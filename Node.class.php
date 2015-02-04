@@ -396,7 +396,7 @@ abstract class Node implements EventTarget {
      * @param boolean           $aCapture   Optional. Specifies whether or not the event should be handled during
      *                                      the capturing or bubbling phase.
      */
-    public function removeEventListener($aEventName, $aCallback, $aCapture) {
+    public function removeEventListener($aEventName, $aCallback, $aCapture = false) {
         if (array_key_exists($aEventName, $this->mEvents)) {
             $useCapture = $aCapture ? Event::CAPTURING_PHASE : Event::BUBBLING_PHASE;
 
