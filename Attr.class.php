@@ -54,7 +54,7 @@ class Attr extends Node {
 			case 'readonly':
 			case 'required':
 			case 'reversed':
-			case 'scpoped':
+			case 'scoped':
 				return true;
 
 			default:
