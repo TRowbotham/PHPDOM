@@ -137,7 +137,7 @@ abstract class Element extends Node implements SplObserver {
 		return $rv;
 	}
 
-	public function insertBefore(Node $aNewNode, Node $aRefNode) {
+	public function insertBefore(Node $aNewNode, Node $aRefNode = null) {
 		$this->mInvalidateChildren = true;
 		return parent::insertBefore($aNewNode, $aRefNode);
 	}

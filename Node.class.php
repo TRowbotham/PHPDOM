@@ -259,7 +259,7 @@ abstract class Node implements EventTarget {
      * @param  Node   $aRefNode The node that the new node will be inserted before.
      * @return Node             The node that was inserted into the document.
      */
-    public function insertBefore(Node $aNewNode, Node $aRefNode) {
+    public function insertBefore(Node $aNewNode, Node $aRefNode = null) {
         if (!isset($aRefNode) || is_null($aRefNode)) {
             return $this->appendChild($aNewNode);
         }
