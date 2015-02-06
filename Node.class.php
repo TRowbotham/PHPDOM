@@ -261,9 +261,7 @@ abstract class Node implements EventTarget {
      */
     public function insertBefore(Node $aNewNode, Node $aRefNode) {
         if (!isset($aRefNode) || is_null($aRefNode)) {
-            $this->appendChild($aNewNode);
-
-            return $aNewNode;
+            return $this->appendChild($aNewNode);
         }
 
         $index = array_search($aRefNode, $this->mChildNodes);
