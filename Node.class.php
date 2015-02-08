@@ -414,7 +414,7 @@ abstract class Node implements EventTarget {
      * @param  Node $aOldNode The node that is being replaced by the new node.
      * @return Node           The node that was replaced in the DOM.
      */
-    public function replaceChild($aNewNode, $aOldNode) {
+    public function replaceChild(Node $aNewNode, Node $aOldNode) {
         if (!is_null($aNewNode->mParentNode)) {
             $aNewNode->mParentNode->removeChild($aNewNode);
         }

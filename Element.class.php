@@ -155,7 +155,7 @@ abstract class Element extends Node implements SplObserver {
 		return parent::removeChild($aNode);
 	}
 
-	public function replaceChild($aNewNode, $aOldNode) {
+	public function replaceChild(Node $aNewNode, Node $aOldNode) {
 		$this->mInvalidateChildren = true;
 		return parent::replaceChild($aNewNode, $aOldNode);
 	}
