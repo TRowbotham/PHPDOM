@@ -119,6 +119,10 @@ abstract class Node implements EventTarget {
     public function appendChild(Node $aNode) {
         $numChildren = count($this->mChildNodes);
 
+        if ($aNode instanceof DocumentFragment) {
+            return $this->appendChildDocumentFragment($aNode, $numChildren);
+        }
+
         // If the node already exists in the document tree somewhere
         // else, remove it from there first.
         if (!is_null($aNode->mParentNode)) {
@@ -428,5 +432,30 @@ abstract class Node implements EventTarget {
         array_splice($this->mChildNodes, $index, 1, array($aNewNode));
 
         return $aOldNode;
+    }
+
+    private function appendChildDocumentFragment($aDocumentFragment, $aChildCount) {
+        if (!$aDocumentFragment->hasChildNodes()) {
+            return $aDocumentFragment;
+        }
+
+        $firstChild = $aDocumentFragment->firstChild;
+
+        foreach ($aDocumentFragment->childNodes as $node) {
+            $node->mParentNode->removeChild($node);
+            $this->mChildNodes[] = $node;
+            $node->mParentElement = $this->mNodeType == Node::ELEMENT_NODE ? $this : null;
+            $node->mParentNode = $this;
+            $this->mLastChild = $node;
+        }
+
+        if ($aChildCount == 0) {
+            $this->mFirstChild = $firstChild;
+        } else {
+            $this->mChildNodes[$aChildCount - 1]->mNextSibling = $firstChild;
+            $firstChild->mPreviousSibling = $this->mChildNodes[$aChildCount - 1];
+        }
+
+        return $aDocumentFragment;
     }
 }
