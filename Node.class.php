@@ -431,25 +431,4 @@ abstract class Node implements EventTarget {
 
         return $aOldNode;
     }
-
-    private function appendChildDocumentFragment($aDocumentFragment) {
-        foreach ($aDocumentFragment->childNodes as $node) {
-            $node->mParentNode->removeChild($node);
-
-            $this->mChildNodes[] = $node;
-
-            if (!$this->mFirstChild) {
-                $this->mFirstChild = $node;
-            } else {
-                $this->mLastChild->mNextSibling = $node;
-                $node->mPreviousSibling = $this->mLastChild;
-            }
-
-            $node->mParentElement = $this->mNodeType == Node::ELEMENT_NODE ? $this : null;
-            $node->mParentNode = $this;
-            $this->mLastChild = $node;
-        }
-
-        return $aDocumentFragment;
-    }
 }
