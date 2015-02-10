@@ -117,8 +117,6 @@ abstract class Node implements EventTarget {
      * @return Node          The node that was just appended to the parent node.
      */
     public function appendChild(Node $aNode) {
-        $numChildren = count($this->mChildNodes);
-
         if ($aNode instanceof DocumentFragment) {
             return $this->appendChildDocumentFragment($aNode);
         }
@@ -131,11 +129,11 @@ abstract class Node implements EventTarget {
 
         $this->mChildNodes[] = $aNode;
 
-        if ($numChildren == 0) {
+        if (!$this->mFirstChild) {
             $this->mFirstChild = $aNode;
         } else {
-            $this->mChildNodes[$numChildren - 1]->mNextSibling = $aNode;
-            $aNode->mPreviousSibling = $this->mChildNodes[$numChildren - 1];
+            $this->mLastChild->mNextSibling = $aNode;
+            $aNode->mPreviousSibling = $this->mLastChild;
         }
 
         $aNode->mParentElement = $this->mNodeType == Node::ELEMENT_NODE ? $this : null;
