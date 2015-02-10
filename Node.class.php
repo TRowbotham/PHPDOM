@@ -120,7 +120,7 @@ abstract class Node implements EventTarget {
         $numChildren = count($this->mChildNodes);
 
         if ($aNode instanceof DocumentFragment) {
-            return $this->appendChildDocumentFragment($aNode, $numChildren);
+            return $this->appendChildDocumentFragment($aNode);
         }
 
         // If the node already exists in the document tree somewhere
@@ -434,26 +434,22 @@ abstract class Node implements EventTarget {
         return $aOldNode;
     }
 
-    private function appendChildDocumentFragment($aDocumentFragment, $aChildCount) {
-        if (!$aDocumentFragment->hasChildNodes()) {
-            return $aDocumentFragment;
-        }
-
-        $firstChild = $aDocumentFragment->firstChild;
-
+    private function appendChildDocumentFragment($aDocumentFragment) {
         foreach ($aDocumentFragment->childNodes as $node) {
             $node->mParentNode->removeChild($node);
+
             $this->mChildNodes[] = $node;
+
+            if (!$this->mFirstChild) {
+                $this->mFirstChild = $node;
+            } else {
+                $this->mLastChild->mNextSibling = $node;
+                $node->mPreviousSibling = $this->mLastChild;
+            }
+
             $node->mParentElement = $this->mNodeType == Node::ELEMENT_NODE ? $this : null;
             $node->mParentNode = $this;
             $this->mLastChild = $node;
-        }
-
-        if ($aChildCount == 0) {
-            $this->mFirstChild = $firstChild;
-        } else {
-            $this->mChildNodes[$aChildCount - 1]->mNextSibling = $firstChild;
-            $firstChild->mPreviousSibling = $this->mChildNodes[$aChildCount - 1];
         }
 
         return $aDocumentFragment;
