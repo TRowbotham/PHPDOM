@@ -117,28 +117,28 @@ abstract class Node implements EventTarget {
      * @return Node          The node that was just appended to the parent node.
      */
     public function appendChild(Node $aNode) {
-        if ($aNode instanceof DocumentFragment) {
-            return $this->appendChildDocumentFragment($aNode);
+        $nodes = $aNode instanceof DocumentFragment ? $aNode->childNodes : array($aNode);
+
+        foreach ($nodes as $node) {
+            // If the node already exists in the document tree somewhere
+            // else, remove it from there first.
+            if ($node->parentNode) {
+                $node->parentNode->removeChild($node);
+            }
+
+            $this->mChildNodes[] = $node;
+
+            if (!$this->mFirstChild) {
+                $this->mFirstChild = $node;
+            } else {
+                $this->mLastChild->mNextSibling = $node;
+                $node->mPreviousSibling = $this->mLastChild;
+            }
+
+            $node->mParentElement = $this->mNodeType == Node::ELEMENT_NODE ? $this : null;
+            $node->mParentNode = $this;
+            $this->mLastChild = $node;
         }
-
-        // If the node already exists in the document tree somewhere
-        // else, remove it from there first.
-        if (!is_null($aNode->mParentNode)) {
-            $aNode->mParentNode->removeChild($aNode);
-        }
-
-        $this->mChildNodes[] = $aNode;
-
-        if (!$this->mFirstChild) {
-            $this->mFirstChild = $aNode;
-        } else {
-            $this->mLastChild->mNextSibling = $aNode;
-            $aNode->mPreviousSibling = $this->mLastChild;
-        }
-
-        $aNode->mParentElement = $this->mNodeType == Node::ELEMENT_NODE ? $this : null;
-        $aNode->mParentNode = $this;
-        $this->mLastChild = $aNode;
 
         return $aNode;
     }
