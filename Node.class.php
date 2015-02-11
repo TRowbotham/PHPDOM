@@ -280,7 +280,7 @@ abstract class Node implements EventTarget {
                 $node->parentNode->removeChild($node);
             }
 
-            $temp[] = $node
+            $temp[] = $node;
 
             if ($index == 0) {
                 $this->mFirstChild = $node;
