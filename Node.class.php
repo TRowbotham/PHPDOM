@@ -272,21 +272,28 @@ abstract class Node implements EventTarget {
             throw new DOMException("NotFoundError: Node was not found");
         }
 
-        if (!is_null($aNewNode->mParentNode)) {
-            $aNewNode->mParentNode->removeChild($aNewNode);
+        $nodes = $aNewNode instanceof DocumentFragment ? $aNewNode->childNodes : array($aNewNode);
+        $temp = array();
+
+        foreach ($nodes as $node) {
+            if ($node->parentNode) {
+                $node->parentNode->removeChild($node);
+            }
+
+            $temp[] = $node
+
+            if ($index == 0) {
+                $this->mFirstChild = $node;
+            }
+
+            $node->mPreviousSibling = $aRefNode->mPreviousSibling;
+            $node->mNextSibling = $aRefNode;
+            $node->mParentNode = $this;
+            $node->mParentElement = $this->mNodeType == Node::ELEMENT_NODE ? $this : null;
+            $aRefNode->mPreviousSibling = $node;
         }
 
-        array_splice($this->mChildNodes, $index, 0, array($aNewNode));
-
-        if ($index == 0) {
-            $this->mFirstChild = $aNewNode;
-        }
-
-        $aNewNode->mPreviousSibling = $aRefNode->mPreviousSibling;
-        $aNewNode->mNextSibling = $aRefNode;
-        $aNewNode->mParentNode = $this;
-        $aNewNode->mParentElement = $this->mNodeType == Node::ELEMENT_NODE ? $this : null;
-        $aRefNode->mPreviousSibling = $aNewNode;
+        array_splice($this->mChildNodes, $index, 0, $temp);
 
         return $aNewNode;
     }
