@@ -424,18 +424,14 @@ abstract class Node implements EventTarget {
      * @return Node           The node that was replaced in the DOM.
      */
     public function replaceChild(Node $aNewNode, Node $aOldNode) {
-        if (!is_null($aNewNode->mParentNode)) {
-            $aNewNode->mParentNode->removeChild($aNewNode);
-        }
-
         $index = array_search($aOldNode, $this->mChildNodes);
 
         if ($index === false) {
             throw new DOMException("NotFoundError: Node was not found");
         }
 
-        array_splice($this->mChildNodes, $index, 1, array($aNewNode));
+        $this->insertBefore($aNewNode, $aOldNode);
 
-        return $aOldNode;
+        return $aOldNode->parentNode->removeChild($aOldNode);
     }
 }
