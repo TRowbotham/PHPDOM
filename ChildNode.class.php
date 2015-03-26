@@ -48,7 +48,7 @@ trait ChildNode {
 		$this->parentNode->removeChild($this);
 	}
 
-	public function replace() {
+	public function replaceWith() {
 		if (!$this->parentNode || !func_num_args()) {
 			return;
 		}
