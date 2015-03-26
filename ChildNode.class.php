@@ -1,27 +1,43 @@
 <?php
 trait ChildNode {
-	public function after(Node ...$aNodes) {
-	//public function after($aNodes) {
-		if (!$this->parentNode) {
+	public function after() {
+		if (!$this->parentNode || !func_num_args()) {
 			return;
 		}
 
-		$next = $this->mNextSibling;
+		$df = new DocumentFragment();
 
-		foreach($aNodes as &$node) {
-			$this->insertBefore($node, $next);
+		foreach (func_get_args() as $node) {
+			if ($node instanceof DocumentFragment) {
+				foreach ($node->childNodes as $child) {
+					$df->appendChild($child);
+				}
+			} elseif ($node instanceof Node) {
+				$df->appendChild($node);
+			}
 		}
+
+		$this->insertBefore($df, $this->mNextSibling);
 	}
 
-	public function before(Node ...$aNodes) {
-	//public function before($aNodes) {
-		if (!$this->parentNode) {
+	public function before() {
+		if (!$this->parentNode || !func_num_args()) {
 			return;
 		}
 
-		foreach($aNodes as &$node) {
-			$this->insertBefore($node, $this);
+		$df = new DocumentFragment();
+
+		foreach (func_get_args() as $node) {
+			if ($node instanceof DocumentFragment) {
+				foreach ($node->childNodes as $child) {
+					$df->appendChild($child);
+				}
+			} elseif ($node instanceof Node) {
+				$df->appendChild($node);
+			}
 		}
+
+		$this->insertBefore($df, $this);
 	}
 
 	public function remove() {
@@ -32,13 +48,12 @@ trait ChildNode {
 		$this->parentNode->removeChild($this);
 	}
 
-	public function replace(Node ...$aNodes) {
-	//public function replace($aNodes) {
-		if (!$this->parentNode) {
+	public function replace() {
+		if (!$this->parentNode || !func_num_args()) {
 			return;
 		}
 
-		$this->after($aNodes);
+		$this->after(func_get_args());
 		$this->remove();
 	}
 }
