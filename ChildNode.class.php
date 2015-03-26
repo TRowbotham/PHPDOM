@@ -1,5 +1,9 @@
 <?php
 trait ChildNode {
+	/**
+	 * Inserts any number of Node or DOMString objects after this ChildNode.
+	 * @param  Node|DOMString ...$aNodes A set of Node or DOMString objects to be inserted.
+	 */
 	public function after() {
 		if (!$this->parentNode || !func_num_args()) {
 			return;
@@ -20,6 +24,10 @@ trait ChildNode {
 		$this->insertBefore($df, $this->mNextSibling);
 	}
 
+	/**
+	 * Inserts any number of Node or DOMString objects before this ChildNode.
+	 * @param  Node|DOMString ...$aNodes A set of Node or DOMString objects to be inserted.
+	 */
 	public function before() {
 		if (!$this->parentNode || !func_num_args()) {
 			return;
@@ -40,6 +48,9 @@ trait ChildNode {
 		$this->insertBefore($df, $this);
 	}
 
+	/**
+	 * Removes this ChildNode from its ParentNode.
+	 */
 	public function remove() {
 		if (!$this->parentNode) {
 			return;
@@ -48,6 +59,10 @@ trait ChildNode {
 		$this->parentNode->removeChild($this);
 	}
 
+	/**
+	 * Replaces this ChildNode with any number of Node or DOMString objects.
+	 * @param  Node|DOMString ...$aNodes A set of Node or DOMString objects to be inserted in place of this ChildNode.
+	 */
 	public function replaceWith() {
 		if (!$this->parentNode || !func_num_args()) {
 			return;
