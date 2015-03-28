@@ -1,7 +1,8 @@
 <?php
 require_once 'Document.class.php';
+require_once 'EventListener.class.php';
 
-class HTMLDocument extends Document {
+class HTMLDocument extends Document implements EventListener {
 	private $mDocumentElement;
 	private $mHead;
 	private $mTitle;
@@ -39,7 +40,7 @@ class HTMLDocument extends Document {
 		}
 	}
 
-	public function handleEvent($aEvent) {
+	public function handleEvent(Event $aEvent) {
 		switch ($aEvent->type) {
 			case 'doctypeChange':
 				$this->removeChild($this->mDoctype);

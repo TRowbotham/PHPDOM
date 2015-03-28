@@ -80,31 +80,30 @@ abstract class Node implements EventTarget {
 
     /**
      * Registers a callback for a specified event on the current node.
-     * @param string            $aEventName The name of the event to listen for.
-     * @param callable|object   $aCallback  A callback that will be executed when the event occurs.  If an object is
-     *                                      given, it will use the handleEvent method on the object as the callback if
-     *                                      it exists.
-     * @param boolean           $aCapture   Optional. Specifies whether or not the event should be handled during
-     *                                      the capturing or bubbling phase.
+     * @param string                    $aEventName     The name of the event to listen for.
+     * @param callable|EventListener    $aCallback      A callback that will be executed when the event occurs.  If an
+     *                                                  object that inherits from the EventListener interface is given,
+     *                                                  it will use the handleEvent method on the object as the
+     *                                                  callback.
+     * @param boolean                   $aUseCapture    Optional. Specifies whether or not the event should be handled
+     *                                                  during the capturing or bubbling phase.
      */
-    public function addEventListener($aEventName, $aCallback, $aCapture = false) {
-        echo 'addEventListener Called<br>';
+    public function addEventListener($aEventName, $aCallback, $aUseCapture = false) {
         if (!array_key_exists($aEventName, $this->mEvents)) {
             $this->mEvents[$aEventName] = array();
             $this->mEvents[$aEventName][Event::CAPTURING_PHASE] = array();
             $this->mEvents[$aEventName][Event::BUBBLING_PHASE] = array();
         }
 
-        if (is_object($aCallback)) {
+        if ($aCallback instanceof EventListener) {
             $callback = array($aCallback, 'handleEvent');
         } else {
             $callback = $aCallback;
         }
 
-        $useCapture = $aCapture ? Event::CAPTURING_PHASE : Event::BUBBLING_PHASE;
+        $useCapture = $aUseCapture ? Event::CAPTURING_PHASE : Event::BUBBLING_PHASE;
 
         if (!in_array($callback, $this->mEvents[$aEventName][$useCapture])) {
-            echo 'EVENT ADDED<br>';
             array_unshift($this->mEvents[$aEventName][$useCapture], $callback);
         }
     }
@@ -439,18 +438,19 @@ abstract class Node implements EventTarget {
 
     /**
      * Unregisters a callback for a specified event on the current node.
-     * @param string            $aEventName The name of the event to listen for.
-     * @param callable|object   $aCallback  A callback that will be executed when the event occurs.  If an object is
-     *                                      given, it will use the handleEvent method on the object as the callback if
-     *                                      it exists.
-     * @param boolean           $aCapture   Optional. Specifies whether or not the event should be handled during
-     *                                      the capturing or bubbling phase.
+     * @param string                    $aEventName     The name of the event to listen for.
+     * @param callable|EventListener    $aCallback      A callback that will be executed when the event occurs.  If an
+     *                                                  object that inherits from the EventListener interface is given,
+     *                                                  it will use the handleEvent method on the object as the
+     *                                                  callback.
+     * @param boolean                   $aUseCapture    Optional. Specifies whether or not the event should be handled
+     *                                                  during the capturing or bubbling phase.
      */
-    public function removeEventListener($aEventName, $aCallback, $aCapture = false) {
+    public function removeEventListener($aEventName, $aCallback, $aUseCapture = false) {
         if (array_key_exists($aEventName, $this->mEvents)) {
-            $useCapture = $aCapture ? Event::CAPTURING_PHASE : Event::BUBBLING_PHASE;
+            $useCapture = $aUseCapture ? Event::CAPTURING_PHASE : Event::BUBBLING_PHASE;
 
-            if (is_object($aCallback)) {
+            if ($aCallback instanceof EventListener) {
                 $callback = array($aCallback, 'handleEvent');
             } else {
                 $callback = $aCallback;
