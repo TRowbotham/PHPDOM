@@ -1,5 +1,6 @@
 <?php
 class Event {
+	const NONE = 0;
 	const CAPTURING_PHASE = 1;
 	const AT_TARGET = 2;
 	const BUBBLING_PHASE = 3;
@@ -10,7 +11,6 @@ class Event {
 	private $mEventPhase;
 	private $mImmediatePropagationStopped;
 	private $mIsTrusted;
-	private $mNodeStack;
 	private $mPropagationStopped;
 	private $mTarget;
 	private $mTimeStamp;
@@ -22,9 +22,8 @@ class Event {
 		$this->mEventPhase = self::CAPTURING_PHASE;
 		$this->mImmediatePropagationStopped = false;
 		$this->mIsTrusted = false;
-		$this->mNodeStack = new SplStack();
 		$this->mPropagationStopped = false;
-		$this->mTimeStamp = time();
+		$this->mTimeStamp = 0;
 		$this->mType = $aEventName;
 	}
 
@@ -67,20 +66,6 @@ class Event {
 		$this->mImmediatePropagationStopped = true;
 	}
 
-	public function _getNodeStack() {
-		if ($this->mNodeStack->isEmpty()) {
-			$node = $this->mTarget;
-
-			while ($node->parentNode) {
-				$this->mNodeStack[] = $node;
-				$node =& $node->parentNode;
-			}
-
-		}
-
-		return $this->mNodeStack;
-	}
-
 	public function _isPropagationStopped() {
 		return $this->mPropagationStopped;
 	}
@@ -91,6 +76,10 @@ class Event {
 
 	public function _setTarget(Node &$aTarget) {
 		$this->mTarget = $aTarget;
+	}
+
+	public function _setTimeStamp($aTime) {
+		$this->mTimeStamp = $aTime;
 	}
 
 	public function _updateEventPhase($aPhase) {

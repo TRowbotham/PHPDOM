@@ -204,17 +204,47 @@ abstract class Node implements EventTarget {
      *                        returns true.
      */
     public function dispatchEvent(Event $aEvent) {
+        $node = $this;
+
+        // There is no Window object in PHPJS, so stop at the Document object
+        while (!($node instanceof Document)) {
+            $node = $node->parentNode;
+        }
+
+        $aEvent->_setTarget($this);
+        $aEvent->_setTimeStamp(microtime());
+
+        if ($node == $this) {
+            $aEvent->_updateEventPhase(Event::AT_TARGET);
+        }
+
+        $node->_dispatchEvent($aEvent);
+    }
+
+    /**
+     * Handles executing the callbacks registered to a specific event on this Node.  It also takes care of handling
+     * event propagation and the event phases.
+     * @param  Event   &$aEvent         The event object associated with the currently executing event.
+     * @param  boolean $aMoveToBubbling Phase When the event phase is AT_TARGET, it first executes any event handlers
+     *                                  on the target Node that are associated with the CAPTURING_PHASE.  Another event
+     *                                  will then be dispatched on the same Node in the AT_TARGET phase again which
+     *                                  executes and event handlers on the target that are associated with the
+     *                                  BUBBLING_PHASE.  When set to true, this means that the dispatched event has
+     *                                  already been through the AT_TARGET phase once.
+     */
+    private function _dispatchEvent(Event &$aEvent, $aMoveToBubblingPhase = false) {
         if ($aEvent->stopPropagation()) {
-            $aEvent->_updateEventPhase(Event::CAPTURING_PHASE);
+            $aEvent->_updateEventPhase(Event::NONE);
+
             return;
         }
 
-        if (empty($aEvent->target)) {
-            $aEvent->_setTarget($this);
-        }
+        $moveToBubblingPhase = $aMoveToBubblingPhase;
 
         if (array_key_exists($aEvent->type, $this->mEvents)) {
-            foreach ($this->mEvents[$aEvent->type][$aEvent->eventPhase] as $callback) {
+            $eventPhase = $moveToBubblingPhase ? Event::CAPTURING_PHASE : Event::BUBBLING_PHASE;
+
+            foreach ($this->mEvents[$aEvent->type][$eventPhase] as $callback) {
                 if ($aEvent->_isImmediatePropagationStopped()) {
                     break;
                 }
@@ -223,27 +253,44 @@ abstract class Node implements EventTarget {
             }
         }
 
-        if ($aEvent->_getNodeStack()->valid()) {
-            $currentTarget = $aEvent->_getNodeStack()->current();
+        switch ($aEvent->eventPhase) {
+            case Event::CAPTURING_PHASE:
+                $node = $aEvent->target;
 
-            switch ($aEvent->eventPhase) {
-                case Event::CAPTURING_PHASE:
-                    $aEvent->_getNodeStack()->next();
-
-                    $currentTarget->dispatchEvent($aEvent);
-
-                    if ($currentTarget == $aEvent->target) {
-                        $aEvent->_updateEventPhase(Event::BUBBLING_PHASE);
-                        $aEvent->_getNodeStack()->prev();
-                        $currentTarget->dispatchEvent($aEvent);
+                while ($node) {
+                    if ($node->parentNode == $this) {
+                        break;
                     }
 
-                    break;
+                    $node = $node->parentNode;
+                }
 
-                case Event::BUBBLING_PHASE:
-                    $aEvent->_getNodeStack()->prev();
-                    $currentTarget->dispatchEvent($aEvent);
-            }
+                if ($this == $aEvent->target->parentNode) {
+                    $aEvent->_updateEventPhase(Event::AT_TARGET);
+                }
+
+                break;
+
+            case Event::AT_TARGET:
+                if ($moveToBubblingPhase) {
+                    $node = $this->parentNode;
+                    $aEvent->_updateEventPhase(Event::BUBBLING_PHASE);
+                } else {
+                    $node = $this;
+                    $moveToBubblingPhase = true;
+                }
+
+                break;
+
+            case Event::BUBBLING_PHASE:
+                $node = $this->parentNode;
+        }
+
+        if ($node) {
+            $node->_dispatchEvent($aEvent, $moveToBubblingPhase);
+        } else {
+            // The event listener has run its course.
+            $aEvent->_updateEventPhase(Event::NONE);
         }
     }
 
