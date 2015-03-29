@@ -232,7 +232,7 @@ abstract class Node implements EventTarget {
      *                                  already been through the AT_TARGET phase once.
      */
     private function _dispatchEvent(Event &$aEvent, $aMoveToBubblingPhase = false) {
-        if ($aEvent->stopPropagation()) {
+        if ($aEvent->_isPropagationStopped()) {
             $aEvent->_updateEventPhase(Event::NONE);
 
             return;
