@@ -7,6 +7,7 @@ class Event {
 
 	private $mBubbles;
 	private $mCancelable;
+	private $mCurrentTarget;
 	private $mDefaultPrevented;
 	private $mEventPhase;
 	private $mImmediatePropagationStopped;
@@ -18,6 +19,7 @@ class Event {
 
 	public function __construct($aEventName) {
 		$this->initEvent();
+		$this->mCurrentTarget = null;
 		$this->mDefaultPrevented = false;
 		$this->mEventPhase = self::CAPTURING_PHASE;
 		$this->mImmediatePropagationStopped = false;
@@ -33,6 +35,8 @@ class Event {
 				return $this->mBubbles;
 			case 'cancelable':
 				return $this->mCancelable;
+			case 'currentTarget':
+				return $this->mCurrentTarget;
 			case 'eventPhase':
 				return $this->mEventPhase;
 			case 'timeStamp':
@@ -72,6 +76,10 @@ class Event {
 
 	public function _isImmediatePropagationStopped() {
 		return $this->mImmediatePropagationStopped;
+	}
+
+	public function _setCurrentTarget(Node &$aTarget) {
+		$this->mCurrentTarget = $aTarget;
 	}
 
 	public function _setTarget(Node &$aTarget) {
