@@ -25,6 +25,7 @@ class Event {
 		$this->mImmediatePropagationStopped = false;
 		$this->mIsTrusted = false;
 		$this->mPropagationStopped = false;
+		$this->mTarget = null;
 		$this->mTimeStamp = 0;
 		$this->mType = $aEventName;
 	}
