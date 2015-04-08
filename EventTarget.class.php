@@ -1,6 +1,4 @@
 <?php
-require_once 'Event.class.php';
-
 interface EventTarget {
 	public function addEventListener($aEventName, $aCallback, $aCapture);
 	public function removeEventListener($aEventName, $aCallback, $aCapture);
