@@ -4,6 +4,7 @@ require_once 'DOMImplementation.class.php';
 require_once 'DocumentType.class.php';
 require_once 'Attr.class.php';
 require_once 'DocumentFragment.class.php';
+require_once 'Event.class.php';
 
 class Document extends Node {
 	public static $implementation; //DOMImplementation
