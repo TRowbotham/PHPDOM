@@ -77,6 +77,7 @@ class NamedNodeMap implements ArrayAccess, SeekableIterator, Countable {
     }
 
     public function offsetUnset($aOffset) {
+        $this->mLength--;
         array_splice($this->mAttributes, $aOffset, 1);
     }
 
@@ -101,6 +102,8 @@ class NamedNodeMap implements ArrayAccess, SeekableIterator, Countable {
     public function removeNamedItem($aName) {
         foreach($this->mAttributes as $attr) {
             if ($attr->nodeName == $aName) {
+                $this->mLength--;
+
                 return array_splice($this->mAttributes, key($this->mAttributes), 1);
             }
         }
@@ -112,6 +115,8 @@ class NamedNodeMap implements ArrayAccess, SeekableIterator, Countable {
         foreach($this->mAttributes as $attr) {
             if ($attr->nodeName == $aLocalName &&
                 $attr->namespaceURI == $aNamespaceURI) {
+                $this->mLength--;
+
                 return array_splice($this->mAttributes, key($this->mAttributes), 1);
             }
         }
