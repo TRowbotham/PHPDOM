@@ -85,6 +85,10 @@ class URLSearchParams {
 		}
 	}
 
+	public function toString() {
+		$this->__toString();
+	}
+
 	public function __toString() {
 		$queryString = '';
 
