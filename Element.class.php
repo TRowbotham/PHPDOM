@@ -19,8 +19,8 @@ abstract class Element extends Node implements SplObserver {
 		parent::__construct();
 
 		$this->mAttributes = new NamedNodeMap();
-		$this->mEndTagOmitted = false;
 		$this->mClassName = '';
+		$this->mEndTagOmitted = false;
 	}
 
 	public function __get( $aName ) {
@@ -93,6 +93,10 @@ abstract class Element extends Node implements SplObserver {
 		return parent::appendChild($aNode);
 	}
 
+	public function closest($aSelectorRule) {
+		// TODO
+	}
+
 	public function getAttribute( $aName ) {
 		$rv = '';
 
@@ -104,6 +108,10 @@ abstract class Element extends Node implements SplObserver {
 		}
 
 		return $rv;
+	}
+
+	public function getAttributeNode(Attr $aName) {
+		// TODO
 	}
 
 	public function getElementsByClassName( $aClassName ) {
@@ -124,6 +132,10 @@ abstract class Element extends Node implements SplObserver {
 		return $elements;
 	}
 
+	public function getElementsByTagName($aTagName) {
+		// TODO
+	}
+
 	public function hasAttribute( $aName ) {
 		$rv = false;
 
@@ -137,6 +149,14 @@ abstract class Element extends Node implements SplObserver {
 		return $rv;
 	}
 
+	public function hasAttributes() {
+		// TODO
+	}
+
+	public function insertAdjacentHTML($aHTML) {
+		// TODO
+	}
+
 	public function insertBefore(Node $aNewNode, Node $aRefNode = null) {
 		$this->mInvalidateChildren = true;
 		return parent::insertBefore($aNewNode, $aRefNode);
@@ -148,6 +168,10 @@ abstract class Element extends Node implements SplObserver {
 
 	public function removeAttribute( $aName ) {
 		$this->mAttributes->removeNamedItem($aName);
+	}
+
+	public function removeAttributeNode(Attr $aNode) {
+		// TODO
 	}
 
 	public function removeChild(Node $aNode) {
@@ -177,6 +201,10 @@ abstract class Element extends Node implements SplObserver {
 			$node->nodeValue = $aValue;
 			$this->mAttributes->setNamedItem($node);
 		}
+	}
+
+	public function setAttributeNode(Attr $aNode) {
+		// TODO
 	}
 
 	public function toHTML() {
