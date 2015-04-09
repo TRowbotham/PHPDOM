@@ -30,7 +30,16 @@ class URLSearchParams {
 	}
 
 	public function get($aName) {
-		return $this->has($aName) ? $this->mPairs[$aName][0] : null;
+		$rv = null;
+
+		for ($i = 0; $i < count($this->mPairs); $i++) {
+			if (isset($this->mPairs[$i][$aName])) {
+				$rv = $this->mPairs[$i][$aName];
+				break;
+			}
+		}
+
+		return $rv;
 	}
 
 	public function getAll($aName) {
