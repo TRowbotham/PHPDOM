@@ -8,11 +8,11 @@ class HTMLTitleElement extends HTMLElement {
 		parent::__construct();
 
 		$this->mNodeName = 'TITLE';
+		$this->mTagName = 'TITLE';
 		$this->text = '';
 	}
 
 	public function __toString() {
 		return __CLASS__;
 	}
-
 }

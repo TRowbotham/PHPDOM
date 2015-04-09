@@ -5,6 +5,7 @@ class HTMLHeadElement extends HTMLElement {
 		parent::__construct();
 
 		$this->mNodeName = 'HEAD';
+		$this->mTagName = 'HEAD';
 	}
 
 	public function __toString() {

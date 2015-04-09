@@ -12,6 +12,7 @@ abstract class Element extends Node implements SplObserver {
 	protected $mClassList; // ClassList
 	protected $mClassName;
 	protected $mEndTagOmitted;
+	protected $mTagName;
 
 	private $mReconstructClassList;
 
@@ -21,6 +22,7 @@ abstract class Element extends Node implements SplObserver {
 		$this->mAttributes = new NamedNodeMap();
 		$this->mClassName = '';
 		$this->mEndTagOmitted = false;
+		$this->mTagName = '';
 	}
 
 	public function __get( $aName ) {
@@ -65,7 +67,7 @@ abstract class Element extends Node implements SplObserver {
 				return $this->getLastElementChild();
 
 			case 'tagName':
-				return $this->mNodeName;
+				return $this->mTagName;
 
 			default:
 				return parent::__get($aName);

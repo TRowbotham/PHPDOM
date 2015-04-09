@@ -22,6 +22,7 @@ class HTMLAnchorElement extends HTMLElement {
 		$this->mPing;
 		$this->mRel = '';
 		$this->mRelList = new DOMTokenList();
+		$this->mTagName = 'A';
 		$this->mTarget = '';
 		$this->mType = '';
 	}

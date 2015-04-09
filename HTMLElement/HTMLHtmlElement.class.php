@@ -7,6 +7,7 @@ class HTMLHtmlElement extends HTMLElement {
 		parent::__construct();
 
 		$this->mNodeName = 'HTML';
+		$this->mTagName = 'HTML';
 	}
 
 	public function __toString() {

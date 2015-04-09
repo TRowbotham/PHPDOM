@@ -7,6 +7,7 @@ class HTMLBodyElement extends HTMLElement {
 		parent::__construct();
 
 		$this->mNodeName = 'BODY';
+		$this->mTagName = 'BODY';
 	}
 
 	public function __toString() {
