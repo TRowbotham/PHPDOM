@@ -152,7 +152,7 @@ abstract class Element extends Node implements SplObserver {
 	}
 
 	public function hasAttributes() {
-		// TODO
+		return $this->mAttributes->length > 0;
 	}
 
 	public function insertAdjacentHTML($aHTML) {
