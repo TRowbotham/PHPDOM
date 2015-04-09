@@ -1,4 +1,6 @@
 <?php
+require_once 'URLSearchParams.class.php';
+
 trait URLUtils {
 	private $mHash;
 	private $mHost;
@@ -39,7 +41,11 @@ trait URLUtils {
 			case 'search':
 				return $this->getURLComponent('query');
 			case 'searchParams':
-				return null;
+				if (!$this->mSearchParams) {
+					$this->mSearchParams = new URLSearchParams($this->getURLComponent('query'));
+				}
+
+				return $this->mSearchParams;
 			case 'username':
 				return $this->getURLComponent('user');
 			default:
