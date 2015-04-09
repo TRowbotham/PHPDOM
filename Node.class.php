@@ -242,7 +242,7 @@ abstract class Node implements EventTarget {
 
         if (array_key_exists($aEvent->type, $this->mEvents)) {
             $aEvent->_setCurrentTarget($this);
-            $eventPhase = $moveToBubblingPhase ? Event::CAPTURING_PHASE : Event::BUBBLING_PHASE;
+            $eventPhase = $moveToBubblingPhase ? Event::BUBBLING_PHASE : Event::CAPTURING_PHASE;
 
             foreach ($this->mEvents[$aEvent->type][$eventPhase] as $callback) {
                 if ($aEvent->_isImmediatePropagationStopped()) {
