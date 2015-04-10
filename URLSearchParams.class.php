@@ -86,7 +86,7 @@ class URLSearchParams {
 	}
 
 	public function toString() {
-		$this->__toString();
+		return $this->__toString();
 	}
 
 	public function __toString() {
