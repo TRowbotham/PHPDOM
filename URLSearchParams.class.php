@@ -1,11 +1,15 @@
 <?php
 class URLSearchParams {
-	private $mPairs;
+	private $mParams;
+	private $mIndex;
+	private $mSequenceId;
 
-	public function __construct($aQueryString = '') {
-		$this->mPairs = array();
+	public function __construct($aSearchParams = '') {
+		$this->mIndex = array();
+		$this->mParams = array();
+		$this->mSequenceId = 0;
 
-		$pairs = explode('&', $aQueryString);
+		$pairs = explode('&', $aSearchParams);
 
 		foreach ($pairs as $pair) {
 			list($key, $value) = explode('=', $pair);
@@ -14,90 +18,48 @@ class URLSearchParams {
 	}
 
 	public function append($aName, $aValue) {
-		$this->mPairs[] = array($aName => $aValue);
+		$this->mIndex[$this->mSequenceId] = $aName;
+		$this->mParams[$aName][$this->mSequenceId++] = $aValue;
 	}
 
 	public function delete($aName) {
-		if ($this->has($aName)) {
-			$arr = array_filter($this->mPairs, function($aKey) use ($aName) {
-						return isset($this->mPairs[$aKey][$aName]);
-					}, ARRAY_FILTER_USE_KEY);
-
-			foreach ($arr as $key => $value) {
-				unset($this->mPairs[$key]);
-			}
-		}
+		unset($this->mParams[$aName]);
 	}
 
 	public function get($aName) {
-		$rv = null;
-
-		for ($i = 0; $i < count($this->mPairs); $i++) {
-			if (isset($this->mPairs[$i][$aName])) {
-				$rv = $this->mPairs[$i][$aName];
-				break;
-			}
-		}
-
-		return $rv;
+		return $this->has($aName) ? reset($this->mParams[$aName]) : null;
 	}
 
 	public function getAll($aName) {
-		return array_column(array_filter($this->mPairs, function($aKey) use ($aName) {
-			return isset($this->mPairs[$aKey][$aName]);
-		}, ARRAY_FILTER_USE_KEY), $aName);
+		return $this->has($aName) ? array_values($this->mParams[$aName]) : array();
 	}
 
 	public function has($aName) {
-		$rv = false;
-
-		for ($i = 0; $i < count($this->mPairs); $i++) {
-			if (isset($this->mPairs[$i][$aName])) {
-				$rv = true;
-				break;
-			}
-		}
-
-		return $rv;
+		return isset($this->mParams[$aName]);
 	}
 
 	public function set($aName, $aValue) {
 		if ($this->has($aName)) {
-			$arr = array_filter($this->mPairs, function($aKey) use ($aName) {
-						return isset($this->mPairs[$aKey][$aName]);
-					}, ARRAY_FILTER_USE_KEY);
-
-			$index = 0;
-			$firstRound = true;
-
-			foreach ($arr as $key => $value) {
-				if ($firstRound) {
-					$index = $key;
-					$firstRound = false;
-				} else {
-					unset($this->mPairs[$key]);
-				}
+			for ($i = count($this->mParams[$aName]) - 1; $i > 0; $i--) {
+				end($this->mParams[$aName]);
+				unset($this->mIndex[key($this->mParams[$aName])]);
+				array_pop($this->mParams[$aName]);
 			}
 
-			$this->mPairs[$index][$aName] = $aValue;
+			reset($this->mParams[$aName]);
+			$this->mParams[$aName][key($this->mParams[$aName])] = $aValue;
 		} else {
 			$this->append($aName, $aValue);
 		}
 	}
 
 	public function toString() {
-		return $this->__toString();
-	}
-
-	public function __toString() {
 		$queryString = '';
 
-		foreach ($this->mPairs as $key => $values) {
-			foreach ($this->mPairs[$key] as $name => $value) {
-				$queryString .= '&' . $name . '=' . $value;
-			}
+		foreach ($this->mIndex as $sequenceId => $name) {
+			$queryString .= '&' . $name . '=' . $this->mParams[$name][$sequenceId];
 		}
 
-		return empty($this->mPairs) ? $queryString : substr($queryString, 1);
+		return $queryString ? substr($queryString, 1) : $queryString;
 	}
 }
