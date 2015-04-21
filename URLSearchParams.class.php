@@ -32,6 +32,10 @@ class URLSearchParams {
 	 * @param  string $aName The name of the key to delete.
 	 */
 	public function delete($aName) {
+		foreach ($this->mParams[$aName] as $key) {
+			unset($this->mIndex[$key]);
+		}
+
 		unset($this->mParams[$aName]);
 	}
 
