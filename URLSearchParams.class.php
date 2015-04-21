@@ -12,7 +12,13 @@ class URLSearchParams {
 		$pairs = explode('&', $aSearchParams);
 
 		foreach ($pairs as $pair) {
-			list($key, $value) = explode('=', $pair);
+			if (strpos($pair, '=') === false) {
+				$key = $pair;
+				$value = '';
+			} else {
+				list($key, $value) = explode('=', $pair);
+			}
+
 			$this->append($key, $value);
 		}
 	}
