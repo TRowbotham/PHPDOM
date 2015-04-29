@@ -65,6 +65,73 @@ class HTMLElement extends Element {
 		}
 	}
 
+	public function __set($aName, $aValue) {
+		switch ($aName) {
+			case 'accessKey':
+				$this->mAccessKey = $aValue;
+				$this->_updateAttributeOnPropertyChange($aName, $aValue);
+
+				break;
+
+			case 'accessKeyLabel':
+				$this->mAccessKeyLabel = $aValue;
+				$this->_updateAttributeOnPropertyChange($aName, $aValue);
+
+				break;
+
+			case 'contentEditable':
+				$this->mContentEditable = $this->mIsContentEditable = $aValue;
+				$this->_updateAttributeOnPropertyChange($aName, $aValue);
+
+				break;
+
+			case 'dir':
+				$this->mDir = $aValue;
+				$this->_updateAttributeOnPropertyChange($aName, $aValue);
+
+				break;
+
+			case 'hidden':
+				$this->mHidden = $aValue;
+				$this->_updateAttributeOnPropertyChange($aName, $aValue);
+
+				break;
+
+			case 'lang':
+				$this->mLang = $aValue;
+				$this->_updateAttributeOnPropertyChange($aName, $aValue);
+
+				break;
+
+			case 'spellcheck':
+				$this->mSpellcheck = $aValue;
+				$this->_updateAttributeOnPropertyChange($aName, $aValue);
+
+				break;
+
+			case 'tabIndex':
+				$this->mTabIndex = $aValue;
+				$this->_updateAttributeOnPropertyChange($aName, $aValue);
+
+				break;
+
+			case 'title':
+				$this->mTitle = $aValue;
+				$this->_updateAttributeOnPropertyChange($aName, $aValue);
+
+				break;
+
+			case 'translate':
+				$this->mTranslate = $aValue;
+				$this->_updateAttributeOnPropertyChange($aName, $aValue);
+
+				break;
+
+			default:
+				parent::__set($aName, $aValue);
+		}
+	}
+
 	public function __toString() {
 		return __CLASS__;
 	}
