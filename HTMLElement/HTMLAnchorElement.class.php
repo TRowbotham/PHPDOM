@@ -5,6 +5,7 @@ require_once 'URLUtils.class.php';
 class HTMLAnchorElement extends HTMLElement {
 	private $mDownload;
 	private $mHrefLang;
+	private $mInvalidateRelList;
 	private $mPing;
 	private $mRel;
 	private $mRelList;
@@ -17,10 +18,11 @@ class HTMLAnchorElement extends HTMLElement {
 
 		$this->mDownload = '';
 		$this->mHrefLang = '';
+		$this->mInvalidateRelList = false;
 		$this->mNodeName = 'A';
 		$this->mPing;
 		$this->mRel = '';
-		$this->mRelList = new DOMTokenList();
+		$this->mRelList = null;
 		$this->mTagName = 'A';
 		$this->mTarget = '';
 		$this->mType = '';
@@ -40,7 +42,7 @@ class HTMLAnchorElement extends HTMLElement {
 			case 'rel':
 				return $this->mRel;
 			case 'relList':
-				return $this->mRelList;
+				return $this->getRelList();
 			case 'target':
 				return $this->mTarget;
 			case 'type':
@@ -78,6 +80,7 @@ class HTMLAnchorElement extends HTMLElement {
 
 			case 'rel':
 				$this->mRel = $aValue;
+				$this->mInvalidateRelList = true;
 				$this->_updateAttributeOnPropertyChange($aName, $aValue);
 
 				break;
@@ -104,7 +107,6 @@ class HTMLAnchorElement extends HTMLElement {
 		if ($aObject instanceof URLUtils) {
 			$this->_updateAttributeOnPropertyChange('href', $this->mURLUtils->href);
 		} else if ($aObject instanceof DOMTokenList && $aObject == $this->mRelList) {
-			$this->mRel = $this->mRelList->toString();
 			$this->_updateAttributeOnPropertyChange('rel', $this->mRel);
 		}
 
@@ -113,5 +115,19 @@ class HTMLAnchorElement extends HTMLElement {
 
 	public function __toString() {
 		return __CLASS__;
+	}
+
+	private function getRelList() {
+		if (!$this->mRelList || $this->mInvalidateRelList) {
+			$this->mInvalidateRelList = false;
+			$this->mRelList = new DOMTokenList();
+			$this->mRelList->attach($this);
+
+			if (!empty($this->mRel)) {
+				$this->mRelList->add($this->mRel);
+			}
+		}
+
+		return $this->mRelList;
 	}
 }
