@@ -3,8 +3,6 @@ require_once 'HTMLElement/HTMLElement.class.php';
 require_once 'URLUtils.class.php';
 
 class HTMLAnchorElement extends HTMLElement {
-	use URLUtils;
-
 	private $mDownload;
 	private $mHrefLang;
 	private $mPing;
@@ -28,12 +26,6 @@ class HTMLAnchorElement extends HTMLElement {
 	}
 
 	public function __get($aName) {
-		$rv = $this->URLUtilsGet($aName);
-
-		if ($rv !== false) {
-			return $rv;
-		}
-
 		switch ($aName) {
 			case 'download':
 				return $this->mDownload;
@@ -55,36 +47,40 @@ class HTMLAnchorElement extends HTMLElement {
 	}
 
 	public function __set($aName, $aValue) {
-		$this->URLUtilsSet($aName, $aValue);
-
 		switch ($aName) {
 			case 'download':
 				$this->mDownload = $aValue;
+				$this->_updateAttributeOnPropertyChange($aName, $aValue);
 
 				break;
 
 			case 'hrefLang':
 				$this->mHrefLang = $aValue;
+				$this->_updateAttributeOnPropertyChange($aName, $aValue);
 
 				break;
 
 			case 'ping':
 				$this->mPing = $aValue;
+				$this->_updateAttributeOnPropertyChange($aName, $aValue);
 
 				break;
 
 			case 'rel':
 				$this->mRel = $aValue;
+				$this->_updateAttributeOnPropertyChange($aName, $aValue);
 
 				break;
 
 			case 'target':
 				$this->mTarget = $aValue;
+				$this->_updateAttributeOnPropertyChange($aName, $aValue);
 
 				break;
 
 			case 'type':
 				$this->mType = $aValue;
+				$this->_updateAttributeOnPropertyChange($aName, $aValue);
 
 				break;
 
