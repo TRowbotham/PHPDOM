@@ -1,11 +1,12 @@
 <?php
 require_once 'URLSearchParams.class.php';
 
-trait URLUtils {
+class URLUtils implements SplSubject {
 	private $mHash;
 	private $mHost;
 	private $mHostname;
 	private $mHref;
+	private $mObservers;
 	private $mOrigin;
 	private $mPassword;
 	private $mPathname;
@@ -16,7 +17,24 @@ trait URLUtils {
 	private $mUrl;
 	private $mUsername;
 
-	public function URLUtilsGet($aName) {
+	public function __construct() {
+		$this->mHash = '';
+		$this->mHost = '';
+		$this->mHostname = '';
+		$this->mHref = '';
+		$this->mObservers = new SplObjectStorage();
+		$this->mOrigin = '';
+		$this->mPassword = '';
+		$this->mPathname = '';
+		$this->mPort = '';
+		$this->mProtocol = '';
+		$this->mSearch = '';
+		$this->mSearchParams = '';
+		$this->mUrl = '';
+		$this->mUsername = '';
+	}
+
+	public function __get($aName) {
 		switch ($aName) {
 			case 'hash':
 				return $this->getURLComponent('fragment');
@@ -39,13 +57,9 @@ trait URLUtils {
 			case 'protocol':
 				return $this->getURLComponent('scheme') . ':';
 			case 'search':
-				return $this->getURLComponent('query');
+				return $this->getURLSearchParams()->toString();
 			case 'searchParams':
-				if (!$this->mSearchParams) {
-					$this->mSearchParams = new URLSearchParams($this->getURLComponent('query'));
-				}
-
-				return $this->mSearchParams;
+				return $this->getURLSearchParams();
 			case 'username':
 				return $this->getURLComponent('user');
 			default:
@@ -53,7 +67,7 @@ trait URLUtils {
 		}
 	}
 
-	public function URLUtilsSet($aName, $aValue) {
+	public function __set($aName, $aValue) {
 		switch ($aName) {
 			case 'hash':
 				$this->mHash = $aValue;
@@ -101,7 +115,7 @@ trait URLUtils {
 				break;
 
 			case 'search':
-				$this->mSearch = $aValue;
+				$this->mSearchParams = new URLSearchParams($aValue);
 
 				break;
 
@@ -109,7 +123,20 @@ trait URLUtils {
 				$this->mUsername = $aValue;
 
 				break;
+
+			default:
+				return false;
 		}
+
+		$this->notify();
+	}
+
+	public function attach(SplObserver $aObserver) {
+		$this->mObservers->attach($aObserver);
+	}
+
+	public function detach(SplObserver $aObserver) {
+		$this->mObservers->detach($aObserver);
 	}
 
 	private function getURLComponent($aComponent) {
@@ -118,5 +145,19 @@ trait URLUtils {
 		}
 
 		return ($this->mUrl === false || !isset($this->mUrl[$aComponent])) ? '' : $this->mUrl[$aComponent];
+	}
+
+	private function getURLSearchParams() {
+		if (!$this->mSearchParams) {
+			$this->mSearchParams = new URLSearchParams($this->getURLComponent('query'));
+		}
+
+		return $this->mSearchParams;
+	}
+
+	public function notify() {
+		foreach($this->mObservers as $observer) {
+			$observer->update($this);
+		}
 	}
 }
