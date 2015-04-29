@@ -10,6 +10,7 @@ class HTMLAnchorElement extends HTMLElement {
 	private $mRelList;
 	private $mTarget;
 	private $mType;
+	private $mURLUtils;
 
 	public function __construct() {
 		parent::__construct();
@@ -23,6 +24,9 @@ class HTMLAnchorElement extends HTMLElement {
 		$this->mTagName = 'A';
 		$this->mTarget = '';
 		$this->mType = '';
+		$this->mURLUtils = new URLUtils();
+
+		$this->mURLUtils->attach($this);
 	}
 
 	public function __get($aName) {
@@ -42,6 +46,12 @@ class HTMLAnchorElement extends HTMLElement {
 			case 'type':
 				return $this->mType;
 			default:
+				$rv = $this->mURLUtils->__get($aName);
+
+				if ($rv !== false) {
+					return $rv;
+				}
+
 				return parent::__get($aName);
 		}
 	}
@@ -85,8 +95,20 @@ class HTMLAnchorElement extends HTMLElement {
 				break;
 
 			default:
+				$this->mURLUtils->__set($aName, $aValue);
 				parent::__set($aName, $aValue);
 		}
+	}
+
+	public function update(SplSubject $aObject) {
+		if ($aObject instanceof URLUtils) {
+			$this->_updateAttributeOnPropertyChange('href', $this->mURLUtils->href);
+		} else if ($aObject instanceof DOMTokenList && $aObject == $this->mRelList) {
+			$this->mRel = $this->mRelList->toString();
+			$this->_updateAttributeOnPropertyChange('rel', $this->mRel);
+		}
+
+		parent::update($aObject);
 	}
 
 	public function __toString() {
