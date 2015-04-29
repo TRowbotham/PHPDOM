@@ -79,12 +79,7 @@ abstract class Element extends Node implements SplObserver {
 			case 'className':
 				$this->mClassName = $aValue;
 				$this->mReconstructClassList = true;
-
-				if (empty($aValue) || $this->mClassName == '') {
-					$this->removeAttribute('class');
-				} else {
-					$this->setAttribute('class', $aValue);
-				}
+				$this->_updateAttributeOnPropertyChange('class', $aValue);
 
 				break;
 		}
@@ -272,18 +267,23 @@ abstract class Element extends Node implements SplObserver {
 	}
 
 	public function update(SplSubject $aObject) {
-		if ($aObject instanceof DOMTokenList) {
+		if ($aObject instanceof DOMTokenList && $aObject == $this->mClassList) {
 			$this->mClassName = $aObject->__toString();
-
-			if (!$this->mClassName) {
-				$this->removeAttribute('class');
-			} else {
-				$this->setAttribute('class', $this->mClassName);
-			}
+			$this->_updateAttributeOnPropertyChange('class', $this->mClassName);
 		}
 	}
 
 	public function _isEndTagOmitted() {
 		return $this->mEndTagOmitted;
+	}
+
+	protected function _updateAttributeOnPropertyChange($aAttributeName, $aValue) {
+		$attrName = strtolower($aAttributeName);
+
+		if (empty($aValue) || $aValue === '') {
+			$this->removeAttribute($attrName);
+		} else {
+			$this->setAttribute($attrName, $aValue);
+		}
 	}
 }
