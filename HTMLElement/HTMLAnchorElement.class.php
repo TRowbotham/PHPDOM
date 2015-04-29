@@ -107,6 +107,7 @@ class HTMLAnchorElement extends HTMLElement {
 		if ($aObject instanceof URLUtils) {
 			$this->_updateAttributeOnPropertyChange('href', $this->mURLUtils->href);
 		} else if ($aObject instanceof DOMTokenList && $aObject == $this->mRelList) {
+			$this->mRel = $this->getRelList()->__toString();
 			$this->_updateAttributeOnPropertyChange('rel', $this->mRel);
 		}
 
