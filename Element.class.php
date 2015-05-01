@@ -23,6 +23,7 @@ abstract class Element extends Node implements SplObserver {
 		$this->mClassName = '';
 		$this->mEndTagOmitted = false;
 		$this->mTagName = '';
+		$this->addEventListener('attributechange', array($this, '_onAttributeChange'));
 	}
 
 	public function __get( $aName ) {
@@ -164,7 +165,11 @@ abstract class Element extends Node implements SplObserver {
 	}
 
 	public function removeAttribute( $aName ) {
-		$this->mAttributes->removeNamedItem($aName);
+		$attr = $this->mAttributes->removeNamedItem($aName)[0];
+		$dict = new CustomEventInit();
+		$dict->detail =& $attr;
+		$e = new CustomEvent('attributechange', $dict);
+		$this->dispatchEvent($e);
 	}
 
 	public function removeAttributeNode(Attr $aNode) {
@@ -183,11 +188,13 @@ abstract class Element extends Node implements SplObserver {
 
 	public function setAttribute( $aName, $aValue = "" ) {
 		$updateOnly = false;
+		$node = null;
 
 		foreach ($this->mAttributes as $attribute) {
 			if ($attribute->nodeName == $aName) {
 				$attribute->nodeValue = $aValue;
 				$updateOnly = true;
+				$node = $attribute;
 				break;
 			}
 		}
@@ -197,6 +204,13 @@ abstract class Element extends Node implements SplObserver {
 			$node->nodeName = $aName;
 			$node->nodeValue = $aValue;
 			$this->mAttributes->setNamedItem($node);
+		}
+
+		if ($node) {
+			$dict = new CustomEventInit();
+			$dict->detail =& $node;
+			$e = new CustomEvent('attributechange', $dict);
+			$this->dispatchEvent($e);
 		}
 	}
 
@@ -275,6 +289,14 @@ abstract class Element extends Node implements SplObserver {
 
 	public function _isEndTagOmitted() {
 		return $this->mEndTagOmitted;
+	}
+
+	protected function _onAttributeChange(Event $aEvent) {
+		switch ($aEvent->detail->nodeName) {
+			case 'class':
+				$this->mReconstructClassList = true;
+				$this->mClassName = $aEvent->detail->nodeValue;
+		}
 	}
 
 	protected function _updateAttributeOnPropertyChange($aAttributeName, $aValue) {
