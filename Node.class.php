@@ -205,8 +205,7 @@ abstract class Node implements EventTarget {
     public function dispatchEvent(Event $aEvent) {
         $node = $this;
 
-        // There is no Window object in PHPJS, so stop at the Document object
-        while (!($node instanceof Document)) {
+        while ($node->parentNode) {
             $node = $node->parentNode;
         }
 
