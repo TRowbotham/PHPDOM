@@ -229,6 +229,10 @@ class Document extends Node {
 		return new Event($aEventType);
 	}
 
+	public function createTextNode($aData) {
+		return new Text($aData);
+	}
+
 	public function _printTree() {
 		return $this->_traverseTree($this->mChildNodes, 0);
 	}
