@@ -8,8 +8,8 @@ class Text extends CharacterData {
 	private $this->mWholeText;
 
 	public function __construct($aData = '') {
-		$this->nodeName = '#text';
-		$this->nodeType = Node::TEXT_NODE;
+		$this->mNodeName = '#text';
+		$this->mNodeType = Node::TEXT_NODE;
 		$this->mWholeText = $aData;
 	}
 
