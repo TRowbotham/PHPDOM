@@ -5,9 +5,11 @@
 require_once 'CharacterData.class.php';
 
 class Text extends CharacterData {
-	private $this->mWholeText;
+	private $mWholeText;
 
 	public function __construct($aData = '') {
+		parent::__construct();
+
 		$this->mNodeName = '#text';
 		$this->mNodeType = Node::TEXT_NODE;
 		$this->mWholeText = $aData;
