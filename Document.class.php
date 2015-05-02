@@ -258,6 +258,17 @@ class Document extends Node {
 		return $node;
 	}
 
+	public function importNode(Node $aNode, $aDeep = false) {
+		if ($aNode instanceof Document) {
+			throw new NotSupportedError;
+		}
+
+		$clone = $aNode->cloneNode($aDeep);
+		$this->adoptNode($clone);
+
+		return $clone;
+	}
+
 	public function _printTree() {
 		return $this->_traverseTree($this->mChildNodes, 0);
 	}
