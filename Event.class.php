@@ -58,7 +58,7 @@ class Event {
 		}
 	}
 
-	public function initEvent($aBubbles = true, $aCancelable = true) {
+	public function initEvent($aBubbles = false, $aCancelable = false) {
 		$this->mBubbles = $aBubbles;
 		$this->mCancelable = $aCancelable;
 	}
@@ -125,7 +125,7 @@ class CustomEvent extends Event {
 		}
 	}
 
-	public function initCustomEvent($aBubbles = true, $aCancelable = true, &$aDetail = null) {
+	public function initCustomEvent($aBubbles = false, $aCancelable = false, &$aDetail = null) {
 		$this->initEvent($aBubbles, $aCancelable);
 		$this->mDetail =& $aDetail;
 	}
@@ -137,8 +137,8 @@ class CustomEventInit {
 	public $detail;
 
 	public function __construct() {
-		$this->bubbles = true;
-		$this->cancelable = true;
+		$this->bubbles = false;
+		$this->cancelable = false;
 		$this->detail = null;
 	}
 }
