@@ -58,9 +58,10 @@ class Event {
 		}
 	}
 
-	public function initEvent($aBubbles = false, $aCancelable = false) {
+	public function initEvent($aType, $aBubbles = false, $aCancelable = false) {
 		$this->mBubbles = $aBubbles;
 		$this->mCancelable = $aCancelable;
+		$this->mType = $aType;
 	}
 
 	public function preventDefault() {
@@ -106,14 +107,14 @@ class Event {
 class CustomEvent extends Event {
 	private $mDetail;
 
-	public function __construct($aEventName, CustomEventInit &$aEventInitDict = null) {
-		parent::__construct($aEventName);
+	public function __construct($aType, CustomEventInit &$aEventInitDict = null) {
+		parent::__construct($aType);
 
 		if (is_null($aEventInitDict)) {
 			$aEventInitDict = new CustomEventInit();
 		}
 
-		$this->initCustomEvent($aEventInitDict->bubbles, $aEventInitDict->cancelable, $aEventInitDict->detail);
+		$this->initCustomEvent($aType, $aEventInitDict->bubbles, $aEventInitDict->cancelable, $aEventInitDict->detail);
 	}
 
 	public function __get($aName) {
@@ -125,7 +126,7 @@ class CustomEvent extends Event {
 		}
 	}
 
-	public function initCustomEvent($aBubbles = false, $aCancelable = false, &$aDetail = null) {
+	public function initCustomEvent($aType, $aBubbles = false, $aCancelable = false, &$aDetail = null) {
 		$this->initEvent($aBubbles, $aCancelable);
 		$this->mDetail =& $aDetail;
 	}
