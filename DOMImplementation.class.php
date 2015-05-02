@@ -15,7 +15,7 @@ class iDOMImplementation {
 		return new Document();
 	}
 
-	public function createDocumentType($aQualifiedName = null, $aPublicId = null, $aSystemId = null) {
+	public function createDocumentType($aQualifiedName, $aPublicId, $aSystemId) {
 		return new DocumentType($aQualifiedName, $aPublicId, $aSystemId);
 	}
 
