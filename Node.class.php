@@ -69,6 +69,9 @@ abstract class Node implements EventTarget {
             case 'nodeValue':
                 return $this->mNodeValue;
 
+            case 'ownerDocument':
+                return $this->mOwnerDocument;
+
             case 'parentElement':
                 return $this->mParentElement;
 
