@@ -19,16 +19,9 @@ class iDOMImplementation {
 		return new DocumentType($aQualifiedName, $aPublicId, $aSystemId);
 	}
 
-	public function createHTMLDocument( $aTitle = null ) {
-		$doc = new HTMLDocument($aTitle);
-		$dict = new CustomEventInit();
-		$dict->bubbles = true;
-		$dict->cancelable = true;
-		$dict->detail = new DocumentType('html');
-
-		$e = new CustomEvent('doctypeChange', $dict);
-		$doc->addEventListener('doctypeChange', $doc);
-		$doc->dispatchEvent($e);
+	public function createHTMLDocument($aTitle = '') {
+		$doc = new HTMLDocument();
+		$doc->title = $aTitle;
 
 		return $doc;
 	}

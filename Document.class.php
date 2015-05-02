@@ -11,15 +11,14 @@ require_once 'Event.class.php';
 require_once 'Text.class.php';
 
 class Document extends Node {
-	public static $implementation; //DOMImplementation
-
 	protected $mDoctype; // DocumentType
 
 	private $mCharacterSet;
 	private $mCompatMode;
+	private $mContentType;
 	private $mDocumentURI;
-
 	private $mEvents;
+	private $mImplementation;
 	private $mInputEncoding;
 	private $mOrigin;
 	private $mURL;
@@ -27,8 +26,10 @@ class Document extends Node {
 	public function __construct() {
 		parent::__construct();
 
-		$this->mDoctype = new DocumentType();
+		$this->mContentType = '';
+		$this->mDoctype = new DocumentType('', '', '');
 		$this->mEvents = array();
+		$this->mImplementation = new iDOMImplementation();
 		$this->mNodeType = Node::DOCUMENT_NODE;
 	}
 
@@ -36,8 +37,12 @@ class Document extends Node {
 		switch ($aName) {
 			case 'characterSet':
 				return $this->mCharacterSet;
+			case 'contentType':
+				return $this->mContentType;
 			case 'doctype':
 				return $this->mDoctype;
+			case 'implementation':
+				return $this->mImplementation;
 			default:
 				return parent::__get($aName);
 		}
@@ -378,5 +383,3 @@ class Document extends Node {
 		}
 	}
 }
-
-Document::$implementation = new iDOMImplementation();

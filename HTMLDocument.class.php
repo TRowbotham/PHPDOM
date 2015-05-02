@@ -2,25 +2,23 @@
 require_once 'Document.class.php';
 require_once 'EventListener.class.php';
 
-class HTMLDocument extends Document implements EventListener {
+class HTMLDocument extends Document {
 	private $mDocumentElement;
 	private $mHead;
 	private $mTitle;
 	private $mBody;
 
-	public function __construct($aTitle = null) {
+	public function __construct() {
 		parent::__construct();
 
+		$this->mDoctype = $this->implementation->createDocumentType('html', '', '');
 		$this->mDocumentElement = $this->createElement('html');
 		$this->mHead = $this->createElement('head');
 		$this->mBody = $this->createElement('body');
-
-		$title = $this->createElement('title');
-		$title->textContent = $aTitle ? $aTitle : '';
-
-		$this->mHead->appendChild($title);
-		$this->documentElement->appendChild($this->mHead);
-		$this->documentElement->appendChild($this->mBody);
+		$this->mTitle = '';
+		$this->mHead->appendChild($this->createElement('title'));
+		$this->mDocumentElement->appendChild($this->mHead);
+		$this->mDocumentElement->appendChild($this->mBody);
 		$this->appendChild($this->mDoctype);
 		$this->appendChild($this->mDocumentElement);
 	}
@@ -40,14 +38,15 @@ class HTMLDocument extends Document implements EventListener {
 		}
 	}
 
-	public function handleEvent(Event $aEvent) {
-		switch ($aEvent->type) {
-			case 'doctypeChange':
-				$this->removeChild($this->mDoctype);
-				$this->mDoctype =& $aEvent->detail;
-				$this->insertBefore($this->mDoctype, $this->mFirstChild);
+	public function __set($aName, $aValue) {
+		switch ($aName) {
+			case 'title':
+				$this->mTitle;
 
-				$this->removeEventListener('doctypeChange', $this);
+				break;
+
+			default:
+				parent::__set($aName, $aValue);
 		}
 	}
 
