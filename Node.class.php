@@ -220,11 +220,7 @@ abstract class Node implements EventTarget {
         $aEvent->_setDispatched();
         $aEvent->_setTarget($this);
         $aEvent->_setTimeStamp(microtime());
-
-        if ($node == $this) {
-            $aEvent->_updateEventPhase(Event::AT_TARGET);
-        }
-
+        $aEvent->_updateEventPhase(($node != $this ? Event::CAPTURING_PHASE : Event::AT_TARGET));
         $node->_dispatchEvent($aEvent);
     }
 
