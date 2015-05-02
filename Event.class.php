@@ -22,8 +22,9 @@ class Event {
 	private $mTimeStamp;
 	private $mType;
 
-	public function __construct($aEventName) {
-		$this->initEvent();
+	public function __construct($aType, EventInit $aEventInitDict = null) {
+		$this->mBubbles = $aEventInitDict ? $aEventInitDict->bubbles : false;
+		$this->mCancelable = $aEventInitDict ? $aEventInitDict->cancelable : false;
 		$this->mCurrentTarget = null;
 		$this->mDefaultPrevented = false;
 		$this->mEventPhase = self::NONE;
@@ -32,7 +33,7 @@ class Event {
 		$this->mPropagationStopped = false;
 		$this->mTarget = null;
 		$this->mTimeStamp = 0;
-		$this->mType = $aEventName;
+		$this->mType = $aType;
 	}
 
 	public function __get($aName) {
@@ -127,19 +128,27 @@ class CustomEvent extends Event {
 	}
 
 	public function initCustomEvent($aType, $aBubbles = false, $aCancelable = false, &$aDetail = null) {
-		$this->initEvent($aBubbles, $aCancelable);
+		$this->initEvent($aType, $aBubbles, $aCancelable);
 		$this->mDetail =& $aDetail;
 	}
 }
 
-class CustomEventInit {
+class EventInit {
 	public $bubbles;
 	public $cancelable;
-	public $detail;
 
 	public function __construct() {
 		$this->bubbles = false;
 		$this->cancelable = false;
+	}
+}
+
+class CustomEventInit extends EventInit {
+	public $detail;
+
+	public function __construct() {
+		parent::__construct();
+
 		$this->detail = null;
 	}
 }
