@@ -217,6 +217,7 @@ abstract class Node implements EventTarget {
             $node = $node->parentNode;
         }
 
+        $aEvent->_setDispatched();
         $aEvent->_setTarget($this);
         $aEvent->_setTimeStamp(microtime());
 

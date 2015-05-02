@@ -13,6 +13,7 @@ class Event {
 	private $mBubbles;
 	private $mCancelable;
 	private $mCurrentTarget;
+	private $mDispatched;
 	private $mDefaultPrevented;
 	private $mEventPhase;
 	private $mImmediatePropagationStopped;
@@ -27,6 +28,7 @@ class Event {
 		$this->mCancelable = $aEventInitDict ? $aEventInitDict->cancelable : false;
 		$this->mCurrentTarget = null;
 		$this->mDefaultPrevented = false;
+		$this->mDispatched = false;
 		$this->mEventPhase = self::NONE;
 		$this->mImmediatePropagationStopped = false;
 		$this->mIsTrusted = false;
@@ -60,6 +62,10 @@ class Event {
 	}
 
 	public function initEvent($aType, $aBubbles = false, $aCancelable = false) {
+		if ($this->mDispatched) {
+			return;
+		}
+
 		$this->mBubbles = $aBubbles;
 		$this->mCancelable = $aCancelable;
 		$this->mType = $aType;
@@ -90,6 +96,10 @@ class Event {
 
 	public function _setCurrentTarget(Node &$aTarget) {
 		$this->mCurrentTarget = $aTarget;
+	}
+
+	public function _setDispatched() {
+		$this->mDispatched = true;
 	}
 
 	public function _setTarget(Node &$aTarget) {
@@ -128,6 +138,10 @@ class CustomEvent extends Event {
 	}
 
 	public function initCustomEvent($aType, $aBubbles = false, $aCancelable = false, &$aDetail = null) {
+		if ($this->mDispatched) {
+			return;
+		}
+
 		$this->initEvent($aType, $aBubbles, $aCancelable);
 		$this->mDetail =& $aDetail;
 	}
