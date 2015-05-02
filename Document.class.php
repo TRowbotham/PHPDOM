@@ -40,6 +40,20 @@ class Document extends Node {
 		}
 	}
 
+	public function adoptNode(Node $aNode) {
+		if ($aNode instanceof Document) {
+			throw new NotSupportedError;
+		}
+
+		if ($aNode->parentNode) {
+			$aNode->parentNode->removeChild($aNode);
+		}
+
+		$this->_adoptNode($aNode);
+
+		return $aNode;
+	}
+
 	public function createAttribute($aLocalName) {
 		$attr = new Attr();
 		$attr->nodeName = $aLocalName;
@@ -340,6 +354,14 @@ class Document extends Node {
 		$html .= '</ul>';
 
 		return $html;
+	}
+
+	private function _adoptNode($aNode) {
+		$aNode->mOwnerDocument =& $this;
+
+		foreach ($aNode->childNodes as $node) {
+			$this->_adoptNode($node);
+		}
 	}
 }
 
