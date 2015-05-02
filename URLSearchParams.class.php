@@ -45,6 +45,7 @@ class URLSearchParams implements SplSubject {
 	public function append($aName, $aValue) {
 		$this->mIndex[$this->mSequenceId] = $aName;
 		$this->mParams[$aName][$this->mSequenceId++] = $aValue;
+		$this->notify();
 	}
 
 	/**
@@ -57,6 +58,7 @@ class URLSearchParams implements SplSubject {
 		}
 
 		unset($this->mParams[$aName]);
+		$this->notify();
 	}
 
 	/**
@@ -124,6 +126,8 @@ class URLSearchParams implements SplSubject {
 		} else {
 			$this->append($aName, $aValue);
 		}
+
+		$this->notify();
 	}
 
 	/**
