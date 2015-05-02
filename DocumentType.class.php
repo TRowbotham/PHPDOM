@@ -5,6 +5,8 @@
 require_once 'Node.class.php';
 
 class DocumentType extends Node {
+	use ChildNode;
+
 	private $mName;
 	private $mPublicId;
 	private $mSystemId;
