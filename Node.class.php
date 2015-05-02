@@ -23,6 +23,7 @@ abstract class Node implements EventTarget {
     protected $mNodeName; // String
     protected $mNodeType; // int
     protected $mNodeValue; // String
+    protected $mOwnerDocument; // Document
     protected $mParentNode; // Node
     protected $mParentElement; // Element
     protected $mPreviousSibling; // Node
@@ -38,6 +39,7 @@ abstract class Node implements EventTarget {
         $this->mNodeName = '';
         $this->mNodeType = '';
         $this->mNodeValue = '';
+        $this->mOwnerDocument = null;
         $this->mParentElement = null;
         $this->mParentNode = null;
         $this->mPreviousSibling = null;
