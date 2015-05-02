@@ -3,12 +3,14 @@
 // https://url.spec.whatwg.org/#urlsearchparams
 
 class URLSearchParams implements SplSubject {
-	private $mParams;
 	private $mIndex;
+	private $mObservers;
+	private $mParams;
 	private $mSequenceId;
 
 	public function __construct($aSearchParams = '') {
 		$this->mIndex = array();
+		$this->mObservers = new SplObjectStorage();
 		$this->mParams = array();
 		$this->mSequenceId = 0;
 
