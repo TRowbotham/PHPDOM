@@ -43,6 +43,7 @@ class Document extends Node {
 	public function createAttribute($aLocalName) {
 		$attr = new Attr();
 		$attr->nodeName = $aLocalName;
+		$attr->mOwnerDocument =& $this;
 
 		return $attr;
 	}
@@ -219,11 +220,17 @@ class Document extends Node {
 		$className = 'HTML' . $interfaceName . 'Element';
 		require_once 'HTMLElement/' . $className . '.class.php';
 
-		return new $className();
+		$node = new $className();
+		$node->mOwnerDocument =& $this;
+
+		return $node;
 	}
 
 	public function createDocumentFragment() {
-		return new DocumentFragment();
+		$node = new DocumentFragment();
+		$node->mOwnerDocument =& $this;
+
+		return $node;
 	}
 
 	public function createEvent($aEventType) {
@@ -231,7 +238,10 @@ class Document extends Node {
 	}
 
 	public function createTextNode($aData) {
-		return new Text($aData);
+		$node = new Text($aData);
+		$node->mOwnerDocument =& $this;
+
+		return $node;
 	}
 
 	public function _printTree() {
