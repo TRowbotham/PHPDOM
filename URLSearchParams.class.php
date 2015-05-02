@@ -2,7 +2,7 @@
 // https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams
 // https://url.spec.whatwg.org/#urlsearchparams
 
-class URLSearchParams {
+class URLSearchParams implements SplSubject {
 	private $mParams;
 	private $mIndex;
 	private $mSequenceId;
@@ -27,6 +27,15 @@ class URLSearchParams {
 	}
 
 	/**
+	 * Add the specified object to the list of objects watching this object
+	 * for changes.
+	 * @param  SplObserver $aObserver An object to observe this object.
+	 */
+	public function attach(SplObserver $aObserver) {
+		$this->mObservers->attach($aObserver);
+	}
+
+	/**
 	 * Appends a new key -> value pair to the end of the query string.
 	 * @param  string $aName  The name of the key in the pair.
 	 * @param  string $aValue The value assigned to the key.
@@ -46,6 +55,14 @@ class URLSearchParams {
 		}
 
 		unset($this->mParams[$aName]);
+	}
+
+	/**
+	 * Remove the specified observer from observing this object for changes.
+	 * @param  SplObserver $aObserver An object to observe this object.
+	 */
+	public function detach(SplObserver $aObserver) {
+		$this->mObservers->detach($aObserver);
 	}
 
 	/**
@@ -73,6 +90,15 @@ class URLSearchParams {
 	 */
 	public function has($aName) {
 		return isset($this->mParams[$aName]);
+	}
+
+	/**
+	 * Notify all observers about a change to this object.
+	 */
+	public function notify() {
+		foreach($this->mObservers as $observer) {
+			$observer->update($this);
+		}
 	}
 
 	/**
