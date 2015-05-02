@@ -3,6 +3,7 @@
 // https://dom.spec.whatwg.org/#documenttype
 
 require_once 'Node.class.php';
+require_once 'ChildNode.class.php';
 
 class DocumentType extends Node {
 	use ChildNode;
