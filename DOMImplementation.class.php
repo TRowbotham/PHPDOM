@@ -11,7 +11,7 @@ class iDOMImplementation {
 
 	}
 
-	public function createDocument() {
+	public function createDocument($aNameSpace, $aQualifiedName = '', $aDoctype = null) {
 		return new Document();
 	}
 
