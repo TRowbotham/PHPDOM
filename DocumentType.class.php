@@ -12,7 +12,7 @@ class DocumentType extends Node {
 	private $mPublicId;
 	private $mSystemId;
 
-	public function __construct($aName = '', $aPublicId = '', $aSystemId = '') {
+	public function __construct($aName, $aPublicId = '', $aSystemId = '') {
 		parent::__construct();
 
 		$this->mName = $aName;
