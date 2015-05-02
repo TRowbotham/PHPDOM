@@ -64,7 +64,9 @@ class Event {
 	}
 
 	public function preventDefault() {
-		$this->mDefaultPrevented = true;
+		if ($this->mCancelable) {
+			$this->mDefaultPrevented = true;
+		}
 	}
 
 	public function stopPropagation() {
