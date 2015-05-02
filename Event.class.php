@@ -26,7 +26,7 @@ class Event {
 		$this->initEvent();
 		$this->mCurrentTarget = null;
 		$this->mDefaultPrevented = false;
-		$this->mEventPhase = self::CAPTURING_PHASE;
+		$this->mEventPhase = self::NONE;
 		$this->mImmediatePropagationStopped = false;
 		$this->mIsTrusted = false;
 		$this->mPropagationStopped = false;
