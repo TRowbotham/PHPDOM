@@ -13,9 +13,23 @@ class DocumentType extends Node {
 		parent::__construct();
 
 		$this->mName = $aName;
+		$this->mNodeName = $aName;
 		$this->mNodeType = Node::DOCUMENT_TYPE_NODE;
 		$this->mPublicId = $aPublicId;
 		$this->mSystemId = $aSystemId;
+	}
+
+	public function __get($aName) {
+		switch ($aName) {
+			case 'name':
+				return $this->mName;
+			case 'publicId':
+				return $this->mPublicId;
+			case 'systemId':
+				return $this->mSystemId;
+			default:
+				return parent::__get($aName);
+		}
 	}
 
 	public function toHTML() {
