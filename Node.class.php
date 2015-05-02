@@ -1,4 +1,7 @@
 <?php
+// https://developer.mozilla.org/en-US/docs/Web/API/Node
+// https://dom.spec.whatwg.org/#node
+
 require_once 'NodeList.class.php';
 require_once 'EventTarget.class.php';
 

@@ -1,4 +1,7 @@
 <?php
+// https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams
+// https://url.spec.whatwg.org/#urlsearchparams
+
 class URLSearchParams {
 	private $mParams;
 	private $mIndex;

@@ -1,4 +1,7 @@
 <?php
+// https://developer.mozilla.org/en-US/docs/Web/API/Element
+// https://dom.spec.whatwg.org/#element
+
 require_once 'Node.class.php';
 require_once 'DOMTokenList.class.php';
 require_once 'NamedNodeMap.class.php';

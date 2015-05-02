@@ -1,4 +1,7 @@
 <?php
+// https://developer.mozilla.org/en-US/docs/Web/API/ChildNode
+// https://dom.spec.whatwg.org/#interface-childnode
+
 trait ChildNode {
 	/**
 	 * Inserts any number of Node or DOMString objects after this ChildNode.

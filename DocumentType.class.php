@@ -1,4 +1,7 @@
 <?php
+// https://developer.mozilla.org/en-US/docs/Web/API/DocumentType
+// https://dom.spec.whatwg.org/#documenttype
+
 require_once 'Node.class.php';
 
 class DocumentType extends Node {

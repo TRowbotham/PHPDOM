@@ -1,4 +1,7 @@
 <?php
+// https://developer.mozilla.org/en-US/docs/Web/API/DOMTokenList
+// https://dom.spec.whatwg.org/#interface-domtokenlist
+
 class DOMTokenList implements SplSubject {
 	private $mObservers;
 	private $mTokens;

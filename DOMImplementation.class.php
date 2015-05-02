@@ -1,4 +1,7 @@
 <?php
+// https://developer.mozilla.org/en-US/docs/Web/API/DOMImplementation
+// https://dom.spec.whatwg.org/#interface=domimplementation
+
 require_once 'HTMLDocument.class.php';
 require_once 'DocumentType.class.php';
 

@@ -1,4 +1,7 @@
 <?php
+// https://developer.mozilla.org/en-US/docs/Web/API/DOMException
+// https://heycam.github.io/webidl/#idl-exceptions
+
 class IndexSizeError extends Exception {
 	public function __construct() {
 		$this->code = 1;

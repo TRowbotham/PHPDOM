@@ -1,4 +1,7 @@
 <?php
+// https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap
+// https://dom.spec.whatwg.org/#namednodemap
+
 class NamedNodeMap implements ArrayAccess, SeekableIterator, Countable {
     private $mAttributes;
     private $mLength;

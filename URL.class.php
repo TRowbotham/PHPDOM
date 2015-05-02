@@ -1,4 +1,7 @@
 <?php
+// https://developer.mozilla.org/en-US/docs/Web/API/URL
+// https://url.spec.whatwg.org/#api
+
 require_once 'URLUtils.class.php';
 
 class URL extends URLUtils {

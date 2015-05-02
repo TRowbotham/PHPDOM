@@ -1,4 +1,9 @@
 <?php
+// https://developer.mozilla.org/en-US/docs/Web/API/Event
+// https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent
+// https://dom.spec.whatwg.org/#event
+// https://dom.spec.whatwg.org/#customevent
+
 class Event {
 	const NONE = 0;
 	const CAPTURING_PHASE = 1;

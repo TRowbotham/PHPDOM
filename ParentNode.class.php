@@ -1,4 +1,7 @@
 <?php
+// https://developer.mozilla.org/en-US/docs/Web/API/ParentNode
+// https://dom.spec.whatwg.org/#interface-parentnode
+
 trait ParentNode {
 	private $mChildren = array();
 	private $mChildElementCount = 0;
