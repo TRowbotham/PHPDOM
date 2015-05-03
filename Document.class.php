@@ -324,10 +324,10 @@ class Document extends Node {
 					$html .= '<li>&lt;' . $tagName;
 
 					foreach($childNode->attributes as $attribute) {
-						$html .= ' ' . $attribute->nodeName;
+						$html .= ' ' . $attribute->name;
 
-						if (!Attr::_isBool($attribute->nodeName)) {
-							$html .= '="' . $attribute->nodeValue . '"';
+						if (!Attr::_isBool($attribute->name)) {
+							$html .= '="' . $attribute->value . '"';
 						}
 					}
 

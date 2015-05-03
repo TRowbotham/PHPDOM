@@ -102,8 +102,8 @@ abstract class Element extends Node implements SplObserver {
 		$rv = '';
 
 		foreach ($this->mAttributes as $attribute) {
-			if ($attribute->nodeName == $aName) {
-				$rv = $attribute->nodeValue;
+			if ($attribute->name == $aName) {
+				$rv = $attribute->value;
 				break;
 			}
 		}
@@ -147,7 +147,7 @@ abstract class Element extends Node implements SplObserver {
 		$rv = false;
 
 		foreach ($this->mAttributes as $attribute) {
-			if ($attribute->nodeName == $aName) {
+			if ($attribute->name == $aName) {
 				$rv = true;
 				break;
 			}
@@ -202,14 +202,13 @@ abstract class Element extends Node implements SplObserver {
 			$node->namespaceURI = null;
 			$node->value = $aValue;
 		} else {
-			$node = new Attr();
-			$node->name = $aName;
+			$node = new Attr($aName);
 			$node->value = $aValue;
 			$this->mAttributes->setNamedItem($node);
 		}
 
 		$dict = new CustomEventInit();
-		$dict->detail = $node;
+		$dict->detail =& $node;
 		$event = new CustomEvent('attributechange', $dict);
 		$this->dispatchEvent($event);
 	}
@@ -227,10 +226,10 @@ abstract class Element extends Node implements SplObserver {
 				$html = '<' . $tagName;
 
 				foreach($this->mAttributes as $attribute) {
-					$html .= ' ' . $attribute->nodeName;
+					$html .= ' ' . $attribute->name;
 
-					if (!Attr::_isBool($attribute->nodeName)) {
-						$html .= '="' . $attribute->nodeValue . '"';
+					if (!Attr::_isBool($attribute->name)) {
+						$html .= '="' . $attribute->value . '"';
 					}
 				}
 
@@ -292,10 +291,10 @@ abstract class Element extends Node implements SplObserver {
 	}
 
 	protected function _onAttributeChange(Event $aEvent) {
-		switch ($aEvent->detail->nodeName) {
+		switch ($aEvent->detail->name) {
 			case 'class':
 				$this->mReconstructClassList = true;
-				$this->mClassName = $aEvent->detail->nodeValue;
+				$this->mClassName = $aEvent->detail->value;
 		}
 	}
 
