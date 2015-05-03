@@ -45,9 +45,6 @@ class HTMLDocument extends Document {
 				$this->mTitle;
 
 				break;
-
-			default:
-				parent::__set($aName, $aValue);
 		}
 	}
 
