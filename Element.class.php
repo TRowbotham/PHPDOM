@@ -195,32 +195,23 @@ abstract class Element extends Node implements SplObserver {
 		return parent::replaceChild($aNewNode, $aOldNode);
 	}
 
-	public function setAttribute( $aName, $aValue = "" ) {
-		$updateOnly = false;
-		$node = null;
+	public function setAttribute($aName, $aValue = "") {
+		$node = $this->getAttributeNode($aName);
 
-		foreach ($this->mAttributes as $attribute) {
-			if ($attribute->nodeName == $aName) {
-				$attribute->nodeValue = $aValue;
-				$updateOnly = true;
-				$node = $attribute;
-				break;
-			}
-		}
-
-		if (!$updateOnly) {
+		if ($node) {
+			$node->namespaceURI = null;
+			$node->value = $aValue;
+		} else {
 			$node = new Attr();
-			$node->nodeName = $aName;
-			$node->nodeValue = $aValue;
+			$node->name = $aName;
+			$node->value = $aValue;
 			$this->mAttributes->setNamedItem($node);
 		}
 
-		if ($node) {
-			$dict = new CustomEventInit();
-			$dict->detail =& $node;
-			$e = new CustomEvent('attributechange', $dict);
-			$this->dispatchEvent($e);
-		}
+		$dict = new CustomEventInit();
+		$dict->detail = $node;
+		$event = new CustomEvent('attributechange', $dict);
+		$this->dispatchEvent($event);
 	}
 
 	public function setAttributeNode(Attr $aNode) {
