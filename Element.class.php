@@ -111,8 +111,14 @@ abstract class Element extends Node implements SplObserver {
 		return $rv;
 	}
 
-	public function getAttributeNode(Attr $aName) {
-		// TODO
+	public function getAttributeNode($aName) {
+		foreach ($this->mAttributes as &$attr) {
+			if ($attr->name == $aName) {
+				return $attr;
+			}
+		}
+
+		return null;
 	}
 
 	public function getElementsByClassName( $aClassName ) {
