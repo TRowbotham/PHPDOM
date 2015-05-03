@@ -62,14 +62,6 @@ class Document extends Node {
 		return $aNode;
 	}
 
-	public function createAttribute($aLocalName) {
-		$attr = new Attr();
-		$attr->nodeName = $aLocalName;
-		$attr->mOwnerDocument =& $this;
-
-		return $attr;
-	}
-
 	public function createElement( $aTagName ) {
 		switch($aTagName) {
 			case 'a':
