@@ -5,6 +5,8 @@
 require_once 'Node.class.php';
 
 abstract class CharacterData extends Node {
+	use ChildNode;
+
 	private $mData;
 	private $mLength;
 
