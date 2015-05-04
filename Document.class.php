@@ -3,6 +3,7 @@
 // https://html.spec.whatwg.org/#document
 
 require_once 'Node.class.php';
+require_once 'ParentNode.class.php';
 require_once 'DOMImplementation.class.php';
 require_once 'DocumentType.class.php';
 require_once 'Attr.class.php';
@@ -11,6 +12,8 @@ require_once 'Event.class.php';
 require_once 'Text.class.php';
 
 class Document extends Node {
+	use ParentNode;
+
 	protected $mDoctype; // DocumentType
 
 	private $mCharacterSet;
