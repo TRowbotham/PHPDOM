@@ -201,7 +201,7 @@ class DOMTokenList implements ArrayAccess, SplSubject {
 			throw new SyntaxError;
 		}
 
-		if (preg_match('/^\s+|\s{2,}|\s+$/', $aToken)) {
+		if (preg_match('/\s/', $aToken)) {
 			throw new InvalidCharacterError;
 		}
 	}
