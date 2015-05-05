@@ -2,6 +2,8 @@
 // https://developer.mozilla.org/en-US/docs/Web/API/DOMTokenList
 // https://dom.spec.whatwg.org/#interface-domtokenlist
 
+require_once 'Exceptions.class.php';
+
 class DOMTokenList implements ArrayAccess, SplSubject {
 	private $mLength;
 	private $mObservers;
@@ -85,7 +87,7 @@ class DOMTokenList implements ArrayAccess, SplSubject {
 	 *                        index does not exist.
 	 */
 	public function item($aIndex) {
-		return isset($this->mTokens[$aIndex]) ? $this->mTokens[$aOffset] : null;
+		return isset($this->mTokens[$aIndex]) ? $this->mTokens[$aIndex] : null;
 	}
 
 	/**
