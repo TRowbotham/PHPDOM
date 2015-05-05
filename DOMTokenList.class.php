@@ -85,13 +85,7 @@ class DOMTokenList implements ArrayAccess, SplSubject {
 	 *                        index does not exist.
 	 */
 	public function item($aIndex) {
-		$rv = null;
-
-		if ($aIndex >= 0 && $aIndex < count($this->mTokens)) {
-			$rv = $this->mTokens[$aIndex];
-		}
-
-		return $rv;
+		return isset($this->mTokens[$aIndex]) ? $this->mTokens[$aOffset] : null;
 	}
 
 	/**
@@ -112,7 +106,7 @@ class DOMTokenList implements ArrayAccess, SplSubject {
 	 *                         index does not exist.
 	 */
 	public function offsetGet($aOffset) {
-		return isset($this->mTokens) ? $this->mTokens[$aOffset] : null;
+		return $this->item($aOffset);
 	}
 
 	/**
