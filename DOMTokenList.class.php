@@ -2,13 +2,22 @@
 // https://developer.mozilla.org/en-US/docs/Web/API/DOMTokenList
 // https://dom.spec.whatwg.org/#interface-domtokenlist
 
-class DOMTokenList implements SplSubject {
+class DOMTokenList implements ArrayAccess, SplSubject {
+	private $mLength;
 	private $mObservers;
 	private $mTokens;
 
 	public function __construct() {
+		$this->mLength = 0;
 		$this->mObservers = new SplObjectStorage();
 		$this->mTokens = [];
+	}
+
+	public function __get($aName) {
+		switch ($aName) {
+			case 'length':
+				return $this->mLength;
+		}
 	}
 
 	public function add($aTokens) {
@@ -25,6 +34,7 @@ class DOMTokenList implements SplSubject {
 			}
 		}
 
+		$this->mLength = count($this->mTokens);
 		$this->notify();
 	}
 
@@ -52,6 +62,22 @@ class DOMTokenList implements SplSubject {
 		return $rv;
 	}
 
+	public function offsetExists($aOffset) {
+		return isset($this->mTokens[$aOffset]);
+	}
+
+	public function offsetGet($aOffset) {
+		return isset($this->mTokens) ? $this->mTokens[$aOffset] : null;
+	}
+
+	public function offsetSet($aOffset, $aValue) {
+
+	}
+
+	public function offsetUnset($aOffset) {
+
+	}
+
 	public function remove($aTokens) {
 		if (!func_num_args()) {
 			return;
@@ -65,6 +91,7 @@ class DOMTokenList implements SplSubject {
 			array_splice($this->mTokens, $key, 1);
 		}
 
+		$this->mLength = count($this->mTokens);
 		$this->notify();
 	}
 
