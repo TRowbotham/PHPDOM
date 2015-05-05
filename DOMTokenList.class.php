@@ -11,10 +11,13 @@ class DOMTokenList implements SplSubject {
 		$this->mTokens = [];
 	}
 
-	public function add( $aToken ) {
-		$this->checkToken($aToken);
+	public function add($aTokens) {
+		if (!func_num_args()) {
+			return;
+		}
 
-		$tokens = explode(' ', $aToken);
+		$tokens = func_get_args();
+		array_walk($tokens, array($this, 'checkToken'));
 
 		foreach ($tokens as $token) {
 			if (!$this->contains($token)) {
@@ -29,7 +32,7 @@ class DOMTokenList implements SplSubject {
 		$this->mObservers->attach($aObserver);
 	}
 
-	public function contains( $aToken ) {
+	public function contains($aToken) {
 		$this->checkToken($aToken);
 
 		return in_array($aToken, $this->mTokens);
@@ -39,7 +42,7 @@ class DOMTokenList implements SplSubject {
 		$this->mObservers->detach($aObserver);
 	}
 
-	public function item( $aIndex ) {
+	public function item($aIndex) {
 		$rv = null;
 
 		if ($aIndex >= 0 && $aIndex < count($this->mTokens)) {
@@ -49,49 +52,57 @@ class DOMTokenList implements SplSubject {
 		return $rv;
 	}
 
-	public function remove( $aToken ) {
-		$this->checkToken($aToken);
+	public function remove($aTokens) {
+		if (!func_num_args()) {
+			return;
+		}
 
-		$tokens = explode(' ', $aToken);
+		$tokens = func_get_args();
+		array_walk($tokens, array($this, 'checkToken'));
 
-		foreach ($tokens as $key => $token) {
+		foreach ($tokens as $token) {
+			$key = array_search($token, $this->mTokens);
 			array_splice($this->mTokens, $key, 1);
 		}
 
 		$this->notify();
 	}
 
-	public function toggle( $aToken, $aForce ) {
+	public function toggle($aToken, $aForce = null) {
 		$contains = $this->contains($aToken);
 
 		if ($contains) {
-			if ($contains) {
-				if ($aForce !== true) {
-					$this->remove($aToken);
-				}
+			if (!$aForce) {
+				$this->remove($aToken);
+				$rv = false;
 			} else {
-				if ($aForce !== false) {
-					$this->add($aToken);
-				}
+				$rv = true;
+			}
+		} else {
+			if ($aForce === false) {
+				$rv = false;
+			} else {
+				$this->add($aToken);
+				$rv = true;
 			}
 		}
 
 		$this->notify();
 
-		return !$contains;
+		return $rv;
 	}
 
 	public function __toString() {
 		return implode(' ', $this->mTokens);
 	}
 
-	private function checkToken( $aToken ) {
+	private function checkToken($aToken) {
 		if (empty($aToken)) {
-			throw new DOMException('SyntaxError: The string did not match the expected pattern.');
+			throw new SyntaxError;
 		}
 
 		if (preg_match('/^\s+|\s{2,}|\s+$/', $aToken)) {
-			throw new DOMException('InvalidCharacterError: 	The string contains invalid characters. ');
+			throw new InvalidCharacterError;
 		}
 	}
 
