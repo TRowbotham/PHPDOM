@@ -33,6 +33,7 @@ class Document extends Node {
 		$this->mDoctype = new DocumentType('', '', '');
 		$this->mEvents = array();
 		$this->mImplementation = new iDOMImplementation();
+		$this->mNodeName = '#document';
 		$this->mNodeType = Node::DOCUMENT_NODE;
 	}
 
