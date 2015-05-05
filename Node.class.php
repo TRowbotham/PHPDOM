@@ -355,7 +355,7 @@ abstract class Node implements EventTarget {
      * @return boolean        Returns true if the two nodes are the same, otherwise false.
      */
     public function isEqualNode(Node $aNode) {
-        return $this == $aNode;
+        return $this === $aNode;
     }
 
     /**
