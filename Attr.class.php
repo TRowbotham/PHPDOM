@@ -2,8 +2,6 @@
 // https://developer.mozilla.org/en-US/docs/Web/API/Attr
 // https://dom.spec.whatwg.org/#attr
 
-require_once 'Node.class.php';
-
 class Attr {
 	protected $mLocalName;
 	protected $mName;
