@@ -4,12 +4,11 @@
 
 require_once 'Node.class.php';
 
-class Attr extends Node {
+class Attr {
 	protected $mLocalName;
 	protected $mName;
 	protected $mNamespaceURI;
 	protected $mPrefix;
-	protected $mSpecified;
 	protected $mValue;
 
 	public function __construct($aName) {
@@ -17,11 +16,8 @@ class Attr extends Node {
 
 		$this->mLocalName = $aName;
 		$this->mName = $aName;
-		$this->mNodeName = $aName;
 		$this->mNamespaceURI = null;
-		$this->mNodeType = Node::ATTRIBUTE_NODE;
 		$this->mPrefix = null;
-		$this->mSpecified = true;
 		$this->mValue = '';
 	}
 
@@ -39,9 +35,6 @@ class Attr extends Node {
 			case 'prefix':
 				return $this->mPrefix;
 
-			case 'specified':
-				return $this->mSpecified;
-
 			case 'value':
 				return $this->mValue;
 
@@ -52,17 +45,8 @@ class Attr extends Node {
 
 	public function __set($aName, $aValue) {
 		switch ($aName) {
-			case 'nodeValue':
-			case 'textContent':
 			case 'value':
-				$this->mNodeValue = $aValue;
-				$this->mTextContent = $aValue;
 				$this->mValue = $aValue;
-
-				break;
-
-			default:
-				parent::__get($aName);
 		}
 	}
 
