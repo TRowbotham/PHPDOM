@@ -124,6 +124,7 @@ abstract class Node implements EventTarget {
      * @return Node          The node that was just appended to the parent node.
      */
     public function appendChild(Node $aNode) {
+        $this->preinsertionValidity($aNode);
         $nodes = $aNode instanceof DocumentFragment ? $aNode->childNodes : array($aNode);
 
         foreach ($nodes as $node) {
@@ -485,5 +486,35 @@ abstract class Node implements EventTarget {
         $this->insertBefore($aNewNode, $aOldNode);
 
         return $aOldNode->parentNode->removeChild($aOldNode);
+    }
+
+    private function preinsertionValidity($aNode) {
+        if (!($this instanceof Document) &&
+            !($this instanceof DocumentFragment) &&
+            !($this instanceof Element)) {
+            throw new HierarchyRequestError;
+        }
+
+        if ($this === $aNode || $aNode->contains($this)) {
+            throw new HierarchyRequestError;
+        }
+
+        if ($aNode === null && $this !== $aNode->parentNode) {
+            throw new NotFoundError;
+        }
+
+        if (!($aNode instanceof DocumentFragment) &&
+            !($aNode instanceof DocumentType) && !($aNode instanceof Element) &&
+            !($aNode instanceof Text) &&
+            !($aNode instanceof ProcessingInstruction) &&
+            !($aNode instanceof Comment)) {
+            throw new HierarchyRequestError;
+        }
+
+        if ((($this instanceof Text || $aNode instanceof Text) &&
+            $this instanceof Document) || ($aNode instanceof DocumentType &&
+            !($this instanceof Document))) {
+            throw new HierarchyRequestError;
+        }
     }
 }
