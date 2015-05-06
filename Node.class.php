@@ -516,5 +516,89 @@ abstract class Node implements EventTarget {
             !($this instanceof Document))) {
             throw new HierarchyRequestError;
         }
+
+        /*if ($this instanceof Document) {
+            if ($aNode instanceof DocumentFragment) {
+                foreach ($aNode->childNodes as $node) {
+                    if ($node instanceof Text) {
+                        $throwException = true;
+
+                        break;
+                    }
+                }
+
+                $throwException = $throwException || $aNode->childElementCount > 1;
+
+                if (!$throwException) {
+                    $throwException = $aNode->childElementCount == 1 || $this->mChildElementCount > 0 || $aNode instanceof DocumentType || ($aNode !== null);
+                }
+            } elseif ($aNode instanceof Element) {
+                $throwException = false;
+
+                foreach ($this->mChildNodes as $node) {
+                    if ($node instanceof Element) {
+                        $throwException = true;
+                        break;
+                    }
+                }
+
+                if (!$throwException) {
+                    $throwException = $aNode instanceof DocumentType;
+                }
+
+                if (!$throwException) {
+                    $node = $aNode->nextSibling;
+
+                    while ($node) {
+                        if ($node instanceof DocumentType) {
+                            $throwException = true;
+
+                            break;
+                        }
+
+                        $node = $node->nextSibling;
+                    }
+
+                    $throwException = $throwException || $aNode !== null;
+                }
+            } elseif ($aNode instanceof DocumentType) {
+                $throwException = false;
+
+                foreach ($this->mChildNodes as $node) {
+                    if ($node instanceof DocumentType) {
+                        $throwException = true;
+                        break;
+                    }
+                }
+
+                if (!$throwException) {
+                    $node = $aNode;
+
+                    while ($node) {
+                        if ($node instanceof Element) {
+                            $throwException = true;
+                            break;
+                        }
+
+                        $node = $node->previousSibling;
+                    }
+                }
+
+                if (!$throwException) {
+                    foreach ($this->mChildNodes as $node) {
+                        if ($node instanceof Element) {
+                            $throwException = true;
+                            break;
+                        }
+                    }
+
+                    $throwException = $aNode === null || $throwException;
+                }
+            }
+
+            if ($throwException) {
+                throw new HierarchyRequestError;
+            }
+        }*/
     }
 }
