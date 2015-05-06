@@ -3,7 +3,6 @@ require_once 'Document.class.php';
 require_once 'EventListener.class.php';
 
 class HTMLDocument extends Document {
-	private $mDocumentElement;
 	private $mHead;
 	private $mTitle;
 	private $mBody;
@@ -28,8 +27,6 @@ class HTMLDocument extends Document {
 		switch ($aName) {
 			case 'body':
 				return $this->mBody;
-			case 'documentElement':
-				return $this->mDocumentElement;
 			case 'head':
 				return $this->mHead;
 			case 'title':

@@ -15,6 +15,7 @@ class Document extends Node {
 	use ParentNode;
 
 	protected $mDoctype; // DocumentType
+	protected $mDocumentElement;
 
 	private $mCharacterSet;
 	private $mCompatMode;
@@ -31,6 +32,7 @@ class Document extends Node {
 
 		$this->mContentType = '';
 		$this->mDoctype = new DocumentType('', '', '');
+		$this->mDocumentElement = null;
 		$this->mEvents = array();
 		$this->mImplementation = new iDOMImplementation();
 		$this->mNodeName = '#document';
@@ -45,6 +47,8 @@ class Document extends Node {
 				return $this->mContentType;
 			case 'doctype':
 				return $this->mDoctype;
+			case 'documentElement':
+				return $this->mDocumentElement;
 			case 'implementation':
 				return $this->mImplementation;
 			default:
