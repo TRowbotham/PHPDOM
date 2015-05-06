@@ -9,13 +9,13 @@ class Attr {
 	protected $mPrefix;
 	protected $mValue;
 
-	public function __construct($aName) {
+	public function __construct($aLocalName, $aPrefix = null) {
 		parent::__construct();
 
-		$this->mLocalName = $aName;
-		$this->mName = $aName;
+		$this->mLocalName = $aLocalName;
+		$this->mName = $aPrefix ? $aPrefix . ':' . $aLocalName : $aLocalName;
 		$this->mNamespaceURI = null;
-		$this->mPrefix = null;
+		$this->mPrefix = $aPrefix;
 		$this->mValue = '';
 	}
 
