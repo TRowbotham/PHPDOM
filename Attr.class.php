@@ -10,8 +10,6 @@ class Attr {
 	protected $mValue;
 
 	public function __construct($aLocalName, $aPrefix = null) {
-		parent::__construct();
-
 		$this->mLocalName = $aLocalName;
 		$this->mName = $aPrefix ? $aPrefix . ':' . $aLocalName : $aLocalName;
 		$this->mNamespaceURI = null;
@@ -35,9 +33,6 @@ class Attr {
 
 			case 'value':
 				return $this->mValue;
-
-			default:
-				return parent::__get($aName);
 		}
 	}
 

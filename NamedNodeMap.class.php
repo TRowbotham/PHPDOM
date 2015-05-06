@@ -30,7 +30,7 @@ class NamedNodeMap implements ArrayAccess, SeekableIterator, Countable {
 
     public function getNamedItem($aName) {
         foreach($this->mAttributes as $attr) {
-            if ($attr->nodeName == $aName) {
+            if ($attr->name == $aName) {
                 return $attr;
             }
         }
@@ -38,10 +38,10 @@ class NamedNodeMap implements ArrayAccess, SeekableIterator, Countable {
         return null;
     }
 
-    public function getNamedItemNS($aNamespaceURI, $aLocalName) {
+    public function getNamedItemNS($aNamespace, $aLocalName) {
         foreach($this->mAttributes as &$attr) {
-            if ($attr->nodeName == $aLocalName &&
-                $attr->namespaceURI == $aNamespaceURI) {
+            if ($attr->localName == $aLocalName &&
+                $attr->namespace == $aNamespace) {
                 return $attr;
             }
         }
@@ -95,16 +95,20 @@ class NamedNodeMap implements ArrayAccess, SeekableIterator, Countable {
     public function setNamedItem(Attr $aNode) {
         $this->mAttributes[] = $aNode;
         $this->mLength++;
+
+        return $aNode;
     }
 
     public function setNamedItemNS(Attr $aNode) {
         $this->mAttributes[] = $aNode;
         $this->mLength++;
+
+        return $aNode;
     }
 
     public function removeNamedItem($aName) {
         foreach($this->mAttributes as $attr) {
-            if ($attr->nodeName == $aName) {
+            if ($attr->name == $aName) {
                 $this->mLength--;
 
                 return array_splice($this->mAttributes, key($this->mAttributes), 1);
@@ -114,10 +118,10 @@ class NamedNodeMap implements ArrayAccess, SeekableIterator, Countable {
         return null;
     }
 
-    public function removeNamedItemNS($aNamespaceURI, $aLocalName) {
+    public function removeNamedItemNS($aNamespace, $aLocalName) {
         foreach($this->mAttributes as $attr) {
-            if ($attr->nodeName == $aLocalName &&
-                $attr->namespaceURI == $aNamespaceURI) {
+            if ($attr->localName == $aLocalName &&
+                $attr->namespace == $aNamespace) {
                 $this->mLength--;
 
                 return array_splice($this->mAttributes, key($this->mAttributes), 1);
