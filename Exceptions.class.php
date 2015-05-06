@@ -30,6 +30,13 @@ class InvalidCharacterError extends Exception {
 	}
 }
 
+class NotFoundError extends Exception {
+	public function __construct() {
+		$this->code = 8;
+		$this->message = 'The object can not be found here.';
+	}
+}
+
 class NotSupportedError extends Exception {
 	public function __construct() {
 		$this->code = 9;
