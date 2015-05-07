@@ -477,6 +477,102 @@ abstract class Node implements EventTarget {
      * @return Node           The node that was replaced in the DOM.
      */
     public function replaceChild(Node $aNewNode, Node $aOldNode) {
+        if (!($this instanceof Document) &&
+            !($this instanceof DocumentFragment) &&
+            !($this instanceof Element)) {
+            throw new HierarchyRequestError;
+        }
+
+        if ($this === $aNewNode || $aNewNode->contains($this)) {
+            throw new HierarchyRequestError;
+        }
+
+        if ($aOldNode->parentNode !== $this) {
+            throw new NotFoundError;
+        }
+
+        if (!($aNewNode instanceof DocumentFragment) &&
+            !($aNewNode instanceof DocumentType) && !($aNewNode instanceof Element) &&
+            !($aNewNode instanceof Text) &&
+            !($aNewNode instanceof ProcessingInstruction) &&
+            !($aNewNode instanceof Comment)) {
+            throw new HierarchyRequestError;
+        }
+
+        if (($aNewNode instanceof Text && $this instanceof Document) ||
+            ($aNewNode instanceof DocumentType && !($this instanceof Document))) {
+            throw new HierarchyRequestError;
+        }
+
+        if ($this instanceof Document) {
+            if ($aNewNode instanceof DocumentFragment) {
+                $hasTextNode = array_filter($this->mChildNodes, function($node) {
+                    return $node instanceof Text;
+                });
+
+                if ($aNewNode->childElementCount > 1 || $hasTextNode) {
+                    throw new HierarchyRequestError;
+                } else {
+                    $node = $aOldNode->nextSibling;
+                    $docTypeFollowsChild = false;
+
+                    while ($node) {
+                        if ($node instanceof DocumentType) {
+                            $docTypeFollowsChild = true;
+                            break;
+                        }
+
+                        $node = $node->nextSibling;
+                    }
+
+                    if ($this->childElementCount == 1 && ($this->children[0] !== $aOldNode || $docTypeFollowsChild)) {
+                        throw new HierarchyRequestError;
+                    }
+                }
+            } elseif ($aNewNode instanceof Element) {
+                $node = $aOldNode->nextSibling;
+                $docTypeFollowsChild = false;
+
+                while ($node) {
+                    if ($node instanceof DocumentType) {
+                        $docTypeFollowsChild = true;
+                        break;
+                    }
+
+                    $node = $node->nextSibling;
+                }
+
+                if ($this->childElementCount > 1 || $docTypeFollowsChild) {
+                    throw new HierarchyRequestError;
+                }
+            } elseif ($aNewNode instanceof DocumentType) {
+                $hasDocTypeNotChild = false;
+
+                foreach ($this->mChildNodes as $node) {
+                    if ($node instanceof DocumentType &&
+                        $node !== $aOldNode) {
+                        $hasDocTypeNotChild = true;
+                    }
+                }
+
+                $node = $aOldNode->previousSibling;
+                $elementPrecedesChild = false;
+
+                while ($node) {
+                    if ($node instanceof Element) {
+                        $elementPrecedesChild = true;
+                        break;
+                    }
+
+                    $node = $node->previousSibling;
+                }
+
+                if ($hasDocTypeNotChild || $elementPrecedesChild) {
+                    throw new HierarchyRequestError;
+                }
+            }
+        }
+
         $index = array_search($aOldNode, $this->mChildNodes);
 
         if ($index === false) {
