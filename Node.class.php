@@ -573,15 +573,18 @@ abstract class Node implements EventTarget {
             }
         }
 
-        $index = array_search($aOldNode, $this->mChildNodes);
+        $referenceChild = $aOldNode->nextSibling;
 
-        if ($index === false) {
-            throw new DOMException("NotFoundError: Node was not found");
+        if ($referenceChild === $aNewNode) {
         }
 
-        $this->insertBefore($aNewNode, $aOldNode);
+        // The DOM4 spec states that nodes should be implicitly adopted
+        $this->mOwnerDocument->adoptNode($aNewNode);
 
-        return $aOldNode->parentNode->removeChild($aOldNode);
+        $aOldNode->parentNode->removeChild($aOldNode);
+        $this->insertBefore($aNewNode, $referenceChild);
+
+        return $aOldNode;
     }
 
     private function preinsertionValidity($aNode) {
