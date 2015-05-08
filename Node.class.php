@@ -353,36 +353,7 @@ abstract class Node implements EventTarget {
      * @return Node          The node that was removed from the DOM.
      */
     public function removeChild(Node $aNode) {
-        $index = array_search($aNode, $this->mChildNodes);
-
-        if ($index === false) {
-            throw new DOMException("NotFoundError: Node was not found");
-        }
-
-        array_splice($this->mChildNodes, $index, 1);
-
-        if ($this->mFirstChild == $aNode) {
-            $this->mFirstChild = $aNode->mNextSibling;
-        }
-
-        if ($this->mLastChild == $aNode) {
-            $this->mLastChild = $aNode->mPreviousSibling;
-        }
-
-        if (!is_null($aNode->mPreviousSibling)) {
-            $aNode->mPreviousSibling->mNextSibling = $aNode->mNextSibling;
-        }
-
-        if (!is_null($aNode->mNextSibling)) {
-            $aNode->mNextSibling->mPreviousSibling = $aNode->mPreviousSibling;
-        }
-
-        $aNode->mPreviousSibling = null;
-        $aNode->mNextSibling = null;
-        $aNode->mParentElement = null;
-        $aNode->mParentNode = null;
-
-        return $aNode;
+        return $this->preremoveChild($aNode);
     }
 
     /**
@@ -568,7 +539,30 @@ abstract class Node implements EventTarget {
     }
 
     private function _removeChild($aNode, $aSuppressObservers = null) {
-        $this->removeChild($aNode);
+        $index = array_search($aNode, $this->mChildNodes);
+
+        array_splice($this->mChildNodes, $index, 1);
+
+        if ($this->mFirstChild === $aNode) {
+            $this->mFirstChild = $aNode->nextSibling;
+        }
+
+        if ($this->mLastChild === $aNode) {
+            $this->mLastChild = $aNode->previousSibling;
+        }
+
+        if ($aNode->previousSibling) {
+            $aNode->previousSibling->mNextSibling = $aNode->nextSibling;
+        }
+
+        if ($aNode->nextSibling) {
+            $aNode->nextSibling->mPreviousSibling = $aNode->previousSibling;
+        }
+
+        $aNode->mPreviousSibling = null;
+        $aNode->mNextSibling = null;
+        $aNode->mParentElement = null;
+        $aNode->mParentNode = null;
     }
 
     private function preinsertNodeBeforeChild($aNode, $aChild) {
@@ -586,6 +580,16 @@ abstract class Node implements EventTarget {
         $this->insertNodeBeforeChild($aNode, $referenceChild);
 
         return $aNode;
+    }
+
+    private function preremoveChild($aChild) {
+        if ($aChild->parentNode !== $this) {
+            throw new NotFoundError;
+        }
+
+        $this->_removeChild($aChild);
+
+        return $aChild;
     }
 
     private function preinsertionValidity($aNode, $aChild) {
