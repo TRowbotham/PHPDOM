@@ -576,6 +576,7 @@ abstract class Node implements EventTarget {
         $referenceChild = $aOldNode->nextSibling;
 
         if ($referenceChild === $aNewNode) {
+            $referenceChild = $aNewNode->nextSibling;
         }
 
         // The DOM4 spec states that nodes should be implicitly adopted
