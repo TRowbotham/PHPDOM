@@ -124,7 +124,7 @@ abstract class Node implements EventTarget {
      * @return Node          The node that was just appended to the parent node.
      */
     public function appendChild(Node $aNode) {
-        $this->preinsertionValidity($aNode);
+        $this->preinsertionValidity($aNode, null);
         $nodes = $aNode instanceof DocumentFragment ? $aNode->childNodes : array($aNode);
 
         foreach ($nodes as $node) {
@@ -588,7 +588,7 @@ abstract class Node implements EventTarget {
         return $aOldNode;
     }
 
-    private function preinsertionValidity($aNode) {
+    private function preinsertionValidity($aNode, $aChild) {
         if (!($this instanceof Document) &&
             !($this instanceof DocumentFragment) &&
             !($this instanceof Element)) {
@@ -599,7 +599,7 @@ abstract class Node implements EventTarget {
             throw new HierarchyRequestError;
         }
 
-        if ($aNode === null && $this !== $aNode->parentNode) {
+        if ($aChild !== null && $this !== $aChild->parentNode) {
             throw new NotFoundError;
         }
 
@@ -611,47 +611,32 @@ abstract class Node implements EventTarget {
             throw new HierarchyRequestError;
         }
 
-        if ((($this instanceof Text || $aNode instanceof Text) &&
-            $this instanceof Document) || ($aNode instanceof DocumentType &&
-            !($this instanceof Document))) {
+        if (($aNode instanceof Text && $this instanceof Document) ||
+            ($aNode instanceof DocumentType && !($this instanceof Document))) {
             throw new HierarchyRequestError;
         }
 
-        /*if ($this instanceof Document) {
+        if ($this instanceof Document) {
             if ($aNode instanceof DocumentFragment) {
+                $hasTextNode = false;
+
                 foreach ($aNode->childNodes as $node) {
                     if ($node instanceof Text) {
-                        $throwException = true;
+                        $hasTextNode = true;
 
                         break;
                     }
                 }
 
-                $throwException = $throwException || $aNode->childElementCount > 1;
-
-                if (!$throwException) {
-                    $throwException = $aNode->childElementCount == 1 || $this->mChildElementCount > 0 || $aNode instanceof DocumentType || ($aNode !== null);
-                }
-            } elseif ($aNode instanceof Element) {
-                $throwException = false;
-
-                foreach ($this->mChildNodes as $node) {
-                    if ($node instanceof Element) {
-                        $throwException = true;
-                        break;
-                    }
-                }
-
-                if (!$throwException) {
-                    $throwException = $aNode instanceof DocumentType;
-                }
-
-                if (!$throwException) {
-                    $node = $aNode->nextSibling;
+                if ($aNode->childElementCount > 1 || $hasTextNode) {
+                    throw new HierarchyRequestError;
+                } else {
+                    $node = $aChild ? $aChild->nextSibling : null;
+                    $docTypeFollowsChild = false;
 
                     while ($node) {
                         if ($node instanceof DocumentType) {
-                            $throwException = true;
+                            $docTypeFollowsChild = true;
 
                             break;
                         }
@@ -659,46 +644,76 @@ abstract class Node implements EventTarget {
                         $node = $node->nextSibling;
                     }
 
-                    $throwException = $throwException || $aNode !== null;
+                    if ($aNode->childElementCount == 1 && ($this->childElementCount ||
+                        $aChild instanceof DocumentType || ($aChild !== null && $docTypeFollowsChild))) {
+                        throw new HierarchyRequestError;
+                    }
                 }
-            } elseif ($aNode instanceof DocumentType) {
-                $throwException = false;
+            } elseif ($aNode instanceof Element) {
+                $parentHasElementChild = false;
 
                 foreach ($this->mChildNodes as $node) {
-                    if ($node instanceof DocumentType) {
-                        $throwException = true;
+                    if ($node instanceof Element) {
+                        $parentHasElementChild = true;
+
                         break;
                     }
                 }
 
-                if (!$throwException) {
-                    $node = $aNode;
+                $node = $aChild ? $aChild->nextSibling : null;
+                $docTypeFollowsChild = false;
 
-                    while ($node) {
-                        if ($node instanceof Element) {
-                            $throwException = true;
-                            break;
-                        }
+                while ($node) {
+                    if ($node instanceof DocumentType) {
+                        $docTypeFollowsChild = true;
 
-                        $node = $node->previousSibling;
+                        break;
+                    }
+
+                    $node = $node->nextSibling;
+                }
+
+                if ($parentHasElementChild || $aChild instanceof DocumentType ||
+                    ($aChild !== null && $docTypeFollowsChild)) {
+                    throw new HierarchyRequestError;
+                }
+            } elseif ($aNode instanceof DocumentType) {
+                $parentHasDocTypeChild = false;
+
+                foreach ($this->mChildNodes as $node) {
+                    if ($node instanceof DocumentType) {
+                        $parentHasDocTypeChild = true;
+
+                        break;
                     }
                 }
 
-                if (!$throwException) {
-                    foreach ($this->mChildNodes as $node) {
-                        if ($node instanceof Element) {
-                            $throwException = true;
-                            break;
-                        }
+                $node = $aChild ? $aChild->previousSibling : null;
+                $elementPrecedesChild = false;
+
+                while ($node) {
+                    if ($node instanceof Element) {
+                        $elementPrecedesChild = true;
+                        break;
                     }
 
-                    $throwException = $aNode === null || $throwException;
+                    $node = $node->previousSibling;
+                }
+
+                $parentHasElementChild = false;
+
+                foreach ($this->mChildNodes as $node) {
+                    if ($node instanceof Element) {
+                        $parentHasElementChild = true;
+
+                        break;
+                    }
+                }
+
+                if ($parentHasDocTypeChild || $elementPrecedesChild || ($aChild !== null && $parentHasElementChild)) {
+                    throw new HierarchyRequestError;
                 }
             }
-
-            if ($throwException) {
-                throw new HierarchyRequestError;
-            }
-        }*/
+        }
     }
 }
