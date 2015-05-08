@@ -7,10 +7,11 @@ require_once 'DOMTokenList.class.php';
 require_once 'NamedNodeMap.class.php';
 require_once 'ParentNode.class.php';
 require_once 'ChildNode.class.php';
+require_once 'NonDocumentTypeChildNode.class.php';
 
 abstract class Element extends Node implements SplObserver {
-	use ParentNode;
-	use ChildNode;
+	use ParentNode, ChildNode, NonDocumentTypeChildNode;
+
 	protected $mAttributes; // NamedNodeMap
 	protected $mClassList; // ClassList
 	protected $mClassName;
@@ -69,6 +70,12 @@ abstract class Element extends Node implements SplObserver {
 
 			case 'lastElementChild':
 				return $this->getLastElementChild();
+
+			case 'nextElementSibling':
+				return $this->getNextElementSibling();
+
+			case 'previousElementSibling':
+				return $this->getPreviousElementSibling();
 
 			case 'tagName':
 				return $this->mTagName;

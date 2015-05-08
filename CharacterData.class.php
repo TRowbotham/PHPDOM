@@ -4,9 +4,10 @@
 
 require_once 'Node.class.php';
 require_once 'ChildNode.class.php';
+require_once 'NonDocumentTypeChildNode.class.php';
 
 abstract class CharacterData extends Node {
-	use ChildNode;
+	use ChildNode, NonDocumentTypeChildNode;
 
 	private $mData;
 	private $mLength;
@@ -24,6 +25,10 @@ abstract class CharacterData extends Node {
 				return $this->mData;
 			case 'length':
 				return $this->mLength;
+			case 'nextElementSibling':
+				return $this->getNextElementSibling();
+			case 'previousElementSibling':
+				return $this->getPreviousElementSibling();
 			default:
 				return parent::__get($aName);
 		}
