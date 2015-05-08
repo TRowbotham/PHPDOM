@@ -517,6 +517,12 @@ abstract class Node implements EventTarget {
         $nodes = $isDocumentFragment ? $aNode->childNodes : array($aNode);
         $index = $aChild ? array_search($aChild, $this->mChildNodes) : count($this->mChildNodes);
 
+        if ($isDocumentFragment) {
+            foreach ($nodes as $node) {
+                $aNode->_removeChild($node, true);
+            }
+        }
+
         if ($index === 0) {
             $this->mFirstChild = $nodes[0];
         }
