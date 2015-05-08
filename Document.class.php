@@ -43,14 +43,22 @@ class Document extends Node {
 		switch ($aName) {
 			case 'characterSet':
 				return $this->mCharacterSet;
+			case 'childElementCount':
+				return $this->getChildElementCount();
+			case 'children':
+				return $this->getChildren();
 			case 'contentType':
 				return $this->mContentType;
 			case 'doctype':
 				return $this->mDoctype;
 			case 'documentElement':
 				return $this->mDocumentElement;
+			case 'firstElementChild':
+				return $this->getFirstElementChild();
 			case 'implementation':
 				return $this->mImplementation;
+			case 'lastElementChild':
+				return $this->getLastElementChild();
 			default:
 				return parent::__get($aName);
 		}
