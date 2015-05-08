@@ -290,40 +290,7 @@ abstract class Node implements EventTarget {
      * @return Node             The node that was inserted into the document.
      */
     public function insertBefore(Node $aNewNode, Node $aRefNode = null) {
-        if (!isset($aRefNode) || is_null($aRefNode)) {
-            return $this->appendChild($aNewNode);
-        }
-
-        $index = array_search($aRefNode, $this->mChildNodes);
-
-        if ($index === false) {
-            throw new DOMException("NotFoundError: Node was not found");
-        }
-
-        $nodes = $aNewNode instanceof DocumentFragment ? $aNewNode->childNodes : array($aNewNode);
-        $temp = array();
-
-        foreach ($nodes as $node) {
-            if ($node->parentNode) {
-                $node->parentNode->removeChild($node);
-            }
-
-            $temp[] = $node;
-
-            if ($index == 0) {
-                $this->mFirstChild = $node;
-            }
-
-            $node->mPreviousSibling = $aRefNode->mPreviousSibling;
-            $node->mNextSibling = $aRefNode;
-            $node->mParentNode = $this;
-            $node->mParentElement = $this->mNodeType == Node::ELEMENT_NODE ? $this : null;
-            $aRefNode->mPreviousSibling = $node;
-        }
-
-        array_splice($this->mChildNodes, $index, 0, $temp);
-
-        return $aNewNode;
+        return $this->preinsertNodeBeforeChild($aNewNode, $aRefNode);
     }
 
     /**
