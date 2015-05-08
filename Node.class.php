@@ -580,12 +580,69 @@ abstract class Node implements EventTarget {
         }
 
         // The DOM4 spec states that nodes should be implicitly adopted
-        $this->mOwnerDocument->adoptNode($aNewNode);
+        $ownerDocument = $this instanceof Document ? $this : $this->mOwnerDocument;
+        $ownerDocument->adoptNode($aNewNode);
 
-        $aOldNode->parentNode->removeChild($aOldNode);
-        $this->insertBefore($aNewNode, $referenceChild);
+        $this->_removeChild($aOldNode, true);
+
+        $nodes = $aNewNode instanceof DocumentFragment ? $aNewNode->childNodes : array($aNewNode);
+        $this->insertNodeBeforeChild($aNewNode, $referenceChild, true);
 
         return $aOldNode;
+    }
+
+    private function insertNodeBeforeChild($aNode, $aChild, $aSuppressObservers = null) {
+        $isDocumentFragment = $aNode instanceof DocumentFragment;
+        $parentElement = $this instanceof Element ? $this : null;
+        $count = $isDocumentFragment ? count($aNode->childNodes) : 1;
+
+        if ($aChild) {
+            // TODO substeps for Step 2
+        }
+
+        $nodes = $isDocumentFragment ? $aNode->childNodes : array($aNode);
+        $index = $aChild ? array_search($aChild, $this->mChildNodes) : count($this->mChildNodes);
+
+        if ($index === 0) {
+            $this->mFirstChild = $nodes[0];
+        }
+
+        foreach ($nodes as $newNode) {
+            $newNode->mParentNode = $this;
+            $newNode->mParentElement = $parentElement;
+
+            if ($aChild) {
+                $newNode->mPreviousSibling = $aChild->previousSibling;
+                $newNode->mNextSibling = $aChild;
+                $aChild->mPreviousSibling = $newNode;
+            } else {
+                $newNode->mPreviousSibling = $this->mLastChild;
+                $this->mLastChild = $newNode;
+            }
+
+            array_splice($this->mChildNodes, $index++, 0, array($newNode));
+        }
+    }
+
+    private function _removeChild($aNode, $aSuppressObservers = null) {
+        $this->removeChild($aNode);
+    }
+
+    private function preinsertNodeBeforeChild($aNode, $aChild) {
+        $this->preinsertionValidity($aNode, $aChild);
+        $referenceChild = $aChild;
+
+        if ($referenceChild === $aNode) {
+            $referenceChild = $aNode->nextSibling;
+        }
+
+        // The DOM4 spec states that nodes should be implicitly adopted
+        $ownerDocument = $this instanceof Document ? $this : $this->mOwnerDocument;
+        $ownerDocument->adoptNode($aNode);
+
+        $this->insertNodeBeforeChild($aNode, $referenceChild);
+
+        return $aNode;
     }
 
     private function preinsertionValidity($aNode, $aChild) {
