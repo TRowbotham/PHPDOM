@@ -176,7 +176,7 @@ abstract class Element extends Node implements SplObserver {
 	public function removeAttribute( $aName ) {
 		$attr = $this->mAttributes->removeNamedItem($aName)[0];
 		$dict = new CustomEventInit();
-		$dict->detail =& $attr;
+		$dict->detail = array('attr' => $attr, 'action' => 'remove');
 		$e = new CustomEvent('attributechange', $dict);
 		$this->dispatchEvent($e);
 	}
@@ -208,7 +208,7 @@ abstract class Element extends Node implements SplObserver {
 		}
 
 		$dict = new CustomEventInit();
-		$dict->detail =& $node;
+		$dict->detail = array('attr' => $node, 'action' => 'set');
 		$event = new CustomEvent('attributechange', $dict);
 		$this->dispatchEvent($event);
 	}
@@ -291,10 +291,10 @@ abstract class Element extends Node implements SplObserver {
 	}
 
 	protected function _onAttributeChange(Event $aEvent) {
-		switch ($aEvent->detail->name) {
+		switch ($aEvent->detail['attr']->name) {
 			case 'class':
 				$this->mReconstructClassList = true;
-				$this->mClassName = $aEvent->detail->value;
+				$this->mClassName = $aEvent->detail['action'] == 'set' ? $aEvent->detail['attr']->value : '';
 		}
 	}
 
