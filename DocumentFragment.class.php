@@ -3,9 +3,10 @@
 // https://dom.spec.whatwg.org/#interface-documentfragment
 
 require_once 'ParentNode.class.php';
+require_once 'NonElementParentNode.class.php';
 
 class DocumentFragment extends Node {
-	use ParentNode;
+	use ParentNode, NonElementParentNode;
 
 	public function __construct() {
 		parent::__construct();

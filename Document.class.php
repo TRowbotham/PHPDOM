@@ -10,9 +10,10 @@ require_once 'Attr.class.php';
 require_once 'DocumentFragment.class.php';
 require_once 'Event.class.php';
 require_once 'Text.class.php';
+require_once 'NonElementParentNode.class.php';
 
 class Document extends Node {
-	use ParentNode;
+	use ParentNode, NonElementParentNode;
 
 	protected $mDoctype; // DocumentType
 	protected $mDocumentElement;
