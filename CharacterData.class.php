@@ -3,7 +3,7 @@
 // https://dom.spec.whatwg.org/#characterdata
 
 require_once 'Node.class.php';
-require_once 'ParentNode.class.php';
+require_once 'ChildNode.class.php';
 
 abstract class CharacterData extends Node {
 	use ChildNode;
