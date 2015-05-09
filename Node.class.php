@@ -19,6 +19,13 @@ abstract class Node implements EventTarget {
     const DOCUMENT_FRAGMENT_NODE = 11;
     const NOTATION_NODE = 12;
 
+    const DOCUMENT_POSITION_DISCONNECTED = 0x01;
+    const DOCUMENT_POSITION_PRECEDING = 0x02;
+    const DOCUMENT_POSITION_FOLLOWING = 0x04;
+    const DOCUMENT_POSITION_CONTAINS = 0x08;
+    const DOCUMENT_POSITION_CONTAINED_BY = 0x10;
+    const DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC = 0x20;
+
     protected $mChildNodes; // NodeList
     protected $mFirstChild; // Node
     protected $mLastChild; // Node
@@ -147,8 +154,56 @@ abstract class Node implements EventTarget {
      *                         Node::DOCUMENT_POSITION_CONTAINED_BY
      *                         Node::DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC
      */
-    public function compareDocumentPosition(Node $aNode) {
-        // TODO
+    public function compareDocumentPosition(Node $aOtherNode) {
+        $reference = $this;
+
+        if ($reference === $aOtherNode) {
+            return 0;
+        }
+
+        if ($reference->mOwnerDocument !== $aOtherNode->ownerDocument || !$reference->parentNode ||
+            !$aOtherNode->parentNode) {
+            return self::DOCUMENT_POSITION_DISCONNECTED + self::DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC +
+                   self::DOCUMENT_POSITION_PRECEDING;
+        }
+
+        if ($aOtherNode->contains($reference)) {
+            return self::DOCUMENT_POSITION_CONTAINS + self::DOCUMENT_POSITION_PRECEDING;
+        }
+
+        if ($reference->contains($aOtherNode)) {
+            return self::DOCUMENT_POSITION_CONTAINED_BY + self::DOCUMENT_POSITION_FOLLOWING;
+        }
+
+        $commonParent = $reference->mParentNode;
+
+        while ($commonParent) {
+            if ($commonParent->contains($aOtherNode)) {
+                pn($commonParent);
+                break;
+            }
+
+            $commonParent = $commonParent->parentNode;
+        }
+
+        $referenceKey = -1;
+        $otherKey = -1;
+
+        foreach ($commonParent->childNodes as $child) {
+            if ($referenceKey < 0 && $child->contains($reference)) {
+                $referenceKey = key($commonParent->childNodes);
+            }
+
+            if ($otherKey < 0 && $child->contains($aOtherNode)) {
+                $otherKey = key($commonParent->childNodes);
+            }
+        }
+
+        if ($otherKey < $referenceKey) {
+            return self::DOCUMENT_POSITION_PRECEDING;
+        }
+
+        return self::DOCUMENT_POSITION_FOLLOWING;
     }
 
     /**
