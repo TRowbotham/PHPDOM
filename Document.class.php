@@ -252,14 +252,14 @@ class Document extends Node {
 		require_once 'HTMLElement/' . $className . '.class.php';
 
 		$node = new $className();
-		$node->mOwnerDocument =& $this;
+		$node->mOwnerDocument = $this;
 
 		return $node;
 	}
 
 	public function createDocumentFragment() {
 		$node = new DocumentFragment();
-		$node->mOwnerDocument =& $this;
+		$node->mOwnerDocument = $this;
 
 		return $node;
 	}
@@ -270,7 +270,7 @@ class Document extends Node {
 
 	public function createTextNode($aData) {
 		$node = new Text($aData);
-		$node->mOwnerDocument =& $this;
+		$node->mOwnerDocument = $this;
 
 		return $node;
 	}
@@ -385,7 +385,7 @@ class Document extends Node {
 	}
 
 	private function _adoptNode($aNode) {
-		$aNode->mOwnerDocument =& $this;
+		$aNode->mOwnerDocument = $this;
 
 		foreach ($aNode->childNodes as $node) {
 			$this->_adoptNode($node);

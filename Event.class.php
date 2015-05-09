@@ -94,7 +94,7 @@ class Event {
 		return $this->mImmediatePropagationStopped;
 	}
 
-	public function _setCurrentTarget(Node &$aTarget) {
+	public function _setCurrentTarget(Node $aTarget) {
 		$this->mCurrentTarget = $aTarget;
 	}
 
@@ -102,7 +102,7 @@ class Event {
 		$this->mDispatched = true;
 	}
 
-	public function _setTarget(Node &$aTarget) {
+	public function _setTarget(Node $aTarget) {
 		$this->mTarget = $aTarget;
 	}
 
@@ -118,7 +118,7 @@ class Event {
 class CustomEvent extends Event {
 	private $mDetail;
 
-	public function __construct($aType, CustomEventInit &$aEventInitDict = null) {
+	public function __construct($aType, CustomEventInit $aEventInitDict = null) {
 		parent::__construct($aType);
 
 		if (is_null($aEventInitDict)) {

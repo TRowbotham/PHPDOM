@@ -39,7 +39,7 @@ class NamedNodeMap implements ArrayAccess, SeekableIterator, Countable {
     }
 
     public function getNamedItemNS($aNamespace, $aLocalName) {
-        foreach($this->mAttributes as &$attr) {
+        foreach($this->mAttributes as $attr) {
             if ($attr->localName == $aLocalName &&
                 $attr->namespace == $aNamespace) {
                 return $attr;

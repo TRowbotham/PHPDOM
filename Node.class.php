@@ -248,15 +248,15 @@ abstract class Node implements EventTarget {
     /**
      * Handles executing the callbacks registered to a specific event on this Node.  It also takes care of handling
      * event propagation and the event phases.
-     * @param  Event   &$aEvent         The event object associated with the currently executing event.
-     * @param  boolean $aMoveToBubbling Phase When the event phase is AT_TARGET, it first executes any event handlers
-     *                                  on the target Node that are associated with the CAPTURING_PHASE.  Another event
-     *                                  will then be dispatched on the same Node in the AT_TARGET phase again which
-     *                                  executes and event handlers on the target that are associated with the
-     *                                  BUBBLING_PHASE.  When set to true, this means that the dispatched event has
-     *                                  already been through the AT_TARGET phase once.
+     * @param  Event   $aEvent                  The event object associated with the currently executing event.
+     * @param  boolean $aMoveToBubblingPhase    When the event phase is AT_TARGET, it first executes any event handlers
+     *                                          on the target Node that are associated with the CAPTURING_PHASE.
+     *                                          Another event will then be dispatched on the same Node in the AT_TARGET
+     *                                          phase again which executes and event handlers on the target that are
+     *                                          associated with the BUBBLING_PHASE.  When set to true, this means that
+     *                                          the dispatched event has already been through the AT_TARGET phase once.
      */
-    private function _dispatchEvent(Event &$aEvent, $aMoveToBubblingPhase = false) {
+    private function _dispatchEvent(Event $aEvent, $aMoveToBubblingPhase = false) {
         if ($aEvent->_isPropagationStopped()) {
             $aEvent->_updateEventPhase(Event::NONE);
 
@@ -588,60 +588,6 @@ abstract class Node implements EventTarget {
         }
     }
 
-    private function _removeChild($aNode, $aSuppressObservers = null) {
-        $index = array_search($aNode, $this->mChildNodes);
-
-        array_splice($this->mChildNodes, $index, 1);
-
-        if ($this->mFirstChild === $aNode) {
-            $this->mFirstChild = $aNode->nextSibling;
-        }
-
-        if ($this->mLastChild === $aNode) {
-            $this->mLastChild = $aNode->previousSibling;
-        }
-
-        if ($aNode->previousSibling) {
-            $aNode->previousSibling->mNextSibling = $aNode->nextSibling;
-        }
-
-        if ($aNode->nextSibling) {
-            $aNode->nextSibling->mPreviousSibling = $aNode->previousSibling;
-        }
-
-        $aNode->mPreviousSibling = null;
-        $aNode->mNextSibling = null;
-        $aNode->mParentElement = null;
-        $aNode->mParentNode = null;
-    }
-
-    private function preinsertNodeBeforeChild($aNode, $aChild) {
-        $this->preinsertionValidity($aNode, $aChild);
-        $referenceChild = $aChild;
-
-        if ($referenceChild === $aNode) {
-            $referenceChild = $aNode->nextSibling;
-        }
-
-        // The DOM4 spec states that nodes should be implicitly adopted
-        $ownerDocument = $this instanceof Document ? $this : $this->mOwnerDocument;
-        $ownerDocument->adoptNode($aNode);
-
-        $this->insertNodeBeforeChild($aNode, $referenceChild);
-
-        return $aNode;
-    }
-
-    private function preremoveChild($aChild) {
-        if ($aChild->parentNode !== $this) {
-            throw new NotFoundError;
-        }
-
-        $this->_removeChild($aChild);
-
-        return $aChild;
-    }
-
     private function preinsertionValidity($aNode, $aChild) {
         if (!($this instanceof Document) &&
             !($this instanceof DocumentFragment) &&
@@ -769,5 +715,59 @@ abstract class Node implements EventTarget {
                 }
             }
         }
+    }
+
+    private function preinsertNodeBeforeChild($aNode, $aChild) {
+        $this->preinsertionValidity($aNode, $aChild);
+        $referenceChild = $aChild;
+
+        if ($referenceChild === $aNode) {
+            $referenceChild = $aNode->nextSibling;
+        }
+
+        // The DOM4 spec states that nodes should be implicitly adopted
+        $ownerDocument = $this instanceof Document ? $this : $this->mOwnerDocument;
+        $ownerDocument->adoptNode($aNode);
+
+        $this->insertNodeBeforeChild($aNode, $referenceChild);
+
+        return $aNode;
+    }
+
+    private function preremoveChild($aChild) {
+        if ($aChild->parentNode !== $this) {
+            throw new NotFoundError;
+        }
+
+        $this->_removeChild($aChild);
+
+        return $aChild;
+    }
+
+    private function _removeChild($aNode, $aSuppressObservers = null) {
+        $index = array_search($aNode, $this->mChildNodes);
+
+        array_splice($this->mChildNodes, $index, 1);
+
+        if ($this->mFirstChild === $aNode) {
+            $this->mFirstChild = $aNode->nextSibling;
+        }
+
+        if ($this->mLastChild === $aNode) {
+            $this->mLastChild = $aNode->previousSibling;
+        }
+
+        if ($aNode->previousSibling) {
+            $aNode->previousSibling->mNextSibling = $aNode->nextSibling;
+        }
+
+        if ($aNode->nextSibling) {
+            $aNode->nextSibling->mPreviousSibling = $aNode->previousSibling;
+        }
+
+        $aNode->mPreviousSibling = null;
+        $aNode->mNextSibling = null;
+        $aNode->mParentElement = null;
+        $aNode->mParentNode = null;
     }
 }
