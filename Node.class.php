@@ -159,22 +159,12 @@ abstract class Node implements EventTarget {
     public function contains(Node $aNode) {
         $rv = false;
 
-        if (!$this->hasChildNodes()) {
-            return $rv;
-        }
-
         foreach ($this->mChildNodes as $node) {
-            $rv = $node == $aNode;
-
-            if (!$rv) {
-                foreach ($node->mChildNodes as $childNode) {
-                    $rv = $childNode->contains($aNode);
-
-                    if ($rv) {
-                        break 2;
-                    }
-                }
+            if ($rv) {
+                break;
             }
+
+            $rv = $node === $aNode || $node->contains($aNode);
         }
 
         return $rv;
