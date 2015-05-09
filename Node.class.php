@@ -179,7 +179,6 @@ abstract class Node implements EventTarget {
 
         while ($commonParent) {
             if ($commonParent->contains($aOtherNode)) {
-                pn($commonParent);
                 break;
             }
 
