@@ -9,10 +9,17 @@ class URLSearchParams implements SplSubject {
 	private $mSequenceId;
 
 	public function __construct($aSearchParams = '') {
-		$this->mIndex = array();
+		if ($aSearchParams instanceof URLSearchParams) {
+			$this->mIndex = $aSearchParams->mIndex;
+			$this->mParams = $aSearchParams->mParams;
+			$this->mSequenceId = $aSearchParams->mSequenceId;
+		} else {
+			$this->mIndex = array();
+			$this->mParams = array();
+			$this->mSequenceId = 0;
+		}
+
 		$this->mObservers = new SplObjectStorage();
-		$this->mParams = array();
-		$this->mSequenceId = 0;
 
 		$pairs = explode('&', $aSearchParams);
 
@@ -23,7 +30,6 @@ class URLSearchParams implements SplSubject {
 			} else {
 				list($key, $value) = explode('=', $pair);
 			}
-
 			$this->append($key, $value);
 		}
 	}
