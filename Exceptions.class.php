@@ -50,3 +50,9 @@ class SyntaxError extends Exception {
 		$this->message = 'The string did not match the expected pattern.';
 	}
 }
+
+class TypeError extends Exception {
+	public function __construct($aMessage = '') {
+		$this->message = $aMessage;
+	}
+}
