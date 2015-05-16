@@ -16,13 +16,12 @@ require_once 'URL.class.php';
 class Document extends Node {
 	use ParentNode, NonElementParentNode;
 
+	protected $mCharacterSet;
+	protected $mContentType;
 	protected $mDoctype; // DocumentType
 	protected $mDocumentElement;
 
-	private $mCharacterSet;
 	private $mCompatMode;
-	private $mContentType;
-	private $mDocumentURI;
 	private $mEvents;
 	private $mImplementation;
 	private $mURL;
