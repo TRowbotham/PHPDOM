@@ -25,8 +25,6 @@ class Document extends Node {
 	private $mDocumentURI;
 	private $mEvents;
 	private $mImplementation;
-	private $mInputEncoding;
-	private $mOrigin;
 	private $mURL;
 
 	public function __construct() {
