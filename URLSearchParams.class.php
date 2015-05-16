@@ -2,6 +2,8 @@
 // https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams
 // https://url.spec.whatwg.org/#urlsearchparams
 
+require_once 'URLParser.class.php';
+
 class URLSearchParams implements SplSubject {
 	private $mIndex;
 	private $mObservers;
@@ -9,6 +11,8 @@ class URLSearchParams implements SplSubject {
 	private $mSequenceId;
 
 	public function __construct($aSearchParams = '') {
+		$this->mObservers = new SplObjectStorage();
+
 		if ($aSearchParams instanceof URLSearchParams) {
 			$this->mIndex = $aSearchParams->mIndex;
 			$this->mParams = $aSearchParams->mParams;
@@ -17,20 +21,11 @@ class URLSearchParams implements SplSubject {
 			$this->mIndex = array();
 			$this->mParams = array();
 			$this->mSequenceId = 0;
-		}
+			$pairs = URLParser::urlencodedStringParser($aSearchParams);
 
-		$this->mObservers = new SplObjectStorage();
-
-		$pairs = explode('&', $aSearchParams);
-
-		foreach ($pairs as $pair) {
-			if (strpos($pair, '=') === false) {
-				$key = $pair;
-				$value = '';
-			} else {
-				list($key, $value) = explode('=', $pair);
+			foreach ($pairs as $pair) {
+				$this->append($pair['name'], $pair['value']);
 			}
-			$this->append($key, $value);
 		}
 	}
 
@@ -141,12 +136,13 @@ class URLSearchParams implements SplSubject {
 	 * @return string The query string.
 	 */
 	public function toString() {
-		$queryString = '';
+		$list = array();
+		$output = '';
 
 		foreach ($this->mIndex as $sequenceId => $name) {
-			$queryString .= '&' . $name . '=' . $this->mParams[$name][$sequenceId];
+			$list[] = array('name' => $name, 'value' => $this->mParams[$name][$sequenceId]);
 		}
 
-		return $queryString ? substr($queryString, 1) : $queryString;
+		return URLParser::urlencodedSerializer($list);
 	}
 }
