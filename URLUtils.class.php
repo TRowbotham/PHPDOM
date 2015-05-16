@@ -1,134 +1,177 @@
 <?php
-require_once 'URLSearchParams.class.php';
+// https://developer.mozilla.org/en-US/docs/Web/API/URLUtils
+// https://url.spec.whatwg.org/#urlutils
 
-class URLUtils implements SplSubject {
-	private $mHash;
-	private $mHost;
-	private $mHostname;
-	private $mHref;
-	private $mObservers;
-	private $mOrigin;
-	private $mPassword;
-	private $mPathname;
-	private $mPort;
-	private $mProtocol;
-	private $mSearch;
-	private $mSearchParams;
-	private $mUrl;
-	private $mUsername;
+require_once 'URLUtilsReadOnly.class.php';
+
+class URLUtils extends URLUtilsReadOnly implements SplObserver, SplSubject {
+	protected $mObservers;
 
 	public function __construct() {
-		$this->mHash = '';
-		$this->mHost = '';
-		$this->mHostname = '';
-		$this->mHref = '';
 		$this->mObservers = new SplObjectStorage();
-		$this->mOrigin = '';
-		$this->mPassword = '';
-		$this->mPathname = '';
-		$this->mPort = '';
-		$this->mProtocol = '';
-		$this->mSearch = '';
-		$this->mSearchParams = '';
-		$this->mUrl = '';
-		$this->mUsername = '';
-	}
-
-	public function __get($aName) {
-		switch ($aName) {
-			case 'hash':
-				return $this->getURLComponent('fragment');
-			case 'host':
-				return $this->getURLComponent('host');
-			case 'hostname':
-				return $this->getURLComponent('host');
-			case 'href':
-				return $this->mHref;
-			case 'origin':
-				return $this->getURLComponent('scheme') . '://' . $this->getURLComponent('host');
-			case 'password':
-				return $this->getURLComponent('pass');
-			case 'pathname':
-				$component = $this->getURLComponent('path');
-
-				return $component ? $component : '/';
-			case 'port':
-				return $this->getURLComponent('port');
-			case 'protocol':
-				return $this->getURLComponent('scheme') . ':';
-			case 'search':
-				return $this->getURLSearchParams()->toString();
-			case 'searchParams':
-				return $this->getURLSearchParams();
-			case 'username':
-				return $this->getURLComponent('user');
-			default:
-				return false;
-		}
+		$this->_setInput();
 	}
 
 	public function __set($aName, $aValue) {
 		switch ($aName) {
 			case 'hash':
-				$this->mHash = $aValue;
+				if (!$this->mUrl || $this->mUrl->mScheme == 'javascript') {
+					return;
+				}
+
+				if ($aValue === '') {
+					$this->mUrl->mFragment = null;
+					$this->preupdate();
+					return;
+				}
+
+				$input = $aValue[0] == '#' ? substr($aValue, 1) : $aValue;
+				$this->mUrl->mFragment = '';
+				URLParser::basicURLParser($input, null, null, $this->mUrl, URLParser::STATE_FRAGMENT);
+				$this->preupdate();
 
 				break;
 
 			case 'host':
-				$this->mHost = $aValue;
+				if ($this->mUrl === null || $this->mUrl->mFlag & ~URL::FLAG_RELATIVE) {
+					return;
+				}
+
+				URLParser::basicURLParser($aValue, null, null, $this->mUrl, URLParser::STATE_HOST);
+				$this->preupdate();
 
 				break;
 
 			case 'hostname':
-				$this->mHostname = $aValue;
+				if ($this->mUrl === null || $this->mUrl->mFlag & ~URL::FLAG_RELATIVE) {
+					return;
+				}
+
+				URLParser::basicURLParser($aValue, null, null, $this->mUrl, URLParser::STATE_HOSTNAME);
+				$this->preupdate();
 
 				break;
 
 			case 'href':
-				$this->mHref = $aValue;
+				$input = $aValue;
 
-				break;
+				if ($this instanceof URL) {
+					$parsedUrl = URLParser::basicURLParser($input, null);
 
-			case 'origin':
-				$this->mOrigin = $aValue;
+					if ($parsedUrl === false) {
+						throw new TypeError('Failed to parse URL.');
+					}
+
+					$this->_setInput('', $parsedUrl);
+				} else {
+					$this->_setInput($input);
+					$this->preupdate($input);
+				}
 
 				break;
 
 			case 'password':
-				$this->mPassword = $aValue;
+				if ($this->mUrl === null || $this->mUrl->mFlag & ~URL::FLAG_RELATIVE) {
+					return;
+				}
+
+				if ($aValue === '') {
+					$this->mUrl->mPassword = null;
+				} else {
+					$this->mUrl->mPassword = '';
+
+					for ($i = 0; $i < strlen($aValue); $i++) {
+						$this->mUrl->mPassword .= URLParser::utf8PercentEncode($aValue[$i]);
+					}
+				}
 
 				break;
 
 			case 'pathname':
-				$this->mPathname = $aValue;
+				if ($this->mUrl === null || $this->mUrl->mFlag & ~URL::FLAG_RELATIVE) {
+					return;
+				}
+
+				while (!$this->mUrl->mPath->isEmpty()) {
+					$this->mUrl->mPath->pop();
+				}
+
+				URLParser::basicURLParser($aValue, null, null, $this->mUrl, URLParser::STATE_RELATIVE_PATH_START);
+				$this->preupdate();
 
 				break;
 
 			case 'port':
-				$this->mPort = $aValue;
+				if ($this->mUrl === null || $this->mUrl->mFlag & ~URL::FLAG_RELATIVE || $this->mUrl->mScheme == 'file') {
+					return;
+				}
+
+				URLParser::basicURLParser($aValue, null, null, $this->mUrl, URLParser::STATE_PORT);
+				$this->preupdate();
 
 				break;
 
 			case 'protocol':
-				$this->mProtocol = $aValue;
+				if ($this->mUrl === null) {
+					return;
+				}
+
+				URLParser::basicURLParser($aValue . ':', null, null, $this->mUrl, URLParser::STATE_SCHEME_START);
+				$this->preupdate();
 
 				break;
 
 			case 'search':
-				$this->mSearchParams = new URLSearchParams($aValue);
+				if ($this->mUrl === null) {
+					return;
+				}
+
+				if ($aValue === '') {
+					$this->mUrl->mQuery = null;
+					$this->mSearchParams->_mutateList();
+
+					return;
+				}
+
+				$input = $aValue[0] == '?' ? substr($aValue, 1) : $aValue;
+				$this->mUrl->mQuery = '';
+				URLParser::basicURLParser($input, null, null, $this->mUrl, URLParser::STATE_QUERY);
+				$pairs = URLParser::urlencodedStringParser($this->mUrl->mQuery);
+				$this->mSearchParams->_mutateList($pairs);
+				$this->mSearchParams->notify();
+
+				break;
+
+			case 'searchParams':
+				$object = $aValue;
+				$this->mSearchParams->detach($this);
+				$object->attach($this);
+				$this->mSearchParams = $object;
+				$this->mQuery = $this->mSearchParams->toString();
+				$this->preupdate();
 
 				break;
 
 			case 'username':
-				$this->mUsername = $aValue;
+				if ($this->mUrl === null || $this->mUrl->mFlag & ~URL::FLAG_RELATIVE) {
+					return;
+				}
+
+				$this->mUsername = '';
+
+				for ($i = 0; $i < strlen($aValue); $i++) {
+					$this->mUrl->mUsername .= URLParser::utf8PercentEncode($aValue[$i], URLParser::ENCODE_SET_USERNAME);
+				}
+
+				$this->preupdate();
 
 				break;
 
 			default:
-				return false;
+				if (property_exists($this, $aName)) {
+					$this->$aName = $aValue;
+				}
 		}
-
-		$this->notify();
 	}
 
 	public function attach(SplObserver $aObserver) {
@@ -139,25 +182,23 @@ class URLUtils implements SplSubject {
 		$this->mObservers->detach($aObserver);
 	}
 
-	private function getURLComponent($aComponent) {
-		if ($this->mUrl !== false && !$this->mUrl) {
-			$this->mUrl = parse_url($this->mHref);
-		}
-
-		return ($this->mUrl === false || !isset($this->mUrl[$aComponent])) ? '' : $this->mUrl[$aComponent];
-	}
-
-	private function getURLSearchParams() {
-		if (!$this->mSearchParams) {
-			$this->mSearchParams = new URLSearchParams($this->getURLComponent('query'));
-		}
-
-		return $this->mSearchParams;
-	}
-
 	public function notify() {
 		foreach($this->mObservers as $observer) {
 			$observer->update($this);
 		}
+	}
+
+	public function update(SplSubject $aObject) {
+		$this->mUrl->mQuery = $aObject->toString();
+	}
+
+	private function preupdate($aValue = null) {
+		$value = $aValue;
+
+		if ($value === null) {
+			$value = URLParser::serializeURL($this->mUrl);
+		}
+
+		$this->notify();
 	}
 }
