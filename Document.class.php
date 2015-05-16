@@ -11,6 +11,7 @@ require_once 'DocumentFragment.class.php';
 require_once 'Event.class.php';
 require_once 'Text.class.php';
 require_once 'NonElementParentNode.class.php';
+require_once 'URL.class.php';
 
 class Document extends Node {
 	use ParentNode, NonElementParentNode;
@@ -38,6 +39,12 @@ class Document extends Node {
 		$this->mImplementation = new iDOMImplementation();
 		$this->mNodeName = '#document';
 		$this->mNodeType = Node::DOCUMENT_NODE;
+
+		$ssl = isset($_SERVER['HTTPS']) && $_SERVER["HTTPS"] == 'on';
+		$port = in_array($_SERVER['SERVER_PORT'], array(80, 443)) ? '' : ':' . $_SERVER['SERVER_PORT'];
+		$url = ($ssl ? 'https' : 'http') . '://' . $_SERVER['SERVER_NAME'] . $port . $_SERVER['REQUEST_URI'];
+
+		$this->mURL = new URL($url);
 	}
 
 	public function __get($aName) {
@@ -54,12 +61,17 @@ class Document extends Node {
 				return $this->mDoctype;
 			case 'documentElement':
 				return $this->mDocumentElement;
+			case 'documentURI':
+			case 'URL':
+				return $this->mURL->href;
 			case 'firstElementChild':
 				return $this->getFirstElementChild();
 			case 'implementation':
 				return $this->mImplementation;
 			case 'lastElementChild':
 				return $this->getLastElementChild();
+			case 'origin':
+				return $this->mURL->origin;
 			default:
 				return parent::__get($aName);
 		}
