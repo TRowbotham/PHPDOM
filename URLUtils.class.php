@@ -7,11 +7,8 @@ require_once 'URLUtilsReadOnly.class.php';
 trait URLUtils {
 	use URLUtilsReadOnly;
 
-	protected $mObservers;
-
 	private function initURLUtils() {
 		$this->initURLUtilsReadOnly();
-		$this->mObservers = new SplObjectStorage();
 	}
 
 	private function URLUtilsSetter($aName, $aValue) {
