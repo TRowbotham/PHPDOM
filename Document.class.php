@@ -11,6 +11,7 @@ require_once 'DocumentFragment.class.php';
 require_once 'Event.class.php';
 require_once 'Text.class.php';
 require_once 'NonElementParentNode.class.php';
+require_once 'Comment.class.php';
 require_once 'URL.class.php';
 
 class Document extends Node {
@@ -268,6 +269,13 @@ class Document extends Node {
 
 	public function createDocumentFragment() {
 		$node = new DocumentFragment();
+		$node->mOwnerDocument = $this;
+
+		return $node;
+	}
+
+	public function createComment($aData) {
+		$node = new Comment($aData);
 		$node->mOwnerDocument = $this;
 
 		return $node;
