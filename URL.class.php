@@ -2,6 +2,7 @@
 // https://developer.mozilla.org/en-US/docs/Web/API/URL
 // https://url.spec.whatwg.org/#api
 
+require_once 'Exceptions.class.php';
 require_once 'URLUtils.class.php';
 
 class URL extends URLUtils {
@@ -58,6 +59,10 @@ class URL extends URLUtils {
             }
 
             $parsedURL->mUrl = $parsedURL;
+
+            if ($parsedBase) {
+                $parsedURL->mBase = $parsedBase;
+            }
         }
 	}
 
