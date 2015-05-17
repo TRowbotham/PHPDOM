@@ -178,7 +178,7 @@ class URLParser {
                     break;
 
                 case self::STATE_NO_SCHEME:
-                    if (!$base || ($base && $base->mFlags & ~URL::FLAG_RELATIVE)) {
+                    if (!$base || $base->mFlags & ~URL::FLAG_RELATIVE) {
                         // parse error
                         return false;
                     } else {
