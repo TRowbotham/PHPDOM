@@ -41,7 +41,7 @@ class URL extends URLUtils {
 
         if ($numArgs > 1) {
             if ($args[1]) {
-                $parsedBase = URLParser::basicURLParser($args[0]);
+                $parsedBase = URLParser::basicURLParser($args[1]);
 
                 if ($parsedBase === false) {
                     throw new TypeError('Error parsing URL.');
