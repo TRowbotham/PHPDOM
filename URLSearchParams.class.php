@@ -145,4 +145,17 @@ class URLSearchParams implements SplSubject {
 
 		return URLParser::urlencodedSerializer($list);
 	}
+
+	public function _mutateList(array $aList = null) {
+		$this->mIndex = array();
+		$this->mParams = array();
+		$this->mSequenceId = 0;
+
+		if (is_array($aList)) {
+			foreach ($aList as $pair) {
+				$this->mIndex[$this->mSequenceId] = $pair['name'];
+				$this->mParams[$pair['name']][$this->mSequenceId++] = $pair['value'];
+			}
+		}
+	}
 }
