@@ -1,18 +1,20 @@
 <?php
 // https://developer.mozilla.org/en-US/docs/Web/API/URLUtils
 // https://url.spec.whatwg.org/#urlutils
-
+require_once 'URL.class.php';
 require_once 'URLUtilsReadOnly.class.php';
 
-class URLUtils extends URLUtilsReadOnly implements SplObserver, SplSubject {
+trait URLUtils {
+	use URLUtilsReadOnly;
+
 	protected $mObservers;
 
-	public function __construct() {
+	private function initURLUtils() {
+		$this->initURLUtilsReadOnly();
 		$this->mObservers = new SplObjectStorage();
-		$this->_setInput();
 	}
 
-	public function __set($aName, $aValue) {
+	private function URLUtilsSetter($aName, $aValue) {
 		switch ($aName) {
 			case 'hash':
 				if (!$this->mUrl || $this->mUrl->mScheme == 'javascript') {
@@ -33,7 +35,7 @@ class URLUtils extends URLUtilsReadOnly implements SplObserver, SplSubject {
 				break;
 
 			case 'host':
-				if ($this->mUrl === null || $this->mUrl->mFlag & ~URL::FLAG_RELATIVE) {
+				if ($this->mUrl === null || !($this->mUrl->mFlags & URL::FLAG_RELATIVE)) {
 					return;
 				}
 
@@ -43,7 +45,7 @@ class URLUtils extends URLUtilsReadOnly implements SplObserver, SplSubject {
 				break;
 
 			case 'hostname':
-				if ($this->mUrl === null || $this->mUrl->mFlag & ~URL::FLAG_RELATIVE) {
+				if ($this->mUrl === null || !($this->mUrl->mFlags & URL::FLAG_RELATIVE)) {
 					return;
 				}
 
@@ -56,22 +58,22 @@ class URLUtils extends URLUtilsReadOnly implements SplObserver, SplSubject {
 				$input = $aValue;
 
 				if ($this instanceof URL) {
-					$parsedUrl = URLParser::basicURLParser($input, null);
+					$parsedUrl = URLParser::basicURLParser($input, $this->getBaseURL());
 
 					if ($parsedUrl === false) {
 						throw new TypeError('Failed to parse URL.');
 					}
 
-					$this->_setInput('', $parsedUrl);
+					$this->setURLInput('', $parsedUrl);
 				} else {
-					$this->_setInput($input);
+					$this->setURLInput($input);
 					$this->preupdate($input);
 				}
 
 				break;
 
 			case 'password':
-				if ($this->mUrl === null || $this->mUrl->mFlag & ~URL::FLAG_RELATIVE) {
+				if ($this->mUrl === null || !($this->mUrl->mFlags & URL::FLAG_RELATIVE)) {
 					return;
 				}
 
@@ -88,7 +90,7 @@ class URLUtils extends URLUtilsReadOnly implements SplObserver, SplSubject {
 				break;
 
 			case 'pathname':
-				if ($this->mUrl === null || $this->mUrl->mFlag & ~URL::FLAG_RELATIVE) {
+				if ($this->mUrl === null || !($this->mUrl->mFlags & URL::FLAG_RELATIVE)) {
 					return;
 				}
 
@@ -102,7 +104,7 @@ class URLUtils extends URLUtilsReadOnly implements SplObserver, SplSubject {
 				break;
 
 			case 'port':
-				if ($this->mUrl === null || $this->mUrl->mFlag & ~URL::FLAG_RELATIVE || $this->mUrl->mScheme == 'file') {
+				if ($this->mUrl === null || !($this->mUrl->mFlags & URL::FLAG_RELATIVE) || $this->mUrl->mScheme == 'file') {
 					return;
 				}
 
@@ -129,14 +131,15 @@ class URLUtils extends URLUtilsReadOnly implements SplObserver, SplSubject {
 				if ($aValue === '') {
 					$this->mUrl->mQuery = null;
 					$this->mSearchParams->_mutateList();
+					$this->mSearchParams->notify();
 
 					return;
 				}
 
 				$input = $aValue[0] == '?' ? substr($aValue, 1) : $aValue;
 				$this->mUrl->mQuery = '';
-				URLParser::basicURLParser($input, null, null, $this->mUrl, URLParser::STATE_QUERY);
-				$pairs = URLParser::urlencodedStringParser($this->mUrl->mQuery);
+				URLParser::basicURLParser($input, null, null, $this->mUrl, URLParser::STATE_QUERY, null);
+				$pairs = URLParser::urlencodedStringParser($input);
 				$this->mSearchParams->_mutateList($pairs);
 				$this->mSearchParams->notify();
 
@@ -147,13 +150,13 @@ class URLUtils extends URLUtilsReadOnly implements SplObserver, SplSubject {
 				$this->mSearchParams->detach($this);
 				$object->attach($this);
 				$this->mSearchParams = $object;
-				$this->mQuery = $this->mSearchParams->toString();
+				$this->mUrl->mQuery = $this->mSearchParams->toString();
 				$this->preupdate();
 
 				break;
 
 			case 'username':
-				if ($this->mUrl === null || $this->mUrl->mFlag & ~URL::FLAG_RELATIVE) {
+				if ($this->mUrl === null || !($this->mUrl->mFlags & URL::FLAG_RELATIVE)) {
 					return;
 				}
 
@@ -174,24 +177,6 @@ class URLUtils extends URLUtilsReadOnly implements SplObserver, SplSubject {
 		}
 	}
 
-	public function attach(SplObserver $aObserver) {
-		$this->mObservers->attach($aObserver);
-	}
-
-	public function detach(SplObserver $aObserver) {
-		$this->mObservers->detach($aObserver);
-	}
-
-	public function notify() {
-		foreach($this->mObservers as $observer) {
-			$observer->update($this);
-		}
-	}
-
-	public function update(SplSubject $aObject) {
-		$this->mUrl->mQuery = $aObject->toString();
-	}
-
 	private function preupdate($aValue = null) {
 		$value = $aValue;
 
@@ -199,6 +184,9 @@ class URLUtils extends URLUtilsReadOnly implements SplObserver, SplSubject {
 			$value = URLParser::serializeURL($this->mUrl);
 		}
 
-		$this->notify();
+		$this->updateURL($value);
 	}
+
+	abstract protected function updateURL($aValue);
+	abstract protected function getBaseURL();
 }

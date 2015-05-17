@@ -5,23 +5,28 @@
 require_once 'Exceptions.class.php';
 require_once 'URLUtils.class.php';
 
-class URL extends URLUtils {
-    protected $mBase;
-    protected $mFlags;
-    protected $mFragment;
-    protected $mHost;
-    protected $mObject;
-    protected $mPassword;
-    protected $mPath;
-    protected $mPort;
-    protected $mQuery;
-    protected $mScheme;
-    protected $mSchemeData;
-    protected $mUsername;
+class URL implements SplObserver {
+    use URLUtils;
+
+    const FLAG_ARRAY = 1;
+    const FLAG_AT = 2;
+    const FLAG_RELATIVE = 4;
+
+    public $mBase;
+    public $mFlags;
+    public $mFragment;
+    public $mHost;
+    public $mObject;
+    public $mPassword;
+    public $mPath;
+    public $mPort;
+    public $mQuery;
+    public $mScheme;
+    public $mSchemeData;
+    public $mUsername;
 
 	public function __construct() {
-		parent::__construct();
-
+        $this->initURLUtils();
         $this->mBase = null;
         $this->mFlags = 0;
         $this->mFragment = null;
@@ -48,6 +53,7 @@ class URL extends URLUtils {
                 }
 
                 $parsedBase->mUrl = $parsedBase;
+                $this->mBase = $parsedBase;
             }
         }
 
@@ -58,13 +64,17 @@ class URL extends URLUtils {
                 throw new TypeError('Error parsing URL.');
             }
 
-            $parsedURL->mUrl = $parsedURL;
-
-            if ($parsedBase) {
-                $parsedURL->mBase = $parsedBase;
-            }
+            $this->setURLInput('', $parsedURL);
         }
 	}
+
+    public function __get($aName) {
+        return $this->URLUtilsGetter($aName);
+    }
+
+    public function __set($aName, $aValue) {
+        $this->URLUtilsSetter($aName, $aValue);
+    }
 
     public static function domainToASCII($aDomain) {
         $result = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $aDomain);
@@ -74,5 +84,24 @@ class URL extends URLUtils {
 
     public static function domainToUnicode($aDomain) {
         return $aDomain;
+    }
+
+    public function update(SplSubject $aObject) {
+        if ($aObject instanceof URLSearchParams) {
+            $this->mQuery = $aObject->toString();
+            $this->preupdate();
+        }
+    }
+
+    private function getBaseURL() {
+        $ssl = isset($_SERVER['HTTPS']) && $_SERVER["HTTPS"] == 'on';
+        $port = in_array($_SERVER['SERVER_PORT'], array(80, 443)) ? '' : ':' . $_SERVER['SERVER_PORT'];
+        $url = ($ssl ? 'https' : 'http') . '://' . $_SERVER['SERVER_NAME'] . $port . $_SERVER['REQUEST_URI'];
+
+        return $this->mBase ? $this->mBase : URLParser::basicURLParser($url);
+    }
+
+    private function updateURL($aValue) {
+
     }
 }

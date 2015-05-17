@@ -5,22 +5,18 @@
 require_once 'URLParser.class.php';
 require_once 'URLSearchParams.class.php';
 
-class URLUtilsReadOnly {
-    const FLAG_ARRAY = 1;
-    const FLAG_AT = 2;
-    const FLAG_RELATIVE = 4;
-
+trait URLUtilsReadOnly {
     protected $mInput;
     protected $mSearchParams;
     protected $mUrl;
 
-    protected function __construct() {
+    private function initURLUtilsReadOnly() {
         $this->mInput = '';
         $this->mSearchParams = null;
         $this->mUrl = null;
     }
 
-    public function __get($aName) {
+    private function URLUtilsGetter($aName) {
         switch ($aName) {
             case 'hash':
                 return !$this->mUrl || !$this->mUrl->mFragment ? '' : '#' . $this->mUrl->mFragment;
@@ -65,7 +61,7 @@ class URLUtilsReadOnly {
                     return '';
                 }
 
-                if ($this->mUrl->mFlags & self::FLAG_RELATIVE) {
+                if ($this->mUrl->mFlags & URL::FLAG_RELATIVE) {
                     $output = '/';
 
                     foreach ($this->mUrl->mPath as $key => $path) {
@@ -97,41 +93,7 @@ class URLUtilsReadOnly {
                 return $this->mUrl ? $this->mUrl->mUsername : '';
 
             default:
-                if (property_exists($this, $aName)) {
-                    return $this->$aName;
-                }
-
                 return false;
-        }
-    }
-
-    public function _setInput($aInput = null, URL $aUrl = null) {
-        if ($aUrl) {
-            $this->mUrl = $aUrl;
-            $this->mInput = $aInput;
-        } else {
-            $this->mUrl = null;
-
-            if ($aInput === null) {
-                $this->mInput = '';
-            } else {
-                $this->mInput = $aInput;
-                $this->mUrl = URLParser::basicURLParser($aInput);
-
-                if ($this->mUrl === false) {
-                    $this->mUrl = null;
-                }
-            }
-        }
-
-        $query = $this->mUrl && $this->mUrl->mQuery ? $this->mUrl->mQuery : '';
-
-        if (!$this->mSearchParams) {
-            $this->mSearchParams = new URLSearchParams($query);
-            $this->mSearchParams->attach($this);
-        } else {
-            $pairs = URLParser::urlencodedParser($query);
-            $this->mSearchParams->_mutateList($pairs);
         }
     }
 
@@ -200,5 +162,35 @@ class URLUtilsReadOnly {
         $tuple .= ')';
 
         return $tuple;
+    }
+
+    private function setURLInput($aInput = null, URL $aUrl = null) {
+        if ($aUrl) {
+            $this->mUrl = $aUrl;
+            $this->mInput = $aInput;
+        } else {
+            $this->mUrl = null;
+
+            if ($aInput === null) {
+                $this->mInput = '';
+            } else {
+                $this->mInput = $aInput;
+                $url = URLParser::URLParser($aInput, $this->getBaseURL(), null);
+
+                if ($url) {
+                    $this->mUrl = $url;
+                }
+            }
+        }
+
+        $query = $this->mUrl && $this->mUrl->mQuery ? $this->mUrl->mQuery : '';
+
+        if (!$this->mSearchParams) {
+            $this->mSearchParams = new URLSearchParams($query);
+            $this->mSearchParams->attach($this);
+        } else {
+            $pairs = URLParser::urlencodedStringParser($query);
+            $this->mSearchParams->_mutateList($pairs);
+        }
     }
 }
