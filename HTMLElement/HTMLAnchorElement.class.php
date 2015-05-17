@@ -129,7 +129,7 @@ class HTMLAnchorElement extends HTMLElement {
 			$this->mRelList->attach($this);
 
 			if (!empty($this->mRel)) {
-				$this->mRelList->add($this->mRel);
+				call_user_func_array(array($this->mRelList, 'add'), explode(' ', $this->mRel));
 			}
 		}
 
