@@ -67,8 +67,11 @@ class URLParser {
                                 '%2e.' => '..',
                                 '%2e%2e' => '..');
 
-    public function __construct($aInput, $aBase = null, $aEncoding = null) {
-        $url = self::basicURLParser($aInput, $aBaseUrl, $aEncoding);
+    public function __construct() {
+    }
+
+    public static function URLParser($aInput, URL $aBase = null, $aEncoding = null) {
+        $url = self::basicURLParser($aInput, $aBase, $aEncoding);
 
         if ($url === false) {
             return false;
