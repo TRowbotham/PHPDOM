@@ -12,7 +12,6 @@ class URL implements SplObserver {
     const FLAG_AT = 2;
     const FLAG_RELATIVE = 4;
 
-    public $mBase;
     public $mFlags;
     public $mFragment;
     public $mHost;
@@ -27,7 +26,6 @@ class URL implements SplObserver {
 
 	public function __construct() {
         $this->initURLUtils();
-        $this->mBase = null;
         $this->mFlags = 0;
         $this->mFragment = null;
         $this->mHost = null;
@@ -53,7 +51,6 @@ class URL implements SplObserver {
                 }
 
                 $parsedBase->mUrl = $parsedBase;
-                $this->mBase = $parsedBase;
             }
         }
 
@@ -98,7 +95,7 @@ class URL implements SplObserver {
         $port = in_array($_SERVER['SERVER_PORT'], array(80, 443)) ? '' : ':' . $_SERVER['SERVER_PORT'];
         $url = ($ssl ? 'https' : 'http') . '://' . $_SERVER['SERVER_NAME'] . $port . $_SERVER['REQUEST_URI'];
 
-        return $this->mBase ? $this->mBase : URLParser::basicURLParser($url);
+        return URLParser::basicURLParser($url);
     }
 
     private function updateURL($aValue) {

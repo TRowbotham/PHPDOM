@@ -96,7 +96,6 @@ class URLParser {
             $input = $aInput;
         } else {
             $url = new URL();
-            $url->mBase = $aBaseUrl;
             $input = trim($aInput);
         }
 
