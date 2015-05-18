@@ -4,14 +4,16 @@
 
 require_once 'Exceptions.class.php';
 
-class DOMTokenList implements ArrayAccess, SplSubject {
+class DOMTokenList implements ArrayAccess, Iterator, SplSubject {
 	private $mLength;
 	private $mObservers;
+	private $mPosition;
 	private $mTokens;
 
 	public function __construct() {
 		$this->mLength = 0;
 		$this->mObservers = new SplObjectStorage();
+		$this->mPosition = 0;
 		$this->mTokens = [];
 	}
 
@@ -72,6 +74,14 @@ class DOMTokenList implements ArrayAccess, SplSubject {
 	}
 
 	/**
+	 * Returns the iterator's current element.
+	 * @return string|null
+	 */
+	public function current() {
+		return $this->item($this->mPosition);
+	}
+
+	/**
 	 * Remove an observer from the list of observers so that it no longer
 	 * receives notifications from this object.
 	 * @param  SplObserver $aObserver The observer object to be removed.
@@ -88,6 +98,21 @@ class DOMTokenList implements ArrayAccess, SplSubject {
 	 */
 	public function item($aIndex) {
 		return isset($this->mTokens[$aIndex]) ? $this->mTokens[$aIndex] : null;
+	}
+
+	/**
+	 * Returns the iterator's current pointer.
+	 * @return int
+	 */
+	public function key() {
+		return $this->mPosition;
+	}
+
+	/**
+	 * Advances the iterator's pointer by 1.
+	 */
+	public function next() {
+		$this->mPosition++;
 	}
 
 	/**
@@ -142,6 +167,13 @@ class DOMTokenList implements ArrayAccess, SplSubject {
 	}
 
 	/**
+	 * Rewinds the iterator pointer to the beginning.
+	 */
+	public function rewind() {
+		$this->mPosition = 0;
+	}
+
+	/**
 	 * Adds or removes a token from the list based on whether or not it is
 	 * presently in the list.  A SyntaxError will be thrown if one of the tokens
 	 * is an empty string and a InvalidCharacterError will be thrown if one of
@@ -185,6 +217,14 @@ class DOMTokenList implements ArrayAccess, SplSubject {
 	 */
 	public function __toString() {
 		return implode(' ', $this->mTokens);
+	}
+
+	/**
+	 * Checks if the iterator's current pointer points to a valid position.
+	 * @return bool
+	 */
+	public function valid() {
+		return isset($this->mTokens[$this->mPosition]);
 	}
 
 	/**
