@@ -149,7 +149,7 @@ class URLParser {
                     } elseif (!$aState) {
                         $buffer = '';
                         $state = self::STATE_NO_SCHEME;
-                        $pointer = 0;
+                        $pointer = -1;
                     } elseif ($c === false) {
                         break;
                     } else {
