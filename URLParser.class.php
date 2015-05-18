@@ -170,7 +170,7 @@ class URLParser {
                         if ($c !== false && !preg_match(self::REGEX_URL_CODE_POINTS, $c) &&
                             $c != '%') {
                             // parse error
-                        } elseif ($c == '%' && preg_match(self::REGEX_ASCII_HEX_DIGITS, substr($input, $i + 1))) {
+                        } elseif ($c == '%' && preg_match(self::REGEX_ASCII_HEX_DIGITS, substr($input, $pointer + 1))) {
                             // parse error
                         } elseif ($c !== false && !preg_match(self::REGEX_ASCII_WHITESPACE, $c)) {
                             $url->mSchemeData .= self::utf8PercentEncode($c);
@@ -247,10 +247,10 @@ class URLParser {
                             break;
 
                         default:
-                            $remaining = substr($input, $i + 1);
+                            $remaining = substr($input, $pointer + 1);
 
                             if ($url->mScheme != 'file' || !preg_match(self::REGEX_ASCII_ALPHA, $c) ||
-                                !preg_match('/^[:|]/', $remaining) || preg_match('/^[\/\\?#]/', substr($remaining, $i + 1))) {
+                                !preg_match('/^[:|]/', $remaining) || preg_match('/^[\/\\?#]/', substr($remaining, $pointer + 1))) {
                                 $url->mHost = $base->mHost;
                                 $url->mPort = $base->mPort;
                                 $url->mPath = $base->mPath;
@@ -570,7 +570,7 @@ class URLParser {
                     } else {
                         if (!preg_match(self::REGEX_URL_CODE_POINTS, $c) && $c != '%') {
                             // parse error
-                        } elseif ($c == '%' && !preg_match(self::REGEX_ASCII_HEX_DIGITS, substr($input, $i + 1))) {
+                        } elseif ($c == '%' && !preg_match(self::REGEX_ASCII_HEX_DIGITS, substr($input, $pointer + 1))) {
                             // parse error
                         }
 
@@ -589,7 +589,7 @@ class URLParser {
                             // parse error
                         }
 
-                        if ($c == '%' && preg_match(self::REGEX_ASCII_HEX_DIGITS, substr($input, $i + 1))) {
+                        if ($c == '%' && preg_match(self::REGEX_ASCII_HEX_DIGITS, substr($input, $pointer + 1))) {
                             // parse error
                         }
 
