@@ -267,7 +267,7 @@ class URLParser {
                     break;
 
                 case self::STATE_RELATIVE_SLASH:
-                    if ($c == '/' || $c = '\\') {
+                    if ($c == '/' || $c == '\\') {
                         if ($c == '\\') {
                             // parse error
                         }
