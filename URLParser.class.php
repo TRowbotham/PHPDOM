@@ -178,7 +178,7 @@ class URLParser {
                     break;
 
                 case self::STATE_NO_SCHEME:
-                    if (!$base || $base->mFlags & ~URL::FLAG_RELATIVE) {
+                    if (!$base || !($base->mFlags & URL::FLAG_RELATIVE)) {
                         // parse error
                         return false;
                     } else {
@@ -189,7 +189,7 @@ class URLParser {
                     break;
 
                 case self::STATE_RELATIVE_OR_AUTHORITY:
-                    if ($c == '/' && preg_match('/^\//', substr($input, $i + 1))) {
+                    if ($c == '/' && preg_match('/^\//', substr($input, $pointer + 1))) {
                         $state = self::STATE_AUTHORITY_IGNORE_SLASHES;
                         $pointer++;
                     } else {
@@ -396,7 +396,7 @@ class URLParser {
 
                 case self::STATE_HOST:
                 case self::STATE_HOSTNAME:
-                    if ($c == ':' && $url->mFlags & ~URL::FLAG_ARRAY) {
+                    if ($c == ':' && !($url->mFlags & URL::FLAG_ARRAY)) {
                         $host = self::parseHost($buffer);
 
                         if ($host === false) {
@@ -543,7 +543,7 @@ class URLParser {
 
                 case self::STATE_QUERY:
                     if ($c === false || (!$aState && $c == '#')) {
-                        if ($url->mFlags & ~URL::FLAG_RELATIVE || $url->mScheme == 'ws' || $url->mScheme == 'wss') {
+                        if (!($url->mFlags & URL::FLAG_RELATIVE) || $url->mScheme == 'ws' || $url->mScheme == 'wss') {
                             $aEncoding = 'utf-8';
                         }
 
@@ -989,7 +989,7 @@ class URLParser {
 
                 $output .= $path;
             }
-        } elseif ($aUrl->mFlags & ~URL::FLAG_RELATIVE) {
+        } elseif (!($aUrl->mFlags & URL::FLAG_RELATIVE)) {
             $output .= $aUrl->mSchemeData;
         }
 
