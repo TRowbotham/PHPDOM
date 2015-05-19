@@ -39,13 +39,7 @@ class DOMTokenList implements ArrayAccess, Iterator, SplSubject {
 		$tokens = func_get_args();
 		array_walk($tokens, array($this, 'checkToken'));
 
-		foreach ($tokens as $token) {
-			if (!$this->contains($token)) {
-				$this->mTokens[] = $token;
-			}
-		}
-
-		$this->notify();
+		$this->_add($tokens);
 	}
 
 	/**
@@ -68,7 +62,7 @@ class DOMTokenList implements ArrayAccess, Iterator, SplSubject {
 	public function contains($aToken) {
 		$this->checkToken($aToken);
 
-		return in_array($aToken, $this->mTokens);
+		return $this->_contains($aToken);
 	}
 
 	/**
@@ -163,13 +157,7 @@ class DOMTokenList implements ArrayAccess, Iterator, SplSubject {
 
 		$tokens = func_get_args();
 		array_walk($tokens, array($this, 'checkToken'));
-
-		foreach ($tokens as $token) {
-			$key = array_search($token, $this->mTokens);
-			array_splice($this->mTokens, $key, 1);
-		}
-
-		$this->notify();
+		$this->_remove($tokens);
 	}
 
 	/**
@@ -197,7 +185,7 @@ class DOMTokenList implements ArrayAccess, Iterator, SplSubject {
 
 		if ($contains) {
 			if (!$aForce) {
-				$this->remove($aToken);
+				$this->_remove(array($aToken));
 				$rv = false;
 			} else {
 				$rv = true;
@@ -206,12 +194,10 @@ class DOMTokenList implements ArrayAccess, Iterator, SplSubject {
 			if ($aForce === false) {
 				$rv = false;
 			} else {
-				$this->add($aToken);
+				$this->_add(array($aToken));
 				$rv = true;
 			}
 		}
-
-		$this->notify();
 
 		return $rv;
 	}
@@ -242,6 +228,46 @@ class DOMTokenList implements ArrayAccess, Iterator, SplSubject {
 	 */
 	protected function serializeOrderedSet($aSet) {
         return implode(chr(0x20), $aSet);
+    }
+
+    /**
+	 * Adds all tokens in the array to the token list except for those that
+	 * already exist in the list.
+	 * @param array $aTokens One or more tokens to be added to the token
+	 *                       list.
+	 */
+    private function _add($aTokens) {
+    	foreach ($aTokens as $token) {
+			if (!$this->_contains($token)) {
+				$this->mTokens[] = $token;
+			}
+		}
+
+		$this->notify();
+    }
+
+    /**
+	 * Returns true if the token is present, and false otherwise.
+	 * @param  string $aToken A token to check against the token list
+	 * @return bool           Returns true if the token is present, and false
+	 *                        otherwise.
+	 */
+    private function _contains($aToken) {
+		return in_array($aToken, $this->mTokens);
+    }
+
+    /**
+	 * Removes all tokens that are present in $aTokens if they are also present
+	 * in the token list.
+	 * @param  array $aTokens An array of tokens to be removed.
+	 */
+    private function _remove($aTokens) {
+    	foreach ($aTokens as $token) {
+			$key = array_search($token, $this->mTokens);
+			array_splice($this->mTokens, $key, 1);
+		}
+
+		$this->notify();
     }
 
 	/**
