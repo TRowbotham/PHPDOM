@@ -1,5 +1,6 @@
 <?php
 require_once 'HTMLElement/HTMLElement.class.php';
+require_once 'DOMSettableTokenList.class.php';
 require_once 'URLUtils.class.php';
 
 class HTMLAnchorElement extends HTMLElement {
@@ -22,7 +23,7 @@ class HTMLAnchorElement extends HTMLElement {
 		$this->mHrefLang = '';
 		$this->mInvalidateRelList = false;
 		$this->mNodeName = 'A';
-		$this->mPing;
+		$this->mPing = new DOMSettableTokenList();
 		$this->mRel = '';
 		$this->mRelList = null;
 		$this->mTagName = 'A';
@@ -37,7 +38,7 @@ class HTMLAnchorElement extends HTMLElement {
 			case 'hrefLang':
 				return $this->mHrefLang;
 			case 'ping':
-				return $this->mPing;
+				return $this->mPing->value;
 			case 'rel':
 				return $this->mRel;
 			case 'relList':
@@ -72,7 +73,7 @@ class HTMLAnchorElement extends HTMLElement {
 				break;
 
 			case 'ping':
-				$this->mPing = $aValue;
+				$this->mPing->value = $aValue;
 				$this->_updateAttributeOnPropertyChange($aName, $aValue);
 
 				break;
@@ -109,9 +110,11 @@ class HTMLAnchorElement extends HTMLElement {
 		} elseif ($aObject instanceof DOMTokenList && $aObject == $this->mRelList) {
 			$this->mRel = $this->getRelList()->toString();
 			$this->_updateAttributeOnPropertyChange('rel', $this->mRel);
+		} elseif ($aObject instanceof DOMSettableTokenList && $aObject === $this->mPing) {
+			$this->_updateAttributeOnPropertyChange('ping', $this->mPing->value);
+		} else {
+			parent::update($aObject);
 		}
-
-		parent::update($aObject);
 	}
 
 	public function __toString() {
