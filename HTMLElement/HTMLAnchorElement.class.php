@@ -107,7 +107,7 @@ class HTMLAnchorElement extends HTMLElement {
 			$this->mUrl->mQuery = $aObject->toString();
 			$this->preupdate();
 		} elseif ($aObject instanceof DOMTokenList && $aObject == $this->mRelList) {
-			$this->mRel = $this->getRelList()->__toString();
+			$this->mRel = $this->getRelList()->toString();
 			$this->_updateAttributeOnPropertyChange('rel', $this->mRel);
 		}
 

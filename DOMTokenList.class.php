@@ -5,13 +5,12 @@
 require_once 'Exceptions.class.php';
 
 class DOMTokenList implements ArrayAccess, Iterator, SplSubject {
-	private $mLength;
+	protected $mTokens;
+
 	private $mObservers;
 	private $mPosition;
-	private $mTokens;
 
 	public function __construct() {
-		$this->mLength = 0;
 		$this->mObservers = new SplObjectStorage();
 		$this->mPosition = 0;
 		$this->mTokens = [];
@@ -20,7 +19,7 @@ class DOMTokenList implements ArrayAccess, Iterator, SplSubject {
 	public function __get($aName) {
 		switch ($aName) {
 			case 'length':
-				return $this->mLength;
+				return count($this->mTokens);
 		}
 	}
 
@@ -46,7 +45,6 @@ class DOMTokenList implements ArrayAccess, Iterator, SplSubject {
 			}
 		}
 
-		$this->mLength = count($this->mTokens);
 		$this->notify();
 	}
 
@@ -116,6 +114,15 @@ class DOMTokenList implements ArrayAccess, Iterator, SplSubject {
 	}
 
 	/**
+	 * Notifies all observers when a change occurs.
+	 */
+	public function notify() {
+		foreach($this->mObservers as $observer) {
+			$observer->update($this);
+		}
+	}
+
+	/**
 	 * Used with isset() to check if there is a token at the specified index
 	 * location.
 	 * @param  int  $aOffset An integer index.
@@ -162,7 +169,6 @@ class DOMTokenList implements ArrayAccess, Iterator, SplSubject {
 			array_splice($this->mTokens, $key, 1);
 		}
 
-		$this->mLength = count($this->mTokens);
 		$this->notify();
 	}
 
@@ -215,8 +221,8 @@ class DOMTokenList implements ArrayAccess, Iterator, SplSubject {
 	 * space.
 	 * @return string Stringified token list.
 	 */
-	public function __toString() {
-		return implode(' ', $this->mTokens);
+	public function toString() {
+		return $this->serializeOrderedSet($this->mTokens);
 	}
 
 	/**
@@ -226,6 +232,17 @@ class DOMTokenList implements ArrayAccess, Iterator, SplSubject {
 	public function valid() {
 		return isset($this->mTokens[$this->mPosition]);
 	}
+
+	/**
+	 * Takes an array and concatenates the values of the array into a string
+	 * with each token separated by U+0020.  See the following link for more info:
+	 * https://dom.spec.whatwg.org/#concept-ordered-set-serializer
+	 * @param  array $aSet An ordered set of tokens.
+	 * @return string      Concatenated string of tokens.
+	 */
+	protected function serializeOrderedSet($aSet) {
+        return implode(chr(0x20), $aSet);
+    }
 
 	/**
 	 * Takes a single token and checks to make sure it is not an empty string
@@ -239,15 +256,6 @@ class DOMTokenList implements ArrayAccess, Iterator, SplSubject {
 
 		if (preg_match('/\s/', $aToken)) {
 			throw new InvalidCharacterError;
-		}
-	}
-
-	/**
-	 * Notifies all observers when a change occurs.
-	 */
-	public function notify() {
-		foreach($this->mObservers as $observer) {
-			$observer->update($this);
 		}
 	}
 }
