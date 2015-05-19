@@ -373,7 +373,7 @@ class URLParser {
                     if ($c === false || preg_match('/[\/\\?#]/', $c)) {
                         $pointer--;
 
-                        if (preg_match(self::REGEX_ASCII_ALPHA, $buffer[0]) && preg_match('/[:|]/', $buffer[1])) {
+                        if (strlen($buffer) == 2 && preg_match(self::REGEX_ASCII_ALPHA, $buffer[0]) && preg_match('/[:|]/', $buffer[1])) {
                             $state = self::STATE_RELATIVE_PATH;
                         } elseif (!$buffer) {
                             $state = self::STATE_RELATIVE_PATH_START;
