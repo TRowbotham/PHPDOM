@@ -220,6 +220,31 @@ class DOMTokenList implements ArrayAccess, Iterator, SplSubject {
     }
 
     /**
+     * Takes an input string and then parses the string for tokens while skipping
+     * over whitespace. See the following link for more info:
+     * https://dom.spec.whatwg.org/#concept-ordered-set-parser
+     * @param  string $aInput String of tokens.
+     * @return array          Array containing the parsed tokens.
+     */
+    public static function _parseOrderedSet($aInput) {
+        $position = 0;
+        $tokens = array();
+        self::collectCodePointSequence($aInput, $position, true);
+
+        while ($position < strlen($aInput)) {
+            $token = self::collectCodePointSequence($aInput, $position, false);
+
+            if ($token && !in_array($token, $tokens)) {
+                $tokens[] = $token;
+            }
+
+            self::collectCodePointSequence($aInput, $position, true);
+        }
+
+        return $tokens;
+    }
+
+    /**
      * Takes an array and concatenates the values of the array into a string
      * with each token separated by U+0020.  See the following link for more info:
      * https://dom.spec.whatwg.org/#concept-ordered-set-serializer
@@ -283,5 +308,31 @@ class DOMTokenList implements ArrayAccess, Iterator, SplSubject {
         if (preg_match('/\s/', $aToken)) {
             throw new InvalidCharacterError;
         }
+    }
+
+    /**
+     * Parses a string for a token and returns that token.  If the $aSkipWhitespace argument
+     * is set, then whitespace is collected, but the caller ignores returned whitespace. See the
+     * following link for more info:
+     * https://dom.spec.whatwg.org/#collect-a-code-point-sequence
+     * @param  string   $aInput             String of tokens to be parsed.
+     * @param  int      &$aPosition         Current position in the token string.
+     * @param  bool     $aSkipWhitespace    Whether to skip whitespace characters or not.
+     * @return string                       Concatenated list of characters.
+     */
+    private static function collectCodePointSequence($aInput, &$aPosition, $aSkipWhitespace) {
+        $result = '';
+
+        while ($aPosition < strlen($aInput)) {
+            if (($aSkipWhitespace && !preg_match('/\s/', $aInput[$aPosition])) ||
+                !$aSkipWhitespace && preg_match('/\s/', $aInput[$aPosition])) {
+                break;
+            }
+
+            $result .= $aInput[$aPosition];
+            $aPosition++;
+        }
+
+        return $result;
     }
 }
