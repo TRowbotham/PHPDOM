@@ -47,6 +47,8 @@ class Document extends Node {
 
 	public function __get($aName) {
 		switch ($aName) {
+			case 'baseURI':
+				return $this->mURL->href;
 			case 'characterSet':
 				return $this->mCharacterSet;
 			case 'childElementCount':
