@@ -24,6 +24,7 @@ abstract class Element extends Node implements SplObserver {
 		parent::__construct();
 
 		$this->mAttributes = new NamedNodeMap();
+		$this->mClassList = null;
 		$this->mClassName = '';
 		$this->mEndTagOmitted = false;
 		$this->mTagName = '';
@@ -47,7 +48,7 @@ abstract class Element extends Node implements SplObserver {
 					$this->mClassList->attach($this);
 
 					if (!empty($this->mClassName)) {
-						$this->mClassList->add($this->mClassName);
+						call_user_func_array(array($this->mClassList, 'add'), DOMTokenList::_parseOrderedSet($this->mClassName));
 					}
 				}
 
@@ -288,7 +289,7 @@ abstract class Element extends Node implements SplObserver {
 
 	public function update(SplSubject $aObject) {
 		if ($aObject instanceof DOMTokenList && $aObject == $this->mClassList) {
-			$this->mClassName = $aObject->__toString();
+			$this->mClassName = $aObject->toString();
 			$this->_updateAttributeOnPropertyChange('class', $this->mClassName);
 		}
 	}
