@@ -321,10 +321,10 @@ class Document extends Node {
 			$html .= htmlspecialchars('<' . $name);
 			if ($node instanceof Element) {
 				foreach($node->attributes as $attribute) {
-					$html .= ' ' . $attribute->nodeName;
+					$html .= ' ' . $attribute->name;
 
-					if (!Attr::_isBool($attribute->nodeName)) {
-						$html .= '="' . $attribute->nodeValue . '"';
+					if (!Attr::_isBool($attribute->name)) {
+						$html .= '="' . $attribute->value . '"';
 					}
 				}
 			}
