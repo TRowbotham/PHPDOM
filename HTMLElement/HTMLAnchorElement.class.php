@@ -23,7 +23,7 @@ class HTMLAnchorElement extends HTMLElement {
 		$this->mHrefLang = '';
 		$this->mInvalidateRelList = false;
 		$this->mNodeName = 'A';
-		$this->mPing = new DOMSettableTokenList();
+		$this->mPing = new DOMSettableTokenList($this, 'ping');
 		$this->mRel = '';
 		$this->mRelList = null;
 		$this->mTagName = 'A';
@@ -107,11 +107,6 @@ class HTMLAnchorElement extends HTMLElement {
 		if ($aObject instanceof URLSearchParams) {
 			$this->mUrl->mQuery = $aObject->toString();
 			$this->preupdate();
-		} elseif ($aObject instanceof DOMTokenList && $aObject == $this->mRelList) {
-			$this->mRel = $this->getRelList()->toString();
-			$this->_updateAttributeOnPropertyChange('rel', $this->mRel);
-		} elseif ($aObject instanceof DOMSettableTokenList && $aObject === $this->mPing) {
-			$this->_updateAttributeOnPropertyChange('ping', $this->mPing->value);
 		} else {
 			parent::update($aObject);
 		}
@@ -128,8 +123,7 @@ class HTMLAnchorElement extends HTMLElement {
 	private function getRelList() {
 		if (!$this->mRelList || $this->mInvalidateRelList) {
 			$this->mInvalidateRelList = false;
-			$this->mRelList = new DOMTokenList();
-			$this->mRelList->attach($this);
+			$this->mRelList = new DOMTokenList($this, 'rel');
 
 			if (!empty($this->mRel)) {
 				call_user_func_array(array($this->mRelList, 'add'), explode(' ', $this->mRel));

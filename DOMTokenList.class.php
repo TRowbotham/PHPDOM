@@ -4,14 +4,16 @@
 
 require_once 'Exceptions.class.php';
 
-class DOMTokenList implements ArrayAccess, Iterator, SplSubject {
+class DOMTokenList implements ArrayAccess, Iterator {
+    protected $mAttrLocalName;
     protected $mTokens;
 
-    private $mObservers;
+    private $mElement;
     private $mPosition;
 
-    public function __construct() {
-        $this->mObservers = new SplObjectStorage();
+    public function __construct(Element $aElement, $aAttrLocalName) {
+        $this->mAttrLocalName = $aAttrLocalName;
+        $this->mElement = $aElement;
         $this->mPosition = 0;
         $this->mTokens = [];
     }
@@ -40,14 +42,7 @@ class DOMTokenList implements ArrayAccess, Iterator, SplSubject {
         array_walk($tokens, array($this, 'checkToken'));
 
         $this->_add($tokens);
-    }
-
-    /**
-     * Attach an observer to this object to be notified when changes occur.
-     * @param  SplObserver $aObserver The object to be notified of changes.
-     */
-    public function attach(SplObserver $aObserver) {
-        $this->mObservers->attach($aObserver);
+        $this->update();
     }
 
     /**
@@ -74,15 +69,6 @@ class DOMTokenList implements ArrayAccess, Iterator, SplSubject {
     }
 
     /**
-     * Remove an observer from the list of observers so that it no longer
-     * receives notifications from this object.
-     * @param  SplObserver $aObserver The observer object to be removed.
-     */
-    public function detach(SplObserver $aObserver) {
-        $this->mObservers->detach($aObserver);
-    }
-
-    /**
      * Returns the token at the specified index.
      * @param  int    $aIndex An integer index.
      * @return string         The token at the specified index or null if the
@@ -105,15 +91,6 @@ class DOMTokenList implements ArrayAccess, Iterator, SplSubject {
      */
     public function next() {
         $this->mPosition++;
-    }
-
-    /**
-     * Notifies all observers when a change occurs.
-     */
-    public function notify() {
-        foreach($this->mObservers as $observer) {
-            $observer->update($this);
-        }
     }
 
     /**
@@ -158,6 +135,7 @@ class DOMTokenList implements ArrayAccess, Iterator, SplSubject {
         $tokens = func_get_args();
         array_walk($tokens, array($this, 'checkToken'));
         $this->_remove($tokens);
+        $this->update();
     }
 
     /**
@@ -198,6 +176,8 @@ class DOMTokenList implements ArrayAccess, Iterator, SplSubject {
                 $rv = true;
             }
         }
+
+        $this->update();
 
         return $rv;
     }
@@ -267,8 +247,6 @@ class DOMTokenList implements ArrayAccess, Iterator, SplSubject {
                 $this->mTokens[] = $token;
             }
         }
-
-        $this->notify();
     }
 
     /**
@@ -291,8 +269,6 @@ class DOMTokenList implements ArrayAccess, Iterator, SplSubject {
             $key = array_search($token, $this->mTokens);
             array_splice($this->mTokens, $key, 1);
         }
-
-        $this->notify();
     }
 
     /**
@@ -308,6 +284,13 @@ class DOMTokenList implements ArrayAccess, Iterator, SplSubject {
         if (preg_match('/\s/', $aToken)) {
             throw new InvalidCharacterError;
         }
+    }
+
+    /**
+     * Set an attribute value on the associated element using the provided attribute local name.
+     */
+    private function update() {
+        $this->mElement->setAttribute($this->mAttrLocalName, $this->toString());
     }
 
     /**

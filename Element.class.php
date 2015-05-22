@@ -44,8 +44,7 @@ abstract class Element extends Node implements SplObserver {
 
 			case 'classList':
 				if (!isset($this->mClassList) || $this->mReconstructClassList) {
-					$this->mClassList = new DOMTokenList();
-					$this->mClassList->attach($this);
+					$this->mClassList = new DOMTokenList($this, 'class');
 
 					if (!empty($this->mClassName)) {
 						call_user_func_array(array($this->mClassList, 'add'), DOMTokenList::_parseOrderedSet($this->mClassName));
@@ -288,10 +287,7 @@ abstract class Element extends Node implements SplObserver {
 	}
 
 	public function update(SplSubject $aObject) {
-		if ($aObject instanceof DOMTokenList && $aObject == $this->mClassList) {
-			$this->mClassName = $aObject->toString();
-			$this->_updateAttributeOnPropertyChange('class', $this->mClassName);
-		}
+
 	}
 
 	public function _isEndTagOmitted() {
