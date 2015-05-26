@@ -47,7 +47,7 @@ class URL implements SplObserver {
                 $parsedBase = URLParser::basicURLParser($args[1]);
 
                 if ($parsedBase === false) {
-                    throw new TypeError('Error parsing URL.');
+                    throw new TypeError($args[1] . ' is not a valid URL.');
                 }
 
                 $parsedBase->mUrl = $parsedBase;
@@ -58,7 +58,7 @@ class URL implements SplObserver {
             $parsedURL = URLParser::basicURLParser($args[0], $parsedBase, null, $this);
 
             if ($parsedURL === false) {
-                throw new TypeError('Error parsing URL.');
+                throw new TypeError($args[0] . ' is not a valid URL.');
             }
 
             $this->setURLInput('', $parsedURL);
