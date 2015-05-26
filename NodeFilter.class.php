@@ -38,6 +38,6 @@ abstract class NodeFilter {
             return NodeFilter::FILTER_ACCEPT;
         }
 
-        return call_user_func($aNodeTraverser->filter);
+        return call_user_func($aNodeTraverser->filter, $aNode);
     }
 }
