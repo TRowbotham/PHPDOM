@@ -8,23 +8,12 @@ trait ChildNode {
 	 * @param  Node|DOMString ...$aNodes A set of Node or DOMString objects to be inserted.
 	 */
 	public function after() {
-		if (!$this->parentNode || !func_num_args()) {
+		if (!$this->mParentNode || !func_num_args()) {
 			return;
 		}
 
-		$df = new DocumentFragment();
-
-		foreach (func_get_args() as $node) {
-			if ($node instanceof DocumentFragment) {
-				foreach ($node->childNodes as $child) {
-					$df->appendChild($child);
-				}
-			} elseif ($node instanceof Node) {
-				$df->appendChild($node);
-			}
-		}
-
-		$this->insertBefore($df, $this->mNextSibling);
+		$node = $this->mutationMethodMacro(func_get_args());
+		$this->mParentNode->preinsertNodeBeforeChild($node, $this->mNextSibling);
 	}
 
 	/**
@@ -32,34 +21,23 @@ trait ChildNode {
 	 * @param  Node|DOMString ...$aNodes A set of Node or DOMString objects to be inserted.
 	 */
 	public function before() {
-		if (!$this->parentNode || !func_num_args()) {
+		if (!$this->mParentNode || !func_num_args()) {
 			return;
 		}
 
-		$df = new DocumentFragment();
-
-		foreach (func_get_args() as $node) {
-			if ($node instanceof DocumentFragment) {
-				foreach ($node->childNodes as $child) {
-					$df->appendChild($child);
-				}
-			} elseif ($node instanceof Node) {
-				$df->appendChild($node);
-			}
-		}
-
-		$this->insertBefore($df, $this);
+		$node = $this->mutationMethodMacro(func_get_args());
+		$this->mParentNode->preinsertNodeBeforeChild($node, $this);
 	}
 
 	/**
 	 * Removes this ChildNode from its ParentNode.
 	 */
 	public function remove() {
-		if (!$this->parentNode) {
+		if (!$this->mParentNode) {
 			return;
 		}
 
-		$this->parentNode->removeChild($this);
+		$this->mParentNode->_removeChild($this);
 	}
 
 	/**
@@ -71,7 +49,32 @@ trait ChildNode {
 			return;
 		}
 
-		$this->after(func_get_args());
-		$this->remove();
+		$node = $this->mutationMethodMacro(func_get_args());
+		$this->mParentNode->replaceChild($node, $this);
+	}
+
+	private function mutationMethodMacro($aNodes) {
+		$node = null;
+		$nodes = $aNodes;
+
+		// Turn all strings into Text nodes.
+		array_walk($nodes, function(&$aArg) {
+			if (is_string($aArg)) {
+				$aArg = new Text($aArg);
+			}
+		});
+
+		// If we were given mutiple nodes, throw them all into a DocumentFragment
+		if (count($nodes) > 1) {
+			$node = new DocumentFragment();
+
+			foreach ($nodes as $arg) {
+				$node->appendChild($arg);
+			}
+		} else {
+			$node = $nodes[0];
+		}
+
+		return $node;
 	}
 }

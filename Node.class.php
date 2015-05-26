@@ -593,7 +593,7 @@ abstract class Node implements EventTarget {
         }
     }
 
-    private function preinsertionValidity($aNode, $aChild) {
+    protected function preinsertionValidity($aNode, $aChild) {
         if (!($this instanceof Document) &&
             !($this instanceof DocumentFragment) &&
             !($this instanceof Element)) {
@@ -722,7 +722,7 @@ abstract class Node implements EventTarget {
         }
     }
 
-    private function preinsertNodeBeforeChild($aNode, $aChild) {
+    protected function preinsertNodeBeforeChild($aNode, $aChild) {
         $this->preinsertionValidity($aNode, $aChild);
         $referenceChild = $aChild;
 
@@ -749,7 +749,7 @@ abstract class Node implements EventTarget {
         return $aChild;
     }
 
-    private function _removeChild($aNode, $aSuppressObservers = null) {
+    protected function _removeChild($aNode, $aSuppressObservers = null) {
         $index = array_search($aNode, $this->mChildNodes);
 
         array_splice($this->mChildNodes, $index, 1);
