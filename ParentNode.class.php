@@ -7,6 +7,16 @@ trait ParentNode {
 	private $mChildElementCount = 0;
 	private $mInvalidateChildren = true;
 
+	/**
+	 * Inserts nodes after the lastChild of this node, while replacing strings in nodes
+	 * with equvilant Text nodes.
+	 * @param Node|DOMString ...$aNodes One or more Nodes or strings to be appended to this Node.
+	 */
+	public function append() {
+		$node = $this->mutationMethodMacro(func_get_args());
+		$this->preinsertNodeBeforeChild($node, null);
+	}
+
 	private function filterChildElements($aNode) {
 		return $aNode->nodeType == Node::ELEMENT_NODE;
 	}
