@@ -9,7 +9,7 @@ require_once 'NonDocumentTypeChildNode.class.php';
 abstract class CharacterData extends Node {
 	use ChildNode, NonDocumentTypeChildNode;
 
-	private $mData;
+	protected $mData;
 	private $mLength;
 
 	public function __construct() {
