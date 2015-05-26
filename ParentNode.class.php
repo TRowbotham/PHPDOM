@@ -8,13 +8,23 @@ trait ParentNode {
 	private $mInvalidateChildren = true;
 
 	/**
-	 * Inserts nodes after the lastChild of this node, while replacing strings in nodes
+	 * Inserts nodes after the last child of this node, while replacing strings in nodes
 	 * with equvilant Text nodes.
 	 * @param Node|DOMString ...$aNodes One or more Nodes or strings to be appended to this Node.
 	 */
 	public function append() {
 		$node = $this->mutationMethodMacro(func_get_args());
 		$this->preinsertNodeBeforeChild($node, null);
+	}
+
+	/**
+	 * Inserts nodes before the first child of this node, while replacing strings in nodes with
+	 * equivalent Text nodes.
+	 * @param Node|DOMString ...$aNodes One or more Nodes or strings to be prepended to this node;
+	 */
+	public function prepend() {
+		$node = $this->mutationMethodMacro(func_get_args());
+		$this->preinsertNodeBeforeChild($node, $this->mFirstChild);
 	}
 
 	private function filterChildElements($aNode) {
