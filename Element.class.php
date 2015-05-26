@@ -16,6 +16,7 @@ abstract class Element extends Node implements SplObserver {
 	protected $mClassList; // ClassList
 	protected $mClassName;
 	protected $mEndTagOmitted;
+	protected $mId;
 	protected $mTagName;
 
 	private $mReconstructClassList;
@@ -27,6 +28,7 @@ abstract class Element extends Node implements SplObserver {
 		$this->mClassList = null;
 		$this->mClassName = '';
 		$this->mEndTagOmitted = false;
+		$this->mId = '';
 		$this->mTagName = '';
 		$this->addEventListener('attributechange', array($this, '_onAttributeChange'));
 	}
@@ -58,6 +60,9 @@ abstract class Element extends Node implements SplObserver {
 
 			case 'firstElementChild':
 				return $this->getFirstElementChild();
+
+			case 'id':
+				return $this->mId;
 
 			case 'innerHTML':
 				$rv = '';
@@ -91,6 +96,12 @@ abstract class Element extends Node implements SplObserver {
 				$this->mClassName = $aValue;
 				$this->mReconstructClassList = true;
 				$this->_updateAttributeOnPropertyChange('class', $aValue);
+
+				break;
+
+			case 'id':
+				$this->mId = $aValue;
+				$this->_updateAttributeOnPropertyChange('id', $aValue);
 
 				break;
 		}
@@ -299,6 +310,11 @@ abstract class Element extends Node implements SplObserver {
 			case 'class':
 				$this->mReconstructClassList = true;
 				$this->mClassName = $aEvent->detail['action'] == 'set' ? $aEvent->detail['attr']->value : '';
+
+				break;
+
+			case 'id':
+				$this->mId = $aEvent->detail['action'] == 'set' ? $aEvent->detail['attr']->value : '';
 		}
 	}
 
