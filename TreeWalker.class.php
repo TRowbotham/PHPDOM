@@ -12,7 +12,7 @@ final class TreeWalker {
 
     public function __construct(Node $aRoot, $aWhatToShow = NodeFilter::SHOW_ALL, callable $aFilter = null) {
         $this->mCurrentNode = $aRoot;
-        $this->mFilter = null;
+        $this->mFilter = $aFilter;
         $this->mRoot = $aRoot;
         $this->mWhatToShow = $aWhatToShow;
     }
