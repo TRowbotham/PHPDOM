@@ -775,4 +775,29 @@ abstract class Node implements EventTarget {
         $aNode->mParentElement = null;
         $aNode->mParentNode = null;
     }
+
+    protected function mutationMethodMacro($aNodes) {
+        $node = null;
+        $nodes = $aNodes;
+
+        // Turn all strings into Text nodes.
+        array_walk($nodes, function(&$aArg) {
+            if (is_string($aArg)) {
+                $aArg = new Text($aArg);
+            }
+        });
+
+        // If we were given mutiple nodes, throw them all into a DocumentFragment
+        if (count($nodes) > 1) {
+            $node = new DocumentFragment();
+
+            foreach ($nodes as $arg) {
+                $node->appendChild($arg);
+            }
+        } else {
+            $node = $nodes[0];
+        }
+
+        return $node;
+    }
 }

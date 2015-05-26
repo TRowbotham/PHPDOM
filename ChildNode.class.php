@@ -52,29 +52,4 @@ trait ChildNode {
 		$node = $this->mutationMethodMacro(func_get_args());
 		$this->mParentNode->replaceChild($node, $this);
 	}
-
-	private function mutationMethodMacro($aNodes) {
-		$node = null;
-		$nodes = $aNodes;
-
-		// Turn all strings into Text nodes.
-		array_walk($nodes, function(&$aArg) {
-			if (is_string($aArg)) {
-				$aArg = new Text($aArg);
-			}
-		});
-
-		// If we were given mutiple nodes, throw them all into a DocumentFragment
-		if (count($nodes) > 1) {
-			$node = new DocumentFragment();
-
-			foreach ($nodes as $arg) {
-				$node->appendChild($arg);
-			}
-		} else {
-			$node = $nodes[0];
-		}
-
-		return $node;
-	}
 }
