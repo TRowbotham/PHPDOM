@@ -13,6 +13,7 @@ require_once 'Text.class.php';
 require_once 'NonElementParentNode.class.php';
 require_once 'Comment.class.php';
 require_once 'URL.class.php';
+require_once 'NodeFilter.class.php';
 
 class Document extends Node {
 	use ParentNode, NonElementParentNode;
