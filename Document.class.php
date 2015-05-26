@@ -14,6 +14,7 @@ require_once 'NonElementParentNode.class.php';
 require_once 'Comment.class.php';
 require_once 'URL.class.php';
 require_once 'NodeFilter.class.php';
+require_once 'TreeWalker.class.php';
 
 class Document extends Node {
 	use ParentNode, NonElementParentNode;
@@ -293,6 +294,19 @@ class Document extends Node {
 		$node->mOwnerDocument = $this;
 
 		return $node;
+	}
+
+	/**
+	 * Returns a new TreeWalker object, which represents the nodes of a document subtree and a position within them.
+	 * @param  Node          	$aRoot       The root node of the DOM subtree being traversed.
+	 * @param  int        		$aWhatToShow Optional.  A bitmask of NodeFilter constants allowing the user
+	 *                                   		to filter for specific node types.
+	 * @param  callable|null 	$aFilter     A user defined function to determine whether or not to accept a node that has
+	 *                                     		passed the whatToShow check.
+	 * @return TreeWalker
+	 */
+	public function createTreeWalker(Node $aRoot, $aWhatToShow = NodeFilter::SHOW_ALL, callable $aFilter = null) {
+		return new TreeWalker($aRoot, $aWhatToShow, $aFilter);
 	}
 
 	public function importNode(Node $aNode, $aDeep = false) {
