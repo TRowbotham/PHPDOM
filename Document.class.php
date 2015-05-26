@@ -14,6 +14,7 @@ require_once 'NonElementParentNode.class.php';
 require_once 'Comment.class.php';
 require_once 'URL.class.php';
 require_once 'NodeFilter.class.php';
+require_once 'NodeIterator.class.php';
 require_once 'TreeWalker.class.php';
 
 class Document extends Node {
@@ -287,6 +288,20 @@ class Document extends Node {
 
 	public function createEvent($aEventType) {
 		return new Event($aEventType);
+	}
+
+	/**
+	 * Returns a new NodeIterator object, which represents an iterator over the members of a list of the nodes in a
+	 * subtree of the DOM.
+	 * @param  Node          	$aRoot       The root node of the iterator object.
+	 * @param  int 				$aWhatToShow Optional.  A bitmask of NodeFilter constants allowing the user
+	 *                              			to filter for specific node types.
+	 * @param  callable|null 	$aFilter     A user defined function to determine whether or not to accept a node that has
+	 *                                     		passed the whatToShow check.
+	 * @return NodeIterator
+	 */
+	public function createNodeIterator(Node $aRoot, $aWhatToShow = NodeFilter::SHOW_ALL, callable $aFilter = null) {
+		return new NodeIterator($aRoot, $aWhatToShow, $aFilter);
 	}
 
 	public function createTextNode($aData) {
