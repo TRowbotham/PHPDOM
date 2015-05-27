@@ -49,7 +49,7 @@ abstract class Node implements EventTarget {
         $this->mNodeName = '';
         $this->mNodeType = '';
         $this->mNodeValue = null;
-        $this->mOwnerDocument = null;
+        $this->mOwnerDocument = Document::_getDefaultDocument();
         $this->mParentElement = null;
         $this->mParentNode = null;
         $this->mPreviousSibling = null;

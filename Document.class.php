@@ -20,6 +20,8 @@ require_once 'TreeWalker.class.php';
 class Document extends Node {
 	use ParentNode, NonElementParentNode;
 
+	protected static $mDefaultDocument = null;
+
 	protected $mCharacterSet;
 	protected $mContentType;
 	protected $mDoctype; // DocumentType
@@ -33,6 +35,10 @@ class Document extends Node {
 	public function __construct() {
 		parent::__construct();
 
+		if (!static::$mDefaultDocument) {
+			static::$mDefaultDocument = $this;
+		}
+
 		$this->mContentType = '';
 		$this->mDoctype = new DocumentType('', '', '');
 		$this->mDocumentElement = null;
@@ -40,6 +46,7 @@ class Document extends Node {
 		$this->mImplementation = new iDOMImplementation();
 		$this->mNodeName = '#document';
 		$this->mNodeType = Node::DOCUMENT_NODE;
+		$this->mOwnerDocument = null; // Documents own themselves.
 
 		$ssl = isset($_SERVER['HTTPS']) && $_SERVER["HTTPS"] == 'on';
 		$port = in_array($_SERVER['SERVER_PORT'], array(80, 443)) ? '' : ':' . $_SERVER['SERVER_PORT'];
@@ -335,6 +342,20 @@ class Document extends Node {
 		return $clone;
 	}
 
+	/**
+	 * @internal
+	 * Returns the first document created, which is assumed to be the global
+	 * document.  This global document is the owning document for objects instantiated
+	 * using its constructor.  These objects are DocumentFragment, Text, Comment, and
+	 * ProcessingInstruction.
+	 * @return Document|null Returns the global document.  If null is returned, then no
+	 *                          document existed before the user attempted to instantiate
+	 *                          an object that has an owning document.
+	 */
+	public static function _getDefaultDocument() {
+		return static::$mDefaultDocument;
+	}
+
 	public function _printTree() {
 		return $this->_traverseTree($this->mChildNodes, 0);
 	}
@@ -398,7 +419,7 @@ class Document extends Node {
 					break;
 
 				case Node::TEXT_NODE:
-					$html .= '<li>' . $this->textContent . '<li>';
+					$html .= '<li>' . $childNode->data . '<li>';
 
 					break;
 
@@ -407,7 +428,7 @@ class Document extends Node {
 					break;
 
 				case Node::COMMENT_NODE:
-					$html .= '<li>&lt;!-- ' . $this->textContent . ' --&gt;</li>';
+					$html .= '<li>&lt;!-- ' . $childNode->data . ' --&gt;</li>';
 
 					break;
 
