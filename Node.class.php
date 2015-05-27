@@ -136,6 +136,7 @@ abstract class Node implements EventTarget {
 
     /**
      * Returns a copy of the node upon which the method was called.
+     * @link   https://dom.spec.whatwg.org/#dom-node-clonenodedeep
      * @param  boolean $aDeep If true, all child nodes and event listeners should be cloned as well.
      * @return Node           The copy of the node.
      */
@@ -145,6 +146,7 @@ abstract class Node implements EventTarget {
 
     /**
      * Compares the position of a node against another node.
+     * @link   https://dom.spec.whatwg.org/#dom-node-comparedocumentpositionother
      * @param  Node   $aNode Node to compare position against.
      * @return integer       A bitmask representing the nodes position.  Possible values are as follows:
      *                         Node::DOCUMENT_POSITION_DISCONNECTED
@@ -246,80 +248,6 @@ abstract class Node implements EventTarget {
     }
 
     /**
-     * Handles executing the callbacks registered to a specific event on this Node.  It also takes care of handling
-     * event propagation and the event phases.
-     * @param  Event   $aEvent                  The event object associated with the currently executing event.
-     * @param  boolean $aMoveToBubblingPhase    When the event phase is AT_TARGET, it first executes any event handlers
-     *                                          on the target Node that are associated with the CAPTURING_PHASE.
-     *                                          Another event will then be dispatched on the same Node in the AT_TARGET
-     *                                          phase again which executes and event handlers on the target that are
-     *                                          associated with the BUBBLING_PHASE.  When set to true, this means that
-     *                                          the dispatched event has already been through the AT_TARGET phase once.
-     */
-    private function _dispatchEvent(Event $aEvent, $aMoveToBubblingPhase = false) {
-        if ($aEvent->_isPropagationStopped()) {
-            $aEvent->_updateEventPhase(Event::NONE);
-
-            return;
-        }
-
-        $moveToBubblingPhase = $aMoveToBubblingPhase;
-
-        if (array_key_exists($aEvent->type, $this->mEvents)) {
-            $aEvent->_setCurrentTarget($this);
-            $eventPhase = $moveToBubblingPhase ? Event::BUBBLING_PHASE : Event::CAPTURING_PHASE;
-
-            foreach ($this->mEvents[$aEvent->type][$eventPhase] as $callback) {
-                if ($aEvent->_isImmediatePropagationStopped()) {
-                    break;
-                }
-
-                call_user_func($callback, $aEvent);
-            }
-        }
-
-        switch ($aEvent->eventPhase) {
-            case Event::CAPTURING_PHASE:
-                $node = $aEvent->target;
-
-                while ($node) {
-                    if ($node->parentNode == $this) {
-                        break;
-                    }
-
-                    $node = $node->parentNode;
-                }
-
-                if ($this == $aEvent->target->parentNode) {
-                    $aEvent->_updateEventPhase(Event::AT_TARGET);
-                }
-
-                break;
-
-            case Event::AT_TARGET:
-                if ($moveToBubblingPhase) {
-                    $node = $this->parentNode;
-                    $aEvent->_updateEventPhase(Event::BUBBLING_PHASE);
-                } else {
-                    $node = $this;
-                    $moveToBubblingPhase = true;
-                }
-
-                break;
-
-            case Event::BUBBLING_PHASE:
-                $node = $this->parentNode;
-        }
-
-        if ($node) {
-            $node->_dispatchEvent($aEvent, $moveToBubblingPhase);
-        } else {
-            // The event listener has run its course.
-            $aEvent->_updateEventPhase(Event::NONE);
-        }
-    }
-
-    /**
      * Returns a boolean indicating whether or not the current node contains any nodes.
      * @return boolean Returns true if at least one child node is present, otherwise false.
      */
@@ -339,6 +267,7 @@ abstract class Node implements EventTarget {
 
     /**
      * Compares two nodes to see if they are equal.
+     * @link   https://dom.spec.whatwg.org/#concept-node-equals
      * @param  Node    $aNode The node you want to compare the current node to.
      * @return boolean        Returns true if the two nodes are the same, otherwise false.
      */
@@ -349,6 +278,7 @@ abstract class Node implements EventTarget {
     /**
      * "Normalizes" the node and its sub-tree so that there are no empty text nodes present and
      * there are no text nodes that appear consecutively.
+     * @link https://dom.spec.whatwg.org/#dom-node-normalize
      */
     public function normalize() {
         if ($this->hasChildNodes()) {
@@ -430,9 +360,12 @@ abstract class Node implements EventTarget {
 
     /**
      * Replaces a node with another node.
+     * @link   https://dom.spec.whatwg.org/#concept-node-replace
      * @param  Node $aNewNode The node to be inserted into the DOM.
      * @param  Node $aOldNode The node that is being replaced by the new node.
      * @return Node           The node that was replaced in the DOM.
+     * @throws HierarchyRequestError
+     * @throws NotFoundError
      */
     public function replaceChild(Node $aNewNode, Node $aOldNode) {
         if (!($this instanceof Document) &&
@@ -549,50 +482,46 @@ abstract class Node implements EventTarget {
         return $aOldNode;
     }
 
-    private function insertNodeBeforeChild($aNode, $aChild, $aSuppressObservers = null) {
-        $isDocumentFragment = $aNode instanceof DocumentFragment;
-        $parentElement = $this instanceof Element ? $this : null;
-        $count = $isDocumentFragment ? count($aNode->childNodes) : 1;
+    /**
+     * @internal
+     * @link   https://dom.spec.whatwg.org/#mutation-method-macro
+     * @param  array                   $aNodes An array of Nodes and strings.
+     * @return DocumentFragment|Node           If $aNodes > 1, then a DocumentFragment is
+     *                                             returned, otherwise a single Node is returned.
+     */
+    protected function mutationMethodMacro($aNodes) {
+        $node = null;
+        $nodes = $aNodes;
 
-        if ($aChild) {
-            // TODO substeps for Step 2
-        }
-
-        $nodes = $isDocumentFragment ? $aNode->childNodes : array($aNode);
-        $index = $aChild ? array_search($aChild, $this->mChildNodes) : count($this->mChildNodes);
-
-        if ($isDocumentFragment) {
-            foreach ($nodes as $node) {
-                $aNode->_removeChild($node, true);
+        // Turn all strings into Text nodes.
+        array_walk($nodes, function(&$aArg) {
+            if (is_string($aArg)) {
+                $aArg = new Text($aArg);
             }
-        }
+        });
 
-        if ($index === 0) {
-            $this->mFirstChild = $nodes[0];
-        }
+        // If we were given mutiple nodes, throw them all into a DocumentFragment
+        if (count($nodes) > 1) {
+            $node = $this->mOwnerDocument->createDocumentFragment();
 
-        foreach ($nodes as $newNode) {
-            $newNode->mParentNode = $this;
-            $newNode->mParentElement = $parentElement;
-
-            if ($aChild) {
-                $newNode->mPreviousSibling = $aChild->previousSibling;
-                $newNode->mNextSibling = $aChild;
-                $aChild->mPreviousSibling = $newNode;
-            } else {
-                $newNode->mPreviousSibling = $this->mLastChild;
-
-                if ($this->mLastChild) {
-                    $this->mLastChild->mNextSibling = $newNode;
-                }
-
-                $this->mLastChild = $newNode;
+            foreach ($nodes as $arg) {
+                $node->appendChild($arg);
             }
-
-            array_splice($this->mChildNodes, $index++, 0, array($newNode));
+        } else {
+            $node = $nodes[0];
         }
+
+        return $node;
     }
 
+    /**
+     * @internal
+     * @link   https://dom.spec.whatwg.org/#concept-node-ensure-pre-insertion-validity
+     * @param  DocumentFragment|Node    $aNode  The nodes being inserted into the document tree.
+     * @param  Node                     $aChild The reference node for where the new nodes should be inserted.
+     * @throws HierarchyRequestError
+     * @throws NotFoundError
+     */
     protected function preinsertionValidity($aNode, $aChild) {
         if (!($this instanceof Document) &&
             !($this instanceof DocumentFragment) &&
@@ -722,6 +651,13 @@ abstract class Node implements EventTarget {
         }
     }
 
+    /**
+     * @internal
+     * @link   https://dom.spec.whatwg.org/#concept-node-pre-insert
+     * @param  DocumentFragment|Node    $aNode  The nodes to be inserted into the document tree.
+     * @param  Node                     $aChild The reference node for where the new nodes should be inserted.
+     * @return DocumentFragment|Node            The nodes that were insterted into the document tree.
+     */
     protected function preinsertNodeBeforeChild($aNode, $aChild) {
         $this->preinsertionValidity($aNode, $aChild);
         $referenceChild = $aChild;
@@ -739,16 +675,88 @@ abstract class Node implements EventTarget {
         return $aNode;
     }
 
-    private function preremoveChild($aChild) {
-        if ($aChild->parentNode !== $this) {
-            throw new NotFoundError;
+    /**
+     * Handles executing the callbacks registered to a specific event on this Node.  It also takes care of handling
+     * event propagation and the event phases.
+     * @internal
+     * @param  Event   $aEvent                  The event object associated with the currently executing event.
+     * @param  boolean $aMoveToBubblingPhase    When the event phase is AT_TARGET, it first executes any event handlers
+     *                                          on the target Node that are associated with the CAPTURING_PHASE.
+     *                                          Another event will then be dispatched on the same Node in the AT_TARGET
+     *                                          phase again which executes and event handlers on the target that are
+     *                                          associated with the BUBBLING_PHASE.  When set to true, this means that
+     *                                          the dispatched event has already been through the AT_TARGET phase once.
+     */
+    private function _dispatchEvent(Event $aEvent, $aMoveToBubblingPhase = false) {
+        if ($aEvent->_isPropagationStopped()) {
+            $aEvent->_updateEventPhase(Event::NONE);
+
+            return;
         }
 
-        $this->_removeChild($aChild);
+        $moveToBubblingPhase = $aMoveToBubblingPhase;
 
-        return $aChild;
+        if (array_key_exists($aEvent->type, $this->mEvents)) {
+            $aEvent->_setCurrentTarget($this);
+            $eventPhase = $moveToBubblingPhase ? Event::BUBBLING_PHASE : Event::CAPTURING_PHASE;
+
+            foreach ($this->mEvents[$aEvent->type][$eventPhase] as $callback) {
+                if ($aEvent->_isImmediatePropagationStopped()) {
+                    break;
+                }
+
+                call_user_func($callback, $aEvent);
+            }
+        }
+
+        switch ($aEvent->eventPhase) {
+            case Event::CAPTURING_PHASE:
+                $node = $aEvent->target;
+
+                while ($node) {
+                    if ($node->parentNode == $this) {
+                        break;
+                    }
+
+                    $node = $node->parentNode;
+                }
+
+                if ($this == $aEvent->target->parentNode) {
+                    $aEvent->_updateEventPhase(Event::AT_TARGET);
+                }
+
+                break;
+
+            case Event::AT_TARGET:
+                if ($moveToBubblingPhase) {
+                    $node = $this->parentNode;
+                    $aEvent->_updateEventPhase(Event::BUBBLING_PHASE);
+                } else {
+                    $node = $this;
+                    $moveToBubblingPhase = true;
+                }
+
+                break;
+
+            case Event::BUBBLING_PHASE:
+                $node = $this->parentNode;
+        }
+
+        if ($node) {
+            $node->_dispatchEvent($aEvent, $moveToBubblingPhase);
+        } else {
+            // The event listener has run its course.
+            $aEvent->_updateEventPhase(Event::NONE);
+        }
     }
 
+    /**
+     * @internal
+     * @link  https://dom.spec.whatwg.org/#concept-node-remove
+     * @param Node $aNode              The Node to be removed from the document tree.
+     * @param bool $aSuppressObservers Optional. If true, mutation events are ignored for this
+     *                                   operation.
+     */
     protected function _removeChild($aNode, $aSuppressObservers = null) {
         $index = array_search($aNode, $this->mChildNodes);
 
@@ -776,28 +784,71 @@ abstract class Node implements EventTarget {
         $aNode->mParentNode = null;
     }
 
-    protected function mutationMethodMacro($aNodes) {
-        $node = null;
-        $nodes = $aNodes;
+    /**
+     * @internal
+     * @link   https://dom.spec.whatwg.org/#concept-node-insert
+     * @param  DocumentFragment|Node    $aNode              The nodes to be inserted into the document tree.
+     * @param  Node                     $aChild             The reference node for where the new nodes should be inserted.
+     * @param  bool                     $aSuppressObservers Optional.  If true, mutation events are ignored for this
+     *                                                         operation.
+     */
+    private function insertNodeBeforeChild($aNode, $aChild, $aSuppressObservers = null) {
+        $isDocumentFragment = $aNode instanceof DocumentFragment;
+        $parentElement = $this instanceof Element ? $this : null;
+        $count = $isDocumentFragment ? count($aNode->childNodes) : 1;
 
-        // Turn all strings into Text nodes.
-        array_walk($nodes, function(&$aArg) {
-            if (is_string($aArg)) {
-                $aArg = new Text($aArg);
-            }
-        });
-
-        // If we were given mutiple nodes, throw them all into a DocumentFragment
-        if (count($nodes) > 1) {
-            $node = $this->mOwnerDocument->createDocumentFragment();
-
-            foreach ($nodes as $arg) {
-                $node->appendChild($arg);
-            }
-        } else {
-            $node = $nodes[0];
+        if ($aChild) {
+            // TODO substeps for Step 2
         }
 
-        return $node;
+        $nodes = $isDocumentFragment ? $aNode->childNodes : array($aNode);
+        $index = $aChild ? array_search($aChild, $this->mChildNodes) : count($this->mChildNodes);
+
+        if ($isDocumentFragment) {
+            foreach ($nodes as $node) {
+                $aNode->_removeChild($node, true);
+            }
+        }
+
+        if ($index === 0) {
+            $this->mFirstChild = $nodes[0];
+        }
+
+        foreach ($nodes as $newNode) {
+            $newNode->mParentNode = $this;
+            $newNode->mParentElement = $parentElement;
+
+            if ($aChild) {
+                $newNode->mPreviousSibling = $aChild->previousSibling;
+                $newNode->mNextSibling = $aChild;
+                $aChild->mPreviousSibling = $newNode;
+            } else {
+                $newNode->mPreviousSibling = $this->mLastChild;
+
+                if ($this->mLastChild) {
+                    $this->mLastChild->mNextSibling = $newNode;
+                }
+
+                $this->mLastChild = $newNode;
+            }
+
+            array_splice($this->mChildNodes, $index++, 0, array($newNode));
+        }
+    }
+
+    /**
+     * @internal
+     * @link   https://dom.spec.whatwg.org/#concept-node-pre-remove
+     * @param  Node $aChild The Node to be removed from the document tree.
+     * @return Node         The Node that was removed.
+     */
+    private function preremoveChild($aChild) {
+        if ($aChild->parentNode !== $this) {
+            throw new NotFoundError;
+        }
+
+        $this->_removeChild($aChild);
+
+        return $aChild;
     }
 }
