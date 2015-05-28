@@ -7,50 +7,50 @@ require_once 'ChildNode.class.php';
 require_once 'NonDocumentTypeChildNode.class.php';
 
 abstract class CharacterData extends Node {
-	use ChildNode, NonDocumentTypeChildNode;
+    use ChildNode, NonDocumentTypeChildNode;
 
-	protected $mData;
-	private $mLength;
+    protected $mData;
+    private $mLength;
 
-	public function __construct() {
-		parent::__construct();
+    public function __construct() {
+        parent::__construct();
 
-		$this->mData = '';
-		$this->mLength = 0;
-	}
+        $this->mData = '';
+        $this->mLength = 0;
+    }
 
-	public function __get($aName) {
-		switch ($aName) {
-			case 'data':
-				return $this->mData;
-			case 'length':
-				return $this->mLength;
-			case 'nextElementSibling':
-				return $this->getNextElementSibling();
-			case 'previousElementSibling':
-				return $this->getPreviousElementSibling();
-			default:
-				return parent::__get($aName);
-		}
-	}
+    public function __get($aName) {
+        switch ($aName) {
+            case 'data':
+                return $this->mData;
+            case 'length':
+                return $this->mLength;
+            case 'nextElementSibling':
+                return $this->getNextElementSibling();
+            case 'previousElementSibling':
+                return $this->getPreviousElementSibling();
+            default:
+                return parent::__get($aName);
+        }
+    }
 
-	public function appendData($aData) {
-		// TODO
-	}
+    public function appendData($aData) {
+        // TODO
+    }
 
-	public function deleteData($aOffset, $aCount) {
-		// TODO
-	}
+    public function deleteData($aOffset, $aCount) {
+        // TODO
+    }
 
-	public function insertData($aOffset, $aData) {
-		// TODO
-	}
+    public function insertData($aOffset, $aData) {
+        // TODO
+    }
 
-	public function replaceData($aOffset, $aCount, $aData) {
-		// TODO
-	}
+    public function replaceData($aOffset, $aCount, $aData) {
+        // TODO
+    }
 
-	public function substringData($aOffset, $aCount) {
-		// TODO
-	}
+    public function substringData($aOffset, $aCount) {
+        // TODO
+    }
 }
