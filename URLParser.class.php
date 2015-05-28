@@ -617,7 +617,7 @@ class URLParser {
             return self::IPv6Parser(substr($aInput, 1, strlen($aInput) - 2));
         }
 
-        $domain = utf8_decode(self::percentDecode(utf8_encode($aInput)));
+        $domain = utf8_decode(self::percentDecode(self::encode($aInput)));
         $asciiDomain = URL::domainToASCII($domain);
 
         if ($asciiDomain === false) {
@@ -795,8 +795,6 @@ class URLParser {
                     return false;
                 }
             }
-        } else {
-            $input = utf8_encode($aInput);
         }
 
         $sequences = explode('&', $input);
@@ -877,7 +875,7 @@ class URLParser {
     }
 
     public static function urlencodedStringParser($aInput) {
-        return self::urlencodedParser(utf8_encode($aInput));
+        return self::urlencodedParser(self::encode($aInput));
     }
 
     public static function utf8PercentEncode($aCodePoint, $aEncodeSet = self::ENCODE_SET_SIMPLE) {
@@ -907,7 +905,7 @@ class URLParser {
             return $aCodePoint;
         }
 
-        $bytes = utf8_encode($aCodePoint);
+        $bytes = self::encode($aCodePoint);
         $result = '';
 
         for ($i = 0; $i < strlen($bytes); $i++) {
@@ -1004,5 +1002,15 @@ class URLParser {
         }
 
         return $output;
+    }
+
+    public static function utf8decode($aStream, $aEncoding = 'UTF-8') {
+        return mb_convert_encoding($aStream, $aEncoding, 'UTF-8');
+    }
+
+    public static function encode($aStream, $aEncoding = 'UTF-8') {
+        $inputEncoding = mb_detect_encoding($aStream);
+
+        return mb_convert_encoding($aStream, $aEncoding, $inputEncoding);
     }
 }
