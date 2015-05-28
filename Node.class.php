@@ -37,12 +37,13 @@ abstract class Node implements EventTarget {
     protected $mParentNode; // Node
     protected $mParentElement; // Element
     protected $mPreviousSibling; // Node
-    public $textContent; // String
+    protected $mTextContent; // String
 
     private $mEvents;
 
     protected function __construct() {
         $this->mChildNodes = array();
+        $this->mEvents = array();
         $this->mFirstChild = null;
         $this->mLastChild = null;
         $this->mNextSibling = null;
@@ -53,7 +54,7 @@ abstract class Node implements EventTarget {
         $this->mParentElement = null;
         $this->mParentNode = null;
         $this->mPreviousSibling = null;
-        $this->mEvents = array();
+        $this->mTextContent = '';
     }
 
     public function __get( $aName ) {
@@ -90,6 +91,13 @@ abstract class Node implements EventTarget {
 
             case 'previousSibling':
                 return $this->mPreviousSibling;
+        }
+    }
+
+    public function __set($aName, $aValue) {
+        switch ($aName) {
+            case 'textContent':
+                $this->mTextContent = $aValue;
         }
     }
 
