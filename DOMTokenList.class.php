@@ -75,7 +75,7 @@ class DOMTokenList implements ArrayAccess, Iterator {
      *                        index does not exist.
      */
     public function item($aIndex) {
-        return isset($this->mTokens[$aIndex]) ? $this->mTokens[$aIndex] : null;
+        return is_int($aIndex) && isset($this->mTokens[$aIndex]) ? $this->mTokens[$aIndex] : null;
     }
 
     /**
