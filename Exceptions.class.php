@@ -51,6 +51,13 @@ class SyntaxError extends Exception {
 	}
 }
 
+class InvalidNodeTypeError extends Exception {
+	public function __construct() {
+		$this->code = 24;
+		$this->message = 'The supplied node is incorrect or has an incorrect ancestor for this operation.';
+	}
+}
+
 class TypeError extends Exception {
 	public function __construct($aMessage = '') {
 		$this->message = $aMessage;
