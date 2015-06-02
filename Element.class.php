@@ -154,8 +154,24 @@ abstract class Element extends Node implements SplObserver {
 		return $nodeList;
 	}
 
+	/**
+	 * Returns an array of Elements with the specified tagName.
+	 * @param  string $aTagName The tagName to search for.
+	 * @return array           	A list of Elements with the specified tagName.
+	 */
 	public function getElementsByTagName($aTagName) {
-		// TODO
+		$nodeList = array();
+
+		$tw = $this->mOwnerDocument->createTreeWalker($this, NodeFilter::SHOW_ELEMENT,
+			function($aNode) use ($aTagName) {
+				return strcasecmp($aNode->tagName, $aTagName) == 0 ? NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
+			});
+
+		while ($node = $tw->nextNode()) {
+			$nodeList[] = $node;
+		}
+
+		return $nodeList;
 	}
 
 	public function hasAttribute( $aName ) {
