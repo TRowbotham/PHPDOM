@@ -139,22 +139,19 @@ abstract class Element extends Node implements SplObserver {
 		return null;
 	}
 
-	public function getElementsByClassName( $aClassName ) {
-		$elements = array();
+	public function getElementsByClassName($aClassName) {
+		$nodeList = array();
 
-		foreach($this->mChildNodes as $child) {
-			if ($child->nodeType == Node::ELEMENT_NODE) {
-				if ($child->classList->contains($aClassName)) {
-					$elements[] = $child;
-				}
+		$tw = $this->mOwnerDocument->createTreeWalker($this, NodeFilter::SHOW_ELEMENT,
+				function($aNode) use ($aClassName) {
+					return $aNode->classList->contains($aClassName) ? NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
+				});
 
-				if ($this->hasChildNodes()) {
-					$elements = array_merge($elements, $child->getElementsByClassName($aClassName));
-				}
-			}
+		while ($node = $tw->nextNode()) {
+			$nodeList[] = $node;
 		}
 
-		return $elements;
+		return $nodeList;
 	}
 
 	public function getElementsByTagName($aTagName) {
