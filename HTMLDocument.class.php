@@ -39,7 +39,12 @@ class HTMLDocument extends Document {
 	public function __set($aName, $aValue) {
 		switch ($aName) {
 			case 'title':
-				$this->mTitle;
+				if (!is_string($aValue)) {
+					break;
+				}
+
+				$this->mTitle = $aValue;
+				$this->getElementsByTagName('title')[0]->text = $aValue;
 
 				break;
 		}
