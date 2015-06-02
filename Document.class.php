@@ -331,6 +331,30 @@ class Document extends Node {
 		return new TreeWalker($aRoot, $aWhatToShow, $aFilter);
 	}
 
+	public function getElementsByClassName($aClassName) {
+		$nodeList = array();
+		$classNames = explode(' ', preg_replace('/\s+/', ' ', trim($aClassName)));
+
+		$tw = $this->createTreeWalker($this, NodeFilter::SHOW_ELEMENT,
+				function($aNode) use ($classNames) {
+					$hasClassName = false;
+
+					foreach ($classNames as $className) {
+						if ($hasClassName = $aNode->classList->contains($className)) {
+							break;
+						}
+					}
+
+					return $hasClassName ? NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
+				});
+
+		while ($node = $tw->nextNode()) {
+			$nodeList[] = $node;
+		}
+
+		return $nodeList;
+	}
+
 	/**
 	 * Returns an array of Elements with the specified tagName.
 	 * @param  string $aTagName The tagName to search for.
