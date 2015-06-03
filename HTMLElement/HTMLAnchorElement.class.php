@@ -1,5 +1,7 @@
 <?php
-require_once 'HTMLElement/HTMLElement.class.php';
+// https://html.spec.whatwg.org/multipage/semantics.html#the-a-element
+
+require_once 'HTMLElement.class.php';
 require_once 'DOMSettableTokenList.class.php';
 require_once 'URLUtils.class.php';
 
@@ -15,18 +17,16 @@ class HTMLAnchorElement extends HTMLElement {
 	private $mTarget;
 	private $mType;
 
-	public function __construct() {
-		parent::__construct();
+	public function __construct($aTagName) {
+		parent::__construct($aTagName);
 		$this->initURLUtils();
 
 		$this->mDownload = '';
 		$this->mHrefLang = '';
 		$this->mInvalidateRelList = false;
-		$this->mNodeName = 'A';
 		$this->mPing = new DOMSettableTokenList($this, 'ping');
 		$this->mRel = '';
 		$this->mRelList = null;
-		$this->mTagName = 'A';
 		$this->mTarget = '';
 		$this->mType = '';
 	}
@@ -112,8 +112,42 @@ class HTMLAnchorElement extends HTMLElement {
 		}
 	}
 
-	public function __toString() {
-		return __CLASS__;
+	protected function _onAttributeChange(Event $aEvent) {
+		switch ($aEvent->detail['attr']->name) {
+			case 'download':
+				$this->mDownload = $aEvent->detail['action'] == 'set' ? $aEvent->detail['attr']->value : '';
+
+				break;
+
+			case 'hrefLang':
+				$this->mHrefLang = $aEvent->detail['action'] == 'set' ? $aEvent->detail['attr']->value : '';
+
+				break;
+
+			case 'ping':
+				$this->mPing->value = $aEvent->detail['action'] == 'set' ? $aEvent->detail['attr']->value : '';
+
+				break;
+
+			case 'rel':
+				$this->mRel = $aEvent->detail['action'] == 'set' ? $aEvent->detail['attr']->value : '';
+				$this->mInvalidateRelList = true;
+
+				break;
+
+			case 'target':
+				$this->mTarget = $aEvent->detail['action'] == 'set' ? $aEvent->detail['attr']->value : '';
+
+				break;
+
+			case 'type':
+				$this->mType = $aEvent->detail['action'] == 'set' ? $aEvent->detail['attr']->value : '';
+
+				break;
+
+			default:
+				parent::_onAttributeChange($aEvent);
+		}
 	}
 
 	private function getBaseURL() {

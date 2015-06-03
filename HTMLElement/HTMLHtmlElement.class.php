@@ -1,16 +1,10 @@
 <?php
-require_once( 'HTMLElement/HTMLElement.class.php' );
+// https://html.spec.whatwg.org/multipage/semantics.html#the-html-element
+
+require_once 'HTMLElement.class.php';
 
 class HTMLHtmlElement extends HTMLElement {
-
-	public function __construct() {
-		parent::__construct();
-
-		$this->mNodeName = 'HTML';
-		$this->mTagName = 'HTML';
-	}
-
-	public function __toString() {
-		return __CLASS__;
+	public function __construct($aTagName) {
+		parent::__construct($aTagName);
 	}
 }

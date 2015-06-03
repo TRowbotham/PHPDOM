@@ -1,16 +1,10 @@
 <?php
-require_once( 'HTMLElement/HTMLBodyElement.class.php' );
+// https://html.spec.whatwg.org/multipage/semantics.html#the-body-element
+
+require_once 'HTMLElement.class.php';
 
 class HTMLBodyElement extends HTMLElement {
-
-	public function __construct() {
-		parent::__construct();
-
-		$this->mNodeName = 'BODY';
-		$this->mTagName = 'BODY';
-	}
-
-	public function __toString() {
-		return __CLASS__;
+	public function __construct($aTagName) {
+		parent::__construct($aTagName);
 	}
 }

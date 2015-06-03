@@ -1,14 +1,12 @@
 <?php
-require_once( 'HTMLElement.class.php' );
+require_once 'HTMLElement.class.php';
 
 class HTMLTitleElement extends HTMLElement {
 	private $mText;
 
-	public function __construct() {
-		parent::__construct();
+	public function __construct($aTagName) {
+		parent::__construct($aTagName);
 
-		$this->mNodeName = 'TITLE';
-		$this->mTagName = 'TITLE';
 		$this->mText = '';
 	}
 
@@ -45,9 +43,5 @@ class HTMLTitleElement extends HTMLElement {
 			default:
 				parent::__set($aName, $aValue);
 		}
-	}
-
-	public function __toString() {
-		return __CLASS__;
 	}
 }

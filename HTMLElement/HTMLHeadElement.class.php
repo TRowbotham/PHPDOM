@@ -1,14 +1,10 @@
 <?php
+// https://html.spec.whatwg.org/multipage/semantics.html#the-head-element
+
+require_once 'HTMLElement.class.php';
+
 class HTMLHeadElement extends HTMLElement {
-
-	public function __construct() {
-		parent::__construct();
-
-		$this->mNodeName = 'HEAD';
-		$this->mTagName = 'HEAD';
-	}
-
-	public function __toString() {
-		return __CLASS__;
+	public function __construct($aTagName) {
+		parent::__construct($aTagName);
 	}
 }
