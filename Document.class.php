@@ -101,8 +101,19 @@ class Document extends Node {
 		return $aNode;
 	}
 
+	/**
+	 * Creates the specified element or an HTMLUnkownElement
+	 * if the element name is not a known name.
+	 * @param  string 		$aTagName 	The name of the element to create.
+	 * @return HTMLElement 				A known HTMLElement or HTMLUnknownElement.
+	 */
 	public function createElement( $aTagName ) {
 		switch($aTagName) {
+			/**
+			 * These are elements whose tag name differs
+			 * from its DOM interface name, so map the tag
+			 * name to the interface name.
+			 */
 			case 'a':
 				$interfaceName = 'Anchor';
 
@@ -147,6 +158,9 @@ class Document extends Node {
 				$interfaceName = 'IFrame';
 
 				break;
+
+			case 'img':
+				$interfaceName = 'Image';
 
 			case 'ins':
 			case 'del':
@@ -220,6 +234,56 @@ class Document extends Node {
 
 				break;
 
+			/**
+			 * These are known HTML elements that don't have their
+			 * own DOM interface, but should not be classified as
+			 * HTMLUnkownElements.
+			 */
+			case 'abbr':
+			case 'address':
+			case 'article':
+			case 'aside':
+			case 'b':
+			case 'bdi':
+			case 'bdo':
+			case 'cite':
+			case 'code':
+			case 'dd':
+			case 'dfn':
+			case 'dt':
+			case 'em':
+			case 'figcaption':
+			case 'figure':
+			case 'footer':
+			case 'header':
+			case 'hrgroup':
+			case 'i':
+			case 'kbd':
+			case 'main':
+			case 'mark':
+			case 'nav':
+			case 'rp':
+			case 'rt':
+			case 'ruby':
+			case 's':
+			case 'samp':
+			case 'section':
+			case 'small':
+			case 'strong':
+			case 'sub':
+			case 'sup':
+			case 'u':
+			case 'var':
+			case 'wbr':
+				$interfaceName = '';
+
+				break;
+
+			/**
+			 * These are known HTML elements that have their own
+			 * DOM interface and their names do not differ from
+			 * their interface names.
+			 */
 			case 'area':
 			case 'audio':
 			case 'base':
@@ -232,7 +296,6 @@ class Document extends Node {
 			case 'form':
 			case 'head':
 			case 'html':
-			case 'image':
 			case 'input':
 			case 'keygen':
 			case 'label':
@@ -263,17 +326,13 @@ class Document extends Node {
 				break;
 
 			default:
-				if (@file_exists('HTMLElement/' . $aTagName . 'Element.class.php')) {
-					$interfaceName = ucfirst(strtolower($aTagName));
-				} else {
-					$interfaceName = 'Unknown';
-				}
+				$interfaceName = 'Unknown';
 		}
 
 		$className = 'HTML' . $interfaceName . 'Element';
 		require_once 'HTMLElement/' . $className . '.class.php';
 
-		$node = new $className();
+		$node = new $className($aTagName);
 		$node->mOwnerDocument = $this;
 
 		return $node;
