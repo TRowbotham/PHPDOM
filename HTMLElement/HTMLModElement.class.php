@@ -10,11 +10,9 @@ class HTMLModElement extends HTMLElement {
     private $mDateTime;
 
     public function __construct($aTagName) {
-        parent::__construct();
+        parent::__construct($aTagName);
 
         $this->mCite = '';
-        $this->mNodeName = $aTagName;
-        $this->mTagName = $aTagName;
         $this->mDateTime = '';
     }
 

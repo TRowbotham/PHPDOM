@@ -6,11 +6,9 @@ require_once 'HTMLElement.class.php';
 class HTMLTimeElement extends HTMLElement {
     private $mDateTime;
 
-    public function __construct() {
-        parent::__construct();
+    public function __construct($aTagName) {
+        parent::__construct($aTagName);
 
-        $this->mNodeName = 'TIME';
-        $this->mTagName = 'TIME';
         $this->mDateTime = '';
     }
 
