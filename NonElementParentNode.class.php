@@ -12,7 +12,7 @@ trait NonElementParentNode {
         }
 
         $tw = new TreeWalker($this, NodeFilter::SHOW_ELEMENT, function($aNode) use ($aElementId) {
-            return $aNode->id == $aElementId ? NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
+            return strcasecmp($aNode->id, $aElementId) == 0 ? NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
         });
 
         return $tw->nextNode();
