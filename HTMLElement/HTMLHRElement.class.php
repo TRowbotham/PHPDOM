@@ -6,5 +6,7 @@ require_once 'HTMLElement.class.php';
 class HTMLHRElement extends HTMLElement {
     public function __construct($aTagName) {
         parent::__construct($aTagName);
+
+        $this->mEndTagOmitted = true;
     }
 }
