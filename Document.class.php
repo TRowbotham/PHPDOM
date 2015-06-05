@@ -162,6 +162,8 @@ class Document extends Node {
 			case 'img':
 				$interfaceName = 'Image';
 
+				break;
+
 			case 'ins':
 			case 'del':
 				$interfaceName = 'Mod';
