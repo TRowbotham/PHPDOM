@@ -239,7 +239,7 @@ class Document extends Node {
 			/**
 			 * These are known HTML elements that don't have their
 			 * own DOM interface, but should not be classified as
-			 * HTMLUnkownElements.
+			 * HTMLUnknownElements.
 			 */
 			case 'abbr':
 			case 'address':
