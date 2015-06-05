@@ -203,8 +203,12 @@ class Document extends Node {
 				break;
 
 			case 'td':
+				$interfaceName = 'TableDataCell';
+
+				break;
+
 			case 'th':
-				$interfaceName = 'TableCell';
+				$interfaceName = 'TableHeaderCell';
 
 				break;
 
