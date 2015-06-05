@@ -270,6 +270,7 @@ class Document extends Node {
 			case 'nav':
 			case 'rp':
 			case 'rt':
+			case 'rtc':
 			case 'ruby':
 			case 's':
 			case 'samp':
