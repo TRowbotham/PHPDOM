@@ -44,7 +44,7 @@ class HTMLDocument extends Document {
 				}
 
 				$this->mTitle = $aValue;
-				$this->getElementsByTagName('title')[0]->text = $aValue;
+				$this->head->getElementsByTagName('title')[0]->text = $aValue;
 
 				break;
 		}
