@@ -17,7 +17,7 @@ class HTMLElement extends Element {
 	protected $mTranslate;
 
 	public function __construct($aTagName) {
-		parent::__construct();
+		parent::__construct($aTagName);
 
 		$this->mAccessKey = '';
 		$this->mAccessKeyLabel = '';
@@ -27,11 +27,9 @@ class HTMLElement extends Element {
 		$this->mHidden = false;
 		$this->mIsContentEditable = false;
 		$this->mLang = '';
-		$this->mNodeName = strtoupper($aTagName);
 		$this->mNodeType = Node::ELEMENT_NODE;
 		$this->mSpellcheck = false;
 		$this->mTabIndex = '';
-		$this->mTagName = strtoupper($aTagName);
 		$this->mTitle = '';
 		$this->mTranslate = false;
 	}

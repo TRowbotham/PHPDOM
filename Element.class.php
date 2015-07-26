@@ -21,7 +21,7 @@ abstract class Element extends Node implements SplObserver {
 
 	private $mReconstructClassList;
 
-	protected function __construct() {
+	protected function __construct($aTagName) {
 		parent::__construct();
 
 		$this->mAttributes = new NamedNodeMap();
@@ -29,7 +29,8 @@ abstract class Element extends Node implements SplObserver {
 		$this->mClassName = '';
 		$this->mEndTagOmitted = false;
 		$this->mId = '';
-		$this->mTagName = '';
+		$this->mNodeName = strtoupper($aTagName);
+		$this->mTagName = strtoupper($aTagName);
 		$this->addEventListener('attributechange', array($this, '_onAttributeChange'));
 	}
 
