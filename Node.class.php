@@ -829,6 +829,7 @@ abstract class Node implements EventTarget {
             if ($aChild) {
                 $newNode->mPreviousSibling = $aChild->previousSibling;
                 $newNode->mNextSibling = $aChild;
+                $aChild->mPreviousSibling->mNextSibling = $newNode;
                 $aChild->mPreviousSibling = $newNode;
             } else {
                 $newNode->mPreviousSibling = $this->mLastChild;
