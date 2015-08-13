@@ -350,4 +350,26 @@ abstract class Element extends Node implements SplObserver {
 			$this->setAttribute($attrName, $aValue);
 		}
 	}
+
+	/**
+	 * Returns an array of Elements with the specified tagName that are immediate children
+	 * of the parent.
+	 * @param  string 		$aTagName 	The tagName to search for.
+	 * @return Element[]            	A list of Elements with the specified tagName.
+	 */
+	protected function shallowGetElementsByTagName($aTagName) {
+        $collection = array();
+        $node = $this->mFirstChild;
+        $tagName = strtoupper($aTagName);
+
+        while ($node) {
+            if (strcmp($node->tagName, $tagName) == 0) {
+                $collection[] = $node;
+            }
+
+            $node = $node->nextElementSibling;
+        }
+
+        return $collection;
+    }
 }

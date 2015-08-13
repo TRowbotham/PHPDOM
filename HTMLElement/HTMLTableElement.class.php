@@ -51,17 +51,17 @@ class HTMLTableElement extends HTMLElement {
     public function __get($aName) {
         switch ($aName) {
             case 'caption':
-                $caption = $this->getElementsByTagName('caption');
+                $caption = $this->shallowGetElementsByTagName('caption');
 
                 return count($caption) ? $caption[0] : null;
 
             case 'rows':
-                $thead = $this->getElementsByTagName('thead');
-                $tfoot = $this->getElementsByTagName('tfoot');
+                $thead = $this->shallowGetElementsByTagName('thead');
+                $tfoot = $this->shallowGetElementsByTagName('tfoot');
                 $collection = array();
 
                 if (count($thead)) {
-                    $collection = array_merge($collection, $thead[0]->getElementsByTagName('tr'));
+                    $collection = array_merge($collection, $thead[0]->shallowGetElementsByTagName('tr'));
                 }
 
                 $node = $this->mFirstChild;
@@ -70,26 +70,26 @@ class HTMLTableElement extends HTMLElement {
                     if ($node instanceof HTMLTableRowElement) {
                         $collection[] = $node;
                     } elseif ($node instanceof HTMLTableSectionElement && strcmp($node->tagName, 'TBODY') == 0) {
-                        $collection = array_merge($collection, $node->getElementsByTagName('tr'));
+                        $collection = array_merge($collection, $node->shallowGetElementsByTagName('tr'));
                     }
                 }
 
                 if (count($tfoot)) {
-                    array_merge($collection, $tfoot[0]->getElementsByTagName('tr'));
+                    array_merge($collection, $tfoot[0]->shallowGetElementsByTagName('tr'));
                 }
 
                 return $collection;
 
             case 'tBodies':
-                return $this->getElementsByTagName('tbody');
+                return $this->shallowGetElementsByTagName('tbody');
 
             case 'tFoot':
-                $tfoot = $this->getElementsByTagName('tfoot');
+                $tfoot = $this->shallowGetElementsByTagName('tfoot');
 
                 return count($tfoot) ? $tfoot[0] : null;
 
             case 'tHead':
-                $thead = $this->getElementsByTagName('thead');
+                $thead = $this->shallowGetElementsByTagName('thead');
 
                 return count($thead) ? $thead[0] : null;
 
@@ -104,7 +104,7 @@ class HTMLTableElement extends HTMLElement {
     public function __set($aName, $aValue) {
         switch ($aName) {
             case 'caption':
-                $caption = $this->getElementsByTagName('caption');
+                $caption = $this->shallowGetElementsByTagName('caption');
 
                 if (isset($caption[0])) {
                     $caption->remove();
@@ -124,7 +124,7 @@ class HTMLTableElement extends HTMLElement {
                     throw new HierarchyRequestError;
                 }
 
-                $tfoot = $this->getElementsByTagName('tfoot');
+                $tfoot = $this->shallowGetElementsByTagName('tfoot');
 
                 if (isset($tfoot[0])) {
                     $tFoot[0]->remove();
@@ -155,7 +155,7 @@ class HTMLTableElement extends HTMLElement {
                     throw new HierarchyRequestError;
                 }
 
-                $thead = $this->getElementsByTagName('thead');
+                $thead = $this->shallowGetElementsByTagName('thead');
 
                 if (isset($thead[0])) {
                     $thead[0]->remove();
@@ -268,7 +268,7 @@ class HTMLTableElement extends HTMLElement {
      * @return HTMLTableSectionElement
      */
     public function createTBody() {
-        $tbodies = $this->getElementsByTagName('tbody');
+        $tbodies = $this->shallowGetElementsByTagName('tbody');
         $len = count($tbodies);
         $lastTbody = $len ? $tbodies[$len - 1] : null;
 
@@ -288,7 +288,7 @@ class HTMLTableElement extends HTMLElement {
      * @throws IndexSizeError   If $aIndex is < -1 or > the number of rows in the table.
      */
     public function insertRow($aIndex = -1) {
-        $rows = $this->getElementsByTagName('tr');
+        $rows = $this->rows;
         $numRows = count($rows);
 
         if ($aIndex < -1 || $aIndex > $numRows) {
@@ -298,7 +298,7 @@ class HTMLTableElement extends HTMLElement {
         $tr = $this->mOwnerDocument->createElement('tr');
 
         if (!$numRows) {
-            $tbodies = $this->getElementsByTagName('tbody');
+            $tbodies = $this->shallowGetElementsByTagName('tbody');
             $numTbodies = count($tbodies);
 
             if (!$tbodies) {
@@ -327,7 +327,7 @@ class HTMLTableElement extends HTMLElement {
      * @throws IndexSizeError   If $aIndex < -1 or >= the number of tr elements in the table.
      */
     public function deleteRow($aIndex) {
-        $rows = $this->getElementsByTagName('tr');
+        $rows = $this->rows;
         $numRows = count($rows);
         $index = $aIndex;
 
@@ -363,7 +363,7 @@ class HTMLTableElement extends HTMLElement {
      * @return HTMLElement
      */
     private function createTableChildElement($aElement, $aInsertBefore) {
-        $node = $this->getElementsByTagName($aElement);
+        $node = $this->shallowGetElementsByTagName($aElement);
 
         if (!isset($node[0])) {
             $node = $this->mOwnerDocument->createElement($aElement);
@@ -379,7 +379,7 @@ class HTMLTableElement extends HTMLElement {
      * @param  string $aElement The tag name of the element to remove.
      */
     private function deleteTableChildElement($aElement) {
-        $node = $this->getElementsByTagName($aElement);
+        $node = $this->shallowGetElementsByTagName($aElement);
 
         if (isset($node[0])) {
             $node->remove();

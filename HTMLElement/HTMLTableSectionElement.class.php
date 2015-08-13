@@ -18,7 +18,7 @@ class HTMLTableSectionElement extends HTMLElement {
     public function __get($aName) {
         switch ($aName) {
             case 'rows':
-                return $this->getElementsByTagName('tr');
+                return $this->shallowGetElementsByTagName('tr');
 
             default:
                 return parent::__get($aName);
@@ -34,7 +34,7 @@ class HTMLTableSectionElement extends HTMLElement {
      * @return HTMLTableRowElement
      */
     public function insertRow($aIndex = -1) {
-        $rows = $this->getElementsByTagName('tr');
+        $rows = $this->shallowGetElementsByTagName('tr');
         $numRows = count($rows);
 
         if ($aIndex < -1 || $aIndex > $numRows) {
@@ -60,7 +60,7 @@ class HTMLTableSectionElement extends HTMLElement {
      * @throws IndexSizeError If $aIndex < 0 or $aIndex >= number of table rows.
      */
     public function deleteRow($aIndex) {
-        $rows = $this->getElementsByTagName('tr');
+        $rows = $this->shallowGetElementsByTagName('tr');
 
         if ($aIndex < 0 || $aIndex >= count($rows)) {
             throw new IndexSizeError;
