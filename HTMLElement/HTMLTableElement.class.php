@@ -72,6 +72,8 @@ class HTMLTableElement extends HTMLElement {
                     } elseif ($node instanceof HTMLTableSectionElement && strcmp($node->tagName, 'TBODY') == 0) {
                         $collection = array_merge($collection, $node->shallowGetElementsByTagName('tr'));
                     }
+
+                    $node = $node->nextSibling;
                 }
 
                 if (count($tfoot)) {
