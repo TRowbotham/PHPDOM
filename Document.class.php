@@ -222,6 +222,21 @@ class Document extends Node {
 
 	/**
 	 * @internal
+	 *
+	 * Sets the document's character set.
+	 *
+	 * @param string $aCharacterSet The document's character set
+	 */
+	public function _setCharacterSet($aCharacterSet) {
+		if (!is_string($aCharacterSet)) {
+			return;
+		}
+
+		$this->mCharacterSet = $aCharacterSet;
+	}
+
+	/**
+	 * @internal
 	 * Returns the first document created, which is assumed to be the global
 	 * document.  This global document is the owning document for objects instantiated
 	 * using its constructor.  These objects are DocumentFragment, Text, Comment, and
