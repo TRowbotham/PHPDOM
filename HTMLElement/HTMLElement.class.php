@@ -135,3 +135,61 @@ class HTMLElement extends Element {
 	public function __toString() {
 		return get_class($this);
 	}
+
+	protected function _onAttributeChange(Event $aEvent) {
+		switch ($aEvent->detail['attr']->name) {
+			case 'accesskey':
+				$this->mAccessKey = $aEvent->detail['action'] == 'set' ? $aEvent->detail['attr']->value : '';
+
+				break;
+
+			case 'accesskeylabel':
+				$this->mAccessKeyLabel = $aEvent->detail['action'] == 'set' ? $aEvent->detail['attr']->value : '';
+
+				break;
+
+			case 'contenteditable':
+				$this->mContentEditable = $this->mIsContentEditable = $aEvent->detail['action'] == 'set' ? true : false;
+
+				break;
+
+			case 'dir':
+				$this->mDir = $aEvent->detail['action'] == 'set' ? $aEvent->detail['attr']->value : '';
+
+				break;
+
+			case 'hidden':
+				$this->hidden = $aEvent->detail['action'] == 'set' ? true : false;
+
+				break;
+
+			case 'lang':
+				$this->mLang = $aEvent->detail['action'] == 'set' ? $aEvent->detail['attr']->value : '';
+
+				break;
+
+			case 'spellcheck':
+				$this->spellcheck = $aEvent->detail['action'] == 'set' ? true : false;
+
+				break;
+
+			case 'tabindex':
+				$this->tabindex = $aEvent->detail['action'] == 'set' ? $aEvent->detail['attr']->value : '';
+
+				break;
+
+			case 'title':
+				$this->mTitle = $aEvent->detail['action'] == 'set' ? $aEvent->detail['attr']->value : '';
+
+				break;
+
+			case 'translate':
+				$this->mTranslate = $aEvent->detail['action'] == 'set' ? true : false;
+
+				break;
+
+			default:
+				parent::_onAttributeChange($aEvent);
+		}
+	}
+}
