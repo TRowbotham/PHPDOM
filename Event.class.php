@@ -1,9 +1,35 @@
 <?php
-// https://developer.mozilla.org/en-US/docs/Web/API/Event
-// https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent
-// https://dom.spec.whatwg.org/#event
-// https://dom.spec.whatwg.org/#customevent
-
+/**
+ * Represents an event which can be dispatched to different objects to signal the occurance of an event.
+ *
+ * @link https://dom.spec.whatwg.org/#event
+ * @link https://developer.mozilla.org/en-US/docs/Web/API/Event
+ *
+ * @property-read bool          $bubbles            Returns true if the event will traverse through its ancestors in reverse
+ *                                                  tree order, otherwise false.
+ *
+ * @property-read bool          $cancelable         Returns true if the event's default action can be prevented, otherwise false.
+ *
+ * @property-read Node|object   $currentTarget      Returns the current object or Node whose event listeners are currently being invoked.
+ *
+ * @property-read bool          $defaultPrevented   Returns true if the event's preventDefault() method is invoked and the event's cancelable
+ *                                                  attribute is true, otherwise false.
+ *
+ * @property-read int           $eventPhase         Returns the current phase that the event is in.  One of the following possibilities:
+ *                                                  NONE: Events that are not currently being dispatched.
+ *                                                  CAPTURING_PHASE: Events that are currently invoking event listeners in tree order.
+ *                                                  AT_TARGET: Events that are currently invoking event listeners on the target Node or object.
+ *                                                  BUBBLING_PHASE: Events that are currently invoking event listeners in reverse tree order,
+ *                                                                  assuming that the event's bubbling property is true.
+ *
+ * @property-read bool          $isTrusted          Returns true if the event was dispatched by the browser, otherwise false.
+ *
+ * @property-read Node|object   $target             Returns the Node or object that dispatched the event.
+ *
+ * @property-read int           $timeStamp          Returns the creation time of the even in milliseconds.
+ *
+ * @property-read string        $type               Returns the type of event that was created.
+ */
 class Event {
     const NONE = 0;
     const CAPTURING_PHASE = 1;
@@ -59,6 +85,16 @@ class Event {
         }
     }
 
+    /**
+     * Initializes or reinitializes an event.
+     *
+     * @param  string  $aType       The type of event to be created.
+     *
+     * @param  boolean $aBubbles    Optional. Whether or not the event will bubble up the tree, if the event is dispatched
+     *                              on an object that participates in a tree.  Defaults to false.
+     *
+     * @param  boolean $aCancelable Optional. Whether or not the event's default action can be prevented.  Defaults to false.
+     */
     public function initEvent($aType, $aBubbles = false, $aCancelable = false) {
         if ($this->mFlags & self::EVENT_DISPATCHED) {
             return;
@@ -73,16 +109,27 @@ class Event {
         $this->mType = $aType;
     }
 
+    /**
+     * If the even'ts cancelable property is true, it signals that the operation that caused the event needs to be canceled.
+     */
     public function preventDefault() {
         if ($this->mCancelable) {
             $this->mFlags |= self::EVENT_CANCELED;
         }
     }
 
+    /**
+     * If the event's target participates in a tree, this method will prevent the event from reaching any objects that
+     * follow the current object.
+     */
     public function stopPropagation() {
         $this->mFlags |= self::EVENT_STOP_PROPAGATION;
     }
 
+    /**
+     * If the event's target participates in a tree, this method will prevent the event from reaching any objects that
+     * follow the current object as well as preventing any following event listeners from being invoked.
+     */
     public function stopImmediatePropagation() {
         $this->mFlags |= self::EVENT_STOP_PROPAGATION | self::EVENT_STOP_IMMEDIATE_PROPATATION;
     }
@@ -112,6 +159,16 @@ class Event {
     }
 }
 
+/**
+ * Represents a custom event defined by the user which they can use to signal that an event has occured
+ * in their code.
+ *
+ * @link https://dom.spec.whatwg.org/#customevent
+ * @link https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent
+ *
+ * @property mixed $detail A proprerty that the user may use to attach additional useful information to the
+ *                         event.
+ */
 class CustomEvent extends Event {
     private $mDetail;
 
@@ -133,6 +190,18 @@ class CustomEvent extends Event {
         }
     }
 
+    /**
+     * Initializes or reinitializes a CustomEvent.
+     *
+     * @param  string  $aType       The type of event to be created.
+     *
+     * @param  boolean $aBubbles    Optional.  Whether or not the event will bubble up the tree, if the event is dispatched
+     *                              on an object that participates in a tree.  Defaults to false.
+     *
+     * @param  boolean $aCancelable Optional.  Whether or not the event's default action can be prevented.  Defaults to false.
+     *
+     * @param  mixed   &$aDetail    Optional.  Additional data to be sent along with the event.
+     */
     public function initCustomEvent($aType, $aBubbles = false, $aCancelable = false, &$aDetail = null) {
         if ($this->mFlags & self::EVENT_DISPATCHED) {
             return;
