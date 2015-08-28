@@ -60,6 +60,7 @@ class Event {
         $this->mFlags |= self::EVENT_INITIALIZED;
         $this->mIsTrusted = false;
         $this->mTimeStamp = microtime();
+        $this->mType = $aType;
     }
 
     public function __get($aName) {
