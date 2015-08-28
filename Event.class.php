@@ -10,15 +10,18 @@ class Event {
 	const AT_TARGET = 2;
 	const BUBBLING_PHASE = 3;
 
+	const EVENT_STOP_PROPAGATION = 1;
+	const EVENT_STOP_IMMEDIATE_PROPATATION = 2;
+	const EVENT_CANCELED = 4;
+	const EVENT_INITIALIZED = 8;
+	const EVENT_DISPATCHED = 16;
+
 	protected $mBubbles;
 	protected $mCancelable;
 	protected $mCurrentTarget;
-	protected $mDispatched;
-	protected $mDefaultPrevented;
 	protected $mEventPhase;
-	protected $mImmediatePropagationStopped;
+	protected $mFlags;
 	protected $mIsTrusted;
-	protected $mPropagationStopped;
 	protected $mTarget;
 	protected $mTimeStamp;
 	protected $mType;
@@ -27,15 +30,10 @@ class Event {
 		$this->mBubbles = $aEventInitDict ? $aEventInitDict->bubbles : false;
 		$this->mCancelable = $aEventInitDict ? $aEventInitDict->cancelable : false;
 		$this->mCurrentTarget = null;
-		$this->mDefaultPrevented = false;
-		$this->mDispatched = false;
 		$this->mEventPhase = self::NONE;
-		$this->mImmediatePropagationStopped = false;
+		$this->mFlags |= self::EVENT_INITIALIZED;
 		$this->mIsTrusted = false;
-		$this->mPropagationStopped = false;
-		$this->mTarget = null;
-		$this->mTimeStamp = 0;
-		$this->mType = $aType;
+		$this->mTimeStamp = microtime();
 	}
 
 	public function __get($aName) {
@@ -46,52 +44,55 @@ class Event {
 				return $this->mCancelable;
 			case 'currentTarget':
 				return $this->mCurrentTarget;
+			case 'defaultPrevented':
+				return $this->mFlags & self::EVENT_CANCELED;
 			case 'eventPhase':
 				return $this->mEventPhase;
-			case 'timeStamp':
-				return $this->mTimeStamp;
-			case 'defaultPrevented':
-				return $this->mDefaultPrevented;
 			case 'isTrusted':
 				return $this->mIsTrusted;
 			case 'target':
 				return $this->mTarget;
+			case 'timeStamp':
+				return $this->mTimeStamp;
 			case 'type':
 				return $this->mType;
 		}
 	}
 
 	public function initEvent($aType, $aBubbles = false, $aCancelable = false) {
-		if ($this->mDispatched) {
+		if ($this->mFlags & self::EVENT_DISPATCHED) {
 			return;
 		}
 
 		$this->mBubbles = $aBubbles;
 		$this->mCancelable = $aCancelable;
+		$this->mFlags |= self::EVENT_INITIALIZED;
+		$this->mFlags &= ~self::EVENT_STOP_PROPAGATION & ~self::EVENT_STOP_IMMEDIATE_PROPATATION & ~self::EVENT_CANCELED;
+		$this->mIsTrusted = false;
+		$this->mTarget = null;
 		$this->mType = $aType;
 	}
 
 	public function preventDefault() {
 		if ($this->mCancelable) {
-			$this->mDefaultPrevented = true;
+			$this->mFlags |= self::EVENT_CANCELED;
 		}
 	}
 
 	public function stopPropagation() {
-		$this->mPropagationStopped = true;
+		$this->mFlags |= self::EVENT_STOP_PROPAGATION;
 	}
 
 	public function stopImmediatePropagation() {
-		$this->mPropagationStopped = true;
-		$this->mImmediatePropagationStopped = true;
+		$this->mFlags |= self::EVENT_STOP_PROPAGATION | self::EVENT_STOP_IMMEDIATE_PROPATATION;
 	}
 
 	public function _isPropagationStopped() {
-		return $this->mPropagationStopped;
+		return $this->mFlags & self::EVENT_STOP_PROPAGATION;
 	}
 
 	public function _isImmediatePropagationStopped() {
-		return $this->mImmediatePropagationStopped;
+		return $this->mFlags & self::EVENT_STOP_IMMEDIATE_PROPATATION;
 	}
 
 	public function _setCurrentTarget(Node $aTarget) {
@@ -99,15 +100,11 @@ class Event {
 	}
 
 	public function _setDispatched() {
-		$this->mDispatched = true;
+		$this->mFlags |= self::EVENT_DISPATCHED;
 	}
 
 	public function _setTarget(Node $aTarget) {
 		$this->mTarget = $aTarget;
-	}
-
-	public function _setTimeStamp($aTime) {
-		$this->mTimeStamp = $aTime;
 	}
 
 	public function _updateEventPhase($aPhase) {
@@ -121,11 +118,10 @@ class CustomEvent extends Event {
 	public function __construct($aType, CustomEventInit $aEventInitDict = null) {
 		parent::__construct($aType);
 
-		if (is_null($aEventInitDict)) {
-			$aEventInitDict = new CustomEventInit();
-		}
-
-		$this->initCustomEvent($aType, $aEventInitDict->bubbles, $aEventInitDict->cancelable, $aEventInitDict->detail);
+		$initDict = $aEventInitDict ? $aEventInitDict : new CustomEventInit();
+		$this->mBubbles = $initDict->bubbles;
+		$this->mCancelable = $initDict->cancelable;
+		$this->mDetail =& $initDict->detail;
 	}
 
 	public function __get($aName) {
@@ -138,7 +134,7 @@ class CustomEvent extends Event {
 	}
 
 	public function initCustomEvent($aType, $aBubbles = false, $aCancelable = false, &$aDetail = null) {
-		if ($this->mDispatched) {
+		if ($this->mFlags & self::EVENT_DISPATCHED) {
 			return;
 		}
 
