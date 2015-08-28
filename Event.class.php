@@ -10,18 +10,18 @@ class Event {
 	const AT_TARGET = 2;
 	const BUBBLING_PHASE = 3;
 
-	private $mBubbles;
-	private $mCancelable;
-	private $mCurrentTarget;
-	private $mDispatched;
-	private $mDefaultPrevented;
-	private $mEventPhase;
-	private $mImmediatePropagationStopped;
-	private $mIsTrusted;
-	private $mPropagationStopped;
-	private $mTarget;
-	private $mTimeStamp;
-	private $mType;
+	protected $mBubbles;
+	protected $mCancelable;
+	protected $mCurrentTarget;
+	protected $mDispatched;
+	protected $mDefaultPrevented;
+	protected $mEventPhase;
+	protected $mImmediatePropagationStopped;
+	protected $mIsTrusted;
+	protected $mPropagationStopped;
+	protected $mTarget;
+	protected $mTimeStamp;
+	protected $mType;
 
 	public function __construct($aType, EventInit $aEventInitDict = null) {
 		$this->mBubbles = $aEventInitDict ? $aEventInitDict->bubbles : false;
