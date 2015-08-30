@@ -44,6 +44,13 @@ class NotSupportedError extends Exception {
 	}
 }
 
+class InvalidStateError extends Exception {
+	public function __construct() {
+		$this->code = 11;
+		$this->message = 'This object is in an invalid state';
+	}
+}
+
 class SyntaxError extends Exception {
 	public function __construct() {
 		$this->code = 12;

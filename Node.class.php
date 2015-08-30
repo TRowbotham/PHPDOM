@@ -103,31 +103,36 @@ abstract class Node implements EventTarget {
 
     /**
      * Registers a callback for a specified event on the current node.
+     *
      * @param string                    $aEventName     The name of the event to listen for.
+     *
      * @param callable|EventListener    $aCallback      A callback that will be executed when the event occurs.  If an
      *                                                  object that inherits from the EventListener interface is given,
      *                                                  it will use the handleEvent method on the object as the
      *                                                  callback.
+     *
      * @param boolean                   $aUseCapture    Optional. Specifies whether or not the event should be handled
      *                                                  during the capturing or bubbling phase.
      */
     public function addEventListener($aEventName, $aCallback, $aUseCapture = false) {
-        if (!array_key_exists($aEventName, $this->mEvents)) {
-            $this->mEvents[$aEventName] = array();
-            $this->mEvents[$aEventName][Event::CAPTURING_PHASE] = array();
-            $this->mEvents[$aEventName][Event::BUBBLING_PHASE] = array();
+        if (!$aCallback) {
+            return;
         }
 
-        if ($aCallback instanceof EventListener) {
+        if (is_object($aCallback) && $aCallback instanceof EventListener) {
             $callback = array($aCallback, 'handleEvent');
         } else {
             $callback = $aCallback;
         }
 
-        $useCapture = $aUseCapture ? Event::CAPTURING_PHASE : Event::BUBBLING_PHASE;
+        $listener = array(
+                        'type' => $aEventName,
+                        'callback' => $aCallback,
+                        'capture' => $aUseCapture
+                    );
 
-        if (!in_array($callback, $this->mEvents[$aEventName][$useCapture])) {
-            array_unshift($this->mEvents[$aEventName][$useCapture], $callback);
+        if (!in_array($listener, $this->mEvents)) {
+            array_unshift($this->mEvents, $listener);
         }
     }
 
@@ -235,23 +240,64 @@ abstract class Node implements EventTarget {
     }
 
     /**
-     * Dispatches an event at the current EventTarget, which will then invoke any event listeners on the node.
-     * @param  Event  $aEvent An object representing the specific event dispatched with information regarding
-     *                        that event.
-     * @return boolean        Returns false if at least one event handler calles Event.preventDefault(), otherwise it
-     *                        returns true.
+     * Dispatches an event at the current EventTarget, which will then invoke any event listeners on the node and
+     * its ancestors.
+     *
+     * @param  Event    $aEvent An object representing the specific event dispatched with information regarding
+     *                          that event.
+     *
+     * @return boolean          Returns true if the event is not cancelable or if the preventDefault() method is not
+     *                          invoked, otherwise it returns false.
      */
     public function dispatchEvent(Event $aEvent) {
-        $node = $this;
+        if ($aEvent->_getFlags() & Event::EVENT_DISPATCHED || !($aEvent->_getFlags() & Event::EVENT_INITIALIZED)) {
+            throw new InvalidStateError;
+        }
 
-        while ($node->parentNode) {
+        $aEvent->_setIsTrusted(false);
+        $aEvent->_setFlag(Event::EVENT_DISPATCHED);
+        $aEvent->_setTarget($this);
+        $eventPath = array();
+        $node = $this->parentNode;
+
+        while ($node) {
+            $eventPath[] = $node;
             $node = $node->parentNode;
         }
 
-        $aEvent->_setDispatched();
-        $aEvent->_setTarget($this);
-        $aEvent->_updateEventPhase(($node != $this ? Event::CAPTURING_PHASE : Event::AT_TARGET));
-        $node->_dispatchEvent($aEvent);
+        $aEvent->_setEventPhase(Event::CAPTURING_PHASE);
+
+        foreach ($eventPath as $eventTarget) {
+            if ($aEvent->_getFlags() & Event::EVENT_STOP_PROPAGATION) {
+                break;
+            }
+
+            $this->invokeEventListener($aEvent, $eventTarget);
+        }
+
+        $aEvent->_setEventPhase(Event::AT_TARGET);
+
+        if (!($aEvent->_getFlags() & Event::EVENT_STOP_PROPAGATION)) {
+            $this->invokeEventListener($aEvent, $aEvent->target);
+        }
+
+        if ($aEvent->bubbles) {
+            $aEvent->_setEventPhase(Event::BUBBLING_PHASE);
+
+            foreach (array_reverse($eventPath) as $eventTarget) {
+                if ($aEvent->_getFlags() & Event::EVENT_STOP_PROPAGATION) {
+                    break;
+                }
+
+                $this->invokeEventListener($aEvent, $eventTarget);
+            }
+        }
+
+        $aEvent->_unsetFlag(Event::EVENT_DISPATCHED);
+        $aEvent->_setEventPhase(Event::NONE);
+        $aEvent->_setCurrentTarget(null);
+
+        return !$aEvent->cancelable || !($aEvent->_getFlags() & Event::EVENT_CANCELED);
     }
 
     /**
@@ -339,29 +385,33 @@ abstract class Node implements EventTarget {
 
     /**
      * Unregisters a callback for a specified event on the current node.
+     *
      * @param string                    $aEventName     The name of the event to listen for.
+     *
      * @param callable|EventListener    $aCallback      A callback that will be executed when the event occurs.  If an
      *                                                  object that inherits from the EventListener interface is given,
      *                                                  it will use the handleEvent method on the object as the
      *                                                  callback.
+     *
      * @param boolean                   $aUseCapture    Optional. Specifies whether or not the event should be handled
      *                                                  during the capturing or bubbling phase.
      */
     public function removeEventListener($aEventName, $aCallback, $aUseCapture = false) {
-        if (array_key_exists($aEventName, $this->mEvents)) {
-            $useCapture = $aUseCapture ? Event::CAPTURING_PHASE : Event::BUBBLING_PHASE;
+        if (is_object($aCallback) && $aCallback instanceof EventListener) {
+            $callback = array($aCallback, 'handleEvent');
+        } else {
+            $callback = $aCallback;
+        }
 
-            if ($aCallback instanceof EventListener) {
-                $callback = array($aCallback, 'handleEvent');
-            } else {
-                $callback = $aCallback;
-            }
+        $listener = array(
+                        'type' => $aEventName,
+                        'callback' => $callback,
+                        'capture' => $aUseCapture
+                    );
+        $index = array_search($listener, $this->mEvents);
 
-            $index = array_search($callback, $this->mEvents[$aEventName][$useCapture]);
-
-            if ($index !== false) {
-                array_splice($this->mEvents[$aEventName][$useCapture], $index, 1);
-            }
+        if ($index !== false) {
+            array_splice($this->mEvents, $index, 1);
         }
     }
 
@@ -683,81 +733,6 @@ abstract class Node implements EventTarget {
     }
 
     /**
-     * Handles executing the callbacks registered to a specific event on this Node.  It also takes care of handling
-     * event propagation and the event phases.
-     * @internal
-     * @param  Event   $aEvent                  The event object associated with the currently executing event.
-     * @param  boolean $aMoveToBubblingPhase    When the event phase is AT_TARGET, it first executes any event handlers
-     *                                          on the target Node that are associated with the CAPTURING_PHASE.
-     *                                          Another event will then be dispatched on the same Node in the AT_TARGET
-     *                                          phase again which executes and event handlers on the target that are
-     *                                          associated with the BUBBLING_PHASE.  When set to true, this means that
-     *                                          the dispatched event has already been through the AT_TARGET phase once.
-     */
-    private function _dispatchEvent(Event $aEvent, $aMoveToBubblingPhase = false) {
-        if ($aEvent->_isPropagationStopped()) {
-            $aEvent->_updateEventPhase(Event::NONE);
-
-            return;
-        }
-
-        $moveToBubblingPhase = $aMoveToBubblingPhase;
-
-        if (array_key_exists($aEvent->type, $this->mEvents)) {
-            $aEvent->_setCurrentTarget($this);
-            $eventPhase = $moveToBubblingPhase ? Event::BUBBLING_PHASE : Event::CAPTURING_PHASE;
-
-            foreach ($this->mEvents[$aEvent->type][$eventPhase] as $callback) {
-                if ($aEvent->_isImmediatePropagationStopped()) {
-                    break;
-                }
-
-                call_user_func($callback, $aEvent);
-            }
-        }
-
-        switch ($aEvent->eventPhase) {
-            case Event::CAPTURING_PHASE:
-                $node = $aEvent->target;
-
-                while ($node) {
-                    if ($node->parentNode == $this) {
-                        break;
-                    }
-
-                    $node = $node->parentNode;
-                }
-
-                if ($this == $aEvent->target->parentNode) {
-                    $aEvent->_updateEventPhase(Event::AT_TARGET);
-                }
-
-                break;
-
-            case Event::AT_TARGET:
-                if ($moveToBubblingPhase) {
-                    $node = $this->parentNode;
-                    $aEvent->_updateEventPhase(Event::BUBBLING_PHASE);
-                } else {
-                    $node = $this;
-                    $moveToBubblingPhase = true;
-                }
-
-                break;
-
-            case Event::BUBBLING_PHASE:
-                $node = $this->parentNode;
-        }
-
-        if ($node) {
-            $node->_dispatchEvent($aEvent, $moveToBubblingPhase);
-        } else {
-            // The event listener has run its course.
-            $aEvent->_updateEventPhase(Event::NONE);
-        }
-    }
-
-    /**
      * @internal
      * @link  https://dom.spec.whatwg.org/#concept-node-remove
      * @param Node $aNode              The Node to be removed from the document tree.
@@ -841,6 +816,35 @@ abstract class Node implements EventTarget {
             }
 
             array_splice($this->mChildNodes, $index++, 0, array($newNode));
+        }
+    }
+
+    /**
+     * @internal
+     * Invokes all callbacks associated with a given event and Node.
+     *
+     * @link https://dom.spec.whatwg.org/#concept-event-listener-invoke
+     *
+     * @param  Event $aEvent  The event currently being dispatched.
+     *
+     * @param  Node  $aTarget The current target of the event being dispatched.
+     */
+    private function invokeEventListener($aEvent, $aTarget) {
+        $listeners = $aTarget->mEvents;
+        $aEvent->_setCurrentTarget($aTarget);
+
+        for ($i = 0; $i < count($listeners); $i++) {
+            if ($aEvent->_getFlags() & Event::EVENT_STOP_IMMEDIATE_PROPAGATION) {
+                break;
+            }
+
+            if (strcasecmp($aEvent->type, $listeners[$i]['type']) !== 0 ||
+                ($aEvent->eventPhase === Event::CAPTURING_PHASE && !$listeners[$i]['capture']) ||
+                ($aEvent->eventPhase === Event::BUBBLING_PHASE && $listeners[$i]['capture'])) {
+                continue;
+            }
+
+            call_user_func($listeners[$i]['callback'], $aEvent);
         }
     }
 

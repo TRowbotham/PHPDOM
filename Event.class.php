@@ -59,6 +59,7 @@ class Event {
         $this->mEventPhase = self::NONE;
         $this->mFlags |= self::EVENT_INITIALIZED;
         $this->mIsTrusted = false;
+        $this->mTarget = null;
         $this->mTimeStamp = microtime();
         $this->mType = $aType;
     }
@@ -135,28 +136,32 @@ class Event {
         $this->mFlags |= self::EVENT_STOP_PROPAGATION | self::EVENT_STOP_IMMEDIATE_PROPATATION;
     }
 
-    public function _isPropagationStopped() {
-        return $this->mFlags & self::EVENT_STOP_PROPAGATION;
+    public function _getFlags() {
+        return $this->mFlags;
     }
 
-    public function _isImmediatePropagationStopped() {
-        return $this->mFlags & self::EVENT_STOP_IMMEDIATE_PROPATATION;
-    }
-
-    public function _setCurrentTarget(Node $aTarget) {
+    public function _setCurrentTarget($aTarget) {
         $this->mCurrentTarget = $aTarget;
     }
 
-    public function _setDispatched() {
-        $this->mFlags |= self::EVENT_DISPATCHED;
+    public function _setEventPhase($aPhase) {
+        $this->mEventPhase = $aPhase;
     }
 
-    public function _setTarget(Node $aTarget) {
+    public function _setFlag($aFlag) {
+        $this->mFlags |= $aFlag;
+    }
+
+    public function _setIsTrusted($aIsTrusted) {
+        $this->mIsTrusted = $aIsTrusted;
+    }
+
+    public function _setTarget($aTarget) {
         $this->mTarget = $aTarget;
     }
 
-    public function _updateEventPhase($aPhase) {
-        $this->mEventPhase = $aPhase;
+    public function _unsetFlag($aFlag) {
+        $this->mFlags &= ~$aFlag;
     }
 }
 
