@@ -37,7 +37,7 @@ class Event {
     const BUBBLING_PHASE = 3;
 
     const EVENT_STOP_PROPAGATION = 1;
-    const EVENT_STOP_IMMEDIATE_PROPATATION = 2;
+    const EVENT_STOP_IMMEDIATE_PROPAGATION = 2;
     const EVENT_CANCELED = 4;
     const EVENT_INITIALIZED = 8;
     const EVENT_DISPATCHED = 16;
@@ -105,7 +105,7 @@ class Event {
         $this->mBubbles = $aBubbles;
         $this->mCancelable = $aCancelable;
         $this->mFlags |= self::EVENT_INITIALIZED;
-        $this->mFlags &= ~self::EVENT_STOP_PROPAGATION & ~self::EVENT_STOP_IMMEDIATE_PROPATATION & ~self::EVENT_CANCELED;
+        $this->mFlags &= ~self::EVENT_STOP_PROPAGATION & ~self::EVENT_STOP_IMMEDIATE_PROPAGATION & ~self::EVENT_CANCELED;
         $this->mIsTrusted = false;
         $this->mTarget = null;
         $this->mType = $aType;
@@ -133,7 +133,7 @@ class Event {
      * follow the current object as well as preventing any following event listeners from being invoked.
      */
     public function stopImmediatePropagation() {
-        $this->mFlags |= self::EVENT_STOP_PROPAGATION | self::EVENT_STOP_IMMEDIATE_PROPATATION;
+        $this->mFlags |= self::EVENT_STOP_PROPAGATION | self::EVENT_STOP_IMMEDIATE_PROPAGATION;
     }
 
     public function _getFlags() {
