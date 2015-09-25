@@ -365,11 +365,13 @@ class HTMLTableElement extends HTMLElement {
      * @return HTMLElement
      */
     private function createTableChildElement($aElement, $aInsertBefore) {
-        $node = $this->shallowGetElementsByTagName($aElement);
+        $nodes = $this->shallowGetElementsByTagName($aElement);
 
-        if (!isset($node[0])) {
+        if (!isset($nodes[0])) {
             $node = $this->mOwnerDocument->createElement($aElement);
             $this->insertBefore($node, $aInsertBefore);
+        } else {
+            $node = $nodes[0];
         }
 
         return $node;
