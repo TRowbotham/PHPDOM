@@ -52,7 +52,7 @@ trait ParentNode {
 	private function getChildElementCount() {
 		$this->maybeInvalidateChildren();
 
-		return $this->mChildElementCount ? $this->mChildElementCount : null;
+		return $this->mChildElementCount;
 	}
 
 	private function maybeInvalidateChildren() {
