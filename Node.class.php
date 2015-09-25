@@ -579,7 +579,7 @@ abstract class Node implements EventTarget {
      * @throws HierarchyRequestError
      * @throws NotFoundError
      */
-    protected function preinsertionValidity($aNode, $aChild) {
+    protected function ensurePreinsertionValidity($aNode, $aChild) {
         if (!($this instanceof Document) &&
             !($this instanceof DocumentFragment) &&
             !($this instanceof Element)) {
@@ -622,22 +622,16 @@ abstract class Node implements EventTarget {
                 if ($aNode->childElementCount > 1 || $hasTextNode) {
                     throw new HierarchyRequestError;
                 } else {
-                    $node = $aChild ? $aChild->nextSibling : null;
-                    $docTypeFollowsChild = false;
-
-                    while ($node) {
-                        if ($node instanceof DocumentType) {
-                            $docTypeFollowsChild = true;
-
-                            break;
-                        }
-
-                        $node = $node->nextSibling;
+                    if ($aNode->childElementCount == 1 && ($this->childElementCount || $aChild instanceof DocumentType)) {
+                        throw new HierarchyRequestError;
                     }
 
-                    if ($aNode->childElementCount == 1 && ($this->childElementCount ||
-                        $aChild instanceof DocumentType || ($aChild !== null && $docTypeFollowsChild))) {
-                        throw new HierarchyRequestError;
+                    if ($aChild !== null) {
+                        $tw = $aChild->ownerDocument->createTreeWalker($aChild, NodeFilter::SHOW_DOCUMENT_TYPE);
+
+                        if ($tw->nextNode() !== null) {
+                            throw new HierarchyRequestError;
+                        }
                     }
                 }
             } elseif ($aNode instanceof Element) {
@@ -651,22 +645,16 @@ abstract class Node implements EventTarget {
                     }
                 }
 
-                $node = $aChild ? $aChild->nextSibling : null;
-                $docTypeFollowsChild = false;
-
-                while ($node) {
-                    if ($node instanceof DocumentType) {
-                        $docTypeFollowsChild = true;
-
-                        break;
-                    }
-
-                    $node = $node->nextSibling;
+                if ($parentHasElementChild || $aChild instanceof DocumentType) {
+                    throw new HierarchyRequestError;
                 }
 
-                if ($parentHasElementChild || $aChild instanceof DocumentType ||
-                    ($aChild !== null && $docTypeFollowsChild)) {
-                    throw new HierarchyRequestError;
+                if ($aChild !== null) {
+                    $tw = $aChild->ownerDocument->createTreeWalker($aChild, NodeFilter::SHOW_DOCUMENT_TYPE);
+
+                    if ($tw->nextNode() !== null) {
+                        throw new HierarchyRequestError;
+                    }
                 }
             } elseif ($aNode instanceof DocumentType) {
                 $parentHasDocTypeChild = false;
@@ -679,16 +667,13 @@ abstract class Node implements EventTarget {
                     }
                 }
 
-                $node = $aChild ? $aChild->previousSibling : null;
-                $elementPrecedesChild = false;
+                if ($aChild !== null) {
+                    $tw = $aChild->ownerDocument->createTreeWalker($aChild->ownerDocument, NodeFilter::SHOW_ELEMENT);
+                    $tw->currentNode = $aChild;
 
-                while ($node) {
-                    if ($node instanceof Element) {
-                        $elementPrecedesChild = true;
-                        break;
+                    if ($tw->previousNode() !== null) {
+                        throw new HierarchyRequestError;
                     }
-
-                    $node = $node->previousSibling;
                 }
 
                 $parentHasElementChild = false;
@@ -701,7 +686,7 @@ abstract class Node implements EventTarget {
                     }
                 }
 
-                if ($parentHasDocTypeChild || $elementPrecedesChild || ($aChild !== null && $parentHasElementChild)) {
+                if ($parentHasDocTypeChild || ($aChild !== null && $parentHasElementChild)) {
                     throw new HierarchyRequestError;
                 }
             }
@@ -716,7 +701,7 @@ abstract class Node implements EventTarget {
      * @return DocumentFragment|Node            The nodes that were insterted into the document tree.
      */
     protected function preinsertNodeBeforeChild($aNode, $aChild) {
-        $this->preinsertionValidity($aNode, $aChild);
+        $this->ensurePreinsertionValidity($aNode, $aChild);
         $referenceChild = $aChild;
 
         if ($referenceChild === $aNode) {
