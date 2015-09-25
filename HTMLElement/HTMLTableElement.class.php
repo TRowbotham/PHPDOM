@@ -272,9 +272,11 @@ class HTMLTableElement extends HTMLElement {
     public function createTBody() {
         $tbodies = $this->shallowGetElementsByTagName('tbody');
         $len = count($tbodies);
-        $lastTbody = $len ? $tbodies[$len - 1] : null;
+        $lastTbody = $len ? $tbodies[$len - 1]->nextSibling : null;
+        $node = $this->mOwnerDocument->createElement('tbody');
+        $this->insertBefore($node, $lastTbody);
 
-        return $this->createTableChildElement('tbody', $lastTbody);
+        return $node;
     }
 
     /**
