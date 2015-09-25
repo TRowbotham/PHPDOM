@@ -33,6 +33,15 @@ final class TreeWalker {
         }
     }
 
+    public function __set($aName, $aValue) {
+        switch ($aName) {
+            case 'currentNode':
+                if ($aValue instanceof Node) {
+                    $this->mCurrentNode = $aValue;
+                }
+        }
+    }
+
     public function firstChild() {
         return $this->traverseChildren('first');
     }
