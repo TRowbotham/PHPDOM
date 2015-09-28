@@ -32,6 +32,20 @@ abstract class CharacterData extends Node {
         }
     }
 
+    public function __set($aName, $aValue) {
+        switch ($aName) {
+            case 'data':
+                if (is_string($aValue)) {
+                    $this->mData = $aValue;
+                }
+
+                break;
+
+            default:
+                parent::__set($aName, $aValue);
+        }
+    }
+
     public function appendData($aData) {
         // TODO
     }
