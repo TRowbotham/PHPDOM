@@ -17,13 +17,19 @@ class Text extends CharacterData {
 		switch ($aName) {
 			case 'wholeText':
 				$wholeText = '';
+				$startNode = $this;
 
-				if ($this->parentNode) {
-					foreach ($this->parentNode->childNodes as $node) {
-						if ($node instanceof Text) {
-							$wholeText += $node->data;
-						}
+				while ($startNode) {
+					if (!($startNode->previousSibling instanceof Text)) {
+						break;
 					}
+
+					$startNode = $startNode->previousSibling;
+				}
+
+				while ($startNode instanceof Text) {
+					$wholeText .= $startNode->data;
+					$startNode = $startNode->nextSibling;
 				}
 
 				return $wholeText;
