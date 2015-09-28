@@ -132,5 +132,16 @@ abstract class CharacterData extends Node {
 
     public function substringData($aOffset, $aCount) {
         // TODO
+    /**
+     * Returns the Node's length.
+     *
+     * @internal
+     *
+     * @link https://dom.spec.whatwg.org/#concept-node-length
+     *
+     * @return int
+     */
+    public function _getNodeLength() {
+        return $this->length;
     }
 }
