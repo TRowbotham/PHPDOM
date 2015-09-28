@@ -1,9 +1,15 @@
 <?php
-// https://developer.mozilla.org/en-US/docs/Web/API/Text
-// https://dom.spec.whatwg.org/#text
-
 require_once 'CharacterData.class.php';
 
+/**
+ * Represents the text content of a Node.
+ *
+ * @link https://dom.spec.whatwg.org/#text
+ * @link https://developer.mozilla.org/en-US/docs/Web/API/Text
+ *
+ * @property-read string $wholeText Returns the concatenated string data of all contingious Text nodes relative
+ * 									to this Node in tree order.
+ */
 class Text extends CharacterData {
 	public function __construct($aData = '') {
 		parent::__construct();
