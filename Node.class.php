@@ -331,46 +331,85 @@ abstract class Node implements EventTarget {
     /**
      * "Normalizes" the node and its sub-tree so that there are no empty text nodes present and
      * there are no text nodes that appear consecutively.
+     *
      * @link https://dom.spec.whatwg.org/#dom-node-normalize
      */
     public function normalize() {
-        if ($this->hasChildNodes()) {
-            $nodesToRemove = [];
-            $lastValidTextNode;
+        $ownerDocument = $this instanceof Document ? $this : $this->mOwnerDocument;
+        $nextSibling = $this->mNextSibling;
+        $tw = $ownerDocument->createTreeWalker($this, NodeFilter::SHOW_TEXT);
 
-            foreach($this->mChildNodes as $node) {
-                switch($node->mNodeType) {
-                    case Node::TEXT_NODE:
-                        if (empty($node->textContent)) {
-                            $nodesToRemove[] = $node;
-                            break;
-                        }
+        while ($node = $tw->nextNode()) {
+            $length = $node->length;
 
-                        if (!is_null($node->mPreviousSibling) &&
-                            $node->mPreviousSibling->mNodeType != Node::TEXT_NODE) {
-                            $lastValidTextNode = $node;
-                        }
-
-                        if ($node != $lastValidTextNode && !is_null($node->mNextSibling) &&
-                            $node->mNextSibling->mNodeType == Node::TEXT_NODE) {
-                            $lastValidTextNode->textContent .= $node->mNextSibling->textContent;
-                            $nodesToRemove[] = $node->mNextSibling;
-                        }
-
-                        break;
-
-                    case Node::ELEMENT_NODE:
-                        $node->normalize();
-
-                        break;
-                }
+            if (!$length) {
+                $this->_removeChild($node);
+                continue;
             }
 
-            if (!empty($nodesToRemove)) {
-                foreach($nodesToRemove as $node) {
-                    $this->removeChild($node);
+            $data = '';
+            $contingiousTextNodes = array();
+            $startNode = $node->previousSibling;
+
+            while ($startNode) {
+                if (!($startNode instanceof Text)) {
+                    break;
                 }
+
+                $data .= $startNode->data;
+                $contingiousTextNodes[] = $startNode;
+                $startNode = $startNode->previousSibling;
             }
+
+            $startNode = $node->nextSibling;
+
+            while ($startNode) {
+                if (!($startNode instanceof Text)) {
+                    break;
+                }
+
+                $data .= $startNode->data;
+                $contingiousTextNodes[] = $startNode;
+                $startNode = $startNode->nextSibling;
+            }
+
+            $node->replaceData($length, 0, $data);
+            $currentNode = $node->nextSibling;
+
+            while ($currentNode instanceof Text) {
+                foreach (Range::_getRangeCollection() as $index => $range) {
+                    if ($range->startContainer === $currentNode) {
+                        $range->setStart($node, $range->startOffset + $length);
+                    }
+                }
+
+                foreach (Range::_getRangeCollection() as $index => $range) {
+                    if ($range->endContainer === $currentNode) {
+                        $range->setStart($node, $range->endOffset + $length);
+                    }
+                }
+
+                foreach (Range::_getRangeCollection() as $index => $range) {
+                    if ($range->startContainer === $currentNode->parentNode && $range->startOffset == $currentNode->_getTreeIndex()) {
+                        $range->setStart($node, $length);
+                    }
+                }
+
+                foreach (Range::_getRangeCollection() as $index => $range) {
+                    if ($range->endContainer === $currentNode->parentNode && $range->endOffset == $currentNode->_getTreeIndex()) {
+                        $range->setEnd($node, $length);
+                    }
+                }
+
+                $length += $currentNode->length;
+                $currentNode = $currentNode->nextSibling;
+            }
+
+            foreach ($contingiousTextNodes as $textNode) {
+                $textNode->parentNode->removeChild($textNode);
+            }
+
+            unset($contingiousTextNodes);
         }
     }
 
