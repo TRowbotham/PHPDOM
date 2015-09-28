@@ -46,6 +46,61 @@ class Text extends CharacterData {
 	}
 
 	public function splitText($aOffset) {
-		// TODO
+		$length = $this->length;
+
+		if ($aOffset > $length) {
+			throw new IndexSizeError;
+		}
+
+		$count = $length - $aOffset;
+		$newData = substr($this->mData, $aOffset, $count);
+		$newNode = new Text($newData);
+		$newNode->mOwnerDocument = $this;
+
+		if ($this->mParentNode) {
+			$this->mParentNode->_insertNodeBeforeChild($newNode, $this->mNextSibling);
+
+			foreach (Range::_getRangeCollection() as $index => $range) {
+				if ($range->startContainer === $this && $range->startOffset > $aOffset) {
+					$range->setStart($newNode, $range->startOffset - $aOffset);
+				}
+			}
+
+			foreach (Range::_getRangeCollection() as $index => $range) {
+				if ($range->endContainer === $this && $range->endOffset > $aOffset) {
+					$range->setEnd($newNode, $range->endOffset - $aOffset);
+				}
+			}
+
+			foreach (Range::_getRangeCollection() as $index => $range) {
+				if ($range->startContainer === $this && $range->startOffset == $this->_getTreeIndex() + 1) {
+					$range->setStart($range->startContainer, $range->startOffset + 1);
+				}
+			}
+
+			foreach (Range::_getRangeCollection() as $index => $range) {
+				if ($range->endContainer === $this && $range->endOffset == $this->_getTreeIndex() + 1) {
+					$range->setEnd($range->endContainer, $range->endOffset + 1);
+				}
+			}
+		}
+
+		$this->replaceData($aOffset, $count, $this->mData);
+
+		if (!$this->mParentNode) {
+			foreach (Range::_getRangeCollection() as $index => $range) {
+				if ($range->startContainer === $this && $range->startOffset > $aOffset) {
+					$range->setStart($range->startContainer, $aOffset);
+				}
+			}
+
+			foreach (Range::_getRangeCollection() as $index => $range) {
+				if ($range->endContainer === $this && $range->endOffset > $aOffset) {
+					$range->setEnd($range->endContainer, $aOffset);
+				}
+			}
+		}
+
+		return $newNode;
 	}
 }

@@ -573,7 +573,7 @@ abstract class Node implements EventTarget {
         $this->_removeChild($aOldNode, true);
 
         $nodes = $aNewNode instanceof DocumentFragment ? $aNewNode->childNodes : array($aNewNode);
-        $this->insertNodeBeforeChild($aNewNode, $referenceChild, true);
+        $this->_insertNodeBeforeChild($aNewNode, $referenceChild, true);
 
         return $aOldNode;
     }
@@ -736,6 +736,67 @@ abstract class Node implements EventTarget {
 
     /**
      * @internal
+     * @link   https://dom.spec.whatwg.org/#concept-node-insert
+     * @param  DocumentFragment|Node    $aNode              The nodes to be inserted into the document tree.
+     * @param  Node                     $aChild             The reference node for where the new nodes should be inserted.
+     * @param  bool                     $aSuppressObservers Optional.  If true, mutation events are ignored for this
+     *                                                         operation.
+     */
+    public function _insertNodeBeforeChild($aNode, $aChild, $aSuppressObservers = null) {
+        $isDocumentFragment = $aNode instanceof DocumentFragment;
+        $parentElement = $this instanceof Element ? $this : null;
+        $count = $isDocumentFragment ? count($aNode->childNodes) : 1;
+
+        if ($aChild) {
+            // TODO substeps for Step 2
+        }
+
+        $nodes = $isDocumentFragment ? $aNode->childNodes : array($aNode);
+        $index = $aChild ? array_search($aChild, $this->mChildNodes) : count($this->mChildNodes);
+
+        if ($isDocumentFragment) {
+            foreach ($nodes as $node) {
+                $aNode->_removeChild($node, true);
+            }
+        }
+
+        if (!$aSuppressObservers) {
+
+        }
+
+        if ($index === 0) {
+            $this->mFirstChild = $nodes[0];
+        }
+
+        foreach ($nodes as $newNode) {
+            $newNode->mParentNode = $this;
+            $newNode->mParentElement = $parentElement;
+
+            if ($aChild) {
+                $newNode->mPreviousSibling = $aChild->previousSibling;
+                $newNode->mNextSibling = $aChild;
+
+                if ($aChild->previousSibling) {
+                    $aChild->previousSibling->mNextSibling = $newNode;
+                }
+
+                $aChild->mPreviousSibling = $newNode;
+            } else {
+                $newNode->mPreviousSibling = $this->mLastChild;
+
+                if ($this->mLastChild) {
+                    $this->mLastChild->mNextSibling = $newNode;
+                }
+
+                $this->mLastChild = $newNode;
+            }
+
+            array_splice($this->mChildNodes, $index++, 0, array($newNode));
+        }
+    }
+
+    /**
+     * @internal
      * @link   https://dom.spec.whatwg.org/#concept-node-pre-insert
      * @param  DocumentFragment|Node    $aNode  The nodes to be inserted into the document tree.
      * @param  Node                     $aChild The reference node for where the new nodes should be inserted.
@@ -753,7 +814,7 @@ abstract class Node implements EventTarget {
         $ownerDocument = $this instanceof Document ? $this : $this->mOwnerDocument;
         $ownerDocument->adoptNode($aNode);
 
-        $this->insertNodeBeforeChild($aNode, $referenceChild);
+        $this->_insertNodeBeforeChild($aNode, $referenceChild);
 
         return $aNode;
     }
@@ -822,63 +883,6 @@ abstract class Node implements EventTarget {
         $aNode->mNextSibling = null;
         $aNode->mParentElement = null;
         $aNode->mParentNode = null;
-    }
-
-    /**
-     * @internal
-     * @link   https://dom.spec.whatwg.org/#concept-node-insert
-     * @param  DocumentFragment|Node    $aNode              The nodes to be inserted into the document tree.
-     * @param  Node                     $aChild             The reference node for where the new nodes should be inserted.
-     * @param  bool                     $aSuppressObservers Optional.  If true, mutation events are ignored for this
-     *                                                         operation.
-     */
-    private function insertNodeBeforeChild($aNode, $aChild, $aSuppressObservers = null) {
-        $isDocumentFragment = $aNode instanceof DocumentFragment;
-        $parentElement = $this instanceof Element ? $this : null;
-        $count = $isDocumentFragment ? count($aNode->childNodes) : 1;
-
-        if ($aChild) {
-            // TODO substeps for Step 2
-        }
-
-        $nodes = $isDocumentFragment ? $aNode->childNodes : array($aNode);
-        $index = $aChild ? array_search($aChild, $this->mChildNodes) : count($this->mChildNodes);
-
-        if ($isDocumentFragment) {
-            foreach ($nodes as $node) {
-                $aNode->_removeChild($node, true);
-            }
-        }
-
-        if ($index === 0) {
-            $this->mFirstChild = $nodes[0];
-        }
-
-        foreach ($nodes as $newNode) {
-            $newNode->mParentNode = $this;
-            $newNode->mParentElement = $parentElement;
-
-            if ($aChild) {
-                $newNode->mPreviousSibling = $aChild->previousSibling;
-                $newNode->mNextSibling = $aChild;
-
-                if ($aChild->previousSibling) {
-                    $aChild->previousSibling->mNextSibling = $newNode;
-                }
-
-                $aChild->mPreviousSibling = $newNode;
-            } else {
-                $newNode->mPreviousSibling = $this->mLastChild;
-
-                if ($this->mLastChild) {
-                    $this->mLastChild->mNextSibling = $newNode;
-                }
-
-                $this->mLastChild = $newNode;
-            }
-
-            array_splice($this->mChildNodes, $index++, 0, array($newNode));
-        }
     }
 
     /**
