@@ -9,7 +9,6 @@ class Comment extends CharacterData {
 		parent::__construct();
 
 		$this->mData = $aData;
-		$this->mLength = strlen($aData);
 		$this->mNodeName = '#comment';
 		$this->mNodeType = Node::COMMENT_NODE;
 	}
