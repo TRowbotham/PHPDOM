@@ -130,8 +130,35 @@ abstract class CharacterData extends Node {
         }
     }
 
+    /**
+     * Returns a portion of the nodes data string starting at the specified
+     * offset.
+     *
+     * @link   https://dom.spec.whatwg.org/#concept-CD-substring
+     *
+     * @param  int      $aOffset The position in the string where the substring should begin.
+     *
+     * @param  int      $aCount  The number of characters the substring should include starting from
+     *                           the given offset.
+     *
+     * @return string
+     *
+     * @throws IndexSizeError
+     */
     public function substringData($aOffset, $aCount) {
-        // TODO
+        $length = $this->length;
+
+        if ($aOffset > $length) {
+            throw new IndexSizeError;
+        }
+
+        if ($aOffset + $aCount > $length) {
+            return substr($this->mData, $aOffset);
+        }
+
+        return substr($this->mData, $aOffset, $aOffset + $aCount);
+    }
+
     /**
      * Returns the Node's length.
      *
