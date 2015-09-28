@@ -315,8 +315,7 @@ class HTMLTableElement extends HTMLElement {
         } elseif ($aIndex == -1 || $aIndex == $numRows) {
             $rows[$numRows - 1]->parentNode->appendChild($tr);
         } else {
-            $nthRow = $rows[$aIndex];
-            $nthRow->parentNode->before($nthRow);
+            $rows[$aIndex]->before($tr);
         }
 
         return $tr;
