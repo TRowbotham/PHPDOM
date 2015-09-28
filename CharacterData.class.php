@@ -6,6 +6,20 @@ require_once 'Node.class.php';
 require_once 'ChildNode.class.php';
 require_once 'NonDocumentTypeChildNode.class.php';
 
+/**
+ * Represents a Node that contains characters.
+ *
+ * @link https://dom.spec.whatwg.org/#characterdata
+ * @link https://developer.mozilla.org/en-US/docs/Web/API/CharacterData
+ *
+ * @property        string          $data                       Represents the textual data contained by this Node.
+ *
+ * @property-read   int             $length                     Represents the length of the data contained by this Node.
+ *
+ * @property-read   Element|null    $nextElementSibling         Returns the next sibling that is an Element, if any.
+ *
+ * @property-read   Element|null    $previousElementSibling     Returns the previous sibling that is an Element, if any.
+ */
 abstract class CharacterData extends Node {
     use ChildNode, NonDocumentTypeChildNode;
 
