@@ -10,13 +10,11 @@ abstract class CharacterData extends Node {
     use ChildNode, NonDocumentTypeChildNode;
 
     protected $mData;
-    private $mLength;
 
     public function __construct() {
         parent::__construct();
 
         $this->mData = '';
-        $this->mLength = 0;
     }
 
     public function __get($aName) {
@@ -24,7 +22,7 @@ abstract class CharacterData extends Node {
             case 'data':
                 return $this->mData;
             case 'length':
-                return $this->mLength;
+                return strlen($this->mData);
             case 'nextElementSibling':
                 return $this->getNextElementSibling();
             case 'previousElementSibling':

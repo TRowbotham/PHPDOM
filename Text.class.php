@@ -8,10 +8,9 @@ class Text extends CharacterData {
 	public function __construct($aData = '') {
 		parent::__construct();
 
+		$this->mData = $aData;
 		$this->mNodeName = '#text';
 		$this->mNodeType = Node::TEXT_NODE;
-		$this->mData = $aData;
-		$this->mLength = strlen($aData);
 	}
 
 	public function __get($aName) {
