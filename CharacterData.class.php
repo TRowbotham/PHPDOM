@@ -1,7 +1,4 @@
 <?php
-// https://developer.mozilla.org/en-US/docs/Web/API/CharacterData
-// https://dom.spec.whatwg.org/#characterdata
-
 require_once 'Node.class.php';
 require_once 'ChildNode.class.php';
 require_once 'NonDocumentTypeChildNode.class.php';
@@ -60,16 +57,35 @@ abstract class CharacterData extends Node {
         }
     }
 
+    /**
+     * Appends the given string to the Node's existing string data.
+     *
+     * @param  string $aData The string data to be appended to the Node.
+     */
     public function appendData($aData) {
-        // TODO
+        $this->replaceData($this->mLength, 0, $aData);
     }
 
+    /**
+     * Removes the specified number of characters starting from the given offset.
+     *
+     * @param  int $aOffset The offset where data deletion should begin.
+     *
+     * @param  int $aCount  How many characters to delete starting from the given offset.
+     */
     public function deleteData($aOffset, $aCount) {
-        // TODO
+        $this->replaceData($aOffset, $aCount, '');
     }
 
+    /**
+     * Inserts the given string data at the specified offset.
+     *
+     * @param  int      $aOffset The offset where insertion should begin.
+     *
+     * @param  string   $aData   The string data to be inserted.
+     */
     public function insertData($aOffset, $aData) {
-        // TODO
+        $this->replaceData($aOffset, 0, $aData);
     }
 
     /**
