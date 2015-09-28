@@ -144,7 +144,7 @@ abstract class Node implements EventTarget {
      * @return Node          The node that was just appended to the parent node.
      */
     public function appendChild(Node $aNode) {
-        return $this->preinsertNodeBeforeChild($aNode, null);
+        return $this->_preinsertNodeBeforeChild($aNode, null);
     }
 
     /**
@@ -315,7 +315,7 @@ abstract class Node implements EventTarget {
      * @return Node             The node that was inserted into the document.
      */
     public function insertBefore(Node $aNewNode, Node $aRefNode = null) {
-        return $this->preinsertNodeBeforeChild($aNewNode, $aRefNode);
+        return $this->_preinsertNodeBeforeChild($aNewNode, $aRefNode);
     }
 
     /**
@@ -541,45 +541,13 @@ abstract class Node implements EventTarget {
 
     /**
      * @internal
-     * @link   https://dom.spec.whatwg.org/#mutation-method-macro
-     * @param  array                   $aNodes An array of Nodes and strings.
-     * @return DocumentFragment|Node           If $aNodes > 1, then a DocumentFragment is
-     *                                             returned, otherwise a single Node is returned.
-     */
-    protected function mutationMethodMacro($aNodes) {
-        $node = null;
-        $nodes = $aNodes;
-
-        // Turn all strings into Text nodes.
-        array_walk($nodes, function(&$aArg) {
-            if (is_string($aArg)) {
-                $aArg = new Text($aArg);
-            }
-        });
-
-        // If we were given mutiple nodes, throw them all into a DocumentFragment
-        if (count($nodes) > 1) {
-            $node = $this->mOwnerDocument->createDocumentFragment();
-
-            foreach ($nodes as $arg) {
-                $node->appendChild($arg);
-            }
-        } else {
-            $node = $nodes[0];
-        }
-
-        return $node;
-    }
-
-    /**
-     * @internal
      * @link   https://dom.spec.whatwg.org/#concept-node-ensure-pre-insertion-validity
      * @param  DocumentFragment|Node    $aNode  The nodes being inserted into the document tree.
      * @param  Node                     $aChild The reference node for where the new nodes should be inserted.
      * @throws HierarchyRequestError
      * @throws NotFoundError
      */
-    protected function ensurePreinsertionValidity($aNode, $aChild) {
+    public function _ensurePreinsertionValidity($aNode, $aChild) {
         if (!($this instanceof Document) &&
             !($this instanceof DocumentFragment) &&
             !($this instanceof Element)) {
@@ -694,14 +662,48 @@ abstract class Node implements EventTarget {
     }
 
     /**
+     * Returns the Node's index.
+     *
+     * @internal
+     *
+     * @link https://dom.spec.whatwg.org/#concept-tree-index
+     *
+     * @return int
+     */
+    public function _getTreeIndex() {
+        $index = 0;
+        $sibling = $this->previousSibling;
+
+        while ($sibling) {
+            $index++;
+            $sibling = $sibling->previousSibling;
+        }
+
+        return $index;
+    }
+
+    /**
+     * Returns the Node's length.
+     *
+     * @internal
+     *
+     * @link https://dom.spec.whatwg.org/#concept-node-length
+     *
+     * @return int
+     */
+    public function _getNodeLength() {
+        return count($this->mChildNodes);
+    }
+
+    /**
      * @internal
      * @link   https://dom.spec.whatwg.org/#concept-node-pre-insert
      * @param  DocumentFragment|Node    $aNode  The nodes to be inserted into the document tree.
      * @param  Node                     $aChild The reference node for where the new nodes should be inserted.
      * @return DocumentFragment|Node            The nodes that were insterted into the document tree.
      */
-    protected function preinsertNodeBeforeChild($aNode, $aChild) {
-        $this->ensurePreinsertionValidity($aNode, $aChild);
+    public function _preinsertNodeBeforeChild($aNode, $aChild) {
+        $this->_ensurePreinsertionValidity($aNode, $aChild);
         $referenceChild = $aChild;
 
         if ($referenceChild === $aNode) {
@@ -715,6 +717,38 @@ abstract class Node implements EventTarget {
         $this->insertNodeBeforeChild($aNode, $referenceChild);
 
         return $aNode;
+    }
+
+    /**
+     * @internal
+     * @link   https://dom.spec.whatwg.org/#mutation-method-macro
+     * @param  array                   $aNodes An array of Nodes and strings.
+     * @return DocumentFragment|Node           If $aNodes > 1, then a DocumentFragment is
+     *                                             returned, otherwise a single Node is returned.
+     */
+    protected function mutationMethodMacro($aNodes) {
+        $node = null;
+        $nodes = $aNodes;
+
+        // Turn all strings into Text nodes.
+        array_walk($nodes, function(&$aArg) {
+            if (is_string($aArg)) {
+                $aArg = new Text($aArg);
+            }
+        });
+
+        // If we were given mutiple nodes, throw them all into a DocumentFragment
+        if (count($nodes) > 1) {
+            $node = $this->mOwnerDocument->createDocumentFragment();
+
+            foreach ($nodes as $arg) {
+                $node->appendChild($arg);
+            }
+        } else {
+            $node = $nodes[0];
+        }
+
+        return $node;
     }
 
     /**

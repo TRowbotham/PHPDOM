@@ -13,7 +13,7 @@ trait ChildNode {
 		}
 
 		$node = $this->mutationMethodMacro(func_get_args());
-		$this->mParentNode->preinsertNodeBeforeChild($node, $this->mNextSibling);
+		$this->mParentNode->_preinsertNodeBeforeChild($node, $this->mNextSibling);
 	}
 
 	/**
@@ -26,7 +26,7 @@ trait ChildNode {
 		}
 
 		$node = $this->mutationMethodMacro(func_get_args());
-		$this->mParentNode->preinsertNodeBeforeChild($node, $this);
+		$this->mParentNode->_preinsertNodeBeforeChild($node, $this);
 	}
 
 	/**

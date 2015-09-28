@@ -14,7 +14,7 @@ trait ParentNode {
 	 */
 	public function append() {
 		$node = $this->mutationMethodMacro(func_get_args());
-		$this->preinsertNodeBeforeChild($node, null);
+		$this->_preinsertNodeBeforeChild($node, null);
 	}
 
 	/**
@@ -24,7 +24,7 @@ trait ParentNode {
 	 */
 	public function prepend() {
 		$node = $this->mutationMethodMacro(func_get_args());
-		$this->preinsertNodeBeforeChild($node, $this->mFirstChild);
+		$this->_preinsertNodeBeforeChild($node, $this->mFirstChild);
 	}
 
 	private function filterChildElements($aNode) {

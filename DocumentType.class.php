@@ -44,4 +44,17 @@ class DocumentType extends Node {
 
 		return $html;
 	}
+
+	/**
+     * Returns the Node's length.
+     *
+     * @internal
+     *
+     * @link https://dom.spec.whatwg.org/#concept-node-length
+     *
+     * @return int
+     */
+    public function _getNodeLength() {
+        return 0;
+    }
 }

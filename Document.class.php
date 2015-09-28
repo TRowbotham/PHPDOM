@@ -15,6 +15,7 @@ require_once 'Comment.class.php';
 require_once 'URL.class.php';
 require_once 'NodeFilter.class.php';
 require_once 'NodeIterator.class.php';
+require_once 'Range.class.php';
 require_once 'TreeWalker.class.php';
 
 class Document extends Node {
@@ -143,6 +144,14 @@ class Document extends Node {
 	 */
 	public function createNodeIterator(Node $aRoot, $aWhatToShow = NodeFilter::SHOW_ALL, callable $aFilter = null) {
 		return new NodeIterator($aRoot, $aWhatToShow, $aFilter);
+	}
+
+	public function createRange() {
+		$range = new Range();
+		$range->setStart($this, 0);
+		$range->setEnd($this, 0);
+
+		return $range;
 	}
 
 	public function createTextNode($aData) {
