@@ -54,7 +54,6 @@ abstract class Node implements EventTarget {
         $this->mParentElement = null;
         $this->mParentNode = null;
         $this->mPreviousSibling = null;
-        $this->mTextContent = '';
     }
 
     public function __get( $aName ) {
@@ -91,13 +90,56 @@ abstract class Node implements EventTarget {
 
             case 'previousSibling':
                 return $this->mPreviousSibling;
+
+            case 'textContent':
+                switch (true) {
+                    case $this instanceof DocumentFragment:
+                    case $this instanceof Element:
+                        $tw = $this->mOwnerDocument->createTreeWalker($this, NodeFilter::SHOW_TEXT);
+                        $textContent = '';
+
+                        while ($node = $tw->nextNode()) {
+                            $textContent .= $node->data;
+                        }
+
+                        return $textContent;
+
+                    case $this instanceof Text:
+                    case $this instanceof ProcessingInstruction:
+                    case $this instanceof Comment:
+                        return $this->mData;
+
+                    default:
+                        return null;
+                }
         }
     }
 
     public function __set($aName, $aValue) {
         switch ($aName) {
             case 'textContent':
-                $this->mTextContent = $aValue;
+                $value = $aValue === null ? '' : $aValue;
+
+                switch (true) {
+                    case $this instanceof DocumentFragment:
+                    case $this instanceof Element:
+                        $node = null;
+
+                        if ($value !== '') {
+                            $node = $this->mOwnerDocument->createTextNode($value);
+                        }
+
+                        $this->_replaceAll($node);
+
+                        break;
+
+                    case $this instanceof Text:
+                    case $this instanceof ProcessingInstruction:
+                    case $this instanceof Comment:
+                        $this->replaceData(0, $this->length, $value);
+
+                        break;
+                }
         }
     }
 
@@ -817,6 +859,42 @@ abstract class Node implements EventTarget {
         $this->_insertNodeBeforeChild($aNode, $referenceChild);
 
         return $aNode;
+    }
+
+    /**
+     * Replaces all nodes within a parent.
+     *
+     * @internal
+     *
+     * @link https://dom.spec.whatwg.org/#concept-node-replace-all
+     *
+     * @param Node $aNode The node that is to be inserted.
+     */
+    public function _replaceAll(Node $aNode) {
+        if ($aNode) {
+            $ownerDocument = $this instanceof Document ? $this : $this->mOwnerDocument;
+            $ownerDocument->adoptNode($aNode);
+        }
+
+        $removedNodes = $this->mChildNodes;
+
+        if (!$aNode) {
+            $addedNodes = array();
+        } else if ($aNode instanceof DocumentFragment) {
+            $addedNodes = $aNode->childNodes;
+        } else {
+            $addedNodes = array($aNode);
+        }
+
+        foreach ($removedNodes as $index => $node) {
+            $this->_removeChild($node, true);
+        }
+
+        if ($aNode) {
+            $this->_insertNodeBeforeChild($aNode, null, true);
+        }
+
+        // TODO: Queue a mutation record for "childList"
     }
 
     /**
