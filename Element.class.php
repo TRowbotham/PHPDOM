@@ -17,11 +17,14 @@ abstract class Element extends Node implements SplObserver {
 	protected $mClassName;
 	protected $mEndTagOmitted;
 	protected $mId;
+	protected $mLocalName;
+	protected $mNamespaceURI;
+	protected $mPrefix;
 	protected $mTagName;
 
 	private $mReconstructClassList;
 
-	protected function __construct($aTagName) {
+	protected function __construct($aLocalName) {
 		parent::__construct();
 
 		$this->mAttributes = new NamedNodeMap();
@@ -29,8 +32,11 @@ abstract class Element extends Node implements SplObserver {
 		$this->mClassName = '';
 		$this->mEndTagOmitted = false;
 		$this->mId = '';
-		$this->mNodeName = strtoupper($aTagName);
-		$this->mTagName = strtoupper($aTagName);
+		$this->mLocalName = strtolower($aLocalName);
+		$this->mNamespaceURI = null;
+		$this->mNodeName = strtoupper($aLocalName);
+		$this->mPrefix = null;
+		$this->mTagName = (!$this->mPrefix ? '' : $this->mPrefix . ':') . ($this->mOwnerDocument instanceof HTMLDocument ? strtoupper($aLocalName) : $aLocalName);
 		$this->addEventListener('attributechange', array($this, '_onAttributeChange'));
 	}
 
@@ -77,8 +83,17 @@ abstract class Element extends Node implements SplObserver {
 			case 'lastElementChild':
 				return $this->getLastElementChild();
 
+			case 'localName':
+				return $this->mLocalName;
+
+			case 'namespaceURI':
+				return $this->mNamespaceURI;
+
 			case 'nextElementSibling':
 				return $this->getNextElementSibling();
+
+			case 'prefix':
+				return $this->mPrefix;
 
 			case 'previousElementSibling':
 				return $this->getPreviousElementSibling();
