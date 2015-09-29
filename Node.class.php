@@ -362,12 +362,64 @@ abstract class Node implements EventTarget {
 
     /**
      * Compares two nodes to see if they are equal.
+     *
+     * @link   https://dom.spec.whatwg.org/#dom-node-isequalnode
      * @link   https://dom.spec.whatwg.org/#concept-node-equals
+     *
      * @param  Node    $aNode The node you want to compare the current node to.
+     *
      * @return boolean        Returns true if the two nodes are the same, otherwise false.
      */
-    public function isEqualNode(Node $aNode) {
-        return $this === $aNode;
+    public function isEqualNode(Node $aOtherNode = null) {
+        if (!$aOtherNode || $this->mNodeType != $aOtherNode->nodeType) {
+            return false;
+        }
+
+        if ($this instanceof DocumentType) {
+            if ($this->mName != $aOtherNode->name ||
+                $this->mPublicId != $aOtherNode->publicId ||
+                $this->mSystemId != $aOtherNode->systemId) {
+                return false;
+            }
+        } else if ($this instanceof Element) {
+            if ($this->mNamespaceURI != $aOtherNode->namespaceURI ||
+                $this->mPrefix != $aOtherNode->prefix ||
+                $this->mLocalName != $aOtherNode->localName ||
+                $this->mAttributes->length !== $aOtherNode->attributes->length) {
+                return false;
+            }
+        } else if ($this instanceof ProcessingInstruction) {
+            if ($this->mTarget != $aOtherNode->target ||
+                $this->mData != $aOtherNode->data) {
+                return false;
+            }
+        } else if ($this instanceof Text || $this instanceof Comment) {
+            if ($this->mData != $aOtherNode->data) {
+                return false;
+            }
+        }
+
+        if ($this instanceof Element) {
+            for ($i = 0; $i < count($this->mAttributesList); $i++) {
+                if ($this->mAttributesList[$i]->namespaceURI != $aOtherNode->attributes[$i]->namespaceURI ||
+                    $this->mAttributesList[$i]->mPrefix != $aOtherNode->attributes[$i]->prefix ||
+                    $this->mAttributesList[$i]->mLocalName != $aOtherNode->attributes[$i]->localName) {
+                    return false;
+                }
+            }
+        }
+
+        if (count($this->mChildNodes) !== count($aOtherNode->childNodes)) {
+            return false;
+        }
+
+        for ($i = 0; $i < count($this->mChildNodes); $i++) {
+            if (!$this->mChildNodes[$i]->isEqualNode($aOtherNode->childNodes[$i])) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
