@@ -13,6 +13,7 @@ abstract class Element extends Node implements SplObserver {
     use ParentNode, ChildNode, NonDocumentTypeChildNode;
 
     protected $mAttributes; // NamedNodeMap
+    protected $mAttributesList;
     protected $mClassList; // ClassList
     protected $mClassName;
     protected $mEndTagOmitted;
@@ -27,7 +28,8 @@ abstract class Element extends Node implements SplObserver {
     protected function __construct($aLocalName) {
         parent::__construct();
 
-        $this->mAttributes = new NamedNodeMap();
+        $this->mAttributes = new NamedNodeMap($this, $this->mAttributesList);
+        $this->mAttributesList = array();
         $this->mClassList = null;
         $this->mClassName = '';
         $this->mEndTagOmitted = false;
@@ -36,7 +38,8 @@ abstract class Element extends Node implements SplObserver {
         $this->mNamespaceURI = null;
         $this->mNodeName = strtoupper($aLocalName);
         $this->mPrefix = null;
-        $this->mTagName = (!$this->mPrefix ? '' : $this->mPrefix . ':') . ($this->mOwnerDocument instanceof HTMLDocument ? strtoupper($aLocalName) : $aLocalName);
+        $this->mTagName = (!$this->mPrefix ? '' : $this->mPrefix . ':') .
+                          ($this->mOwnerDocument instanceof HTMLDocument ?strtoupper($aLocalName) : $aLocalName);
         $this->addEventListener('attributechange', array($this, '_onAttributeChange'));
     }
 
@@ -132,27 +135,62 @@ abstract class Element extends Node implements SplObserver {
         // TODO
     }
 
-    public function getAttribute( $aName ) {
-        $rv = '';
+    /**
+     * Retrieves the value of the attribute with the given name, if any.
+     *
+     * @link https://dom.spec.whatwg.org/#dom-element-getattribute
+     *
+     * @param  string       $aName The name of the attribute whose value is to be retrieved.
+     *
+     * @return string|null
+     */
+    public function getAttribute($aName) {
+        $attr = $this->_getAttributeByName($aName);
 
-        foreach ($this->mAttributes as $attribute) {
-            if ($attribute->name == $aName) {
-                $rv = $attribute->value;
-                break;
-            }
-        }
-
-        return $rv;
+        return $attr ? $attr->value : null;
     }
 
+    /**
+     * Retrieves the attribute node with the given name, if any.
+     *
+     * @link https://dom.spec.whatwg.org/#dom-element-getattributenode
+     *
+     * @param  string       $aName The name of the attribute that is to be retrieved.
+     *
+     * @return Attr|null
+     */
     public function getAttributeNode($aName) {
-        foreach ($this->mAttributes as $attr) {
-            if ($attr->name == $aName) {
-                return $attr;
-            }
-        }
+        return $this->_getAttributeByName($aName);
+    }
 
-        return null;
+    /**
+     * Retrieves the attribute node with the given namespace and local name, if any.
+     *
+     * @link https://dom.spec.whatwg.org/#dom-element-getattributenodens
+     *
+     * @param  string       $aNamespace The namespaceURI of the attribute node to be retrieved.
+     *
+     * @param  string       $aLocalName The localName of the attribute node to be retrieved.
+     *
+     * @return Attr|null
+     */
+    public function getAttributeNodeNS($aNamespace, $aLocalName) {
+        return $this->_getAttributeByNamespaceAndLocalName($aNamespace, $aLocalName);
+    }
+
+    /**
+     * Retrieves the value of the attribute with the given namespace and local name, if any.
+     *
+     * @link https://dom.spec.whatwg.org/#dom-element-getattributens
+     *
+     * @param  string       $aNamespace The namespaceURI of the attribute whose value is to be retrieved.
+     * @param  string       $aLocalName The localName of the attribute whose value is to be retrieved.
+     * @return string|null
+     */
+    public function getAttributeNS($aNamespace, $aLocalName) {
+        $attr = $this->_getAttributeByNamespaceAndLocalName($aNamespace, $aLocalName);
+
+        return $attr ? $attr->value : null;
     }
 
     public function getElementsByClassName($aClassName) {
@@ -199,21 +237,66 @@ abstract class Element extends Node implements SplObserver {
         return $nodeList;
     }
 
-    public function hasAttribute( $aName ) {
-        $rv = false;
+    /**
+     * Returns true if the attribtue with the given name is present in the Element's
+     * attribute list, otherwise false.
+     *
+     * @link https://dom.spec.whatwg.org/#dom-element-hasattribute
+     *
+     * @param  string  $aName The name of the attribute to find.
+     *
+     * @return bool
+     */
+    public function hasAttribute($aName) {
+        $name = $aName;
 
-        foreach ($this->mAttributes as $attribute) {
-            if ($attribute->name == $aName) {
-                $rv = true;
-                break;
+        if ($this->mNamespaceURI == 'http://www.w3.org/1999/xhtml' &&
+            $this->mOwnerDocument instanceof HTMLDocument) {
+            $name = strtolower($aName);
+        }
+
+        foreach ($this->mAttributesList as $attr) {
+            if ($attr->name == $name) {
+                return true;
             }
         }
 
-        return $rv;
+        return false;
     }
 
+    /**
+     * Returns true if the attribute with the given namespace and localName
+     * is present in the Element's attribute list, otherwise false.
+     *
+     * @link https://dom.spec.whatwg.org/#dom-element-hasattributens
+     *
+     * @param  string  $aNamespace The namespace of the attribute to find.
+     *
+     * @param  string  $aLocalName The localName of the attribute to find.
+     *
+     * @return bool
+     */
+    public function hasAttribueNS($aNamespace, $aLocalName) {
+        $namespace = $aNamespace === '' ? null : $aNamespace;
+
+        foreach ($this->mAttributesList as $attr) {
+            if ($attr->namespaceURI == $namespace &&
+                $attr->localName == $aLocalName) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns true if there are attributes present in the Element's attribute
+     * list, otherwise false.
+     *
+     * @return bool
+     */
     public function hasAttributes() {
-        return $this->mAttributes->length > 0;
+        return !empty($this->mAttributesList);
     }
 
     public function insertAdjacentHTML($aHTML) {
@@ -229,16 +312,53 @@ abstract class Element extends Node implements SplObserver {
         // TODO
     }
 
-    public function removeAttribute( $aName ) {
-        $attr = $this->mAttributes->removeNamedItem($aName)[0];
-        $dict = new CustomEventInit();
-        $dict->detail = array('attr' => $attr, 'action' => 'remove');
-        $e = new CustomEvent('attributechange', $dict);
-        $this->dispatchEvent($e);
+    /**
+     * Removes an attribute with the specified name from the Element's attribute
+     * list.
+     *
+     * @link https://dom.spec.whatwg.org/#dom-element-removeattribute
+     *
+     * @param  string $aName The attributes name.
+     */
+    public function removeAttribute($aName) {
+        $this->_removeAttributeByName($aName);
     }
 
-    public function removeAttributeNode(Attr $aNode) {
-        // TODO
+    /**
+     * Removes the given attribute from the Element's attribute list.
+     *
+     * @link https://dom.spec.whatwg.org/#dom-element-removeattributenode
+     *
+     * @param  Attr   $aAttr The attribute to be removed.
+     *
+     * @return Attr          The Attr node that was removed.
+     *
+     * @throws NotFoundError
+     */
+    public function removeAttributeNode(Attr $aAttr) {
+        $index = array_search($aAttr, $this->mAttributesList);
+
+        if ($index === false) {
+            throw new NotFoundError;
+        }
+
+        $this->_removeAttribute($aAttr);
+
+        return $aAttr;
+    }
+
+    /**
+     * Removes the attribute with the given namespace and local name from the Element's
+     * attribute list.
+     *
+     * @link https://dom.spec.whatwg.org/#dom-element-hasattributens
+     *
+     * @param  string $aNamespace The namespaceURI of the attribute to be removed.
+     *
+     * @param  string $aLocalName The localName of the attribute to be removed.
+     */
+    public function removeAttributeNS($aNamespace, $aLocalName) {
+        $this->_removeAttributeByNamespaceAndLocalName($aNamespace, $aLocalName);
     }
 
     public function removeChild(Node $aNode) {
@@ -251,25 +371,78 @@ abstract class Element extends Node implements SplObserver {
         return parent::replaceChild($aNewNode, $aOldNode);
     }
 
-    public function setAttribute($aName, $aValue = "") {
-        $node = $this->getAttributeNode($aName);
+    /**
+     * Either adds a new attribute to the Element's attribute list or it modifies
+     * the value of an already existing attribute with the the same name.
+     *
+     * @link https://dom.spec.whatwg.org/#dom-element-setattribute
+     *
+     * @param string $aName  The name of the attribute.
+     *
+     * @param string $aValue The value of the attribute.
+     */
+    public function setAttribute($aName, $aValue) {
+        $name = $aName;
 
-        if ($node) {
-            $node->namespaceURI = null;
-            $node->value = $aValue;
-        } else {
-            $node = new Attr($aName);
-            $node->value = $aValue;
-            $this->mAttributes->setNamedItem($node);
+        // TODO: Check Name production in XML documents
+
+        if ($this->mNamespaceURI == 'http://www.w3.org/1999/xhtml' &&
+            $this->mOwnerDocument instanceof HTMLDocument) {
+            $name = strtolower($aName);
         }
 
-        $dict = new CustomEventInit();
-        $dict->detail = array('attr' => $node, 'action' => 'set');
-        $event = new CustomEvent('attributechange', $dict);
-        $this->dispatchEvent($event);
+        $attr = $this->_getAttributeByName($name);
+
+        if (!$attr) {
+            $attr = new Attr($this, $name, $aValue);
+            $this->_appendAttribute($attr);
+            return;
+        }
+
+        $this->_changeAttributeValue($attr, $aValue);
     }
 
-    public function setAttributeNode(Attr $aNode) {
+    /**
+     * Appends the given attribute to the Element's attribute list.
+     *
+     * @link https://dom.spec.whatwg.org/#dom-element-setattributenode
+     *
+     * @param Attr $aAttr The attribute to be appended.
+     */
+    public function setAttributeNode(Attr $aAttr) {
+        try {
+            return $this->_setAttribute($aAttr);
+        } catch (Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Appends the given namespaced attribute to the Element's attribute list.
+     *
+     * @link https://dom.spec.whatwg.org/#dom-element-setattributenodens
+     *
+     * @param Attr $aAttr The namespaced attribute to be appended.
+     */
+    public function setAttributeNodeNS(Attr $aAttr) {
+        try {
+            return $this->_setAttribute($aAttr, $aAttr->namespaceURI, $aAttr->localName);
+        } catch (Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Either appends a new attribute or modifies the value of an existing attribute
+     * with the given namespace and name.
+     *
+     * @param string $aNamespace The namespaceURI of the attribute.
+     *
+     * @param string $aName      The name of the attribute.
+     *
+     * @param string $aValue     The value of the attribute.
+     */
+    public function setAttributeNS($aNamespace, $aName, $aValue) {
         // TODO
     }
 
@@ -281,7 +454,7 @@ abstract class Element extends Node implements SplObserver {
                 $tagName = strtolower($this->mNodeName);
                 $html = '<' . $tagName;
 
-                foreach($this->mAttributes as $attribute) {
+                foreach($this->mAttributesList as $attribute) {
                     $html .= ' ' . $attribute->name;
 
                     if (!Attr::_isBool($attribute->name)) {
@@ -339,8 +512,244 @@ abstract class Element extends Node implements SplObserver {
 
     }
 
+    /**
+     * Appends an Attr node to the Element's attribute list.
+     *
+     * @internal
+     *
+     * @link https://dom.spec.whatwg.org/#concept-element-attributes-append
+     *
+     * @param  Attr   $aAttr The Attr node to be appended.
+     */
+    public function _appendAttribute(Attr $aAttr) {
+        // TODO: Queue a mutation record for "attributes"
+        $dict = new CustomEventInit();
+        $dict->detail = array('attr' => $aAttr, 'action' => 'set');
+        $event = new CustomEvent('attributechange', $dict);
+        $this->dispatchEvent($event);
+
+        $this->mAttributesList[] = $aAttr;
+    }
+
+    /**
+     * Changes the value of an attribute.
+     *
+     * @internal
+     *
+     * @link https://dom.spec.whatwg.org/#concept-element-attributes-change
+     *
+     * @param  Attr   $aAttr  The Attr whose value is to be changed.
+     * @param  string $aValue The new value of the given Attr.
+     */
+    public function _changeAttributeValue(Attr $aAttr, $aValue) {
+        // TODO: Queue a mutation record for "attributes"
+        $dict = new CustomEventInit();
+        $dict->detail = array('attr' => $aAttr, 'action' => 'set');
+        $event = new CustomEvent('attributechange', $dict);
+        $this->dispatchEvent($event);
+
+        $aAttr->value = $aValue;
+    }
+
+    /**
+     * Returns the first Attr in the Element's attribute list that has the given
+     * name.
+     *
+     * @internal
+     *
+     * @link https://dom.spec.whatwg.org/#concept-element-attributes-get-by-name
+     *
+     * @param  string       $aName The name of the attribute to find.
+     *
+     * @return Attr|null
+     */
+    public function _getAttributeByName($aName) {
+        $name = $aName;
+
+        if ($this->mNamespaceURI == 'http://www.w3.org/1999/xhtml' &&
+            $this->mOwnerDocument instanceof HTMLDocument) {
+            $name = strtolower($aName);
+        }
+
+        foreach ($this->mAttributesList as $attr) {
+            if (strcmp($attr->name, $name) === 0) {
+                return $attr;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns the first Attr in the Element's attribute list that has the given namespace
+     * and local name.
+     *
+     * @internal
+     *
+     * @link https://dom.spec.whatwg.org/#concept-element-attributes-get-by-namespace
+     *
+     * @param  string       $aNamespace The namespaceURI of the attribute to find.
+     *
+     * @param  string       $aLocalName The localName of the attribute to find.
+     *
+     * @return Attr|null
+     */
+    public function _getAttributeByNamespaceAndLocalName($aNamespace, $aLocalName) {
+        $namespace = $aNamespace === '' ? null : $aNamespace;
+
+        foreach ($this->mAttributesList as $attr) {
+            if (strcmp($attr->namespaceURI, $namespace) === 0 &&
+                strcmp($attr->localName, $aLocalName) === 0) {
+                return $attr;
+            }
+        }
+
+        return null;
+    }
+
     public function _isEndTagOmitted() {
         return $this->mEndTagOmitted;
+    }
+
+    /**
+     * Removes the given Attr from the Element's attribute list.
+     *
+     * @internal
+     *
+     * @link https://dom.spec.whatwg.org/#concept-element-attributes-remove
+     *
+     * @param  Attr $aAttr The Attr to be removed.
+     */
+    public function _removeAttribute(Attr $aAttr) {
+        // TODO: Queue a mutation record for "attributes"
+        $dict = new CustomEventInit();
+        $dict->detail = array('attr' => $aAttr, 'action' => 'remove');
+        $e = new CustomEvent('attributechange', $dict);
+        $this->dispatchEvent($e);
+
+        $index = array_search($aAttr, $this->mAttributesList);
+
+        if ($index !== false) {
+            array_splice($this->mAttributesList, $index, 1);
+            // TODO: Set attribute's ownerElement to null
+        }
+    }
+
+    /**
+     * Removes the attribute with the given name from the Element's attribute list.
+     *
+     * @internal
+     *
+     * @link https://dom.spec.whatwg.org/#concept-element-attributes-remove-by-name
+     *
+     * @param  string       $aName The name of the attribute to be removed.
+     *
+     * @return Attr|null
+     */
+    public function _removeAttributeByName($aName) {
+        $attr = $this->_getAttributeByName($aName);
+
+        if ($attr) {
+            $this->_removeAttribute($attr);
+        }
+
+        return $attr;
+    }
+
+    /**
+     * Removes the attribtue with the given namespace and local name from the Element's attribute
+     * list.
+     *
+     * @internal
+     *
+     * @link https://dom.spec.whatwg.org/#concept-element-attributes-remove-by-namespace
+     *
+     * @param  string       $aNamespace The namespaceURI of the attribute to be removed.
+     *
+     * @param  string       $aLocalName The localName of the attribute to be removed.
+     *
+     * @return Attr|null
+     */
+    public function _removeAttributeByNamespaceAndLocalName($aNamespace, $aLocalName) {
+        $attr = $this->_getAttributeByNamespaceAndLocalName($aNamespace, $aLocalName);
+
+        if ($attr) {
+            $this->_removeAttribute($attr);
+        }
+
+        return $attr;
+    }
+
+    /**
+     * Associates an Attr with this Element.
+     *
+     * @internal
+     *
+     * @link https://dom.spec.whatwg.org/#concept-element-attributes-set
+     *
+     * @param Attr   $aAttr      The Attr to be appended to this Element's attribute list.
+     *
+     * @param string $aNamespace Optional.  Whether or not the attribute being appended is namespaced.
+     *
+     * @param string $aLocalName Optional.  Whether or not the attribute being appended is namespaced.
+     */
+    public function _setAttribute(Attr $aAttr, $aNamespace = null, $aLocalName = null) {
+        if ($aAttr->ownerElement !== null && !($aAttr->ownerElement instanceof Element)) {
+            throw new InUseAttributeError;
+        }
+
+        $oldAttr = null;
+
+        if ($aNamespace && $aLocalName) {
+            $oldAttr = $this->_getAttributeByNamespaceAndLocalName($attr->namespaceURI, $attr->localName);
+        } else {
+            $oldAttr = $this->_getAttributeByName($aAttr->name);
+        }
+
+        if ($oldAttr === $aAttr) {
+            return $aAttr;
+        }
+
+        if ($oldAttr) {
+            $this->_removeAttribute($oldAttr);
+        }
+
+        $this->_appendAttribute($aAttr);
+
+        return $oldAttr;
+    }
+
+    /**
+     * Sets an attributes value.
+     *
+     * @internal
+     *
+     * @link https://dom.spec.whatwg.org/#concept-element-attributes-set-value
+     *
+     * @param string $aLocalName The localName of the attribute to find.
+     *
+     * @param string $aValue     The value of the attribute.
+     *
+     * @param string $aName      The name of the attribute.
+     *
+     * @param string $aPrefix    The namespace prefix of the attribute.
+     *
+     * @param string $aNamespace The namespaceURI of the attribute to find.
+     */
+    public function _setAttributeValue($aLocalName, $aValue, $aName = null, $aPrefix = null, $aNamespace = null) {
+        $name = !$aName ? $aLocalName : $aName;
+        $prefix = !$aPrefix ? null : $aPrefix;
+        $namespace = !$aNamespace ? null : $aNamespace;
+
+        $attr = $this->_getAttributeByNamespaceAndLocalName($namespace, $aLocalName);
+
+        if (!$attr) {
+            $attr = new Attr($this, $aLocalName, $aValue, $namespace, $prefix);
+            $this->_appendAttribute($attr);
+            return;
+        }
+
+        $this->_changeAttributeValue($attr, $aValue);
     }
 
     protected function _onAttributeChange(Event $aEvent) {

@@ -44,6 +44,13 @@ class NotSupportedError extends Exception {
 	}
 }
 
+class InUseAttributeError extends Exception {
+	public function __construct() {
+		$this->code = 10;
+		$this->message = 'The attribute is in use.';
+	}
+}
+
 class InvalidStateError extends Exception {
 	public function __construct() {
 		$this->code = 11;

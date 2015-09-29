@@ -6,13 +6,15 @@ class Attr {
 	protected $mLocalName;
 	protected $mName;
 	protected $mNamespaceURI;
+	protected $mOwnerElement;
 	protected $mPrefix;
 	protected $mValue;
 
-	public function __construct($aLocalName, $aPrefix = null) {
+	public function __construct(Element $aOwnerElement, $aLocalName, $aValue, $aNamespace = null, $aPrefix = null) {
 		$this->mLocalName = $aLocalName;
 		$this->mName = $aPrefix ? $aPrefix . ':' . $aLocalName : $aLocalName;
 		$this->mNamespaceURI = null;
+		$this->mOwnerElement = $aOwnerElement;
 		$this->mPrefix = $aPrefix;
 		$this->mValue = '';
 	}
@@ -27,6 +29,9 @@ class Attr {
 
 			case 'namespaceURI':
 				return $this->mNamespaceURI;
+
+			case 'ownerElement':
+				return $this->mOwnerElement;
 
 			case 'prefix':
 				return $this->mPrefix;

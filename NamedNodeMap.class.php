@@ -1,60 +1,52 @@
 <?php
-// https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap
-// https://dom.spec.whatwg.org/#namednodemap
-
+/**
+ * Represents a list of named attributes.
+ *
+ * @link https://dom.spec.whatwg.org/#namednodemap
+ * @link https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap
+ *
+ * @property-read int $length Returns the number of attributes in the list.
+ */
 class NamedNodeMap implements ArrayAccess, SeekableIterator, Countable {
-    private $mAttributes;
-    private $mLength;
+    private $mAttributesList;
+    private $mOwnerElement;
     private $mPosition;
 
-    public function __construct() {
-        $this->mAttributes = array();
-        $this->mLength = 0;
+    public function __construct(Element $aOwnerElement, &$aAttributesList) {
+        $this->mAttributesList = &$aAttributesList;
+        $this->mOwnerElement = $aOwnerElement;
         $this->mPosition = 0;
     }
 
     public function __get($aName) {
         switch ($aName) {
             case 'length':
-                return $this->mLength;
+                return count($this->mAttributesList);
         }
     }
 
     public function count() {
-        return $this->mLength;
+        return count($this->mAttributesList);
     }
 
     public function current() {
-        return $this->mAttributes[$this->mPosition];
+        return $this->mAttributesList[$this->mPosition];
     }
 
     public function getNamedItem($aName) {
-        foreach($this->mAttributes as $attr) {
-            if ($attr->name == $aName) {
-                return $attr;
-            }
-        }
-
-        return null;
+        return $this->mOwnerElement->_getAttributeByName($aName);
     }
 
     public function getNamedItemNS($aNamespace, $aLocalName) {
-        foreach($this->mAttributes as $attr) {
-            if ($attr->localName == $aLocalName &&
-                $attr->namespace == $aNamespace) {
-                return $attr;
-            }
-        }
-
-        return null;
+        return $this->mOwnerElement->_getAttributeByNamespaceAndLocalName($aNamespace, $aLocalName);
     }
 
     public function item($aIndex) {
-        if (array_key_exists($aIndex, $this->mAttributes)) {
-            return $this->mAttributes[$aIndex];
+        if ($aIndex >= count($this->mAttributesList)) {
+            return null;
         }
 
-        return null;
+        return $this->mAttributesList[$aIndex];
     }
 
     public function key() {
@@ -66,76 +58,58 @@ class NamedNodeMap implements ArrayAccess, SeekableIterator, Countable {
     }
 
     public function offsetSet($aOffset, $aValue) {
-        $this->mLength++;
-
-        if (is_null($aOffset)) {
-            $this->mAttributes[] = $aValue;
-        } else {
-            $this->mAttributes[$aOffset] = $value;
-        }
+        // Do nothing.
     }
 
     public function offsetExists($aOffset) {
-        return isset($this->mAttributes[$aOffset]);
+        return isset($this->mAttributesList[$aOffset]);
     }
 
     public function offsetUnset($aOffset) {
-        $this->mLength--;
-        array_splice($this->mAttributes, $aOffset, 1);
+        // Do nothing.
     }
 
     public function offsetGet($aOffset) {
-        return isset($this->mAttributes[$aOffset]) ? $this->mAttributes[$aOffset] : null;
-    }
-
-    public function seek($aPosition) {
-        $this->mPosition = $aPosition;
-    }
-
-    public function setNamedItem(Attr $aNode) {
-        $this->mAttributes[] = $aNode;
-        $this->mLength++;
-
-        return $aNode;
-    }
-
-    public function setNamedItemNS(Attr $aNode) {
-        $this->mAttributes[] = $aNode;
-        $this->mLength++;
-
-        return $aNode;
+        return isset($this->mAttributesList[$aOffset]) ? $this->mAttributesList[$aOffset] : null;
     }
 
     public function removeNamedItem($aName) {
-        foreach($this->mAttributes as $attr) {
-            if ($attr->name == $aName) {
-                $this->mLength--;
+        $attr = $this->mOwnerElement->_removeAttributeByName($aName);
 
-                return array_splice($this->mAttributes, key($this->mAttributes), 1);
-            }
+        if (!$attr) {
+            throw new NotFoundError;
         }
 
-        return null;
+        return $attr;
     }
 
     public function removeNamedItemNS($aNamespace, $aLocalName) {
-        foreach($this->mAttributes as $attr) {
-            if ($attr->localName == $aLocalName &&
-                $attr->namespace == $aNamespace) {
-                $this->mLength--;
+        $attr = $this->mOwnerElement->_removeAttributeByNamespaceAndLocalName($aNamespace, $aLocalName);
 
-                return array_splice($this->mAttributes, key($this->mAttributes), 1);
-            }
+        if (!$attr) {
+            throw new NotFoundError;
         }
 
-        return null;
+        return $attr;
     }
 
     public function rewind() {
         $this->mPosition = 0;
     }
 
+    public function seek($aPosition) {
+        $this->mPosition = $aPosition;
+    }
+
+    public function setNamedItem(Attr $aAttr) {
+        return $this->mOwnerElement->_setAttribute($aAttr);
+    }
+
+    public function setNamedItemNS(Attr $aAttr) {
+        return $this->mOwnerElement->_setAttribute($aAttr, $aAttr->namespaceURI, $aAttr->localName);
+    }
+
     public function valid() {
-        return isset($this->mAttributes[$this->mPosition]);
+        return isset($this->mAttributesList[$this->mPosition]);
     }
 }
