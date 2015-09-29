@@ -842,7 +842,17 @@ abstract class Node implements EventTarget {
         $count = $isDocumentFragment ? count($aNode->childNodes) : 1;
 
         if ($aChild) {
-            // TODO substeps for Step 2
+            foreach (Range::_getRangeCollection() as $index => $range) {
+                if ($range->startContainer === $this && $range->startOffset > $aChild->_getTreeIndex()) {
+                    $range->setStart($range->startContainer, $range->startOffset + $count);
+                }
+            }
+
+            foreach (Range::_getRangeCollection() as $index => $range) {
+                if ($range->endContainer === $this && $range->endOffset > $aChild->_getTreeIndex()) {
+                    $range->setEnd($range->endContainer, $range->endOffset + $count);
+                }
+            }
         }
 
         $nodes = $isDocumentFragment ? $aNode->childNodes : array($aNode);
@@ -990,6 +1000,32 @@ abstract class Node implements EventTarget {
      */
     protected function _removeChild($aNode, $aSuppressObservers = null) {
         $index = array_search($aNode, $this->mChildNodes);
+
+        foreach (Range::_getRangeCollection() as $index => $range) {
+            if ($range->startContainer === $aNode || $aNode->contains($range->startContainer)) {
+                $range->setStart($this, $index);
+            }
+        }
+
+        foreach (Range::_getRangeCollection() as $index => $range) {
+            if ($range->endContainer === $aNode || $aNode->contains($range->endContainer)) {
+                $range->setEnd($this, $index);
+            }
+        }
+
+        foreach (Range::_getRangeCollection() as $index => $range) {
+            if ($range->startContainer === $this && $range->startOffset > $index) {
+                $range->setStart($range->startContainer, $range->startOffset - 1);
+            }
+        }
+
+        foreach (Range::_getRangeCollection() as $index => $range) {
+            if ($range->endContainer === $this && $range->endOffset > $index) {
+                $range->setEnd($range->endContainer, $range->endOffset - 1);
+            }
+        }
+
+        // TODO: Run NodeIterator's pre-removing steps
 
         array_splice($this->mChildNodes, $index, 1);
 
