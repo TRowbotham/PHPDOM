@@ -74,15 +74,36 @@ trait ChildNode {
     }
 
     /**
-     * Replaces this ChildNode with any number of Node or DOMString objects.
-     * @param  Node|DOMString ...$aNodes A set of Node or DOMString objects to be inserted in place of this ChildNode.
+     * Replaces this ChildNode with any number of Node objects or strings.
+     *
+     * @link https://dom.spec.whatwg.org/#dom-childnode-replacewith
+     *
+     * @param  Node|string ...$aNodes A set of Node objects or strings to be inserted in place of this ChildNode.
      */
     public function replaceWith() {
-        if (!$this->parentNode || !func_num_args()) {
+        $parent = $this->mParentNode;
+        $nodes = func_get_args();
+
+        if (!$parent || !func_num_args()) {
             return;
         }
 
-        $node = $this->mutationMethodMacro(func_get_args());
-        $this->mParentNode->replaceChild($node, $this);
+        $viableNextSibling = $this->mNextSibling;
+
+        while ($viableNextSibling) {
+            if (!in_array($viableNextSibling, $nodes)) {
+                break;
+            }
+
+            $viableNextSibling = $viableNextSibling->nextSibling;
+        }
+
+        $node = $this->mutationMethodMacro($nodes);
+
+        if ($this->mParentNode === $parent) {
+            $parent->replaceChild($node, $this);
+        } else {
+            $parent->_preinsertNodeBeforeChild($node, $viableNextSibling);
+        }
     }
 }
