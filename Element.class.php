@@ -123,6 +123,9 @@ abstract class Element extends Node implements SplObserver {
                 $this->_updateAttributeOnPropertyChange('id', $aValue);
 
                 break;
+
+            default:
+                parent::__set($aName, $aValue);
         }
     }
 

@@ -916,7 +916,7 @@ abstract class Node implements EventTarget {
 
         // The DOM4 spec states that nodes should be implicitly adopted
         $ownerDocument = $this instanceof Document ? $this : $this->mOwnerDocument;
-        $ownerDocument->_adoptNode($aNode);
+        $ownerDocument->adoptNode($aNode);
 
         $this->_insertNodeBeforeChild($aNode, $referenceChild);
 
