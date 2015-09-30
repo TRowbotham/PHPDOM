@@ -138,8 +138,41 @@ class Document extends Node {
         return $node;
     }
 
-    public function createEvent($aEventType) {
-        return new Event($aEventType);
+    /**
+     * Creates a new Event of the specified type and returns it.
+     *
+     * @link https://dom.spec.whatwg.org/#dom-document-createevent
+     *
+     * @param  string $aInterface The type of event interface to be created.
+     *
+     * @return Event
+     *
+     * @throws NotSupportedError
+     */
+    public function createEvent($aInterface) {
+        $constructor = null;
+        $interface = strtolower($aInterface);
+
+        switch ($interface) {
+            case 'customevent':
+                $constructor = 'CustomEvent';
+
+                break;
+
+            case 'event':
+            case 'events':
+            case 'htmlevents':
+                $constructor = 'Event';
+        }
+
+        if (!$constructor) {
+            throw new NotSupportedError;
+        }
+
+        $event = new $constructor('');
+        $event->_unsetFlag(Event::EVENT_INITIALIZED);
+
+        return $event;
     }
 
     /**
