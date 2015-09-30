@@ -41,7 +41,7 @@ class Document extends Node {
         }
 
         $this->mContentType = '';
-        $this->mDoctype = new DocumentType('', '', '');
+        $this->mDoctype = null;
         $this->mDocumentElement = null;
         $this->mEvents = array();
         $this->mImplementation = new iDOMImplementation();
