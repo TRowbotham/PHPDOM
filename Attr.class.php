@@ -16,7 +16,7 @@ class Attr {
 		$this->mNamespaceURI = null;
 		$this->mOwnerElement = $aOwnerElement;
 		$this->mPrefix = $aPrefix;
-		$this->mValue = '';
+		$this->mValue = $aValue;
 	}
 
 	public function __get($aName) {
