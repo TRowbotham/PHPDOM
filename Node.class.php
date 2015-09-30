@@ -662,7 +662,7 @@ abstract class Node implements EventTarget {
 
         // The DOM4 spec states that nodes should be implicitly adopted
         $ownerDocument = $this instanceof Document ? $this : $this->mOwnerDocument;
-        $ownerDocument->adoptNode($aNewNode);
+        $ownerDocument->_adoptNode($aNewNode);
 
         $this->_removeChild($aOldNode, true);
 
@@ -916,7 +916,7 @@ abstract class Node implements EventTarget {
 
         // The DOM4 spec states that nodes should be implicitly adopted
         $ownerDocument = $this instanceof Document ? $this : $this->mOwnerDocument;
-        $ownerDocument->adoptNode($aNode);
+        $ownerDocument->_adoptNode($aNode);
 
         $this->_insertNodeBeforeChild($aNode, $referenceChild);
 
@@ -935,7 +935,7 @@ abstract class Node implements EventTarget {
     public function _replaceAll(Node $aNode) {
         if ($aNode) {
             $ownerDocument = $this instanceof Document ? $this : $this->mOwnerDocument;
-            $ownerDocument->adoptNode($aNode);
+            $ownerDocument->_adoptNode($aNode);
         }
 
         $removedNodes = $this->mChildNodes;
