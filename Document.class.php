@@ -88,13 +88,23 @@ class Document extends Node {
         }
     }
 
+    /**
+     * Adopts the given Node and its subtree from a differnt Document allowing
+     * the node to be used in this Document.
+     *
+     * @link https://dom.spec.whatwg.org/#dom-document-adoptnode
+     *
+     * @param  Node  $aNode The Node to be adopted.
+     *
+     * @return Node         The newly adopted Node.
+     */
     public function adoptNode(Node $aNode) {
         if ($aNode instanceof Document) {
             throw new NotSupportedError;
         }
 
-        if ($aNode->parentNode) {
-            $aNode->parentNode->removeChild($aNode);
+        if ($aNode instanceof ShadowRoot) {
+            throw new HierarchyRequestError;
         }
 
         $this->_adoptNode($aNode);
@@ -234,6 +244,32 @@ class Document extends Node {
     }
 
     /**
+     * Removes the node from its parent and adopts it and all its children.
+     *
+     * @internal
+     *
+     * @link https://dom.spec.whatwg.org/#concept-node-adopt
+     *
+     * @param  Node   $aNode The Node to be adopted into this document.
+     */
+    public function _adoptNode(Node $aNode) {
+        $oldDocument = $aNode->ownerDocument;
+
+        if (!$aNode->parentNode) {
+            $this->_removeChild($aNode);
+        }
+
+        $tw = $oldDocument->createTreeWalker($aNode);
+        $node = $tw->root;
+
+        while ($node) {
+            $node->mOwnerDocument = $this;
+            // TODO: Support adopting steps for nodes
+            $node = $tw->nextNode();
+        }
+    }
+
+    /**
      * @internal
      *
      * Sets the document's character set.
@@ -358,13 +394,5 @@ class Document extends Node {
         $html .= '</ul>';
 
         return $html;
-    }
-
-    private function _adoptNode($aNode) {
-        $aNode->mOwnerDocument = $this;
-
-        foreach ($aNode->childNodes as $node) {
-            $this->_adoptNode($node);
-        }
     }
 }
