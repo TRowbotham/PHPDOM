@@ -677,7 +677,7 @@ abstract class Element extends Node implements SplObserver {
         } else if ($rootIsDocument) {
             $nodeFilter = function ($aNode) use ($aLocalName) {
                 if (strcmp($aNode->namespaceURI, 'http://www.w3.org/1999/xhtml') === 0 &&
-                    strcmp($aNode->localName, strtolower($aLocalName)) ||
+                    strcmp($aNode->localName, strtolower($aLocalName) === 0) ||
                     (strcmp($aNode->namespaceURI, 'http://www.w3.org/1999/xhtml') !== 0 &&
                     strcmp($aNode->localName, $aLocalName) === 0)) {
                     return NodeFilter::FILTER_ACCEPT;
