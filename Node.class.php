@@ -266,22 +266,24 @@ abstract class Node implements EventTarget {
     }
 
     /**
-     * Returns whether or not a node is a descendant of another node.
+     * Returns whether or not a node is an inclusive descendant of another node.
+     *
      * @param  Node     $aNode A node that you wanted to compare its position of.
-     * @return boolean         Returns true if $aNode is a descendant of a node.
+     *
+     * @return boolean         Returns true if $aNode is an inclusive descendant of a node.
      */
     public function contains(Node $aNode) {
-        $rv = false;
+        $node = $aNode;
 
-        foreach ($this->mChildNodes as $node) {
-            if ($rv) {
-                break;
+        while ($node) {
+            if ($node === $this) {
+                return true;
             }
 
-            $rv = $node === $aNode || $node->contains($aNode);
+            $node = $node->parentNode;
         }
 
-        return $rv;
+        return false;
     }
 
     /**
