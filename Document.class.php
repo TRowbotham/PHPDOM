@@ -199,23 +199,17 @@ class Document extends Node {
 	}
 
 	/**
-	 * Returns an array of Elements with the specified tagName.
-	 * @param  string $aTagName The tagName to search for.
-	 * @return array           	A list of Elements with the specified tagName.
+	 * Returns an array of Elements with the specified local name.
+	 *
+	 * @link https://dom.spec.whatwg.org/#dom-document-getelementsbytagname
+	 *
+	 * @param  string 		$aLocalName The element's local name to search for.  If given '*',
+	 *                              	all element decendants will be returned.
+	 *
+	 * @return Element[]           		A list of Elements with the specified local name.
 	 */
-	public function getElementsByTagName($aTagName) {
-		$nodeList = array();
-
-		$tw = $this->createTreeWalker($this, NodeFilter::SHOW_ELEMENT,
-			function($aNode) use ($aTagName) {
-				return strcasecmp($aNode->tagName, $aTagName) == 0 ? NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
-			});
-
-		while ($node = $tw->nextNode()) {
-			$nodeList[] = $node;
-		}
-
-		return $nodeList;
+	public function getElementsByTagName($aLocalName) {
+		return Element::_getElementsByTagName($this, $aLocalName);
 	}
 
 	public function importNode(Node $aNode, $aDeep = false) {

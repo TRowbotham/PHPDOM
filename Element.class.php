@@ -218,23 +218,18 @@ abstract class Element extends Node implements SplObserver {
     }
 
     /**
-     * Returns an array of Elements with the specified tagName.
-     * @param  string $aTagName The tagName to search for.
-     * @return array            A list of Elements with the specified tagName.
+     * Returns an array of Elements with the specified local name.
+     *
+     * @link https://dom.spec.whatwg.org/#dom-element-getelementsbytagname
+     *
+     * @param  string       $aLocalName The element's local name to search for.  If given '*',
+     *                                  all element decendants will be returned.
+     *
+     * @return Element[]                A list of Elements with the specified local name.
      */
-    public function getElementsByTagName($aTagName) {
-        $nodeList = array();
 
-        $tw = $this->mOwnerDocument->createTreeWalker($this, NodeFilter::SHOW_ELEMENT,
-            function($aNode) use ($aTagName) {
-                return strcasecmp($aNode->tagName, $aTagName) == 0 ? NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
-            });
-
-        while ($node = $tw->nextNode()) {
-            $nodeList[] = $node;
-        }
-
-        return $nodeList;
+    public function getElementsByTagName($aLocalName) {
+        return static::_getElementsByTagName($this, $aLocalName);
     }
 
     /**
@@ -605,6 +600,53 @@ abstract class Element extends Node implements SplObserver {
         }
 
         return null;
+    }
+
+    /**
+     * Returns a collection of Elements that match the given local name.
+     *
+     * @internal
+     *
+     * @link https://dom.spec.whatwg.org/#concept-getElementsByTagName
+     *
+     * @param  Node         $aRoot      A node at which the search is rooted at.  If given '*',
+     *                                  all element decendants will be returned.
+     *
+     * @param  string       $aLocalName The Element's local name to search for.
+     *
+     * @return Element[]
+     */
+    public static function _getElementsByTagName(Node $aRoot, $aLocalName) {
+        $rootIsDocument = $aRoot instanceof Document;
+        $ownerDocument =  $rootIsDocument ? $aRoot : $aRoot->ownerDocument;
+        $collection = array();
+
+        if (strcmp($aLocalName, '*') === 0) {
+            $nodeFilter = null;
+        } else if ($rootIsDocument) {
+            $nodeFilter = function ($aNode) use ($aLocalName) {
+                if (strcmp($aNode->namespaceURI, 'http://www.w3.org/1999/xhtml') === 0 &&
+                    strcmp($aNode->localName, strtolower($aLocalName)) ||
+                    (strcmp($aNode->namespaceURI, 'http://www.w3.org/1999/xhtml') !== 0 &&
+                    strcmp($aNode->localName, $aLocalName) === 0)) {
+                    return NodeFilter::FILTER_ACCEPT;
+                }
+
+                return NodeFilter::FILTER_SKIP;
+            };
+        } else {
+            $nodeFilter = function ($aNode) use ($aLocalName) {
+                return strcmp($aNode->localName, $aLocalName) === 0 ? NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
+            };
+        }
+
+        $tw = $ownerDocument->createTreeWalker($aRoot, NodeFilter::SHOW_ELEMENT, $nodeFilter);
+
+        while ($node = $tw->nextNode()) {
+            $collection[] = $node;
+        }
+
+        return $collection;
     }
 
     public function _isEndTagOmitted() {
