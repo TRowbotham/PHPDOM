@@ -36,6 +36,8 @@ abstract class CharacterData extends Node {
                 return strlen($this->mData);
             case 'nextElementSibling':
                 return $this->getNextElementSibling();
+            case 'nodeValue':
+                return $this->mData;
             case 'previousElementSibling':
                 return $this->getPreviousElementSibling();
             default:
@@ -49,6 +51,11 @@ abstract class CharacterData extends Node {
                 if (is_string($aValue)) {
                     $this->mData = $aValue;
                 }
+
+                break;
+
+            case 'nodeValue':
+                $this->replaceData(0, $this->length, $aValue);
 
                 break;
 
