@@ -381,34 +381,34 @@ abstract class Node implements EventTarget {
         }
 
         if ($this instanceof DocumentType) {
-            if ($this->mName != $aOtherNode->name ||
-                $this->mPublicId != $aOtherNode->publicId ||
-                $this->mSystemId != $aOtherNode->systemId) {
+            if (strcmp($this->name, $aOtherNode->name) !== 0 ||
+                strcmp($this->publicId, $aOtherNode->publicId) !== 0 ||
+                strcmp($this->systemId, $aOtherNode->systemId) !== 0) {
                 return false;
             }
         } else if ($this instanceof Element) {
-            if ($this->mNamespaceURI != $aOtherNode->namespaceURI ||
-                $this->mPrefix != $aOtherNode->prefix ||
-                $this->mLocalName != $aOtherNode->localName ||
+            if (strcmp($this->namespaceURI, $aOtherNode->namespaceURI) !== 0 ||
+                strcmp($this->prefix, $aOtherNode->prefix) !== 0 ||
+                strcmp($this->localName, $aOtherNode->localName) !== 0 ||
                 $this->mAttributes->length !== $aOtherNode->attributes->length) {
                 return false;
             }
         } else if ($this instanceof ProcessingInstruction) {
-            if ($this->mTarget != $aOtherNode->target ||
-                $this->mData != $aOtherNode->data) {
+            if (strcmp($this->target, $aOtherNode->target) !== 0 ||
+                strcmp($this->data, $aOtherNode->data) !== 0) {
                 return false;
             }
         } else if ($this instanceof Text || $this instanceof Comment) {
-            if ($this->mData != $aOtherNode->data) {
+            if (strcmp($this->data, $aOtherNode->data) !== 0) {
                 return false;
             }
         }
 
         if ($this instanceof Element) {
             for ($i = 0; $i < count($this->mAttributesList); $i++) {
-                if ($this->mAttributesList[$i]->namespaceURI != $aOtherNode->attributes[$i]->namespaceURI ||
-                    $this->mAttributesList[$i]->mPrefix != $aOtherNode->attributes[$i]->prefix ||
-                    $this->mAttributesList[$i]->mLocalName != $aOtherNode->attributes[$i]->localName) {
+                if (strcmp($this->mAttributesList[$i]->namespaceURI, $aOtherNode->attributes[$i]->namespaceURI) !== 0 ||
+                    strcmp($this->mAttributesList[$i]->prefix, $aOtherNode->attributes[$i]->prefix) !== 0 ||
+                    strcmp($this->mAttributesList[$i]->localName, $aOtherNode->attributes[$i]->localName) !== 0) {
                     return false;
                 }
             }
