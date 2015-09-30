@@ -201,6 +201,27 @@ class Document extends Node {
         return Element::_getElementsByTagName($this, $aLocalName);
     }
 
+    /**
+     * Returns a collection of Elements that match the given namespace and local name.
+     *
+     * @link https://dom.spec.whatwg.org/#dom-document-getelementsbytagnamens
+     *
+     * @param  string       $aNamespace The namespaceURI to search for.  If both namespace and local
+     *                                  name are given '*', all element decendants will be returned.  If only
+     *                                  namespace is given '*' all element decendants matching only local
+     *                                  name will be returned.
+     *
+     * @param  string       $aLocalName The Element's local name to search for.  If both namespace and local
+     *                                  name are given '*', all element decendants will be returned.  If only
+     *                                  local name is given '*' all element decendants matching only namespace
+     *                                  will be returned.
+     *
+     * @return Element[]
+     */
+    public function getElementsByTagNameNS($aNamespace, $aLocalName) {
+        return Element::_getElementsByTagNameNS($this, $aNamespace, $aLocalName);
+    }
+
     public function importNode(Node $aNode, $aDeep = false) {
         if ($aNode instanceof Document) {
             throw new NotSupportedError;

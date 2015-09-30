@@ -222,6 +222,27 @@ abstract class Element extends Node implements SplObserver {
     }
 
     /**
+     * Returns a collection of Elements that match the given namespace and local name.
+     *
+     * @link https://dom.spec.whatwg.org/#dom-element-getelementsbytagnamens
+     *
+     * @param  string       $aNamespace The namespaceURI to search for.  If both namespace and local
+     *                                  name are given '*', all element decendants will be returned.  If only
+     *                                  namespace is given '*' all element decendants matching only local
+     *                                  name will be returned.
+     *
+     * @param  string       $aLocalName The Element's local name to search for.  If both namespace and local
+     *                                  name are given '*', all element decendants will be returned.  If only
+     *                                  local name is given '*' all element decendants matching only namespace
+     *                                  will be returned.
+     *
+     * @return Element[]
+     */
+    public function getElementsByTagNameNS($aNamespace, $aLocalName) {
+        return static::_getElementsByTagNameNS($this, $aNamespace, $aLocalName);
+    }
+
+    /**
      * Returns true if the attribtue with the given name is present in the Element's
      * attribute list, otherwise false.
      *
@@ -670,6 +691,53 @@ abstract class Element extends Node implements SplObserver {
             };
         }
 
+        $tw = $ownerDocument->createTreeWalker($aRoot, NodeFilter::SHOW_ELEMENT, $nodeFilter);
+
+        while ($node = $tw->nextNode()) {
+            $collection[] = $node;
+        }
+
+        return $collection;
+    }
+
+    /**
+     * Returns a collection of Elements that match the given namespace and local name.
+     *
+     * @internal
+     *
+     * @link https://dom.spec.whatwg.org/#concept-getElementsByTagNameNS
+     *
+     * @param  Node         $aRoot      A node at which the search is rooted at.
+     *
+     * @param  string       $aNamespace The namespaceURI to search for.  If both namespace and local
+     *                                  name are given '*', all element decendants will be returned.  If only
+     *                                  namespace is given '*' all element decendants matching only local
+     *                                  name will be returned.
+     *
+     * @param  string       $aLocalName The Element's local name to search for.  If both namespace and local
+     *                                  name are given '*', all element decendants will be returned.  If only
+     *                                  local name is given '*' all element decendants matching only namespace
+     *                                  will be returned.
+     *
+     * @return Element[]
+     */
+    public static function _getElementsByTagNameNS(Node $aRoot, $aNamespace, $aLocalName) {
+        $namespace = strcmp($aNamespace, '') === 0 ? null : $aNamespace;
+        $collection = array();
+
+        if (strcmp($namespace, '*') === 0 && strcmp($aLocalName, '*') === 0) {
+            $nodeFilter = null;
+        } else if (strcmp($namespace, '*') === 0) {
+            $nodeFilter = function ($aNode) use ($aLocalName) {
+                return strcmp($aNode->localName, $aLocalName) === 0 ? NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
+            };
+        } else if (strcmp($aLocalName, '*') === 0) {
+            $nodeFilter =  function ($aNode) use ($namespace) {
+                return strcmp($aNode->namespaceURI, $namespace) === 0 ? NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
+            };
+        }
+
+        $ownerDocument = $aRoot instanceof Document ? $aRoot : $aRoot->ownerDocument;
         $tw = $ownerDocument->createTreeWalker($aRoot, NodeFilter::SHOW_ELEMENT, $nodeFilter);
 
         while ($node = $tw->nextNode()) {
