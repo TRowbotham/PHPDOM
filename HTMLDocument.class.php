@@ -61,11 +61,19 @@ class HTMLDocument extends Document {
 
     /**
      * Creates an HTMLElement with the specified tag name.
-     * @param  string       $aTagName   The name of the element to create.
-     * @return HTMLElement              A known HTMLElement or HTMLUnknownElement.
+     *
+     * @link https://dom.spec.whatwg.org/#dom-document-createelement
+     *
+     * @param  string       $aLocalName   The name of the element to create.
+     *
+     * @return HTMLElement                A known HTMLElement or HTMLUnknownElement.
      */
-    public function createElement($aTagName) {
-        switch($aTagName) {
+    public function createElement($aLocalName) {
+        // TODO: Make sure localName matches the name production
+
+        $localName = strtolower($aLocalName);
+
+        switch($localName) {
             /**
              * These are elements whose tag name differs
              * from its DOM interface name, so map the tag
@@ -285,7 +293,7 @@ class HTMLDocument extends Document {
             case 'title':
             case 'track':
             case 'video':
-                $interfaceName = ucfirst(strtolower($aTagName));
+                $interfaceName = ucfirst($localName);
 
                 break;
 
@@ -296,7 +304,8 @@ class HTMLDocument extends Document {
         $className = 'HTML' . $interfaceName . 'Element';
         require_once 'HTMLElement/' . $className . '.class.php';
 
-        $node = new $className($aTagName);
+        $node = new $className($localName);
+        $node->mNamespaceURI = 'http://www.w3.org/1999/xhtml';
         $node->mOwnerDocument = $this;
 
         return $node;
