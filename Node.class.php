@@ -201,9 +201,12 @@ abstract class Node implements EventTarget {
 
     /**
      * Compares the position of a node against another node.
+     *
      * @link   https://dom.spec.whatwg.org/#dom-node-comparedocumentpositionother
+     *
      * @param  Node   $aNode Node to compare position against.
-     * @return integer       A bitmask representing the nodes position.  Possible values are as follows:
+     *
+     * @return int           A bitmask representing the nodes position.  Possible values are as follows:
      *                         Node::DOCUMENT_POSITION_DISCONNECTED
      *                         Node::DOCUMENT_POSITION_PRECEDING
      *                         Node::DOCUMENT_POSITION_FOLLOWING
@@ -220,16 +223,16 @@ abstract class Node implements EventTarget {
 
         if ($reference->mOwnerDocument !== $aOtherNode->ownerDocument || !$reference->parentNode ||
             !$aOtherNode->parentNode) {
-            return self::DOCUMENT_POSITION_DISCONNECTED + self::DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC +
+            return self::DOCUMENT_POSITION_DISCONNECTED | self::DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC |
                    self::DOCUMENT_POSITION_PRECEDING;
         }
 
         if ($aOtherNode->contains($reference)) {
-            return self::DOCUMENT_POSITION_CONTAINS + self::DOCUMENT_POSITION_PRECEDING;
+            return self::DOCUMENT_POSITION_CONTAINS | self::DOCUMENT_POSITION_PRECEDING;
         }
 
         if ($reference->contains($aOtherNode)) {
-            return self::DOCUMENT_POSITION_CONTAINED_BY + self::DOCUMENT_POSITION_FOLLOWING;
+            return self::DOCUMENT_POSITION_CONTAINED_BY | self::DOCUMENT_POSITION_FOLLOWING;
         }
 
         $commonParent = $reference->mParentNode;
