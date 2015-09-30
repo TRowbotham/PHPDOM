@@ -255,8 +255,8 @@ class Document extends Node {
     public function _adoptNode(Node $aNode) {
         $oldDocument = $aNode->ownerDocument;
 
-        if (!$aNode->parentNode) {
-            $this->_removeChild($aNode);
+        if ($aNode->parentNode) {
+            $aNode->parentNode->_removeChild($aNode);
         }
 
         $tw = $oldDocument->createTreeWalker($aNode);
