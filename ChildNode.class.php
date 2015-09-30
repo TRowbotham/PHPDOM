@@ -17,16 +17,33 @@ trait ChildNode {
     }
 
     /**
-     * Inserts any number of Node or DOMString objects before this ChildNode.
-     * @param  Node|DOMString ...$aNodes A set of Node or DOMString objects to be inserted.
+     * Inserts any number of Node objects or strings before this ChildNode.
+     *
+     * @link https://dom.spec.whatwg.org/#dom-childnode-before
+     *
+     * @param  Node|string ...$aNodes A set of Node objects or strings to be inserted.
      */
     public function before() {
-        if (!$this->mParentNode || !func_num_args()) {
+        $parent = $this->mParentNode;
+        $nodes = func_get_args();
+
+        if (!$parent || !func_num_args()) {
             return;
         }
 
+        $viablePreviousSibling = $this->mPreviousSibling;
+
+        while ($viablePreviousSibling) {
+            if (!in_array($viablePreviousSibling, $nodes)) {
+                break;
+            }
+
+            $viablePreviousSibling = $viablePreviousSibling->previousSibling;
+        }
+
         $node = $this->mutationMethodMacro(func_get_args());
-        $this->mParentNode->_preinsertNodeBeforeChild($node, $this);
+        $viablePreviousSibling = $viablePreviousSibling ? $viablePreviousSibling->nextSibling : $parent->firstChild;
+        $this->mParentNode->_preinsertNodeBeforeChild($node, $viablePreviousSibling);
     }
 
     /**
