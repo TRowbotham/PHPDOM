@@ -4,16 +4,32 @@
 
 trait ChildNode {
     /**
-     * Inserts any number of Node or DOMString objects after this ChildNode.
-     * @param  Node|DOMString ...$aNodes A set of Node or DOMString objects to be inserted.
+     * Inserts any number of Node objects or strings after this ChildNode.
+     *
+     * @link https://dom.spec.whatwg.org/#dom-childnode-after
+     *
+     * @param  Node|string ...$aNodes A set of Node objects or strings to be inserted.
      */
     public function after() {
-        if (!$this->mParentNode || !func_num_args()) {
+        $parent = $this->mParentNode;
+        $nodes = func_get_args();
+
+        if (!$parent || !func_num_args()) {
             return;
         }
 
-        $node = $this->mutationMethodMacro(func_get_args());
-        $this->mParentNode->_preinsertNodeBeforeChild($node, $this->mNextSibling);
+        $viableNextSibling = $this->mNextSibling;
+
+        while ($viableNextSibling) {
+            if (!in_array($viableNextSibling, $nodes)) {
+                break;
+            }
+
+            $viableNextSibling = $viableNextSibling->nextSibling;
+        }
+
+        $node = $this->mutationMethodMacro($nodes);
+        $parent->_preinsertNodeBeforeChild($node, $viableNextSibling);
     }
 
     /**
