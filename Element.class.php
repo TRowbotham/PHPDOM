@@ -193,28 +193,17 @@ abstract class Element extends Node implements SplObserver {
         return $attr ? $attr->value : null;
     }
 
+    /**
+     * Returns a list of all the Element's that have all the given class names.
+     *
+     * @link https://dom.spec.whatwg.org/#dom-element-getelementsbyclassname
+     *
+     * @param  string       $aClassName A space delimited string containing the classNames to search for.
+     *
+     * @return Element[]
+     */
     public function getElementsByClassName($aClassName) {
-        $nodeList = array();
-        $classNames = explode(' ', preg_replace('/\s+/', ' ', trim($aClassName)));
-
-        $tw = $this->createTreeWalker($this, NodeFilter::SHOW_ELEMENT,
-                function($aNode) use ($classNames) {
-                    $hasClassName = false;
-
-                    foreach ($classNames as $className) {
-                        if ($hasClassName = $aNode->classList->contains($className)) {
-                            break;
-                        }
-                    }
-
-                    return $hasClassName ? NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
-                });
-
-        while ($node = $tw->nextNode()) {
-            $nodeList[] = $node;
-        }
-
-        return $nodeList;
+        return static::_getElementsByClassName($this, $aClassName);
     }
 
     /**
@@ -600,6 +589,47 @@ abstract class Element extends Node implements SplObserver {
         }
 
         return null;
+    }
+
+    /**
+     * Returns a list of all the Element's that have all the given class names.
+     *
+     * @internal
+     *
+     * @link https://dom.spec.whatwg.org/#concept-getElementsByClassName
+     *
+     * @param  Node         $aRoot      A node at which the search is rooted at.
+     *
+     * @param  string       $aClassName A space delimited string containing the classNames to search for.
+     *
+     * @return Element[]
+     */
+    public static function _getElementsByClassName(Node $aRoot, $aClassName) {
+        $classes = DOMTokenList::_parseOrderedSet($aClassName);
+
+        if (empty($classes)) {
+            return $classes;
+        }
+
+        $ownerDocument = $aRoot instanceof Document ? $aRoot : $aRoot->ownerDocument;
+        $nodeFilter = function ($aNode) use ($classes) {
+            $hasClasses = false;
+
+            foreach ($classes as $className) {
+                if (!($hasClasses = $aNode->classList->contains($className))) {
+                    break;
+                }
+            }
+
+            return $hasClasses ? NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
+        };
+        $tw = $ownerDocument->createTreeWalker($aRoot, NodeFilter::SHOW_ELEMENT, $nodeFilter);
+
+        while ($node = $tw->nextNode()) {
+            $collection[] = $node;
+        }
+
+        return $collection;
     }
 
     /**

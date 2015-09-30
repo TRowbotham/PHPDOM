@@ -174,28 +174,17 @@ class Document extends Node {
         return new TreeWalker($aRoot, $aWhatToShow, $aFilter);
     }
 
+    /**
+     * Returns a list of all the Element's that have all the given class names.
+     *
+     * @link https://dom.spec.whatwg.org/#dom-element-getelementsbyclassname
+     *
+     * @param  string       $aClassName A space delimited string containing the classNames to search for.
+     *
+     * @return Element[]
+     */
     public function getElementsByClassName($aClassName) {
-        $nodeList = array();
-        $classNames = explode(' ', preg_replace('/\s+/', ' ', trim($aClassName)));
-
-        $tw = $this->createTreeWalker($this, NodeFilter::SHOW_ELEMENT,
-                function($aNode) use ($classNames) {
-                    $hasClassName = false;
-
-                    foreach ($classNames as $className) {
-                        if ($hasClassName = $aNode->classList->contains($className)) {
-                            break;
-                        }
-                    }
-
-                    return $hasClassName ? NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
-                });
-
-        while ($node = $tw->nextNode()) {
-            $nodeList[] = $node;
-        }
-
-        return $nodeList;
+        return Element::_getElementsByClassName($this, $aClassName);
     }
 
     /**
