@@ -580,17 +580,13 @@ class Range {
             $s .= substr($this->mStartContainer->data, $this->mStartOffset);
         }
 
-        $startNode = $this->mStartContainer;
+        $range = $this;
 
-        $tw = new TreeWalker($this->getRoot($this->mStartContainer), NodeFilter::SHOW_TEXT, function($aNode) use ($startNode) {
-            return $aNode === $startNode ? NodeFilter::FILTER_SKIP : NodeFilter::FILTER_ACCEPT;
+        $tw = new TreeWalker($this->mStartContainer, NodeFilter::SHOW_TEXT, function($aNode) use ($range) {
+            return $range->isPointInRange($aNode, $aNode->_getTreeIndex()) ? NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_REJECT;
         });
 
         while ($text = $tw->nextNode()) {
-            if ($text === $this->mEndContainer) {
-                break;
-            }
-
             $s .= $text->data;
         }
 
