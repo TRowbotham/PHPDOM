@@ -652,7 +652,7 @@ class Range {
             }
         }
 
-        $ancestor = $aB[0];
+        $ancestor = $aB[0]->parentNode;
 
         while ($ancestor) {
             if ($ancestor === $aA[0]) {
