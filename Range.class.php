@@ -94,7 +94,11 @@ class Range {
      * @return Range
      */
     public function cloneRange() {
-        // TODO
+        $range = new Range();
+        $range->setStart($this->mStartContainer, $this->mStartOffset);
+        $range->setEnd($this->mEndContainer, $this->mEndOffset);
+
+        return $range;
     }
 
     /**
