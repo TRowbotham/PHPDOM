@@ -666,19 +666,19 @@ class Range {
             $child = $aB[0];
 
             while ($child) {
-                if ($index = array_search($child, $aA[0]->childNodes)) {
-                    if ($index < $aA[1]) {
-                        return 'after';
-                    }
-
+                if (in_array($child, $aA[0]->childNodes, true)) {
                     break;
                 }
 
                 $child = $child->parentNode;
             }
 
-            return 'before';
+            if ($child->_getTreeIndex() < $aA[1]) {
+                return 'after';
+            }
         }
+
+        return 'before';
     }
 
     /**
