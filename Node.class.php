@@ -367,6 +367,23 @@ abstract class Node implements EventTarget {
     }
 
     /**
+     * Returns whether or not the namespace of the node is the node's default
+     * namespace.
+     *
+     * @link https://dom.spec.whatwg.org/#dom-node-isdefaultnamespace
+     *
+     * @param  string|null  $aNamespace A namespaceURI to check against.
+     *
+     * @return bool
+     */
+    public function isDefaultNamespace($aNamespace) {
+        $namespace = $aNamespace === '' ? null : $aNamespace;
+        $defaultNamespace = Namespaces::locateNamespace($this, null);
+
+        return $defaultNamespace === $namespace;
+    }
+
+    /**
      * Compares two nodes to see if they are equal.
      *
      * @link   https://dom.spec.whatwg.org/#dom-node-isequalnode
@@ -426,6 +443,51 @@ abstract class Node implements EventTarget {
         }
 
         return true;
+    }
+
+    /**
+     * Finds the namespace associated with the given prefix.
+     *
+     * @link https://dom.spec.whatwg.org/#dom-node-lookupnamespaceuri
+     *
+     * @param  string|null  $aPrefix The prefix of the namespace to be found.
+     *
+     * @return string|null
+     */
+    public function lookupNamespaceURI($aPrefix) {
+        $prefix = $aPrefix === '' ? null : $aPrefix;
+
+        return Namespaces::locateNamespace($this, $aPrefix);
+    }
+
+    /**
+     * Finds the prefix associated with the given namespace on the given node.
+     *
+     * @link https://dom.spec.whatwg.org/#dom-node-lookupprefix
+     *
+     * @param  string|null  $aNamespace The namespace of the prefix to be found.
+     *
+     * @return string|null
+     */
+    public function lookupPrefix($aNamespace) {
+        if ($aNamespace === null || $aNamespace === '') {
+            return null;
+        }
+
+        switch (true) {
+            case $this instanceof Element:
+                return Namespaces::locatePrefix($this, $aNamespace);
+
+            case $this instanceof Document:
+                return Namespaces::locatePrefix($this->mDoumentElement, $aNamespace);
+
+            case $this instanceof DocumentType:
+            case $this instanceof DocumentFragment:
+                return null;
+
+            default:
+                return $this->mParentElement ? Namespaces::locatePrefix($this->mParentElement, $aNamespace) : null;
+        }
     }
 
     /**
