@@ -697,7 +697,7 @@ class Range {
             return $aNode;
         }
 
-        return $aNode->parentNode->ownerDocument;
+        return $aNode->ownerDocument;
     }
 
     /**
