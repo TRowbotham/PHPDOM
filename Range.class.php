@@ -636,9 +636,10 @@ class Range {
             }
         }
 
-        $tw = new TreeWalker($aB[0], NodeFilter::SHOW_ALL, function($aNode) use ($aA) {
+        $tw = new TreeWalker($this->getRoot($aB[0]), NodeFilter::SHOW_ALL, function($aNode) use ($aA) {
             return $aNode === $aA[0] ? NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
         });
+        $tw->currentNode = $aB[0];
 
         $AFollowsB = $tw->nextNode();
 
