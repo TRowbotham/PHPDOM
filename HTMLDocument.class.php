@@ -305,7 +305,7 @@ class HTMLDocument extends Document {
         require_once 'HTMLElement/' . $className . '.class.php';
 
         $node = new $className($localName);
-        $node->mNamespaceURI = 'http://www.w3.org/1999/xhtml';
+        $node->mNamespaceURI = Namespaces::HTML;
         $node->mOwnerDocument = $this;
 
         return $node;

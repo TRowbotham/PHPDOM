@@ -258,7 +258,7 @@ abstract class Element extends Node implements SplObserver {
     public function hasAttribute($aName) {
         $name = $aName;
 
-        if ($this->mNamespaceURI == 'http://www.w3.org/1999/xhtml' &&
+        if ($this->mNamespaceURI === Namespaces::HTML &&
             $this->mOwnerDocument instanceof HTMLDocument) {
             $name = strtolower($aName);
         }
@@ -394,7 +394,7 @@ abstract class Element extends Node implements SplObserver {
 
         // TODO: Check Name production in XML documents
 
-        if ($this->mNamespaceURI == 'http://www.w3.org/1999/xhtml' &&
+        if ($this->mNamespaceURI === Namespaces::HTML &&
             $this->mOwnerDocument instanceof HTMLDocument) {
             $name = strtolower($aName);
         }
@@ -574,7 +574,7 @@ abstract class Element extends Node implements SplObserver {
     public function _getAttributeByName($aName) {
         $name = $aName;
 
-        if ($this->mNamespaceURI == 'http://www.w3.org/1999/xhtml' &&
+        if ($this->mNamespaceURI === Namespaces::HTML &&
             $this->mOwnerDocument instanceof HTMLDocument) {
             $name = strtolower($aName);
         }
@@ -679,9 +679,9 @@ abstract class Element extends Node implements SplObserver {
             $nodeFilter = null;
         } else if ($rootIsDocument) {
             $nodeFilter = function ($aNode) use ($aLocalName) {
-                if (strcmp($aNode->namespaceURI, 'http://www.w3.org/1999/xhtml') === 0 &&
-                    strcmp($aNode->localName, strtolower($aLocalName) === 0) ||
-                    (strcmp($aNode->namespaceURI, 'http://www.w3.org/1999/xhtml') !== 0 &&
+                if ($aNode->namespaceURI === Namespaces::HTML &&
+                    strcmp($aNode->localName, strtolower($aLocalName)) === 0) ||
+                    ($aNode->namespaceURI === Namespaces::HTML &&
                     strcmp($aNode->localName, $aLocalName) === 0)) {
                     return NodeFilter::FILTER_ACCEPT;
                 }

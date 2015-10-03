@@ -4,6 +4,7 @@
 
 require_once 'NodeList.class.php';
 require_once 'EventTarget.class.php';
+require_once 'Namespaces.class.php';
 
 abstract class Node implements EventTarget {
     const ELEMENT_NODE = 1;
