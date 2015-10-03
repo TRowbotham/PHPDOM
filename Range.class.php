@@ -584,11 +584,10 @@ class Range {
             $s .= substr($this->mStartContainer->data, $this->mStartOffset);
         }
 
-        $range = $this;
-
-        $tw = new TreeWalker($this->mStartContainer, NodeFilter::SHOW_TEXT, function($aNode) use ($range) {
-            return $range->isPointInRange($aNode, $aNode->_getTreeIndex()) ? NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_REJECT;
+        $tw = new TreeWalker($this->getRoot($this->mStartContainer), NodeFilter::SHOW_TEXT, function($aNode) {
+            return $this->isFullyContainedNode($aNode) ? NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_REJECT;
         });
+        $tw->currentNode = $this->mStartContainer;
 
         while ($text = $tw->nextNode()) {
             $s .= $text->data;
@@ -701,6 +700,23 @@ class Range {
     }
 
     /**
+     * Returns true if the entire Node is within the Range, otherwise false.
+     *
+     * @link https://dom.spec.whatwg.org/#contained
+     *
+     * @param  Node    $aNode The Node to check against.
+     *
+     * @return bool
+     */
+    private function isFullyContainedNode(Node $aNode) {
+        $startBP = array($this->mStartContainer, $this->mStartOffset);
+        $endBP = array($this->mEndContainer, $this->mEndOffset);
+
+        return $this->getRoot($aNode) === $this->getRoot($this->mStartContainer) &&
+                $this->computePosition(array($aNode, 0), $startBP) == 'after' &&
+                $this->computePosition(array($aNode, $aNode->_getNodeLength()), $endBP) == 'before';
+    }
+
      * Sets the start or end boundary point for the Range.
      *
      * @internal
