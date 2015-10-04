@@ -863,6 +863,34 @@ abstract class Node implements EventTarget {
     }
 
     /**
+    /**
+     * Gets the root element of the given node.
+     *
+     * @link https://html.spec.whatwg.org/multipage/infrastructure.html#root-element
+     *
+     * @param  Node         $aNode The node whose root element is to be found.
+     *
+     * @return Element|null
+     */
+    public static function _getRootElement(Node $aNode) {
+        if ($aNode instanceof Document) {
+            return $aNode->firstElementChild;
+        }
+
+        if (!$aNode->parentElement) {
+            return $aNode;
+        }
+
+        $node = $aNode->parentElement;
+
+        while ($node->parentElement) {
+            $node = $node->parentElement;
+        }
+
+        return $node;
+    }
+
+    /**
      * Returns the Node's index.
      *
      * @internal

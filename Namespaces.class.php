@@ -1,6 +1,7 @@
 <?php
 class Namespaces {
     const HTML = 'http://www.w3.org/1999/xhtml';
+    const SVG = 'http://www.w3.org/2000/svg';
     const XML = 'http://www.w3.org/XML/1998/namespace';
     const XMLNS = 'http://www.w3.org/2000/xmlns/';
 

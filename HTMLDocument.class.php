@@ -1,6 +1,5 @@
 <?php
 require_once 'Document.class.php';
-require_once 'EventListener.class.php';
 
 /**
  * HTMLDocument represents an HTML document.
@@ -13,7 +12,6 @@ require_once 'EventListener.class.php';
  */
 class HTMLDocument extends Document {
     private $mHead;
-    private $mTitle;
     private $mBody;
 
     public function __construct() {
@@ -24,7 +22,6 @@ class HTMLDocument extends Document {
         $this->mDocumentElement = $this->createElement('html');
         $this->mHead = $this->createElement('head');
         $this->mBody = $this->createElement('body');
-        $this->mTitle = '';
         $this->mHead->appendChild($this->createElement('title'));
         $this->mDocumentElement->appendChild($this->mHead);
         $this->mDocumentElement->appendChild($this->mBody);
@@ -39,7 +36,29 @@ class HTMLDocument extends Document {
             case 'head':
                 return $this->mHead;
             case 'title':
-                return $this->mTitle;
+                $root = self::_getRootElement($this);
+
+                if ($root instanceof SVGElement && $root->namespaceURI === Namespaces::SVG) {
+                    $nodeFilter = function($aNode) {
+                        return $aNode instanceof SVGTitleElement ? NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
+                    };
+                } else {
+                    $nodeFilter = function($aNode) {
+                        return $aNode instanceof HTMLTitleElement ? NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
+                    };
+                }
+
+                $value = '';
+                $tw = new TreeWalker($this, NodeFilter::SHOW_ELEMENT, $nodeFilter);
+                $title = $tw->nextNode();
+
+                foreach ($title->childNodes as $node) {
+                    if ($node instanceof Text) {
+                        $value .= $node->data;
+                    }
+                }
+
+                return $value;
             default:
                 return parent::__get($aName);
         }
@@ -49,13 +68,48 @@ class HTMLDocument extends Document {
         switch ($aName) {
             case 'title':
                 if (!is_string($aValue)) {
-                    break;
+                    return;
                 }
 
-                $this->mTitle = $aValue;
-                $this->head->getElementsByTagName('title')[0]->text = $aValue;
+                $root = self::_getRootElement($this);
+
+                if ($root instanceof SVGElement && $root->namespaceURI === Namespaces::SVG) {
+                    $element = $root->firstChild;
+
+                    while ($element) {
+                        if ($element instanceof SVGTitleElement) {
+                            break;
+                        }
+
+                        $element = $element->nextSibling;
+                    }
+
+                    if (!$element) {
+                        // TODO: Create title element with SVG namespace
+                    }
+
+                    $element->textContent = $aValue;
+                } else if ($root && $root->namespaceURI === Namespaces::HTML) {
+                    $tw = new TreeWalker($root, NodeFilter::SHOW_ELEMENT, function($aNode) {
+                        return $aNode instanceof HTMLTitleElement ? NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
+                    });
+                    $element = $tw->nextNode();
+
+                    if (!$element && !$this->head) {
+                        return;
+                    }
+
+                    if (!$element) {
+                        $element = $this->head->appendChild($this->createElement('title'));
+                    }
+
+                    $element->textContent = $aValue;
+                }
 
                 break;
+
+            default:
+                parent::__set($aName, $aValue);
         }
     }
 
@@ -322,6 +376,6 @@ class HTMLDocument extends Document {
     }
 
     public function __toString() {
-        return $this->toHTML();
+        return get_class($this);
     }
 }
