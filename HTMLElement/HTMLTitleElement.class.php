@@ -2,18 +2,22 @@
 require_once 'HTMLElement.class.php';
 
 class HTMLTitleElement extends HTMLElement {
-    private $mText;
-
     public function __construct($aTagName) {
         parent::__construct($aTagName);
-
-        $this->mText = '';
     }
 
     public function __get($aName) {
         switch ($aName) {
             case 'text':
-                return $this->mText;
+                $value = '';
+
+                foreach ($this->mChildNodes as $node) {
+                    if ($node instanceof Text) {
+                        $value .= $node->data;
+                    }
+                }
+
+                return $value;
 
             default:
                 return parent::__get($aName);
@@ -23,20 +27,7 @@ class HTMLTitleElement extends HTMLElement {
     public function __set($aName, $aValue) {
         switch ($aName) {
             case 'text':
-            case 'textContent':
-                if (!is_string($aValue)) {
-                    break;
-                }
-
-                $this->mText = $this->mTextContent = $aValue;
-
-                foreach ($this->mChildNodes as $child) {
-                    // It should be safe to assume that any node we encounter
-                    // here uses the ChildNode trait.
-                    $child->remove();
-                }
-
-                $this->append($aValue);
+                parent::__set('textContent', $aValue);
 
                 break;
 
