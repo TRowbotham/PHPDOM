@@ -3,10 +3,6 @@
 // https://dom.spec.whatwg.org/#interface-parentnode
 
 trait ParentNode {
-    private $mChildren = array();
-    private $mChildElementCount = 0;
-    private $mInvalidateChildren = true;
-
     /**
      * Inserts nodes after the last child of this node, while replacing strings in nodes
      * with equvilant Text nodes.
@@ -32,34 +28,38 @@ trait ParentNode {
     }
 
     private function getChildren() {
-        $this->maybeInvalidateChildren();
-
-        return $this->mChildElementCount ? $this->mChildren : null;
+        return array_values(array_filter($this->mChildNodes, array($this, 'filterChildElements')));
     }
 
     private function getFirstElementChild() {
-        $this->maybeInvalidateChildren();
+        $node = $this->mFirstChild;
 
-        return $this->mChildElementCount ? $this->mChildren[0] : null;
+        while ($node) {
+            if ($node instanceof Element) {
+                break;
+            }
+
+            $node = $node->nextSibling;
+        }
+
+        return $node;
     }
 
     private function getLastElementChild() {
-        $this->maybeInvalidateChildren();
+        $node = $this->mLastChild;
 
-        return $this->mChildElementCount ? $this->mChildren[$this->mChildElementCount - 1] : null;
+        while ($node) {
+            if ($node instanceof Element) {
+                break;
+            }
+
+            $node = $node->previousSibling;
+        }
+
+        return $node;
     }
 
     private function getChildElementCount() {
-        $this->maybeInvalidateChildren();
-
-        return $this->mChildElementCount;
-    }
-
-    private function maybeInvalidateChildren() {
-        if ($this->mInvalidateChildren) {
-            $this->mInvalidateChildren = false;
-            $this->mChildren = array_filter($this->mChildNodes, array($this, 'filterChildElements'));
-            $this->mChildElementCount = count($this->mChildren);
-        }
+        return count($this->getChildren());
     }
 }

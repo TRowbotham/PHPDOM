@@ -129,11 +129,6 @@ abstract class Element extends Node implements SplObserver {
         }
     }
 
-    public function appendChild(Node $aNode) {
-        $this->mInvalidateChildren = true;
-        return parent::appendChild($aNode);
-    }
-
     public function closest($aSelectorRule) {
         // TODO
     }
@@ -311,11 +306,6 @@ abstract class Element extends Node implements SplObserver {
         // TODO
     }
 
-    public function insertBefore(Node $aNewNode, Node $aRefNode = null) {
-        $this->mInvalidateChildren = true;
-        return parent::insertBefore($aNewNode, $aRefNode);
-    }
-
     public function matches( $aSelectorRule ) {
         // TODO
     }
@@ -367,16 +357,6 @@ abstract class Element extends Node implements SplObserver {
      */
     public function removeAttributeNS($aNamespace, $aLocalName) {
         $this->_removeAttributeByNamespaceAndLocalName($aNamespace, $aLocalName);
-    }
-
-    public function removeChild(Node $aNode) {
-        $this->mInvalidateChildren = true;
-        return parent::removeChild($aNode);
-    }
-
-    public function replaceChild(Node $aNewNode, Node $aOldNode) {
-        $this->mInvalidateChildren = true;
-        return parent::replaceChild($aNewNode, $aOldNode);
     }
 
     /**
