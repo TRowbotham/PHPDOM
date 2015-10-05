@@ -19,14 +19,14 @@ class HTMLDocument extends Document {
 
         $this->mContentType = 'text/html';
         $this->mDoctype = $this->implementation->createDocumentType('html', '', '');
-        $this->mDocumentElement = $this->createElement('html');
         $this->mHead = $this->createElement('head');
         $this->mBody = $this->createElement('body');
         $this->mHead->appendChild($this->createElement('title'));
-        $this->mDocumentElement->appendChild($this->mHead);
-        $this->mDocumentElement->appendChild($this->mBody);
+        $documentElement = $this->createElement('html');
+        $documentElement->appendChild($this->mHead);
+        $documentElement->appendChild($this->mBody);
         $this->appendChild($this->mDoctype);
-        $this->appendChild($this->mDocumentElement);
+        $this->appendChild($documentElement);
     }
 
     public function __get( $aName ) {

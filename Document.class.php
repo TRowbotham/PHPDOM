@@ -26,7 +26,6 @@ class Document extends Node {
     protected $mCharacterSet;
     protected $mContentType;
     protected $mDoctype; // DocumentType
-    protected $mDocumentElement;
 
     private $mCompatMode;
     private $mEvents;
@@ -42,7 +41,6 @@ class Document extends Node {
 
         $this->mContentType = '';
         $this->mDoctype = null;
-        $this->mDocumentElement = null;
         $this->mEvents = array();
         $this->mImplementation = new iDOMImplementation();
         $this->mNodeName = '#document';
@@ -71,7 +69,7 @@ class Document extends Node {
             case 'doctype':
                 return $this->mDoctype;
             case 'documentElement':
-                return $this->mDocumentElement;
+                return $this->getFirstElementChild();
             case 'documentURI':
             case 'URL':
                 return $this->mURL->href;
