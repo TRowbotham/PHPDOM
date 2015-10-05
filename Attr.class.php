@@ -74,4 +74,8 @@ class Attr {
                 return false;
         }
     }
+
+    public function _setOwnerElement(Element $aElement = null) {
+        $this->mOwnerElement = $aElement;
+    }
 }
