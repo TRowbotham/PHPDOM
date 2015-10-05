@@ -44,7 +44,12 @@ class Attr {
     public function __set($aName, $aValue) {
         switch ($aName) {
             case 'value':
-                $this->mValue = $aValue;
+                if (!$this->mOwnerElement) {
+                    $this->mValue = $aValue;
+                } else {
+                    $this->mOwnerElement->_changeAttributeValue($this, $aValue);
+                }
+
         }
     }
 

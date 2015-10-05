@@ -537,7 +537,11 @@ abstract class Element extends Node implements SplObserver {
         $event = new CustomEvent('attributechange', $dict);
         $this->dispatchEvent($event);
 
+        // This is kind of hacky, but should work.
+        $owner = $aAttr->ownerElement;
+        $aAttr->_setOwnerElement(null);
         $aAttr->value = $aValue;
+        $aAttr->_setOwnerElement($owner);
     }
 
     /**
