@@ -11,19 +11,16 @@ require_once 'Document.class.php';
  * @property string             $title  Reflects the text content of the <title> element.
  */
 class HTMLDocument extends Document {
-    private $mBody;
-
     public function __construct() {
         parent::__construct();
 
         $this->mContentType = 'text/html';
         $this->mDoctype = $this->implementation->createDocumentType('html', '', '');
-        $this->mBody = $this->createElement('body');
         $documentElement = $this->createElement('html');
-        $documentElement->appendChild($this->mBody);
         $head = $this->createElement('head');
         $head->appendChild($this->createElement('title'));
         $documentElement->appendChild($head);
+        $documentElement->appendChild($this->createElement('body'));
         $this->appendChild($this->mDoctype);
         $this->appendChild($documentElement);
     }
@@ -31,7 +28,18 @@ class HTMLDocument extends Document {
     public function __get( $aName ) {
         switch ($aName) {
             case 'body':
-                return $this->mBody;
+                $node = $this->documentElement ? $this->documentElement->firstChild : null;
+
+                while ($node) {
+                    if ($node instanceof HTMLBodyElement || $node instanceof HTMLFrameSetElement) {
+                        break;
+                    }
+
+                    $node = $node->nextSibling;
+                }
+
+                return $node;
+
             case 'head':
                 $node = $this->documentElement ? $this->documentElement->firstChild : null;
 
@@ -76,6 +84,34 @@ class HTMLDocument extends Document {
 
     public function __set($aName, $aValue) {
         switch ($aName) {
+            case 'body':
+                if (!($aValue instanceof HTMLBodyElement) && !($aValue instanceof HTMLFrameSetElement)) {
+                    throw new HierarchyRequestError;
+                    return;
+                }
+
+                $currentBody = $this->body;
+
+                if ($aValue === $currentBody) {
+                    return;
+                }
+
+                if ($currentBody) {
+                    $this->replaceChild($aValue, $currentBody);
+                    return;
+                }
+
+                $root = $this->documentElement;
+
+                if (!$root) {
+                    throw new HierarchyRequestError;
+                    return;
+                }
+
+                $root->appendChild($aValue);
+
+                break;
+
             case 'title':
                 if (!is_string($aValue)) {
                     return;
