@@ -11,7 +11,6 @@ require_once 'Document.class.php';
  * @property string             $title  Reflects the text content of the <title> element.
  */
 class HTMLDocument extends Document {
-    private $mHead;
     private $mBody;
 
     public function __construct() {
@@ -19,12 +18,12 @@ class HTMLDocument extends Document {
 
         $this->mContentType = 'text/html';
         $this->mDoctype = $this->implementation->createDocumentType('html', '', '');
-        $this->mHead = $this->createElement('head');
         $this->mBody = $this->createElement('body');
-        $this->mHead->appendChild($this->createElement('title'));
         $documentElement = $this->createElement('html');
-        $documentElement->appendChild($this->mHead);
         $documentElement->appendChild($this->mBody);
+        $head = $this->createElement('head');
+        $head->appendChild($this->createElement('title'));
+        $documentElement->appendChild($head);
         $this->appendChild($this->mDoctype);
         $this->appendChild($documentElement);
     }
@@ -34,7 +33,18 @@ class HTMLDocument extends Document {
             case 'body':
                 return $this->mBody;
             case 'head':
-                return $this->mHead;
+                $node = $this->documentElement ? $this->documentElement->firstChild : null;
+
+                while ($node) {
+                    if ($node instanceof HTMLHeadElement) {
+                        break;
+                    }
+
+                    $node = $node->nextSibling;
+                }
+
+                return $node;
+
             case 'title':
                 $root = self::_getRootElement($this);
 
