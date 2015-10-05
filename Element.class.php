@@ -382,7 +382,7 @@ abstract class Element extends Node implements SplObserver {
         $attr = $this->_getAttributeByName($name);
 
         if (!$attr) {
-            $attr = new Attr($this, $name, $aValue);
+            $attr = new Attr($name, $aValue, null, null, null, $this);
             $this->_appendAttribute($attr);
             return;
         }
@@ -867,7 +867,7 @@ abstract class Element extends Node implements SplObserver {
         $attr = $this->_getAttributeByNamespaceAndLocalName($namespace, $aLocalName);
 
         if (!$attr) {
-            $attr = new Attr($this, $aLocalName, $aValue, $namespace, $prefix);
+            $attr = new Attr($aLocalName, $aValue, $name, $namespace, $prefix, $this);
             $this->_appendAttribute($attr);
             return;
         }

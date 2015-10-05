@@ -10,9 +10,9 @@ class Attr {
     protected $mPrefix;
     protected $mValue;
 
-    public function __construct(Element $aOwnerElement, $aLocalName, $aValue, $aNamespace = null, $aPrefix = null) {
+    public function __construct($aLocalName, $aValue, $aName = null, $aNamespace = null, $aPrefix = null, Element $aOwnerElement = null) {
         $this->mLocalName = $aLocalName;
-        $this->mName = $aPrefix ? $aPrefix . ':' . $aLocalName : $aLocalName;
+        $this->mName = $aName ? $aName : $aLocalName;
         $this->mNamespaceURI = $aNamespace;
         $this->mOwnerElement = $aOwnerElement;
         $this->mPrefix = $aPrefix;
