@@ -13,7 +13,7 @@ class Attr {
     public function __construct(Element $aOwnerElement, $aLocalName, $aValue, $aNamespace = null, $aPrefix = null) {
         $this->mLocalName = $aLocalName;
         $this->mName = $aPrefix ? $aPrefix . ':' . $aLocalName : $aLocalName;
-        $this->mNamespaceURI = null;
+        $this->mNamespaceURI = $aNamespace;
         $this->mOwnerElement = $aOwnerElement;
         $this->mPrefix = $aPrefix;
         $this->mValue = $aValue;
