@@ -145,7 +145,7 @@ class Range {
             throw new NotSupportedError;
         }
 
-        if ($this->getRoot($this->mStartContainer) !== $this->getRoot($aSourceRange->startContainer)) {
+        if (Node::_getRootElement($this->mStartContainer) !== Node::_getRootElement($aSourceRange->startContainer)) {
             throw new WrongDocumentError;
         }
 
@@ -206,7 +206,7 @@ class Range {
      * @throws IndexSizeError
      */
     public function comparePoint(Node $aNode, $aOffset) {
-        if ($this->getRoot($aNode) !== $this->getRoot($this->mStartContainer)) {
+        if (Node::_getRootElement($aNode) !== Node::_getRootElement($this->mStartContainer)) {
             throw new WrongDocumentError;
         }
 
@@ -357,7 +357,7 @@ class Range {
      * @return bool
      */
     public function intersectsNode(Node $aNode) {
-        if ($this->getRoot($aNode) !== $this->getRoot($this->mStartContainer)) {
+        if (Node::_getRootElement($aNode) !== Node::_getRootElement($this->mStartContainer)) {
             return false;
         }
 
@@ -394,7 +394,7 @@ class Range {
      * @throws IndexSizeError
      */
     public function isPointInRange(Node $aNode, $aOffset) {
-        if ($this->getRoot($aNode) !== $this->getRoot($this->mStartContainer)) {
+        if (Node::_getRootElement($aNode) !== Node::_getRootElement($this->mStartContainer)) {
             return false;
         }
 
@@ -584,7 +584,7 @@ class Range {
             $s .= substr($this->mStartContainer->data, $this->mStartOffset);
         }
 
-        $tw = new TreeWalker($this->getRoot($this->mStartContainer), NodeFilter::SHOW_TEXT, function($aNode) {
+        $tw = new TreeWalker(Node::_getRootElement($this->mStartContainer), NodeFilter::SHOW_TEXT, function($aNode) {
             return $this->isFullyContainedNode($aNode) ? NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_REJECT;
         });
         $tw->currentNode = $this->mStartContainer;
@@ -636,7 +636,7 @@ class Range {
             }
         }
 
-        $tw = new TreeWalker($this->getRoot($aB[0]), NodeFilter::SHOW_ALL, function($aNode) use ($aA) {
+        $tw = new TreeWalker(Node::_getRootElement($aB[0]), NodeFilter::SHOW_ALL, function($aNode) use ($aA) {
             return $aNode === $aA[0] ? NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
         });
         $tw->currentNode = $aB[0];
@@ -748,7 +748,7 @@ class Range {
         switch ($aType) {
             case 'start':
                 if ($this->computePosition($bp, array($this->mEndContainer, $this->mEndOffset)) == 'after' ||
-                    $this->getRoot($this->mStartContainer) !== $this->getRoot($aNode)) {
+                    Node::_getRootElement($this->mStartContainer) !== Node::_getRootElement($aNode)) {
                     $this->mEndContainer = $aNode;
                     $this->mEndOffset = $aOffset;
                 }
@@ -760,7 +760,7 @@ class Range {
 
             case 'end':
                 if ($this->computePosition($bp, array($this->mStartContainer, $this->mStartOffset)) == 'before' ||
-                    $this->getRoot($this->mStartContainer) !== $this->getRoot($aNode)) {
+                    Node::_getRootElement($this->mStartContainer) !== Node::_getRootElement($aNode)) {
                     $this->mStartContainer = $aNode;
                     $this->mStartOffset = $aOffset;
                 }
