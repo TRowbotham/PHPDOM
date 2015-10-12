@@ -883,7 +883,7 @@ abstract class Node implements EventTarget {
 
         $node = $aNode->parentElement;
 
-        while ($node->parentElement) {
+        while ($node && $node->parentElement) {
             $node = $node->parentElement;
         }
 
