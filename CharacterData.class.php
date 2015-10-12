@@ -64,7 +64,7 @@ abstract class CharacterData extends Node {
      * @param  string $aData The string data to be appended to the Node.
      */
     public function appendData($aData) {
-        $this->replaceData($this->mLength, 0, $aData);
+        $this->replaceData($this->length, 0, $aData);
     }
 
     /**
