@@ -49,23 +49,7 @@ class Range {
                         $this->mStartOffset == $this->mEndOffset;
 
             case 'commonAncestorContainer':
-                $container = $this->mStartContainer;
-
-                while ($container) {
-                    $end = $this->mEndContainer;
-
-                    while ($end) {
-                        if ($end === $container) {
-                            break 2;
-                        }
-
-                        $end = $end->parentNode;
-                    }
-
-                    $container = $container->parentNode;
-                }
-
-                return $container;
+                return Node::_getCommonAncestor($this->mStartContainer, $this->mEndContainer);
 
             case 'endContainer':
                 return $this->mEndContainer;

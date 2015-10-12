@@ -863,6 +863,31 @@ abstract class Node implements EventTarget {
     }
 
     /**
+     * Gets the bottom most common ancestor of two nodes, if any.  If null is returned,
+     * the two nodes do not have a common ancestor.
+     *
+     * @internal
+     */
+    public static function _getCommonAncestor(Node $aNodeA, Node $aNodeB) {
+        $nodeA = $aNodeA;
+
+        while ($nodeA) {
+            $nodeB = $aNodeB;
+
+            while ($nodeB) {
+                if ($nodeB === $nodeA) {
+                    break 2;
+                }
+
+                $nodeB = $nodeB->parentNode;
+            }
+
+            $nodeA = $nodeA->parentNode;
+        }
+
+        return $nodeA;
+    }
+
     /**
      * Gets the root element of the given node.
      *
