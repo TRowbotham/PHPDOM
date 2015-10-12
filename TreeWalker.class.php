@@ -166,7 +166,11 @@ final class TreeWalker {
         $node = $this->mCurrentNode;
         $node = $aType == 'first' ? $node->firstChild : $node->lastChild;
 
-        while ($node) {
+        if (!$node) {
+            return null;
+        }
+
+        while (true) {
             $result = NodeFilter::_filter($node, $this);
 
             switch ($result) {
@@ -180,16 +184,16 @@ final class TreeWalker {
 
                     if ($child) {
                         $node = $child;
-                        continue;
+                        continue 2;
                     }
             }
 
-            while ($node) {
+            while (true) {
                 $sibling = $aType == 'first' ? $node->nextSibling : $node->previousSibling;
 
                 if ($sibling) {
                     $node = $sibling;
-                    continue;
+                    continue 2;
                 }
 
                 $parent = $node->parentNode;
@@ -201,8 +205,6 @@ final class TreeWalker {
                 $node = $parent;
             }
         }
-
-        return null;
     }
 
     private function traverseSiblings($aType) {
