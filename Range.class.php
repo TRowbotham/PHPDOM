@@ -682,22 +682,11 @@ class Range {
     }
 
     /**
-     * Returns the root of a Node.
      *
-     * @internal
      *
-     * @link https://dom.spec.whatwg.org/#concept-tree-root
      *
-     * @param  Node $aNode The Node whose root is to be returned.
-     *
-     * @return Node
      */
-    private function getRoot($aNode) {
-        if (!$aNode->parentNode) {
-            return $aNode;
-        }
 
-        return $aNode->ownerDocument;
     }
 
     /**
