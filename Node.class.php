@@ -1026,9 +1026,9 @@ abstract class Node implements EventTarget {
      *
      * @link https://dom.spec.whatwg.org/#concept-node-replace-all
      *
-     * @param Node $aNode The node that is to be inserted.
+     * @param Node|null $aNode The node that is to be inserted.
      */
-    public function _replaceAll(Node $aNode) {
+    public function _replaceAll(Node $aNode = null) {
         if ($aNode) {
             $ownerDocument = $this instanceof Document ? $this : $this->mOwnerDocument;
             $ownerDocument->_adoptNode($aNode);
