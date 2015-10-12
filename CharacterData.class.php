@@ -48,12 +48,6 @@ abstract class CharacterData extends Node {
     public function __set($aName, $aValue) {
         switch ($aName) {
             case 'data':
-                if (is_string($aValue)) {
-                    $this->mData = $aValue;
-                }
-
-                break;
-
             case 'nodeValue':
                 $this->replaceData(0, $this->length, $aValue);
 
