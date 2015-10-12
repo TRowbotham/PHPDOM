@@ -66,7 +66,108 @@ class Range {
     }
 
     public function cloneContents() {
-        // TODO
+        $ownerDocument = $this->mStartContainer instanceof Document ? $this->mStartContainer : $this->mStartContainer->ownerDocument;
+        $fragment = $ownerDocument->createDocumentFragment();
+
+        if ($this->mStartContainer === $this->mEndContainer &&
+            $this->mStartOffset == $this->mEndOffset) {
+            return $fragment;
+        }
+
+        $originalStartNode = $this->mStartContainer;
+        $originalStartOffset = $this->mStartOffset;
+        $originalEndNode = $this->mEndNode;
+        $originalEndOffset = $this->mEndOffset;
+
+        if ($originalStartNode === $originalEndNode &&
+            ($originalStartNode instanceof Text ||
+            $originalStartNode instanceof ProcessingInstruction ||
+            $originalStartNode instanceof Comment)) {
+            $clone = $originalStartNode->cloneNode();
+            $clone->data = $originalStartNode->substringData($originalStartOffset, $originalEndOffset - $originalStartOffset);
+            $fragment->appendChild($clone);
+
+            return $fragment;
+        }
+
+        $commonAncestor = Node::_getCommonAncestor($originalStartNode, $originalEndNode);
+        $firstPartiallyContainedChild = null;
+
+        if (!$originalStartNode->contains($originalEndNode)) {
+            foreach ($commonAncestor->childNodes as $node) {
+                if ($this->isPartiallyContainedNode($node)) {
+                    $firstPartiallyContainedChild = $node;
+                    break;
+                }
+            }
+        }
+
+        $lastPartiallyContainedChild = null;
+
+        if (!$originalEndNode->contains($originalStartNode)) {
+            foreach (array_reverse($commonAncestor->childNodes) as $node) {
+                if ($this->isPartiallyContainedNode($node)) {
+                    $lastPartiallyContainedChild = $node;
+                    break;
+                }
+            }
+        }
+
+        $containedChildren = array();
+        $node = $firstPartiallyContainedChild;
+
+        while ($node) {
+            $containedChildren[] = $node;
+
+            if ($node instanceof DocumentType) {
+                throw new HierarchyRequestError;
+            }
+
+            if ($node === $lastPartiallyContainedChild) {
+                break;
+            }
+
+            $node = $node->nextSibling;
+        }
+
+        if ($firstPartiallyContainedChild instanceof Text ||
+            $firstPartiallyContainedChild instanceof ProcessingInstruction ||
+            $firstPartiallyContainedChild instanceof Comment) {
+            $clone = $originalStartNode->cloneNode();
+            $clone->data = $originalStartNode->substringData($originalStartOffset, $originalStartNode->length - $originalStartOffset);
+            $fragment->appendChild($clone);
+        } else {
+            $clone = $firstPartiallyContainedChild->cloneNode();
+            $fragment->appendChild($clone);
+            $subrange = new Range();
+            $subrange->setStart($originalStartNode, $originalStartOffset);
+            $subrange->setEnd($firstPartiallyContainedChild, $firstPartiallyContainedChild->_getNodeLength());
+            $subfragment = $subrange->cloneRange();
+            $clone->appendChild($subfragment);
+        }
+
+        foreach ($containedChildren as $child) {
+            $clone = $child->cloneNode(true);
+            $fragment->appendChild($clone);
+        }
+
+        if ($lastPartiallyContainedChild instanceof Text ||
+            $lastPartiallyContainedChild instanceof ProcessingInstruction ||
+            $lastPartiallyContainedChild instanceof Comment) {
+            $clone = $originalEndNode->cloneNode();
+            $clone->data = $originalEndNode->substringData(0, $originalEndOffset);
+            $fragment->appendChild($clone);
+        } else if ($lastPartiallyContainedChild) {
+            $clone = $lastPartiallyContainedChild->cloneNode();
+            $fragment->appendChild($clone);
+            $subrange = new Range();
+            $subrange->setStart($lastPartiallyContainedChild, 0);
+            $subrange->setEnd($originalEndNode, $originalEndOffset);
+            $subfragment = $subrange->cloneRange();
+            $clone->appendChild($subfragment);
+        }
+
+        return $fragment;
     }
 
     /**
@@ -666,14 +767,6 @@ class Range {
     }
 
     /**
-     *
-     *
-     *
-     */
-
-    }
-
-    /**
      * Returns true if the entire Node is within the Range, otherwise false.
      *
      * @link https://dom.spec.whatwg.org/#contained
@@ -686,11 +779,28 @@ class Range {
         $startBP = array($this->mStartContainer, $this->mStartOffset);
         $endBP = array($this->mEndContainer, $this->mEndOffset);
 
-        return $this->getRoot($aNode) === $this->getRoot($this->mStartContainer) &&
+        return Node::_getRootElement($aNode) === Node::_getRootElement($this->mStartContainer) &&
                 $this->computePosition(array($aNode, 0), $startBP) == 'after' &&
                 $this->computePosition(array($aNode, $aNode->_getNodeLength()), $endBP) == 'before';
     }
 
+    /**
+     * Returns true if only a portion of the Node is contained within the Range.
+     *
+     * @link https://dom.spec.whatwg.org/#partially-contained
+     *
+     * @param  Node    $aNode The Node to check against.
+     *
+     * @return bool
+     */
+    private function isPartiallyContainedNode(Node $aNode) {
+        $isAncestorOfStart = $aNode->contains($this->mStartContainer);
+        $isAncestorOfEnd = $aNode->contains($this->mEndContainer);
+
+        return ($isAncestorOfStart && !$isAncestorOfEnd) || (!$isAncestorOfStart && $isAncestorOfEnd);
+    }
+
+    /**
      * Sets the start or end boundary point for the Range.
      *
      * @internal
