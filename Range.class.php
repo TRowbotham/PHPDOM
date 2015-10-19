@@ -647,8 +647,33 @@ class Range {
         $this->setStartOrEnd('start', $parent, $aNode->_getTreeIndex());
     }
 
+    /**
+     * Wraps the content of Range in a new Node and inserts it in to the Document.
+     *
+     * @link https://dom.spec.whatwg.org/#dom-range-surroundcontents
+     *
+     * @param  Node   $aNewParent The node that will surround the Range's content.
+     */
     public function surroundCountents(Node $aNewParent) {
-        // TODO
+        if ((!($this->mStartContainer instanceof Text) && $this->isPartiallyContainedNode($this->mStartContainer)) ||
+            (!($this->mEndContainer instanceof Text) && $this->isPartiallyContainedNode($this->mEndContainer))) {
+            throw new InvalidStateError;
+        }
+
+        if ($aNewParent instanceof Document || $aNewParent instanceof DocumentType ||
+            $aNewParent instanceof DocumentFragment) {
+            throw new InvalidNodeTypeError;
+        }
+
+        $fragment = $this->extractContents();
+
+        if ($aNewParent->hasChildNodes()) {
+            $aNewParent->_replaceAll(null);
+        }
+
+        $this->insertNode($aNewParent);
+        $aNewParent->appendChild($fragment);
+        $this->selectNode($aNewParent);
     }
 
     /**
