@@ -332,18 +332,58 @@ class Range {
         $originalEndNode = $this->mEndContainer;
         $originalEndOffset = $this->mEndOffset;
 
-        if ($originalStartNode === $originalEndNode) {
-            if (($originalStartNode instanceof Text ||
+        if ($originalStartNode === $originalEndNode && ($originalStartNode instanceof Text ||
                 $originalStartNode instanceof ProcessingInstruction ||
-                $originalStartNode instanceof Comment) &&
-                ($originalEndNode instanceof Text ||
-                $originalEndNode instanceof ProcessingInstruction ||
-                $originalEndNode instanceof Comment)) {
-
-            }
+                $originalStartNode instanceof Comment)) {
+            $originalStartNode->replaceData($originalStartOffset, $originalEndOffset - $originalStartOffset, '');
         }
 
-        // TODO: Finish
+        $nodesToRemove = array();
+        $tw = new TreeWalker($originalStartNode, NodeFilter::SHOW_ALL, function($aNode) {
+            return $this->isFullyContainedNode($aNode) && !$this->isFullyContainedNode($aNode->parentNode) ?
+                    NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
+        });
+
+        while ($node = $tw->nextNode()) {
+            $nodesToRemove[] = $node;
+        }
+
+        if ($originalStartNode->contains($originalEndNode)) {
+            $newNode = $originalStartNode;
+            $newOffset = $originalStartOffset;
+        } else {
+            $referenceNode = $originalStartNode;
+
+            while ($referenceNode) {
+                if ($referenceNode->contains($originalEndNode)) {
+                    break;
+                }
+
+                $referenceNode = $referenceNode->parentNode;
+            }
+
+            $newNode = $referenceNode->parentNode;
+            $newOffset = $referenceNode->_getTreeIndex() + 1;
+        }
+
+        if ($originalStartNode instanceof Text ||
+            $originalStartNode instanceof ProcessingInstruction ||
+            $originalStartNode instanceof Comment) {
+            $originalStartNode->replaceData($originalStartOffset, $originalStartNode->length - $originalStartOffset, '');
+        }
+
+        foreach ($nodesToRemove as $node) {
+            $node->parentNode->_removeChild($node);
+        }
+
+        if ($originalEndNode instanceof Text ||
+            $originalEndNode instanceof ProcessingInstruction ||
+            $originalEndNode instanceof Comment) {
+            $originalEndNode->replaceData(0, $originalEndOffset, '');
+        }
+
+        $this->setStartOrEnd('start', $newNode, $newOffset);
+        $this->setStartOrEnd('end', $newNode, $newOffset);
     }
 
     /**
