@@ -3,10 +3,8 @@
 // https://developer.mozilla.org/en-US/docs/Web/API/NodeIterator
 
 require_once 'NodeFilter.class.php';
-require_once 'TreeWalker.class.php';
 
 final class NodeIterator {
-    private $mCollection;
     private $mFilter;
     private $mPointerBeforeReferenceNode;
     private $mReferenceNode;
@@ -14,7 +12,6 @@ final class NodeIterator {
     private $mWhatToShow;
 
     public function __construct(Node $aRoot, $aWhatToShow = NodeFilter::SHOW_ALL, callable $aFilter = null) {
-        $this->mCollection = new TreeWalker($aRoot, $aWhatToShow);
         $this->mFilter = $aFilter;
         $this->mPointerBeforeReferenceNode = true;
         $this->mReferenceNode = $aRoot;
@@ -61,9 +58,33 @@ final class NodeIterator {
             switch ($aDirection) {
                 case 'next':
                     if (!$beforeNode) {
-                        $node = $this->mCollection->nextNode();
+                        $firstChild = $node->firstChild;
 
-                        if (!$node) {
+                        if ($firstChild) {
+                            $node = $firstChild;
+                            break;
+                        }
+
+                        $sibling = null;
+                        $temp = $node;
+
+                        do {
+                            if ($temp === $this->mRoot) {
+                                break;
+                            }
+
+                            $sibling = $temp->nextSibling;
+
+                            if ($sibling) {
+                                break;
+                            }
+
+                            $temp = $temp->parentNode;
+                        } while($temp);
+
+                        $node = $sibling;
+
+                        if (!$sibling) {
                             return null;
                         }
                     } else {
@@ -74,16 +95,22 @@ final class NodeIterator {
 
                 case 'previous':
                     if ($beforeNode) {
-                        $node = $this->mCollection->previousNode();
+                        $sibling = $node->previousSibling;
 
-                        if (!$node) {
+                        if ($sibling) {
+                            $node = $sibling;
+
+                            while (($lastChild = $node->lastChild)) {
+                                $node = $lastChild;
+                            }
+                        }
+
+                        if ($this->mReferenceNode === $this->mRoot || !($node = $node->parentNode)) {
                             return null;
                         }
                     } else {
                         $beforeNode = true;
                     }
-
-                    break;
             }
 
             $result = NodeFilter::_filter($node, $this);
