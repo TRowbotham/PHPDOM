@@ -1146,7 +1146,9 @@ abstract class Node implements EventTarget {
             }
         }
 
-        // TODO: Run NodeIterator's pre-removing steps
+        foreach ($aNode->ownerDocument->_getNodeIteratorCollection() as $iter) {
+            $iter->_preremove($aNode);
+        }
 
         array_splice($this->mChildNodes, $index, 1);
 

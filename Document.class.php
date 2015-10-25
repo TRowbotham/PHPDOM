@@ -30,6 +30,7 @@ class Document extends Node {
     private $mCompatMode;
     private $mEvents;
     private $mImplementation;
+    private $mNodeIteratorList;
     private $mURL;
 
     public function __construct() {
@@ -43,6 +44,7 @@ class Document extends Node {
         $this->mDoctype = null;
         $this->mEvents = array();
         $this->mImplementation = new iDOMImplementation();
+        $this->mNodeIteratorList = array();
         $this->mNodeName = '#document';
         $this->mNodeType = Node::DOCUMENT_NODE;
         $this->mOwnerDocument = null; // Documents own themselves.
@@ -184,7 +186,10 @@ class Document extends Node {
      * @return NodeIterator
      */
     public function createNodeIterator(Node $aRoot, $aWhatToShow = NodeFilter::SHOW_ALL, callable $aFilter = null) {
-        return new NodeIterator($aRoot, $aWhatToShow, $aFilter);
+        $iter = new NodeIterator($aRoot, $aWhatToShow, $aFilter);
+        $this->mNodeIteratorList[] = $iter;
+
+        return $iter;
     }
 
     public function createRange() {
@@ -298,6 +303,10 @@ class Document extends Node {
             // TODO: Support adopting steps for nodes
             $node = $tw->nextNode();
         }
+    }
+
+    public function _getNodeIteratorCollection() {
+        return $this->mNodeIteratorList;
     }
 
     /**
