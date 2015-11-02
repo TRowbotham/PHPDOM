@@ -59,6 +59,9 @@ abstract class Node implements EventTarget {
 
     public function __get( $aName ) {
         switch ($aName) {
+            case 'baseURI':
+                return $this->getBaseURI();
+
             case 'childNodes':
                 return $this->mChildNodes;
 
@@ -1078,6 +1081,14 @@ abstract class Node implements EventTarget {
         }
 
         // TODO: Queue a mutation record for "childList"
+    }
+
+    protected function getBaseURI() {
+        $ssl = isset($_SERVER['HTTPS']) && $_SERVER["HTTPS"] == 'on';
+        $port = in_array($_SERVER['SERVER_PORT'], array(80, 443)) ? '' : ':' . $_SERVER['SERVER_PORT'];
+        $url = ($ssl ? 'https' : 'http') . '://' . $_SERVER['SERVER_NAME'] . $port . $_SERVER['REQUEST_URI'];
+
+        return $url;
     }
 
     /**
