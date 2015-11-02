@@ -743,6 +743,71 @@ abstract class Node implements EventTarget {
         return $aOldNode;
     }
 
+    public function _cloneNode($aDocument = null, $aCloneChildren = false) {
+        $doc = !$aDocument ? $this->mOwnerDocument : $aDocument;
+        $class = get_class($this);
+
+        switch (true) {
+            case $this instanceof Document:
+                $copy = new $class();
+                // Set encoding
+                $copy->mContentType = $this->mContentType;
+                // Set URL
+                // Set Type
+                // Set Mode
+
+                break;
+
+            case $this instanceof DocumentType:
+                $copy = new $class();
+                $copy->mName = $this->mName;
+                $copy->mPublicId = $this->mPublicId;
+                $copy->mSystemId = $this->mSystemId;
+
+                break;
+
+            case $this instanceof Element:
+                $copy = new $class($this->mLocalName);
+                $copy->mNamespaceURI = $this->mNamespaceURI;
+                $copy->mPrefix = $this->mPrefix;
+
+                foreach ($this->mAttributesList as $attr) {
+                    $copyAttr = new Attr($attr->localName, $attr->value, $attr->name,
+                                         $attr->namespaceURI, $attr->prefix, $copy);
+                    $copy->mAttributesList[] = $copyAttr;
+                }
+
+                break;
+
+            case $this instanceof Text:
+            case $this instanceof Comment:
+                $copy = new $class($this->mData);
+
+                break;
+
+            case $this instanceof ProcessingInstruction:
+                $copy = new $class($this->mTarget, $this->mData);
+        }
+
+        if ($copy instanceof Document) {
+            $copy->mOwnerDocument = $copy;
+            $doc = $copy;
+        } else {
+            $copy->mOwnerDocument = $doc;
+        }
+
+        // TODO: Run any specification specific cloning steps
+
+        if ($aCloneChildren) {
+            foreach ($this->mChildNodes as $child) {
+                $copyChild = $child->_cloneNode($doc, true);
+                $copy->mChildNodes[] = $copyChild;
+            }
+        }
+
+        return $copy;
+    }
+
     /**
      * @internal
      * @link   https://dom.spec.whatwg.org/#concept-node-ensure-pre-insertion-validity
