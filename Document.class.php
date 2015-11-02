@@ -192,6 +192,19 @@ class Document extends Node {
         return $iter;
     }
 
+    public function createProcessingInstruction($aTarget, $aData) {
+        // TODO: Make sure the Name matches the production
+
+        if (strpos($aData, '?>') === false) {
+            throw new InvalidCharacterError;
+        }
+
+        $pi = new ProcessingInstruction($aTarget, $aData);
+        $pi->mOwnerDocument = $this;
+
+        return $pi;
+    }
+
     public function createRange() {
         $range = new Range();
         $range->setStart($this, 0);
