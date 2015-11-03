@@ -281,7 +281,7 @@ class Document extends Node {
     }
 
     public function importNode(Node $aNode, $aDeep = false) {
-        if ($aNode instanceof Document) {
+        if ($aNode instanceof Document || $aNode instanceof ShadowRoot) {
             throw new NotSupportedError;
         }
 
