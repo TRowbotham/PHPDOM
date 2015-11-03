@@ -17,6 +17,7 @@ require_once 'NodeFilter.class.php';
 require_once 'NodeIterator.class.php';
 require_once 'Range.class.php';
 require_once 'TreeWalker.class.php';
+require_once 'ProcessingInstruction.class.php';
 
 class Document extends Node {
     use ParentNode, NonElementParentNode;
