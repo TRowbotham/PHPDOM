@@ -200,7 +200,9 @@ abstract class Node implements EventTarget {
      * @return Node           The copy of the node.
      */
     public function cloneNode($aDeep = false) {
-        // TODO
+        $ownerDocument = $this instanceof Document ? $this : $this->mOwnerDocument;
+
+        return $this->_cloneNode($ownerDocument, $aDeep);
     }
 
     /**
@@ -773,8 +775,8 @@ abstract class Node implements EventTarget {
 
                 foreach ($this->mAttributesList as $attr) {
                     $copyAttr = new Attr($attr->localName, $attr->value, $attr->name,
-                                         $attr->namespaceURI, $attr->prefix, $copy);
-                    $copy->mAttributesList[] = $copyAttr;
+                                         $attr->namespaceURI, $attr->prefix);
+                    $copy->_appendAttribute($copyAttr);
                 }
 
                 break;
@@ -801,7 +803,7 @@ abstract class Node implements EventTarget {
         if ($aCloneChildren) {
             foreach ($this->mChildNodes as $child) {
                 $copyChild = $child->_cloneNode($doc, true);
-                $copy->mChildNodes[] = $copyChild;
+                $copy->appendChild($copyChild);
             }
         }
 
