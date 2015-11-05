@@ -10,7 +10,7 @@ class HTMLTableColElement extends HTMLElement {
     public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null) {
         parent::__construct($aLocalName, $aNamespaceURI, $aPrefix);
 
-        if (strcasecmp($aTagName, 'col') == 0) {
+        if (strcasecmp($aLocalName, 'col') == 0) {
             $this->mEndTagOmitted = true;
         }
 
