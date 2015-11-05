@@ -16,12 +16,12 @@ class HTMLElement extends Element {
     protected $mTitle;
     protected $mTranslate;
 
-    public function __construct($aTagName) {
-        parent::__construct($aTagName);
 
         $this->mAccessKey = '';
         $this->mAccessKeyLabel = '';
         $this->mContentEditable = false;
+    public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null) {
+        parent::__construct($aLocalName, $aNamespaceURI, $aPrefix);
         $this->mDataset;
         $this->mDir = '';
         $this->mHidden = false;

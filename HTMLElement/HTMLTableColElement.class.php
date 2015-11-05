@@ -7,8 +7,8 @@ require_once 'HTMLElement.class.php';
 class HTMLTableColElement extends HTMLElement {
     private $mSpan;
 
-    public function __construct($aTagName) {
-        parent::__construct($aTagName);
+    public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null) {
+        parent::__construct($aLocalName, $aNamespaceURI, $aPrefix);
 
         if (strcasecmp($aTagName, 'col') == 0) {
             $this->mEndTagOmitted = true;

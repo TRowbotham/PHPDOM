@@ -2,8 +2,8 @@
 require_once 'HTMLElement.class.php';
 
 class HTMLTitleElement extends HTMLElement {
-    public function __construct($aTagName) {
-        parent::__construct($aTagName);
+    public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null) {
+        parent::__construct($aLocalName, $aNamespaceURI, $aPrefix);
     }
 
     public function __get($aName) {

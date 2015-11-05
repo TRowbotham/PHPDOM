@@ -25,7 +25,7 @@ abstract class Element extends Node implements SplObserver {
 
     private $mReconstructClassList;
 
-    protected function __construct($aLocalName) {
+    protected function __construct($aLocalName, $aNamespaceURI, $aPrefix = null) {
         parent::__construct();
 
         $this->mAttributes = new NamedNodeMap($this, $this->mAttributesList);
@@ -35,9 +35,9 @@ abstract class Element extends Node implements SplObserver {
         $this->mEndTagOmitted = false;
         $this->mId = '';
         $this->mLocalName = strtolower($aLocalName);
-        $this->mNamespaceURI = null;
+        $this->mNamespaceURI = $aNamespaceURI;
         $this->mNodeName = strtoupper($aLocalName);
-        $this->mPrefix = null;
+        $this->mPrefix = $aPrefix;
         $this->mTagName = (!$this->mPrefix ? '' : $this->mPrefix . ':') .
                           ($this->mOwnerDocument instanceof HTMLDocument ?strtoupper($aLocalName) : $aLocalName);
         $this->addEventListener('attributechange', array($this, '_onAttributeChange'));

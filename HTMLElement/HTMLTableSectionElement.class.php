@@ -11,8 +11,8 @@ require_once 'HTMLElement.class.php';
  * @property HTMLTableRowElement[] $rows Returns all of the <tr> elements within this section element.
  */
 class HTMLTableSectionElement extends HTMLElement {
-    public function __construct($aTagName) {
-        parent::__construct($aTagName);
+    public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null) {
+        parent::__construct($aLocalName, $aNamespaceURI, $aPrefix);
     }
 
     public function __get($aName) {

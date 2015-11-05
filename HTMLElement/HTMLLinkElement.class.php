@@ -38,8 +38,8 @@ class HTMLLinkElement extends HTMLElement {
     private $mSizes;
     private $mType;
 
-    public function __construct($aTagName) {
-        parent::__construct($aTagName);
+    public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null) {
+        parent::__construct($aLocalName, $aNamespaceURI, $aPrefix);
 
         $this->mCrossOrigin = '';
         $this->mEndTagOmitted = true;

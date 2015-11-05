@@ -7,7 +7,7 @@ require_once 'HTMLTableCellElement.class.php';
  * @link https://html.spec.whatwg.org/#the-td-element
  */
 class HTMLTableDataCellElement extends HTMLTableCellElement {
-    public function __construct($aTagName) {
-        parent::__construct($aTagName);
+    public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null) {
+        parent::__construct($aLocalName, $aNamespaceURI, $aPrefix);
     }
 }

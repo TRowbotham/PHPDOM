@@ -20,8 +20,8 @@ class HTMLTableHeaderCellElement extends HTMLTableCellElement {
     private $mScope;
     private $mSorted;
 
-    public function __construct($aTagName) {
-        parent::__construct($aTagName);
+    public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null) {
+        parent::__construct($aLocalName, $aNamespaceURI, $aPrefix);
 
         $this->mAbbr = '';
         $this->mScope = '';

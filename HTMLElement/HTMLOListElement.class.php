@@ -8,8 +8,8 @@ class HTMLOListElement extends HTMLElement {
     private $mStart;
     private $mType;
 
-    public function __construct($aTagName) {
-        parent::__construct($aTagName);
+    public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null) {
+        parent::__construct($aLocalName, $aNamespaceURI, $aPrefix);
 
         $this->mReversed = false;
         $this->mStart = 1;

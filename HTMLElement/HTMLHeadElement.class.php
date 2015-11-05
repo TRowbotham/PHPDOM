@@ -4,7 +4,7 @@
 require_once 'HTMLElement.class.php';
 
 class HTMLHeadElement extends HTMLElement {
-	public function __construct($aTagName) {
-		parent::__construct($aTagName);
+	public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null) {
+		parent::__construct($aLocalName, $aNamespaceURI, $aPrefix);
 	}
 }
