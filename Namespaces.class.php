@@ -18,7 +18,7 @@ class Namespaces {
      *
      * @return string|null
      */
-    public function locateNamespace(Node $aNode, $aPrefix) {
+    public static function locateNamespace(Node $aNode, $aPrefix) {
         switch (true) {
             case $aNode instanceof Element:
                 if ($aNode->namespaceURI && $aNode->prefix === $aPrefix) {
