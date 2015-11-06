@@ -4,6 +4,8 @@ class Namespaces {
     const SVG = 'http://www.w3.org/2000/svg';
     const XML = 'http://www.w3.org/XML/1998/namespace';
     const XMLNS = 'http://www.w3.org/2000/xmlns/';
+    const MATHML = 'http://www.w3.org/1998/Math/MathML';
+    const XLINK = 'http://www.w3.org/1999/xlink';
 
     /**
      * Finds the namespace associated with the given prefix on the given node.
