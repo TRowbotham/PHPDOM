@@ -431,7 +431,13 @@ abstract class Element extends Node implements SplObserver {
      * @param string $aValue     The value of the attribute.
      */
     public function setAttributeNS($aNamespace, $aName, $aValue) {
-        // TODO
+        try {
+            $parts = Namespaces::validateAndExtract($aNamespace, $aName);
+        } catch (Exception $e) {
+            throw $e;
+        }
+
+        $this->_setAttributeValue($parts['localName'], $aValue, $aName, $parts['prefix'], $parts['namespace']);
     }
 
     public function toHTML() {
