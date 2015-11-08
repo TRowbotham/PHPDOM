@@ -9,7 +9,7 @@ require_once 'ParentNode.class.php';
 require_once 'ChildNode.class.php';
 require_once 'NonDocumentTypeChildNode.class.php';
 
-abstract class Element extends Node implements SplObserver {
+class Element extends Node implements SplObserver {
     use ParentNode, ChildNode, NonDocumentTypeChildNode;
 
     protected $mAttributes; // NamedNodeMap
