@@ -20,6 +20,10 @@ require_once 'TreeWalker.class.php';
 require_once 'ProcessingInstruction.class.php';
 
 class Document extends Node {
+    const NO_QUIRKS_MODE = 1;
+    const LIMITED_QUIRKS_MODE = 2;
+    const QUIRKS_MODE = 3;
+
     use ParentNode, NonElementParentNode;
 
     protected static $mDefaultDocument = null;
@@ -27,6 +31,7 @@ class Document extends Node {
     protected $mCharacterSet;
     protected $mContentType;
     protected $mDoctype; // DocumentType
+    protected $mMode;
 
     private $mCompatMode;
     private $mEvents;
@@ -45,6 +50,7 @@ class Document extends Node {
         $this->mDoctype = null;
         $this->mEvents = array();
         $this->mImplementation = new iDOMImplementation();
+        $this->mMode = self::NO_QUIRKS_MODE;
         $this->mNodeIteratorList = array();
         $this->mNodeName = '#document';
         $this->mNodeType = Node::DOCUMENT_NODE;
@@ -349,8 +355,31 @@ class Document extends Node {
         }
     }
 
+    /**
+     * Gets the value of the document's mode.
+     *
+     * @internal
+     *
+     * @return int
+     */
+    public function _getMode() {
+        return $this->mMode;
+    }
+
     public function _getNodeIteratorCollection() {
         return $this->mNodeIteratorList;
+    }
+
+    /**
+    /**
+     * Sets the document's mode.
+     *
+     * @internal
+     *
+     * @param int $aMode An integer representing the current mode.
+     */
+    public function _setMode($aMode) {
+        $this->mMode = $aMode;
     }
 
     /**
