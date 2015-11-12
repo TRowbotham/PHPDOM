@@ -371,6 +371,16 @@ class Document extends Node {
     }
 
     /**
+     * Sets the document's content type.
+     *
+     * @internal
+     *
+     * @param string $aType The MIME content type of the document.
+     */
+    public function _setContentType($aType) {
+        $this->mContentType = $aType;
+    }
+
     /**
      * Sets the document's mode.
      *
