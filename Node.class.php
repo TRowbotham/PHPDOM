@@ -769,9 +769,7 @@ abstract class Node implements EventTarget {
                 break;
 
             case $this instanceof Element:
-                $copy = new $class($this->mLocalName);
-                $copy->mNamespaceURI = $this->mNamespaceURI;
-                $copy->mPrefix = $this->mPrefix;
+                $copy = new $class($this->mLocalName, $this->mNamespaceURI, $this->mPrefix);
 
                 foreach ($this->mAttributesList as $attr) {
                     $copyAttr = new Attr($attr->localName, $attr->value, $attr->name,
