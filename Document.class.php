@@ -382,6 +382,17 @@ class Document extends Node {
     }
 
     /**
+     * Associates a DocumentType node with the document.
+     *
+     * @internal
+     *
+     * @param DocumentType $aDoctype The DocumentType node of the document.
+     */
+    public function _setDoctype(DocumentType $aDoctype) {
+        $this->mDoctype = $aDoctype;
+    }
+
+    /**
      * Sets the document's mode.
      *
      * @internal
