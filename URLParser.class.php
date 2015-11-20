@@ -104,8 +104,8 @@ class URLParser {
         $encoding = $aEncoding ? $aEncoding : 'utf-8';
         $buffer = '';
 
-        for ($pointer = 0; $pointer <= strlen($input); $pointer++) {
-            $c = substr($input, $pointer, 1);
+        for ($pointer = 0; $pointer <= mb_strlen($input, $encoding); $pointer++) {
+            $c = mb_substr($input, $pointer, 1, $encoding);
 
             switch ($state) {
                 case self::STATE_SCHEME_START:
