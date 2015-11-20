@@ -981,13 +981,24 @@ class URLParser {
         return $output;
     }
 
+    /**
+     * Serializes a URL object.
+     *
+     * @link https://url.spec.whatwg.org/#concept-url-serializer
+     *
+     * @param  URL          $aUrl             The URL object to serialize.
+     *
+     * @param  bool|null    $aExcludeFragment Optional argument, that, when specified will exclude the URL's
+     *                                        fragment from being serialized.
+     * @return string
+     */
     public static function serializeURL(URL $aUrl, $aExcludeFragment = null) {
         $output = $aUrl->mScheme . ':';
 
-        if ($aUrl->mFlags & URL::FLAG_RELATIVE) {
+        if ($aUrl->mHost !== null) {
             $output .= '//';
 
-            if ($aUrl->mUsername || $aUrl->mPassword !== null) {
+            if ($aUrl->mUsername !== '' || $aUrl->mPassword !== null) {
                 $output .= $aUrl->mUsername;
 
                 if ($aUrl->mPassword !== null) {
@@ -999,10 +1010,16 @@ class URLParser {
 
             $output .= self::serializeHost($aUrl->mHost);
 
-            if ($aUrl->mPort) {
+            if ($aUrl->mPort !== null) {
                 $output .= ':' . $aUrl->mPort;
             }
+        } else if ($aUrl->mHost === null && $aUrl->mScheme == 'file') {
+            $output .= '//';
+        }
 
+        if ($aUrl->mFlags & URL::FLAG_NON_RELATIVE) {
+            $output .= $this->mPath[0];
+        } else {
             $output .= '/';
 
             foreach ($aUrl->mPath as $key => $path) {
@@ -1012,8 +1029,6 @@ class URLParser {
 
                 $output .= $path;
             }
-        } elseif (!($aUrl->mFlags & URL::FLAG_RELATIVE)) {
-            $output .= $aUrl->mSchemeData;
         }
 
         if ($aUrl->mQuery !== null) {
