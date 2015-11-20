@@ -21,6 +21,7 @@ class URLParser {
     const STATE_PORT = 19;
 
     const REGEX_ASCII_DIGIT = '/[\x{0030}-\x{0039}]/';
+    const REGEX_C0_CONTROLS = '/[\x{0000}-\x{001F}]/';
     const REGEX_ASCII_HEX_DIGITS = '/^[\x{0030}-\x{0039}\x{0041}-\x{0046}\x{0061}-\x{0066}]{2}/';
     const REGEX_ASCII_HEX_DIGIT = '/[\x{0030}-\x{0039}\x{0041}-\x{0046}\x{0061}-\x{0066}]/';
     const REGEX_ASCII_ALPHA = '/[\x{0041}-\x{005A}\x{0061}-\x{007A}]/';
@@ -52,8 +53,7 @@ class URLParser {
 
     const ENCODE_SET_SIMPLE = 1;
     const ENCODE_SET_DEFAULT = 2;
-    const ENCODE_SET_PASSWORD = 3;
-    const ENCODE_SET_USERNAME = 4;
+    const ENCODE_SET_USERINFO = 3;
 
     public static $relativeSchemes = array('ftp' => 21,
                                                 'file' => '',
@@ -901,30 +901,30 @@ class URLParser {
         return self::urlencodedParser(self::encode($aInput));
     }
 
+    /**
+     * Encodes a code point stream if the code point is not part of the specified encode set.
+     *
+     * @link https://url.spec.whatwg.org/#utf-8-percent-encode
+     *
+     * @param  string   $aCodePoint A code point stream to be encoded.
+     *
+     * @param  int      $aEncodeSet The encode set used to decide whether or not the code point should
+     *                              be encoded.
+     * @return string
+     */
     public static function utf8PercentEncode($aCodePoint, $aEncodeSet = self::ENCODE_SET_SIMPLE) {
-        switch ($aEncodeSet) {
-            case self::ENCODE_SET_SIMPLE:
-                $notInCodeSet = !preg_match('/[^\x{0020}-\x{007E}]/', $aCodePoint);
+        // The Simple Encode Set
+        $inCodeSet = preg_match(self::REGEX_C0_CONTROLS, $aCodePoint) || ord($aCodePoint) > 0x7E;
 
-                break;
-
-            case self::ENCODE_SET_DEFAULT:
-                $notInCodeSet = !preg_match('/[^\x{0020}-\x{007E}]/', $aCodePoint) && !preg_match('/[\x{0020}"#<>?`]/', $aCodePoint);
-
-                break;
-
-            case self::ENCODE_SET_PASSWORD:
-                $notInCodeSet = !preg_match('/[^\x{0020}-\x{007E}]/', $aCodePoint) && !preg_match('/[\x{0020}"#<>?`\/@\\]/', $aCodePoint);
-
-                break;
-
-            case self::ENCODE_SET_USERNAME:
-                $notInCodeSet = !preg_match('/[^\x{0020}-\x{007E}]/', $aCodePoint) && !preg_match('/[\x{0020}"#<>?`\/@\\:]/', $aCodePoint);
-
-                break;
+        if ($aEncodeSet <= self::ENCODE_SET_DEFAULT) {
+            $inCodeSet = $inCodeSet && preg_match('/[\x{0020}"#<>?`,{}]/', $aCodePoint);
         }
 
-        if ($notInCodeSet) {
+        if ($aEncodeSet <= self::ENCODE_SET_USERINFO) {
+            $inCodeSet = $inCodeSet && preg_match('/[/:;=@[\\\]^|]/');
+        }
+
+        if (!$inCodeSet) {
             return $aCodePoint;
         }
 
