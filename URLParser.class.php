@@ -1,27 +1,29 @@
 <?php
 class URLParser {
-    const STATE_SCHEME_START = 1;
-    const STATE_SCHEME = 2;
-    const STATE_SCHEME_DATA = 3;
-    const STATE_NO_SCHEME = 4;
-    const STATE_RELATIVE = 5;
-    const STATE_RELATIVE_OR_AUTHORITY = 6;
-    const STATE_AUTHORITY_FIRST_SLASH = 7;
-    const STATE_QUERY = 8;
-    const STATE_FRAGMENT = 9;
-    const STATE_AUTHORITY_IGNORE_SLASHES = 10;
-    const STATE_RELATIVE_SLASH = 11;
-    const STATE_RELATIVE_PATH = 12;
-    const STATE_FILE_HOST = 13;
-    const STATE_AUTHORITY_SECOND_SLASH = 14;
-    const STATE_AUTHORITY = 15;
-    const STATE_HOST = 16;
-    const STATE_RELATIVE_PATH_START = 17;
-    const STATE_HOSTNAME = 18;
-    const STATE_PORT = 19;
+    const SCHEME_START_STATE = 1;
+    const SCHEME_STATE = 2;
+    const NO_SCHEME_STATE = 3;
+    const SPECIAL_RELATIVE_OR_AUTHORITY_STATE = 4;
+    const PATH_OR_AUTHORITY_STATE = 5;
+    const RELATIVE_STATE = 6;
+    const RELATIVE_SLASH_STATE = 7;
+    const SPECIAL_AUTHORITY_SLASHES_STATE = 8;
+    const SPECIAL_AUTHORITY_IGNORE_SLASHES_STATE = 9;
+    const AUTHORITY_STATE = 10;
+    const HOST_STATE = 11;
+    const HOSTNAME_STATE = 12;
+    const PORT_STATE = 13;
+    const FILE_STATE = 14;
+    const FILE_SLASH_STATE = 15;
+    const FILE_HOST_STATE = 16;
+    const PATH_START_STATE = 17;
+    const PATH_STATE = 18;
+    const NON_RELATIVE_PATH_STATE = 19;
+    const QUERY_STATE = 20;
+    const FRAGMENT_STATE = 21;
 
-    const REGEX_ASCII_DIGIT = '/[\x{0030}-\x{0039}]/';
     const REGEX_C0_CONTROLS = '/[\x{0000}-\x{001F}]/';
+    const REGEX_ASCII_DIGITS = '/[\x{0030}-\x{0039}]/';
     const REGEX_ASCII_HEX_DIGITS = '/^[\x{0030}-\x{0039}\x{0041}-\x{0046}\x{0061}-\x{0066}]{2}/';
     const REGEX_ASCII_HEX_DIGIT = '/[\x{0030}-\x{0039}\x{0041}-\x{0046}\x{0061}-\x{0066}]/';
     const REGEX_ASCII_ALPHA = '/[\x{0041}-\x{005A}\x{0061}-\x{007A}]/';
@@ -50,22 +52,27 @@ class URLParser {
              ]/u';
     const REGEX_ASCII_WHITESPACE = '/[\x{0009}\x{000A}\x{000D}]/';
     const REGEX_ASCII_DOMAIN = '/[\x{0000}\x{0009}\x{000A}\x{000D}\x{0020}#%\/:?@[\\\]]/';
+    const REGEX_WINDOWS_DRIVE_LETTER = '/[\x{0041}-\x{005A}\x{0061}-\x{007A}][:|]/';
+    const REGEX_NORMALIZED_WINDOWS_DRIVE_LETTER = '/[\x{0041}-\x{005A}\x{0061}-\x{007A}]:/';
 
     const ENCODE_SET_SIMPLE = 1;
     const ENCODE_SET_DEFAULT = 2;
     const ENCODE_SET_USERINFO = 3;
 
-    public static $relativeSchemes = array('ftp' => 21,
-                                                'file' => '',
-                                                'gopher' => 70,
-                                                'http' => 80,
-                                                'https' => 443,
-                                                'ws' => 80,
-                                                'wss' => 443);
-    public static $dots = array('%2e' => '.',
-                                '.%2e' => '..',
-                                '%2e.' => '..',
-                                '%2e%2e' => '..');
+    public static $specialSchemes = array('ftp' => 21,
+                                        'file' => '',
+                                        'gopher' => 70,
+                                        'http' => 80,
+                                        'https' => 443,
+                                        'ws' => 80,
+                                        'wss' => 443);
+
+    public static $singleDotPathSegment = array('.' => '.',
+                                                '%2e', '.');
+    public static $doubleDotPathSegment = array('..' => '..',
+                                                '.%2e' => '..',
+                                                '%2e.' => '..',
+                                                '%2e%2e' => '..');
 
     public function __construct() {
     }
@@ -90,6 +97,30 @@ class URLParser {
         return $url;
     }
 
+    /**
+     * Parses a string as a URL.  The string can be an absolute URL or a relative URL.  If a relative URL is give,
+     * a base URL must also be given so that a complete URL can be resolved.  It can also parse individual parts of a URL
+     * when the state machine starts in a specific state.
+     *
+     * @link https://url.spec.whatwg.org/#concept-basic-url-parser
+     *
+     * @param  string   $aInput    The URL string that is to be parsed.
+     *
+     * @param  URL|null $aBaseUrl  Optional argument that is only needed if the input is a relative URL.  This represents the base URL,
+     *                             which in most cases, is the document's URL, it may also be a node's base URI or whatever base URL you
+     *                             wish to resolve relative URLs against. Default is null.
+     *
+     * @param  string   $aEncoding Optional argument that overrides the default encoding.  Default is UTF-8.
+     *
+     * @param  URL|null $aUrl      Optional argument.  This represents an existing URL object that should be modified based on the input
+     *                             URL and optional base URL.  Default is null.
+     *
+     * @param  int      $aState    Optional argument. An integer that determines what state the state machine will begin parsing the
+     *                             input URL from.  Suppling a value for this parameter will override the default state of SCHEME_START_STATE.
+     *                             Default is null.
+     *
+     * @return URL|bool            Returns a URL object upon successfully parsing the input or false if parsing input failed.
+     */
     public static function basicURLParser($aInput, URL $aBaseUrl = null, $aEncoding = null, URL $aUrl = null, $aState = null) {
         if ($aUrl) {
             $url = $aUrl;
@@ -99,7 +130,7 @@ class URLParser {
             $input = trim($aInput);
         }
 
-        $state = $aState ? $aState : self::STATE_SCHEME_START;
+        $state = $aState ? $aState : self::SCHEME_START_STATE;
         $base = $aBaseUrl;
         $encoding = $aEncoding ? $aEncoding : 'utf-8';
         $buffer = '';
@@ -108,411 +139,502 @@ class URLParser {
             $c = mb_substr($input, $pointer, 1, $encoding);
 
             switch ($state) {
-                case self::STATE_SCHEME_START:
+                case self::SCHEME_START_STATE:
                     if (preg_match(self::REGEX_ASCII_ALPHA, $c)) {
                         $buffer .= strtolower($c);
-                        $state = self::STATE_SCHEME;
+                        $state = self::SCHEME_STATE;
                     } elseif (!$aState) {
-                        $state = self::STATE_NO_SCHEME;
+                        $state = self::NO_SCHEME_STATE;
                         $pointer--;
                     } else {
-                        // parse error
+                        // Syntax violation. Terminate this algorithm.
                         break;
                     }
 
                     break;
 
-                case self::STATE_SCHEME:
+                case self::SCHEME_STATE:
                     if (preg_match(self::REGEX_ASCII_ALPHANUMERIC, $c) || preg_match('/[+\-.]/', $c)) {
                         $buffer .= strtolower($c);
                     } elseif ($c == ':') {
+                        if ($aState) {
+                            $bufferIsSpecialScheme = false;
+
+                            foreach (self::$specialSchemes as $scheme => $port) {
+                                if (stripos($scheme, $buffer) !== 0) {
+                                    $bufferIsSpecialScheme = true;
+                                    break;
+                                }
+                            }
+
+                            if (($url->_isSpecial() && !$bufferIsSpecialScheme) ||
+                                (!$url->_isSpecial() && $bufferIsSpecialScheme)) {
+                                // Terminate this algorithm.
+                                break;
+                            }
+                        }
+
                         $url->mScheme = $buffer;
                         $buffer = '';
 
                         if ($aState) {
+                            // Terminate this algoritm
                             break;
                         }
 
-                        if (array_key_exists($url->mScheme, self::$relativeSchemes)) {
-                            $url->mFlags |= URL::FLAG_RELATIVE;
-                        }
+                        $offset = $pointer + 1;
 
                         if ($url->mScheme == 'file') {
-                            $state = self::STATE_RELATIVE;
-                        } elseif ($url->mFlags & URL::FLAG_RELATIVE && $base && $base->mScheme == $url->mScheme) {
-                            $state = self::STATE_RELATIVE_OR_AUTHORITY;
-                        } elseif ($url->mFlags & URL::FLAG_RELATIVE) {
-                            $state = self::STATE_AUTHORITY_FIRST_SLASH;
+                            if (mb_strpos($input, '//', $offset, $encoding) == $offset) {
+                                // Syntax violation
+                            }
+
+                            $state = self::FILE_STATE;
+                        } elseif ($url->_isSpecial() && $base && $base->mScheme == $url->mScheme) {
+                            $state = self::SPECIAL_RELATIVE_OR_AUTHORITY_STATE;
+                        } elseif ($url->_isSpecial()) {
+                            $state = self::SPECIAL_AUTHORITY_SLASHES_STATE;
+                        } else if (mb_strpos($input, '/', $offset, $encoding) == $offset) {
+                            $state = self::PATH_OR_AUTHORITY_STATE;
                         } else {
-                            $state = self::STATE_SCHEME_DATA;
+                            $url->mFlags |= URL::FLAG_NON_RELATIVE;
+                            $url->mPath->push('');
+                            $state = self::NON_RELATIVE_PATH_STATE;
                         }
                     } elseif (!$aState) {
                         $buffer = '';
-                        $state = self::STATE_NO_SCHEME;
+                        $state = self::NO_SCHEME_STATE;
+
+                        // Reset the pointer to poing at the first code point.  The pointer needs to be set to -1 to compensate for the
+                        // loop incrementing pointer after this iteration.
                         $pointer = -1;
-                    } elseif ($c === false) {
-                        break;
                     } else {
-                        // parse error
+                        // Syntax violation. Terminate this algorithm.
                         break;
                     }
 
                     break;
 
-                case self::STATE_SCHEME_DATA:
-                    if ($c == '?') {
-                        $url->mQuery = '';
-                        $state = self::STATE_QUERY;
-                    } elseif ($c == '#') {
-                        $this->mFragment = '';
-                        $state = self::STATE_FRAGMENT;
-                    } else {
-                        if ($c !== false && !preg_match(self::REGEX_URL_CODE_POINTS, $c) &&
-                            $c != '%') {
-                            // parse error
-                        } elseif ($c == '%' && preg_match(self::REGEX_ASCII_HEX_DIGITS, substr($input, $pointer + 1))) {
-                            // parse error
-                        } elseif ($c !== false && !preg_match(self::REGEX_ASCII_WHITESPACE, $c)) {
-                            $url->mSchemeData .= self::utf8PercentEncode($c);
-                        }
-                    }
-
-                    break;
-
-                case self::STATE_NO_SCHEME:
-                    if (!$base || !($base->mFlags & URL::FLAG_RELATIVE)) {
-                        // parse error
+                case self::NO_SCHEME_STATE:
+                    if (!$base || ($base->mFlags & URL::FLAG_NON_RELATIVE && $c != '#')) {
+                        // Syntax violation. Return failure
                         return false;
+                    } else if ($base->mFlags & URL::FLAG_NON_RELATIVE && $c == '#') {
+                        $url->mScheme = $base->mScheme;
+                        $url->mPath = clone $base->mPath;
+                        $url->mQuery = $base->mQuery;
+                        $url->mFragment = '';
+                        $url->mFlags |= URL::FLAG_NON_RELATIVE;
+                        $state = self::FRAGMENT_STATE;
+                    } else if ($base->mScheme != 'file') {
+                        $state = self::RELATIVE_STATE;
+                        $pointer--;
                     } else {
-                        $state = self::STATE_RELATIVE;
+                        $state = self::FILE_STATE;
                         $pointer--;
                     }
 
                     break;
 
-                case self::STATE_RELATIVE_OR_AUTHORITY:
-                    if ($c == '/' && preg_match('/^\//', substr($input, $pointer + 1))) {
-                        $state = self::STATE_AUTHORITY_IGNORE_SLASHES;
+                case self::SPECIAL_RELATIVE_OR_AUTHORITY_STATE:
+                    $offset = $pointer + 1;
+
+                    if ($c == '/' && mb_strpos($input, '/', $offset, $encoding) == $offset) {
+                        $state = self::SPECIAL_AUTHORITY_IGNORE_SLASHES_STATE;
                         $pointer++;
                     } else {
-                        // parse error
-                        $state = self::STATE_RELATIVE;
+                        // Syntax violation
+                        $state = self::RELATIVE_STATE;
                         $pointer--;
                     }
 
                     break;
 
-                case self::STATE_RELATIVE:
-                    $url->mFlags |= URL::FLAG_RELATIVE;
-
-                    if ($url->mScheme != 'file') {
-                        $url->mScheme = $base->mScheme;
+                case self::PATH_OR_AUTHORITY_STATE:
+                    if ($c == '/') {
+                        $state = self::AUTHORITY_STATE;
+                    } else {
+                        $state = self::PATH_STATE;
+                        $pointer--;
                     }
 
-                    if ($c === false) {
+                    break;
+
+                case self::RELATIVE_STATE:
+                    $url->mScheme = $base->mScheme;
+
+                    if ($c === ''/* EOF */) {
+                        $url->mUsername = $base->mUsername;
+                        $url->mPassword = $base->mPassword;
                         $url->mHost = $base->mHost;
                         $url->mPort = $base->mPort;
-                        $url->mPath = $base->mPath;
-                        $url->mQuery = $base->mScheme;
-                    }
-
-                    switch ($c) {
-                        case '/':
-                        case '\\':
-                            if ($c == '\\') {
-                                // parse error
-                            }
-
-                            $state = self::STATE_RELATIVE_SLASH;
-
-                            break;
-
-                        case '?':
-                            $url->mHost = $base->mHost;
-                            $url->mPort = $base->mPort;
-                            $url->mPath = $base->mPath;
-                            $url->mQuery = '';
-                            $state = self::STATE_QUERY;
-
-                            break;
-
-                        case '#':
-                            $url->mHost = $base->mHost;
-                            $url->mPort = $base->mPort;
-                            $url->mPath = $base->mPath;
-                            $url->mQuery = $base->mQuery;
-                            $url->mFragment = '';
-                            $state = self::STATE_FRAGMENT;
-
-                            break;
-
-                        default:
-                            $remaining = substr($input, $pointer + 1);
-
-                            if ($url->mScheme != 'file' || !preg_match(self::REGEX_ASCII_ALPHA, $c) ||
-                                !preg_match('/^[:|]/', $remaining) || preg_match('/^[\/\\?#]/', substr($remaining, $pointer + 1))) {
-                                $url->mHost = $base->mHost;
-                                $url->mPort = $base->mPort;
-                                $url->mPath = $base->mPath;
-
-                                if (!$url->mPath->isEmpty()) {
-                                    $url->mPath->pop();
-                                }
-                            }
-
-                            $state = self::STATE_RELATIVE_PATH;
-                            $pointer--;
-                    }
-
-                    break;
-
-                case self::STATE_RELATIVE_SLASH:
-                    if ($c == '/' || $c == '\\') {
-                        if ($c == '\\') {
-                            // parse error
-                        }
-
-                        if ($url->mScheme == 'file') {
-                            $state = self::STATE_FILE_HOST;
+                        $url->mPath = clone $base->mPath;
+                        $url->mQuery = $base->mQuery;
+                    } else if ($c == '/') {
+                        $state = self::RELATIVE_SLASH_STATE;
+                    } else if ($c == '?') {
+                        $url->mUsername = $base->mUsername;
+                        $url->mPassword = $base->mPassword;
+                        $url->mHost = $base->mHost;
+                        $url->mPort = $base->mPort;
+                        $url->mPath = clone $base->mPath;
+                        $url->mQuery = '';
+                        $state = self::QUERY_STATE;
+                    } else if ($c == '#') {
+                        $url->mUsername = $base->mUsername;
+                        $url->mPassword = $base->mPassword;
+                        $url->mHost = $base->mHost;
+                        $url->mPort = $base->mPort;
+                        $url->mPath = clone $base->mPath;
+                        $url->mQuery = $base->mQuery;
+                        $url->mFragment = '';
+                    } else {
+                        if ($url->_isSpecial() && $c == '/') {
+                            // Syntax violation
+                            $state = self::RELATIVE_SLASH_STATE;
                         } else {
-                            $state = self::STATE_AUTHORITY_IGNORE_SLASHES;
-                        }
-                    } else {
-                        if ($url->mScheme != 'file') {
+                            $url->mUsername = $base->mUsername;
+                            $url->mPassword = $base->mPassword;
                             $url->mHost = $base->mHost;
                             $url->mPort = $base->mPort;
-                        }
+                            $url->mPath = clone $base->mPath;
 
-                        $state = self::STATE_RELATIVE_PATH;
-                        $pointer--;
-                    }
-
-                    break;
-
-                case self::STATE_AUTHORITY_FIRST_SLASH:
-                    if ($c == '/') {
-                        $state = self::STATE_AUTHORITY_SECOND_SLASH;
-                    } else {
-                        // parse error
-                        $state = self::STATE_AUTHORITY_IGNORE_SLASHES;
-                        $pointer--;
-                    }
-
-                    break;
-
-                case self::STATE_AUTHORITY_SECOND_SLASH:
-                    if ($c == '/') {
-                        $state = self::STATE_AUTHORITY_IGNORE_SLASHES;
-                    } else {
-                        // parse error
-                        $state = self::STATE_AUTHORITY_IGNORE_SLASHES;
-                        $pointer--;
-                    }
-
-                    break;
-
-                case self::STATE_AUTHORITY_IGNORE_SLASHES:
-                    if ($c != '/' && $c != '\\') {
-                        $state = self::STATE_AUTHORITY;
-                        $pointer--;
-                    } else {
-                        // parse error
-                    }
-
-                    break;
-
-                case self::STATE_AUTHORITY:
-                    if ($c == '@') {
-                        if ($url->mFlags & URL::FLAG_AT) {
-                            // parse error
-                            $buffer = '%40' . $buffer;
-                        }
-
-                        $url->mFlags |= URL::FLAG_AT;
-
-                        for ($i = 0; $i < strlen($buffer); $i++) {
-                            if (preg_match(self::REGEX_ASCII_WHITESPACE, $buffer[$i])) {
-                                // parse error
-                                continue;
-                            }
-
-                            if (!preg_match(self::REGEX_URL_CODE_POINTS, $buffer[$i]) && $buffer[$i] != '%') {
-                                // parse error
-                            }
-
-                            if ($buffer[$i] == '%' && !preg_match(self::REGEX_ASCII_HEX_DIGITS, substr($buffer, $i + 1))) {
-                                // parse error
-                            }
-
-                            if ($buffer[$i] == ':' && $url->mPassword === null) {
-                                $url->mPassword = '';
-                                continue;
-                            }
-
-                            $cp = self::utf8PercentEncode($buffer[$i], self::ENCODE_SET_DEFAULT);
-
-                            if ($url->mPassword !== null) {
-                                $url->mPassword .= $cp;
-                            } else {
-                                $url->mUsername .= $cp;
-                            }
-                        }
-
-                        $buffer = '';
-                    } elseif ($c === false || preg_match('/[\/\\?#]/', $c)) {
-                        $pointer -= strlen($buffer) + 1;
-                        $buffer = '';
-                        $state = self::STATE_HOST;
-                    } else {
-                        $buffer .= $c;
-                    }
-
-                    break;
-
-                case self::STATE_FILE_HOST:
-                    if ($c === false || preg_match('/[\/\\?#]/', $c)) {
-                        $pointer--;
-
-                        if (strlen($buffer) == 2 && preg_match(self::REGEX_ASCII_ALPHA, $buffer[0]) && preg_match('/[:|]/', $buffer[1])) {
-                            $state = self::STATE_RELATIVE_PATH;
-                        } elseif (!$buffer) {
-                            $state = self::STATE_RELATIVE_PATH_START;
-                        } else {
-                            $host = self::parseHost($buffer);
-
-                            if ($host === false) {
-                                return false;
-                            }
-
-                            $url->mHost = $host;
-                            $buffer = '';
-                            $state = self::STATE_RELATIVE_PATH_START;
-                        }
-                    } elseif (preg_match(self::REGEX_ASCII_WHITESPACE, $c)) {
-                        // parse error
-                    } else {
-                        $buffer .= $c;
-                    }
-
-                    break;
-
-                case self::STATE_HOST:
-                case self::STATE_HOSTNAME:
-                    if ($c == ':' && !($url->mFlags & URL::FLAG_ARRAY)) {
-                        $host = self::parseHost($buffer);
-
-                        if ($host === false) {
-                            return false;
-                        }
-
-                        $url->mHost = $host;
-                        $buffer = '';
-                        $state = self::STATE_PORT;
-
-                        if ($aState == self::STATE_HOSTNAME) {
-                            break;
-                        }
-                    } elseif ($c === false || preg_match('/[\/\\?#]/', $c)) {
-                        $pointer--;
-                        $host = self::parseHost($buffer);
-
-                        if ($host === false) {
-                            return false;
-                        }
-
-                        $url->mHost = $host;
-                        $buffer = '';
-                        $state = self::STATE_RELATIVE_PATH_START;
-
-                        if ($aState) {
-                            break;
-                        }
-                    } elseif (preg_match(self::REGEX_ASCII_WHITESPACE, $c)) {
-                        // parse error
-                    } else {
-                        if ($c == '[') {
-                            $url->mFlags |= URL::FLAG_ARRAY;
-                        } elseif ($c == ']') {
-                            $url->mFlags &= ~URL::FLAG_ARRAY;
-                        }
-
-                        $buffer .= $c;
-                    }
-
-                    break;
-
-                case self::STATE_PORT:
-                    if (preg_match(self::REGEX_ASCII_DIGIT, $c)) {
-                        $buffer .= $c;
-                    } elseif ($c === false || preg_match('/[\/\\?#]/', $c) || $aState) {
-                        while (strlen($buffer) > 1) {
-                            if (!preg_match('/^\x{0030}/', $buffer)) {
-                                break;
-                            }
-
-                            $buffer = substr($buffer, 1);
-                        }
-
-                        if ($buffer == self::$relativeSchemes[$url->mScheme]) {
-                            $buffer = '';
-                        }
-
-                        $url->mPort = $buffer;
-
-                        if ($aState) {
-                            break;
-                        }
-
-                        $buffer = '';
-                        $state = self::STATE_RELATIVE_PATH_START;
-                        $pointer--;
-                    } elseif (preg_match(self::REGEX_ASCII_WHITESPACE, $c)) {
-                        // parse error
-                    } else {
-                        // parse error
-                        return false;
-                    }
-
-                    break;
-
-                case self::STATE_RELATIVE_PATH_START:
-                    if ($c == '\\') {
-                        // parse error
-                    }
-
-                    $state = self::STATE_RELATIVE_PATH;
-
-                    if ($c != '/' && $c != '\\') {
-                        $pointer--;
-                    }
-
-                    break;
-
-                case self::STATE_RELATIVE_PATH:
-                    if (($c === false || $c == '/' || $c == '\\') || (!$aState &&
-                        ($c == '?' || $c == '#'))) {
-                        if ($c == '\\') {
-                            // parse error
-                        }
-
-                        if (isset(self::$dots[strtolower($buffer)])) {
-                            $buffer = self::$dots[strtolower($buffer)];
-                        }
-
-                        if ($buffer == '..') {
                             if (!$url->mPath->isEmpty()) {
                                 $url->mPath->pop();
                             }
 
-                            if ($c != '/' && $c != '\\') {
+                            $state = self::PATH_STATE;
+                            $pointer--;
+                        }
+                    }
+
+                    break;
+
+                case self::RELATIVE_SLASH_STATE:
+                    if ($c == '/' || ($url->_isSpecial() && $c == '\\')) {
+                        if ($c == '\\') {
+                            // Syntax violation
+                        }
+
+                        $state = self::SPECIAL_AUTHORITY_IGNORE_SLASHES_STATE;
+                    } else {
+                        $url->mUsername = $base->mUsername;
+                        $url->mPassword = $base->mPassword;
+                        $url->mHost = $base->mHost;
+                        $url->mPort = $base->mPort;
+                        $state = self::PATH_STATE;
+                        $pointer--;
+                    }
+
+                    break;
+
+                case self::SPECIAL_AUTHORITY_SLASHES_STATE:
+                    $offset = $pointer + 1;
+
+                    if ($c == '/' && mb_strpos($input, '/', $offset, $encoding) == $offset) {
+                        $state = self::SPECIAL_AUTHORITY_IGNORE_SLASHES_STATE;
+                        $pointer++;
+                    } else {
+                        // Syntax violation
+                        $state = self::SPECIAL_AUTHORITY_IGNORE_SLASHES_STATE;
+                        $pointer--;
+                    }
+
+                    break;
+
+                case self::SPECIAL_AUTHORITY_IGNORE_SLASHES_STATE:
+                    if ($c != '/' && $c != '\\') {
+                        $state = self::AUTHORITY_STATE;
+                        $pointer--;
+                    } else {
+                        // Syntax violation
+                    }
+
+                    break;
+
+                case self::AUTHORITY_STATE:
+                    if ($c == '@') {
+                        // Syntax violation
+
+                        if ($url->mFlags & URL::FLAG_AT) {
+                            $buffer .= '%40';
+                        }
+
+                        $url->mFlags |= URL::FLAG_AT;
+
+                        for ($i = 0; $i < mb_strlen($buffer, $encoding); $i++) {
+                            $codePoint = mb_substr($buffer, $i, 1, $encoding);
+
+                            if (preg_match(self::REGEX_ASCII_WHITESPACE, $codePoint)) {
+                                continue;
+                            }
+
+                            if ($codePoint == ':' && $url->mPassword === null) {
+                                $url->mPassword = '';
+                                continue;
+                            }
+
+                            $encodedCodePoints = self::utf8PercentEncode($codePoint, self::ENCODE_SET_USERINFO);
+
+                            if ($url->mPassword !== null) {
+                                $url->mPassword .= $encodedCodePoints;
+                            } else {
+                                $url->mUsername .= $encodedCodePoints;
+                            }
+                        }
+
+                        $buffer = '';
+                    } else if (($c === ''/* EOF */ || $c == '/' || $c == '?' || $c == '#') || ($url->_isSpecial() && $c == '\\')) {
+                        $pointer -= mb_strlen($buffer, $encoding) + 1;
+                        $buffer = '';
+                        $state = self::HOST_STATE;
+                    } else {
+                        $buffer .= $c;
+                    }
+
+                    break;
+
+                case self::HOST_STATE:
+                case self::HOSTNAME_STATE:
+                    if ($c == ':' && !($url->mFlags & URL::FLAG_ARRAY)) {
+                        if ($url->_isSpecial() && !$buffer) {
+                            // Return failure
+                            return false;
+                        }
+
+                        $host = self::parseHost($buffer);
+
+                        if ($host === false) {
+                            // Return failure
+                            return false;
+                        }
+
+                        $url->mHost = $host;
+                        $buffer = '';
+                        $state = self::PORT_STATE;
+
+                        if ($aState == self::HOSTNAME_STATE) {
+                            // Terminate this algorithm
+                            break;
+                        }
+                    } else if (($c === ''/* EOF */ || $c == '/' || $c == '?' || $c == '#') || ($url->_isSpecial() && $c == '\\')) {
+                        $pointer--;
+
+                        if ($url->_isSpecial() && !$buffer) {
+                            // Return failure
+                            return false;
+                        }
+
+                        $host = self::parseHost($buffer);
+
+                        if ($host === false) {
+                            // Return failure
+                            return false;
+                        }
+
+                        $url->mHost = $host;
+                        $buffer = '';
+                        $state = self::PATH_START_STATE;
+
+                        if ($aState) {
+                            // Terminate this algorithm
+                            break;
+                        }
+                    } else if (preg_match(self::REGEX_ASCII_WHITESPACE, $c)) {
+                        // Syntax violation
+                    } else {
+                        if ($c == '[') {
+                            $url->mFlags |= URL::FLAG_ARRAY;
+                        } else if ($c == ']') {
+                            $url->mFlags &= ~URL::FLAG_ARRAY;
+                        } else {
+                            $buffer .= $c;
+                        }
+                    }
+
+                    break;
+
+                case self::PORT_STATE:
+                    if (preg_match(self::REGEX_ASCII_DIGITS, $c)) {
+                        $buffer .= $c;
+                    } else if (($c === ''/* EOF */ || $c == '/' || $c == '?' || $c == '#') || ($url->_isSpecial() && $c == '\\') || $aState) {
+                        if ($buffer) {
+                            $port = intval($buffer, 10);
+
+                            if ($port > pow(2, 16) - 1) {
+                                // Syntax violation. Return failure.
+                                return false;
+                            }
+
+                            if (array_key_exists($url->mScheme, self::$specialSchemes) && self::$specialSchemes[$url->mScheme] == $port) {
+                                $url->mPort = null;
+                            } else {
+                                $url->mPort = $port;
+                            }
+
+                            $buffer = '';
+                        }
+
+                        if ($aState) {
+                            // Terminate this algorithm
+                            break;
+                        }
+
+                        $state = self::PATH_START_STATE;
+                        $pointer--;
+                    } else if (preg_match(self::REGEX_ASCII_WHITESPACE, $c)) {
+                        // Syntax violation
+                    } else {
+                        // Syntax violation. Return failure.
+                        return false;
+                    }
+
+                    break;
+
+                case self::FILE_STATE:
+                    if ($url->mScheme == 'file') {
+                        if ($c === ''/* EOF */) {
+                            if ($base && $base->mScheme == 'file') {
+                                $url->mHost = $base->mHost;
+                                $url->mPath = clone $base->mPath;
+                                $url->mQuery = $base->mQuery;
+                            }
+                        } else if ($c == '/' || $c == '\\') {
+                            if ($c == '\\') {
+                                // Syntax violation
+                            }
+
+                            $state = self::FILE_SLASH_STATE;
+                        } else if ($c == '?') {
+                            if ($base && $base->mScheme == 'file') {
+                                $url->mHost = $base->mHost;
+                                $url->mPath = clone $base->mPath;
+                                $url->mQuery = '';
+                                $state = self::QUERY_STATE;
+                            }
+                        } else if ($c == '#') {
+                            if ($base && $base->mScheme == 'file') {
+                                $url->mHost = $base->mHost;
+                                $url->mPath = clone $base->mPath;
+                                $url->mQuery = $base->mQuery;
+                                $url->mFragment = $base->mFragment;
+                                $state = self::FRAGMENT_STATE;
+                            }
+                        } else {
+                            // Platform-independent Windows drive letter quirk
+                            if ($base && $base->mScheme == 'file' && (
+                                !preg_match(self::REGEX_WINDOWS_DRIVE_LETTER, mb_substr($input, $pointer, 2, $encoding)) ||
+                                mb_strlen(mb_substr($input, $pointer, mb_strlen($input, $encoding), $encoding), $encoding) == 1 ||
+                                !preg_match('/[/\\?#]/', mb_substr($input, $pointer + 2, 1, $encoding)))) {
+                                $url->mHost = $base->mHost;
+                                $url->mPath = clone $base->mPath;
+
+                                if (!$url->mPath->isEmpty()) {
+                                    $url->mPath->pop();
+                                }
+                            } else if ($base && $base->mScheme == 'file') {
+                                // Syntax violation
+                            } else {
+                                $state = self::PATH_STATE;
+                                $pointer--;
+                            }
+                        }
+                    }
+
+                    break;
+
+                case self::FILE_SLASH_STATE:
+                    if ($c == '/' || $c == '\\') {
+                        if ($c == '\\') {
+                            // Syntax violation
+                        }
+
+                        $state = self::FILE_HOST_STATE;
+                    } else {
+                        if ($base && $base->mScheme == 'file' && preg_match(self::REGEX_NORMALIZED_WINDOWS_DRIVE_LETTER, $base->mPath[0])) {
+                            // This is a (platform-independent) Windows drive letter quirk. Both url’s and base’s
+                            // host are null under these conditions and therefore not copied.
+                            $url->mPath->push($base->mPath[0]);
+                        }
+
+                        $state = self::PATH_STATE;
+                        $pointer--;
+                    }
+
+                    break;
+
+                case self::FILE_HOST_STATE:
+                    if ($c === ''/* EOF */ || $c == '/' || $c == '\\' || $c == '?' || $c == '#') {
+                        $pointer--;
+
+
+                        if (preg_match(self::REGEX_WINDOWS_DRIVE_LETTER, $buffer)) {
+                            // This is a (platform-independent) Windows drive letter quirk. buffer is not reset here and instead used in the path state.
+                            // Syntax violation
+                            $state = self::PATH_STATE;
+                        } else if (!$buffer) {
+                            $state = self::PATH_START_STATE;
+                        } else {
+                            $host = self::parseHost($buffer);
+
+                            if ($host === false) {
+                                // Return failure
+                                return false;
+                            }
+
+                            if ($host != 'localhost') {
+                                $url->mHost = $host;
+                            }
+
+                            $buffer = '';
+                            $state = self::PATH_START_STATE;
+                        }
+                    } else if (preg_match(self::REGEX_ASCII_WHITESPACE, $c)) {
+                        // Syntax violation
+                    } else {
+                        $buffer .= $c;
+                    }
+
+                    break;
+
+                case self::PATH_START_STATE:
+                    if ($url->_isSpecial() && $c == '\\') {
+                        // Syntax violation
+                    }
+
+                    $state = self::PATH_STATE;
+
+                    if ($c != '/' && !($url->_isSpecial() && $c != '\\')) {
+                        $pointer--;
+                    }
+
+                    break;
+
+                case self::PATH_STATE:
+                    if ($c === ''/* EOF */ || $c == '/' || ($url->_isSpecial() && $c == '\\') || (!$aState && ($c == '?' || $c == '#'))) {
+                        if ($url->_isSpecial() && $c == '\\') {
+                            // Syntax violation
+                        }
+
+                        if (in_array($buffer, self::$doubleDotPathSegment)) {
+                            if (!$url->mPath->isEmpty()) {
+                                $url->mPath->pop();
+                            }
+
+                            if ($c != '/' && !($url->_isSpecial() && $c == '\\')) {
                                 $url->mPath->push('');
                             }
-                        } elseif ($buffer == '.' && $c != '/' && $c != '\\') {
+                        } else if (in_array($buffer, self::$singleDotPathSegment) && $c != '/' && !($url->_isSpecial() && $c == '\\')) {
                             $url->mPath->push('');
-                        } elseif ($buffer != '.') {
-                            if ($url->mScheme == 'file' && $url->mPath->isEmpty() && preg_match(self::REGEX_ASCII_ALPHA, $buffer[0]) &&
-                                $buffer[1] == '|') {
-                                $buffer[1] = ':';
+                        } else if (!in_array($buffer, self::$singleDotPathSegment)) {
+                            if ($url->mScheme == 'file' && $url->mPath->isEmpty() && preg_match(self::REGEX_WINDOWS_DRIVE_LETTER, $buffer)) {
+                                if ($url->mHost !== null) {
+                                    // Syntax violation
+                                }
+
+                                $url->mHost = null;
+                                // This is a (platform-independent) Windows drive letter quirk.
+                                $buffer = mb_substr($buffer, 0, 1, $encoding) . ':';
                             }
 
                             $url->mPath->push($buffer);
@@ -522,20 +644,20 @@ class URLParser {
 
                         if ($c == '?') {
                             $url->mQuery = '';
-                            $state = self::STATE_QUERY;
-                        } elseif ($c == '#') {
+                            $state = self::QUERY_STATE;
+                        } else if ($c == '#') {
                             $url->mFragment = '';
-                            $state = self::STATE_FRAGMENT;
+                            $state = self::FRAGMENT_STATE;
                         }
-                    } elseif (preg_match(self::REGEX_ASCII_WHITESPACE, $c)) {
-                        // parse error
+                    } else if (preg_match(self::REGEX_ASCII_WHITESPACE, $c)) {
+                        // Syntax violation
                     } else {
                         if (!preg_match(self::REGEX_URL_CODE_POINTS, $c) && $c != '%') {
-                            // parse error
+                            // Syntax violation
                         }
 
-                        if ($c == '%' && !preg_match(self::REGEX_ASCII_HEX_DIGITS, $c)) {
-                            // parse error
+                        if ($c == '%' && preg_match(self::REGEX_ASCII_HEX_DIGITS, mb_substr($input, $pointer + 1, 2, $encoding))) {
+                            // Syntax violation
                         }
 
                         $buffer .= self::utf8PercentEncode($c, self::ENCODE_SET_DEFAULT);
@@ -543,19 +665,46 @@ class URLParser {
 
                     break;
 
-                case self::STATE_QUERY:
-                    if ($c === false || (!$aState && $c == '#')) {
-                        if (!($url->mFlags & URL::FLAG_RELATIVE) || $url->mScheme == 'ws' || $url->mScheme == 'wss') {
-                            $aEncoding = 'utf-8';
+                case self::NON_RELATIVE_PATH_STATE:
+                    if ($c == '?') {
+                        $url->mQuery = '';
+                        $state = self::QUERY_STATE;
+                    } else if ($c == '#') {
+                        $url->mFragment = '';
+                        $state = self::FRAGMENT_STATE;
+                    } else {
+                        if ($c !== ''/* EOF */ && !preg_match(self::REGEX_URL_CODE_POINTS, $c) && $c != '%') {
+                            // Syntax violation
                         }
 
-                        for ($i = 0; $i < strlen($buffer); $i++) {
-                            $byte = $buffer[$i];
+                        if ($c == '%' && preg_match(self::REGEX_ASCII_HEX_DIGITS, mb_substr($input, $pointer + 1, 2, $encoding))) {
+                            // Syntax violation
+                        }
 
-                            if ($byte < 0x21 || $byte > 0x7E || $byte == 0x22 || $byte == 0x23 || $byte == 0x3C || $byte == 0x60) {
-                                $url->mQuery .= self::utf8PercentEncode($byte);
+                        if ($c !== ''/* EOF */ && !preg_match(self::REGEX_ASCII_WHITESPACE, $c)) {
+                            if (!$url->mPath->isEmpty()) {
+                                $url->mPath[0] .= self::utf8PercentEncode($c);
+                            }
+                        }
+                    }
+
+                    break;
+
+                case self::QUERY_STATE:
+                    if ($c === ''/* EOF */ || (!$aState && $c == '#')) {
+                        if (!$url->_isSpecial() || $url->mScheme == 'ws' || $url->mScheme == 'wss') {
+                            $encoding = 'utf-8';
+                        }
+
+                        $buffer = mb_convert_encoding($buffer, $encoding);
+
+                        for ($i = 0; $i < strlen($buffer); $i++) {
+                            $byteOrd = ord($buffer[$i]);
+
+                            if ($byteOrd < 0x21 || $byteOrd > 0x7E || $byteOrd == 0x22 || $byteOrd == 0x23 || $byteOrd == 0x3C || $byteOrd == 0x3E) {
+                                $url->mQuery .= self::percentEncode($buffer[$i]);
                             } else {
-                                $url->mQuery .= $byte;
+                                $url->mQuery .= $buffer[$i];
                             }
                         }
 
@@ -563,15 +712,17 @@ class URLParser {
 
                         if ($c == '#') {
                             $url->mFragment = '';
-                            $state = self::STATE_FRAGMENT;
+                            $state = self::FRAGMENT_STATE;
                         }
-                    } elseif (preg_match(self::REGEX_ASCII_WHITESPACE, $c)) {
-                        // parse error
+                    } else if (preg_match(self::REGEX_ASCII_WHITESPACE, $c)) {
+                        // Syntax violation
                     } else {
                         if (!preg_match(self::REGEX_URL_CODE_POINTS, $c) && $c != '%') {
-                            // parse error
-                        } elseif ($c == '%' && !preg_match(self::REGEX_ASCII_HEX_DIGITS, substr($input, $pointer + 1))) {
-                            // parse error
+                            // Syntax violation
+                        }
+
+                        if ($c == '%' && preg_match(self::REGEX_ASCII_HEX_DIGITS, mb_substr($input, $pointer + 1, 2, $encoding))) {
+                            // Syntax violation
                         }
 
                         $buffer .= $c;
@@ -579,18 +730,18 @@ class URLParser {
 
                     break;
 
-                case self::STATE_FRAGMENT:
-                    if ($c === false) {
-                        // Do Nothing
-                    } elseif (preg_match('/[\x{0000}\x{0009}\x{000A}\x{000D}]/', $c)) {
-                        // parse error
+                case self::FRAGMENT_STATE:
+                    if ($c === ''/* EOF */) {
+                        // Do nothing
+                    } else if (preg_match(self::REGEX_ASCII_WHITESPACE, $c) || preg_match('/\x{0000}/', $c)) {
+                        // Syntax violation
                     } else {
                         if (!preg_match(self::REGEX_URL_CODE_POINTS, $c) && $c != '%') {
-                            // parse error
+                            // Syntax violation
                         }
 
-                        if ($c == '%' && preg_match(self::REGEX_ASCII_HEX_DIGITS, substr($input, $pointer + 1))) {
-                            // parse error
+                        if ($c == '%' && preg_match(self::REGEX_ASCII_HEX_DIGITS, mb_substr($input, $pointer + 1, 2, $encoding))) {
+                            // Syntax violation
                         }
 
                         $url->mFragment .= $c;

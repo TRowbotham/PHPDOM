@@ -10,7 +10,7 @@ class URL implements SplObserver {
 
     const FLAG_ARRAY = 1;
     const FLAG_AT = 2;
-    const FLAG_RELATIVE = 4;
+    const FLAG_NON_RELATIVE = 4;
 
     public $mFlags;
     public $mFragment;
@@ -32,10 +32,9 @@ class URL implements SplObserver {
         $this->mObject = null; // Something about supporting Blobs
         $this->mPassword = null;
         $this->mPath = new SplDoublyLinkedList();
-        $this->mPort = '';
+        $this->mPort = null;
         $this->mQuery = null;
         $this->mScheme = '';
-        $this->mSchemeData = '';
         $this->mUsername = '';
 
         $args = func_get_args();
@@ -88,6 +87,19 @@ class URL implements SplObserver {
             $this->mQuery = $aObject->toString();
             $this->preupdate();
         }
+    }
+
+    /**
+     * Returns whether or not the URL's scheme is a special scheme.
+     *
+     * @link https://url.spec.whatwg.org/#is-special
+     *
+     * @internal
+     *
+     * @return boolean
+     */
+    public function _isSpecial() {
+        return array_key_exists($this->mScheme, URLParser::$specialSchemes);
     }
 
     private function getBaseURL() {
