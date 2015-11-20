@@ -829,15 +829,28 @@ class URLParser {
         return $pairs;
     }
 
-    public static function urlencodedSerializer(array $aList, $aEncoding = 'utf-8') {
+    /**
+     * Serializes a list of name-value pairs to be used in a URL.
+     *
+     * @link https://url.spec.whatwg.org/#concept-urlencoded-serializer
+     *
+     * @param  array  $aPairs    A list of name-value pairs to be serialized.
+     *
+     * @param  string $aEncoding Optionally allows you to set a different encoding to be used.
+     *                           Default value is UTF-8.
+     *
+     * @return string
+     */
+    public static function urlencodedSerializer(array $aPairs, $aEncoding = 'UTF-8') {
         $output = '';
 
-        foreach ($aList as $key => $pair) {
+        foreach ($aPairs as $key => $pair) {
             if ($key > 0) {
                 $output .= '&';
             }
 
-            $output .= self::urlencodedByteSerializer($pair['name']) . '=' . self::urlencodedByteSerializer($pair['value']);
+            $output .= self::urlencodedByteSerializer(mb_convert_encoding($pair['name'], $aEncoding)) . '=';
+            $output .= self::urlencodedByteSerializer(mb_convert_encoding($pair['value'], $aEncoding));
         }
 
         return $output;
