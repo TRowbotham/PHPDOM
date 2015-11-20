@@ -856,11 +856,21 @@ class URLParser {
         return $output;
     }
 
+    /**
+     * Serializes the individual bytes of the given byte sequence to be compatible with
+     * application/x-www-form-encoded URLs.
+     *
+     * @link https://url.spec.whatwg.org/#concept-urlencoded-byte-serializer
+     *
+     * @param  string $aInput A byte sequence to be serialized.
+     *
+     * @return string
+     */
     public static function urlencodedByteSerializer($aInput) {
         $output = '';
 
         for ($i = 0; $i < strlen($aInput); $i++) {
-            $byte = hexdec(bin2hex(mb_substr($aInput[$i], 0, 1, 'utf-8')));
+            $byte = ord($aInput[$i]);
 
             switch (true) {
                 case ($byte == 0x20):
