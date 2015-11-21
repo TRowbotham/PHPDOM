@@ -656,7 +656,7 @@ class URLParser {
                             // Syntax violation
                         }
 
-                        if ($c == '%' && preg_match(self::REGEX_ASCII_HEX_DIGITS, mb_substr($input, $pointer + 1, 2, $encoding))) {
+                        if ($c == '%' && !preg_match(self::REGEX_ASCII_HEX_DIGITS, mb_substr($input, $pointer + 1, 2, $encoding))) {
                             // Syntax violation
                         }
 
@@ -677,7 +677,7 @@ class URLParser {
                             // Syntax violation
                         }
 
-                        if ($c == '%' && preg_match(self::REGEX_ASCII_HEX_DIGITS, mb_substr($input, $pointer + 1, 2, $encoding))) {
+                        if ($c == '%' && !preg_match(self::REGEX_ASCII_HEX_DIGITS, mb_substr($input, $pointer + 1, 2, $encoding))) {
                             // Syntax violation
                         }
 
@@ -721,7 +721,7 @@ class URLParser {
                             // Syntax violation
                         }
 
-                        if ($c == '%' && preg_match(self::REGEX_ASCII_HEX_DIGITS, mb_substr($input, $pointer + 1, 2, $encoding))) {
+                        if ($c == '%' && !preg_match(self::REGEX_ASCII_HEX_DIGITS, mb_substr($input, $pointer + 1, 2, $encoding))) {
                             // Syntax violation
                         }
 
@@ -740,7 +740,7 @@ class URLParser {
                             // Syntax violation
                         }
 
-                        if ($c == '%' && preg_match(self::REGEX_ASCII_HEX_DIGITS, mb_substr($input, $pointer + 1, 2, $encoding))) {
+                        if ($c == '%' && !preg_match(self::REGEX_ASCII_HEX_DIGITS, mb_substr($input, $pointer + 1, 2, $encoding))) {
                             // Syntax violation
                         }
 
@@ -1099,10 +1099,10 @@ class URLParser {
         for ($i = 0; $i < strlen($aByteSequence); $i++) {
             if ($aByteSequence[$i] != '%') {
                 $output .= $aByteSequence[$i];
-            } elseif ($aByteSequence[$i] == '%' && preg_match(self::REGEX_ASCII_HEX_DIGITS, substr($aByteSequence, $i + 1)) === false) {
+            } elseif ($aByteSequence[$i] == '%' && !preg_match(self::REGEX_ASCII_HEX_DIGITS, substr($aByteSequence, $i + 1, 2))) {
                 $output .= $aByteSequence[$i];
             } else {
-                preg_match(self::REGEX_ASCII_HEX_DIGITS, substr($aByteSequence, $i + 1), $matches);
+                preg_match(self::REGEX_ASCII_HEX_DIGITS, substr($aByteSequence, $i + 1, 2), $matches);
 
                 $bytePoint = bin2hex(utf8_decode($matches[0][0]));
                 $output .= $bytePoint;
