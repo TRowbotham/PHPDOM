@@ -780,6 +780,116 @@ class URLParser {
         }
 
         return $aUnicodeFlag ? self::domainToUnicode($domain) : $asciiDomain;
+
+    /**
+     * Takes a string and parses it as an IPv4 address.
+     *
+     * @link https://url.spec.whatwg.org/#concept-ipv4-parser
+     *
+     * @param  string           $aInput  A string representing an IPv4 address.
+     *
+     * @return int|string|bool
+     */
+    public static function parseIPv4Address($aInput) {
+        $syntaxViolationFlag = null;
+        $parts = explode('.', $aInput);
+        $len = count($parts);
+        $lastIndex = $len - 1;
+
+        if ($parts[$lastIndex] === '') {
+            $syntaxViolationFlag = true;
+            array_pop($parts);
+        }
+
+        if ($len > 4) {
+            return $aInput;
+        }
+
+        $numbers = array();
+
+        foreach($parts as $part) {
+            if ($part === '') {
+                return $aInput;
+            }
+
+            $n = self::parseIPv4Number($part, $syntaxViolationFlag);
+
+            if ($n === false) {
+                return $input;
+            }
+
+            $numbers[] = $n;
+        }
+
+        if ($syntaxViolationFlag) {
+            // Syntax violation
+        }
+
+        foreach ($numbers as $n) {
+            if ($n > 255) {
+                // Syntax violation
+            }
+        }
+
+        $numCount = count($numbers);
+
+        for ($i = 0; $i < $numCount - 2; $i++) {
+            if ($numbers[$i] > 255) {
+                return false;
+            }
+        }
+
+        if ($numbers[$numCount - 1] >= pow(256, 5 - $numCount)) {
+            // Syntax violation
+            return false;
+        }
+
+        $ipv4 = array_pop($numbers);
+        $counter = 0;
+
+        foreach ($numbers as $n) {
+            $ipv4 += $n * pow(256, 3 - $counter);
+            $counter++;
+        }
+
+        return $ipv4;
+    }
+
+    /**
+     * Takes a string and parses it as a valid IPv4 number.
+     *
+     * @link https://url.spec.whatwg.org/#ipv4-number-parser
+     *
+     * @param  string       $aInput                 A string of numbers to be parsed.
+     *
+     * @param  bool|null    &$aSyntaxViolationFlag  A flag that represents if there was a syntax violation
+     *                                              while parsing.
+     *
+     * @return int|bool                             Returns a bool on failure and an int otherwise.
+     */
+    public static function parseIPv4Number($aInput, &$aSyntaxViolationFlag) {
+        $input = $aInput;
+        $R = 10;
+
+        if (strlen($input) > 1 && stripos($input, '0x') === 0) {
+            $aSyntaxViolationFlag = true;
+            $input = substr($input, 2);
+            $R = 16;
+        }
+
+        if ($input === '') {
+            return 0;
+        } else if (strlen($input) > 1 && $input[0] === '0') {
+            $syntaxViolationFlag = true;
+            $input = substr($input, 1);
+            $R = 8;
+        }
+
+        // TODO: If input contains a code point that is not a radix-R digit, and return failure
+
+        return intval($input, $R);
+    }
+
     }
 
     public static function IPv6Parser($aInput) {
