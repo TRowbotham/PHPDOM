@@ -8,14 +8,16 @@
  */
 require_once 'URLParser.class.php';
 
-class URLSearchParams implements SplSubject {
+class URLSearchParams implements Iterator, SplSubject {
     private $mIndex;
     private $mObservers;
     private $mParams;
+    private $mPosition;
     private $mSequenceId;
 
     public function __construct($aSearchParams = '') {
         $this->mObservers = new SplObjectStorage();
+        $this->mPosition = 0;
 
         if ($aSearchParams instanceof URLSearchParams) {
             $this->mIndex = $aSearchParams->mIndex;
@@ -58,6 +60,20 @@ class URLSearchParams implements SplSubject {
         $this->mIndex[$this->mSequenceId] = $aName;
         $this->mParams[$aName][$this->mSequenceId++] = $aValue;
         $this->notify();
+    }
+
+    /**
+     * Returns an array containing the query parameters name as the first index's value
+     * and the query parameters value as the second index's value.
+     *
+     * @return string[]
+     */
+    public function current() {
+        $index = array_keys($this->mIndex);
+        $sequenceId = $index[$this->mPosition];
+        $name = $this->mIndex[$sequenceId];
+
+        return array($name, $this->mParams[$name][$sequenceId]);
     }
 
     /**
@@ -127,6 +143,22 @@ class URLSearchParams implements SplSubject {
     }
 
     /**
+     * Returns the key of the current name -> value pair of query parameters in the iterator.
+     *
+     * @return int
+     */
+    public function key() {
+        return $this->mPosition;
+    }
+
+    /**
+     * Moves the the iterator to the next name -> value pair of query parameters.
+     */
+    public function next() {
+        $this->mPosition++;
+    }
+
+    /**
      * Notify all observers about a change to this object.
      *
      * @internal
@@ -135,6 +167,13 @@ class URLSearchParams implements SplSubject {
         foreach($this->mObservers as $observer) {
             $observer->update($this);
         }
+    }
+
+    /**
+     * Rewinds the iterator back to the beginning position.
+     */
+    public function rewind() {
+        $this->mPosition = 0;
     }
 
     /**
@@ -180,6 +219,15 @@ class URLSearchParams implements SplSubject {
         }
 
         return URLParser::urlencodedSerializer($list);
+    }
+
+    /**
+     * Returns whether or not the iterator's current postion is a valid one.
+     *
+     * @return boolean
+     */
+    public function valid() {
+        return $this->mPosition < count($this->mIndex);
     }
 
     /**
