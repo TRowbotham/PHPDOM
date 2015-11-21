@@ -1072,7 +1072,7 @@ class URLParser {
         }
 
         if (!$inCodeSet && $aEncodeSet <= self::ENCODE_SET_USERINFO) {
-            $inCodeSet = $inCodeSet || preg_match('/[/:;=@[\\\]^|]/', $aCodePoint);
+            $inCodeSet = $inCodeSet || preg_match('/[\/:;=@[\\\]^|]/', $aCodePoint);
         }
 
         if (!$inCodeSet) {
