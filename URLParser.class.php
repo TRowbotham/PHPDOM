@@ -746,13 +746,9 @@ class URLParser {
      * @return string|int|string[]
      */
     public static function parseHost($aInput, $aUnicodeFlag = null) {
-        if ($aInput === '') {
-            return false;
-        }
-
         if ($aInput[0] == '[') {
             if ($aInput[strlen($aInput) - 1] != ']') {
-                // parse error
+                // Syntax violation
                 return false;
             }
 
