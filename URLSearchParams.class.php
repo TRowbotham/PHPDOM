@@ -1,4 +1,6 @@
 <?php
+require_once 'URLParser.class.php';
+
 /**
  * An object containing a list of all URL query parameters.  This allows you to manipulate
  * a URL's query string in a granular manner.
@@ -6,21 +8,19 @@
  * @link https://url.spec.whatwg.org/#urlsearchparams
  * @link https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams
  */
-require_once 'URLParser.class.php';
-
-class URLSearchParams implements Iterator, SplSubject {
+class URLSearchParams implements Iterator {
     private $mIndex;
-    private $mObservers;
     private $mParams;
     private $mPosition;
     private $mSequenceId;
+    private $mUrl;
 
     public function __construct($aSearchParams = '') {
         $this->mIndex = array();
-        $this->mObservers = new SplObjectStorage();
         $this->mParams = array();
         $this->mPosition = 0;
         $this->mSequenceId = 0;
+        $this->mUrl = null;
 
         if ($aSearchParams instanceof URLSearchParams) {
             $this->mIndex = $aSearchParams->mIndex;
@@ -36,18 +36,6 @@ class URLSearchParams implements Iterator, SplSubject {
     }
 
     /**
-     * Add the specified object to the list of objects watching this object
-     * for changes.
-     *
-     * @internal
-     *
-     * @param  SplObserver $aObserver An object to observe this object.
-     */
-    public function attach(SplObserver $aObserver) {
-        $this->mObservers->attach($aObserver);
-    }
-
-    /**
      * Appends a new key -> value pair to the end of the query string.
      *
      * @link https://url.spec.whatwg.org/#dom-urlsearchparams-append
@@ -59,7 +47,7 @@ class URLSearchParams implements Iterator, SplSubject {
     public function append($aName, $aValue) {
         $this->mIndex[$this->mSequenceId] = $aName;
         $this->mParams[$aName][$this->mSequenceId++] = $aValue;
-        $this->notify();
+        $this->update();
     }
 
     /**
@@ -89,18 +77,7 @@ class URLSearchParams implements Iterator, SplSubject {
         }
 
         unset($this->mParams[$aName]);
-        $this->notify();
-    }
-
-    /**
-     * Remove the specified observer from observing this object for changes.
-     *
-     * @internal
-     *
-     * @param  SplObserver $aObserver An object to observe this object.
-     */
-    public function detach(SplObserver $aObserver) {
-        $this->mObservers->detach($aObserver);
+        $this->update();
     }
 
     /**
@@ -159,17 +136,6 @@ class URLSearchParams implements Iterator, SplSubject {
     }
 
     /**
-     * Notify all observers about a change to this object.
-     *
-     * @internal
-     */
-    public function notify() {
-        foreach($this->mObservers as $observer) {
-            $observer->update($this);
-        }
-    }
-
-    /**
      * Rewinds the iterator back to the beginning position.
      */
     public function rewind() {
@@ -202,7 +168,7 @@ class URLSearchParams implements Iterator, SplSubject {
             $this->append($aName, $aValue);
         }
 
-        $this->notify();
+        $this->update();
     }
 
     /**
@@ -247,6 +213,30 @@ class URLSearchParams implements Iterator, SplSubject {
                 $this->mIndex[$this->mSequenceId] = $pair['name'];
                 $this->mParams[$pair['name']][$this->mSequenceId++] = $pair['value'];
             }
+        }
+    }
+
+    /**
+     * Set's the URLSearchParam's associated URL object.
+     *
+     * @internal
+     *
+     * @param URLInternal|null $aUrl The associated URL object.
+     */
+    public function _setUrl(URLInternal $aUrl = null) {
+        $this->mUrl = $aUrl;
+    }
+
+    /**
+     * Set's the associated URL object's query to the serialization of URLSearchParams.
+     *
+     * @link https://url.spec.whatwg.org/#concept-urlsearchparams-update
+     *
+     * @internal
+     */
+    protected function update() {
+        if ($this->mUrl) {
+            $this->mUrl->mQuery = $this->toString();
         }
     }
 }
