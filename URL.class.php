@@ -237,27 +237,4 @@ class URL {
                 break;
         }
     }
-
-    public static function domainToASCII($aDomain) {
-        $result = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $aDomain);
-
-        return $result;
-    }
-
-    public static function domainToUnicode($aDomain) {
-        return $aDomain;
-    }
-
-    /**
-     * Returns whether or not the URL's scheme is a special scheme.
-     *
-     * @link https://url.spec.whatwg.org/#is-special
-     *
-     * @internal
-     *
-     * @return boolean
-     */
-    public function _isSpecial() {
-        return array_key_exists($this->mScheme, URLParser::$specialSchemes);
-    }
 }

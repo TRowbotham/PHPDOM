@@ -1,4 +1,10 @@
 <?php
+namespace phpjs\url;
+
+use phpjs\url;
+
+require_once 'URLInternal.class.php';
+
 class URLParser {
     const SCHEME_START_STATE = 1;
     const SCHEME_STATE = 2;
@@ -100,12 +106,12 @@ class URLParser {
      *
      * @return URL|bool            Returns a URL object upon successfully parsing the input or false if parsing input failed.
      */
-    public static function basicURLParser($aInput, URL $aBaseUrl = null, $aEncoding = null, URL $aUrl = null, $aState = null) {
+    public static function basicURLParser($aInput, URLInternal $aBaseUrl = null, $aEncoding = null, URLInternal $aUrl = null, $aState = null) {
         if ($aUrl) {
             $url = $aUrl;
             $input = $aInput;
         } else {
-            $url = new URL();
+            $url = new URLInternal();
             $input = trim($aInput);
         }
 
@@ -146,14 +152,14 @@ class URLParser {
                                 }
                             }
 
-                            if (($url->_isSpecial() && !$bufferIsSpecialScheme) ||
-                                (!$url->_isSpecial() && $bufferIsSpecialScheme)) {
+                            if (($url->isSpecial() && !$bufferIsSpecialScheme) ||
+                                (!$url->isSpecial() && $bufferIsSpecialScheme)) {
                                 // Terminate this algorithm.
                                 break;
                             }
                         }
 
-                        $url->mScheme = $buffer;
+                        $url->setScheme($buffer);
                         $buffer = '';
 
                         if ($aState) {
@@ -163,21 +169,21 @@ class URLParser {
 
                         $offset = $pointer + 1;
 
-                        if ($url->mScheme == 'file') {
+                        if ($url->getScheme() == 'file') {
                             if (mb_strpos($input, '//', $offset, $encoding) == $offset) {
                                 // Syntax violation
                             }
 
                             $state = self::FILE_STATE;
-                        } elseif ($url->_isSpecial() && $base && $base->mScheme == $url->mScheme) {
+                        } elseif ($url->isSpecial() && $base && $base->getScheme() == $url->getScheme()) {
                             $state = self::SPECIAL_RELATIVE_OR_AUTHORITY_STATE;
-                        } elseif ($url->_isSpecial()) {
+                        } elseif ($url->isSpecial()) {
                             $state = self::SPECIAL_AUTHORITY_SLASHES_STATE;
                         } else if (mb_strpos($input, '/', $offset, $encoding) == $offset) {
                             $state = self::PATH_OR_AUTHORITY_STATE;
                         } else {
-                            $url->mFlags |= URL::FLAG_NON_RELATIVE;
-                            $url->mPath->push('');
+                            $url->setFlag(URLInternal::FLAG_NON_RELATIVE);
+                            $url->getPath()->push('');
                             $state = self::NON_RELATIVE_PATH_STATE;
                         }
                     } elseif (!$aState) {
@@ -195,17 +201,17 @@ class URLParser {
                     break;
 
                 case self::NO_SCHEME_STATE:
-                    if (!$base || ($base->mFlags & URL::FLAG_NON_RELATIVE && $c != '#')) {
+                    if (!$base || ($base->isFlagSet(URLInternal::FLAG_NON_RELATIVE) && $c != '#')) {
                         // Syntax violation. Return failure
                         return false;
-                    } else if ($base->mFlags & URL::FLAG_NON_RELATIVE && $c == '#') {
-                        $url->mScheme = $base->mScheme;
-                        $url->mPath = clone $base->mPath;
-                        $url->mQuery = $base->mQuery;
-                        $url->mFragment = '';
-                        $url->mFlags |= URL::FLAG_NON_RELATIVE;
+                    } else if ($base->isFlagSet(URLInternal::FLAG_NON_RELATIVE) && $c == '#') {
+                        $url->setScheme($base->getScheme());
+                        $url->setPath(clone $base->getPath());
+                        $url->setQuery($base->getQuery());
+                        $url->setFragment('');
+                        $url->setFlag(URLInternal::FLAG_NON_RELATIVE);
                         $state = self::FRAGMENT_STATE;
-                    } else if ($base->mScheme != 'file') {
+                    } else if ($base->getScheme() != 'file') {
                         $state = self::RELATIVE_STATE;
                         $pointer--;
                     } else {
@@ -240,46 +246,46 @@ class URLParser {
                     break;
 
                 case self::RELATIVE_STATE:
-                    $url->mScheme = $base->mScheme;
+                    $url->setScheme($base->getScheme());
 
                     if ($c === ''/* EOF */) {
-                        $url->mUsername = $base->mUsername;
-                        $url->mPassword = $base->mPassword;
-                        $url->mHost = $base->mHost;
-                        $url->mPort = $base->mPort;
-                        $url->mPath = clone $base->mPath;
-                        $url->mQuery = $base->mQuery;
+                        $url->setUsername($base->getUsername());
+                        $url->setPassword($base->getPassword());
+                        $url->setHost($base->getHost());
+                        $url->setPort($base->getPort());
+                        $url->setPath(clone $base->getPath());
+                        $url->setQuery($base->getQuery());
                     } else if ($c == '/') {
                         $state = self::RELATIVE_SLASH_STATE;
                     } else if ($c == '?') {
-                        $url->mUsername = $base->mUsername;
-                        $url->mPassword = $base->mPassword;
-                        $url->mHost = $base->mHost;
-                        $url->mPort = $base->mPort;
-                        $url->mPath = clone $base->mPath;
-                        $url->mQuery = '';
+                        $url->setUsername($base->getUsername());
+                        $url->setPassword($base->getPassword());
+                        $url->setHost($base->getHost());
+                        $url->setPort($base->getPort());
+                        $url->setPath(clone $base->getPath());
+                        $url->setQuery('');
                         $state = self::QUERY_STATE;
                     } else if ($c == '#') {
-                        $url->mUsername = $base->mUsername;
-                        $url->mPassword = $base->mPassword;
-                        $url->mHost = $base->mHost;
-                        $url->mPort = $base->mPort;
-                        $url->mPath = clone $base->mPath;
-                        $url->mQuery = $base->mQuery;
-                        $url->mFragment = '';
+                        $url->setUsername($base->getUsername());
+                        $url->setPassword($base->getPassword());
+                        $url->setHost($base->getHost());
+                        $url->setPort($base->getPort());
+                        $url->setPath(clone $base->getPath());
+                        $url->setQuery($base->getQuery());
+                        $url->setFragment('');
                     } else {
-                        if ($url->_isSpecial() && $c == '/') {
+                        if ($url->isSpecial() && $c == '/') {
                             // Syntax violation
                             $state = self::RELATIVE_SLASH_STATE;
                         } else {
-                            $url->mUsername = $base->mUsername;
-                            $url->mPassword = $base->mPassword;
-                            $url->mHost = $base->mHost;
-                            $url->mPort = $base->mPort;
-                            $url->mPath = clone $base->mPath;
+                            $url->setUsername($base->getUsername());
+                            $url->setPassword($base->getPassword());
+                            $url->setHost($base->getHost());
+                            $url->setPort($base->getPort());
+                            $url->setPath(clone $base->getPath());
 
-                            if (!$url->mPath->isEmpty()) {
-                                $url->mPath->pop();
+                            if (!$url->getPath()->isEmpty()) {
+                                $url->getPath()->pop();
                             }
 
                             $state = self::PATH_STATE;
@@ -290,17 +296,17 @@ class URLParser {
                     break;
 
                 case self::RELATIVE_SLASH_STATE:
-                    if ($c == '/' || ($url->_isSpecial() && $c == '\\')) {
+                    if ($c == '/' || ($url->isSpecial() && $c == '\\')) {
                         if ($c == '\\') {
                             // Syntax violation
                         }
 
                         $state = self::SPECIAL_AUTHORITY_IGNORE_SLASHES_STATE;
                     } else {
-                        $url->mUsername = $base->mUsername;
-                        $url->mPassword = $base->mPassword;
-                        $url->mHost = $base->mHost;
-                        $url->mPort = $base->mPort;
+                        $url->setUsername($base->getUsername());
+                        $url->setPassword($base->getPassword());
+                        $url->setHost($base->getHost());
+                        $url->setPort($base->getPort());
                         $state = self::PATH_STATE;
                         $pointer--;
                     }
@@ -335,11 +341,11 @@ class URLParser {
                     if ($c == '@') {
                         // Syntax violation
 
-                        if ($url->mFlags & URL::FLAG_AT) {
+                        if ($url->isFlagSet(URLInternal::FLAG_AT)) {
                             $buffer .= '%40';
                         }
 
-                        $url->mFlags |= URL::FLAG_AT;
+                        $url->setFlag(URLInternal::FLAG_AT);
 
                         for ($i = 0; $i < mb_strlen($buffer, $encoding); $i++) {
                             $codePoint = mb_substr($buffer, $i, 1, $encoding);
@@ -348,22 +354,22 @@ class URLParser {
                                 continue;
                             }
 
-                            if ($codePoint == ':' && $url->mPassword === null) {
-                                $url->mPassword = '';
+                            if ($codePoint == ':' && $url->getPassword() === null) {
+                                $url->setPassword('');
                                 continue;
                             }
 
                             $encodedCodePoints = self::utf8PercentEncode($codePoint, self::ENCODE_SET_USERINFO);
 
-                            if ($url->mPassword !== null) {
-                                $url->mPassword .= $encodedCodePoints;
+                            if ($url->getPassword() !== null) {
+                                $url->setPassword($url->getPassword() . $encodedCodePoints);
                             } else {
-                                $url->mUsername .= $encodedCodePoints;
+                                $url->setUsername($url->getUsername() . $encodedCodePoints);
                             }
                         }
 
                         $buffer = '';
-                    } else if (($c === ''/* EOF */ || $c == '/' || $c == '?' || $c == '#') || ($url->_isSpecial() && $c == '\\')) {
+                    } else if (($c === ''/* EOF */ || $c == '/' || $c == '?' || $c == '#') || ($url->isSpecial() && $c == '\\')) {
                         $pointer -= mb_strlen($buffer, $encoding) + 1;
                         $buffer = '';
                         $state = self::HOST_STATE;
@@ -375,8 +381,8 @@ class URLParser {
 
                 case self::HOST_STATE:
                 case self::HOSTNAME_STATE:
-                    if ($c == ':' && !($url->mFlags & URL::FLAG_ARRAY)) {
-                        if ($url->_isSpecial() && !$buffer) {
+                    if ($c == ':' && !$url->isFlagSet(URLInternal::FLAG_ARRAY)) {
+                        if ($url->isSpecial() && !$buffer) {
                             // Return failure
                             return false;
                         }
@@ -388,7 +394,7 @@ class URLParser {
                             return false;
                         }
 
-                        $url->mHost = $host;
+                        $url->setHost($host);
                         $buffer = '';
                         $state = self::PORT_STATE;
 
@@ -396,10 +402,10 @@ class URLParser {
                             // Terminate this algorithm
                             break;
                         }
-                    } else if (($c === ''/* EOF */ || $c == '/' || $c == '?' || $c == '#') || ($url->_isSpecial() && $c == '\\')) {
+                    } else if (($c === ''/* EOF */ || $c == '/' || $c == '?' || $c == '#') || ($url->isSpecial() && $c == '\\')) {
                         $pointer--;
 
-                        if ($url->_isSpecial() && !$buffer) {
+                        if ($url->isSpecial() && !$buffer) {
                             // Return failure
                             return false;
                         }
@@ -411,7 +417,7 @@ class URLParser {
                             return false;
                         }
 
-                        $url->mHost = $host;
+                        $url->setHost($host);
                         $buffer = '';
                         $state = self::PATH_START_STATE;
 
@@ -423,9 +429,9 @@ class URLParser {
                         // Syntax violation
                     } else {
                         if ($c == '[') {
-                            $url->mFlags |= URL::FLAG_ARRAY;
+                            $url->setFlag(URLInternal::FLAG_ARRAY);
                         } else if ($c == ']') {
-                            $url->mFlags &= ~URL::FLAG_ARRAY;
+                            $url->unsetFlag(URLInternal::FLAG_ARRAY);
                         } else {
                             $buffer .= $c;
                         }
@@ -436,7 +442,7 @@ class URLParser {
                 case self::PORT_STATE:
                     if (preg_match(self::REGEX_ASCII_DIGITS, $c)) {
                         $buffer .= $c;
-                    } else if (($c === ''/* EOF */ || $c == '/' || $c == '?' || $c == '#') || ($url->_isSpecial() && $c == '\\') || $aState) {
+                    } else if (($c === ''/* EOF */ || $c == '/' || $c == '?' || $c == '#') || ($url->isSpecial() && $c == '\\') || $aState) {
                         if ($buffer) {
                             $port = intval($buffer, 10);
 
@@ -445,10 +451,10 @@ class URLParser {
                                 return false;
                             }
 
-                            if (array_key_exists($url->mScheme, self::$specialSchemes) && self::$specialSchemes[$url->mScheme] == $port) {
-                                $url->mPort = null;
+                            if (array_key_exists($url->getScheme(), self::$specialSchemes) && self::$specialSchemes[$url->getScheme()] == $port) {
+                                $url->setPort(null);
                             } else {
-                                $url->mPort = $port;
+                                $url->setPort($port);
                             }
 
                             $buffer = '';
@@ -471,12 +477,12 @@ class URLParser {
                     break;
 
                 case self::FILE_STATE:
-                    if ($url->mScheme == 'file') {
+                    if ($url->getScheme() == 'file') {
                         if ($c === ''/* EOF */) {
-                            if ($base && $base->mScheme == 'file') {
-                                $url->mHost = $base->mHost;
-                                $url->mPath = clone $base->mPath;
-                                $url->mQuery = $base->mQuery;
+                            if ($base && $base->getScheme() == 'file') {
+                                $url->setHost($base->getHost());
+                                $url->setPath(clone $base->getPath());
+                                $url->setQuery($base->getQuery());
                             }
                         } else if ($c == '/' || $c == '\\') {
                             if ($c == '\\') {
@@ -485,33 +491,33 @@ class URLParser {
 
                             $state = self::FILE_SLASH_STATE;
                         } else if ($c == '?') {
-                            if ($base && $base->mScheme == 'file') {
-                                $url->mHost = $base->mHost;
-                                $url->mPath = clone $base->mPath;
-                                $url->mQuery = '';
+                            if ($base && $base->getScheme() == 'file') {
+                                $url->setHost($base->getHost());
+                                $url->setPath(clone $base->getPath());
+                                $url->setQuery('');
                                 $state = self::QUERY_STATE;
                             }
                         } else if ($c == '#') {
-                            if ($base && $base->mScheme == 'file') {
-                                $url->mHost = $base->mHost;
-                                $url->mPath = clone $base->mPath;
-                                $url->mQuery = $base->mQuery;
-                                $url->mFragment = $base->mFragment;
+                            if ($base && $base->getScheme() == 'file') {
+                                $url->setHost($base->getHost());
+                                $url->setPath(clone $base->getPath());
+                                $url->setQuery($base->getQuery());
+                                $url->setFragment($base->getFragment());
                                 $state = self::FRAGMENT_STATE;
                             }
                         } else {
                             // Platform-independent Windows drive letter quirk
-                            if ($base && $base->mScheme == 'file' && (
+                            if ($base && $base->getScheme() == 'file' && (
                                 !preg_match(self::REGEX_WINDOWS_DRIVE_LETTER, mb_substr($input, $pointer, 2, $encoding)) ||
                                 mb_strlen(mb_substr($input, $pointer, mb_strlen($input, $encoding), $encoding), $encoding) == 1 ||
                                 !preg_match('/[/\\?#]/', mb_substr($input, $pointer + 2, 1, $encoding)))) {
-                                $url->mHost = $base->mHost;
-                                $url->mPath = clone $base->mPath;
+                                $url->setHost($base->getHost());
+                                $url->setPath(clone $base->getPath());
 
-                                if (!$url->mPath->isEmpty()) {
-                                    $url->mPath->pop();
+                                if (!$url->getPath()->isEmpty()) {
+                                    $url->getPath()->pop();
                                 }
-                            } else if ($base && $base->mScheme == 'file') {
+                            } else if ($base && $base->getScheme() == 'file') {
                                 // Syntax violation
                             } else {
                                 $state = self::PATH_STATE;
@@ -530,10 +536,10 @@ class URLParser {
 
                         $state = self::FILE_HOST_STATE;
                     } else {
-                        if ($base && $base->mScheme == 'file' && preg_match(self::REGEX_NORMALIZED_WINDOWS_DRIVE_LETTER, $base->mPath[0])) {
+                        if ($base && $base->getScheme() == 'file' && preg_match(self::REGEX_NORMALIZED_WINDOWS_DRIVE_LETTER, $base->getPath()[0])) {
                             // This is a (platform-independent) Windows drive letter quirk. Both url’s and base’s
                             // host are null under these conditions and therefore not copied.
-                            $url->mPath->push($base->mPath[0]);
+                            $url->getPath()->push($base->getPath()[0]);
                         }
 
                         $state = self::PATH_STATE;
@@ -562,7 +568,7 @@ class URLParser {
                             }
 
                             if ($host != 'localhost') {
-                                $url->mHost = $host;
+                                $url->setHost($host);
                             }
 
                             $buffer = '';
@@ -577,55 +583,55 @@ class URLParser {
                     break;
 
                 case self::PATH_START_STATE:
-                    if ($url->_isSpecial() && $c == '\\') {
+                    if ($url->isSpecial() && $c == '\\') {
                         // Syntax violation
                     }
 
                     $state = self::PATH_STATE;
 
-                    if ($c != '/' && !($url->_isSpecial() && $c != '\\')) {
+                    if ($c != '/' && !($url->isSpecial() && $c != '\\')) {
                         $pointer--;
                     }
 
                     break;
 
                 case self::PATH_STATE:
-                    if ($c === ''/* EOF */ || $c == '/' || ($url->_isSpecial() && $c == '\\') || (!$aState && ($c == '?' || $c == '#'))) {
-                        if ($url->_isSpecial() && $c == '\\') {
+                    if ($c === ''/* EOF */ || $c == '/' || ($url->isSpecial() && $c == '\\') || (!$aState && ($c == '?' || $c == '#'))) {
+                        if ($url->isSpecial() && $c == '\\') {
                             // Syntax violation
                         }
 
                         if (in_array($buffer, self::$doubleDotPathSegment)) {
-                            if (!$url->mPath->isEmpty()) {
-                                $url->mPath->pop();
+                            if (!$url->getPath()->isEmpty()) {
+                                $url->getPath()->pop();
                             }
 
-                            if ($c != '/' && !($url->_isSpecial() && $c == '\\')) {
-                                $url->mPath->push('');
+                            if ($c != '/' && !($url->isSpecial() && $c == '\\')) {
+                                $url->getPath()->push('');
                             }
-                        } else if (in_array($buffer, self::$singleDotPathSegment) && $c != '/' && !($url->_isSpecial() && $c == '\\')) {
-                            $url->mPath->push('');
+                        } else if (in_array($buffer, self::$singleDotPathSegment) && $c != '/' && !($url->isSpecial() && $c == '\\')) {
+                            $url->getPath()->push('');
                         } else if (!in_array($buffer, self::$singleDotPathSegment)) {
-                            if ($url->mScheme == 'file' && $url->mPath->isEmpty() && preg_match(self::REGEX_WINDOWS_DRIVE_LETTER, $buffer)) {
-                                if ($url->mHost !== null) {
+                            if ($url->getScheme() == 'file' && $url->getPath()->isEmpty() && preg_match(self::REGEX_WINDOWS_DRIVE_LETTER, $buffer)) {
+                                if ($url->getHost() !== null) {
                                     // Syntax violation
                                 }
 
-                                $url->mHost = null;
+                                $url->setHost(null);
                                 // This is a (platform-independent) Windows drive letter quirk.
                                 $buffer = mb_substr($buffer, 0, 1, $encoding) . ':';
                             }
 
-                            $url->mPath->push($buffer);
+                            $url->getPath()->push($buffer);
                         }
 
                         $buffer = '';
 
                         if ($c == '?') {
-                            $url->mQuery = '';
+                            $url->setQuery('');
                             $state = self::QUERY_STATE;
                         } else if ($c == '#') {
-                            $url->mFragment = '';
+                            $url->setFragment('');
                             $state = self::FRAGMENT_STATE;
                         }
                     } else if (preg_match(self::REGEX_ASCII_WHITESPACE, $c)) {
@@ -646,10 +652,10 @@ class URLParser {
 
                 case self::NON_RELATIVE_PATH_STATE:
                     if ($c == '?') {
-                        $url->mQuery = '';
+                        $url->setQuery('');
                         $state = self::QUERY_STATE;
                     } else if ($c == '#') {
-                        $url->mFragment = '';
+                        $url->setFragment('');
                         $state = self::FRAGMENT_STATE;
                     } else {
                         if ($c !== ''/* EOF */ && !preg_match(self::REGEX_URL_CODE_POINTS, $c) && $c != '%') {
@@ -661,8 +667,8 @@ class URLParser {
                         }
 
                         if ($c !== ''/* EOF */ && !preg_match(self::REGEX_ASCII_WHITESPACE, $c)) {
-                            if (!$url->mPath->isEmpty()) {
-                                $url->mPath[0] .= self::utf8PercentEncode($c);
+                            if (!$url->getPath()->isEmpty()) {
+                                $url->getPath()[0] .= self::utf8PercentEncode($c);
                             }
                         }
                     }
@@ -671,7 +677,7 @@ class URLParser {
 
                 case self::QUERY_STATE:
                     if ($c === ''/* EOF */ || (!$aState && $c == '#')) {
-                        if (!$url->_isSpecial() || $url->mScheme == 'ws' || $url->mScheme == 'wss') {
+                        if (!$url->isSpecial() || $url->getScheme() == 'ws' || $url->getScheme() == 'wss') {
                             $encoding = 'utf-8';
                         }
 
@@ -681,16 +687,16 @@ class URLParser {
                             $byteOrd = ord($buffer[$i]);
 
                             if ($byteOrd < 0x21 || $byteOrd > 0x7E || $byteOrd == 0x22 || $byteOrd == 0x23 || $byteOrd == 0x3C || $byteOrd == 0x3E) {
-                                $url->mQuery .= self::percentEncode($buffer[$i]);
+                                $url->setQuery($url->getQuery() . self::percentEncode($buffer[$i]));
                             } else {
-                                $url->mQuery .= $buffer[$i];
+                                $url->setQuery($url->getQuery() . $buffer[$i]);
                             }
                         }
 
                         $buffer = '';
 
                         if ($c == '#') {
-                            $url->mFragment = '';
+                            $url->setFragment('');
                             $state = self::FRAGMENT_STATE;
                         }
                     } else if (preg_match(self::REGEX_ASCII_WHITESPACE, $c)) {
@@ -723,7 +729,7 @@ class URLParser {
                             // Syntax violation
                         }
 
-                        $url->mFragment .= $c;
+                        $url->setFragment($url->getFragment() . $c);
                     }
 
                     break;
@@ -757,7 +763,7 @@ class URLParser {
 
         // TODO: utf-8 decode without BOM
         $domain = self::percentDecode(mb_convert_encoding(self::encode($aInput), 'UTF-8'));
-        $asciiDomain = URL::domainToASCII($domain);
+        $asciiDomain = URLInternal::domainToASCII($domain);
 
         if ($asciiDomain === false) {
             return false;
@@ -772,7 +778,7 @@ class URLParser {
 
         // TODO: If ipv4Host is an IPv4 address or failure, return ipv4Host
 
-        return $aUnicodeFlag ? URL::domainToUnicode($domain) : $asciiDomain;
+        return $aUnicodeFlag ? URLInternal::domainToUnicode($domain) : $asciiDomain;
     }
 
     /**
@@ -1332,37 +1338,37 @@ class URLParser {
      *                                        fragment from being serialized.
      * @return string
      */
-    public static function serializeURL(URL $aUrl, $aExcludeFragment = null) {
-        $output = $aUrl->mScheme . ':';
+    public static function serializeURL(URLInternal $aUrl, $aExcludeFragment = null) {
+        $output = $aUrl->getScheme() . ':';
 
-        if ($aUrl->mHost !== null) {
+        if ($aUrl->getHost() !== null) {
             $output .= '//';
 
-            if ($aUrl->mUsername !== '' || $aUrl->mPassword !== null) {
-                $output .= $aUrl->mUsername;
+            if ($aUrl->getUsername() !== '' || $aUrl->getPassword() !== null) {
+                $output .= $aUrl->getUsername();
 
-                if ($aUrl->mPassword !== null) {
-                    $output .= ':' . $aUrl->mPassword;
+                if ($aUrl->getPassword() !== null) {
+                    $output .= ':' . $aUrl->getPassword();
                 }
 
                 $output .= '@';
             }
 
-            $output .= self::serializeHost($aUrl->mHost);
+            $output .= self::serializeHost($aUrl->getHost());
 
-            if ($aUrl->mPort !== null) {
-                $output .= ':' . $aUrl->mPort;
+            if ($aUrl->getPort() !== null) {
+                $output .= ':' . $aUrl->getPort();
             }
-        } else if ($aUrl->mHost === null && $aUrl->mScheme == 'file') {
+        } else if ($aUrl->getHost() === null && $aUrl->getScheme() == 'file') {
             $output .= '//';
         }
 
-        if ($aUrl->mFlags & URL::FLAG_NON_RELATIVE) {
-            $output .= $this->mPath[0];
+        if ($aUrl->isFlagSet(URLInternal::FLAG_NON_RELATIVE)) {
+            $output .= $this->getPath()[0];
         } else {
             $output .= '/';
 
-            foreach ($aUrl->mPath as $key => $path) {
+            foreach ($aUrl->getPath() as $key => $path) {
                 if ($key > 0) {
                     $output .= '/';
                 }
@@ -1371,12 +1377,12 @@ class URLParser {
             }
         }
 
-        if ($aUrl->mQuery !== null) {
-            $output .= '?' . $aUrl->mQuery;
+        if ($aUrl->getQuery() !== null) {
+            $output .= '?' . $aUrl->getQuery();
         }
 
-        if (!$aExcludeFragment && $aUrl->mFragment !== null) {
-            $output .= '#' . $aUrl->mFragment;
+        if (!$aExcludeFragment && $aUrl->getFragment() !== null) {
+            $output .= '#' . $aUrl->getFragment();
         }
 
         return $output;

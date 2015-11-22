@@ -10,16 +10,6 @@ class URLInternal {
     const FLAG_AT = 2;
     const FLAG_NON_RELATIVE = 4;
 
-    public static $specialSchemes = array(
-                                        'ftp' => 21,
-                                        'file' => '',
-                                        'gopher' => 70,
-                                        'http' => 80,
-                                        'https' => 443,
-                                        'ws' => 80,
-                                        'wss' => 443
-                                    );
-
     private $mFlags;
     private $mFragment;
     private $mHost;
@@ -116,7 +106,7 @@ class URLInternal {
      * @return boolean
      */
     public function isSpecial() {
-        return array_key_exists($this->mScheme, self::$specialSchemes);
+        return array_key_exists($this->mScheme, URLParser::$specialSchemes);
     }
 
     public function setFragment($aFragment) {
