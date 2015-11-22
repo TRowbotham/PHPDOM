@@ -1,7 +1,7 @@
 <?php
-namespace phpjs\url;
+namespace phpjs\urls;
 
-use phpjs\url;
+use phpjs\urls;
 
 require_once 'Exceptions.class.php';
 require_once 'URLParser.class.php';

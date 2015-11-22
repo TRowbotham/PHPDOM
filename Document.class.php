@@ -60,7 +60,7 @@ class Document extends Node {
         $port = in_array($_SERVER['SERVER_PORT'], array(80, 443)) ? '' : ':' . $_SERVER['SERVER_PORT'];
         $url = ($ssl ? 'https' : 'http') . '://' . $_SERVER['SERVER_NAME'] . $port . $_SERVER['REQUEST_URI'];
 
-        $this->mURL = new URL($url);
+        $this->mURL = new phpjs\urls\URL($url);
     }
 
     public function __get($aName) {
