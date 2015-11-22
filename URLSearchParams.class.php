@@ -240,7 +240,7 @@ class URLSearchParams implements \Iterator {
      */
     protected function update() {
         if ($this->mUrl) {
-            $this->mUrl->mQuery = $this->toString();
+            $this->mUrl->setQuery($this->toString());
         }
     }
 }
