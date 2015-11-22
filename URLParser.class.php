@@ -733,6 +733,18 @@ class URLParser {
         return $url;
     }
 
+    /**
+     * Parses a host.
+     *
+     * @link https://url.spec.whatwg.org/#concept-host-parser
+     *
+     * @param  string               $aInput       A IPv4, IPv6 address, or a domain.
+     *
+     * @param  bool|null            $aUnicodeFlag Option argument, that when set to true, causes the domain
+     *                                            to be encoded using unicode instead of ASCII.  Default is null.
+     *
+     * @return string|int|string[]
+     */
     public static function parseHost($aInput, $aUnicodeFlag = null) {
         if ($aInput === '') {
             return false;
@@ -1026,7 +1038,23 @@ class URLParser {
         return $address;
     }
 
-    // https://url.spec.whatwg.org/#concept-urlencoded-parser
+    /**
+     * Encodes a byte sequence to be compatible with the application/x-www-form-urlencoded encoding.
+     *
+     * @link https://url.spec.whatwg.org/#concept-urlencoded-parser
+     *
+     * @param  string   $aInput      A byte sequence to be encoded.
+     *
+     * @param  string   $aEncoding   Optional argument used to set the character encoding.  Default is utf-8.
+     *
+     * @param  bool     $aUseCharset Optional argument that, if set to true, indicates if the charset specfied in the byte
+     *                               sequence should be used in place of the specified encoding argument.  Default is null.
+     *
+     * @param  bool     $aIsIndex    Optional argument that, if set to true, prepends an = character to the first
+     *                               byte sequence if one does not exist.  Default is null.
+     *
+     * @return string[]
+     */
     public static function urlencodedParser($aInput, $aEncoding = 'utf-8', $aUseCharset = null, $aIsIndex = null) {
         $input = $aInput;
 
@@ -1063,6 +1091,8 @@ class URLParser {
 
             $name = str_replace('+', chr(0x20), $name);
             $value = str_replace('+', chr(0x20), $value);
+
+            // TODO: If use _charset_ flag is set and name is `_charset_`
 
             $pairs[] = array('name' => $name, 'value' => $value);
         }
@@ -1179,10 +1209,28 @@ class URLParser {
         return $result;
     }
 
+    /**
+     * Encodes a byte into a uppercase hexadecimal number prefixed by a % character.
+     *
+     * @link https://url.spec.whatwg.org/#percent-encode
+     *
+     * @param  string $aByte A byte to be percent encoded.
+     *
+     * @return string
+     */
     public static function percentEncode($aByte) {
         return '%' . strtoupper(bin2hex($aByte));
     }
 
+    /**
+     * Decodes a percent encoded byte into a code point.
+     *
+     * @link https://url.spec.whatwg.org/#percent-decode
+     *
+     * @param  string $aByteSequence A byte sequence to be decoded.
+     *
+     * @return string
+     */
     public static function percentDecode($aByteSequence) {
         $output = '';
 
@@ -1204,9 +1252,18 @@ class URLParser {
         return $output;
     }
 
-    public static function serializeHost($aHost = null) {
         if ($aHost === null) {
             return '';
+    /**
+     * Serializes a host.
+     *
+     * @link https://url.spec.whatwg.org/#concept-host-serializer
+     *
+     * @param  string|int|string[] $aHost A domain or an IPv4 or IPv6 address.
+     *
+     * @return string
+     */
+    public static function serializeHost($aHost) {
         }
 
         if (self::IPv6Parser($aHost)) {
@@ -1216,7 +1273,16 @@ class URLParser {
         return $aHost;
     }
 
-    public static function serializeIPv6($aAddress) {
+    /**
+     * Serializes an IPv6 address.
+     *
+     * @link https://url.spec.whatwg.org/#concept-ipv6-serializer
+     *
+     * @param  string[] $aAddress A list of 16-bit pieces representing an IPv6 address.
+     *
+     * @return string
+     */
+    public static function serializeIPv6Address($aAddress) {
         $output = '';
         $compressPointer = null;
 
