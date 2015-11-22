@@ -1097,7 +1097,17 @@ class URLParser {
             $pairs[] = array('name' => $name, 'value' => $value);
         }
 
-        return $pairs;
+        $output = array();
+
+        foreach ($pairs as $pair) {
+            // TODO: Run encoding override’s decoder on the percent decoding of the name and value from pairs
+            $output[] = array(
+                'name' => self::percentDecode($pair['name']),
+                'value' => self::percentDecode($pair['value'])
+            );
+        }
+
+        return $output;
     }
 
     /**
