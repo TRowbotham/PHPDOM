@@ -1262,8 +1262,6 @@ class URLParser {
         return $output;
     }
 
-        if ($aHost === null) {
-            return '';
     /**
      * Serializes a host.
      *
@@ -1274,8 +1272,6 @@ class URLParser {
      * @return string
      */
     public static function serializeHost($aHost) {
-        }
-
         if (self::IPv6Parser($aHost)) {
             return '[' . self::serializeIPv6($aHost) . ']';
         }
