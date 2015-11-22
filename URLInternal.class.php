@@ -33,14 +33,14 @@ class URLInternal {
     }
 
     public static function domainToASCII($aDomain) {
-        //$asciiDomain = URLParser2::parseHost($aDomain);
+        //$asciiDomain = URLParser::parseHost($aDomain);
 
         // TODO: Return the empty string if asciiDomain is not a domain, and asciiDomain otherwise.
         return $aDomain;
     }
 
     public static function domainToUnicode($aDomain) {
-        //$unicodeDomain = URLParser2::parseHost($aDomain);
+        //$unicodeDomain = URLParser::parseHost($aDomain);
 
         // TODO: Return the empty string if unicodeDomain is not a domain, and unicodeDomain otherwise.
         return $aDomain;
@@ -91,7 +91,7 @@ class URLInternal {
      * @return bool
      */
     public function isEqual(URLInternal $aOtherUrl, $aExcludeFragment = null) {
-        return URLParser2::serializeURL($this, $aExcludeFragment) == URLParser2::serializeURL($aOtherUrl, $aExcludeFragment);
+        return URLParser::serializeURL($this, $aExcludeFragment) == URLParser::serializeURL($aOtherUrl, $aExcludeFragment);
     }
 
     public function isFlagSet($aFlag) {
@@ -135,7 +135,7 @@ class URLInternal {
             $this->mPassword = '';
 
             for ($i = 0; $i < mb_strlen($aPassword); $i++) {
-                $this->mPassword .= URLParser2::utf8PercentEncode(mb_substr($aPassword, $i, 1), URLParser2::ENCODE_SET_USERINFO);
+                $this->mPassword .= URLParser::utf8PercentEncode(mb_substr($aPassword, $i, 1), URLParser::ENCODE_SET_USERINFO);
             }
         }
     }
@@ -171,7 +171,7 @@ class URLInternal {
         $this->mUsername = '';
 
         for ($i = 0; $i < mb_strlen($aUsername); $i++) {
-            $this->mUsername .= URLParser2::utf8PercentEncode(mb_substr($aUsername, $i, 1), URLParser2::ENCODE_SET_USERINFO);
+            $this->mUsername .= URLParser::utf8PercentEncode(mb_substr($aUsername, $i, 1), URLParser::ENCODE_SET_USERINFO);
         }
     }
 

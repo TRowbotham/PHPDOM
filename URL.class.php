@@ -23,21 +23,21 @@ class URL {
         $parsedBase = null;
 
         if ($aBase) {
-            $parsedBase = URLParser2::basicURLParser($aBase);
+            $parsedBase = URLParser::basicURLParser($aBase);
 
             if ($parsedBase === false) {
                 throw new \TypeError($aBase . ' is not a valid URL.');
             }
         }
 
-        $parsedURL = URLParser2::basicURLParser($aUrl, $parsedBase);
+        $parsedURL = URLParser::basicURLParser($aUrl, $parsedBase);
 
         if ($parsedURL === false) {
             throw new \TypeError($aUrl . ' is not a valid URL.');
         }
 
         $this->mUrl = $parsedURL;
-        $this->mSearchParams = new URLSearchParams2($this->mUrl->getQuery());
+        $this->mSearchParams = new URLSearchParams($this->mUrl->getQuery());
         $this->mSearchParams->_setUrl($parsedURL);
 	}
 
@@ -57,18 +57,18 @@ class URL {
                 }
 
                 if ($port === null) {
-                    return URLParser2::serializeHost($host);
+                    return URLParser::serializeHost($host);
                 }
 
-                return URLParser2::serializeHost($host) . ':' . $port;
+                return URLParser::serializeHost($host) . ':' . $port;
 
             case 'hostname':
                 $host = $this->mUrl->getHost();
 
-                return $host === null ? '' : URLParser2::serializeHost($host);
+                return $host === null ? '' : URLParser::serializeHost($host);
 
             case 'href':
-                return URLParser2::serializeURL($this->mUrl);
+                return URLParser::serializeURL($this->mUrl);
 
             case 'origin':
                 // TODO
@@ -136,7 +136,7 @@ class URL {
 
                 $input = $aValue[0] == '#' ? substr($aValue, 1) : $aValue;
                 $this->mUrl->setFragment('');
-                URLParser2::basicURLParser($input, null, null, $this->mUrl, URLParser2::FRAGMENT_STATE);
+                URLParser::basicURLParser($input, null, null, $this->mUrl, URLParser::FRAGMENT_STATE);
 
                 break;
 
@@ -146,7 +146,7 @@ class URL {
                     return;
                 }
 
-                URLParser2::basicURLParser($aValue, null, null, $this->mUrl, URLParser2::HOST_STATE);
+                URLParser::basicURLParser($aValue, null, null, $this->mUrl, URLParser::HOST_STATE);
 
                 break;
 
@@ -156,10 +156,10 @@ class URL {
                     return;
                 }
 
-                URLParser2::basicURLParser($aValue, null, null, $this->mUrl, URLParser2::HOSTNAME_STATE);
+                URLParser::basicURLParser($aValue, null, null, $this->mUrl, URLParser::HOSTNAME_STATE);
 
             case 'href':
-                $parsedURL = URLParser2::basicURLParser($aValue);
+                $parsedURL = URLParser::basicURLParser($aValue);
 
                 if ($parsedURL === false) {
                     throw new \TypeError($aValue . ' is not a valid URL.');
@@ -190,7 +190,7 @@ class URL {
                     $this->mUrl->getPath()->pop();
                 }
 
-                URLParser2::basicURLParser($aValue, null, null, $this->mUrl, URLParser2::PATH_START_STATE);
+                URLParser::basicURLParser($aValue, null, null, $this->mUrl, URLParser::PATH_START_STATE);
 
                 break;
 
@@ -200,12 +200,12 @@ class URL {
                     return;
                 }
 
-                URLParser2::basicURLParser($aValue, null, null, $this->mUrl, URLParser2::PORT_STATE);
+                URLParser::basicURLParser($aValue, null, null, $this->mUrl, URLParser::PORT_STATE);
 
                 break;
 
             case 'protocol':
-                URLParser2::basicURLParser($aValue . ':', null, null, $this->mUrl, URLParser2::SCHEME_START_STATE);
+                URLParser::basicURLParser($aValue . ':', null, null, $this->mUrl, URLParser::SCHEME_START_STATE);
 
                 break;
 
@@ -220,7 +220,7 @@ class URL {
 
                 $input = $aValue[0] == '?' ? substr($aValue, 1) : $aValue;
                 $this->mUrl->setQuery('');
-                URLParser2::basicURLParser($input, null, null, $this->mUrl, URLParser2::QUERY_STATE);
+                URLParser::basicURLParser($input, null, null, $this->mUrl, URLParser::QUERY_STATE);
 
                 // TODO: Set url’s query object’s list to the result of parsing input.
 
