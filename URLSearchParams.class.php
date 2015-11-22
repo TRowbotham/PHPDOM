@@ -16,17 +16,17 @@ class URLSearchParams implements Iterator, SplSubject {
     private $mSequenceId;
 
     public function __construct($aSearchParams = '') {
+        $this->mIndex = array();
         $this->mObservers = new SplObjectStorage();
+        $this->mParams = array();
         $this->mPosition = 0;
+        $this->mSequenceId = 0;
 
         if ($aSearchParams instanceof URLSearchParams) {
             $this->mIndex = $aSearchParams->mIndex;
             $this->mParams = $aSearchParams->mParams;
             $this->mSequenceId = $aSearchParams->mSequenceId;
-        } else {
-            $this->mIndex = array();
-            $this->mParams = array();
-            $this->mSequenceId = 0;
+        } else if (is_string($aSearchParams)) {
             $pairs = URLParser::urlencodedStringParser($aSearchParams);
 
             foreach ($pairs as $pair) {
