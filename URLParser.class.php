@@ -747,7 +747,8 @@ class URLParser {
             return self::IPv6Parser(substr($aInput, 1, strlen($aInput) - 2));
         }
 
-        $domain = utf8_decode(self::percentDecode(self::encode($aInput)));
+        // TODO: utf-8 decode without BOM
+        $domain = self::percentDecode(mb_convert_encoding(self::encode($aInput), 'UTF-8'));
         $asciiDomain = URL::domainToASCII($domain);
 
         if ($asciiDomain === false) {
@@ -1193,7 +1194,8 @@ class URLParser {
             } else {
                 preg_match(self::REGEX_ASCII_HEX_DIGITS, substr($aByteSequence, $i + 1, 2), $matches);
 
-                $bytePoint = bin2hex(utf8_decode($matches[0][0]));
+                // TODO: utf-8 decode without BOM
+                $bytePoint = bin2hex($matches[0][0]);
                 $output .= $bytePoint;
                 $i += 2;
             }
