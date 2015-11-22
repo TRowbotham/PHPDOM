@@ -764,10 +764,16 @@ class URLParser {
         }
 
         if (preg_match(self::REGEX_ASCII_DOMAIN, $asciiDomain)) {
+            // Syntax violation
             return false;
         }
 
-        return $aUnicodeFlag ? self::domainToUnicode($domain) : $asciiDomain;
+        $ipv4Host = self::parseIPv4Address($asciiDomain);
+
+        // TODO: If ipv4Host is an IPv4 address or failure, return ipv4Host
+
+        return $aUnicodeFlag ? URL::domainToUnicode($domain) : $asciiDomain;
+    }
 
     /**
      * Takes a string and parses it as an IPv4 address.
@@ -876,8 +882,6 @@ class URLParser {
         // TODO: If input contains a code point that is not a radix-R digit, and return failure
 
         return intval($input, $R);
-    }
-
     }
 
     public static function IPv6Parser($aInput) {
