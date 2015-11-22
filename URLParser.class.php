@@ -74,28 +74,7 @@ class URLParser {
                                                 '%2e.' => '..',
                                                 '%2e%2e' => '..');
 
-    public function __construct() {
-    }
-
-    public static function URLParser($aInput, URL $aBase = null, $aEncoding = null) {
-        $url = self::basicURLParser($aInput, $aBase, $aEncoding);
-
-        if ($url === false) {
-            return false;
-        }
-
-        if ($url->mScheme != 'blob') {
-            return $url;
-        }
-
-        /*if ($url->mSchemeData != blob store) {
-            return $url;
-        }
-
-        $url->object = structured clone;*/
-
-        return $url;
-    }
+    public function __construct() { }
 
     /**
      * Parses a string as a URL.  The string can be an absolute URL or a relative URL.  If a relative URL is give,
