@@ -15,13 +15,11 @@ class URL implements SplObserver {
     public $mFlags;
     public $mFragment;
     public $mHost;
-    public $mObject;
     public $mPassword;
     public $mPath;
     public $mPort;
     public $mQuery;
     public $mScheme;
-    public $mSchemeData;
     public $mUsername;
 
 	public function __construct() {
@@ -29,7 +27,6 @@ class URL implements SplObserver {
         $this->mFlags = 0;
         $this->mFragment = null;
         $this->mHost = null;
-        $this->mObject = null; // Something about supporting Blobs
         $this->mPassword = null;
         $this->mPath = new SplDoublyLinkedList();
         $this->mPort = null;
