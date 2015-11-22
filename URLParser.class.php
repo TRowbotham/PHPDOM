@@ -1280,6 +1280,32 @@ class URLParser {
     }
 
     /**
+     * Serializes an IPv4 address
+     *
+     * @link https://url.spec.whatwg.org/#concept-ipv4-serializer
+     *
+     * @param  int      $aAddress The IPv4 address to be serialized.
+     *
+     * @return string
+     */
+    public static function serializeIPv4Address($aAddress) {
+        $output = '';
+        $n = $aAddress;
+
+        for ($i = 0; $i < 4; $i++) {
+            $output = ($n % 256) . $output;
+
+            if ($i < 3) {
+                $output = '.' . $output;
+            }
+
+            $n /= 256;
+        }
+
+        return $output;
+    }
+
+    /**
      * Serializes an IPv6 address.
      *
      * @link https://url.spec.whatwg.org/#concept-ipv6-serializer
