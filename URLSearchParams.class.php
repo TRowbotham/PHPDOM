@@ -1,4 +1,8 @@
 <?php
+namespace phpjs\url;
+
+use phpjs\url;
+
 require_once 'URLParser.class.php';
 
 /**
@@ -8,7 +12,7 @@ require_once 'URLParser.class.php';
  * @link https://url.spec.whatwg.org/#urlsearchparams
  * @link https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams
  */
-class URLSearchParams implements Iterator {
+class URLSearchParams implements \Iterator {
     private $mIndex;
     private $mParams;
     private $mPosition;
