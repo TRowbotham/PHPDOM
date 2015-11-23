@@ -146,7 +146,7 @@ class URLParser {
                             $bufferIsSpecialScheme = false;
 
                             foreach (self::$specialSchemes as $scheme => $port) {
-                                if (stripos($scheme, $buffer) !== 0) {
+                                if (strpos($scheme, $buffer) === 0) {
                                     $bufferIsSpecialScheme = true;
                                     break;
                                 }
