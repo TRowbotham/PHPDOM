@@ -1388,6 +1388,36 @@ class URLParser {
         return $output;
     }
 
+    /**
+     * Parses a URL.
+     *
+     * @link https://url.spec.whatwg.org/#concept-url-parser
+     *
+     * @param string            $aInput    The URL string to be parsed.
+     *
+     * @param URLInternal|null  $aBase     A base URL to resolve relative URLs against.
+     *
+     * @param string            $aEncoding The character encoding of the URL.
+     *
+     * @return URLInternal|bool
+     */
+    public static function URLParser($aInput, URLInternal $aBase = null, $aEncoding = null) {
+        $url = self::basicURLParser($aInput, $aBase, $aEncoding);
+
+        if ($url === false) {
+            return false;
+        }
+
+        if ($url->getScheme() != 'blob') {
+            return $url;
+        }
+
+        // TODO: If the first string in url’s path is not in the blob URL store, return url
+        // TODO: Set url’s object to a structured clone of the entry in the blob URL store corresponding to the first string in url’s path
+
+        return $url;
+    }
+
     public static function utf8decode($aStream, $aEncoding = 'UTF-8') {
         return mb_convert_encoding($aStream, $aEncoding, 'UTF-8');
     }
