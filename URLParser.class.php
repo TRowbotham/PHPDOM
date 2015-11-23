@@ -833,7 +833,7 @@ class URLParser {
 
         $numCount = count($numbers);
 
-        for ($i = 0; $i < $numCount - 2; $i++) {
+        for ($i = 0; $i < $numCount - 1; $i++) {
             if ($numbers[$i] > 255) {
                 return false;
             }
