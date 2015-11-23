@@ -727,6 +727,47 @@ class Element extends Node implements SplObserver {
     }
 
     /**
+    /**
+     * Resolves a URL to the absolute URL that it implies.
+     *
+     * @link https://html.spec.whatwg.org/multipage/infrastructure.html#resolve-a-url
+     *
+     * @internal
+     *
+     * @param  string $aUrl         A URL string to be resolved.
+     *
+     * @param  string       $aBase  Optional argument that should be an absolute URL that a relative URL can be
+     *                              resolved against.  Default is null.
+     *
+     * @return mixed[]|bool         An array containing the serialized absolute URL as well as the parsed URL or
+     *                              false on failure.
+     */
+    protected function resolveURL($aUrl, phpjs\urls\URLInternal $aBase = null) {
+        $url = $aUrl;
+        $base = null;
+
+        // TODO: Handle encoding
+        $encoding = 'utf-8';
+
+        if ($aBase && $aBase->isFlagSet(phpjs\urls\URLInternal::FLAG_NON_RELATIVE)) {
+            $base = $aBase;
+        } else {
+            $base = phpjs\urls\URLParser::basicURLParser($this->mOwnerDocument->baseURI, null, $encoding);
+        }
+
+        $parsedURL = phpjs\urls\URLParser::URLParser($url, $base, $encoding);
+
+        if ($parsedURL === false) {
+            // Abort these steps.  The URL cannot be resolved.
+            return false;
+        }
+
+        $serializedURL = phpjs\urls\URLParser::serializeURL($parsedURL);
+
+        return array('absolute_url' => $serializedURL, 'parsed_url' => $parsedURL);
+    }
+
+    /**
      * Returns an array of Elements with the specified tagName that are immediate children
      * of the parent.
      * @param  string       $aTagName   The tagName to search for.

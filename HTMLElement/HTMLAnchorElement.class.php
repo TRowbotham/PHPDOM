@@ -1,7 +1,7 @@
 <?php
 require_once 'HTMLElement.class.php';
 require_once 'DOMSettableTokenList.class.php';
-require_once 'URLUtils.class.php';
+require_once 'HTMLHyperlinkElementUtils.class.php';
 
 /**
  * Represents the HTML anchor element <a>.
@@ -60,7 +60,7 @@ require_once 'URLUtils.class.php';
  * @property-read URLSearchParams   $searchParams   Represents the search property as a list of tokens.
  */
 class HTMLAnchorElement extends HTMLElement {
-    use URLUtils;
+    use HTMLHyperlinkElementUtils;
 
     private $mDownload;
     private $mHrefLang;
@@ -73,7 +73,6 @@ class HTMLAnchorElement extends HTMLElement {
 
     public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null) {
         parent::__construct($aLocalName, $aNamespaceURI, $aPrefix);
-        $this->initURLUtils();
 
         $this->mDownload = '';
         $this->mHrefLang = '';
@@ -102,9 +101,9 @@ class HTMLAnchorElement extends HTMLElement {
             case 'type':
                 return $this->mType;
             default:
-                $rv = $this->URLUtilsGetter($aName);
+                $rv = $this->HTMLHyperlinkElementUtilsGetter($aName);
 
-                if ($rv !== false) {
+                if ($rv != 'HTMLHyperlinkElementUtilsGetter') {
                     return $rv;
                 }
 
@@ -152,7 +151,7 @@ class HTMLAnchorElement extends HTMLElement {
                 break;
 
             default:
-                $this->URLUtilsSetter($aName, $aValue);
+                $this->HTMLHyperlinkElementUtilsSetter($aName, $aValue);
                 parent::__set($aName, $aValue);
         }
     }
@@ -204,10 +203,6 @@ class HTMLAnchorElement extends HTMLElement {
         }
     }
 
-    private function getBaseURL() {
-        return URLParser::basicURLParser($this->mOwnerDocument->baseURI);
-    }
-
     private function getRelList() {
         if (!$this->mRelList || $this->mInvalidateRelList) {
             $this->mInvalidateRelList = false;
@@ -219,9 +214,5 @@ class HTMLAnchorElement extends HTMLElement {
         }
 
         return $this->mRelList;
-    }
-
-    private function updateURL($aValue) {
-        $this->_updateAttributeOnPropertyChange('href', $aValue);
     }
 }
