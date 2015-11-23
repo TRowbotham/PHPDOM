@@ -109,6 +109,10 @@ class URLInternal {
         return array_key_exists($this->mScheme, URLParser::$specialSchemes);
     }
 
+    public function setFlag($aFlag) {
+        $this->mFlags |= $aFlag;
+    }
+
     public function setFragment($aFragment) {
         $this->mFragment = $aFragment;
     }
