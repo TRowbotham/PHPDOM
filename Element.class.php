@@ -8,9 +8,10 @@ require_once 'NamedNodeMap.class.php';
 require_once 'ParentNode.class.php';
 require_once 'ChildNode.class.php';
 require_once 'NonDocumentTypeChildNode.class.php';
+require_once 'GetElementsBy.class.php';
 
 class Element extends Node implements SplObserver {
-    use ParentNode, ChildNode, NonDocumentTypeChildNode;
+    use ChildNode, GetElementsBy, NonDocumentTypeChildNode, ParentNode;
 
     protected $mAttributes; // NamedNodeMap
     protected $mAttributesList;
@@ -189,55 +190,6 @@ class Element extends Node implements SplObserver {
         $attr = $this->_getAttributeByNamespaceAndLocalName($aNamespace, $aLocalName);
 
         return $attr ? $attr->value : null;
-    }
-
-    /**
-     * Returns a list of all the Element's that have all the given class names.
-     *
-     * @link https://dom.spec.whatwg.org/#dom-element-getelementsbyclassname
-     *
-     * @param  string       $aClassName A space delimited string containing the classNames to search for.
-     *
-     * @return Element[]
-     */
-    public function getElementsByClassName($aClassName) {
-        return static::_getElementsByClassName($this, $aClassName);
-    }
-
-    /**
-     * Returns an array of Elements with the specified local name.
-     *
-     * @link https://dom.spec.whatwg.org/#dom-element-getelementsbytagname
-     *
-     * @param  string       $aLocalName The element's local name to search for.  If given '*',
-     *                                  all element decendants will be returned.
-     *
-     * @return Element[]                A list of Elements with the specified local name.
-     */
-
-    public function getElementsByTagName($aLocalName) {
-        return static::_getElementsByTagName($this, $aLocalName);
-    }
-
-    /**
-     * Returns a collection of Elements that match the given namespace and local name.
-     *
-     * @link https://dom.spec.whatwg.org/#dom-element-getelementsbytagnamens
-     *
-     * @param  string       $aNamespace The namespaceURI to search for.  If both namespace and local
-     *                                  name are given '*', all element decendants will be returned.  If only
-     *                                  namespace is given '*' all element decendants matching only local
-     *                                  name will be returned.
-     *
-     * @param  string       $aLocalName The Element's local name to search for.  If both namespace and local
-     *                                  name are given '*', all element decendants will be returned.  If only
-     *                                  local name is given '*' all element decendants matching only namespace
-     *                                  will be returned.
-     *
-     * @return Element[]
-     */
-    public function getElementsByTagNameNS($aNamespace, $aLocalName) {
-        return static::_getElementsByTagNameNS($this, $aNamespace, $aLocalName);
     }
 
     /**
@@ -604,141 +556,6 @@ class Element extends Node implements SplObserver {
         }
 
         return null;
-    }
-
-    /**
-     * Returns a list of all the Element's that have all the given class names.
-     *
-     * @internal
-     *
-     * @link https://dom.spec.whatwg.org/#concept-getElementsByClassName
-     *
-     * @param  Node         $aRoot      A node at which the search is rooted at.
-     *
-     * @param  string       $aClassName A space delimited string containing the classNames to search for.
-     *
-     * @return Element[]
-     */
-    public static function _getElementsByClassName(Node $aRoot, $aClassName) {
-        $classes = DOMTokenList::_parseOrderedSet($aClassName);
-
-        if (empty($classes)) {
-            return $classes;
-        }
-
-        $ownerDocument = $aRoot instanceof Document ? $aRoot : $aRoot->ownerDocument;
-        $nodeFilter = function ($aNode) use ($classes) {
-            $hasClasses = false;
-
-            foreach ($classes as $className) {
-                if (!($hasClasses = $aNode->classList->contains($className))) {
-                    break;
-                }
-            }
-
-            return $hasClasses ? NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
-        };
-        $tw = $ownerDocument->createTreeWalker($aRoot, NodeFilter::SHOW_ELEMENT, $nodeFilter);
-
-        while ($node = $tw->nextNode()) {
-            $collection[] = $node;
-        }
-
-        return $collection;
-    }
-
-    /**
-     * Returns a collection of Elements that match the given local name.
-     *
-     * @internal
-     *
-     * @link https://dom.spec.whatwg.org/#concept-getElementsByTagName
-     *
-     * @param  Node         $aRoot      A node at which the search is rooted at.  If given '*',
-     *                                  all element decendants will be returned.
-     *
-     * @param  string       $aLocalName The Element's local name to search for.
-     *
-     * @return Element[]
-     */
-    public static function _getElementsByTagName(Node $aRoot, $aLocalName) {
-        $rootIsDocument = $aRoot instanceof Document;
-        $ownerDocument =  $rootIsDocument ? $aRoot : $aRoot->ownerDocument;
-        $collection = array();
-
-        if (strcmp($aLocalName, '*') === 0) {
-            $nodeFilter = null;
-        } else if ($rootIsDocument) {
-            $nodeFilter = function ($aNode) use ($aLocalName) {
-                if (($aNode->namespaceURI === Namespaces::HTML &&
-                    strcmp($aNode->localName, strtolower($aLocalName)) === 0) ||
-                    ($aNode->namespaceURI === Namespaces::HTML &&
-                    strcmp($aNode->localName, $aLocalName) === 0)) {
-                    return NodeFilter::FILTER_ACCEPT;
-                }
-
-                return NodeFilter::FILTER_SKIP;
-            };
-        } else {
-            $nodeFilter = function ($aNode) use ($aLocalName) {
-                return strcmp($aNode->localName, $aLocalName) === 0 ? NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
-            };
-        }
-
-        $tw = $ownerDocument->createTreeWalker($aRoot, NodeFilter::SHOW_ELEMENT, $nodeFilter);
-
-        while ($node = $tw->nextNode()) {
-            $collection[] = $node;
-        }
-
-        return $collection;
-    }
-
-    /**
-     * Returns a collection of Elements that match the given namespace and local name.
-     *
-     * @internal
-     *
-     * @link https://dom.spec.whatwg.org/#concept-getElementsByTagNameNS
-     *
-     * @param  Node         $aRoot      A node at which the search is rooted at.
-     *
-     * @param  string       $aNamespace The namespaceURI to search for.  If both namespace and local
-     *                                  name are given '*', all element decendants will be returned.  If only
-     *                                  namespace is given '*' all element decendants matching only local
-     *                                  name will be returned.
-     *
-     * @param  string       $aLocalName The Element's local name to search for.  If both namespace and local
-     *                                  name are given '*', all element decendants will be returned.  If only
-     *                                  local name is given '*' all element decendants matching only namespace
-     *                                  will be returned.
-     *
-     * @return Element[]
-     */
-    public static function _getElementsByTagNameNS(Node $aRoot, $aNamespace, $aLocalName) {
-        $namespace = strcmp($aNamespace, '') === 0 ? null : $aNamespace;
-        $collection = array();
-
-        if (strcmp($namespace, '*') === 0 && strcmp($aLocalName, '*') === 0) {
-            $nodeFilter = null;
-        } else if (strcmp($namespace, '*') === 0) {
-            $nodeFilter = function ($aNode) use ($aLocalName) {
-                return strcmp($aNode->localName, $aLocalName) === 0 ? NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
-            };
-        } else if (strcmp($aLocalName, '*') === 0) {
-            $nodeFilter =  function ($aNode) use ($namespace) {
-                return strcmp($aNode->namespaceURI, $namespace) === 0 ? NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
-            };
-        }
-
-        $ownerDocument = $aRoot instanceof Document ? $aRoot : $aRoot->ownerDocument;
-        $tw = $ownerDocument->createTreeWalker($aRoot, NodeFilter::SHOW_ELEMENT, $nodeFilter);
-
-        while ($node = $tw->nextNode()) {
-            $collection[] = $node;
-        }
-
-        return $collection;
     }
 
     public function _isEndTagOmitted() {

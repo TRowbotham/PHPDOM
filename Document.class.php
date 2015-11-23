@@ -18,13 +18,14 @@ require_once 'NodeIterator.class.php';
 require_once 'Range.class.php';
 require_once 'TreeWalker.class.php';
 require_once 'ProcessingInstruction.class.php';
+require_once 'GetElementsBy.class.php';
 
 class Document extends Node {
+    use GetElementsBy, NonElementParentNode, ParentNode;
+
     const NO_QUIRKS_MODE = 1;
     const LIMITED_QUIRKS_MODE = 2;
     const QUIRKS_MODE = 3;
-
-    use ParentNode, NonElementParentNode;
 
     protected static $mDefaultDocument = null;
 
@@ -268,54 +269,6 @@ class Document extends Node {
      */
     public function createTreeWalker(Node $aRoot, $aWhatToShow = NodeFilter::SHOW_ALL, callable $aFilter = null) {
         return new TreeWalker($aRoot, $aWhatToShow, $aFilter);
-    }
-
-    /**
-     * Returns a list of all the Element's that have all the given class names.
-     *
-     * @link https://dom.spec.whatwg.org/#dom-element-getelementsbyclassname
-     *
-     * @param  string       $aClassName A space delimited string containing the classNames to search for.
-     *
-     * @return Element[]
-     */
-    public function getElementsByClassName($aClassName) {
-        return Element::_getElementsByClassName($this, $aClassName);
-    }
-
-    /**
-     * Returns an array of Elements with the specified local name.
-     *
-     * @link https://dom.spec.whatwg.org/#dom-document-getelementsbytagname
-     *
-     * @param  string       $aLocalName The element's local name to search for.  If given '*',
-     *                                  all element decendants will be returned.
-     *
-     * @return Element[]                A list of Elements with the specified local name.
-     */
-    public function getElementsByTagName($aLocalName) {
-        return Element::_getElementsByTagName($this, $aLocalName);
-    }
-
-    /**
-     * Returns a collection of Elements that match the given namespace and local name.
-     *
-     * @link https://dom.spec.whatwg.org/#dom-document-getelementsbytagnamens
-     *
-     * @param  string       $aNamespace The namespaceURI to search for.  If both namespace and local
-     *                                  name are given '*', all element decendants will be returned.  If only
-     *                                  namespace is given '*' all element decendants matching only local
-     *                                  name will be returned.
-     *
-     * @param  string       $aLocalName The Element's local name to search for.  If both namespace and local
-     *                                  name are given '*', all element decendants will be returned.  If only
-     *                                  local name is given '*' all element decendants matching only namespace
-     *                                  will be returned.
-     *
-     * @return Element[]
-     */
-    public function getElementsByTagNameNS($aNamespace, $aLocalName) {
-        return Element::_getElementsByTagNameNS($this, $aNamespace, $aLocalName);
     }
 
     public function importNode(Node $aNode, $aDeep = false) {
