@@ -74,6 +74,7 @@ class HTMLAnchorElement extends HTMLElement {
     public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null) {
         parent::__construct($aLocalName, $aNamespaceURI, $aPrefix);
 
+        $this->initHTMLHyperlinkElementUtils();
         $this->mDownload = '';
         $this->mHrefLang = '';
         $this->mInvalidateRelList = false;
