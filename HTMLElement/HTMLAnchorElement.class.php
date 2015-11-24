@@ -157,19 +157,31 @@ class HTMLAnchorElement extends HTMLElement {
         }
     }
 
-    public function update(SplSubject $aObject) {
-        if ($aObject instanceof URLSearchParams) {
-            $this->mUrl->mQuery = $aObject->toString();
-            $this->preupdate();
-        } else {
-            parent::update($aObject);
-        }
-    }
-
     protected function _onAttributeChange(Event $aEvent) {
         switch ($aEvent->detail['attr']->name) {
             case 'download':
                 $this->mDownload = $aEvent->detail['action'] == 'set' ? $aEvent->detail['attr']->value : '';
+
+                break;
+
+            case 'href':
+                if ($aEvent->detail['action'] == 'set') {
+                    $resolvedURL = $this->resolveURL($aEvent->detail['attr']->value);
+
+                    if ($resolvedURL) {
+                        $this->mUrl = $resolvedURL['parsed_url'];
+                        $this->mSearchParams->_mutateList(phpjs\urls\URLParser::urlencodedStringParser($this->mUrl->getQuery()));
+                        $this->mSearchParams->_setUrl($this->mUrl);
+                    } else {
+                        $this->mUrl = null;
+                        $this->mSearchParams->_mutateList(null);
+                        $this->mSearchParams->_setUrl(null);
+                    }
+                } else {
+                    $this->mUrl = null;
+                    $this->mSearchParams->_mutateList(null);
+                    $this->mSearchParams->_setUrl(null);
+                }
 
                 break;
 
