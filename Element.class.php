@@ -490,16 +490,17 @@ class Element extends Node implements SplObserver {
      */
     public function _changeAttributeValue(Attr $aAttr, $aValue) {
         // TODO: Queue a mutation record for "attributes"
-        $dict = new CustomEventInit();
-        $dict->detail = array('attr' => $aAttr, 'action' => 'set');
-        $event = new CustomEvent('attributechange', $dict);
-        $this->dispatchEvent($event);
 
         // This is kind of hacky, but should work.
         $owner = $aAttr->ownerElement;
         $aAttr->_setOwnerElement(null);
         $aAttr->value = $aValue;
         $aAttr->_setOwnerElement($owner);
+
+        $dict = new CustomEventInit();
+        $dict->detail = array('attr' => $aAttr, 'action' => 'set');
+        $event = new CustomEvent('attributechange', $dict);
+        $this->dispatchEvent($event);
     }
 
     /**
