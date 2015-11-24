@@ -513,10 +513,7 @@ class URLParser {
                                 !preg_match('/[/\\?#]/', mb_substr($input, $pointer + 2, 1, $encoding)))) {
                                 $url->setHost($base->getHost());
                                 $url->setPath(clone $base->getPath());
-
-                                if (!$url->getPath()->isEmpty()) {
-                                    $url->getPath()->pop();
-                                }
+                                self::popURLPath($url);
                             } else if ($base && $base->getScheme() == 'file') {
                                 // Syntax violation
                             } else {
@@ -602,9 +599,7 @@ class URLParser {
                         }
 
                         if (in_array($buffer, self::$doubleDotPathSegment)) {
-                            if (!$url->getPath()->isEmpty()) {
-                                $url->getPath()->pop();
-                            }
+                            self::popURLPath($url);
 
                             if ($c != '/' && !($url->isSpecial() && $c == '\\')) {
                                 $url->getPath()->push('');
@@ -1042,6 +1037,31 @@ class URLParser {
         }
 
         return $address;
+    }
+
+    /**
+     * Removes the last string from a URL's path if its scheme is not "file"
+     * and the path does not contain a normalized Windows drive letter.
+     *
+     * @link https://url.spec.whatwg.org/#pop-a-urls-path
+     *
+     * @param  URLInternal $aUrl The URL of the path that is to be popped.
+     */
+    public static function popURLPath(URLInternal $aUrl) {
+        if (!$aUrl->getPath()->isEmpty()) {
+            $containsDriveLetter = false;
+
+            foreach ($aUrl->getPath() as $path) {
+                if (preg_match(self::REGEX_NORMALIZED_WINDOWS_DRIVE_LETTER, $path)) {
+                    $containsDriveLetter = true;
+                    break;
+                }
+            }
+
+            if ($aUrl->getScheme() != 'file' || !$containsDriveLetter) {
+                $aUrl->getPath()->pop();
+            }
+        }
     }
 
     /**
