@@ -214,15 +214,13 @@ class URL {
 
                 if ($aValue === '') {
                     $this->mUrl->setQuery(null);
-
-                    // TODO: Empty the query object
+                    $this->mSearchParams->_mutateList(null);
                 }
 
                 $input = $aValue[0] == '?' ? substr($aValue, 1) : $aValue;
                 $this->mUrl->setQuery('');
                 URLParser::basicURLParser($input, null, null, $this->mUrl, URLParser::QUERY_STATE);
-
-                // TODO: Set url’s query object’s list to the result of parsing input.
+                $this->mSearchParams->_mutateList(URLParser::urlencodedStringParser($input));
 
                 break;
 
