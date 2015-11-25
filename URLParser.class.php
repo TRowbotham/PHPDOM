@@ -735,16 +735,51 @@ class URLParser {
     }
 
     /**
+     * Converts a domain name to ASCII.
+     *
+     * @link https://url.spec.whatwg.org/#concept-domain-to-ascii
+     *
+     * @param  string       $aDomain    The domain name to be converted.
+     *
+     * @return string|bool              Returns the domain name upon success or false on failure.
+     */
+    public static function domainToASCII($aDomain) {
+        // TODO: Let result be the result of running Unicode ToASCII with domain_name set to domain, UseSTD3ASCIIRules set to false,
+        // processing_option set to Transitional_Processing, and VerifyDnsLength set to false.
+
+        // TODO: If result is a failure value, syntax violation, return failure.
+
+        return $aDomain;
+    }
+
+    /**
+     * Converts a domain name to Unicode.
+     *
+     * @link https://url.spec.whatwg.org/#concept-domain-to-ascii
+     *
+     * @param  string       $aDomain    The domain name to be converted.
+     *
+     * @return string|bool              Returns the domain name upon success or false on failure.
+     */
+    public static function domainToUnicode($aDomain) {
+        // TODO: Let result be the result of running Unicode ToUnicode with domain_name set to domain, UseSTD3ASCIIRules set to false.
+
+        // TODO: Signify syntax violations for any returned errors, and then, return result.
+
+        return $aDomain;
+    }
+
+    /**
      * Parses a host.
      *
      * @link https://url.spec.whatwg.org/#concept-host-parser
      *
-     * @param  string               $aInput       A IPv4, IPv6 address, or a domain.
+     * @param  string                   $aInput       A IPv4, IPv6 address, or a domain.
      *
-     * @param  bool|null            $aUnicodeFlag Option argument, that when set to true, causes the domain
-     *                                            to be encoded using unicode instead of ASCII.  Default is null.
+     * @param  bool|null                $aUnicodeFlag Option argument, that when set to true, causes the domain
+     *                                                to be encoded using unicode instead of ASCII.  Default is null.
      *
-     * @return string|int|string[]
+     * @return string|int|string[]|bool
      */
     public static function parseHost($aInput, $aUnicodeFlag = null) {
         if ($aInput[0] == '[') {
@@ -756,9 +791,9 @@ class URLParser {
             return self::IPv6Parser(substr($aInput, 1, strlen($aInput) - 2));
         }
 
-        // TODO: utf-8 decode without BOM
-        $domain = self::percentDecode(mb_convert_encoding(self::encode($aInput), 'UTF-8'));
-        $asciiDomain = URLInternal::domainToASCII($domain);
+        // TODO: Let domain be the result of utf-8 decode without BOM on the percent decoding of utf-8 encode on input
+        $domain = self::percentDecode(self::encode($aInput));
+        $asciiDomain = self::domainToASCII($domain);
 
         if ($asciiDomain === false) {
             return false;
@@ -775,7 +810,7 @@ class URLParser {
             return $ipv4Host;
         }
 
-        return $aUnicodeFlag ? URLInternal::domainToUnicode($domain) : $asciiDomain;
+        return $aUnicodeFlag ? self::domainToUnicode($domain) : $asciiDomain;
     }
 
     /**
