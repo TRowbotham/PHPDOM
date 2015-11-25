@@ -1430,7 +1430,7 @@ class URLParser {
         }
 
         if ($aUrl->isFlagSet(URLInternal::FLAG_NON_RELATIVE)) {
-            $output .= $this->getPath()[0];
+            $output .= $aUrl->getPath()[0];
         } else {
             $output .= '/';
 
