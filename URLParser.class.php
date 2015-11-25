@@ -771,7 +771,9 @@ class URLParser {
 
         $ipv4Host = self::parseIPv4Address($asciiDomain);
 
-        // TODO: If ipv4Host is an IPv4 address or failure, return ipv4Host
+        if (is_int($ipv4Host) || $ipv4Host === false) {
+            return $ipv4Host;
+        }
 
         return $aUnicodeFlag ? URLInternal::domainToUnicode($domain) : $asciiDomain;
     }
@@ -810,7 +812,7 @@ class URLParser {
             $n = self::parseIPv4Number($part, $syntaxViolationFlag);
 
             if ($n === false) {
-                return $input;
+                return $aInput;
             }
 
             $numbers[] = $n;
@@ -880,7 +882,11 @@ class URLParser {
             $R = 8;
         }
 
-        // TODO: If input contains a code point that is not a radix-R digit, and return failure
+        if (($R == 10 && preg_match('/[^0-9]/', $input)) ||
+            ($R == 16 && preg_match('/[^0-9A-Fa-f]/', $input)) ||
+            ($R == 8 && preg_match('/[^0-7]/', $input))) {
+            return false;
+        }
 
         return intval($input, $R);
     }
