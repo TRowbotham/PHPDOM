@@ -779,7 +779,7 @@ class URLParser {
      * @param  bool|null                $aUnicodeFlag Option argument, that when set to true, causes the domain
      *                                                to be encoded using unicode instead of ASCII.  Default is null.
      *
-     * @return string|int|string[]|bool
+     * @return string|GMP|string[]|bool
      */
     public static function parseHost($aInput, $aUnicodeFlag = null) {
         if ($aInput[0] == '[') {
@@ -806,7 +806,8 @@ class URLParser {
 
         $ipv4Host = self::parseIPv4Address($asciiDomain);
 
-        if (is_int($ipv4Host) || $ipv4Host === false) {
+        if ($ipv4Host instanceof \GMP || $ipv4Host === false ||
+            (is_resource($ipv4Host) && get_resource_type($ipv4Host) == 'gmp_resource')) {
             return $ipv4Host;
         }
 
@@ -820,7 +821,9 @@ class URLParser {
      *
      * @param  string           $aInput  A string representing an IPv4 address.
      *
-     * @return int|string|bool
+     * @return GMP|string|bool           Returns a GMP object if the input is a valid IPv4 address
+     *                                   or a string if the input is determined to be a domain.  This
+     *                                   will return false if the input is neither a domain or IPv4 address.
      */
     public static function parseIPv4Address($aInput) {
         $syntaxViolationFlag = null;
@@ -876,11 +879,11 @@ class URLParser {
             return false;
         }
 
-        $ipv4 = array_pop($numbers);
+        $ipv4 = gmp_init(array_pop($numbers), 10);
         $counter = 0;
 
         foreach ($numbers as $n) {
-            $ipv4 += $n * pow(256, 3 - $counter);
+            $ipv4 = gmp_add($ipv4, gmp_mul(gmp_init($n, 10), gmp_init(pow(256, 3 - $counter), 10)));
             $counter++;
         }
 
@@ -923,6 +926,8 @@ class URLParser {
             return false;
         }
 
+        // TODO: Return the mathematical integer value that is represented by input in
+        // radix-R notation, using ASCII hex digits for digits with values 0 through 15.
         return intval($input, $R);
     }
 
@@ -1334,7 +1339,7 @@ class URLParser {
      *
      * @link https://url.spec.whatwg.org/#concept-host-serializer
      *
-     * @param  string|int|string[] $aHost A domain or an IPv4 or IPv6 address.
+     * @param  string|GMP|string[] $aHost A domain or an IPv4 or IPv6 address.
      *
      * @return string
      */
@@ -1351,7 +1356,7 @@ class URLParser {
      *
      * @link https://url.spec.whatwg.org/#concept-ipv4-serializer
      *
-     * @param  int      $aAddress The IPv4 address to be serialized.
+     * @param  GMP      $aAddress The IPv4 address to be serialized.
      *
      * @return string
      */
@@ -1360,13 +1365,13 @@ class URLParser {
         $n = $aAddress;
 
         for ($i = 0; $i < 4; $i++) {
-            $output = ($n % 256) . $output;
+            $output = gmp_strval(gmp_mod($n, '256')) . $output;
 
             if ($i < 3) {
                 $output = '.' . $output;
             }
 
-            $n /= 256;
+            $n = gmp_div($n, '256');
         }
 
         return $output;
