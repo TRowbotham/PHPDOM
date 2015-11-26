@@ -156,6 +156,8 @@ class URL {
 
                 URLParser::basicURLParser($aValue, null, null, $this->mUrl, URLParser::HOSTNAME_STATE);
 
+                break;
+
             case 'href':
                 $parsedURL = URLParser::basicURLParser($aValue);
 
