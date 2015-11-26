@@ -1,12 +1,10 @@
 <?php
 require_once 'URLParser.class.php';
-require_once 'URLSearchParams.class.php';
 
 /**
  * @link https://html.spec.whatwg.org/multipage/semantics.html#htmlhyperlinkelementutils
  */
 trait HTMLHyperlinkElementUtils {
-    protected $mSearchParams;
     protected $mUrl;
 
     private function HTMLHyperlinkElementUtilsGetter($aName) {
@@ -113,9 +111,6 @@ trait HTMLHyperlinkElementUtils {
                 $this->reinitialiseURL();
 
                 return $this->mUrl === null || !($query = $this->mUrl->getQuery()) ? '' : '?' . $query;
-
-            case 'searchParams':
-                return $this->mSearchParams;
 
             case 'username':
                 $this->reinitialiseURL();
@@ -274,7 +269,6 @@ trait HTMLHyperlinkElementUtils {
 
     private function initHTMLHyperlinkElementUtils() {
         $this->mUrl = null;
-        $this->mSearchParams = new phpjs\urls\URLSearchParams();
     }
 
     /**
