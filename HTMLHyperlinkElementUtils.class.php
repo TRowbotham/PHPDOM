@@ -58,8 +58,7 @@ trait HTMLHyperlinkElementUtils {
                     return '';
                 }
 
-                // TODO: Return the Unicode serialization of this element's url's origin.
-                return;
+                return URLParser::serializeOriginAsUnicode($this->mUrl->getOrigin());
 
             case 'password':
                 $this->reinitialiseURL();

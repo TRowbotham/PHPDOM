@@ -54,6 +54,49 @@ class URLInternal {
         return $this->mHost;
     }
 
+    /**
+     * Computes a URL's origin.
+     *
+     * @link https://url.spec.whatwg.org/#origin
+     *
+     * @return array
+     */
+    public function getOrigin() {
+        switch ($this->mScheme) {
+            case 'blob':
+                $url = URLParser::basicURLParser($this->mPath[0]);
+
+                if ($url === false) {
+                    // TODO: Return globally unique identifier.
+                    return;
+                }
+
+                return $url->getOrigin();
+
+            case 'ftp':
+            case 'gopher':
+            case 'http':
+            case 'https':
+            case 'ws':
+            case 'wss':
+                return array(
+                            'scheme' => $this->mScheme,
+                            'host' => $this->mHost,
+                            'port' => ($this->mPort === null ? URLParser::$specialSchemes[$this->mScheme] : $this->mPort)
+                        );
+
+                break;
+
+            case 'file':
+                // TODO: Unfortunate as it is, this is left as an exercise to the reader. When in doubt, return a new globally unique identifier.
+                return array('scheme' => $this->mScheme, 'host' => '', 'port' => '');
+
+            default:
+                // TODO: Return a new globally unique identifier.
+                return;
+        }
+    }
+
     public function getPassword() {
         return $this->mPassword;
     }

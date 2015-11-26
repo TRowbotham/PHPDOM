@@ -1219,6 +1219,33 @@ class URLParser {
     }
 
     /**
+     * Serializes an origin using Unicode.
+     *
+     * @link https://html.spec.whatwg.org/multipage/browsers.html#unicode-serialisation-of-an-origin
+     *
+     * @param  array    $aOrigin An origin.
+     *
+     * @return string
+     */
+    public static function serializeOriginAsUnicode($aOrigin) {
+        if (!is_array($aOrigin)) {
+            return 'null';
+        }
+
+        $result = $aOrigin['scheme'];
+        $result .= '://';
+
+        $hostParts = explode('.', self::serializeHost($aOrigin['host']));
+        $result .= implode('.', array_map(array('self', 'domainToUnicode'), $hostParts));
+
+        if ($aOrigin['port'] != self::$specialSchemes[$aOrigin['scheme']]) {
+            $result .= ':' . intval($aOrigin['port'], 10);
+        }
+
+        return $result;
+    }
+
+    /**
      * Serializes a URL object.
      *
      * @link https://url.spec.whatwg.org/#concept-url-serializer
