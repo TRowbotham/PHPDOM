@@ -769,6 +769,12 @@ class URLParser {
         return $aDomain;
     }
 
+    public static function encode($aStream, $aEncoding = 'UTF-8') {
+        $inputEncoding = mb_detect_encoding($aStream);
+
+        return mb_convert_encoding($aStream, $aEncoding, $inputEncoding);
+    }
+
     /**
      * Parses a host.
      *
@@ -1086,225 +1092,6 @@ class URLParser {
     }
 
     /**
-     * Removes the last string from a URL's path if its scheme is not "file"
-     * and the path does not contain a normalized Windows drive letter.
-     *
-     * @link https://url.spec.whatwg.org/#pop-a-urls-path
-     *
-     * @param  URLInternal $aUrl The URL of the path that is to be popped.
-     */
-    public static function popURLPath(URLInternal $aUrl) {
-        if (!$aUrl->getPath()->isEmpty()) {
-            $containsDriveLetter = false;
-
-            foreach ($aUrl->getPath() as $path) {
-                if (preg_match(self::REGEX_NORMALIZED_WINDOWS_DRIVE_LETTER, $path)) {
-                    $containsDriveLetter = true;
-                    break;
-                }
-            }
-
-            if ($aUrl->getScheme() != 'file' || !$containsDriveLetter) {
-                $aUrl->getPath()->pop();
-            }
-        }
-    }
-
-    /**
-     * Encodes a byte sequence to be compatible with the application/x-www-form-urlencoded encoding.
-     *
-     * @link https://url.spec.whatwg.org/#concept-urlencoded-parser
-     *
-     * @param  string   $aInput      A byte sequence to be encoded.
-     *
-     * @param  string   $aEncoding   Optional argument used to set the character encoding.  Default is utf-8.
-     *
-     * @param  bool     $aUseCharset Optional argument that, if set to true, indicates if the charset specfied in the byte
-     *                               sequence should be used in place of the specified encoding argument.  Default is null.
-     *
-     * @param  bool     $aIsIndex    Optional argument that, if set to true, prepends an = character to the first
-     *                               byte sequence if one does not exist.  Default is null.
-     *
-     * @return string[]
-     */
-    public static function urlencodedParser($aInput, $aEncoding = 'utf-8', $aUseCharset = null, $aIsIndex = null) {
-        $input = $aInput;
-
-        if ($aEncoding != 'utf-8') {
-            for ($i = 0; $i < strlen($input); $i++) {
-                if ($aInput[$i] > 0x7F) {
-                    return false;
-                }
-            }
-        }
-
-        $sequences = explode('&', $input);
-
-        if ($aIsIndex && !empty($squences) && strpos($squences[0], '=') === false) {
-            $sequences[0] = '=' . $sequences[0];
-        }
-
-        $pairs = array();
-
-        foreach ($sequences as $bytes) {
-            if ($bytes === '') {
-                continue;
-            }
-
-            $pos = strpos($bytes, '=');
-
-            if ($pos !== false) {
-                $name = substr($bytes, 0, $pos);
-                $value = substr($bytes, $pos + 1) !== false ? substr($bytes, $pos + 1) : '';
-            } else {
-                $name = $bytes;
-                $value = '';
-            }
-
-            $name = str_replace('+', chr(0x20), $name);
-            $value = str_replace('+', chr(0x20), $value);
-
-            // TODO: If use _charset_ flag is set and name is `_charset_`
-
-            $pairs[] = array('name' => $name, 'value' => $value);
-        }
-
-        $output = array();
-
-        foreach ($pairs as $pair) {
-            // TODO: Run encoding override’s decoder on the percent decoding of the name and value from pairs
-            $output[] = array(
-                'name' => self::percentDecode($pair['name']),
-                'value' => self::percentDecode($pair['value'])
-            );
-        }
-
-        return $output;
-    }
-
-    /**
-     * Serializes a list of name-value pairs to be used in a URL.
-     *
-     * @link https://url.spec.whatwg.org/#concept-urlencoded-serializer
-     *
-     * @param  array  $aPairs    A list of name-value pairs to be serialized.
-     *
-     * @param  string $aEncoding Optionally allows you to set a different encoding to be used.
-     *                           Default value is UTF-8.
-     *
-     * @return string
-     */
-    public static function urlencodedSerializer(array $aPairs, $aEncoding = 'UTF-8') {
-        $output = '';
-
-        foreach ($aPairs as $key => $pair) {
-            if ($key > 0) {
-                $output .= '&';
-            }
-
-            $output .= self::urlencodedByteSerializer(mb_convert_encoding($pair['name'], $aEncoding)) . '=';
-            $output .= self::urlencodedByteSerializer(mb_convert_encoding($pair['value'], $aEncoding));
-        }
-
-        return $output;
-    }
-
-    /**
-     * Serializes the individual bytes of the given byte sequence to be compatible with
-     * application/x-www-form-encoded URLs.
-     *
-     * @link https://url.spec.whatwg.org/#concept-urlencoded-byte-serializer
-     *
-     * @param  string $aInput A byte sequence to be serialized.
-     *
-     * @return string
-     */
-    public static function urlencodedByteSerializer($aInput) {
-        $output = '';
-
-        for ($i = 0; $i < strlen($aInput); $i++) {
-            $byte = ord($aInput[$i]);
-
-            switch (true) {
-                case ($byte == 0x20):
-                    $output .= chr(0x2B);
-
-                    break;
-
-                case ($byte == 0x2A):
-                case ($byte == 0x2D):
-                case ($byte == 0x2E):
-                case !($byte < 0x30 || $byte > 0x39):
-                case !($byte < 0x41 || $byte > 0x5A):
-                case ($byte == 0x5F):
-                case !($byte < 0x61 || $byte > 0x7A):
-                    $output .= $aInput[$i];
-
-                    break;
-
-                default:
-                    $output .= self::percentEncode($aInput[$i]);
-            }
-        }
-
-        return $output;
-    }
-
-    public static function urlencodedStringParser($aInput) {
-        return self::urlencodedParser(self::encode($aInput));
-    }
-
-    /**
-     * Encodes a code point stream if the code point is not part of the specified encode set.
-     *
-     * @link https://url.spec.whatwg.org/#utf-8-percent-encode
-     *
-     * @param  string   $aCodePoint A code point stream to be encoded.
-     *
-     * @param  int      $aEncodeSet The encode set used to decide whether or not the code point should
-     *                              be encoded.
-     * @return string
-     */
-    public static function utf8PercentEncode($aCodePoint, $aEncodeSet = self::ENCODE_SET_SIMPLE) {
-        // The Simple Encode Set
-        $inCodeSet = preg_match(self::REGEX_C0_CONTROLS, $aCodePoint) || ord($aCodePoint) > 0x7E;
-
-        if (!$inCodeSet && $aEncodeSet >= self::ENCODE_SET_DEFAULT) {
-            $inCodeSet = $inCodeSet || preg_match('/[\x{0020}"#<>?`,{}]/', $aCodePoint);
-        }
-
-        if (!$inCodeSet && $aEncodeSet == self::ENCODE_SET_USERINFO) {
-            $inCodeSet = $inCodeSet || preg_match('/[\/:;=@[\\\]^|]/', $aCodePoint);
-        }
-
-        if (!$inCodeSet) {
-            return $aCodePoint;
-        }
-
-        $bytes = self::encode($aCodePoint);
-        $result = '';
-
-        for ($i = 0; $i < strlen($bytes); $i++) {
-            $result .= self::percentEncode($bytes[$i]);
-        }
-
-        return $result;
-    }
-
-    /**
-     * Encodes a byte into a uppercase hexadecimal number prefixed by a % character.
-     *
-     * @link https://url.spec.whatwg.org/#percent-encode
-     *
-     * @param  string $aByte A byte to be percent encoded.
-     *
-     * @return string
-     */
-    public static function percentEncode($aByte) {
-        return '%' . strtoupper(bin2hex($aByte));
-    }
-
-    /**
      * Decodes a percent encoded byte into a code point.
      *
      * @link https://url.spec.whatwg.org/#percent-decode
@@ -1332,6 +1119,44 @@ class URLParser {
         }
 
         return $output;
+    }
+
+    /**
+     * Encodes a byte into a uppercase hexadecimal number prefixed by a % character.
+     *
+     * @link https://url.spec.whatwg.org/#percent-encode
+     *
+     * @param  string $aByte A byte to be percent encoded.
+     *
+     * @return string
+     */
+    public static function percentEncode($aByte) {
+        return '%' . strtoupper(bin2hex($aByte));
+    }
+
+    /**
+     * Removes the last string from a URL's path if its scheme is not "file"
+     * and the path does not contain a normalized Windows drive letter.
+     *
+     * @link https://url.spec.whatwg.org/#pop-a-urls-path
+     *
+     * @param  URLInternal $aUrl The URL of the path that is to be popped.
+     */
+    public static function popURLPath(URLInternal $aUrl) {
+        if (!$aUrl->getPath()->isEmpty()) {
+            $containsDriveLetter = false;
+
+            foreach ($aUrl->getPath() as $path) {
+                if (preg_match(self::REGEX_NORMALIZED_WINDOWS_DRIVE_LETTER, $path)) {
+                    $containsDriveLetter = true;
+                    break;
+                }
+            }
+
+            if ($aUrl->getScheme() != 'file' || !$containsDriveLetter) {
+                $aUrl->getPath()->pop();
+            }
+        }
     }
 
     /**
@@ -1455,6 +1280,150 @@ class URLParser {
     }
 
     /**
+     * Serializes the individual bytes of the given byte sequence to be compatible with
+     * application/x-www-form-encoded URLs.
+     *
+     * @link https://url.spec.whatwg.org/#concept-urlencoded-byte-serializer
+     *
+     * @param  string $aInput A byte sequence to be serialized.
+     *
+     * @return string
+     */
+    public static function urlencodedByteSerializer($aInput) {
+        $output = '';
+
+        for ($i = 0; $i < strlen($aInput); $i++) {
+            $byte = ord($aInput[$i]);
+
+            switch (true) {
+                case ($byte == 0x20):
+                    $output .= chr(0x2B);
+
+                    break;
+
+                case ($byte == 0x2A):
+                case ($byte == 0x2D):
+                case ($byte == 0x2E):
+                case !($byte < 0x30 || $byte > 0x39):
+                case !($byte < 0x41 || $byte > 0x5A):
+                case ($byte == 0x5F):
+                case !($byte < 0x61 || $byte > 0x7A):
+                    $output .= $aInput[$i];
+
+                    break;
+
+                default:
+                    $output .= self::percentEncode($aInput[$i]);
+            }
+        }
+
+        return $output;
+    }
+
+    /**
+     * Encodes a byte sequence to be compatible with the application/x-www-form-urlencoded encoding.
+     *
+     * @link https://url.spec.whatwg.org/#concept-urlencoded-parser
+     *
+     * @param  string   $aInput      A byte sequence to be encoded.
+     *
+     * @param  string   $aEncoding   Optional argument used to set the character encoding.  Default is utf-8.
+     *
+     * @param  bool     $aUseCharset Optional argument that, if set to true, indicates if the charset specfied in the byte
+     *                               sequence should be used in place of the specified encoding argument.  Default is null.
+     *
+     * @param  bool     $aIsIndex    Optional argument that, if set to true, prepends an = character to the first
+     *                               byte sequence if one does not exist.  Default is null.
+     *
+     * @return string[]
+     */
+    public static function urlencodedParser($aInput, $aEncoding = 'utf-8', $aUseCharset = null, $aIsIndex = null) {
+        $input = $aInput;
+
+        if ($aEncoding != 'utf-8') {
+            for ($i = 0; $i < strlen($input); $i++) {
+                if ($aInput[$i] > 0x7F) {
+                    return false;
+                }
+            }
+        }
+
+        $sequences = explode('&', $input);
+
+        if ($aIsIndex && !empty($squences) && strpos($squences[0], '=') === false) {
+            $sequences[0] = '=' . $sequences[0];
+        }
+
+        $pairs = array();
+
+        foreach ($sequences as $bytes) {
+            if ($bytes === '') {
+                continue;
+            }
+
+            $pos = strpos($bytes, '=');
+
+            if ($pos !== false) {
+                $name = substr($bytes, 0, $pos);
+                $value = substr($bytes, $pos + 1) !== false ? substr($bytes, $pos + 1) : '';
+            } else {
+                $name = $bytes;
+                $value = '';
+            }
+
+            $name = str_replace('+', chr(0x20), $name);
+            $value = str_replace('+', chr(0x20), $value);
+
+            // TODO: If use _charset_ flag is set and name is `_charset_`
+
+            $pairs[] = array('name' => $name, 'value' => $value);
+        }
+
+        $output = array();
+
+        foreach ($pairs as $pair) {
+            // TODO: Run encoding override’s decoder on the percent decoding of the name and value from pairs
+            $output[] = array(
+                'name' => self::percentDecode($pair['name']),
+                'value' => self::percentDecode($pair['value'])
+            );
+        }
+
+        return $output;
+    }
+
+    /**
+     * Serializes a list of name-value pairs to be used in a URL.
+     *
+     * @link https://url.spec.whatwg.org/#concept-urlencoded-serializer
+     *
+     * @param  array  $aPairs    A list of name-value pairs to be serialized.
+     *
+     * @param  string $aEncoding Optionally allows you to set a different encoding to be used.
+     *                           Default value is UTF-8.
+     *
+     * @return string
+     */
+    public static function urlencodedSerializer(array $aPairs, $aEncoding = 'UTF-8') {
+        $output = '';
+
+        foreach ($aPairs as $key => $pair) {
+            if ($key > 0) {
+                $output .= '&';
+            }
+
+            $output .= self::urlencodedByteSerializer(mb_convert_encoding($pair['name'], $aEncoding)) . '=';
+            $output .= self::urlencodedByteSerializer(mb_convert_encoding($pair['value'], $aEncoding));
+        }
+
+        return $output;
+    }
+
+    public static function urlencodedStringParser($aInput) {
+        return self::urlencodedParser(self::encode($aInput));
+    }
+
+    /**
      * Parses a URL.
      *
      * @link https://url.spec.whatwg.org/#concept-url-parser
@@ -1488,9 +1457,40 @@ class URLParser {
         return mb_convert_encoding($aStream, $aEncoding, 'UTF-8');
     }
 
-    public static function encode($aStream, $aEncoding = 'UTF-8') {
-        $inputEncoding = mb_detect_encoding($aStream);
+    /**
+     * Encodes a code point stream if the code point is not part of the specified encode set.
+     *
+     * @link https://url.spec.whatwg.org/#utf-8-percent-encode
+     *
+     * @param  string   $aCodePoint A code point stream to be encoded.
+     *
+     * @param  int      $aEncodeSet The encode set used to decide whether or not the code point should
+     *                              be encoded.
+     * @return string
+     */
+    public static function utf8PercentEncode($aCodePoint, $aEncodeSet = self::ENCODE_SET_SIMPLE) {
+        // The Simple Encode Set
+        $inCodeSet = preg_match(self::REGEX_C0_CONTROLS, $aCodePoint) || ord($aCodePoint) > 0x7E;
 
-        return mb_convert_encoding($aStream, $aEncoding, $inputEncoding);
+        if (!$inCodeSet && $aEncodeSet >= self::ENCODE_SET_DEFAULT) {
+            $inCodeSet = $inCodeSet || preg_match('/[\x{0020}"#<>?`,{}]/', $aCodePoint);
+        }
+
+        if (!$inCodeSet && $aEncodeSet == self::ENCODE_SET_USERINFO) {
+            $inCodeSet = $inCodeSet || preg_match('/[\/:;=@[\\\]^|]/', $aCodePoint);
+        }
+
+        if (!$inCodeSet) {
+            return $aCodePoint;
+        }
+
+        $bytes = self::encode($aCodePoint);
+        $result = '';
+
+        for ($i = 0; $i < strlen($bytes); $i++) {
+            $result .= self::percentEncode($bytes[$i]);
+        }
+
+        return $result;
     }
 }
