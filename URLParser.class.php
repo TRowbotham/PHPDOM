@@ -1269,11 +1269,11 @@ class URLParser {
         // The Simple Encode Set
         $inCodeSet = preg_match(self::REGEX_C0_CONTROLS, $aCodePoint) || ord($aCodePoint) > 0x7E;
 
-        if (!$inCodeSet && $aEncodeSet <= self::ENCODE_SET_DEFAULT) {
+        if (!$inCodeSet && $aEncodeSet >= self::ENCODE_SET_DEFAULT) {
             $inCodeSet = $inCodeSet || preg_match('/[\x{0020}"#<>?`,{}]/', $aCodePoint);
         }
 
-        if (!$inCodeSet && $aEncodeSet <= self::ENCODE_SET_USERINFO) {
+        if (!$inCodeSet && $aEncodeSet == self::ENCODE_SET_USERINFO) {
             $inCodeSet = $inCodeSet || preg_match('/[\/:;=@[\\\]^|]/', $aCodePoint);
         }
 
