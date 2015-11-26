@@ -586,7 +586,7 @@ class URLParser {
 
                     $state = self::PATH_STATE;
 
-                    if ($c != '/' && !($url->isSpecial() && $c != '\\')) {
+                    if ($c != '/' && !($url->isSpecial() && $c == '\\')) {
                         $pointer--;
                     }
 
