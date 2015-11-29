@@ -38,6 +38,7 @@ class Element extends Node implements SplObserver {
         $this->mLocalName = strtolower($aLocalName);
         $this->mNamespaceURI = $aNamespaceURI;
         $this->mNodeName = strtoupper($aLocalName);
+        $this->mNodeType = Node::ELEMENT_NODE;
         $this->mPrefix = $aPrefix;
         $this->mTagName = (!$this->mPrefix ? '' : $this->mPrefix . ':') .
                           ($this->mOwnerDocument instanceof HTMLDocument ?strtoupper($aLocalName) : $aLocalName);

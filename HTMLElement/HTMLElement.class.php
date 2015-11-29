@@ -27,7 +27,6 @@ class HTMLElement extends Element {
         $this->mHidden = false;
         $this->mIsContentEditable = false;
         $this->mLang = '';
-        $this->mNodeType = Node::ELEMENT_NODE;
         $this->mSpellcheck = false;
         $this->mTabIndex = '';
         $this->mTitle = '';
