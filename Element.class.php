@@ -9,6 +9,8 @@ require_once 'ParentNode.class.php';
 require_once 'ChildNode.class.php';
 require_once 'NonDocumentTypeChildNode.class.php';
 require_once 'GetElementsBy.class.php';
+require_once 'urls/URLInternal.class.php';
+require_once 'urls/URLUtils.class.php';
 
 class Element extends Node implements SplObserver {
     use ChildNode, GetElementsBy, NonDocumentTypeChildNode, ParentNode;
@@ -754,17 +756,17 @@ class Element extends Node implements SplObserver {
         if ($aBase && $aBase->isFlagSet(phpjs\urls\URLInternal::FLAG_NON_RELATIVE)) {
             $base = $aBase;
         } else {
-            $base = phpjs\urls\URLParser::basicURLParser($this->mOwnerDocument->baseURI, null, $encoding);
+            $base = phpjs\urls\URLInternal::basicURLParser($this->mOwnerDocument->baseURI, null, $encoding);
         }
 
-        $parsedURL = phpjs\urls\URLParser::URLParser($url, $base, $encoding);
+        $parsedURL = phpjs\urls\URLInternal::URLParser($url, $base, $encoding);
 
         if ($parsedURL === false) {
             // Abort these steps.  The URL cannot be resolved.
             return false;
         }
 
-        $serializedURL = phpjs\urls\URLParser::serializeURL($parsedURL);
+        $serializedURL = phpjs\urls\URLUtils::serializeURL($parsedURL);
 
         return array('absolute_url' => $serializedURL, 'parsed_url' => $parsedURL);
     }
