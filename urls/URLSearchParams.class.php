@@ -1,8 +1,6 @@
 <?php
 namespace phpjs\urls;
 
-use phpjs\urls;
-
 require_once 'URLParser.class.php';
 
 /**

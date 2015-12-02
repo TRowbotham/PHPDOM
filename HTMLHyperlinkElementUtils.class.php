@@ -1,5 +1,5 @@
 <?php
-require_once 'URLParser.class.php';
+require_once 'urls/URLParser.class.php';
 
 /**
  * @link https://html.spec.whatwg.org/multipage/semantics.html#htmlhyperlinkelementutils

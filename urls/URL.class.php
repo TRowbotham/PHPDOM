@@ -1,9 +1,7 @@
 <?php
 namespace phpjs\urls;
 
-use phpjs\urls;
-
-require_once 'Exceptions.class.php';
+require_once __DIR__ . '/../Exceptions.class.php';
 require_once 'URLParser.class.php';
 require_once 'URLSearchParams.class.php';
 

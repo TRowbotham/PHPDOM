@@ -12,7 +12,7 @@ require_once 'Event.class.php';
 require_once 'Text.class.php';
 require_once 'NonElementParentNode.class.php';
 require_once 'Comment.class.php';
-require_once 'URL.class.php';
+require_once 'urls/URL.class.php';
 require_once 'NodeFilter.class.php';
 require_once 'NodeIterator.class.php';
 require_once 'Range.class.php';
