@@ -30,12 +30,8 @@ class URLInternal {
     const FLAG_AT = 2;
     const FLAG_NON_RELATIVE = 4;
 
-    private static $singleDotPathSegment = array('.' => '.',
-                                                '%2e', '.');
-    private static $doubleDotPathSegment = array('..' => '..',
-                                                '.%2e' => '..',
-                                                '%2e.' => '..',
-                                                '%2e%2e' => '..');
+    private static $singleDotPathSegment = array('.', '%2e');
+    private static $doubleDotPathSegment = array('..', '.%2e', '%2e.', '%2e%2e');
 
     private $mFlags;
     private $mFragment;
