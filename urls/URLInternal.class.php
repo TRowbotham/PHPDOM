@@ -809,7 +809,7 @@ class URLInternal {
      * @return bool
      */
     public function isEqual(URLInternal $aOtherUrl, $aExcludeFragment = null) {
-        return URLUtils::serializeURL($this, $aExcludeFragment) == URLUtils::serializeURL($aOtherUrl, $aExcludeFragment);
+        return $this->serializeURL($aExcludeFragment) == $aOtherUrl->serializeURL($aExcludeFragment);
     }
 
     public function isFlagSet($aFlag) {
@@ -825,6 +825,65 @@ class URLInternal {
      */
     public function isSpecial() {
         return array_key_exists($this->mScheme, URLUtils::$specialSchemes);
+    }
+
+    /**
+     * Serializes a URL object.
+     *
+     * @link https://url.spec.whatwg.org/#concept-url-serializer
+     *
+     * @param  bool|null    $aExcludeFragment Optional argument, that, when specified will exclude the URL's
+     *                                        fragment from being serialized.
+     * @return string
+     */
+    public function serializeURL($aExcludeFragment = null) {
+        $output = $this->mScheme . ':';
+
+        if ($this->mHost !== null) {
+            $output .= '//';
+
+            if ($this->mUsername !== '' || $this->mPassword !== null) {
+                $output .= $this->mUsername;
+
+                if ($this->mPassword !== null) {
+                    $output .= ':' . $this->mPassword;
+                }
+
+                $output .= '@';
+            }
+
+            $output .= URLUtils::serializeHost($this->mHost);
+
+            if ($this->mPort !== null) {
+                $output .= ':' . $this->mPort;
+            }
+        } else if ($this->mHost === null && $this->mScheme == 'file') {
+            $output .= '//';
+        }
+
+        if ($this->isFlagSet(URLInternal::FLAG_NON_RELATIVE)) {
+            $output .= $this->mPath[0];
+        } else {
+            $output .= '/';
+
+            foreach ($this->mPath as $key => $path) {
+                if ($key > 0) {
+                    $output .= '/';
+                }
+
+                $output .= $path;
+            }
+        }
+
+        if ($this->mQuery !== null) {
+            $output .= '?' . $this->mQuery;
+        }
+
+        if (!$aExcludeFragment && $this->mFragment !== null) {
+            $output .= '#' . $this->mFragment;
+        }
+
+        return $output;
     }
 
     public function setFlag($aFlag) {

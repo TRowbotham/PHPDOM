@@ -67,7 +67,7 @@ class URL {
                 return $host === null ? '' : URLUtils::serializeHost($host);
 
             case 'href':
-                return URLUtils::serializeURL($this->mUrl);
+                return $this->mUrl->serializeURL();
 
             case 'origin':
                 return URLUtils::serializeOriginAsUnicode($this->mUrl->getOrigin());

@@ -534,67 +534,6 @@ abstract class URLUtils {
     }
 
     /**
-     * Serializes a URL object.
-     *
-     * @link https://url.spec.whatwg.org/#concept-url-serializer
-     *
-     * @param  URL          $aUrl             The URL object to serialize.
-     *
-     * @param  bool|null    $aExcludeFragment Optional argument, that, when specified will exclude the URL's
-     *                                        fragment from being serialized.
-     * @return string
-     */
-    public static function serializeURL(URLInternal $aUrl, $aExcludeFragment = null) {
-        $output = $aUrl->getScheme() . ':';
-
-        if ($aUrl->getHost() !== null) {
-            $output .= '//';
-
-            if ($aUrl->getUsername() !== '' || $aUrl->getPassword() !== null) {
-                $output .= $aUrl->getUsername();
-
-                if ($aUrl->getPassword() !== null) {
-                    $output .= ':' . $aUrl->getPassword();
-                }
-
-                $output .= '@';
-            }
-
-            $output .= self::serializeHost($aUrl->getHost());
-
-            if ($aUrl->getPort() !== null) {
-                $output .= ':' . $aUrl->getPort();
-            }
-        } else if ($aUrl->getHost() === null && $aUrl->getScheme() == 'file') {
-            $output .= '//';
-        }
-
-        if ($aUrl->isFlagSet(URLInternal::FLAG_NON_RELATIVE)) {
-            $output .= $aUrl->getPath()[0];
-        } else {
-            $output .= '/';
-
-            foreach ($aUrl->getPath() as $key => $path) {
-                if ($key > 0) {
-                    $output .= '/';
-                }
-
-                $output .= $path;
-            }
-        }
-
-        if ($aUrl->getQuery() !== null) {
-            $output .= '?' . $aUrl->getQuery();
-        }
-
-        if (!$aExcludeFragment && $aUrl->getFragment() !== null) {
-            $output .= '#' . $aUrl->getFragment();
-        }
-
-        return $output;
-    }
-
-    /**
      * Serializes the individual bytes of the given byte sequence to be compatible with
      * application/x-www-form-encoded URLs.
      *

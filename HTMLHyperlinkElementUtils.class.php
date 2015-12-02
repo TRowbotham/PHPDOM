@@ -53,7 +53,7 @@ trait HTMLHyperlinkElementUtils {
                     return $this->getAttribute('href');
                 }
 
-                return URLUtils::serializeURL($this->mUrl);
+                return $this->mUrl->serializeURL();
 
             case 'origin':
                 $this->reinitialiseURL();
@@ -143,7 +143,7 @@ trait HTMLHyperlinkElementUtils {
                     URLInternal::basicURLParser($input, null, null, $this->mUrl, URLInternal::FRAGMENT_STATE);
                 }
 
-                $this->_setAttributeValue('href', URLUtils::serializeURL($this->mUrl));
+                $this->_setAttributeValue('href', $this->mUrl->serializeURL());
 
                 break;
 
@@ -156,7 +156,7 @@ trait HTMLHyperlinkElementUtils {
                 }
 
                 URLInternal::basicURLParser($aValue, null, null, $this->mUrl, URLInternal::HOST_STATE);
-                $this->_setAttributeValue('href', URLUtils::serializeURL($this->mUrl));
+                $this->_setAttributeValue('href', $this->mUrl->serializeURL());
 
                 break;
 
@@ -169,7 +169,7 @@ trait HTMLHyperlinkElementUtils {
                 }
 
                 URLInternal::basicURLParser($aValue, null, null, $this->mUrl, URLInternal::HOSTNAME_STATE);
-                $this->_setAttributeValue('href', URLUtils::serializeURL($this->mUrl));
+                $this->_setAttributeValue('href', $this->mUrl->serializeURL());
 
                 break;
 
@@ -187,7 +187,7 @@ trait HTMLHyperlinkElementUtils {
                 }
 
                 $this->mUrl->setPasswordSteps($aValue);
-                $this->_setAttributeValue('href', URLUtils::serializeURL($this->mUrl));
+                $this->_setAttributeValue('href', $this->mUrl->serializeURL());
 
                 break;
 
@@ -204,7 +204,7 @@ trait HTMLHyperlinkElementUtils {
                 }
 
                 URLInternal::basicURLParser($aValue, null, null, $this->mUrl, URLInternal::PATH_START_STATE);
-                $this->_setAttributeValue('href', URLUtils::serializeURL($this->mUrl));
+                $this->_setAttributeValue('href', $this->mUrl->serializeURL());
 
                 break;
 
@@ -218,7 +218,7 @@ trait HTMLHyperlinkElementUtils {
                 }
 
                 URLInternal::basicURLParser($aValue, null, null, $this->mUrl, URLInternal::PORT_STATE);
-                $this->_setAttributeValue('href', URLUtils::serializeURL($this->mUrl));
+                $this->_setAttributeValue('href', $this->mUrl->serializeURL());
 
                 break;
 
@@ -231,7 +231,7 @@ trait HTMLHyperlinkElementUtils {
                 }
 
                 URLInternal::basicURLParser($aValue . ':', null, null, $this->mUrl, URLInternal::SCHEME_START_STATE);
-                $this->_setAttributeValue('href', URLUtils::serializeURL($this->mUrl));
+                $this->_setAttributeValue('href', $this->mUrl->serializeURL());
 
                 break;
 
@@ -251,7 +251,7 @@ trait HTMLHyperlinkElementUtils {
                     URLInternal::basicURLParser($input, null, $this->mOwnerDocument->characterSet, $this->mUrl, URLInternal::QUERY_STATE);
                 }
 
-                $this->_setAttributeValue('href', URLUtils::serializeURL($this->mUrl));
+                $this->_setAttributeValue('href', $this->mUrl->serializeURL());
 
                 break;
 
@@ -264,7 +264,7 @@ trait HTMLHyperlinkElementUtils {
                 }
 
                 $this->mUrl->setUsernameSteps($aValue);
-                $this->_setAttributeValue('href', URLUtils::serializeURL($this->mUrl));
+                $this->_setAttributeValue('href', $this->mUrl->serializeURL());
 
                 break;
         }

@@ -10,7 +10,6 @@ require_once 'ChildNode.class.php';
 require_once 'NonDocumentTypeChildNode.class.php';
 require_once 'GetElementsBy.class.php';
 require_once 'urls/URLInternal.class.php';
-require_once 'urls/URLUtils.class.php';
 
 class Element extends Node implements SplObserver {
     use ChildNode, GetElementsBy, NonDocumentTypeChildNode, ParentNode;
@@ -766,7 +765,7 @@ class Element extends Node implements SplObserver {
             return false;
         }
 
-        $serializedURL = phpjs\urls\URLUtils::serializeURL($parsedURL);
+        $serializedURL = $parsedURL->serializeURL();
 
         return array('absolute_url' => $serializedURL, 'parsed_url' => $parsedURL);
     }
