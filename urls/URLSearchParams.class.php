@@ -1,7 +1,7 @@
 <?php
 namespace phpjs\urls;
 
-require_once 'URLParser.class.php';
+require_once 'URLUtils.class.php';
 
 /**
  * An object containing a list of all URL query parameters.  This allows you to manipulate
@@ -29,7 +29,7 @@ class URLSearchParams implements \Iterator {
             $this->mParams = $aSearchParams->mParams;
             $this->mSequenceId = $aSearchParams->mSequenceId;
         } else if (is_string($aSearchParams)) {
-            $pairs = URLParser::urlencodedStringParser($aSearchParams);
+            $pairs = URLUtils::urlencodedStringParser($aSearchParams);
 
             foreach ($pairs as $pair) {
                 $this->append($pair['name'], $pair['value']);
@@ -186,7 +186,7 @@ class URLSearchParams implements \Iterator {
             $list[] = array('name' => $name, 'value' => $this->mParams[$name][$sequenceId]);
         }
 
-        return URLParser::urlencodedSerializer($list);
+        return URLUtils::urlencodedSerializer($list);
     }
 
     /**

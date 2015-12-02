@@ -2,8 +2,9 @@
 namespace phpjs\urls;
 
 require_once __DIR__ . '/../Exceptions.class.php';
-require_once 'URLParser.class.php';
+require_once 'URLInternal.class.php';
 require_once 'URLSearchParams.class.php';
+require_once 'URLUtils.class.php';
 
 /**
  * Represents a URL that can be manipulated.
@@ -21,14 +22,14 @@ class URL {
         $parsedBase = null;
 
         if ($aBase) {
-            $parsedBase = URLParser::basicURLParser($aBase);
+            $parsedBase = URLInternal::basicURLParser($aBase);
 
             if ($parsedBase === false) {
                 throw new \TypeError($aBase . ' is not a valid URL.');
             }
         }
 
-        $parsedURL = URLParser::basicURLParser($aUrl, $parsedBase);
+        $parsedURL = URLInternal::basicURLParser($aUrl, $parsedBase);
 
         if ($parsedURL === false) {
             throw new \TypeError($aUrl . ' is not a valid URL.');
@@ -55,21 +56,21 @@ class URL {
                 }
 
                 if ($port === null) {
-                    return URLParser::serializeHost($host);
+                    return URLUtils::serializeHost($host);
                 }
 
-                return URLParser::serializeHost($host) . ':' . $port;
+                return URLUtils::serializeHost($host) . ':' . $port;
 
             case 'hostname':
                 $host = $this->mUrl->getHost();
 
-                return $host === null ? '' : URLParser::serializeHost($host);
+                return $host === null ? '' : URLUtils::serializeHost($host);
 
             case 'href':
-                return URLParser::serializeURL($this->mUrl);
+                return URLUtils::serializeURL($this->mUrl);
 
             case 'origin':
-                return URLParser::serializeOriginAsUnicode($this->mUrl->getOrigin());
+                return URLUtils::serializeOriginAsUnicode($this->mUrl->getOrigin());
 
             case 'password':
                 $password = $this->mUrl->getPassword();
@@ -132,7 +133,7 @@ class URL {
 
                 $input = $aValue[0] == '#' ? substr($aValue, 1) : $aValue;
                 $this->mUrl->setFragment('');
-                URLParser::basicURLParser($input, null, null, $this->mUrl, URLParser::FRAGMENT_STATE);
+                URLInternal::basicURLParser($input, null, null, $this->mUrl, URLInternal::FRAGMENT_STATE);
 
                 break;
 
@@ -142,7 +143,7 @@ class URL {
                     return;
                 }
 
-                URLParser::basicURLParser($aValue, null, null, $this->mUrl, URLParser::HOST_STATE);
+                URLInternal::basicURLParser($aValue, null, null, $this->mUrl, URLInternal::HOST_STATE);
 
                 break;
 
@@ -152,12 +153,12 @@ class URL {
                     return;
                 }
 
-                URLParser::basicURLParser($aValue, null, null, $this->mUrl, URLParser::HOSTNAME_STATE);
+                URLInternal::basicURLParser($aValue, null, null, $this->mUrl, URLInternal::HOSTNAME_STATE);
 
                 break;
 
             case 'href':
-                $parsedURL = URLParser::basicURLParser($aValue);
+                $parsedURL = URLInternal::basicURLParser($aValue);
 
                 if ($parsedURL === false) {
                     throw new \TypeError($aValue . ' is not a valid URL.');
@@ -188,7 +189,7 @@ class URL {
                     $this->mUrl->getPath()->pop();
                 }
 
-                URLParser::basicURLParser($aValue, null, null, $this->mUrl, URLParser::PATH_START_STATE);
+                URLInternal::basicURLParser($aValue, null, null, $this->mUrl, URLInternal::PATH_START_STATE);
 
                 break;
 
@@ -198,12 +199,12 @@ class URL {
                     return;
                 }
 
-                URLParser::basicURLParser($aValue, null, null, $this->mUrl, URLParser::PORT_STATE);
+                URLInternal::basicURLParser($aValue, null, null, $this->mUrl, URLInternal::PORT_STATE);
 
                 break;
 
             case 'protocol':
-                URLParser::basicURLParser($aValue . ':', null, null, $this->mUrl, URLParser::SCHEME_START_STATE);
+                URLInternal::basicURLParser($aValue . ':', null, null, $this->mUrl, URLInternal::SCHEME_START_STATE);
 
                 break;
 
@@ -217,8 +218,8 @@ class URL {
 
                 $input = $aValue[0] == '?' ? substr($aValue, 1) : $aValue;
                 $this->mUrl->setQuery('');
-                URLParser::basicURLParser($input, null, null, $this->mUrl, URLParser::QUERY_STATE);
-                $this->mSearchParams->_mutateList(URLParser::urlencodedStringParser($input));
+                URLInternal::basicURLParser($input, null, null, $this->mUrl, URLInternal::QUERY_STATE);
+                $this->mSearchParams->_mutateList(URLUtils::urlencodedStringParser($input));
 
                 break;
 
