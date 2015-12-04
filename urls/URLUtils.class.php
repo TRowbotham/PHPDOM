@@ -4,8 +4,6 @@ namespace phpjs\urls;
 abstract class URLUtils {
     const REGEX_C0_CONTROLS = '/[\x{0000}-\x{001F}]/';
     const REGEX_ASCII_DIGITS = '/[\x{0030}-\x{0039}]/';
-    const REGEX_ASCII_HEX_DIGITS = '/^[\x{0030}-\x{0039}\x{0041}-\x{0046}\x{0061}-\x{0066}]{2}/';
-    const REGEX_ASCII_HEX_DIGIT = '/[\x{0030}-\x{0039}\x{0041}-\x{0046}\x{0061}-\x{0066}]/';
     const REGEX_ASCII_ALPHA = '/[\x{0041}-\x{005A}\x{0061}-\x{007A}]/';
     const REGEX_ASCII_ALPHANUMERIC = '/[\x{0030}-\x{0039}\x{0041}-\x{005A}\x{0061}-\x{007A}]/';
     const REGEX_URL_CODE_POINTS = '/[\x{0030}-\x{0039}\x{0041}-\x{005A}\x{0061}-\x{007A}
@@ -292,7 +290,7 @@ abstract class URLUtils {
             $value = 0;
             $length = 0;
 
-            while ($length < 4 && preg_match(self::REGEX_ASCII_HEX_DIGIT, $c)) {
+            while ($length < 4 && ctype_xdigit($c)) {
                 $value = bin2hex($value * 0x10 + $c);
                 $pointer++;
                 $length++;
@@ -340,12 +338,12 @@ abstract class URLUtils {
         while ($c !== false) {
             $value = null;
 
-            if (!preg_match(self::REGEX_ASCII_HEX_DIGIT, $c)) {
+            if (!ctype_xdigit($c)) {
                 // parse error
                 return false;
             }
 
-            while (preg_match(self::REGEX_ASCII_HEX_DIGIT, $c)) {
+            while (ctype_xdigit($c)) {
                 $number = (float) $c;
 
                 if ($value === null) {
@@ -419,13 +417,11 @@ abstract class URLUtils {
         for ($i = 0; $i < strlen($aByteSequence); $i++) {
             if ($aByteSequence[$i] != '%') {
                 $output .= $aByteSequence[$i];
-            } elseif ($aByteSequence[$i] == '%' && !preg_match(self::REGEX_ASCII_HEX_DIGITS, substr($aByteSequence, $i + 1, 2))) {
+            } elseif ($aByteSequence[$i] == '%' && !ctype_xdigit(substr($aByteSequence, $i + 1, 2))) {
                 $output .= $aByteSequence[$i];
             } else {
-                preg_match(self::REGEX_ASCII_HEX_DIGITS, substr($aByteSequence, $i + 1, 2), $matches);
-
                 // TODO: utf-8 decode without BOM
-                $bytePoint = bin2hex($matches[0][0]);
+                $bytePoint = bin2hex(substr($aByteSequence, $i + 1, 2));
                 $output .= $bytePoint;
                 $i += 2;
             }

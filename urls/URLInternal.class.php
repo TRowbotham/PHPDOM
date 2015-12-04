@@ -609,7 +609,7 @@ class URLInternal {
                             // Syntax violation
                         }
 
-                        if ($c == '%' && !preg_match(URLUtils::REGEX_ASCII_HEX_DIGITS, mb_substr($input, $pointer + 1, 2, $encoding))) {
+                        if ($c == '%' && !ctype_xdigit(mb_substr($input, $pointer + 1, 2, $encoding))) {
                             // Syntax violation
                         }
 
@@ -630,7 +630,7 @@ class URLInternal {
                             // Syntax violation
                         }
 
-                        if ($c == '%' && !preg_match(URLUtils::REGEX_ASCII_HEX_DIGITS, mb_substr($input, $pointer + 1, 2, $encoding))) {
+                        if ($c == '%' && !ctype_xdigit(mb_substr($input, $pointer + 1, 2, $encoding))) {
                             // Syntax violation
                         }
 
@@ -674,7 +674,7 @@ class URLInternal {
                             // Syntax violation
                         }
 
-                        if ($c == '%' && !preg_match(URLUtils::REGEX_ASCII_HEX_DIGITS, mb_substr($input, $pointer + 1, 2, $encoding))) {
+                        if ($c == '%' && !ctype_xdigit(mb_substr($input, $pointer + 1, 2, $encoding))) {
                             // Syntax violation
                         }
 
@@ -693,7 +693,7 @@ class URLInternal {
                             // Syntax violation
                         }
 
-                        if ($c == '%' && !preg_match(URLUtils::REGEX_ASCII_HEX_DIGITS, mb_substr($input, $pointer + 1, 2, $encoding))) {
+                        if ($c == '%' && !ctype_xdigit(mb_substr($input, $pointer + 1, 2, $encoding))) {
                             // Syntax violation
                         }
 
