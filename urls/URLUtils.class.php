@@ -3,7 +3,6 @@ namespace phpjs\urls;
 
 abstract class URLUtils {
     const REGEX_C0_CONTROLS = '/[\x{0000}-\x{001F}]/';
-    const REGEX_ASCII_DIGITS = '/[\x{0030}-\x{0039}]/';
     const REGEX_ASCII_ALPHA = '/[\x{0041}-\x{005A}\x{0061}-\x{007A}]/';
     const REGEX_ASCII_ALPHANUMERIC = '/[\x{0030}-\x{0039}\x{0041}-\x{005A}\x{0061}-\x{007A}]/';
     const REGEX_URL_CODE_POINTS = '/[\x{0030}-\x{0039}\x{0041}-\x{005A}\x{0061}-\x{007A}

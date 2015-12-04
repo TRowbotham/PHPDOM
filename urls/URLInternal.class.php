@@ -413,7 +413,7 @@ class URLInternal {
                     break;
 
                 case self::PORT_STATE:
-                    if (preg_match(URLUtils::REGEX_ASCII_DIGITS, $c)) {
+                    if (ctype_digit($c)) {
                         $buffer .= $c;
                     } else if (($c === ''/* EOF */ || $c == '/' || $c == '?' || $c == '#') || ($url->isSpecial() && $c == '\\') || $aState) {
                         if ($buffer) {
