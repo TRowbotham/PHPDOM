@@ -56,21 +56,21 @@ class URL {
                 }
 
                 if ($port === null) {
-                    return URLUtils::serializeHost($host);
+                    return HostFactory::serialize($host);
                 }
 
-                return URLUtils::serializeHost($host) . ':' . $port;
+                return HostFactory::serialize($host) . ':' . $port;
 
             case 'hostname':
                 $host = $this->mUrl->getHost();
 
-                return $host === null ? '' : URLUtils::serializeHost($host);
+                return $host === null ? '' : HostFactory::serialize($host);
 
             case 'href':
                 return $this->mUrl->serializeURL();
 
             case 'origin':
-                return URLUtils::serializeOriginAsUnicode($this->mUrl->getOrigin());
+                return URLInternal::serializeOriginAsUnicode($this->mUrl->getOrigin());
 
             case 'password':
                 $password = $this->mUrl->getPassword();

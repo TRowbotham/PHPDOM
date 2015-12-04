@@ -30,10 +30,10 @@ trait HTMLHyperlinkElementUtils {
                 }
 
                 if (($port = $this->mUrl->getPort()) === null) {
-                    return URLUtils::serializeHost($host);
+                    return HostFactory::serialize($host);
                 }
 
-                return URLUtils::serializeHost($host) . ':' . $port;
+                return HostFactory::serialize($host) . ':' . $port;
 
             case 'hostname':
                 $this->reinitialiseURL();
@@ -42,7 +42,7 @@ trait HTMLHyperlinkElementUtils {
                     return '';
                 }
 
-                return URLUtils::serializeHost($host);
+                return HostFactory::serialize($host);
 
             case 'href':
                 $this->reinitialiseURL();

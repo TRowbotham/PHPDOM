@@ -1,6 +1,7 @@
 <?php
 namespace phpjs\urls;
 
+require_once 'HostFactory.class.php';
 require_once 'URLUtils.class.php';
 
 class URLInternal {
@@ -360,7 +361,7 @@ class URLInternal {
                             return false;
                         }
 
-                        $host = URLUtils::parseHost($buffer);
+                        $host = HostFactory::parse($buffer);
 
                         if ($host === false) {
                             // Return failure
@@ -383,7 +384,7 @@ class URLInternal {
                             return false;
                         }
 
-                        $host = URLUtils::parseHost($buffer);
+                        $host = HostFactory::parse($buffer);
 
                         if ($host === false) {
                             // Return failure
@@ -530,7 +531,7 @@ class URLInternal {
                         } else if (!$buffer) {
                             $state = self::PATH_START_STATE;
                         } else {
-                            $host = URLUtils::parseHost($buffer);
+                            $host = HostFactory::parse($buffer);
 
                             if ($host === false) {
                                 // Return failure
@@ -708,14 +709,14 @@ class URLInternal {
     }
 
     public static function domainToASCII($aDomain) {
-        //$asciiDomain = URLParser::parseHost($aDomain);
+        //$asciiDomain = HostFactory::parse($aDomain);
 
         // TODO: Return the empty string if asciiDomain is not a domain, and asciiDomain otherwise.
         return $aDomain;
     }
 
     public static function domainToUnicode($aDomain) {
-        //$unicodeDomain = URLParser::parseHost($aDomain);
+        //$unicodeDomain = HostFactory::parse($aDomain);
 
         // TODO: Return the empty string if unicodeDomain is not a domain, and unicodeDomain otherwise.
         return $aDomain;
@@ -828,6 +829,33 @@ class URLInternal {
     }
 
     /**
+     * Serializes an origin using Unicode.
+     *
+     * @link https://html.spec.whatwg.org/multipage/browsers.html#unicode-serialisation-of-an-origin
+     *
+     * @param  array    $aOrigin An origin.
+     *
+     * @return string
+     */
+    public static function serializeOriginAsUnicode($aOrigin) {
+        if (!is_array($aOrigin)) {
+            return 'null';
+        }
+
+        $result = $aOrigin['scheme'];
+        $result .= '://';
+
+        $hostParts = explode('.', HostFactory::parse($aOrigin['host']));
+        $result .= implode('.', array_map(array('self', 'domainToUnicode'), $hostParts));
+
+        if ($aOrigin['port'] != URLUtils::$specialSchemes[$aOrigin['scheme']]) {
+            $result .= ':' . intval($aOrigin['port'], 10);
+        }
+
+        return $result;
+    }
+
+    /**
      * Serializes a URL object.
      *
      * @link https://url.spec.whatwg.org/#concept-url-serializer
@@ -852,7 +880,7 @@ class URLInternal {
                 $output .= '@';
             }
 
-            $output .= URLUtils::serializeHost($this->mHost);
+            $output .= HostFactory::serialize($this->mHost);
 
             if ($this->mPort !== null) {
                 $output .= ':' . $this->mPort;
