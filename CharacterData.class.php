@@ -119,7 +119,7 @@ abstract class CharacterData extends Node {
         // TODO: Queue a mutation record for "characterData"
 
         $this->mData = substr_replace($this->mData, $aData, $aOffset);
-        $deleteOffset = $aOffset + $length;
+        $deleteOffset = $aOffset + strlen($aData);
         $this->mData = substr($this->mData, 0, $deleteOffset);
 
         foreach (Range::_getRangeCollection() as $index => $range ) {
