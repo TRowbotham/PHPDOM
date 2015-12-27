@@ -27,7 +27,7 @@ class Element extends Node implements SplObserver {
 
     private $mReconstructClassList;
 
-    protected function __construct($aLocalName, $aNamespaceURI, $aPrefix = null) {
+    public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null) {
         parent::__construct();
 
         $this->mAttributes = new NamedNodeMap($this, $this->mAttributesList);
