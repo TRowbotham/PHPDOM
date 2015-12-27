@@ -247,6 +247,7 @@ class URLInternal {
                         $url->setPath(clone $base->getPath());
                         $url->setQuery($base->getQuery());
                         $url->setFragment('');
+                        $state = self::FRAGMENT_STATE;
                     } else {
                         if ($url->isSpecial() && $c == '/') {
                             // Syntax violation
