@@ -97,7 +97,7 @@ abstract class URLUtils {
     public static function percentDecode($aByteSequence) {
         $output = '';
 
-        for ($i = 0; $i < strlen($aByteSequence); $i++) {
+        for ($i = 0, $len = strlen($aByteSequence); $i < $len; $i++) {
             if ($aByteSequence[$i] != '%') {
                 $output .= $aByteSequence[$i];
             } elseif ($aByteSequence[$i] == '%' && !ctype_xdigit(substr($aByteSequence, $i + 1, 2))) {
@@ -139,7 +139,7 @@ abstract class URLUtils {
     public static function urlencodedByteSerializer($aInput) {
         $output = '';
 
-        for ($i = 0; $i < strlen($aInput); $i++) {
+        for ($i = 0, $len = strlen($aInput); $i < $len; $i++) {
             $byte = ord($aInput[$i]);
 
             switch (true) {
@@ -188,7 +188,7 @@ abstract class URLUtils {
         $input = $aInput;
 
         if ($aEncoding != 'utf-8') {
-            for ($i = 0; $i < strlen($input); $i++) {
+            for ($i = 0, $len = strlen($input); $i < $len; $i++) {
                 if ($aInput[$i] > 0x7F) {
                     return false;
                 }
@@ -212,7 +212,8 @@ abstract class URLUtils {
 
             if ($pos !== false) {
                 $name = substr($bytes, 0, $pos);
-                $value = substr($bytes, $pos + 1) !== false ? substr($bytes, $pos + 1) : '';
+                $str = substr($bytes, $pos + 1);
+                $value = $str !== false ? $str : '';
             } else {
                 $name = $bytes;
                 $value = '';
@@ -300,7 +301,7 @@ abstract class URLUtils {
         $bytes = self::encode($aCodePoint);
         $result = '';
 
-        for ($i = 0; $i < strlen($bytes); $i++) {
+        for ($i = 0, $len = strlen($bytes); $i < $len; $i++) {
             $result .= self::percentEncode($bytes[$i]);
         }
 
