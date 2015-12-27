@@ -341,7 +341,7 @@ class Document extends Node {
      *
      * @param DocumentType $aDoctype The DocumentType node of the document.
      */
-    public function _setDoctype(DocumentType $aDoctype) {
+    public function _setDoctype(DocumentType $aDoctype = null) {
         $this->mDoctype = $aDoctype;
     }
 
