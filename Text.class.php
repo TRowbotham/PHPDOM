@@ -12,9 +12,8 @@ require_once 'CharacterData.class.php';
  */
 class Text extends CharacterData {
     public function __construct($aData = '') {
-        parent::__construct();
+        parent::__construct($aData);
 
-        $this->mData = $aData;
         $this->mNodeName = '#text';
         $this->mNodeType = Node::TEXT_NODE;
     }
@@ -26,16 +25,16 @@ class Text extends CharacterData {
                 $startNode = $this;
 
                 while ($startNode) {
-                    if (!($startNode->previousSibling instanceof Text)) {
+                    if (!($startNode->mPreviousSibling instanceof Text)) {
                         break;
                     }
 
-                    $startNode = $startNode->previousSibling;
+                    $startNode = $startNode->mPreviousSibling;
                 }
 
                 while ($startNode instanceof Text) {
-                    $wholeText .= $startNode->data;
-                    $startNode = $startNode->nextSibling;
+                    $wholeText .= $startNode->mData;
+                    $startNode = $startNode->mNextSibling;
                 }
 
                 return $wholeText;
@@ -50,7 +49,7 @@ class Text extends CharacterData {
     }
 
     public function splitText($aOffset) {
-        $length = $this->length;
+        $length = $this->mLength;
 
         if ($aOffset > $length) {
             throw new IndexSizeError;
@@ -60,31 +59,43 @@ class Text extends CharacterData {
         $newData = substr($this->mData, $aOffset, $count);
         $newNode = new Text($newData);
         $newNode->mOwnerDocument = $this;
+        $ranges = Range::_getRangeCollection();
 
         if ($this->mParentNode) {
             $this->mParentNode->_insertNodeBeforeChild($newNode, $this->mNextSibling);
+            $treeIndex = $this->_getTreeIndex();
 
-            foreach (Range::_getRangeCollection() as $index => $range) {
-                if ($range->startContainer === $this && $range->startOffset > $aOffset) {
-                    $range->setStart($newNode, $range->startOffset - $aOffset);
+            foreach ($ranges as $index => $range) {
+                $startOffset = $range->startOffset;
+
+                if ($range->startContainer === $this && $startOffset > $aOffset) {
+                    $range->setStart($newNode, $startOffset - $aOffset);
                 }
             }
 
-            foreach (Range::_getRangeCollection() as $index => $range) {
-                if ($range->endContainer === $this && $range->endOffset > $aOffset) {
-                    $range->setEnd($newNode, $range->endOffset - $aOffset);
+            foreach ($ranges as $index => $range) {
+                $endOffset = $range->endOffset;
+
+                if ($range->endContainer === $this && $endOffset > $aOffset) {
+                    $range->setEnd($newNode, $endOffset - $aOffset);
                 }
             }
 
-            foreach (Range::_getRangeCollection() as $index => $range) {
-                if ($range->startContainer === $this && $range->startOffset == $this->_getTreeIndex() + 1) {
-                    $range->setStart($range->startContainer, $range->startOffset + 1);
+            foreach ($ranges as $index => $range) {
+                $startContainer = $range->startContainer;
+                $startOffset = $range->startOffset;
+
+                if ($startContainer === $this && $startOffset == $treeIndex + 1) {
+                    $range->setStart($startContainer, $startOffset + 1);
                 }
             }
 
-            foreach (Range::_getRangeCollection() as $index => $range) {
-                if ($range->endContainer === $this && $range->endOffset == $this->_getTreeIndex() + 1) {
-                    $range->setEnd($range->endContainer, $range->endOffset + 1);
+            foreach ($ranges as $index => $range) {
+                $endContainer = $range->endContainer;
+                $endOffset = $range->endOffset;
+
+                if ($endContainer === $this && $endOffset == $treeIndex + 1) {
+                    $range->setEnd($endContainer, $endOffset + 1);
                 }
             }
         }
@@ -92,15 +103,19 @@ class Text extends CharacterData {
         $this->replaceData($aOffset, $count, $this->mData);
 
         if (!$this->mParentNode) {
-            foreach (Range::_getRangeCollection() as $index => $range) {
-                if ($range->startContainer === $this && $range->startOffset > $aOffset) {
-                    $range->setStart($range->startContainer, $aOffset);
+            foreach ($ranges as $index => $range) {
+                $startContainer = $range->startContainer;
+
+                if ($startContainer === $this && $range->startOffset > $aOffset) {
+                    $range->setStart($startContainer, $aOffset);
                 }
             }
 
-            foreach (Range::_getRangeCollection() as $index => $range) {
-                if ($range->endContainer === $this && $range->endOffset > $aOffset) {
-                    $range->setEnd($range->endContainer, $aOffset);
+            foreach ($ranges as $index => $range) {
+                $endContainer = $range->endContainer;
+
+                if ($endContainer === $this && $range->endOffset > $aOffset) {
+                    $range->setEnd($endContainer, $aOffset);
                 }
             }
         }

@@ -6,8 +6,8 @@ require_once 'NonDocumentTypeChildNode.class.php';
 /**
  * Represents a Node that contains characters.
  *
- * @link https://dom.spec.whatwg.org/#characterdata
- * @link https://developer.mozilla.org/en-US/docs/Web/API/CharacterData
+ * @see https://dom.spec.whatwg.org/#characterdata
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/CharacterData
  *
  * @property        string          $data                       Represents the textual data contained by this Node.
  *
@@ -21,11 +21,13 @@ abstract class CharacterData extends Node {
     use ChildNode, NonDocumentTypeChildNode;
 
     protected $mData;
+    protected $mLength;
 
-    public function __construct() {
+    public function __construct($aData) {
         parent::__construct();
 
-        $this->mData = '';
+        $this->mData = $aData;
+        $this->mLength = strlen($aData);
     }
 
     public function __get($aName) {
@@ -33,7 +35,7 @@ abstract class CharacterData extends Node {
             case 'data':
                 return $this->mData;
             case 'length':
-                return strlen($this->mData);
+                return $this->mLength;
             case 'nextElementSibling':
                 return $this->getNextElementSibling();
             case 'nodeValue':
@@ -49,7 +51,7 @@ abstract class CharacterData extends Node {
         switch ($aName) {
             case 'data':
             case 'nodeValue':
-                $this->replaceData(0, $this->length, $aValue);
+                $this->replaceData(0, $this->mLength, $aValue);
 
                 break;
 
@@ -64,7 +66,7 @@ abstract class CharacterData extends Node {
      * @param  string $aData The string data to be appended to the Node.
      */
     public function appendData($aData) {
-        $this->replaceData($this->length, 0, $aData);
+        $this->replaceData($this->mLength, 0, $aData);
     }
 
     /**
@@ -105,7 +107,7 @@ abstract class CharacterData extends Node {
      * @throws IndexSizeError
      */
     public function replaceData($aOffset, $aCount, $aData) {
-        $length = $this->length;
+        $length = $this->mLength;
         $count = $aCount;
 
         if ($aOffset > $length) {
@@ -118,30 +120,46 @@ abstract class CharacterData extends Node {
 
         // TODO: Queue a mutation record for "characterData"
         $this->mData = substr_replace($this->mData, $aData, $aOffset, 0);
-        $deleteOffset = $aOffset + strlen($aData);
+        $newDataLen = strlen($aData);
+        $this->mLength = $newDataLen + strlen($this->mData);
+        $deleteOffset = $aOffset + $newDataLen;
         $this->mData = substr($this->mData, 0, $deleteOffset);
 
-        foreach (Range::_getRangeCollection() as $index => $range ) {
-            if ($range->startContainer === $this && $range->startOffset > $aOffset && $range->startOffset <= $aOffset + $count) {
-                $range->setStart($range->startContainer, $aOffset);
+        $ranges = Range::_getRangeCollection();
+
+        foreach ($ranges as $index => $range) {
+            $startContainer = $range->startContainer;
+            $startOffset = $range->startOffset;
+
+            if ($startContainer === $this && $startOffset > $aOffset && $startOffset <= $aOffset + $count) {
+                $range->setStart($startContainer, $aOffset);
             }
         }
 
-        foreach (Range::_getRangeCollection() as $index => $range) {
-            if ($range->endContainer === $this && $range->endOffset > $aOffset && $range->endOffset <= $aOffset + $count) {
-                $range->setEnd($range->endContainer, $aOffset);
+        foreach ($ranges as $index => $range) {
+            $endContainer = $range->endContainer;
+            $endOffset = $range->endOffset;
+
+            if ($endContainer === $this && $endOffset > $aOffset && $endOffset <= $aOffset + $count) {
+                $range->setEnd($endContainer, $aOffset);
             }
         }
 
-        foreach (Range::_getRangeCollection() as $index => $range) {
-            if ($range->startContainer === $this && $range->startOffset > $aOffset + $count) {
-                $range->setStart($range->startContainer, $range->startOffset + strlen($aData) - $count);
+        foreach ($ranges as $index => $range) {
+            $startContainer = $range->startContainer;
+            $startOffset = $range->startOffset;
+
+            if ($startContainer === $this && $startOffset > $aOffset + $count) {
+                $range->setStart($startContainer, $startOffset + $newDataLen - $count);
             }
         }
 
-        foreach (Range::_getRangeCollection() as $index => $range) {
-            if ($range->endContainer === $this && $range->endOffset > $aOffset + $count) {
-                $range->setEnd($range->endContainer, $range->endOffset + strlen($aData) - $count);
+        foreach ($ranges as $index => $range) {
+            $endContainer = $range->endContainer;
+            $endOffset = $range->endOffset;
+
+            if ($endContainer === $this && $endOffset > $aOffset + $count) {
+                $range->setEnd($endContainer, $endOffset + $newDataLen - $count);
             }
         }
     }
@@ -162,7 +180,7 @@ abstract class CharacterData extends Node {
      * @throws IndexSizeError
      */
     public function substringData($aOffset, $aCount) {
-        $length = $this->length;
+        $length = $this->mLength;
 
         if ($aOffset > $length) {
             throw new IndexSizeError;
@@ -185,6 +203,6 @@ abstract class CharacterData extends Node {
      * @return int
      */
     public function _getNodeLength() {
-        return $this->length;
+        return $this->mLength;
     }
 }
