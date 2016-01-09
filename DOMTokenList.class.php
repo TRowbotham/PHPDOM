@@ -46,6 +46,23 @@ class DOMTokenList implements ArrayAccess, Iterator {
     }
 
     /**
+     * Appends a list of tokens to the token list without running the object's update steps.
+     *
+     * @internal
+     *
+     * @param  string[]  $aTokens A list of tokens to be added.
+     */
+    public function appendTokens(array $aTokens) {
+        $this->mTokens = [];
+
+        foreach ($aTokens as $token) {
+            if (!empty($token) && !preg_match('/\s/', $token) && !in_array($token, $this->mTokens)) {
+                $this->mTokens[] = $token;
+            }
+        }
+    }
+
+    /**
      * Returns true if the token is present, and false otherwise.
      * A SyntaxError will be thrown if one of the tokens is an empty string
      * and a InvalidCharacterError will be thrown if one of the tokens contains
@@ -66,6 +83,15 @@ class DOMTokenList implements ArrayAccess, Iterator {
      */
     public function current() {
         return $this->item($this->mPosition);
+    }
+
+    /**
+     * Removes all items from the list without running the object's update steps.
+     *
+     * @internal
+     */
+    public function emptyList() {
+        $this->mTokens = [];
     }
 
     /**
