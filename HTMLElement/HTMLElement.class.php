@@ -80,15 +80,15 @@ class HTMLElement extends Element {
     public function __set($aName, $aValue) {
         switch ($aName) {
             case 'accessKey':
-                $this->_setAttributeValue($aName, $value);
+                $this->_setAttributeValue($aName, $aValue);
 
                 break;
 
             case 'contentEditable':
-                if (strcasecmp($value, 'inherit') === 0) {
+                if (strcasecmp($aValue, 'inherit') === 0) {
                     $this->_removeAttributeByNamespaceAndLocalName(null, $aName);
-                } else if (strcasecmp($value, 'true') === 0 || strcasecmp($value, 'false') === 0) {
-                    $this->_setAttributeValue($aName, $value);
+                } else if (strcasecmp($aValue, 'true') === 0 || strcasecmp($aValue, 'false') === 0) {
+                    $this->_setAttributeValue($aName, $aValue);
                 } else {
                     throw new \SyntaxError('The value must be one of "true", "false", or "inherit".');
                 }
@@ -96,27 +96,27 @@ class HTMLElement extends Element {
                 break;
 
             case 'dir':
-                $this->_setAttributeValue($aName, $value);
+                $this->_setAttributeValue($aName, $aValue);
 
                 break;
 
             case 'draggable':
-                $this->_setAttributeValue($aName, $value);
+                $this->_setAttributeValue($aName, $aValue);
 
                 break;
 
             case 'dropzone':
-                $this->_setAttributeValue($aName, $value);
+                $this->_setAttributeValue($aName, $aValue);
 
                 break;
 
             case 'hidden':
-                $this->_setAttributeValue($aName, $value);
+                $this->_setAttributeValue($aName, $aValue);
 
                 break;
 
             case 'lang':
-                $this->_setAttributeValue($aName, $value);
+                $this->_setAttributeValue($aName, $aValue);
 
                 break;
 
@@ -131,7 +131,7 @@ class HTMLElement extends Element {
                 break;
 
             case 'title':
-                $this->_setAttributeValue($aName, $value);
+                $this->_setAttributeValue($aName, $aValue);
 
                 break;
 
