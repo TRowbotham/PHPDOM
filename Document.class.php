@@ -52,7 +52,7 @@ class Document extends Node {
         $this->mContentType = '';
         $this->mDoctype = null;
         $this->mEvents = array();
-        $this->mImplementation = new iDOMImplementation();
+        $this->mImplementation = new DOMImplementation($this);
         $this->mMode = self::NO_QUIRKS_MODE;
         $this->mNodeIteratorList = array();
         $this->mNodeName = '#document';

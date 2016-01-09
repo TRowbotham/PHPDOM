@@ -17,14 +17,6 @@ class HTMLDocument extends Document {
         parent::__construct();
 
         $this->mContentType = 'text/html';
-        $this->mDoctype = $this->implementation->createDocumentType('html', '', '');
-        $documentElement = $this->createElement('html');
-        $head = $this->createElement('head');
-        $head->appendChild($this->createElement('title'));
-        $documentElement->appendChild($head);
-        $documentElement->appendChild($this->createElement('body'));
-        $this->appendChild($this->mDoctype);
-        $this->appendChild($documentElement);
     }
 
     public function __get( $aName ) {
