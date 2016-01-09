@@ -1,4 +1,6 @@
 <?php
+namespace phpjs;
+
 require_once 'HTMLElement.class.php';
 
 /**

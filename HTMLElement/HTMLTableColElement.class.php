@@ -1,4 +1,6 @@
 <?php
+namespace phpjs;
+
 // https://html.spec.whatwg.org/#the-colgroup-element
 // https://html.spec.whatwg.org/#the-col-element
 

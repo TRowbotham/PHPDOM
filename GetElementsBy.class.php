@@ -1,4 +1,6 @@
 <?php
+namespace phpjs;
+
 trait GetElementsBy {
     /**
      * Returns a list of all the Element's that have all the given class names.

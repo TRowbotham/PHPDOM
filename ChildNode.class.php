@@ -1,4 +1,6 @@
 <?php
+namespace phpjs;
+
 // https://developer.mozilla.org/en-US/docs/Web/API/ChildNode
 // https://dom.spec.whatwg.org/#interface-childnode
 
@@ -64,6 +66,8 @@ trait ChildNode {
 
     /**
      * Removes this ChildNode from its ParentNode.
+     *
+     * @link https://dom.spec.whatwg.org/#dom-childnode-remove
      */
     public function remove() {
         if (!$this->mParentNode) {

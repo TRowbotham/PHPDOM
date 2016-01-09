@@ -1,4 +1,6 @@
 <?php
+namespace phpjs;
+
 // https://html.spec.whatwg.org/multipage/embedded-content.html#the-img-element
 
 require_once 'HTMLElement.class.php';

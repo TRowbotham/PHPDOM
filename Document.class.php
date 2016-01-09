@@ -1,4 +1,6 @@
 <?php
+namespace phpjs;
+
 // https://developer.mozilla.org/en-US/docs/Web/API/Document
 // https://html.spec.whatwg.org/#document
 
@@ -61,7 +63,7 @@ class Document extends Node {
         $port = in_array($_SERVER['SERVER_PORT'], array(80, 443)) ? '' : ':' . $_SERVER['SERVER_PORT'];
         $url = ($ssl ? 'https' : 'http') . '://' . $_SERVER['SERVER_NAME'] . $port . $_SERVER['REQUEST_URI'];
 
-        $this->mURL = new phpjs\urls\URL($url);
+        $this->mURL = new urls\URL($url);
     }
 
     public function __get($aName) {
@@ -131,7 +133,7 @@ class Document extends Node {
         // TODO: Make sure localName matches the name production
 
         $localName = strtolower($aLocalName);
-        $interface = $this->getHTMLInterfaceFor($localName);
+        $interface = 'phpjs\\' . $this->getHTMLInterfaceFor($localName);
         $node = new $interface($localName, Namespaces::HTML);
         $node->mOwnerDocument = $this;
 
@@ -148,12 +150,12 @@ class Document extends Node {
         // We only support the HTML namespace currently.
         switch ($parts['namespace']) {
             case Namespaces::HTML:
-                $interface = $this->getHTMLInterfaceFor($parts['localName']);
+                $interface = 'phpjs\\' . $this->getHTMLInterfaceFor($parts['localName']);
 
                 break;
 
             default:
-                $interface = 'Element';
+                $interface = 'phpjs\Element';
         }
 
         $node = new $interface($parts['localName'], $parts['namespace'], $parts['prefix']);

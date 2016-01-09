@@ -1,4 +1,6 @@
 <?php
+namespace phpjs;
+
 /**
  * Represents a list of named attributes.
  *
@@ -7,7 +9,7 @@
  *
  * @property-read int $length Returns the number of attributes in the list.
  */
-class NamedNodeMap implements ArrayAccess, SeekableIterator, Countable {
+class NamedNodeMap implements \ArrayAccess, \SeekableIterator, \Countable {
     private $mAttributesList;
     private $mOwnerElement;
     private $mPosition;

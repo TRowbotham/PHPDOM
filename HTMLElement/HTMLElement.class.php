@@ -1,4 +1,6 @@
 <?php
+namespace phpjs;
+
 require_once 'Element.class.php';
 
 class HTMLElement extends Element {

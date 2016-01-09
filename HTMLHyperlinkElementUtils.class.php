@@ -1,9 +1,11 @@
 <?php
+namespace phpjs;
+
 require_once 'urls/URLInternal.class.php';
 require_once 'urls/URLUtils.class.php';
 
-use phpjs\urls\URLInternal;
-use phpjs\urls\URLUtils;
+use urls\URLInternal;
+use urls\URLUtils;
 
 /**
  * @link https://html.spec.whatwg.org/multipage/semantics.html#htmlhyperlinkelementutils

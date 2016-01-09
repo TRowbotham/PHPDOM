@@ -1,4 +1,6 @@
 <?php
+namespace phpjs;
+
 // https://developer.mozilla.org/en-US/docs/Web/API/Element
 // https://dom.spec.whatwg.org/#element
 
@@ -11,7 +13,7 @@ require_once 'NonDocumentTypeChildNode.class.php';
 require_once 'GetElementsBy.class.php';
 require_once 'urls/URLInternal.class.php';
 
-class Element extends Node implements SplObserver {
+class Element extends Node implements \SplObserver {
     use ChildNode, GetElementsBy, NonDocumentTypeChildNode, ParentNode;
 
     protected $mAttributes; // NamedNodeMap
@@ -438,7 +440,7 @@ class Element extends Node implements SplObserver {
         return $html;
     }
 
-    public function update(SplSubject $aObject) {
+    public function update(\SplSubject $aObject) {
 
     }
 
@@ -741,20 +743,20 @@ class Element extends Node implements SplObserver {
      * @return mixed[]|bool         An array containing the serialized absolute URL as well as the parsed URL or
      *                              false on failure.
      */
-    protected function resolveURL($aUrl, phpjs\urls\URLInternal $aBase = null) {
+    protected function resolveURL($aUrl, urls\URLInternal $aBase = null) {
         $url = $aUrl;
         $base = null;
 
         // TODO: Handle encoding
         $encoding = 'utf-8';
 
-        if ($aBase && $aBase->isFlagSet(phpjs\urls\URLInternal::FLAG_NON_RELATIVE)) {
+        if ($aBase && $aBase->isFlagSet(urls\URLInternal::FLAG_NON_RELATIVE)) {
             $base = $aBase;
         } else {
             $base = self::$mBaseURI;
         }
 
-        $parsedURL = phpjs\urls\URLInternal::URLParser($url, $base, $encoding);
+        $parsedURL = urls\URLInternal::URLParser($url, $base, $encoding);
 
         if ($parsedURL === false) {
             // Abort these steps.  The URL cannot be resolved.

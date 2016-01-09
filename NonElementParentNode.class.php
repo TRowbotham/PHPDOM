@@ -1,4 +1,6 @@
 <?php
+namespace phpjs;
+
 trait NonElementParentNode {
     /**
      * Returns the first element in tree order whose id attribute is equal to $aElementId or

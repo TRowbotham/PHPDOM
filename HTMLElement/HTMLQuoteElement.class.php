@@ -1,4 +1,6 @@
 <?php
+namespace phpjs;
+
 // https://html.spec.whatwg.org/multipage/semantics.html#htmlquoteelement
 // https://html.spec.whatwg.org/multipage/semantics.html#the-blockquote-element
 // https://html.spec.whatwg.org/multipage/semantics.html#the-q-element

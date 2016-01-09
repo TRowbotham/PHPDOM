@@ -1,10 +1,12 @@
 <?php
+namespace phpjs;
+
 // https://developer.mozilla.org/en-US/docs/Web/API/DOMTokenList
 // https://dom.spec.whatwg.org/#interface-domtokenlist
 
 require_once 'Exceptions.class.php';
 
-class DOMTokenList implements ArrayAccess, Iterator {
+class DOMTokenList implements \ArrayAccess, \Iterator {
     protected $mAttrLocalName;
     protected $mTokens;
 

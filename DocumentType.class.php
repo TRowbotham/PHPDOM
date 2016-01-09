@@ -1,4 +1,6 @@
 <?php
+namespace phpjs;
+
 // https://developer.mozilla.org/en-US/docs/Web/API/DocumentType
 // https://dom.spec.whatwg.org/#documenttype
 

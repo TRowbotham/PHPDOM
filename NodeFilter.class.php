@@ -1,4 +1,6 @@
 <?php
+namespace phpjs;
+
 abstract class NodeFilter {
     const FILTER_ACCEPT = 1;
     const FILTER_REJECT = 2;

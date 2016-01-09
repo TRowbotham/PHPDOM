@@ -1,4 +1,6 @@
 <?php
+namespace phpjs;
+
 trait NonDocumentTypeChildNode {
     private function getNextElementSibling() {
         $node = $this->nextSibling;

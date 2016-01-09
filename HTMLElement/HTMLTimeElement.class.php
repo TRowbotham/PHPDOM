@@ -1,4 +1,6 @@
 <?php
+namespace phpjs;
+
 // https://html.spec.whatwg.org/multipage/semantics.html#the-time-element
 
 require_once 'HTMLElement.class.php';

@@ -1,4 +1,6 @@
 <?php
+namespace phpjs;
+
 // https://html.spec.whatwg.org/multipage/semantics.html#htmlmodelement
 // https://html.spec.whatwg.org/multipage/semantics.html#the-ins-element
 // https://html.spec.whatwg.org/multipage/semantics.html#the-del-element

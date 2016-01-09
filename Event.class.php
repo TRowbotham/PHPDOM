@@ -1,4 +1,6 @@
 <?php
+namespace phpjs;
+
 /**
  * Represents an event which can be dispatched to different objects to signal the occurance of an event.
  *

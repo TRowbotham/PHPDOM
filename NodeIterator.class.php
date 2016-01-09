@@ -1,4 +1,6 @@
 <?php
+namespace phpjs;
+
 // https://dom.spec.whatwg.org/#nodeiterator
 // https://developer.mozilla.org/en-US/docs/Web/API/NodeIterator
 

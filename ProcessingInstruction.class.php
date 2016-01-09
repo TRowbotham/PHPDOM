@@ -1,4 +1,6 @@
 <?php
+namespace phpjs;
+
 require_once 'CharacterData.class.php';
 
 class ProcessingInstruction extends CharacterData {

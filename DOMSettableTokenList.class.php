@@ -1,4 +1,6 @@
 <?php
+namespace phpjs;
+
 // https://dom.spec.whatwg.org/#interface-domsettabletokenlist
 
 require_once 'DOMTokenList.class.php';

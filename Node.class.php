@@ -1,4 +1,6 @@
 <?php
+namespace phpjs;
+
 require_once 'NodeList.class.php';
 require_once 'EventTarget.class.php';
 require_once 'Namespaces.class.php';
