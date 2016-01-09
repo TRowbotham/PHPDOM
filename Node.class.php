@@ -1,11 +1,39 @@
 <?php
-// https://developer.mozilla.org/en-US/docs/Web/API/Node
-// https://dom.spec.whatwg.org/#node
-
 require_once 'NodeList.class.php';
 require_once 'EventTarget.class.php';
 require_once 'Namespaces.class.php';
 
+
+/**
+ * @see https://dom.spec.whatwg.org/#node
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/Node
+ *
+ * @property-read string         $baseURI
+ *
+ * @property-read Node[]         $childNodes
+ *
+ * @property-read Node|null      $firstChild
+ *
+ * @property-read Node|null      $lastChild
+ *
+ * @property-read Node|null      $nextSibling
+ *
+ * @property-read string         $nodeName
+ *
+ * @property-read int            $nodeType
+ *
+ * @property string|null         $nodeValue
+ *
+ * @property-read Document|null  $ownerDocument
+ *
+ * @property-read Node|null      $parentNode
+ *
+ * @property-read Element|null   $parentElement
+ *
+ * @property-read Node|null      $previousSibling
+ *
+ * @property string|null         $textContent
+ */
 abstract class Node implements EventTarget {
     const ELEMENT_NODE = 1;
     const ATTRIBUTE_NODE = 2;
@@ -227,8 +255,8 @@ abstract class Node implements EventTarget {
             return 0;
         }
 
-        if ($reference->mOwnerDocument !== $aOtherNode->ownerDocument || !$reference->parentNode ||
-            !$aOtherNode->parentNode) {
+        if ($reference->mOwnerDocument !== $aOtherNode->mOwnerDocument || !$reference->mParentNode ||
+            !$aOtherNode->mParentNode) {
             return self::DOCUMENT_POSITION_DISCONNECTED | self::DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC |
                    self::DOCUMENT_POSITION_PRECEDING;
         }
@@ -248,19 +276,19 @@ abstract class Node implements EventTarget {
                 break;
             }
 
-            $commonParent = $commonParent->parentNode;
+            $commonParent = $commonParent->mParentNode;
         }
 
         $referenceKey = -1;
         $otherKey = -1;
 
-        foreach ($commonParent->childNodes as $child) {
+        foreach ($commonParent->mChildNodes as $child) {
             if ($referenceKey < 0 && $child->contains($reference)) {
-                $referenceKey = key($commonParent->childNodes);
+                $referenceKey = key($commonParent->mChildNodes);
             }
 
             if ($otherKey < 0 && $child->contains($aOtherNode)) {
-                $otherKey = key($commonParent->childNodes);
+                $otherKey = key($commonParent->mChildNodes);
             }
         }
 
@@ -286,7 +314,7 @@ abstract class Node implements EventTarget {
                 return true;
             }
 
-            $node = $node->parentNode;
+            $node = $node->mParentNode;
         }
 
         return false;
@@ -311,11 +339,11 @@ abstract class Node implements EventTarget {
         $aEvent->_setFlag(Event::EVENT_DISPATCHED);
         $aEvent->_setTarget($this);
         $eventPath = array();
-        $node = $this->parentNode;
+        $node = $this->mParentNode;
 
         while ($node) {
             $eventPath[] = $node;
-            $node = $node->parentNode;
+            $node = $node->mParentNode;
         }
 
         $aEvent->_setEventPhase(Event::CAPTURING_PHASE);
@@ -399,7 +427,7 @@ abstract class Node implements EventTarget {
      * @return boolean        Returns true if the two nodes are the same, otherwise false.
      */
     public function isEqualNode(Node $aOtherNode = null) {
-        if (!$aOtherNode || $this->mNodeType != $aOtherNode->nodeType) {
+        if (!$aOtherNode || $this->mNodeType != $aOtherNode->mNodeType) {
             return false;
         }
 
@@ -502,7 +530,7 @@ abstract class Node implements EventTarget {
      * @link https://dom.spec.whatwg.org/#dom-node-normalize
      */
     public function normalize() {
-        $ownerDocument = $this instanceof Document ? $this : $this->mOwnerDocument;
+        $ownerDocument = $this->mOwnerDocument ?: $this;
         $nextSibling = $this->mNextSibling;
         $tw = $ownerDocument->createTreeWalker($this, NodeFilter::SHOW_TEXT);
 
@@ -516,7 +544,7 @@ abstract class Node implements EventTarget {
 
             $data = '';
             $contingiousTextNodes = array();
-            $startNode = $node->previousSibling;
+            $startNode = $node->mPreviousSibling;
 
             while ($startNode) {
                 if (!($startNode instanceof Text)) {
@@ -525,10 +553,10 @@ abstract class Node implements EventTarget {
 
                 $data .= $startNode->data;
                 $contingiousTextNodes[] = $startNode;
-                $startNode = $startNode->previousSibling;
+                $startNode = $startNode->mPreviousSibling;
             }
 
-            $startNode = $node->nextSibling;
+            $startNode = $node->mNextSibling;
 
             while ($startNode) {
                 if (!($startNode instanceof Text)) {
@@ -537,43 +565,46 @@ abstract class Node implements EventTarget {
 
                 $data .= $startNode->data;
                 $contingiousTextNodes[] = $startNode;
-                $startNode = $startNode->nextSibling;
+                $startNode = $startNode->mNextSibling;
             }
 
             $node->replaceData($length, 0, $data);
-            $currentNode = $node->nextSibling;
+            $currentNode = $node->mNextSibling;
 
             while ($currentNode instanceof Text) {
-                foreach (Range::_getRangeCollection() as $index => $range) {
+                $ranges = Range::_getRangeCollection();
+                $treeIndex = $currentNode->_getTreeIndex();
+
+                foreach ($ranges as $index => $range) {
                     if ($range->startContainer === $currentNode) {
                         $range->setStart($node, $range->startOffset + $length);
                     }
                 }
 
-                foreach (Range::_getRangeCollection() as $index => $range) {
+                foreach ($ranges as $index => $range) {
                     if ($range->endContainer === $currentNode) {
                         $range->setStart($node, $range->endOffset + $length);
                     }
                 }
 
-                foreach (Range::_getRangeCollection() as $index => $range) {
-                    if ($range->startContainer === $currentNode->parentNode && $range->startOffset == $currentNode->_getTreeIndex()) {
+                foreach ($ranges as $index => $range) {
+                    if ($range->startContainer === $currentNode->mParentNode && $range->startOffset == $treeIndex) {
                         $range->setStart($node, $length);
                     }
                 }
 
-                foreach (Range::_getRangeCollection() as $index => $range) {
-                    if ($range->endContainer === $currentNode->parentNode && $range->endOffset == $currentNode->_getTreeIndex()) {
+                foreach ($ranges as $index => $range) {
+                    if ($range->endContainer === $currentNode->mParentNode && $range->endOffset == $treeIndex) {
                         $range->setEnd($node, $length);
                     }
                 }
 
                 $length += $currentNode->length;
-                $currentNode = $currentNode->nextSibling;
+                $currentNode = $currentNode->mPextSibling;
             }
 
             foreach ($contingiousTextNodes as $textNode) {
-                $textNode->parentNode->removeChild($textNode);
+                $textNode->mParentNode->removeChild($textNode);
             }
 
             unset($contingiousTextNodes);
@@ -742,6 +773,8 @@ abstract class Node implements EventTarget {
         $nodes = $aNewNode instanceof DocumentFragment ? $aNewNode->childNodes : array($aNewNode);
         $this->_insertNodeBeforeChild($aNewNode, $referenceChild, true);
 
+        // TODO: Queue a mutation record for "childList"
+
         return $aOldNode;
     }
 
@@ -827,7 +860,7 @@ abstract class Node implements EventTarget {
             throw new HierarchyRequestError;
         }
 
-        if ($aChild !== null && $this !== $aChild->parentNode) {
+        if ($aChild !== null && $this !== $aChild->mParentNode) {
             throw new NotFoundError;
         }
 
@@ -848,7 +881,7 @@ abstract class Node implements EventTarget {
             if ($aNode instanceof DocumentFragment) {
                 $hasTextNode = false;
 
-                foreach ($aNode->childNodes as $node) {
+                foreach ($aNode->mChildNodes as $node) {
                     if ($node instanceof Text) {
                         $hasTextNode = true;
 
@@ -864,7 +897,7 @@ abstract class Node implements EventTarget {
                     }
 
                     if ($aChild !== null) {
-                        $tw = $aChild->ownerDocument->createTreeWalker($aChild, NodeFilter::SHOW_DOCUMENT_TYPE);
+                        $tw = new TreeWalker($aChild, NodeFilter::SHOW_DOCUMENT_TYPE);
 
                         if ($tw->nextNode() !== null) {
                             throw new HierarchyRequestError;
@@ -887,7 +920,7 @@ abstract class Node implements EventTarget {
                 }
 
                 if ($aChild !== null) {
-                    $tw = $aChild->ownerDocument->createTreeWalker($aChild, NodeFilter::SHOW_DOCUMENT_TYPE);
+                    $tw = new TreeWalker($aChild, NodeFilter::SHOW_DOCUMENT_TYPE);
 
                     if ($tw->nextNode() !== null) {
                         throw new HierarchyRequestError;
@@ -905,7 +938,8 @@ abstract class Node implements EventTarget {
                 }
 
                 if ($aChild !== null) {
-                    $tw = $aChild->ownerDocument->createTreeWalker($aChild->ownerDocument, NodeFilter::SHOW_ELEMENT);
+                    $ownerDocument = $this->mOwnerDocument ?: $this;
+                    $tw = new TreeWalker($ownerDocument, NodeFilter::SHOW_ELEMENT);
                     $tw->currentNode = $aChild;
 
                     if ($tw->previousNode() !== null) {
@@ -947,10 +981,10 @@ abstract class Node implements EventTarget {
                     break 2;
                 }
 
-                $nodeB = $nodeB->parentNode;
+                $nodeB = $nodeB->mParentNode;
             }
 
-            $nodeA = $nodeA->parentNode;
+            $nodeA = $nodeA->mParentNode;
         }
 
         return $nodeA;
@@ -970,14 +1004,14 @@ abstract class Node implements EventTarget {
             return $aNode->firstElementChild;
         }
 
-        if (!$aNode->parentElement) {
+        if (!$aNode->mParentElement) {
             return $aNode;
         }
 
-        $node = $aNode->parentElement;
+        $node = $aNode->mParentElement;
 
-        while ($node && $node->parentElement) {
-            $node = $node->parentElement;
+        while ($node && $node->mParentElement) {
+            $node = $node->mParentElement;
         }
 
         return $node;
@@ -994,11 +1028,11 @@ abstract class Node implements EventTarget {
      */
     public function _getTreeIndex() {
         $index = 0;
-        $sibling = $this->previousSibling;
+        $sibling = $this->mPreviousSibling;
 
         while ($sibling) {
             $index++;
-            $sibling = $sibling->previousSibling;
+            $sibling = $sibling->mPreviousSibling;
         }
 
         return $index;
@@ -1028,33 +1062,40 @@ abstract class Node implements EventTarget {
     public function _insertNodeBeforeChild($aNode, $aChild, $aSuppressObservers = null) {
         $isDocumentFragment = $aNode instanceof DocumentFragment;
         $parentElement = $this instanceof Element ? $this : null;
-        $count = $isDocumentFragment ? count($aNode->childNodes) : 1;
+        $count = $isDocumentFragment ? count($aNode->mChildNodes) : 1;
 
         if ($aChild) {
-            foreach (Range::_getRangeCollection() as $index => $range) {
-                if ($range->startContainer === $this && $range->startOffset > $aChild->_getTreeIndex()) {
-                    $range->setStart($range->startContainer, $range->startOffset + $count);
+            $ranges = Range::_getRangeCollection();
+
+            foreach ($ranges as $index => $range) {
+                $startContainer = $range->startContainer;
+                $startOffset = $range->startOffset;
+
+                if ($startContainer === $this && $startOffset > $aChild->_getTreeIndex()) {
+                    $range->setStart($startContainer, $startOffset + $count);
                 }
             }
 
-            foreach (Range::_getRangeCollection() as $index => $range) {
-                if ($range->endContainer === $this && $range->endOffset > $aChild->_getTreeIndex()) {
-                    $range->setEnd($range->endContainer, $range->endOffset + $count);
+            foreach ($ranges as $index => $range) {
+                $endContainer = $range->endContainer;
+                $endOffset = $range->endOffset;
+
+                if ($endContainer === $this && $endOffset > $aChild->_getTreeIndex()) {
+                    $range->setEnd($endContainer, $endOffset + $count);
                 }
             }
         }
 
-        $nodes = $isDocumentFragment ? $aNode->childNodes : array($aNode);
+        $nodes = $isDocumentFragment ? $aNode->mChildNodes : array($aNode);
         $index = $aChild ? array_search($aChild, $this->mChildNodes) : count($this->mChildNodes);
 
         if ($isDocumentFragment) {
             foreach ($nodes as $node) {
                 $aNode->_removeChild($node, true);
+                $count--;
             }
-        }
 
-        if (!$aSuppressObservers) {
-
+            // TODO: Queue a mutation record for "childList"
         }
 
         if ($index === 0) {
@@ -1066,11 +1107,11 @@ abstract class Node implements EventTarget {
             $newNode->mParentElement = $parentElement;
 
             if ($aChild) {
-                $newNode->mPreviousSibling = $aChild->previousSibling;
+                $newNode->mPreviousSibling = $aChild->mPreviousSibling;
                 $newNode->mNextSibling = $aChild;
 
-                if ($aChild->previousSibling) {
-                    $aChild->previousSibling->mNextSibling = $newNode;
+                if ($aChild->mPreviousSibling) {
+                    $aChild->mPreviousSibling->mNextSibling = $newNode;
                 }
 
                 $aChild->mPreviousSibling = $newNode;
@@ -1086,6 +1127,10 @@ abstract class Node implements EventTarget {
 
             array_splice($this->mChildNodes, $index++, 0, array($newNode));
         }
+
+        if (!$aSuppressObservers) {
+            // TODO: Queue a mutation record for "childList"
+        }
     }
 
     /**
@@ -1100,11 +1145,11 @@ abstract class Node implements EventTarget {
         $referenceChild = $aChild;
 
         if ($referenceChild === $aNode) {
-            $referenceChild = $aNode->nextSibling;
+            $referenceChild = $aNode->mNextSibling;
         }
 
         // The DOM4 spec states that nodes should be implicitly adopted
-        $ownerDocument = $this instanceof Document ? $this : $this->mOwnerDocument;
+        $ownerDocument = $this->mOwnerDocument ?: $this;
         $ownerDocument->adoptNode($aNode);
 
         $this->_insertNodeBeforeChild($aNode, $referenceChild);
@@ -1123,7 +1168,7 @@ abstract class Node implements EventTarget {
      */
     public function _replaceAll(Node $aNode = null) {
         if ($aNode) {
-            $ownerDocument = $this instanceof Document ? $this : $this->mOwnerDocument;
+            $ownerDocument = $this->mOwnerDocument ?: $this;
             $ownerDocument->_adoptNode($aNode);
         }
 
@@ -1132,7 +1177,7 @@ abstract class Node implements EventTarget {
         if (!$aNode) {
             $addedNodes = array();
         } else if ($aNode instanceof DocumentFragment) {
-            $addedNodes = $aNode->childNodes;
+            $addedNodes = $aNode->mChildNodes;
         } else {
             $addedNodes = array($aNode);
         }
@@ -1197,57 +1242,74 @@ abstract class Node implements EventTarget {
      */
     protected function _removeChild($aNode, $aSuppressObservers = null) {
         $index = array_search($aNode, $this->mChildNodes);
+        $ranges = Range::_getRangeCollection();
 
-        foreach (Range::_getRangeCollection() as $index => $range) {
-            if ($range->startContainer === $aNode || $aNode->contains($range->startContainer)) {
+        foreach ($ranges as $index => $range) {
+            $startContainer = $range->startContainer;
+
+            if ($startContainer === $aNode || $aNode->contains($startContainer)) {
                 $range->setStart($this, $index);
             }
         }
 
-        foreach (Range::_getRangeCollection() as $index => $range) {
-            if ($range->endContainer === $aNode || $aNode->contains($range->endContainer)) {
+        foreach ($ranges as $index => $range) {
+            $endContainer = $range->endContainer;
+
+            if ($endContainer === $aNode || $aNode->contains($endContainer)) {
                 $range->setEnd($this, $index);
             }
         }
 
-        foreach (Range::_getRangeCollection() as $index => $range) {
-            if ($range->startContainer === $this && $range->startOffset > $index) {
-                $range->setStart($range->startContainer, $range->startOffset - 1);
+        foreach ($ranges as $index => $range) {
+            $startContainer = $range->startContainer;
+            $startOffset = $range->startOffset;
+
+            if ($startContainer === $this && $startOffset > $index) {
+                $range->setStart($startContainer, $startOffset - 1);
             }
         }
 
-        foreach (Range::_getRangeCollection() as $index => $range) {
-            if ($range->endContainer === $this && $range->endOffset > $index) {
-                $range->setEnd($range->endContainer, $range->endOffset - 1);
+        foreach ($ranges as $index => $range) {
+            $endContainer = $range->endContainer;
+            $endOffset = $range->endOffset;
+
+            if ($endContainer === $this && $endOffset > $index) {
+                $range->setEnd($endContainer, $endOffset - 1);
             }
         }
 
-        foreach ($aNode->ownerDocument->_getNodeIteratorCollection() as $iter) {
+        foreach ($aNode->mOwnerDocument->_getNodeIteratorCollection() as $iter) {
             $iter->_preremove($aNode);
         }
 
         array_splice($this->mChildNodes, $index, 1);
 
         if ($this->mFirstChild === $aNode) {
-            $this->mFirstChild = $aNode->nextSibling;
+            $this->mFirstChild = $aNode->mNextSibling;
         }
 
         if ($this->mLastChild === $aNode) {
-            $this->mLastChild = $aNode->previousSibling;
+            $this->mLastChild = $aNode->mPreviousSibling;
         }
 
-        if ($aNode->previousSibling) {
-            $aNode->previousSibling->mNextSibling = $aNode->nextSibling;
+        if ($aNode->mPreviousSibling) {
+            $aNode->mPreviousSibling->mNextSibling = $aNode->mNextSibling;
         }
 
-        if ($aNode->nextSibling) {
-            $aNode->nextSibling->mPreviousSibling = $aNode->previousSibling;
+        if ($aNode->mNextSibling) {
+            $aNode->mNextSibling->mPreviousSibling = $aNode->mPreviousSibling;
         }
 
         $aNode->mPreviousSibling = null;
         $aNode->mNextSibling = null;
         $aNode->mParentElement = null;
         $aNode->mParentNode = null;
+
+        // TODO: Unregister any registered observers whose subtree option is true
+
+        if (!$aSuppressObservers) {
+            // TODO: Queue a mutation record for "childList"
+        }
     }
 
     /**
@@ -1264,14 +1326,16 @@ abstract class Node implements EventTarget {
         $listeners = $aTarget->mEvents;
         $aEvent->_setCurrentTarget($aTarget);
 
-        for ($i = 0; $i < count($listeners); $i++) {
+        for ($i = 0, $count = count($listeners); $i < $count; $i++) {
             if ($aEvent->_getFlags() & Event::EVENT_STOP_IMMEDIATE_PROPAGATION) {
                 break;
             }
 
-            if (strcasecmp($aEvent->type, $listeners[$i]['type']) !== 0 ||
-                ($aEvent->eventPhase === Event::CAPTURING_PHASE && !$listeners[$i]['capture']) ||
-                ($aEvent->eventPhase === Event::BUBBLING_PHASE && $listeners[$i]['capture'])) {
+            $phase = $aEvent->eventPhase;
+
+            if ($aEvent->type !== $listeners[$i]['type'] ||
+                ($phase === Event::CAPTURING_PHASE && !$listeners[$i]['capture']) ||
+                ($phase === Event::BUBBLING_PHASE && $listeners[$i]['capture'])) {
                 continue;
             }
 
@@ -1286,7 +1350,7 @@ abstract class Node implements EventTarget {
      * @return Node         The Node that was removed.
      */
     private function preremoveChild($aChild) {
-        if ($aChild->parentNode !== $this) {
+        if ($aChild->mParentNode !== $this) {
             throw new NotFoundError;
         }
 
