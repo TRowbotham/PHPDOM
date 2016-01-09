@@ -778,6 +778,19 @@ abstract class Node implements EventTarget {
         return $aOldNode;
     }
 
+    /**
+     * Sets the node's owner document.
+     *
+     * @internal
+     *
+     * @param Document $aNode The Document object that owns this Node.
+     */
+    public function setOwnerDocument(Document $aDocument) {
+        if ($this->mNodeType !== self::DOCUMENT_NODE) {
+            $this->mOwnerDocument = $aDocument;
+        }
+    }
+
     public function _cloneNode($aDocument = null, $aCloneChildren = false) {
         $doc = !$aDocument ? $this->mOwnerDocument : $aDocument;
         $class = get_class($this);
