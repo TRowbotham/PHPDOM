@@ -17,25 +17,19 @@ class Element extends Node implements SplObserver {
     protected $mAttributes; // NamedNodeMap
     protected $mAttributesList;
     protected $mClassList; // ClassList
-    protected $mClassName;
     protected $mEndTagOmitted;
-    protected $mId;
     protected $mLocalName;
     protected $mNamespaceURI;
     protected $mPrefix;
     protected $mTagName;
-
-    private $mReconstructClassList;
 
     public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null) {
         parent::__construct();
 
         $this->mAttributes = new NamedNodeMap($this, $this->mAttributesList);
         $this->mAttributesList = array();
-        $this->mClassList = null;
-        $this->mClassName = '';
+        $this->mClassList = new DOMTokenList($this, 'class');
         $this->mEndTagOmitted = false;
-        $this->mId = '';
         $this->mLocalName = strtolower($aLocalName);
         $this->mNamespaceURI = $aNamespaceURI;
         $this->mNodeName = strtoupper($aLocalName);
@@ -43,7 +37,6 @@ class Element extends Node implements SplObserver {
         $this->mPrefix = $aPrefix;
         $this->mTagName = (!$this->mPrefix ? '' : $this->mPrefix . ':') .
                           ($this->mOwnerDocument instanceof HTMLDocument ?strtoupper($aLocalName) : $aLocalName);
-        $this->addEventListener('attributechange', array($this, '_onAttributeChange'));
     }
 
     public function __get( $aName ) {
@@ -58,24 +51,16 @@ class Element extends Node implements SplObserver {
                 return $this->getChildren();
 
             case 'classList':
-                if (!isset($this->mClassList) || $this->mReconstructClassList) {
-                    $this->mClassList = new DOMTokenList($this, 'class');
-
-                    if (!empty($this->mClassName)) {
-                        call_user_func_array(array($this->mClassList, 'add'), DOMTokenList::_parseOrderedSet($this->mClassName));
-                    }
-                }
-
                 return $this->mClassList;
 
             case 'className':
-                return $this->mClassName;
+                return $this->reflectStringAttributeValue('class');
 
             case 'firstElementChild':
                 return $this->getFirstElementChild();
 
             case 'id':
-                return $this->mId;
+                return $this->reflectStringAttributeValue($aName);
 
             case 'innerHTML':
                 $rv = '';
@@ -112,18 +97,15 @@ class Element extends Node implements SplObserver {
         }
     }
 
-    public function __set( $aName, $aValue ) {
+    public function __set($aName, $aValue) {
         switch ($aName) {
             case 'className':
-                $this->mClassName = $aValue;
-                $this->mReconstructClassList = true;
-                $this->_updateAttributeOnPropertyChange('class', $aValue);
+                $this->_setAttributeValue('class', $aValue);
 
                 break;
 
             case 'id':
-                $this->mId = $aValue;
-                $this->_updateAttributeOnPropertyChange('id', $aValue);
+                $this->_setAttributeValue($aName, $aValue);
 
                 break;
 
@@ -471,13 +453,11 @@ class Element extends Node implements SplObserver {
      */
     public function _appendAttribute(Attr $aAttr) {
         // TODO: Queue a mutation record for "attributes"
-        $dict = new CustomEventInit();
-        $dict->detail = array('attr' => $aAttr, 'action' => 'set');
-        $event = new CustomEvent('attributechange', $dict);
-        $this->dispatchEvent($event);
-
         $this->mAttributesList[] = $aAttr;
         $aAttr->_setOwnerElement($this);
+
+        $this->attributeHookHandler('set', $aAttr);
+        $this->attributeHookHandler('added', $aAttr);
     }
 
     /**
@@ -499,10 +479,8 @@ class Element extends Node implements SplObserver {
         $aAttr->value = $aValue;
         $aAttr->_setOwnerElement($owner);
 
-        $dict = new CustomEventInit();
-        $dict->detail = array('attr' => $aAttr, 'action' => 'set');
-        $event = new CustomEvent('attributechange', $dict);
-        $this->dispatchEvent($event);
+        $this->attributeHookHandler('set', $aAttr);
+        $this->attributeHookHandler('changed', $aAttr);
     }
 
     /**
@@ -576,16 +554,12 @@ class Element extends Node implements SplObserver {
      */
     public function _removeAttribute(Attr $aAttr) {
         // TODO: Queue a mutation record for "attributes"
-        $dict = new CustomEventInit();
-        $dict->detail = array('attr' => $aAttr, 'action' => 'remove');
-        $e = new CustomEvent('attributechange', $dict);
-        $this->dispatchEvent($e);
-
         $index = array_search($aAttr, $this->mAttributesList);
 
         if ($index !== false) {
             array_splice($this->mAttributesList, $index, 1);
             $aAttr->_setOwnerElement(null);
+            $this->attributeHookHandler('removed', $aAttr);
         }
     }
 
@@ -706,30 +680,52 @@ class Element extends Node implements SplObserver {
         $this->_changeAttributeValue($attr, $aValue);
     }
 
-    protected function _onAttributeChange(Event $aEvent) {
-        switch ($aEvent->detail['attr']->name) {
+    protected function attributeHookHandler($aHookType, Attr $aAttr) {
+        switch ($aAttr->name) {
             case 'class':
-                $this->mReconstructClassList = true;
-                $this->mClassName = $aEvent->detail['action'] == 'set' ? $aEvent->detail['attr']->value : '';
+                if ($aHookType == 'set') {
+                    $value = $aAttr->value;
 
-                break;
-
-            case 'id':
-                $this->mId = $aEvent->detail['action'] == 'set' ? $aEvent->detail['attr']->value : '';
+                    if (!empty($value)) {
+                        $this->mClassList->appendTokens(DOMTokenList::_parseOrderedSet($value));
+                    }
+                } elseif ($aHookType == 'removed') {
+                    $this->mClassList->emptyList();
+                }
         }
     }
 
-    protected function _updateAttributeOnPropertyChange($aAttributeName, $aValue) {
-        $attrName = strtolower($aAttributeName);
+    protected function reflectURLAttributeValue($aName, $aMissingValueDefault = null) {
+        $attr = $this->_getAttributeByNamespaceAndLocalName(null, $aName);
 
-        if (empty($aValue) || $aValue === '') {
-            $this->removeAttribute($attrName);
-        } else {
-            $this->setAttribute($attrName, $aValue);
+        if ($attr) {
+            $url = $this->resolveURL($attr->value, self::$mBaseURI);
+
+            if ($url !== false) {
+                return $url['serialized_url'];
+            }
+        } elseif ($aMissingValueDefault !== null) {
+            return $aMissingValueDefault;
         }
+
+        return '';
     }
 
     /**
+     * Gets the value of an attribute that is to be reflected as an object property.
+     *
+     * @link https://dom.spec.whatwg.org/#concept-reflect
+     *
+     * @param  string $aName The name of the attribute that is to be reflected.
+     *
+     * @return string
+     */
+    protected function reflectStringAttributeValue($aName) {
+        $attr = $this->_getAttributeByNamespaceAndLocalName(null, $aName);
+
+        return !$attr ? '' : $attr->value;
+    }
+
     /**
      * Resolves a URL to the absolute URL that it implies.
      *

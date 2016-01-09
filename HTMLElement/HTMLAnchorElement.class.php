@@ -62,45 +62,33 @@ require_once 'HTMLHyperlinkElementUtils.class.php';
 class HTMLAnchorElement extends HTMLElement {
     use HTMLHyperlinkElementUtils;
 
-    private $mDownload;
-    private $mHrefLang;
-    private $mInvalidateRelList;
     private $mPing;
-    private $mRel;
     private $mRelList;
-    private $mTarget;
-    private $mType;
 
     public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null) {
         parent::__construct($aLocalName, $aNamespaceURI, $aPrefix);
 
         $this->initHTMLHyperlinkElementUtils();
-        $this->mDownload = '';
-        $this->mHrefLang = '';
-        $this->mInvalidateRelList = false;
         $this->mPing = new DOMSettableTokenList($this, 'ping');
-        $this->mRel = '';
-        $this->mRelList = null;
-        $this->mTarget = '';
-        $this->mType = '';
+        $this->mRelList = new DOMTokenList($this, 'rel');
     }
 
     public function __get($aName) {
         switch ($aName) {
             case 'download':
-                return $this->mDownload;
+                return $this->reflectStringAttributeValue($aName);
             case 'hrefLang':
-                return $this->mHrefLang;
+                return $this->reflectStringAttributeValue('hreflang');
             case 'ping':
-                return $this->mPing->value;
+                return $this->reflectStringAttributeValue($aName);
             case 'rel':
-                return $this->mRel;
+                return $this->reflectStringAttributeValue($aName);
             case 'relList':
-                return $this->getRelList();
+                return $this->mRelList;
             case 'target':
-                return $this->mTarget;
+                return $this->reflectStringAttributeValue($aName);
             case 'type':
-                return $this->mType;
+                return $this->reflectStringAttributeValue($aName);
             default:
                 $rv = $this->HTMLHyperlinkElementUtilsGetter($aName);
 
@@ -115,39 +103,32 @@ class HTMLAnchorElement extends HTMLElement {
     public function __set($aName, $aValue) {
         switch ($aName) {
             case 'download':
-                $this->mDownload = $aValue;
-                $this->_updateAttributeOnPropertyChange($aName, $aValue);
+                $this->_setAttributeValue($aName, $aValue);
 
                 break;
 
             case 'hrefLang':
-                $this->mHrefLang = $aValue;
-                $this->_updateAttributeOnPropertyChange($aName, $aValue);
+                $this->_setAttributeValue($aName, $aValue);
 
                 break;
 
             case 'ping':
-                $this->mPing->value = $aValue;
-                $this->_updateAttributeOnPropertyChange($aName, $aValue);
+                $this->_setAttributeValue($aName, $aValue);
 
                 break;
 
             case 'rel':
-                $this->mRel = $aValue;
-                $this->mInvalidateRelList = true;
-                $this->_updateAttributeOnPropertyChange($aName, $aValue);
+                $this->_setAttributeValue($aName, $aValue);
 
                 break;
 
             case 'target':
-                $this->mTarget = $aValue;
-                $this->_updateAttributeOnPropertyChange($aName, $aValue);
+                $this->_setAttributeValue($aName, $aValue);
 
                 break;
 
             case 'type':
-                $this->mType = $aValue;
-                $this->_updateAttributeOnPropertyChange($aName, $aValue);
+                $this->_setAttributeValue($aName, $aValue);
 
                 break;
 
@@ -157,64 +138,38 @@ class HTMLAnchorElement extends HTMLElement {
         }
     }
 
-    protected function _onAttributeChange(Event $aEvent) {
-        switch ($aEvent->detail['attr']->name) {
-            case 'download':
-                $this->mDownload = $aEvent->detail['action'] == 'set' ? $aEvent->detail['attr']->value : '';
-
-                break;
-
+    protected function attributeHookHandler($aHookType, Attr $aAttr) {
+        switch ($aAttr->name) {
             case 'href':
-                if ($aEvent->detail['action'] == 'set') {
-                    $resolvedURL = $this->resolveURL($aEvent->detail['attr']->value);
+                if ($aHookType == 'set') {
+                    $resolvedURL = $this->resolveURL($aAttr->value);
                     $this->mUrl = $resolvedURL === false ? null : $resolvedURL['parsed_url'];
-                } else {
+                } elseif ($aHookType == 'removed') {
                     $this->mUrl = null;
                 }
 
                 break;
 
-            case 'hrefLang':
-                $this->mHrefLang = $aEvent->detail['action'] == 'set' ? $aEvent->detail['attr']->value : '';
-
-                break;
-
             case 'ping':
-                $this->mPing->value = $aEvent->detail['action'] == 'set' ? $aEvent->detail['attr']->value : '';
+                $this->mPing->value = $aAttr->value;
 
                 break;
 
             case 'rel':
-                $this->mRel = $aEvent->detail['action'] == 'set' ? $aEvent->detail['attr']->value : '';
-                $this->mInvalidateRelList = true;
+                if ($aHookType == 'set') {
+                    $value = $aAttr->value;
 
-                break;
-
-            case 'target':
-                $this->mTarget = $aEvent->detail['action'] == 'set' ? $aEvent->detail['attr']->value : '';
-
-                break;
-
-            case 'type':
-                $this->mType = $aEvent->detail['action'] == 'set' ? $aEvent->detail['attr']->value : '';
+                    if (!empty($value)) {
+                        $this->mRelList->appendTokens(DOMTokenList::_parseOrderedSet($value));
+                    }
+                } elseif ($aHookType == 'removed') {
+                    $this->mRelList->emptyList();
+                }
 
                 break;
 
             default:
-                parent::_onAttributeChange($aEvent);
+                parent::attributeHookHandler($aHookType, $aAttr);
         }
-    }
-
-    private function getRelList() {
-        if (!$this->mRelList || $this->mInvalidateRelList) {
-            $this->mInvalidateRelList = false;
-            $this->mRelList = new DOMTokenList($this, 'rel');
-
-            if (!empty($this->mRel)) {
-                call_user_func_array(array($this->mRelList, 'add'), explode(' ', $this->mRel));
-            }
-        }
-
-        return $this->mRelList;
     }
 }

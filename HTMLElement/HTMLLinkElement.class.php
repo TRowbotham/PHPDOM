@@ -28,55 +28,42 @@ require_once 'DOMSettableTokenList.class.php';
  * @property-read   DOMTokenList    $relList        Reflects the HTML rel attribute as a list of tokens.
  */
 class HTMLLinkElement extends HTMLElement {
-    private $mCrossOrigin;
-    private $mHref;
-    private $mHrefLang;
-    private $mInvalidateRelList;
-    private $mMedia;
-    private $mRel;
     private $mRelList;
     private $mSizes;
-    private $mType;
 
     public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null) {
         parent::__construct($aLocalName, $aNamespaceURI, $aPrefix);
 
-        $this->mCrossOrigin = '';
         $this->mEndTagOmitted = true;
-        $this->mHref = '';
-        $this->mHrefLang = '';
-        $this->mInvalidateRelList = false;
-        $this->mMedia = '';
-        $this->mRel = '';
+        $this->mRelList = new DOMTokenList($this, 'rel');
         $this->mSizes = new DOMSettableTokenList($this, 'sizes');
-        $this->mType = '';
     }
 
     public function __get($aName) {
         switch ($aName) {
             case 'crossOrigin':
-                return $this->mCrossOrigin;
+                return $this->getAttributeStateEnumeratedString('crossorigin', 'anonymous', 'no-cors', self::CORS_STATE_MAP);
 
             case 'href':
-                return $this->mHref;
+                return $this->reflectStringAttributeValue($aName);
 
             case 'hrefLang':
-                return $this->mHrefLang;
+                return $this->reflectStringAttributeValue('hreflang');
 
             case 'media':
-                return $this->mMedia;
+                return $this->reflectStringAttributeValue($aName);
 
             case 'rel':
-                return $this->mRel;
+                return $this->reflectStringAttributeValue($aName);
 
             case 'relList':
-                return $this->getRelList();
+                return $this->mRelList;
 
             case 'sizes':
-                return $this->mSizes->value;
+                return $this->reflectStringAttributeValue($aName);
 
             case 'type':
-                return $this->mType;
+                return $reflectStringAttributeValue($aName);
 
             default:
                 return parent::__get($aName);
@@ -86,73 +73,37 @@ class HTMLLinkElement extends HTMLElement {
     public function __set($aName, $aValue) {
         switch ($aName) {
             case 'crossOrigin':
-                if (!is_string($aValue)) {
-                    break;
-                }
-
-                $this->mCrossOrigin = $aValue;
-                $this->_updateAttributeOnPropertyChange($aName, $aValue);
+                $this->_setAttributeValue('crossorigin', $aValue);
 
                 break;
 
             case 'href':
-                if (!is_string($aValue)) {
-                    break;
-                }
-
-                $this->mHref = $aValue;
-                $this->_updateAttributeOnPropertyChange($aName, $aValue);
+                $this->_setAttributeValue($aName, $aValue);
 
                 break;
 
             case 'hrefLang':
-                if (!is_string($aValue)) {
-                    break;
-                }
-
-                $this->mHrefLang = $aValue;
-                $this->_updateAttributeOnPropertyChange($aName, $aValue);
+                $this->_setAttributeValue('hreflang', $aValue);
 
                 break;
 
             case 'media':
-                if (!is_string($aValue)) {
-                    break;
-                }
-
-                $this->mMedia = $aValue;
-                $this->_updateAttributeOnPropertyChange($aName, $aValue);
+                $this->_setAttributeValue($aName, $aValue);
 
                 break;
 
             case 'rel':
-                if (!is_string($aValue)) {
-                    break;
-                }
-
-                $this->mRel = $aValue;
-                $this->mInvalidateRelList = true;
-                $this->_updateAttributeOnPropertyChange($aName, $aValue);
+                $this->_setAttributeValue($aName, $aValue);
 
                 break;
 
             case 'sizes':
-                if (!is_string($aValue)) {
-                    break;
-                }
-
-                $this->mSizes->value = $aValue;
-                $this->_updateAttributeOnPropertyChange($aName, $aValue);
+                $this->_setAttributeValue($aName, $aValue);
 
                 break;
 
             case 'type':
-                if (!is_string($aValue)) {
-                    break;
-                }
-
-                $this->mType = $aValue;
-                $this->_updateAttributeOnPropertyChange($aName, $aValue);
+                $this->_setAttributeValue($aName, $aValue);
 
                 break;
 
@@ -161,60 +112,28 @@ class HTMLLinkElement extends HTMLElement {
         }
     }
 
-    protected function _onAttributeChange(Event $aEvent) {
-        switch ($aEvent->detail['attr']->name) {
-            case 'crossorigin':
-                $this->mCrossOrigin = $aEvent->detail['action'] == 'set' ? $aEvent->detail['attr']->value : '';
-
-                break;
-
-            case 'href':
-                $this->mHref = $aEvent->detail['action'] == 'set' ? $aEvent->detail['attr']->value : '';
-
-                break;
-
-            case 'hrefLang':
-                $this->mHrefLang = $aEvent->detail['action'] == 'set' ? $aEvent->detail['attr']->value : '';
-
-                break;
-
-            case 'media':
-                $this->mMedia = $aEvent->detail['action'] == 'set' ? $aEvent->detail['attr']->value : '';
-
-                break;
-
+    protected function attributeHookHandler($aHookType, Attr $aAttr) {
+        switch ($aAttr->name) {
             case 'rel':
-                $this->mRel = $aEvent->detail['action'] == 'set' ? $aEvent->detail['attr']->value : '';
-                $this->mInvalidateRelList = true;
+                if ($aHookType == 'set') {
+                    $value = $aAttr->value;
+
+                    if (!empty($value)) {
+                        $this->mRelList->appendTokens(DOMTokenList::_parseOrderedSet($value));
+                    }
+                } elseif ($aHookType == 'removed') {
+                    $this->mRelList->emptyList();
+                }
 
                 break;
 
             case 'sizes':
-                $this->mSizes = $aEvent->detail['action'] == 'set' ? $aEvent->detail['attr']->value : '';
+                $this->mSizes->value = $aAttr->value;
 
                 break;
-
-            case 'type':
-                $this->mType = $aEvent->detail['action'] == 'set' ? $aEvent->detail['attr']->value : '';
-
-                break;
-
 
             default:
-                parent::_onAttributeChange($aEvent);
+                parent::attributeHookHandler($aHookType, $aAttr);
         }
-    }
-
-    private function getRelList() {
-        if (!$this->mRelList || $this->mInvalidateRelList) {
-            $this->mInvalidateRelList = false;
-            $this->mRelList = new DOMTokenList($this, 'rel');
-
-            if (!empty($this->mRel)) {
-                call_user_func_array(array($this->mRelList, 'add'), $this->mRelList->_parseOrderedSet($this->mRel));
-            }
-        }
-
-        return $this->mRelList;
     }
 }

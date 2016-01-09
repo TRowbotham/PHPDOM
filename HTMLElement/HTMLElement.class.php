@@ -2,63 +2,76 @@
 require_once 'Element.class.php';
 
 class HTMLElement extends Element {
+    // state => array(keyword[, keyword, ...])
+    const CONTENT_EDITABLE_STATE_MAP = ['true' => ['', 'true'], 'false' => ['false']];
+    const CORS_STATE_MAP = ['Anonymous' => ['', 'anonymous'], 'Use Credentials' => ['use-credentials']];
+    const DIR_STATE_MAP = ['ltr' => ['ltr'], 'rtl' => ['rtl'], 'auto' => ['auto']];
+    const DRAGGABLE_STATE_MAP = ['true' => ['true'], 'false' => ['false']];
+    const LANG_STATE_MAP = [];
+    const SPELL_CHECK_STATE_MAP = ['true' => ['', 'true'], 'false' => ['false']];
+    const TRANSLATE_STATE_MAP = ['yes' => ['', 'yes'], 'no' => ['no']];
 
-    protected $mAccessKey;
-    protected $mAccessKeyLabel;
-    protected $mContentEditable;
-    protected $mDir;
     protected $mDataset;
-    protected $mHidden;
-    protected $mIsContentEditable;
-    protected $mLang;
-    protected $mSpellcheck;
-    protected $mTabIndex;
-    protected $mTitle;
-    protected $mTranslate;
 
-
-        $this->mAccessKey = '';
-        $this->mAccessKeyLabel = '';
-        $this->mContentEditable = false;
     public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null) {
         parent::__construct($aLocalName, $aNamespaceURI, $aPrefix);
+
         $this->mDataset;
-        $this->mDir = '';
-        $this->mHidden = false;
-        $this->mIsContentEditable = false;
-        $this->mLang = '';
-        $this->mSpellcheck = false;
-        $this->mTabIndex = '';
-        $this->mTitle = '';
-        $this->mTranslate = false;
     }
 
     public function __get($aName) {
         switch ($aName) {
             case 'accessKey':
-                return $this->mAccessKey;
             case 'accessKeyLabel':
-                return $this->mAccessKeyLabel;
+                // For the time being, have accessKeyLabel return the same value as accessKey
+                return $this->reflectStringAttributeValue('accessKey');
             case 'contentEditable':
-                return $this->mContentEditable;
+                $state = $this->getAttributeStateEnumeratedString($aName, 'inherit', 'inherit', self::CONTENT_EDITABLE_STATE_MAP);
+                // TODO: Check the contentEditable state of all parent elements if state == inherit to get a more accurate answer
+                return $state;
             case 'dataset':
                 return $this->mDataset;
             case 'dir':
-                return $this->mDir;
+                return $this->getAttributeStateEnumeratedString($aName, null, null, self::DIR_STATE_MAP);
+            case 'draggable':
+                $state = $this->getAttributeStateEnumeratedString($aName, null, 'auto', self::DRAGGABLE_STATE_MAP);
+
+                return $state == 'true' ? true : false;
+            case 'dropzone':
+                return $this->reflectStringAttributeValue($aName);
             case 'hidden':
-                return $this->mHidden;
+                return $this->reflectBooleanAttributeValue($aName);
             case 'isContentEditable':
-                return $this->mIsContentEditable;
+                $state = $this->getAttributeStateEnumeratedString($aName, 'inherit', 'inherit', self::CONTENT_EDITABLE_STATE_MAP);
+                // TODO: Check the contentEditable state of all parent elements if state == inherit to get a more accurate answer
+                return $state == 'true' ? true : false;
             case 'lang':
-                return $this->mLang;
+                return $this->reflectStringAttributeValue($aName);
             case 'spellcheck':
-                return $this->mSpellcheck;
+                $state = $this->getAttributeStateEnumeratedString($aName, 'default', 'default', self::SPELL_CHECK_STATE_MAP);
+
+                if ($state == 'true') {
+                    $value = true;
+                } else if ($state == 'false') {
+                    $value = false;
+                } else {
+                    // TODO: Handle default states
+                    return false;
+                }
+
+                return $value;
             case 'tabIndex':
-                return $this->mTabIndex;
+                $index = filter_var($this->reflectStringAttributeValue('tabindex'), FILTER_VALIDATE_INT, [
+                    'default' => 0
+                ]);
+
+                return $index;
             case 'title':
-                return $this->mTitle;
+                return $this->reflectStringAttributeValue($aName);
             case 'translate':
-                return $this->mTranslate;
+                $state = $this->getAttributeStateEnumeratedString($aName, 'inherit', 'inherit', self::TRANSLATE_STATE_MAP);
+                // TODO: Check the translate state of all parent elements to get a more accurate answer
+                return $state == 'yes' ? true : false;
             default:
                 return parent::__get($aName);
         }
@@ -67,62 +80,63 @@ class HTMLElement extends Element {
     public function __set($aName, $aValue) {
         switch ($aName) {
             case 'accessKey':
-                $this->mAccessKey = $aValue;
-                $this->_updateAttributeOnPropertyChange($aName, $aValue);
-
-                break;
-
-            case 'accessKeyLabel':
-                $this->mAccessKeyLabel = $aValue;
-                $this->_updateAttributeOnPropertyChange($aName, $aValue);
+                $this->_setAttributeValue($aName, $value);
 
                 break;
 
             case 'contentEditable':
-                $this->mContentEditable = $this->mIsContentEditable = $aValue;
-                $this->_updateAttributeOnPropertyChange($aName, $aValue);
+                if (strcasecmp($value, 'inherit') === 0) {
+                    $this->_removeAttributeByNamespaceAndLocalName(null, $aName);
+                } else if (strcasecmp($value, 'true') === 0 || strcasecmp($value, 'false') === 0) {
+                    $this->_setAttributeValue($aName, $value);
+                } else {
+                    throw new \SyntaxError('The value must be one of "true", "false", or "inherit".');
+                }
 
                 break;
 
             case 'dir':
-                $this->mDir = $aValue;
-                $this->_updateAttributeOnPropertyChange($aName, $aValue);
+                $this->_setAttributeValue($aName, $value);
+
+                break;
+
+            case 'draggable':
+                $this->_setAttributeValue($aName, $value);
+
+                break;
+
+            case 'dropzone':
+                $this->_setAttributeValue($aName, $value);
 
                 break;
 
             case 'hidden':
-                $this->mHidden = $aValue;
-                $this->_updateAttributeOnPropertyChange($aName, $aValue);
+                $this->_setAttributeValue($aName, $value);
 
                 break;
 
             case 'lang':
-                $this->mLang = $aValue;
-                $this->_updateAttributeOnPropertyChange($aName, $aValue);
+                $this->_setAttributeValue($aName, $value);
 
                 break;
 
             case 'spellcheck':
-                $this->mSpellcheck = $aValue;
-                $this->_updateAttributeOnPropertyChange($aName, $aValue);
+                $this->_setAttributeValue($aName, ($aValue === true ? 'true' : 'false'));
 
                 break;
 
             case 'tabIndex':
-                $this->mTabIndex = $aValue;
-                $this->_updateAttributeOnPropertyChange($aName, $aValue);
+                $this->_setAttributeValue('tabindex', $aValue);
 
                 break;
 
             case 'title':
-                $this->mTitle = $aValue;
-                $this->_updateAttributeOnPropertyChange($aName, $aValue);
+                $this->_setAttributeValue($aName, $value);
 
                 break;
 
             case 'translate':
-                $this->mTranslate = $aValue;
-                $this->_updateAttributeOnPropertyChange($aName, $aValue);
+                $this->_setAttributeValue($aName, ($aValue === true ? 'yes' : 'no'));
 
                 break;
 
@@ -135,60 +149,47 @@ class HTMLElement extends Element {
         return get_class($this);
     }
 
-    protected function _onAttributeChange(Event $aEvent) {
-        switch ($aEvent->detail['attr']->name) {
-            case 'accesskey':
-                $this->mAccessKey = $aEvent->detail['action'] == 'set' ? $aEvent->detail['attr']->value : '';
+    protected function reflectBooleanAttributeValue($aName) {
+        $attr = $this->_getAttributeByNamespaceAndLocalName(null, $aName);
 
-                break;
+        return !!$attr;
+    }
 
-            case 'accesskeylabel':
-                $this->mAccessKeyLabel = $aEvent->detail['action'] == 'set' ? $aEvent->detail['attr']->value : '';
+    protected function reflectEnumeratedStringAttributeValue($aName, $aMissingValueDefault = null) {
+        $attr = $this->_getAttributeByNamespaceAndLocalName(null, $aName);
 
-                break;
-
-            case 'contenteditable':
-                $this->mContentEditable = $this->mIsContentEditable = $aEvent->detail['action'] == 'set' ? true : false;
-
-                break;
-
-            case 'dir':
-                $this->mDir = $aEvent->detail['action'] == 'set' ? $aEvent->detail['attr']->value : '';
-
-                break;
-
-            case 'hidden':
-                $this->hidden = $aEvent->detail['action'] == 'set' ? true : false;
-
-                break;
-
-            case 'lang':
-                $this->mLang = $aEvent->detail['action'] == 'set' ? $aEvent->detail['attr']->value : '';
-
-                break;
-
-            case 'spellcheck':
-                $this->spellcheck = $aEvent->detail['action'] == 'set' ? true : false;
-
-                break;
-
-            case 'tabindex':
-                $this->tabindex = $aEvent->detail['action'] == 'set' ? $aEvent->detail['attr']->value : '';
-
-                break;
-
-            case 'title':
-                $this->mTitle = $aEvent->detail['action'] == 'set' ? $aEvent->detail['attr']->value : '';
-
-                break;
-
-            case 'translate':
-                $this->mTranslate = $aEvent->detail['action'] == 'set' ? true : false;
-
-                break;
-
-            default:
-                parent::_onAttributeChange($aEvent);
+        if (!$attr && $aMissingValueDefault !== null) {
+            return null;
         }
+
+        return $attr ? $attr->value : '';
+    }
+
+    protected function getAttributeStateEnumeratedString($aName, $aInvalidValueDefault = null, $aMissingValueDefault = null, array $aStateMap = array()) {
+        $attr = $this->_getAttributeByNamespaceAndLocalName(null, $aName);
+        $state = null;
+
+        if ($attr) {
+            foreach ($aStateMap as $attributeState => $keywords) {
+                foreach ($keywords as $keyword) {
+                    if (strcasecmp($attr->value, $keyword) === 0) {
+                        $state = $attributeState;
+                        break 2;
+                    }
+                }
+            }
+
+            if ($state === null) {
+                if ($aInvalidValueDefault !== null) {
+                    $state = $aInvalidValueDefault;
+                } else if ($aMissingValueDefault !== null) {
+                    $state = $aMissingValueDefault;
+                }
+            }
+        } else if (!$attr && $aMissingValueDefault !== null) {
+            $state = $aMissingValueDefault;
+        }
+
+        return $state !== null ? $state : '';
     }
 }

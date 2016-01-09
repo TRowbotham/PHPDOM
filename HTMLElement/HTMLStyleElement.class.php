@@ -22,22 +22,18 @@ class HTMLStyleElement extends HTMLElement {
 
     public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null) {
         parent::__construct($aLocalName, $aNamespaceURI, $aPrefix);
-
-        $this->mMedia = '';
-        $this->mScoped = false;
-        $this->mType = 'text/css';
     }
 
     public function __get($aName) {
         switch ($aName) {
             case 'media':
-                return $this->mMedia;
+                return $this->reflectStringAttributeValue($aName);
 
             case 'scoped':
-                return $this->mScoped;
+                return $this->reflectBooleanAttributeValue($aName);
 
             case 'type':
-                return $this->mType;
+                return $this->reflectStringAttributeValue($aName);
 
             default:
                 return parent::__get($aName);
@@ -47,47 +43,22 @@ class HTMLStyleElement extends HTMLElement {
     public function __set($aName, $aValue) {
         switch ($aName) {
             case 'media':
-                $this->mMedia = $aValue;
-                $this->_updateAttributeOnPropertyChange($aName, $aValue);
+                $this->_setAttributeValue($aName, $aValue);
 
                 break;
 
             case 'scoped':
-                $this->mScoped = (bool)$aValue;
-                $this->_updateAttributeOnPropertyChange($aName, $this->mScoped);
+                $this->_setAttributeValue($aName, $aValue);
 
                 break;
 
             case 'type':
-                $this->mType = $aValue;
-                $this->_updateAttributeOnPropertyChange($aName, $aValue);
+                $this->_setAttributeValue($aName, $aValue);
 
                 break;
 
             default:
                 parent::__set($aName, $aValue);
-        }
-    }
-
-    protected function _onAttributeChange(Event $aEvent) {
-        switch ($aEvent->detail['attr']->name) {
-            case 'media':
-                $this->mMedia = $aEvent->detail['action'] == 'set' ? $aEvent->detail['attr']->value : '';
-
-                break;
-
-            case 'scoped':
-                $this->mScoped = $aEvent->detail['action'] == 'set' ? true : false;
-
-                break;
-
-            case 'type':
-                $this->mType = $aEvent->detail['action'] == 'set' ? $aEvent->detail['attr']->value : 'text/css';
-
-                break;
-
-            default:
-                parent::_onAttributeChange($aEvent);
         }
     }
 }
