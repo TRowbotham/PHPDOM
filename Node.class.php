@@ -1098,7 +1098,7 @@ abstract class Node implements EventTarget {
             // TODO: Queue a mutation record for "childList"
         }
 
-        if ($index === 0) {
+        if (($aChild && $aChild === $this->mChildNodes[0]) || (!$aChild && $index === 0 && $count)) {
             $this->mFirstChild = $nodes[0];
         }
 
