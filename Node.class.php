@@ -306,7 +306,7 @@ abstract class Node implements EventTarget {
      *
      * @return boolean         Returns true if $aNode is an inclusive descendant of a node.
      */
-    public function contains(Node $aNode) {
+    public function contains(Node $aNode = null) {
         $node = $aNode;
 
         while ($node) {
