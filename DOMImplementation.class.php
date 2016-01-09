@@ -7,23 +7,23 @@ require_once 'DocumentType.class.php';
 
 class iDOMImplementation {
 
-	public function __construct() {
+    public function __construct() {
 
-	}
+    }
 
-	public function createDocument($aNameSpace, $aQualifiedName = '', $aDoctype = null) {
-		return new Document();
-	}
+    public function createDocument($aNameSpace, $aQualifiedName = '', $aDoctype = null) {
+        return new Document();
+    }
 
-	public function createDocumentType($aQualifiedName, $aPublicId, $aSystemId) {
-		return new DocumentType($aQualifiedName, $aPublicId, $aSystemId);
-	}
+    public function createDocumentType($aQualifiedName, $aPublicId, $aSystemId) {
+        return new DocumentType($aQualifiedName, $aPublicId, $aSystemId);
+    }
 
-	public function createHTMLDocument($aTitle = '') {
-		$doc = new HTMLDocument();
-		$doc->title = $aTitle;
+    public function createHTMLDocument($aTitle = '') {
+        $doc = new HTMLDocument();
+        $doc->title = $aTitle;
 
-		return $doc;
-	}
+        return $doc;
+    }
 
 }
