@@ -55,6 +55,7 @@ abstract class Node implements EventTarget {
     const DOCUMENT_POSITION_CONTAINED_BY = 0x10;
     const DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC = 0x20;
 
+    protected static $mBaseURI;
     protected $mChildNodes; // NodeList
     protected $mFirstChild; // Node
     protected $mLastChild; // Node
@@ -71,6 +72,10 @@ abstract class Node implements EventTarget {
     private $mEvents;
 
     protected function __construct() {
+        if (!self::$mBaseURI) {
+            self::$mBaseURI = urls\URLInternal::basicURLParser($this->getBaseURI());
+        }
+
         $this->mChildNodes = array();
         $this->mEvents = array();
         $this->mFirstChild = null;

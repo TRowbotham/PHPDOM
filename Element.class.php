@@ -751,7 +751,7 @@ class Element extends Node implements SplObserver {
         if ($aBase && $aBase->isFlagSet(phpjs\urls\URLInternal::FLAG_NON_RELATIVE)) {
             $base = $aBase;
         } else {
-            $base = phpjs\urls\URLInternal::basicURLParser($this->mOwnerDocument->baseURI, null, $encoding);
+            $base = self::$mBaseURI;
         }
 
         $parsedURL = phpjs\urls\URLInternal::URLParser($url, $base, $encoding);
