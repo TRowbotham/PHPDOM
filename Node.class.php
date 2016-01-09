@@ -805,11 +805,11 @@ abstract class Node implements EventTarget {
         switch (true) {
             case $this instanceof Document:
                 $copy = new $class();
-                // Set encoding
+                $copy->mCharacterSet = $this->mCharacterSet;
                 $copy->mContentType = $this->mContentType;
                 // Set URL
                 // Set Type
-                // Set Mode
+                $copy->mMode = $this->mMode;
 
                 break;
 
