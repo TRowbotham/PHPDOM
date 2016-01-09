@@ -814,10 +814,7 @@ abstract class Node implements EventTarget {
                 break;
 
             case $this instanceof DocumentType:
-                $copy = new $class();
-                $copy->mName = $this->mName;
-                $copy->mPublicId = $this->mPublicId;
-                $copy->mSystemId = $this->mSystemId;
+                $copy = new $class($this->mName, $this->mPublicId, $this->mSystemId);
 
                 break;
 
