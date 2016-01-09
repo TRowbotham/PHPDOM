@@ -292,14 +292,14 @@ class Document extends Node {
      * @param  Node   $aNode The Node to be adopted into this document.
      */
     public function _adoptNode(Node $aNode) {
-        $oldDocument = $aNode->ownerDocument;
+        $oldDocument = $aNode->mOwnerDocument;
 
-        if ($aNode->parentNode) {
-            $aNode->parentNode->_removeChild($aNode);
+        if ($aNode->mParentNode) {
+            $aNode->mParentNode->_removeChild($aNode);
         }
 
         $tw = $oldDocument->createTreeWalker($aNode);
-        $node = $tw->root;
+        $node = $aNode;
 
         while ($node) {
             $node->mOwnerDocument = $this;
