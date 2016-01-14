@@ -1,9 +1,7 @@
 <?php
 namespace phpjs;
 
-require_once 'Node.class.php';
-require_once 'ChildNode.class.php';
-require_once 'NonDocumentTypeChildNode.class.php';
+use phpjs\exceptions\IndexSizeError;
 
 /**
  * Represents a Node that contains characters.

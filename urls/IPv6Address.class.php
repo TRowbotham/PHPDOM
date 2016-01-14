@@ -1,9 +1,6 @@
 <?php
 namespace phpjs\urls;
 
-require_once 'Host.class.php';
-require_once 'URLUtils.class.php';
-
 class IPv6Address extends Host {
     protected function __construct($aHost) {
         parent::__construct($aHost);

@@ -1,6 +1,8 @@
 <?php
 namespace phpjs;
 
+use phpjs\elements\Element;
+
 // https://developer.mozilla.org/en-US/docs/Web/API/Attr
 // https://dom.spec.whatwg.org/#attr
 

@@ -1,10 +1,7 @@
 <?php
 namespace phpjs\urls;
 
-require_once __DIR__ . '/../Exceptions.class.php';
-require_once 'URLInternal.class.php';
-require_once 'URLSearchParams.class.php';
-require_once 'URLUtils.class.php';
+use phpjs\exceptions\TypeError;
 
 /**
  * Represents a URL that can be manipulated.
@@ -25,14 +22,14 @@ class URL {
             $parsedBase = URLInternal::basicURLParser($aBase);
 
             if ($parsedBase === false) {
-                throw new \TypeError($aBase . ' is not a valid URL.');
+                throw new TypeError($aBase . ' is not a valid URL.');
             }
         }
 
         $parsedURL = URLInternal::basicURLParser($aUrl, $parsedBase);
 
         if ($parsedURL === false) {
-            throw new \TypeError($aUrl . ' is not a valid URL.');
+            throw new TypeError($aUrl . ' is not a valid URL.');
         }
 
         $this->mUrl = $parsedURL;
@@ -161,7 +158,7 @@ class URL {
                 $parsedURL = URLInternal::basicURLParser($aValue);
 
                 if ($parsedURL === false) {
-                    throw new \TypeError($aValue . ' is not a valid URL.');
+                    throw new TypeError($aValue . ' is not a valid URL.');
                 }
 
                 $this->mUrl = $parsedURL;

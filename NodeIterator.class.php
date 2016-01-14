@@ -3,9 +3,6 @@ namespace phpjs;
 
 // https://dom.spec.whatwg.org/#nodeiterator
 // https://developer.mozilla.org/en-US/docs/Web/API/NodeIterator
-
-require_once 'NodeFilter.class.php';
-
 final class NodeIterator {
     private $mFilter;
     private $mPointerBeforeReferenceNode;

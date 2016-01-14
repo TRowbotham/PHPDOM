@@ -1,27 +1,12 @@
 <?php
 namespace phpjs;
 
+use phpjs\exceptions\HierarchyRequestError;
+use phpjs\exceptions\InvalidCharacterError;
+use phpjs\exceptions\NotSupportedError;
+
 // https://developer.mozilla.org/en-US/docs/Web/API/Document
 // https://html.spec.whatwg.org/#document
-
-require_once 'Node.class.php';
-require_once 'ParentNode.class.php';
-require_once 'DOMImplementation.class.php';
-require_once 'DocumentType.class.php';
-require_once 'Attr.class.php';
-require_once 'DocumentFragment.class.php';
-require_once 'Event.class.php';
-require_once 'Text.class.php';
-require_once 'NonElementParentNode.class.php';
-require_once 'Comment.class.php';
-require_once 'urls/URL.class.php';
-require_once 'NodeFilter.class.php';
-require_once 'NodeIterator.class.php';
-require_once 'Range.class.php';
-require_once 'TreeWalker.class.php';
-require_once 'ProcessingInstruction.class.php';
-require_once 'GetElementsBy.class.php';
-
 class Document extends Node {
     use GetElementsBy, NonElementParentNode, ParentNode;
 
@@ -56,7 +41,7 @@ class Document extends Node {
         $this->mMode = self::NO_QUIRKS_MODE;
         $this->mNodeIteratorList = array();
         $this->mNodeName = '#document';
-        $this->mNodeType = Node::DOCUMENT_NODE;
+        $this->mNodeType = self::DOCUMENT_NODE;
         $this->mOwnerDocument = null; // Documents own themselves.
 
         $ssl = isset($_SERVER['HTTPS']) && $_SERVER["HTTPS"] == 'on';
@@ -133,7 +118,7 @@ class Document extends Node {
         // TODO: Make sure localName matches the name production
 
         $localName = strtolower($aLocalName);
-        $interface = 'phpjs\\' . $this->getHTMLInterfaceFor($localName);
+        $interface = $this->getHTMLInterfaceFor($localName);
         $node = new $interface($localName, Namespaces::HTML);
         $node->mOwnerDocument = $this;
 
@@ -150,12 +135,12 @@ class Document extends Node {
         // We only support the HTML namespace currently.
         switch ($parts['namespace']) {
             case Namespaces::HTML:
-                $interface = 'phpjs\\' . $this->getHTMLInterfaceFor($parts['localName']);
+                $interface = $this->getHTMLInterfaceFor($parts['localName']);
 
                 break;
 
             default:
-                $interface = 'phpjs\Element';
+                $interface = 'phpjs\elements\Element';
         }
 
         $node = new $interface($parts['localName'], $parts['namespace'], $parts['prefix']);
@@ -714,9 +699,6 @@ class Document extends Node {
                 $interfaceName = 'Unknown';
         }
 
-        $className = 'HTML' . $interfaceName . 'Element';
-        require_once 'HTMLElement/' . $className . '.class.php';
-
-        return $className;
+        return 'phpjs\\elements\\html\\HTML' . $interfaceName . 'Element';
     }
 }

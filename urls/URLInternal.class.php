@@ -1,9 +1,6 @@
 <?php
 namespace phpjs\urls;
 
-require_once 'HostFactory.class.php';
-require_once 'URLUtils.class.php';
-
 class URLInternal {
     const SCHEME_START_STATE = 1;
     const SCHEME_STATE = 2;

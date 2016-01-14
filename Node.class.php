@@ -1,9 +1,10 @@
 <?php
 namespace phpjs;
 
-require_once 'NodeList.class.php';
-require_once 'EventTarget.class.php';
-require_once 'Namespaces.class.php';
+use phpjs\elements\Element;
+use phpjs\exceptions\HierarchyRequestError;
+use phpjs\exceptions\InvalidStateError;
+use phpjs\exceptions\NotFoundError;
 
 
 /**

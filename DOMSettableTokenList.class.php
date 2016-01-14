@@ -1,10 +1,9 @@
 <?php
 namespace phpjs;
 
+use phpjs\elements\Element;
+
 // https://dom.spec.whatwg.org/#interface-domsettabletokenlist
-
-require_once 'DOMTokenList.class.php';
-
 class DOMSettableTokenList extends DOMTokenList {
     public function __construct(Element $aElement, $aAttrLocalName = null) {
         parent::__construct($aElement, $aAttrLocalName);

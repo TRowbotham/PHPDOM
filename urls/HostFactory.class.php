@@ -1,10 +1,6 @@
 <?php
 namespace phpjs\urls;
 
-require_once 'IPv4Address.class.php';
-require_once 'IPv6Address.class.php';
-require_once 'URLUtils.class.php';
-
 abstract class HostFactory {
     /**
      * Parses a host.

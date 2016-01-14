@@ -1,9 +1,10 @@
 <?php
 namespace phpjs;
 
+use phpjs\elements\Element;
+
 // https://developer.mozilla.org/en-US/docs/Web/API/ParentNode
 // https://dom.spec.whatwg.org/#interface-parentnode
-
 trait ParentNode {
     /**
      * Inserts nodes after the last child of this node, while replacing strings in nodes

@@ -1,7 +1,11 @@
 <?php
 namespace phpjs;
 
-require_once 'Exceptions.class.php';
+use phpjs\exceptions\HierarchyRequestError;
+use phpjs\exceptions\IndexSizeError;
+use phpjs\exceptions\InvalidNodeTypeError;
+use phpjs\exceptions\NotSupportedError;
+use phpjs\exceptions\WrongDocumentError;
 
 /**
  * Represents a sequence of content within a node tree.

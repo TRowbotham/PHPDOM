@@ -1,8 +1,6 @@
 <?php
 namespace phpjs\urls;
 
-require_once 'Host.class.php';
-
 class IPv4Address extends Host {
     protected function __construct($aHost) {
         parent::__construct($aHost);

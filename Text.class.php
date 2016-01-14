@@ -1,7 +1,7 @@
 <?php
 namespace phpjs;
 
-require_once 'CharacterData.class.php';
+use phpjs\exceptions\IndexSizeError;
 
 /**
  * Represents the text content of a Node.

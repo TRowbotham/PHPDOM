@@ -1,6 +1,8 @@
 <?php
 namespace phpjs;
 
+use phpjs\exceptions\NamespaceError;
+
 class Namespaces {
     const HTML = 'http://www.w3.org/1999/xhtml';
     const SVG = 'http://www.w3.org/2000/svg';
@@ -21,8 +23,8 @@ class Namespaces {
      * @return string|null
      */
     public static function locateNamespace(Node $aNode, $aPrefix) {
-        switch (true) {
-            case $aNode instanceof Element:
+        switch ($aNode->nodeType) {
+            case Node::ELEMENT_NODE:
                 if ($aNode->namespaceURI && $aNode->prefix === $aPrefix) {
                     return $aNode->namespaceURI;
                 }
@@ -41,15 +43,15 @@ class Namespaces {
 
                 return self::locateNamespace($aNode->parentElement, $aPrefix);
 
-            case $aNode instanceof Document:
+            case Node::DOCUMENT_NODE:
                 if (!$aNode->documentElement) {
                     return null;
                 }
 
                 return self::locateNamespace($aNode->documentElement, $aPrefix);
 
-            case $aNode instanceof DocumentType:
-            case $aNode instanceof DocumentFragment:
+            case Node::DOCUMENT_TYPE_NODE:
+            case Node::DOCUMENT_FRAGMENT_NODE:
                 return null;
 
             default:

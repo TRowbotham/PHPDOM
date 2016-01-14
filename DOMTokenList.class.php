@@ -1,11 +1,12 @@
 <?php
 namespace phpjs;
 
+use phpjs\elements\Element;
+use phpjs\exceptions\InvalidCharacterError;
+use phpjs\exceptions\SyntaxError;
+
 // https://developer.mozilla.org/en-US/docs/Web/API/DOMTokenList
 // https://dom.spec.whatwg.org/#interface-domtokenlist
-
-require_once 'Exceptions.class.php';
-
 class DOMTokenList implements \ArrayAccess, \Iterator {
     protected $mAttrLocalName;
     protected $mTokens;

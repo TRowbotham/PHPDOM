@@ -3,9 +3,6 @@ namespace phpjs;
 
 // https://dom.spec.whatwg.org/#treewalker
 // https://developer.mozilla.org/en-US/docs/Web/API/TreeWalker
-
-require_once 'NodeFilter.class.php';
-
 final class TreeWalker {
     private $mCurrentNode;
     private $mFilter;

@@ -1,7 +1,12 @@
 <?php
 namespace phpjs;
 
-require_once 'Document.class.php';
+use phpjs\elements\html\HTMLBodyElement;
+use phpjs\elements\html\HTMLFrameSetElement;
+use phpjs\elements\html\HTMLHeadElement;
+use phpjs\elements\svg\SVGElement;
+use phpjs\elements\svg\SVGTitleElement;
+use phpjs\exceptions\HierarchyRequestError;
 
 /**
  * HTMLDocument represents an HTML document.

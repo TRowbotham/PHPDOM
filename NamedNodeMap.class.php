@@ -1,6 +1,9 @@
 <?php
 namespace phpjs;
 
+use phpjs\elements\Element;
+use phpjs\exceptions\NotFoundError;
+
 /**
  * Represents a list of named attributes.
  *

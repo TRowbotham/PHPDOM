@@ -3,10 +3,6 @@ namespace phpjs;
 
 // https://developer.mozilla.org/en-US/docs/Web/API/DocumentType
 // https://dom.spec.whatwg.org/#documenttype
-
-require_once 'Node.class.php';
-require_once 'ChildNode.class.php';
-
 class DocumentType extends Node {
 	use ChildNode;
 
@@ -19,7 +15,7 @@ class DocumentType extends Node {
 
 		$this->mName = $aName;
 		$this->mNodeName = $aName;
-		$this->mNodeType = Node::DOCUMENT_TYPE_NODE;
+		$this->mNodeType = self::DOCUMENT_TYPE_NODE;
 		$this->mPublicId = $aPublicId;
 		$this->mSystemId = $aSystemId;
 	}

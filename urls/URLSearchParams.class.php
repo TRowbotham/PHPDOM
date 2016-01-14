@@ -1,8 +1,6 @@
 <?php
 namespace phpjs\urls;
 
-require_once 'URLUtils.class.php';
-
 /**
  * An object containing a list of all URL query parameters.  This allows you to manipulate
  * a URL's query string in a granular manner.
