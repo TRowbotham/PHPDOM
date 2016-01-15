@@ -6,9 +6,10 @@ namespace phpjs\exceptions;
  */
 class HierarchyRequestError extends \Exception
 {
-    public function __construct()
+    public function __construct($aMessage = '')
     {
         $this->code = 3;
-        $this->message = 'The operation would yield an incorrect node tree.';
+        $this->message = $aMessage ?: 'The operation would yield an incorrect
+            node tree.';
     }
 }

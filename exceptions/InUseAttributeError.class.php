@@ -6,9 +6,9 @@ namespace phpjs\exceptions;
  */
 class InUseAttributeError extends \Exception
 {
-    public function __construct()
+    public function __construct($aMessage = '')
     {
         $this->code = 10;
-        $this->message = 'The attribute is in use.';
+        $this->message = $aMessage ?: 'The attribute is in use.';
     }
 }

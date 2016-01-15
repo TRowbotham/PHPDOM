@@ -6,9 +6,9 @@ namespace phpjs\exceptions;
  */
 class NotSupportedError extends \Exception
 {
-    public function __construct()
+    public function __construct($aMessage = '')
     {
         $this->code = 9;
-        $this->message = 'The operation is not supported.';
+        $this->message = $aMessage ?: 'The operation is not supported.';
     }
 }

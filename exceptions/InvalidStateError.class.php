@@ -6,9 +6,9 @@ namespace phpjs\exceptions;
  */
 class InvalidStateError extends \Exception
 {
-    public function __construct()
+    public function __construct($aMessage = '')
     {
         $this->code = 11;
-        $this->message = 'This object is in an invalid state';
+        $this->message = $aMessage ?: 'This object is in an invalid state';
     }
 }

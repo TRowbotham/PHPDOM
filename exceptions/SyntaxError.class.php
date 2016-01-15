@@ -6,9 +6,10 @@ namespace phpjs\exceptions;
  */
 class SyntaxError extends \Exception
 {
-    public function __construct()
+    public function __construct($aMessage = '')
     {
         $this->code = 12;
-        $this->message = 'The string did not match the expected pattern.';
+        $this->message = $aMessage ?: 'The string did not match the expected
+            pattern.';
     }
 }

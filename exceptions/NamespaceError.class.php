@@ -6,9 +6,10 @@ namespace phpjs\exceptions;
  */
 class NamespaceError extends \Exception
 {
-    public function __construct()
+    public function __construct($aMessage = '')
     {
         $this->code = 14;
-        $this->message = 'The operation is not allowed by Namespaces in XML.';
+        $this->message = $aMessage ?: 'The operation is not allowed by
+            Namespaces in XML.';
     }
 }

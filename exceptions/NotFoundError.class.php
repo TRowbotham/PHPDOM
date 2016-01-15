@@ -6,9 +6,9 @@ namespace phpjs\exceptions;
  */
 class NotFoundError extends \Exception
 {
-    public function __construct()
+    public function __construct($aMessage = '')
     {
         $this->code = 8;
-        $this->message = 'The object can not be found here.';
+        $this->message = $aMessage ?: 'The object can not be found here.';
     }
 }

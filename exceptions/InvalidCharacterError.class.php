@@ -6,9 +6,9 @@ namespace phpjs\exceptions;
  */
 class InvalidCharacterError extends \Exception
 {
-    public function __construct()
+    public function __construct($aMessage = '')
     {
         $this->code = 5;
-        $this->message = 'The string contains invalid characters.';
+        $this->message = $aMessage ?: 'The string contains invalid characters.';
     }
 }
