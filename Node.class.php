@@ -2,6 +2,8 @@
 namespace phpjs;
 
 use phpjs\elements\Element;
+use phpjs\events\Event;
+use phpjs\events\EventTarget;
 use phpjs\exceptions\HierarchyRequestError;
 use phpjs\exceptions\InvalidStateError;
 use phpjs\exceptions\NotFoundError;

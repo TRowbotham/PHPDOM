@@ -1,5 +1,5 @@
 <?php
-namespace phpjs;
+namespace phpjs\events;
 
 // https://developer.mozilla.org/en-US/docs/Web/API/EventTarget
 // https://dom.spec.whatwg.org/#eventtarget

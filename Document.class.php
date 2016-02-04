@@ -1,6 +1,8 @@
 <?php
 namespace phpjs;
 
+use phpjs\events\Event;
+use phpjs\events\CustomEvent;
 use phpjs\exceptions\HierarchyRequestError;
 use phpjs\exceptions\InvalidCharacterError;
 use phpjs\exceptions\NotSupportedError;
