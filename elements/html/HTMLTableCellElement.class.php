@@ -1,8 +1,6 @@
 <?php
 namespace phpjs\elements\html;
 
-use phpjs\DOMSettableTokenList;
-
 /**
  * A common class from which the HTMLTableDataCellElement and HTMLTableHeaderCellElement classes derive from.  The
  * HTMLTableDataCellElement and HTMLTableHeaderCellElement classes represent the HTML <td> and <th> elements respectively.
@@ -30,7 +28,7 @@ class HTMLTableCellElement extends HTMLElement {
         parent::__construct($aLocalName, $aNamespaceURI, $aPrefix);
 
         $this->mColSpan = 1;
-        $this->mHeaders = new DOMSettableTokenList($this, 'headers');
+        $this->mHeaders = new DOMTokenList($this, 'headers');
         $this->mRowSpan = 1;
     }
 

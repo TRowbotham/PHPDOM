@@ -2,7 +2,6 @@
 namespace phpjs\elements\html;
 
 use phpjs\Attr;
-use phpjs\DOMSettableTokenList;
 use phpjs\DOMTokenList;
 
 /**
@@ -71,7 +70,7 @@ class HTMLAnchorElement extends HTMLElement {
         parent::__construct($aLocalName, $aNamespaceURI, $aPrefix);
 
         $this->initHTMLHyperlinkElementUtils();
-        $this->mPing = new DOMSettableTokenList($this, 'ping');
+        $this->mPing = new DOMTokenList($this, 'ping');
         $this->mRelList = new DOMTokenList($this, 'rel');
     }
 

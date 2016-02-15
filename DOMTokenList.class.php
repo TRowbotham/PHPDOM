@@ -14,7 +14,7 @@ class DOMTokenList implements \ArrayAccess, \Iterator {
     private $mElement;
     private $mPosition;
 
-    public function __construct(Element $aElement, $aAttrLocalName) {
+    public function __construct(Element $aElement, $aAttrLocalName = null) {
         $this->mAttrLocalName = $aAttrLocalName;
         $this->mElement = $aElement;
         $this->mPosition = 0;
@@ -25,6 +25,16 @@ class DOMTokenList implements \ArrayAccess, \Iterator {
         switch ($aName) {
             case 'length':
                 return count($this->mTokens);
+
+            case 'value':
+                return $this->serializeOrderedSet($this->mTokens);
+        }
+    }
+
+    public function __set($aName, $aValue) {
+        switch ($aName) {
+            case 'value':
+                $this->mTokens = self::_parseOrderedSet($aValue);
         }
     }
 
@@ -316,9 +326,15 @@ class DOMTokenList implements \ArrayAccess, \Iterator {
     }
 
     /**
-     * Set an attribute value on the associated element using the provided attribute local name.
+     * If there is no associated attribute, then terminate the update steps.
+     * Otherwise, set an attribute value on the associated element using the
+     * provided attribute local name.
      */
     private function update() {
+        if (!$this->mAttrLocalName) {
+            return;
+        }
+
         $this->mElement->setAttribute($this->mAttrLocalName, $this->toString());
     }
 

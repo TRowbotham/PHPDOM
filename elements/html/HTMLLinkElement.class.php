@@ -2,7 +2,6 @@
 namespace phpjs\elements\html;
 
 use phpjs\Attr;
-use phpjs\DOMSettableTokenList;
 use phpjs\DOMTokenList;
 
 /**
@@ -39,7 +38,7 @@ class HTMLLinkElement extends HTMLElement {
 
         $this->mEndTagOmitted = true;
         $this->mRelList = new DOMTokenList($this, 'rel');
-        $this->mSizes = new DOMSettableTokenList($this, 'sizes');
+        $this->mSizes = new DOMTokenList($this, 'sizes');
     }
 
     public function __get($aName) {
