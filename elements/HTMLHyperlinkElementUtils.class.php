@@ -5,17 +5,22 @@ use phpjs\urls\URLInternal;
 use phpjs\urls\URLUtils;
 
 /**
- * @link https://html.spec.whatwg.org/multipage/semantics.html#htmlhyperlinkelementutils
+ * @see https://html.spec.whatwg.org/multipage/semantics.html#htmlhyperlinkelementutils
  */
-trait HTMLHyperlinkElementUtils {
+trait HTMLHyperlinkElementUtils
+{
     protected $mUrl;
 
-    private function HTMLHyperlinkElementUtilsGetter($aName) {
+    private function HTMLHyperlinkElementUtilsGetter($aName)
+    {
         switch ($aName) {
             case 'hash':
                 $this->reinitialiseURL();
 
-                if ($this->mUrl === null || !($fragment = $this->mUrl->getFragment())) {
+                if (
+                    $this->mUrl === null ||
+                    !($fragment = $this->mUrl->getFragment())
+                ) {
                     return '';
                 }
 
@@ -24,7 +29,10 @@ trait HTMLHyperlinkElementUtils {
             case 'host':
                 $this->reinitialiseURL();
 
-                if ($this->mUrl === null || ($host = $this->mUrl->getHost()) === null) {
+                if (
+                    $this->mUrl === null ||
+                    ($host = $this->mUrl->getHost()) === null
+                ) {
                     return '';
                 }
 
@@ -37,7 +45,10 @@ trait HTMLHyperlinkElementUtils {
             case 'hostname':
                 $this->reinitialiseURL();
 
-                if ($this->mUrl === null || ($host = $this->mUrl->getHost()) === null) {
+                if (
+                    $this->mUrl === null ||
+                    ($host = $this->mUrl->getHost()) === null
+                ) {
                     return '';
                 }
 
@@ -61,12 +72,17 @@ trait HTMLHyperlinkElementUtils {
                     return '';
                 }
 
-                return URLUtils::serializeOriginAsUnicode($this->mUrl->getOrigin());
+                return URLUtils::serializeOriginAsUnicode(
+                    $this->mUrl->getOrigin()
+                );
 
             case 'password':
                 $this->reinitialiseURL();
 
-                if ($this->mUrl === null || ($password = $this->mUrl->getPassword()) === null) {
+                if (
+                    $this->mUrl === null ||
+                    ($password = $this->mUrl->getPassword()) === null
+                ) {
                     return '';
                 }
 
@@ -98,7 +114,10 @@ trait HTMLHyperlinkElementUtils {
             case 'port':
                 $this->reinitialiseURL();
 
-                if ($this->mUrl === null || ($port = $this->mUrl->getPort()) === null) {
+                if (
+                    $this->mUrl === null ||
+                    ($port = $this->mUrl->getPort()) === nul
+                ) {
                     return '';
                 }
 
@@ -107,12 +126,14 @@ trait HTMLHyperlinkElementUtils {
             case 'protocol':
                 $this->reinitialiseURL();
 
-                return $this->mUrl === null ? ':' : $this->mUrl->getScheme() . ':';
+                return $this->mUrl === null ?
+                    ':' : $this->mUrl->getScheme() . ':';
 
             case 'search':
                 $this->reinitialiseURL();
 
-                return $this->mUrl === null || !($query = $this->mUrl->getQuery()) ? '' : '?' . $query;
+                return $this->mUrl === null ||
+                    !($query = $this->mUrl->getQuery()) ? '' : '?' . $query;
 
             case 'username':
                 $this->reinitialiseURL();
@@ -124,12 +145,16 @@ trait HTMLHyperlinkElementUtils {
         }
     }
 
-    private function HTMLHyperlinkElementUtilsSetter($aName, $aValue) {
+    private function HTMLHyperlinkElementUtilsSetter($aName, $aValue)
+    {
         switch ($aName) {
             case 'hash':
                 $this->reinitialiseURL();
 
-                if ($this->mUrl === null || !$this->mUrl->getScheme() == 'javascript') {
+                if (
+                    $this->mUrl === null ||
+                    !$this->mUrl->getScheme() == 'javascript'
+                ) {
                     // Terminate these steps
                     return;
                 }
@@ -139,7 +164,13 @@ trait HTMLHyperlinkElementUtils {
                 } else {
                     $input = $aValue[0] == '#' ? substr($aValue, 1) : $aValue;
                     $this->mUrl->setFragment('');
-                    URLInternal::basicURLParser($input, null, null, $this->mUrl, URLInternal::FRAGMENT_STATE);
+                    URLInternal::basicURLParser(
+                        $input,
+                        null,
+                        null,
+                        $this->mUrl,
+                        URLInternal::FRAGMENT_STATE
+                    );
                 }
 
                 $this->_setAttributeValue('href', $this->mUrl->serializeURL());
@@ -149,12 +180,20 @@ trait HTMLHyperlinkElementUtils {
             case 'host':
                 $this->reinitialiseURL();
 
-                if ($this->mUrl === null || $this->mUrl->isFlagSet(URLInternal::FLAG_NON_RELATIVE)) {
+                if (
+                    $this->mUrl === null ||
+                    $this->mUrl->isFlagSet(URLInternal::FLAG_NON_RELATIVE)
+                ) {
                     // Terminate these steps
                     return;
                 }
 
-                URLInternal::basicURLParser($aValue, null, null, $this->mUrl, URLInternal::HOST_STATE);
+                URLInternal::basicURLParser($aValue,
+                    null,
+                    null,
+                    $this->mUrl,
+                    URLInternal::HOST_STATE
+                );
                 $this->_setAttributeValue('href', $this->mUrl->serializeURL());
 
                 break;
@@ -162,12 +201,21 @@ trait HTMLHyperlinkElementUtils {
             case 'hostname':
                 $this->reinitialiseURL();
 
-                if ($this->mUrl === null || $this->mUrl->isFlagSet(URLInternal::FLAG_NON_RELATIVE)) {
+                if (
+                    $this->mUrl === null ||
+                    $this->mUrl->isFlagSet(URLInternal::FLAG_NON_RELATIVE)
+                ) {
                     // Terminate these steps
                     return;
                 }
 
-                URLInternal::basicURLParser($aValue, null, null, $this->mUrl, URLInternal::HOSTNAME_STATE);
+                URLInternal::basicURLParser(
+                    $aValue,
+                    null,
+                    null,
+                    $this->mUrl,
+                    URLInternal::HOSTNAME_STATE
+                );
                 $this->_setAttributeValue('href', $this->mUrl->serializeURL());
 
                 break;
@@ -180,7 +228,11 @@ trait HTMLHyperlinkElementUtils {
             case 'password':
                 $this->reinitialiseURL();
 
-                if ($this->mUrl === null || $this->mUrl->getHost() === null || $this->mUrl->isFlagSet(URLInternal::FLAG_NON_RELATIVE)) {
+                if (
+                    $this->mUrl === null ||
+                    $this->mUrl->getHost() === null ||
+                    $this->mUrl->isFlagSet(URLInternal::FLAG_NON_RELATIVE)
+                ) {
                     // Terminate these steps
                     return;
                 }
@@ -193,7 +245,10 @@ trait HTMLHyperlinkElementUtils {
             case 'pathname':
                 $this->reinitialiseURL();
 
-                if ($this->mUrl === null || $this->mUrl->isFlagSet(URLInternal::FLAG_NON_RELATIVE)) {
+                if (
+                    $this->mUrl === null ||
+                    $this->mUrl->isFlagSet(URLInternal::FLAG_NON_RELATIVE)
+                ) {
                     // Terminate these steps
                     return;
                 }
@@ -202,7 +257,13 @@ trait HTMLHyperlinkElementUtils {
                     $this->mUrl->getPath()->pop();
                 }
 
-                URLInternal::basicURLParser($aValue, null, null, $this->mUrl, URLInternal::PATH_START_STATE);
+                URLInternal::basicURLParser(
+                    $aValue,
+                    null,
+                    null,
+                    $this->mUrl,
+                    URLInternal::PATH_START_STATE
+                );
                 $this->_setAttributeValue('href', $this->mUrl->serializeURL());
 
                 break;
@@ -210,13 +271,23 @@ trait HTMLHyperlinkElementUtils {
             case 'port':
                 $this->reinitialiseURL();
 
-                if ($this->mUrl === null || $this->mUrl->getHost() === null || $this->mUrl->isFlagSet(URLInternal::FLAG_NON_RELATIVE) ||
-                    $this->mUrl->getScheme() == 'file') {
+                if (
+                    $this->mUrl === null ||
+                    $this->mUrl->getHost() === null ||
+                    $this->mUrl->isFlagSet(URLInternal::FLAG_NON_RELATIVE) ||
+                    $this->mUrl->getScheme() == 'file'
+                ) {
                     // Terminate these steps
                     return;
                 }
 
-                URLInternal::basicURLParser($aValue, null, null, $this->mUrl, URLInternal::PORT_STATE);
+                URLInternal::basicURLParser(
+                    $aValue,
+                    null,
+                    null,
+                    $this->mUrl,
+                    URLInternal::PORT_STATE
+                );
                 $this->_setAttributeValue('href', $this->mUrl->serializeURL());
 
                 break;
@@ -229,7 +300,13 @@ trait HTMLHyperlinkElementUtils {
                     return;
                 }
 
-                URLInternal::basicURLParser($aValue . ':', null, null, $this->mUrl, URLInternal::SCHEME_START_STATE);
+                URLInternal::basicURLParser(
+                    $aValue . ':',
+                    null,
+                    null,
+                    $this->mUrl,
+                    URLInternal::SCHEME_START_STATE
+                );
                 $this->_setAttributeValue('href', $this->mUrl->serializeURL());
 
                 break;
@@ -247,7 +324,13 @@ trait HTMLHyperlinkElementUtils {
                 } else {
                     $input = $aValue[0] == '?' ? substr($aValue, 1) : $aValue;
                     $this->mUrl->setQuery('');
-                    URLInternal::basicURLParser($input, null, $this->mOwnerDocument->characterSet, $this->mUrl, URLInternal::QUERY_STATE);
+                    URLInternal::basicURLParser(
+                        $input,
+                        null,
+                        $this->mOwnerDocument->characterSet,
+                        $this->mUrl,
+                        URLInternal::QUERY_STATE
+                    );
                 }
 
                 $this->_setAttributeValue('href', $this->mUrl->serializeURL());
@@ -257,7 +340,11 @@ trait HTMLHyperlinkElementUtils {
             case 'username':
                 $this->reinitialiseURL();
 
-                if ($this->mUrl === null || $this->mUrl->getHost() === null || $this->mUrl->isFlagSet(URLInternal::FLAG_NON_RELATIVE)) {
+                if (
+                    $this->mUrl === null ||
+                    $this->mUrl->getHost() === null ||
+                    $this->mUrl->isFlagSet(URLInternal::FLAG_NON_RELATIVE)
+                ) {
                     // Terminate these steps
                     return;
                 }
@@ -269,7 +356,8 @@ trait HTMLHyperlinkElementUtils {
         }
     }
 
-    private function initHTMLHyperlinkElementUtils() {
+    private function initHTMLHyperlinkElementUtils()
+    {
         $this->mUrl = null;
     }
 
@@ -278,16 +366,21 @@ trait HTMLHyperlinkElementUtils {
      *
      * @internal
      *
-     * @link https://html.spec.whatwg.org/multipage/semantics.html#reinitialise-url
-     * @link https://html.spec.whatwg.org/multipage/semantics.html#concept-hyperlink-url-set
+     * @see https://html.spec.whatwg.org/multipage/semantics.html#reinitialise-url
+     * @see https://html.spec.whatwg.org/multipage/semantics.html#concept-hyperlink-url-set
      */
-    private function reinitialiseUrl() {
-        if ($this->mUrl === null || $this->mUrl->isFlagSet(URLInternal::FLAG_NON_RELATIVE)) {
+    private function reinitialiseUrl()
+    {
+        if (
+            $this->mUrl === null ||
+            $this->mUrl->isFlagSet(URLInternal::FLAG_NON_RELATIVE)
+        ) {
             // Terminate these steps
             return;
         }
 
         $resolvedURL = $this->resolveURL($this->getAttribute('href'));
-        $this->mUrl = $resolvedURL === false ? null : $resolvedURL['parsed_url'];
+        $this->mUrl = $resolvedURL !== false ?
+            $resolvedURL['parsed_url'] : null;
     }
 }

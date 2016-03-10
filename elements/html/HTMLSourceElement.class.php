@@ -1,7 +1,8 @@
 <?php
 namespace phpjs\elements\html;
 
-class HTMLSourceElement extends HTMLElement {
+class HTMLSourceElement extends HTMLElement
+{
     // For picture element
     private $mMedia;
     private $mSizes;
@@ -11,7 +12,8 @@ class HTMLSourceElement extends HTMLElement {
     private $mSrc;
     private $mType;
 
-	public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null) {
+	public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null)
+    {
 		parent::__construct($aLocalName, $aNamespaceURI, $aPrefix);
 
 		$this->mEndTagOmitted = true;
@@ -22,7 +24,8 @@ class HTMLSourceElement extends HTMLElement {
         $this->mType = '';
 	}
 
-    public function __get($aName) {
+    public function __get($aName)
+    {
         switch ($aName) {
             case 'media':
                 return $this->mMedia;
@@ -44,7 +47,8 @@ class HTMLSourceElement extends HTMLElement {
         }
     }
 
-    public function __set($aName, $aValue) {
+    public function __set($aName, $aValue)
+    {
         switch ($aName) {
             case 'media':
                 if (!is_string($aValue)) {

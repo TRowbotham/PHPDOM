@@ -7,33 +7,42 @@ use phpjs\DOMTokenList;
 /**
  * Represents the HTML <link> element.
  *
- * @link https://html.spec.whatwg.org/multipage/semantics.html#the-link-element
+ * @see https://html.spec.whatwg.org/multipage/semantics.html#the-link-element
  *
- * @property        string          $crossOrigin    Reflects the HTML crossorigin attribute and instructs how crossorigin requrests should be
- *                                                  handled for this particular resource.
+ * @property string $crossOrigin Reflects the HTML crossorigin attribute and
+ *     instructs how crossorigin requrests should be handled for this particular
+ *     resource.
  *
- * @property        string          $href           Reflects the HTML href attribute and represents the location of the linked resource.
+ * @property string $href Reflects the HTML href attribute and represents the
+ *     location of the linked resource.
  *
- * @property        string          $hrefLang       Reflects the HTML hreflang attribute, which indicates the language of the linked resource.
+ * @property string $hrefLang Reflects the HTML hreflang attribute, which
+ *     indicates the language of the linked resource.
  *
- * @property        string          $media          Reflects the HTML media attribute.  This accepts a valid media query to instruct the browser on
- *                                                  when this resource should apply to the document.
+ * @property string $media Reflects the HTML media attribute.  This accepts a
+ *     valid media query to instruct the browser on when this resource should
+ *     apply to the document.
  *
- * @property        string          $rel            Reflects the HTML rel attribute, which indicates the relationship between the document and
- *                                                  the linked resource.
+ * @property string $rel Reflects the HTML rel attribute, which indicates the
+ *     relationship between the document and the linked resource.
  *
- * @property        string          $sizes          Reflects the HTML sizes attribute, which is used to describe the sizes of icons when the HTML
- *                                                  rel attribute with a value of icon is present.
+ * @property string $sizes Reflects the HTML sizes attribute, which is used to
+ *     describe the sizes of icons when the HTML rel attribute with a value of
+ *     icon is present.
  *
- * @property        string          $type           Reflects the HTML type attribute, which hints at the linked resource's MIME type.
+ * @property string $type Reflects the HTML type attribute, which hints at the
+ *     linked resource's MIME type.
  *
- * @property-read   DOMTokenList    $relList        Reflects the HTML rel attribute as a list of tokens.
+ * @property-read DOMTokenList $relList Reflects the HTML rel attribute as a
+ *     list of tokens.
  */
-class HTMLLinkElement extends HTMLElement {
+class HTMLLinkElement extends HTMLElement
+{
     private $mRelList;
     private $mSizes;
 
-    public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null) {
+    public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null)
+    {
         parent::__construct($aLocalName, $aNamespaceURI, $aPrefix);
 
         $this->mEndTagOmitted = true;
@@ -41,10 +50,16 @@ class HTMLLinkElement extends HTMLElement {
         $this->mSizes = new DOMTokenList($this, 'sizes');
     }
 
-    public function __get($aName) {
+    public function __get($aName)
+    {
         switch ($aName) {
             case 'crossOrigin':
-                return $this->getAttributeStateEnumeratedString('crossorigin', 'anonymous', 'no-cors', self::CORS_STATE_MAP);
+                return $this->getAttributeStateEnumeratedString(
+                    'crossorigin',
+                    'anonymous',
+                    'no-cors',
+                    self::CORS_STATE_MAP
+                );
 
             case 'href':
                 return $this->reflectStringAttributeValue($aName);
@@ -72,7 +87,8 @@ class HTMLLinkElement extends HTMLElement {
         }
     }
 
-    public function __set($aName, $aValue) {
+    public function __set($aName, $aValue)
+    {
         switch ($aName) {
             case 'crossOrigin':
                 $this->_setAttributeValue('crossorigin', $aValue);
@@ -114,14 +130,17 @@ class HTMLLinkElement extends HTMLElement {
         }
     }
 
-    protected function attributeHookHandler($aHookType, Attr $aAttr) {
+    protected function attributeHookHandler($aHookType, Attr $aAttr)
+    {
         switch ($aAttr->name) {
             case 'rel':
                 if ($aHookType == 'set') {
                     $value = $aAttr->value;
 
                     if (!empty($value)) {
-                        $this->mRelList->appendTokens(DOMTokenList::_parseOrderedSet($value));
+                        $this->mRelList->appendTokens(
+                            DOMTokenList::_parseOrderedSet($value)
+                        );
                     }
                 } elseif ($aHookType == 'removed') {
                     $this->mRelList->emptyList();

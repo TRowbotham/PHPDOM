@@ -1,13 +1,17 @@
 <?php
 namespace phpjs\elements\html;
 
-// https://html.spec.whatwg.org/multipage/semantics.html#the-ol-element
-class HTMLOListElement extends HTMLElement {
+/**
+ * @see https://html.spec.whatwg.org/multipage/semantics.html#the-ol-element
+ */
+class HTMLOListElement extends HTMLElement
+{
     private $mReversed;
     private $mStart;
     private $mType;
 
-    public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null) {
+    public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null)
+    {
         parent::__construct($aLocalName, $aNamespaceURI, $aPrefix);
 
         $this->mReversed = false;
@@ -15,7 +19,8 @@ class HTMLOListElement extends HTMLElement {
         $this->mType = '';
     }
 
-    public function __get($aName) {
+    public function __get($aName)
+    {
         switch ($aName) {
             case 'reversed':
                 return $this->mReversed;
@@ -31,7 +36,8 @@ class HTMLOListElement extends HTMLElement {
         }
     }
 
-    public function __set($aName, $aValue) {
+    public function __set($aName, $aValue)
+    {
         switch ($aName) {
             case 'reversed':
                 $this->mReversed = $aValue;

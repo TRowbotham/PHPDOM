@@ -7,66 +7,71 @@ use phpjs\DOMTokenList;
 /**
  * Represents the HTML anchor element <a>.
  *
- * @link https://html.spec.whatwg.org/multipage/semantics.html#the-a-element
+ * @see https://html.spec.whatwg.org/multipage/semantics.html#the-a-element
  *
- * @property string $download               Reflects the download HTML attribute, which indicates that the linked
- *                                          resource should be downloaded rather than displayed in the browser.
- *                                          The value is the prefered name of the file to be saved to disk.  While there
- *                                          are no restrictions on the characters allowed, you must take into consideration
- *                                          disallowed characters in file names on most operating systems.
+ * @property string $download Reflects the download HTML attribute, which
+ *     indicates that the linked resource should be downloaded rather than
+ *     displayed in the browser.  The value is the prefered name of the file to
+ *     be saved to disk.  While there are no restrictions on the characters
+ *     allowed, you must take into consideration disallowed characters in file
+ *     names on most operating systems.
  *
- * @property string $hash                   Represents the fragment identifier, including the leading hash (#) mark,
- *                                          if one is present, of the URL.
+ * @property string $hash Represents the fragment identifier, including the
+ *     leading hash (#) mark, if one is present, of the URL.
  *
- * @property string $host                   Represents the hostname and the port, if the port is not the
- *                                          default port, of the URL.
+ * @property string $host Represents the hostname and the port, if the port is
+ *     not the default port, of the URL.
  *
- * @property string $hostname               Represents the hostname of the URL.
+ * @property string $hostname Represents the hostname of the URL.
  *
- * @property string $href                   Reflects the href HTML attribute.
+ * @property string $href Reflects the href HTML attribute.
  *
- * @property string $hrefLang               Reflects the hrefLang HTML attribute, indicating the language of the linked
- *                                          resource.
+ * @property string $hrefLang Reflects the hrefLang HTML attribute, indicating
+ *     the language of the linked resource.
  *
- * @property string $password               Represents the password specified in the URL.
+ * @property string $password Represents the password specified in the URL.
  *
- * @property string $pathname               Represents the pathname of the URL, if any.
+ * @property string $pathname Represents the pathname of the URL, if any.
  *
- * @property string $ping                   Reflects the ping HTML attribute.  A notification will be sent to all the
- *                                          URLs contained within this property if the user clicks on this link.
+ * @property string $ping Reflects the ping HTML attribute.  A notification will
+ *     be sent to all the URLs contained within this property if the user clicks
+ *     on this link.
  *
- * @property string $port                   Represents the port, if any, of the URL.
+ * @property string $port Represents the port, if any, of the URL.
  *
- * @property string $protocol               Represents the protocol, including the trailing colon (:), of the URL.
+ * @property string $protocol Represents the protocol, including the trailing
+ *     colon (:), of the URL.
  *
- * @property string $rel                    Reflects the rel HTML attribute, which specifies the relationship of the
- *                                          target object to the linked object.
+ * @property string $rel Reflects the rel HTML attribute, which specifies the
+ *     relationship of the target object to the linked object.
  *
- * @property string $search                 Represents the query string, including the leading question mark (?), if
- *                                          any, of the URL.
+ * @property string $search Represents the query string, including the leading
+ *     question mark (?), if any, of the URL.
  *
- * @property string $target                 Reflects the target HTML attribute, which indicates where to display the
- *                                          linked resource.
+ * @property string $target Reflects the target HTML attribute, which indicates
+ *     where to display the linked resource.
  *
- * @property string $type                   Reflects the type HTML attribute, which indicates the MIME type of the
- *                                          linked resource.
+ * @property string $type Reflects the type HTML attribute, which indicates the
+ *     MIME type of the linked resource.
  *
- * @property string $username               Represents the username specified, if any, of the URL.
+ * @property string $username Represents the username specified, if any, of the
+ *     URL.
  *
- * @property-read string            $origin         Represents the URL's origin which is composed of the scheme, domain, and
- *                                                  port.
+ * @property-read string $origin Represents the URL's origin which is composed
+ *     of the scheme, domain, and port.
  *
- * @property-read DOMTokenList      $relList        Reflects the rel HTML attribute as a list of tokens.
- *
- * @property-read URLSearchParams   $searchParams   Represents the search property as a list of tokens.
+ * @property-read DOMTokenList $relList Reflects the rel HTML attribute as a
+ *     list of tokens.
  */
-class HTMLAnchorElement extends HTMLElement {
+class HTMLAnchorElement extends HTMLElement
+{
     use \phpjs\elements\HTMLHyperlinkElementUtils;
 
     private $mPing;
     private $mRelList;
 
-    public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null) {
+    public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null)
+    {
         parent::__construct($aLocalName, $aNamespaceURI, $aPrefix);
 
         $this->initHTMLHyperlinkElementUtils();
@@ -74,7 +79,16 @@ class HTMLAnchorElement extends HTMLElement {
         $this->mRelList = new DOMTokenList($this, 'rel');
     }
 
-    public function __get($aName) {
+    public function __destruct()
+    {
+        $this->mPing = null;
+        $this->mRelList = null;
+        $this->HTMLHyperLinkElementUtilsDestructor();
+        parent::__destruct();
+    }
+
+    public function __get($aName)
+    {
         switch ($aName) {
             case 'download':
                 return $this->reflectStringAttributeValue($aName);
@@ -101,7 +115,8 @@ class HTMLAnchorElement extends HTMLElement {
         }
     }
 
-    public function __set($aName, $aValue) {
+    public function __set($aName, $aValue)
+    {
         switch ($aName) {
             case 'download':
                 $this->_setAttributeValue($aName, $aValue);
@@ -139,12 +154,14 @@ class HTMLAnchorElement extends HTMLElement {
         }
     }
 
-    protected function attributeHookHandler($aHookType, Attr $aAttr) {
+    protected function attributeHookHandler($aHookType, Attr $aAttr)
+    {
         switch ($aAttr->name) {
             case 'href':
                 if ($aHookType == 'set') {
                     $resolvedURL = $this->resolveURL($aAttr->value);
-                    $this->mUrl = $resolvedURL === false ? null : $resolvedURL['parsed_url'];
+                    $this->mUrl = $resolvedURL !== false ?
+                        $resolvedURL['parsed_url'] : null;
                 } elseif ($aHookType == 'removed') {
                     $this->mUrl = null;
                 }
@@ -161,7 +178,9 @@ class HTMLAnchorElement extends HTMLElement {
                     $value = $aAttr->value;
 
                     if (!empty($value)) {
-                        $this->mRelList->appendTokens(DOMTokenList::_parseOrderedSet($value));
+                        $this->mRelList->appendTokens(
+                            DOMTokenList::_parseOrderedSet($value)
+                        );
                     }
                 } elseif ($aHookType == 'removed') {
                     $this->mRelList->emptyList();

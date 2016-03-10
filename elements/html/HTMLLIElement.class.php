@@ -1,18 +1,23 @@
 <?php
 namespace phpjs\elements\html;
 
-// https://html.spec.whatwg.org/multipage/semantics.html#the-li-element
+/**
+ * @see https://html.spec.whatwg.org/multipage/semantics.html#the-li-element
+ */
 
-class HTMLLIElement extends HTMLElement {
+class HTMLLIElement extends HTMLElement
+{
     private $mValue;
 
-    public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null) {
+    public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null)
+    {
         parent::__construct($aLocalName, $aNamespaceURI, $aPrefix);
 
         $this->mValue = '';
     }
 
-    public function __get($aName) {
+    public function __get($aName)
+    {
         switch ($aName) {
             case 'value':
                 return $this->mValue;
@@ -22,7 +27,8 @@ class HTMLLIElement extends HTMLElement {
         }
     }
 
-    public function __set($aName, $aValue) {
+    public function __set($aName, $aValue)
+    {
         switch ($aName) {
             case 'value':
                 if (!is_string($aValue)) {

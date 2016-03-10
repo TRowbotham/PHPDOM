@@ -1,8 +1,11 @@
 <?php
 namespace phpjs\elements\html;
 
-// https://html.spec.whatwg.org/multipage/embedded-content.html#the-img-element
-class HTMLImageElement extends HTMLElement {
+/**
+ * @see https://html.spec.whatwg.org/multipage/embedded-content.html#the-img-element
+ */
+class HTMLImageElement extends HTMLElement
+{
     private $mAlt;
     private $mCrossOrigin;
     private $mHeight;
@@ -13,7 +16,8 @@ class HTMLImageElement extends HTMLElement {
     private $mUseMap;
     private $mWidth;
 
-    public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null) {
+    public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null)
+    {
         parent::__construct($aLocalName, $aNamespaceURI, $aPrefix);
 
         $this->mEndTagOmitted = true;
@@ -28,7 +32,8 @@ class HTMLImageElement extends HTMLElement {
         $this->mWidth = 0;
     }
 
-    public function __get($aName) {
+    public function __get($aName)
+    {
         switch ($aName) {
             case 'alt':
                 return $this->mAlt;
@@ -62,7 +67,8 @@ class HTMLImageElement extends HTMLElement {
         }
     }
 
-    public function __set($aName, $aValue) {
+    public function __set($aName, $aValue)
+    {
         switch ($aName) {
             case 'alt':
                 if (!is_string($aValue)) {

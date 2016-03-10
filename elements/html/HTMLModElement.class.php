@@ -1,21 +1,26 @@
 <?php
 namespace phpjs\elements\html;
 
-// https://html.spec.whatwg.org/multipage/semantics.html#htmlmodelement
-// https://html.spec.whatwg.org/multipage/semantics.html#the-ins-element
-// https://html.spec.whatwg.org/multipage/semantics.html#the-del-element
-class HTMLModElement extends HTMLElement {
+/**
+ * @see https://html.spec.whatwg.org/multipage/semantics.html#htmlmodelement
+ * @see https://html.spec.whatwg.org/multipage/semantics.html#the-ins-element
+ * @see https://html.spec.whatwg.org/multipage/semantics.html#the-del-element
+ */
+class HTMLModElement extends HTMLElement
+{
     private $mCite;
     private $mDateTime;
 
-    public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null) {
+    public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null)
+    {
         parent::__construct($aLocalName, $aNamespaceURI, $aPrefix);
 
         $this->mCite = '';
         $this->mDateTime = '';
     }
 
-    public function __get($aName) {
+    public function __get($aName)
+    {
         switch ($aName) {
             case 'cite':
                 return $this->mCite;
@@ -28,7 +33,8 @@ class HTMLModElement extends HTMLElement {
         }
     }
 
-    public function __set($aName, $aValue) {
+    public function __set($aName, $aValue)
+    {
         switch ($aName) {
             case 'cite':
                 if (!is_string($aValue)) {

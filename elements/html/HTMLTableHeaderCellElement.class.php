@@ -4,23 +4,27 @@ namespace phpjs\elements\html;
 /**
  * Represents the HTML table header element <th>.
  *
- * @link https://html.spec.whatwg.org/#the-th-element
+ * @see https://html.spec.whatwg.org/#the-th-element
  *
- * @property string $abbr   An alternative label to use for the header cell when referencing the cell in other contexts.
- *                          This propterty reflects the value of the abbr attribute.
+ * @property string $abbr An alternative label to use for the header cell when
+ *     referencing the cell in other contexts.  This propterty reflects the
+ *     value of the abbr attribute.
  *
- * @property string $scope  Specifies which cells the header cell applies to.  The only accpeted values are row, col,
- *                          rowgroup, and colgroup.  This property reflects the value of the scope attribute.
+ * @property string $scope Specifies which cells the header cell applies to.
+ *     The only accpeted values are row, col, rowgroup, and colgroup.  This
+ *     property reflects the value of the scope attribute.
  *
- * @property string $sorted Column sort direction and its ordinality.  This property reflects the value of the sorted
- *                          attribute.
+ * @property string $sorted Column sort direction and its ordinality.  This
+ *     property reflects the value of the sorted attribute.
  */
-class HTMLTableHeaderCellElement extends HTMLTableCellElement {
+class HTMLTableHeaderCellElement extends HTMLTableCellElement
+{
     private $mAbbr;
     private $mScope;
     private $mSorted;
 
-    public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null) {
+    public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null)
+    {
         parent::__construct($aLocalName, $aNamespaceURI, $aPrefix);
 
         $this->mAbbr = '';
@@ -28,7 +32,8 @@ class HTMLTableHeaderCellElement extends HTMLTableCellElement {
         $this->mSorted = '';
     }
 
-    public function __get($aName) {
+    public function __get($aName)
+    {
         switch ($aName) {
             case 'abbr':
                 return $this->mAbbr;
@@ -44,7 +49,8 @@ class HTMLTableHeaderCellElement extends HTMLTableCellElement {
         }
     }
 
-    public function __set($aName, $aValue) {
+    public function __set($aName, $aValue)
+    {
         switch ($aName) {
             case 'abbr':
                 if (!is_string($aValue)) {
@@ -81,7 +87,8 @@ class HTMLTableHeaderCellElement extends HTMLTableCellElement {
         }
     }
 
-    public function sort() {
+    public function sort()
+    {
         // TODO
     }
 }

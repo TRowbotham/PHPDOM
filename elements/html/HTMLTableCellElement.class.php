@@ -4,29 +4,33 @@ namespace phpjs\elements\html;
 use phpjs\DOMTokenList;
 
 /**
- * A common class from which the HTMLTableDataCellElement and HTMLTableHeaderCellElement classes derive from.  The
- * HTMLTableDataCellElement and HTMLTableHeaderCellElement classes represent the HTML <td> and <th> elements respectively.
+ * A common class from which the HTMLTableDataCellElement and
+ * HTMLTableHeaderCellElement classes derive from.  The HTMLTableDataCellElement
+ * and HTMLTableHeaderCellElement classes represent the HTML <td> and <th>
+ * elements respectively.
  *
- * @link https://html.spec.whatwg.org/#htmltablecellelement
+ * @see https://html.spec.whatwg.org/#htmltablecellelement
  *
- * @property        int     $colSpan    Represents the number of columns this row must span.  Default value is 1.  Reflects the
- *                                      value of the colspan attribute.
+ * @property int $colSpan Represents the number of columns this row must span.
+ *     Default value is 1.  Reflects the value of the colspan attribute.
  *
- * @property        int     $rowSpan    Represents the number of rows this column must span.  Default value is 1.  Reflects the
- *                                      value of the rowspan attribute.
+ * @property int $rowSpan Represents the number of rows this column must span.
+ *     Default value is 1.  Reflects the value of the rowspan attribute.
  *
- * @property-read   int     $cellIndex  Returns the position of the cell in the row's cells list.  Returns -1
- *                                         if the element isn't in a row.
+ * @property-read int $cellIndex Returns the position of the cell in the row's
+ *     cells list.  Returns -1 if the element isn't in a row.
  *
- * @property-read   string  $headers    A list of ids of th elements that represents th elements associated with
- *                                         this cell.
+ * @property-read string $headers A list of ids of th elements that represents
+ *     th elements associated with this cell.
  */
-class HTMLTableCellElement extends HTMLElement {
+class HTMLTableCellElement extends HTMLElement
+{
     private $mColSpan;
     private $mHeaders;
     private $mRowSpan;
 
-    public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null) {
+    public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null)
+    {
         parent::__construct($aLocalName, $aNamespaceURI, $aPrefix);
 
         $this->mColSpan = 1;
@@ -34,7 +38,8 @@ class HTMLTableCellElement extends HTMLElement {
         $this->mRowSpan = 1;
     }
 
-    public function __get($aName) {
+    public function __get($aName)
+    {
         switch ($aName) {
             case 'cellIndex':
                 if ($this->mParentNode instanceof HTMLTableRowElement) {
@@ -65,7 +70,8 @@ class HTMLTableCellElement extends HTMLElement {
         }
     }
 
-    public function __set($aName, $aValue) {
+    public function __set($aName, $aValue)
+    {
         switch ($aName) {
             case 'colspan':
                 if (!is_int((int)$aValue)) {

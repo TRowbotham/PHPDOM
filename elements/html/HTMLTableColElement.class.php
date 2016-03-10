@@ -1,12 +1,16 @@
 <?php
 namespace phpjs\elements\html;
 
-// https://html.spec.whatwg.org/#the-colgroup-element
-// https://html.spec.whatwg.org/#the-col-element
-class HTMLTableColElement extends HTMLElement {
+/**
+ * @see https://html.spec.whatwg.org/#the-colgroup-element
+ * @see https://html.spec.whatwg.org/#the-col-element
+ */
+class HTMLTableColElement extends HTMLElement
+{
     private $mSpan;
 
-    public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null) {
+    public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null)
+    {
         parent::__construct($aLocalName, $aNamespaceURI, $aPrefix);
 
         if (strcasecmp($aLocalName, 'col') == 0) {
@@ -16,7 +20,8 @@ class HTMLTableColElement extends HTMLElement {
         $this->mSpan = 0;
     }
 
-    public function __get($aName) {
+    public function __get($aName)
+    {
         switch ($aName) {
             case 'span':
                 return $this->mSpan;
@@ -26,7 +31,8 @@ class HTMLTableColElement extends HTMLElement {
         }
     }
 
-    public function __set($aName, $aValue) {
+    public function __set($aName, $aValue)
+    {
         switch ($aName) {
             case 'span':
                 $this->mSpan = $aValue;

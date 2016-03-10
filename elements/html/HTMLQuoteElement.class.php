@@ -1,19 +1,24 @@
 <?php
 namespace phpjs\elements\html;
 
-// https://html.spec.whatwg.org/multipage/semantics.html#htmlquoteelement
-// https://html.spec.whatwg.org/multipage/semantics.html#the-blockquote-element
-// https://html.spec.whatwg.org/multipage/semantics.html#the-q-element
-class HTMLQuoteElement extends HTMLElement {
+/**
+ * @see https://html.spec.whatwg.org/multipage/semantics.html#htmlquoteelement
+ * @see https://html.spec.whatwg.org/multipage/semantics.html#the-blockquote-element
+ * @see https://html.spec.whatwg.org/multipage/semantics.html#the-q-element
+ */
+class HTMLQuoteElement extends HTMLElement
+{
     private $mCite;
 
-    public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null) {
+    public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null)
+    {
         parent::__construct($aLocalName, $aNamespaceURI, $aPrefix);
 
         $this->mCite = '';
     }
 
-    public function __get($aName) {
+    public function __get($aName)
+    {
         switch ($aName) {
             case 'cite':
                 return $this->mCite;
@@ -23,7 +28,8 @@ class HTMLQuoteElement extends HTMLElement {
         }
     }
 
-    public function __set($aName, $aValue) {
+    public function __set($aName, $aValue)
+    {
         switch ($aName) {
             case 'cite':
                 if (!is_string($aValue)) {
