@@ -1,6 +1,8 @@
 <?php
 namespace phpjs\elements\html;
 
+use phpjs\DOMTokenList;
+
 /**
  * A common class from which the HTMLTableDataCellElement and HTMLTableHeaderCellElement classes derive from.  The
  * HTMLTableDataCellElement and HTMLTableHeaderCellElement classes represent the HTML <td> and <th> elements respectively.
