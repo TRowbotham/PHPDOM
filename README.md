@@ -5,7 +5,11 @@ XML/XHTML/HTML4.  This is very much a work in progress and as a result things ma
 
 Here is a small sample of how to use PHPJS:
 ```php
+<<<<<<< HEAD
 require_once "phpjs.php";
+=======
+require_once "HTMLDocument.class.php";
+>>>>>>> parent of fa0759d... Update example
 
 /**
  * This creates a skeleton html page, which includes the DOCTYPE,

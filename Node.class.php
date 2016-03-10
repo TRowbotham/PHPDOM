@@ -7,7 +7,7 @@ use phpjs\events\EventTarget;
 use phpjs\exceptions\HierarchyRequestError;
 use phpjs\exceptions\InvalidStateError;
 use phpjs\exceptions\NotFoundError;
-use phpjs\urls\URLInternal;
+
 
 /**
  * @see https://dom.spec.whatwg.org/#node
@@ -39,8 +39,7 @@ use phpjs\urls\URLInternal;
  *
  * @property string|null         $textContent
  */
-abstract class Node implements EventTarget
-{
+abstract class Node implements EventTarget {
     const ELEMENT_NODE = 1;
     const ATTRIBUTE_NODE = 2;
     const TEXT_NODE = 3;
@@ -73,14 +72,13 @@ abstract class Node implements EventTarget
     protected $mParentNode; // Node
     protected $mParentElement; // Element
     protected $mPreviousSibling; // Node
-    protected static $mRefCount = 0;
+    protected $mTextContent; // String
 
     private $mEvents;
 
-    protected function __construct()
-    {
+    protected function __construct() {
         if (!self::$mBaseURI) {
-            self::$mBaseURI = URLInternal::basicURLParser($this->getBaseURI());
+            self::$mBaseURI = urls\URLInternal::basicURLParser($this->getBaseURI());
         }
 
         $this->mChildNodes = array();
@@ -90,29 +88,14 @@ abstract class Node implements EventTarget
         $this->mNextSibling = null;
         $this->mNodeName = '';
         $this->mNodeType = '';
+        $this->mNodeValue = null;
         $this->mOwnerDocument = Document::_getDefaultDocument();
         $this->mParentElement = null;
         $this->mParentNode = null;
         $this->mPreviousSibling = null;
-        self::$mRefCount++;
     }
 
-    public function __destruct()
-    {
-        $this->mChildNodes = null;
-        $this->mEvents = null;
-        $this->mFirstChild = null;
-        $this->mLastChild = null;
-        $this->mNextSibling = null;
-        $this->mOwnerDocument = null;
-        $this->mParentElement = null;
-        $this->mParentNode = null;
-        $this->mPreviousSibling = null;
-        self::$mRefCount--;
-    }
-
-    public function __get($aName)
-    {
+    public function __get( $aName ) {
         switch ($aName) {
             case 'baseURI':
                 return $this->getBaseURI();
@@ -136,7 +119,7 @@ abstract class Node implements EventTarget
                 return $this->mNodeType;
 
             case 'nodeValue':
-                return null;
+                return $this->mNodeValue;
 
             case 'ownerDocument':
                 return $this->mOwnerDocument;
@@ -154,7 +137,7 @@ abstract class Node implements EventTarget
                 switch (true) {
                     case $this instanceof DocumentFragment:
                     case $this instanceof Element:
-                        $tw = new TreeWalker($this, NodeFilter::SHOW_TEXT);
+                        $tw = $this->mOwnerDocument->createTreeWalker($this, NodeFilter::SHOW_TEXT);
                         $textContent = '';
 
                         while ($node = $tw->nextNode()) {
@@ -174,8 +157,7 @@ abstract class Node implements EventTarget
         }
     }
 
-    public function __set($aName, $aValue)
-    {
+    public function __set($aName, $aValue) {
         switch ($aName) {
             case 'textContent':
                 $value = $aValue === null ? '' : $aValue;
@@ -203,29 +185,20 @@ abstract class Node implements EventTarget
         }
     }
 
-    public function __toString()
-    {
-        return get_class($this);
-    }
-
     /**
      * Registers a callback for a specified event on the current node.
      *
-     * @param string $aEventName  The name of the event to listen for.
+     * @param string                    $aEventName     The name of the event to listen for.
      *
-     * @param callable|EventListener $aCallback A callback that will be
-     *     executed when the event occurs.  If an object that inherits from the
-     *     EventListener interface is given, it will use the handleEvent method
-     *     on the object as the callback.
+     * @param callable|EventListener    $aCallback      A callback that will be executed when the event occurs.  If an
+     *                                                  object that inherits from the EventListener interface is given,
+     *                                                  it will use the handleEvent method on the object as the
+     *                                                  callback.
      *
-     * @param boolean $aUseCapture Optional. Specifies whether or not the event
-     *     should be handled during the capturing or bubbling phase.
+     * @param boolean                   $aUseCapture    Optional. Specifies whether or not the event should be handled
+     *                                                  during the capturing or bubbling phase.
      */
-    public function addEventListener(
-        $aEventName,
-        $aCallback,
-        $aUseCapture = false
-    ) {
+    public function addEventListener($aEventName, $aCallback, $aUseCapture = false) {
         if (!$aCallback) {
             return;
         }
@@ -237,10 +210,10 @@ abstract class Node implements EventTarget
         }
 
         $listener = array(
-            'type' => $aEventName,
-            'callback' => $aCallback,
-            'capture' => $aUseCapture
-        );
+                        'type' => $aEventName,
+                        'callback' => $aCallback,
+                        'capture' => $aUseCapture
+                    );
 
         if (!in_array($listener, $this->mEvents)) {
             array_unshift($this->mEvents, $listener);
@@ -248,32 +221,24 @@ abstract class Node implements EventTarget
     }
 
     /**
-     * Appends a node to the parent node.  If the node being appended is already
-     * associated with another parent node, it will be removed from that parent
-     * node before being appended to the current parent node.
-     *
-     * @param Node $aNode A node representing an element on the page.
-     *
-     * @return Node The node that was just appended to the parent node.
+     * Appends a node to the parent node.  If the node being appended is already associated
+     * with another parent node, it will be removed from that parent node before being appended
+     * to the current parent node.
+     * @param  Node   $aNode A node representing an element on the page.
+     * @return Node          The node that was just appended to the parent node.
      */
-    public function appendChild(Node $aNode)
-    {
+    public function appendChild(Node $aNode) {
         return $this->_preinsertNodeBeforeChild($aNode, null);
     }
 
     /**
      * Returns a copy of the node upon which the method was called.
-     *
-     * @see https://dom.spec.whatwg.org/#dom-node-clonenodedeep
-     *
-     * @param bool $aDeep If true, all child nodes and event listeners should be
-     *     cloned as well.
-     *
-     * @return Node The copy of the node.
+     * @link   https://dom.spec.whatwg.org/#dom-node-clonenodedeep
+     * @param  boolean $aDeep If true, all child nodes and event listeners should be cloned as well.
+     * @return Node           The copy of the node.
      */
-    public function cloneNode($aDeep = false)
-    {
-        $ownerDocument = $this->mOwnerDocument ?: $this;
+    public function cloneNode($aDeep = false) {
+        $ownerDocument = $this instanceof Document ? $this : $this->mOwnerDocument;
 
         return $this->_cloneNode($ownerDocument, $aDeep);
     }
@@ -281,45 +246,37 @@ abstract class Node implements EventTarget
     /**
      * Compares the position of a node against another node.
      *
-     * @see https://dom.spec.whatwg.org/#dom-node-comparedocumentpositionother
+     * @link   https://dom.spec.whatwg.org/#dom-node-comparedocumentpositionother
      *
-     * @param Node $aOtherNode Node to compare position against.
+     * @param  Node   $aNode Node to compare position against.
      *
-     * @return int A bitmask representing the nodes position.  Possible values
-     *     are as follows:
-     *
-     *     Node::DOCUMENT_POSITION_DISCONNECTED
-     *     Node::DOCUMENT_POSITION_PRECEDING
-     *     Node::DOCUMENT_POSITION_FOLLOWING
-     *     Node::DOCUMENT_POSITION_CONTAINS
-     *     Node::DOCUMENT_POSITION_CONTAINED_BY
-     *     Node::DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC
+     * @return int           A bitmask representing the nodes position.  Possible values are as follows:
+     *                         Node::DOCUMENT_POSITION_DISCONNECTED
+     *                         Node::DOCUMENT_POSITION_PRECEDING
+     *                         Node::DOCUMENT_POSITION_FOLLOWING
+     *                         Node::DOCUMENT_POSITION_CONTAINS
+     *                         Node::DOCUMENT_POSITION_CONTAINED_BY
+     *                         Node::DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC
      */
-    public function compareDocumentPosition(Node $aOtherNode)
-    {
+    public function compareDocumentPosition(Node $aOtherNode) {
         $reference = $this;
 
         if ($reference === $aOtherNode) {
             return 0;
         }
 
-        if ($reference->mOwnerDocument !== $aOtherNode->mOwnerDocument ||
-            !$reference->mParentNode ||
-            !$aOtherNode->mParentNode
-        ) {
-            return self::DOCUMENT_POSITION_DISCONNECTED |
-                self::DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC |
-                self::DOCUMENT_POSITION_PRECEDING;
+        if ($reference->mOwnerDocument !== $aOtherNode->mOwnerDocument || !$reference->mParentNode ||
+            !$aOtherNode->mParentNode) {
+            return self::DOCUMENT_POSITION_DISCONNECTED | self::DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC |
+                   self::DOCUMENT_POSITION_PRECEDING;
         }
 
         if ($aOtherNode->contains($reference)) {
-            return self::DOCUMENT_POSITION_CONTAINS |
-                self::DOCUMENT_POSITION_PRECEDING;
+            return self::DOCUMENT_POSITION_CONTAINS | self::DOCUMENT_POSITION_PRECEDING;
         }
 
         if ($reference->contains($aOtherNode)) {
-            return self::DOCUMENT_POSITION_CONTAINED_BY |
-                self::DOCUMENT_POSITION_FOLLOWING;
+            return self::DOCUMENT_POSITION_CONTAINED_BY | self::DOCUMENT_POSITION_FOLLOWING;
         }
 
         $commonParent = $reference->mParentNode;
@@ -355,14 +312,11 @@ abstract class Node implements EventTarget
     /**
      * Returns whether or not a node is an inclusive descendant of another node.
      *
-     * @param Node|null $aNode A node that you wanted to compare its position
-     *     of.
+     * @param  Node     $aNode A node that you wanted to compare its position of.
      *
-     * @return boolean Returns true if $aNode is an inclusive descendant of a
-     *     node.
+     * @return boolean         Returns true if $aNode is an inclusive descendant of a node.
      */
-    public function contains(Node $aNode = null)
-    {
+    public function contains(Node $aNode = null) {
         $node = $aNode;
 
         while ($node) {
@@ -377,22 +331,18 @@ abstract class Node implements EventTarget
     }
 
     /**
-     * Dispatches an event at the current EventTarget, which will then invoke
-     * any event listeners on the node and its ancestors.
+     * Dispatches an event at the current EventTarget, which will then invoke any event listeners on the node and
+     * its ancestors.
      *
-     * @param Event $aEvent An object representing the specific event dispatched
-     *     with information regarding that event.
+     * @param  Event    $aEvent An object representing the specific event dispatched with information regarding
+     *                          that event.
      *
-     * @return bool Returns true if the event is not cancelable or if the
-     *     Event's preventDefault() method is not invoked, otherwise it
-     *     returns false.
+     * @return boolean          Returns true if the event is not cancelable or if the preventDefault() method is not
+     *                          invoked, otherwise it returns false.
      */
-    public function dispatchEvent(Event $aEvent)
-    {
-        if ($aEvent->_getFlags() & Event::EVENT_DISPATCHED ||
-            !($aEvent->_getFlags() & Event::EVENT_INITIALIZED)
-        ) {
-            throw new InvalidStateError();
+    public function dispatchEvent(Event $aEvent) {
+        if ($aEvent->_getFlags() & Event::EVENT_DISPATCHED || !($aEvent->_getFlags() & Event::EVENT_INITIALIZED)) {
+            throw new InvalidStateError;
         }
 
         $aEvent->_setIsTrusted(false);
@@ -438,34 +388,24 @@ abstract class Node implements EventTarget
         $aEvent->_setEventPhase(Event::NONE);
         $aEvent->_setCurrentTarget(null);
 
-        return !$aEvent->cancelable ||
-            !($aEvent->_getFlags() & Event::EVENT_CANCELED);
+        return !$aEvent->cancelable || !($aEvent->_getFlags() & Event::EVENT_CANCELED);
     }
 
     /**
-     * Returns a boolean indicating whether or not the current node contains
-     * any nodes.
-     *
-     * @return bool Returns true if at least one child node is present,
-     *     otherwise false.
+     * Returns a boolean indicating whether or not the current node contains any nodes.
+     * @return boolean Returns true if at least one child node is present, otherwise false.
      */
-    public function hasChildNodes()
-    {
+    public function hasChildNodes() {
         return !empty($this->mChildNodes);
     }
 
     /**
      * Inserts a node before another node in a common parent node.
-     *
-     * @param Node $aNewNode The node to be inserted into the document.
-     *
-     * @param Node $aRefNode The node that the new node will be inserted
-     *     before.
-     *
-     * @return Node The node that was inserted into the document.
+     * @param  Node   $aNewNode The node to be inserted into the document.
+     * @param  Node   $aRefNode The node that the new node will be inserted before.
+     * @return Node             The node that was inserted into the document.
      */
-    public function insertBefore(Node $aNewNode, Node $aRefNode = null)
-    {
+    public function insertBefore(Node $aNewNode, Node $aRefNode = null) {
         return $this->_preinsertNodeBeforeChild($aNewNode, $aRefNode);
     }
 
@@ -473,14 +413,13 @@ abstract class Node implements EventTarget
      * Returns whether or not the namespace of the node is the node's default
      * namespace.
      *
-     * @see https://dom.spec.whatwg.org/#dom-node-isdefaultnamespace
+     * @link https://dom.spec.whatwg.org/#dom-node-isdefaultnamespace
      *
-     * @param string|null $aNamespace A namespaceURI to check against.
+     * @param  string|null  $aNamespace A namespaceURI to check against.
      *
      * @return bool
      */
-    public function isDefaultNamespace($aNamespace)
-    {
+    public function isDefaultNamespace($aNamespace) {
         $namespace = $aNamespace === '' ? null : $aNamespace;
         $defaultNamespace = Namespaces::locateNamespace($this, null);
 
@@ -490,15 +429,14 @@ abstract class Node implements EventTarget
     /**
      * Compares two nodes to see if they are equal.
      *
-     * @see https://dom.spec.whatwg.org/#dom-node-isequalnode
-     * @see https://dom.spec.whatwg.org/#concept-node-equals
+     * @link   https://dom.spec.whatwg.org/#dom-node-isequalnode
+     * @link   https://dom.spec.whatwg.org/#concept-node-equals
      *
-     * @param Node $aNode The node you want to compare the current node to.
+     * @param  Node    $aNode The node you want to compare the current node to.
      *
-     * @return bool Returns true if the two nodes are the same, otherwise false.
+     * @return boolean        Returns true if the two nodes are the same, otherwise false.
      */
-    public function isEqualNode(Node $aOtherNode = null)
-    {
+    public function isEqualNode(Node $aOtherNode = null) {
         if (!$aOtherNode || $this->mNodeType != $aOtherNode->mNodeType) {
             return false;
         }
@@ -509,42 +447,29 @@ abstract class Node implements EventTarget
                 strcmp($this->systemId, $aOtherNode->systemId) !== 0) {
                 return false;
             }
-        } elseif ($this instanceof Element) {
+        } else if ($this instanceof Element) {
             if (strcmp($this->namespaceURI, $aOtherNode->namespaceURI) !== 0 ||
                 strcmp($this->prefix, $aOtherNode->prefix) !== 0 ||
                 strcmp($this->localName, $aOtherNode->localName) !== 0 ||
-                $this->mAttributes->length !== $aOtherNode->attributes->length
-            ) {
+                $this->mAttributes->length !== $aOtherNode->attributes->length) {
                 return false;
             }
-        } elseif ($this instanceof ProcessingInstruction) {
+        } else if ($this instanceof ProcessingInstruction) {
             if (strcmp($this->target, $aOtherNode->target) !== 0 ||
                 strcmp($this->data, $aOtherNode->data) !== 0) {
                 return false;
             }
-        } elseif ($this instanceof Text || $this instanceof Comment) {
+        } else if ($this instanceof Text || $this instanceof Comment) {
             if (strcmp($this->data, $aOtherNode->data) !== 0) {
                 return false;
             }
         }
 
         if ($this instanceof Element) {
-            $len = count($this->mAttributesList);
-
-            for ($i = 0; $i < $len; $i++) {
-                if (strcmp(
-                        $this->mAttributesList[$i]->namespaceURI,
-                        $aOtherNode->attributes[$i]->namespaceURI
-                    ) !== 0 ||
-                    strcmp(
-                        $this->mAttributesList[$i]->prefix,
-                        $aOtherNode->attributes[$i]->prefix
-                    ) !== 0 ||
-                    strcmp(
-                        $this->mAttributesList[$i]->localName,
-                        $aOtherNode->attributes[$i]->localName
-                    ) !== 0
-                ) {
+            for ($i = 0; $i < count($this->mAttributesList); $i++) {
+                if (strcmp($this->mAttributesList[$i]->namespaceURI, $aOtherNode->attributes[$i]->namespaceURI) !== 0 ||
+                    strcmp($this->mAttributesList[$i]->prefix, $aOtherNode->attributes[$i]->prefix) !== 0 ||
+                    strcmp($this->mAttributesList[$i]->localName, $aOtherNode->attributes[$i]->localName) !== 0) {
                     return false;
                 }
             }
@@ -566,14 +491,13 @@ abstract class Node implements EventTarget
     /**
      * Finds the namespace associated with the given prefix.
      *
-     * @see https://dom.spec.whatwg.org/#dom-node-lookupnamespaceuri
+     * @link https://dom.spec.whatwg.org/#dom-node-lookupnamespaceuri
      *
      * @param  string|null  $aPrefix The prefix of the namespace to be found.
      *
      * @return string|null
      */
-    public function lookupNamespaceURI($aPrefix)
-    {
+    public function lookupNamespaceURI($aPrefix) {
         $prefix = $aPrefix === '' ? null : $aPrefix;
 
         return Namespaces::locateNamespace($this, $aPrefix);
@@ -582,14 +506,13 @@ abstract class Node implements EventTarget
     /**
      * Finds the prefix associated with the given namespace on the given node.
      *
-     * @see https://dom.spec.whatwg.org/#dom-node-lookupprefix
+     * @link https://dom.spec.whatwg.org/#dom-node-lookupprefix
      *
      * @param  string|null  $aNamespace The namespace of the prefix to be found.
      *
      * @return string|null
      */
-    public function lookupPrefix($aNamespace)
-    {
+    public function lookupPrefix($aNamespace) {
         if ($aNamespace === null || $aNamespace === '') {
             return null;
         }
@@ -599,32 +522,24 @@ abstract class Node implements EventTarget
                 return Namespaces::locatePrefix($this, $aNamespace);
 
             case $this instanceof Document:
-                return Namespaces::locatePrefix(
-                    $this->mDoumentElement,
-                    $aNamespace
-                );
+                return Namespaces::locatePrefix($this->mDoumentElement, $aNamespace);
 
             case $this instanceof DocumentType:
             case $this instanceof DocumentFragment:
                 return null;
 
             default:
-                return $this->mParentElement ?
-                    Namespaces::locatePrefix(
-                        $this->mParentElement,
-                        $aNamespace
-                    ) : null;
+                return $this->mParentElement ? Namespaces::locatePrefix($this->mParentElement, $aNamespace) : null;
         }
     }
 
     /**
-     * "Normalizes" the node and its sub-tree so that there are no empty text
-     * nodes present and there are no text nodes that appear consecutively.
+     * "Normalizes" the node and its sub-tree so that there are no empty text nodes present and
+     * there are no text nodes that appear consecutively.
      *
-     * @see https://dom.spec.whatwg.org/#dom-node-normalize
+     * @link https://dom.spec.whatwg.org/#dom-node-normalize
      */
-    public function normalize()
-    {
+    public function normalize() {
         $ownerDocument = $this->mOwnerDocument ?: $this;
         $nextSibling = $this->mNextSibling;
         $tw = $ownerDocument->createTreeWalker($this, NodeFilter::SHOW_TEXT);
@@ -683,17 +598,13 @@ abstract class Node implements EventTarget
                 }
 
                 foreach ($ranges as $index => $range) {
-                    if ($range->startContainer === $currentNode->mParentNode &&
-                        $range->startOffset == $treeIndex
-                    ) {
+                    if ($range->startContainer === $currentNode->mParentNode && $range->startOffset == $treeIndex) {
                         $range->setStart($node, $length);
                     }
                 }
 
                 foreach ($ranges as $index => $range) {
-                    if ($range->endContainer === $currentNode->mParentNode &&
-                        $range->endOffset == $treeIndex
-                    ) {
+                    if ($range->endContainer === $currentNode->mParentNode && $range->endOffset == $treeIndex) {
                         $range->setEnd($node, $length);
                     }
                 }
@@ -712,34 +623,27 @@ abstract class Node implements EventTarget
 
     /**
      * Removes the specified node from the current node.
-     *
-     * @param Node $aNode The node to be removed from the DOM.
-     *
-     * @return Node The node that was removed from the DOM.
+     * @param  Node   $aNode The node to be removed from the DOM.
+     * @return Node          The node that was removed from the DOM.
      */
-    public function removeChild(Node $aNode)
-    {
+    public function removeChild(Node $aNode) {
         return $this->preremoveChild($aNode);
     }
 
     /**
      * Unregisters a callback for a specified event on the current node.
      *
-     * @param string $aEventName The name of the event to listen for.
+     * @param string                    $aEventName     The name of the event to listen for.
      *
-     * @param callable|EventListener $aCallback A callback that will be executed
-     *     when the event occurs.  If an object that inherits from the
-     *     EventListener interface is given,  it will use the handleEvent method
-     *     on the object as the callback.
+     * @param callable|EventListener    $aCallback      A callback that will be executed when the event occurs.  If an
+     *                                                  object that inherits from the EventListener interface is given,
+     *                                                  it will use the handleEvent method on the object as the
+     *                                                  callback.
      *
-     * @param bool $aUseCapture Optional. Specifies whether or not the event
-     *     should be handled during the capturing or bubbling phase.
+     * @param boolean                   $aUseCapture    Optional. Specifies whether or not the event should be handled
+     *                                                  during the capturing or bubbling phase.
      */
-    public function removeEventListener(
-        $aEventName,
-        $aCallback,
-        $aUseCapture = false
-    ) {
+    public function removeEventListener($aEventName, $aCallback, $aUseCapture = false) {
         if (is_object($aCallback) && $aCallback instanceof EventListener) {
             $callback = array($aCallback, 'handleEvent');
         } else {
@@ -747,10 +651,10 @@ abstract class Node implements EventTarget
         }
 
         $listener = array(
-            'type' => $aEventName,
-            'callback' => $callback,
-            'capture' => $aUseCapture
-        );
+                        'type' => $aEventName,
+                        'callback' => $callback,
+                        'capture' => $aUseCapture
+                    );
         $index = array_search($listener, $this->mEvents);
 
         if ($index !== false) {
@@ -760,60 +664,46 @@ abstract class Node implements EventTarget
 
     /**
      * Replaces a node with another node.
-     *
-     * @see https://dom.spec.whatwg.org/#concept-node-replace
-     *
-     * @param Node $aNewNode The node to be inserted into the DOM.
-     *
-     * @param Node $aOldNode The node that is being replaced by the new node.
-     *
-     * @return Node The node that was replaced in the DOM.
-     *
+     * @link   https://dom.spec.whatwg.org/#concept-node-replace
+     * @param  Node $aNewNode The node to be inserted into the DOM.
+     * @param  Node $aOldNode The node that is being replaced by the new node.
+     * @return Node           The node that was replaced in the DOM.
      * @throws HierarchyRequestError
-     *
      * @throws NotFoundError
      */
-    public function replaceChild(Node $aNewNode, Node $aOldNode)
-    {
+    public function replaceChild(Node $aNewNode, Node $aOldNode) {
         if (!($this instanceof Document) &&
             !($this instanceof DocumentFragment) &&
-            !($this instanceof Element)
-        ) {
-            throw new HierarchyRequestError();
+            !($this instanceof Element)) {
+            throw new HierarchyRequestError;
         }
 
         if ($this === $aNewNode || $aNewNode->contains($this)) {
-            throw new HierarchyRequestError();
+            throw new HierarchyRequestError;
         }
 
         if ($aOldNode->parentNode !== $this) {
-            throw new NotFoundError();
+            throw new NotFoundError;
         }
 
         if (!($aNewNode instanceof DocumentFragment) &&
-            !($aNewNode instanceof DocumentType) &&
-            !($aNewNode instanceof Element) &&
+            !($aNewNode instanceof DocumentType) && !($aNewNode instanceof Element) &&
             !($aNewNode instanceof Text) &&
             !($aNewNode instanceof ProcessingInstruction) &&
-            !($aNewNode instanceof Comment)
-        ) {
-            throw new HierarchyRequestError();
+            !($aNewNode instanceof Comment)) {
+            throw new HierarchyRequestError;
         }
 
         if (($aNewNode instanceof Text && $this instanceof Document) ||
-            ($aNewNode instanceof DocumentType && !($this instanceof Document))
-        ) {
-            throw new HierarchyRequestError();
+            ($aNewNode instanceof DocumentType && !($this instanceof Document))) {
+            throw new HierarchyRequestError;
         }
 
         if ($this instanceof Document) {
             if ($aNewNode instanceof DocumentFragment) {
-                $hasTextNode = array_filter(
-                    $this->mChildNodes,
-                    function ($node) {
-                        return $node instanceof Text;
-                    }
-                );
+                $hasTextNode = array_filter($this->mChildNodes, function($node) {
+                    return $node instanceof Text;
+                });
 
                 if ($aNewNode->childElementCount > 1 || $hasTextNode) {
                     throw new HierarchyRequestError;
@@ -830,11 +720,8 @@ abstract class Node implements EventTarget
                         $node = $node->nextSibling;
                     }
 
-                    if ($this->childElementCount == 1 &&
-                        ($this->children[0] !== $aOldNode ||
-                            $docTypeFollowsChild)
-                    ) {
-                        throw new HierarchyRequestError();
+                    if ($this->childElementCount == 1 && ($this->children[0] !== $aOldNode || $docTypeFollowsChild)) {
+                        throw new HierarchyRequestError;
                     }
                 }
             } elseif ($aNewNode instanceof Element) {
@@ -851,15 +738,14 @@ abstract class Node implements EventTarget
                 }
 
                 if ($this->childElementCount > 1 || $docTypeFollowsChild) {
-                    throw new HierarchyRequestError();
+                    throw new HierarchyRequestError;
                 }
             } elseif ($aNewNode instanceof DocumentType) {
                 $hasDocTypeNotChild = false;
 
                 foreach ($this->mChildNodes as $node) {
                     if ($node instanceof DocumentType &&
-                        $node !== $aOldNode
-                    ) {
+                        $node !== $aOldNode) {
                         $hasDocTypeNotChild = true;
                     }
                 }
@@ -877,7 +763,7 @@ abstract class Node implements EventTarget
                 }
 
                 if ($hasDocTypeNotChild || $elementPrecedesChild) {
-                    throw new HierarchyRequestError();
+                    throw new HierarchyRequestError;
                 }
             }
         }
@@ -889,13 +775,12 @@ abstract class Node implements EventTarget
         }
 
         // The DOM4 spec states that nodes should be implicitly adopted
-        $ownerDocument = $this->mOwnerDocument ?: $this;
+        $ownerDocument = $this instanceof Document ? $this : $this->mOwnerDocument;
         $ownerDocument->_adoptNode($aNewNode);
 
         $this->_removeChild($aOldNode, true);
 
-        $nodes = $aNewNode instanceof DocumentFragment ?
-            $aNewNode->childNodes : array($aNewNode);
+        $nodes = $aNewNode instanceof DocumentFragment ? $aNewNode->childNodes : array($aNewNode);
         $this->_insertNodeBeforeChild($aNewNode, $referenceChild, true);
 
         // TODO: Queue a mutation record for "childList"
@@ -910,15 +795,13 @@ abstract class Node implements EventTarget
      *
      * @param Document $aNode The Document object that owns this Node.
      */
-    public function setOwnerDocument(Document $aDocument)
-    {
+    public function setOwnerDocument(Document $aDocument) {
         if ($this->mNodeType !== self::DOCUMENT_NODE) {
             $this->mOwnerDocument = $aDocument;
         }
     }
 
-    public function _cloneNode($aDocument = null, $aCloneChildren = false)
-    {
+    public function _cloneNode($aDocument = null, $aCloneChildren = false) {
         $doc = !$aDocument ? $this->mOwnerDocument : $aDocument;
         $class = get_class($this);
 
@@ -934,29 +817,16 @@ abstract class Node implements EventTarget
                 break;
 
             case $this instanceof DocumentType:
-                $copy = new $class(
-                    $this->mName,
-                    $this->mPublicId,
-                    $this->mSystemId
-                );
+                $copy = new $class($this->mName, $this->mPublicId, $this->mSystemId);
 
                 break;
 
             case $this instanceof Element:
-                $copy = new $class(
-                    $this->mLocalName,
-                    $this->mNamespaceURI,
-                    $this->mPrefix
-                );
+                $copy = new $class($this->mLocalName, $this->mNamespaceURI, $this->mPrefix);
 
                 foreach ($this->mAttributesList as $attr) {
-                    $copyAttr = new Attr(
-                        $attr->localName,
-                        $attr->value,
-                        $attr->name,
-                        $attr->namespaceURI,
-                        $attr->prefix
-                    );
+                    $copyAttr = new Attr($attr->localName, $attr->value, $attr->name,
+                                         $attr->namespaceURI, $attr->prefix);
                     $copy->_appendAttribute($copyAttr);
                 }
 
@@ -993,59 +863,38 @@ abstract class Node implements EventTarget
 
     /**
      * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#concept-node-ensure-pre-insertion-validity
-     *
-     * @param DocumentFragment|Node $aNode The nodes being inserted into the
-     *     document tree.
-     *
-     * @param Node $aChild The reference node for where the new nodes should be
-     *     inserted.
-     *
+     * @link   https://dom.spec.whatwg.org/#concept-node-ensure-pre-insertion-validity
+     * @param  DocumentFragment|Node    $aNode  The nodes being inserted into the document tree.
+     * @param  Node                     $aChild The reference node for where the new nodes should be inserted.
      * @throws HierarchyRequestError
-     *
      * @throws NotFoundError
      */
-    public function _ensurePreinsertionValidity($aNode, $aChild)
-    {
+    public function _ensurePreinsertionValidity($aNode, $aChild) {
         if (!($this instanceof Document) &&
             !($this instanceof DocumentFragment) &&
-            !($this instanceof Element)
-        ) {
-            throw new HierarchyRequestError(
-                sprintf('%s cannot have child nodes.', get_class($aNode))
-            );
+            !($this instanceof Element)) {
+            throw new HierarchyRequestError;
         }
 
         if ($this === $aNode || $aNode->contains($this)) {
-            throw new HierarchyRequestError(
-                'You cannot insert a Node in to itself or one of its children.'
-            );
+            throw new HierarchyRequestError;
         }
 
         if ($aChild !== null && $this !== $aChild->mParentNode) {
-            throw new NotFoundError('The Node could not be found.');
+            throw new NotFoundError;
         }
 
         if (!($aNode instanceof DocumentFragment) &&
             !($aNode instanceof DocumentType) && !($aNode instanceof Element) &&
             !($aNode instanceof Text) &&
             !($aNode instanceof ProcessingInstruction) &&
-            !($aNode instanceof Comment)
-        ) {
-            throw new HierarchyRequestError(
-                'Only instances of DocumentFragment, DocumentType, Element,
-                    Text, ProcessingInstruction, and Comment can be inserted
-                    in to a document.'
-            );
+            !($aNode instanceof Comment)) {
+            throw new HierarchyRequestError;
         }
 
         if (($aNode instanceof Text && $this instanceof Document) ||
-            ($aNode instanceof DocumentType && !($this instanceof Document))
-        ) {
-            throw new HierarchyRequestError(
-                sprintf('%s cannot have child nodes.', get_class($aNode))
-            );
+            ($aNode instanceof DocumentType && !($this instanceof Document))) {
+            throw new HierarchyRequestError;
         }
 
         if ($this instanceof Document) {
@@ -1060,32 +909,18 @@ abstract class Node implements EventTarget
                     }
                 }
 
-                if ($hasTextNode) {
-                    throw new HierarchyRequestError(
-                        'A Node of type #text cannot be inserted in to a Node
-                            of type #document.'
-                    );
-                } elseif ($aNode->childElementCount > 1) {
-                    throw new HierarchyRequestError(
-                        'A Document node can only have an single Element child
-                            node.'
-                    );
+                if ($aNode->childElementCount > 1 || $hasTextNode) {
+                    throw new HierarchyRequestError;
                 } else {
-                    if ($aNode->childElementCount == 1 &&
-                        ($this->childElementCount ||
-                        $aChild instanceof DocumentType)
-                    ) {
-                        throw new HierarchyRequestError();
+                    if ($aNode->childElementCount == 1 && ($this->childElementCount || $aChild instanceof DocumentType)) {
+                        throw new HierarchyRequestError;
                     }
 
                     if ($aChild !== null) {
-                        $tw = new TreeWalker(
-                            $aChild,
-                            NodeFilter::SHOW_DOCUMENT_TYPE
-                        );
+                        $tw = new TreeWalker($aChild, NodeFilter::SHOW_DOCUMENT_TYPE);
 
                         if ($tw->nextNode() !== null) {
-                            throw new HierarchyRequestError();
+                            throw new HierarchyRequestError;
                         }
                     }
                 }
@@ -1100,20 +935,12 @@ abstract class Node implements EventTarget
                     }
                 }
 
-                if ($parentHasElementChild) {
-                    throw new HierarchyRequestError(
-                        'A Document node can only have an single Element child
-                            node.'
-                    );
-                } elseif ($aChild instanceof DocumentType) {
-                    throw new HierarchyRequestError();
+                if ($parentHasElementChild || $aChild instanceof DocumentType) {
+                    throw new HierarchyRequestError;
                 }
 
                 if ($aChild !== null) {
-                    $tw = new TreeWalker(
-                        $aChild,
-                        NodeFilter::SHOW_DOCUMENT_TYPE
-                    );
+                    $tw = new TreeWalker($aChild, NodeFilter::SHOW_DOCUMENT_TYPE);
 
                     if ($tw->nextNode() !== null) {
                         throw new HierarchyRequestError;
@@ -1132,14 +959,11 @@ abstract class Node implements EventTarget
 
                 if ($aChild !== null) {
                     $ownerDocument = $this->mOwnerDocument ?: $this;
-                    $tw = new TreeWalker(
-                        $ownerDocument,
-                        NodeFilter::SHOW_ELEMENT
-                    );
+                    $tw = new TreeWalker($ownerDocument, NodeFilter::SHOW_ELEMENT);
                     $tw->currentNode = $aChild;
 
                     if ($tw->previousNode() !== null) {
-                        throw new HierarchyRequestError();
+                        throw new HierarchyRequestError;
                     }
                 }
 
@@ -1153,23 +977,20 @@ abstract class Node implements EventTarget
                     }
                 }
 
-                if ($parentHasDocTypeChild || ($aChild !== null &&
-                    $parentHasElementChild)
-                ) {
-                    throw new HierarchyRequestError();
+                if ($parentHasDocTypeChild || ($aChild !== null && $parentHasElementChild)) {
+                    throw new HierarchyRequestError;
                 }
             }
         }
     }
 
     /**
-     * Gets the bottom most common ancestor of two nodes, if any.  If null is
-     * returned, the two nodes do not have a common ancestor.
+     * Gets the bottom most common ancestor of two nodes, if any.  If null is returned,
+     * the two nodes do not have a common ancestor.
      *
      * @internal
      */
-    public static function _getCommonAncestor(Node $aNodeA, Node $aNodeB)
-    {
+    public static function _getCommonAncestor(Node $aNodeA, Node $aNodeB) {
         $nodeA = $aNodeA;
 
         while ($nodeA) {
@@ -1192,14 +1013,13 @@ abstract class Node implements EventTarget
     /**
      * Gets the root element of the given node.
      *
-     * @see https://html.spec.whatwg.org/multipage/infrastructure.html#root-element
+     * @link https://html.spec.whatwg.org/multipage/infrastructure.html#root-element
      *
      * @param  Node         $aNode The node whose root element is to be found.
      *
      * @return Element|null
      */
-    public static function _getRootElement(Node $aNode)
-    {
+    public static function _getRootElement(Node $aNode) {
         if ($aNode instanceof Document) {
             return $aNode->firstElementChild;
         }
@@ -1222,12 +1042,11 @@ abstract class Node implements EventTarget
      *
      * @internal
      *
-     * @see https://dom.spec.whatwg.org/#concept-tree-index
+     * @link https://dom.spec.whatwg.org/#concept-tree-index
      *
      * @return int
      */
-    public function _getTreeIndex()
-    {
+    public function _getTreeIndex() {
         $index = 0;
         $sibling = $this->mPreviousSibling;
 
@@ -1244,34 +1063,23 @@ abstract class Node implements EventTarget
      *
      * @internal
      *
-     * @see https://dom.spec.whatwg.org/#concept-node-length
+     * @link https://dom.spec.whatwg.org/#concept-node-length
      *
      * @return int
      */
-    public function _getNodeLength()
-    {
+    public function _getNodeLength() {
         return count($this->mChildNodes);
     }
 
     /**
      * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#concept-node-insert
-     *
-     * @param DocumentFragment|Node $aNode The nodes to be inserted into the
-     *     document tree.
-     *
-     * @param Node $aChild The reference node for where the new nodes should be
-     *     inserted.
-     *
-     * @param bool $aSuppressObservers Optional. If true, mutation events are
-     *     ignored for this operation.
+     * @link   https://dom.spec.whatwg.org/#concept-node-insert
+     * @param  DocumentFragment|Node    $aNode              The nodes to be inserted into the document tree.
+     * @param  Node                     $aChild             The reference node for where the new nodes should be inserted.
+     * @param  bool                     $aSuppressObservers Optional.  If true, mutation events are ignored for this
+     *                                                         operation.
      */
-    public function _insertNodeBeforeChild(
-        $aNode,
-        $aChild,
-        $aSuppressObservers = null
-    ) {
+    public function _insertNodeBeforeChild($aNode, $aChild, $aSuppressObservers = null) {
         $isDocumentFragment = $aNode instanceof DocumentFragment;
         $parentElement = $this instanceof Element ? $this : null;
         $count = $isDocumentFragment ? count($aNode->mChildNodes) : 1;
@@ -1283,9 +1091,7 @@ abstract class Node implements EventTarget
                 $startContainer = $range->startContainer;
                 $startOffset = $range->startOffset;
 
-                if ($startContainer === $this &&
-                    $startOffset > $aChild->_getTreeIndex()
-                ) {
+                if ($startContainer === $this && $startOffset > $aChild->_getTreeIndex()) {
                     $range->setStart($startContainer, $startOffset + $count);
                 }
             }
@@ -1294,18 +1100,14 @@ abstract class Node implements EventTarget
                 $endContainer = $range->endContainer;
                 $endOffset = $range->endOffset;
 
-                if ($endContainer === $this &&
-                    $endOffset > $aChild->_getTreeIndex()
-                ) {
+                if ($endContainer === $this && $endOffset > $aChild->_getTreeIndex()) {
                     $range->setEnd($endContainer, $endOffset + $count);
                 }
             }
         }
 
         $nodes = $isDocumentFragment ? $aNode->mChildNodes : array($aNode);
-        $index = $aChild ?
-            array_search($aChild, $this->mChildNodes) :
-            count($this->mChildNodes);
+        $index = $aChild ? array_search($aChild, $this->mChildNodes) : count($this->mChildNodes);
 
         if ($isDocumentFragment) {
             foreach ($nodes as $node) {
@@ -1316,9 +1118,7 @@ abstract class Node implements EventTarget
             // TODO: Queue a mutation record for "childList"
         }
 
-        if (($aChild && $aChild === $this->mChildNodes[0]) ||
-            (!$aChild && $index === 0 && $count)
-        ) {
+        if (($aChild && $aChild === $this->mChildNodes[0]) || (!$aChild && $index === 0 && $count)) {
             $this->mFirstChild = $nodes[0];
         }
 
@@ -1355,20 +1155,12 @@ abstract class Node implements EventTarget
 
     /**
      * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#concept-node-pre-insert
-     *
-     * @param DocumentFragment|Node $aNode The nodes to be inserted into the
-     *     document tree.
-     *
-     * @param Node $aChild The reference node for where the new nodes should be
-     *     inserted.
-     *
-     * @return DocumentFragment|Node The nodes that were insterted into the
-     *     document tree.
+     * @link   https://dom.spec.whatwg.org/#concept-node-pre-insert
+     * @param  DocumentFragment|Node    $aNode  The nodes to be inserted into the document tree.
+     * @param  Node                     $aChild The reference node for where the new nodes should be inserted.
+     * @return DocumentFragment|Node            The nodes that were insterted into the document tree.
      */
-    public function _preinsertNodeBeforeChild($aNode, $aChild)
-    {
+    public function _preinsertNodeBeforeChild($aNode, $aChild) {
         $this->_ensurePreinsertionValidity($aNode, $aChild);
         $referenceChild = $aChild;
 
@@ -1390,12 +1182,11 @@ abstract class Node implements EventTarget
      *
      * @internal
      *
-     * @see https://dom.spec.whatwg.org/#concept-node-replace-all
+     * @link https://dom.spec.whatwg.org/#concept-node-replace-all
      *
      * @param Node|null $aNode The node that is to be inserted.
      */
-    public function _replaceAll(Node $aNode = null)
-    {
+    public function _replaceAll(Node $aNode = null) {
         if ($aNode) {
             $ownerDocument = $this->mOwnerDocument ?: $this;
             $ownerDocument->_adoptNode($aNode);
@@ -1405,7 +1196,7 @@ abstract class Node implements EventTarget
 
         if (!$aNode) {
             $addedNodes = array();
-        } elseif ($aNode instanceof DocumentFragment) {
+        } else if ($aNode instanceof DocumentFragment) {
             $addedNodes = $aNode->mChildNodes;
         } else {
             $addedNodes = array($aNode);
@@ -1422,30 +1213,22 @@ abstract class Node implements EventTarget
         // TODO: Queue a mutation record for "childList"
     }
 
-    protected function getBaseURI()
-    {
+    protected function getBaseURI() {
         $ssl = isset($_SERVER['HTTPS']) && $_SERVER["HTTPS"] == 'on';
-        $port = in_array($_SERVER['SERVER_PORT'], array(80, 443)) ?
-            '' :
-            ':' . $_SERVER['SERVER_PORT'];
-        $url = ($ssl ? 'https' : 'http') . '://' . $_SERVER['SERVER_NAME'] .
-            $port . $_SERVER['REQUEST_URI'];
+        $port = in_array($_SERVER['SERVER_PORT'], array(80, 443)) ? '' : ':' . $_SERVER['SERVER_PORT'];
+        $url = ($ssl ? 'https' : 'http') . '://' . $_SERVER['SERVER_NAME'] . $port . $_SERVER['REQUEST_URI'];
 
         return $url;
     }
 
     /**
      * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#mutation-method-macro
-     *
-     * @param  array $aNodes An array of Nodes and strings.
-     *
-     * @return DocumentFragment|Node If $aNodes > 1, then a DocumentFragment is
-     *     returned, otherwise a single Node is returned.
+     * @link   https://dom.spec.whatwg.org/#mutation-method-macro
+     * @param  array                   $aNodes An array of Nodes and strings.
+     * @return DocumentFragment|Node           If $aNodes > 1, then a DocumentFragment is
+     *                                             returned, otherwise a single Node is returned.
      */
-    protected function mutationMethodMacro($aNodes)
-    {
+    protected function mutationMethodMacro($aNodes) {
         $node = null;
         $nodes = $aNodes;
 
@@ -1456,8 +1239,7 @@ abstract class Node implements EventTarget
             }
         });
 
-        // If we were given mutiple nodes, throw them all into a
-        // DocumentFragment
+        // If we were given mutiple nodes, throw them all into a DocumentFragment
         if (count($nodes) > 1) {
             $node = $this->mOwnerDocument->createDocumentFragment();
 
@@ -1473,25 +1255,19 @@ abstract class Node implements EventTarget
 
     /**
      * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#concept-node-remove
-     *
-     * @param Node $aNode The Node to be removed from the document tree.
-     *
-     * @param bool $aSuppressObservers Optional. If true, mutation events are
-     *     ignored for this operation.
+     * @link  https://dom.spec.whatwg.org/#concept-node-remove
+     * @param Node $aNode              The Node to be removed from the document tree.
+     * @param bool $aSuppressObservers Optional. If true, mutation events are ignored for this
+     *                                   operation.
      */
-    protected function _removeChild($aNode, $aSuppressObservers = null)
-    {
+    protected function _removeChild($aNode, $aSuppressObservers = null) {
         $index = array_search($aNode, $this->mChildNodes);
         $ranges = Range::_getRangeCollection();
 
         foreach ($ranges as $index => $range) {
             $startContainer = $range->startContainer;
 
-            if ($startContainer === $aNode ||
-                $aNode->contains($startContainer)
-            ) {
+            if ($startContainer === $aNode || $aNode->contains($startContainer)) {
                 $range->setStart($this, $index);
             }
         }
@@ -1549,8 +1325,7 @@ abstract class Node implements EventTarget
         $aNode->mParentElement = null;
         $aNode->mParentNode = null;
 
-        // TODO: Unregister any registered observers whose subtree option is
-        // true
+        // TODO: Unregister any registered observers whose subtree option is true
 
         if (!$aSuppressObservers) {
             // TODO: Queue a mutation record for "childList"
@@ -1561,7 +1336,7 @@ abstract class Node implements EventTarget
      * @internal
      * Invokes all callbacks associated with a given event and Node.
      *
-     * @see https://dom.spec.whatwg.org/#concept-event-listener-invoke
+     * @link https://dom.spec.whatwg.org/#concept-event-listener-invoke
      *
      * @param  Event $aEvent  The event currently being dispatched.
      *
@@ -1579,11 +1354,8 @@ abstract class Node implements EventTarget
             $phase = $aEvent->eventPhase;
 
             if ($aEvent->type !== $listeners[$i]['type'] ||
-                ($phase === Event::CAPTURING_PHASE &&
-                    !$listeners[$i]['capture']) ||
-                ($phase === Event::BUBBLING_PHASE &&
-                    $listeners[$i]['capture'])
-            ) {
+                ($phase === Event::CAPTURING_PHASE && !$listeners[$i]['capture']) ||
+                ($phase === Event::BUBBLING_PHASE && $listeners[$i]['capture'])) {
                 continue;
             }
 
@@ -1593,82 +1365,17 @@ abstract class Node implements EventTarget
 
     /**
      * @internal
-     * @see   https://dom.spec.whatwg.org/#concept-node-pre-remove
+     * @link   https://dom.spec.whatwg.org/#concept-node-pre-remove
      * @param  Node $aChild The Node to be removed from the document tree.
      * @return Node         The Node that was removed.
      */
     private function preremoveChild($aChild) {
         if ($aChild->mParentNode !== $this) {
-            throw new NotFoundError();
+            throw new NotFoundError;
         }
 
         $this->_removeChild($aChild);
 
         return $aChild;
-    }
-
-    private function queueMutationRecord($aType, $aValues)
-    {
-        $interestedObservers = new \SplObjectStorage();
-        $nodes = new \SplObjectStorage();
-        $node = $this;
-
-        while ($node) {
-            $nodes->attach($node);
-            $node = $node->mParentNode;
-        }
-
-        foreach ($nodes as $node) {
-            foreach ($node->_getObservers() as $observer) {
-                $data = $observer->getInfo();
-
-                if ($node !== $data['target'] && !$data['options']->subtree) {
-                    continue;
-                }
-
-                if ($aType == 'attributes' && !$data['options']->attributes) {
-                    continue;
-                }
-
-                if ($aType == 'attributes' &&
-                    is_array($data['options']->attributeFilter) &&
-                    empty($data['options']->attributeFilter)
-                ) {
-                    continue;
-                }
-
-                if ($aType == 'characterData' &&
-                    !$data['options']->characterData
-                ) {
-                    continue;
-                }
-
-                if ($aType == 'childList' && !$data['options']->childList) {
-                    continue;
-                }
-
-                if (!$interestedObservers->contains($observer)) {
-                    $interestedObservers->attach($observer);
-                }
-
-                if (($aType == 'attributes' &&
-                        $data['options']->attributeOldValue) ||
-                    ($aType == 'characterData' &&
-                        $data['options']->characterDataOldValue)
-                ) {
-                    $interestedObservers->setInfo($aValues['oldValue']);
-                }
-            }
-        }
-
-        foreach ($interestedObservers as $observer) {
-            $record = new MutationRecord($aType, $this, $aValues);
-            $observer->_appendRecord($record);
-        }
-    }
-
-    private function queueCompoundMicrotask()
-    {
-
     }
 }
