@@ -7,7 +7,7 @@ use phpjs\events\EventTarget;
 use phpjs\exceptions\HierarchyRequestError;
 use phpjs\exceptions\InvalidStateError;
 use phpjs\exceptions\NotFoundError;
-
+use phpjs\urls\URLInternal;
 
 /**
  * @see https://dom.spec.whatwg.org/#node
@@ -78,7 +78,7 @@ abstract class Node implements EventTarget {
 
     protected function __construct() {
         if (!self::$mBaseURI) {
-            self::$mBaseURI = urls\URLInternal::basicURLParser($this->getBaseURI());
+            self::$mBaseURI = URLInternal::basicURLParser($this->getBaseURI());
         }
 
         $this->mChildNodes = array();
