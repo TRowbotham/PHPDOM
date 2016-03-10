@@ -11,26 +11,35 @@ use phpjs\exceptions\HierarchyRequestError;
 /**
  * HTMLDocument represents an HTML document.
  *
- * @property HTMLBodyElement    $body   Represents the HTML document's <body> element.
+ * @property HTMLBodyElement $body Represents the HTML document's <body>
+ *     element.
  *
- * @property HTMLHeadElement    $head   Represents the HTML document's <head> element.
+ * @property HTMLHeadElement $head Represents the HTML document's <head>
+ *     element.
  *
- * @property string             $title  Reflects the text content of the <title> element.
+ * @property string $title  Reflects the text content of the <title> element.
  */
-class HTMLDocument extends Document {
-    public function __construct() {
+class HTMLDocument extends Document
+{
+    public function __construct()
+    {
         parent::__construct();
 
         $this->mContentType = 'text/html';
     }
 
-    public function __get( $aName ) {
+    public function __get($aName)
+    {
         switch ($aName) {
             case 'body':
-                $node = $this->documentElement ? $this->documentElement->firstChild : null;
+                $node = $this->documentElement ?
+                    $this->documentElement->firstChild : null;
 
                 while ($node) {
-                    if ($node instanceof HTMLBodyElement || $node instanceof HTMLFrameSetElement) {
+                    if (
+                        $node instanceof HTMLBodyElement ||
+                        $node instanceof HTMLFrameSetElement
+                    ) {
                         break;
                     }
 
@@ -40,7 +49,8 @@ class HTMLDocument extends Document {
                 return $node;
 
             case 'head':
-                $node = $this->documentElement ? $this->documentElement->firstChild : null;
+                $node = $this->documentElement ?
+                    $this->documentElement->firstChild : null;
 
                 while ($node) {
                     if ($node instanceof HTMLHeadElement) {
@@ -55,18 +65,27 @@ class HTMLDocument extends Document {
             case 'title':
                 $root = self::_getRootElement($this);
 
-                if ($root instanceof SVGElement && $root->namespaceURI === Namespaces::SVG) {
-                    $nodeFilter = function($aNode) {
-                        return $aNode instanceof SVGTitleElement ? NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
+                if (
+                    $root instanceof SVGElement &&
+                    $root->namespaceURI === Namespaces::SVG
+                ) {
+                    $nodeFilter = function ($aNode) {
+                        return $aNode instanceof SVGTitleElement ?
+                            NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
                     };
                 } else {
-                    $nodeFilter = function($aNode) {
-                        return $aNode instanceof HTMLTitleElement ? NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
+                    $nodeFilter = function ($aNode) {
+                        return $aNode instanceof HTMLTitleElement ?
+                            NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
                     };
                 }
 
                 $value = '';
-                $tw = new TreeWalker($this, NodeFilter::SHOW_ELEMENT, $nodeFilter);
+                $tw = new TreeWalker(
+                    $this,
+                    NodeFilter::SHOW_ELEMENT,
+                    $nodeFilter
+                );
                 $title = $tw->nextNode();
 
                 foreach ($title->childNodes as $node) {
@@ -81,11 +100,15 @@ class HTMLDocument extends Document {
         }
     }
 
-    public function __set($aName, $aValue) {
+    public function __set($aName, $aValue)
+    {
         switch ($aName) {
             case 'body':
-                if (!($aValue instanceof HTMLBodyElement) && !($aValue instanceof HTMLFrameSetElement)) {
-                    throw new HierarchyRequestError;
+                if (
+                    !($aValue instanceof HTMLBodyElement) &&
+                    !($aValue instanceof HTMLFrameSetElement)
+                ) {
+                    throw new HierarchyRequestError();
                     return;
                 }
 
@@ -103,7 +126,7 @@ class HTMLDocument extends Document {
                 $root = $this->documentElement;
 
                 if (!$root) {
-                    throw new HierarchyRequestError;
+                    throw new HierarchyRequestError();
                     return;
                 }
 
@@ -118,7 +141,10 @@ class HTMLDocument extends Document {
 
                 $root = self::_getRootElement($this);
 
-                if ($root instanceof SVGElement && $root->namespaceURI === Namespaces::SVG) {
+                if (
+                    $root instanceof SVGElement &&
+                    $root->namespaceURI === Namespaces::SVG
+                ) {
                     $element = $root->firstChild;
 
                     while ($element) {
@@ -134,10 +160,16 @@ class HTMLDocument extends Document {
                     }
 
                     $element->textContent = $aValue;
-                } else if ($root && $root->namespaceURI === Namespaces::HTML) {
-                    $tw = new TreeWalker($root, NodeFilter::SHOW_ELEMENT, function($aNode) {
-                        return $aNode instanceof HTMLTitleElement ? NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
-                    });
+                } elseif ($root && $root->namespaceURI === Namespaces::HTML) {
+                    $tw = new TreeWalker(
+                        $root,
+                        NodeFilter::SHOW_ELEMENT,
+                        function ($aNode) {
+                            return $aNode instanceof HTMLTitleElement ?
+                                NodeFilter::FILTER_ACCEPT :
+                                NodeFilter::FILTER_SKIP;
+                        }
+                    );
                     $element = $tw->nextNode();
 
                     if (!$element && !$this->head) {
@@ -145,7 +177,9 @@ class HTMLDocument extends Document {
                     }
 
                     if (!$element) {
-                        $element = $this->head->appendChild($this->createElement('title'));
+                        $element = $this->head->appendChild(
+                            $this->createElement('title')
+                        );
                     }
 
                     $element->textContent = $aValue;
@@ -158,7 +192,8 @@ class HTMLDocument extends Document {
         }
     }
 
-    public function toHTML() {
+    public function toHTML()
+    {
         $html = '';
 
         foreach($this->mChildNodes as $child) {
@@ -168,7 +203,8 @@ class HTMLDocument extends Document {
         return $html;
     }
 
-    public function __toString() {
+    public function __toString()
+    {
         return get_class($this);
     }
 }

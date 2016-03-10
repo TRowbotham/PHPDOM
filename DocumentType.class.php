@@ -1,16 +1,20 @@
 <?php
 namespace phpjs;
 
-// https://developer.mozilla.org/en-US/docs/Web/API/DocumentType
-// https://dom.spec.whatwg.org/#documenttype
-class DocumentType extends Node {
+/**
+ * @see https://dom.spec.whatwg.org/#documenttype
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/DocumentType
+ */
+class DocumentType extends Node
+{
 	use ChildNode;
 
 	private $mName;
 	private $mPublicId;
 	private $mSystemId;
 
-	public function __construct($aName, $aPublicId = '', $aSystemId = '') {
+	public function __construct($aName, $aPublicId = '', $aSystemId = '')
+    {
 		parent::__construct();
 
 		$this->mName = $aName;
@@ -20,7 +24,8 @@ class DocumentType extends Node {
 		$this->mSystemId = $aSystemId;
 	}
 
-	public function __get($aName) {
+	public function __get($aName)
+    {
 		switch ($aName) {
 			case 'name':
 				return $this->mName;
@@ -33,7 +38,8 @@ class DocumentType extends Node {
 		}
 	}
 
-	public function toHTML() {
+	public function toHTML()
+    {
 		$html = '<!DOCTYPE';
 		$html .= ($this->mName ? ' ' . $this->mName  : '');
 		$html .= ($this->mPublicId ? ' ' . $this->mPublicId : '');
@@ -48,11 +54,12 @@ class DocumentType extends Node {
      *
      * @internal
      *
-     * @link https://dom.spec.whatwg.org/#concept-node-length
+     * @see https://dom.spec.whatwg.org/#concept-node-length
      *
      * @return int
      */
-    public function _getNodeLength() {
+    public function _getNodeLength()
+    {
         return 0;
     }
 }

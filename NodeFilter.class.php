@@ -20,16 +20,22 @@ abstract class NodeFilter {
     const SHOW_DOCUMENT_FRAGMENT = 0x400;
     const SHOW_NOTATION = 0x800;
 
-    final public function acceptNode(Node $aNode) {}
+    final public function acceptNode(Node $aNode)
+    {
+    }
 
     /**
      * Filters a node.
-     * @param  Node                    $aNode           The node to check.
-     * @param  NodeIterator|TreeWalker $aNodeTraverser  An iterator to traverse the DOM tree.
-     * @return int                                      Can be one of FILTER_ACCEPT | FILTER_REJECT |
-     *                                                  FILTER_SKIP
+     *
+     * @param Node $aNode The node to check.
+     *
+     * @param NodeIterator|TreeWalker $aNodeTraverser An iterator to traverse
+     *     the DOM tree.
+     *
+     * @return int Can be one of FILTER_ACCEPT | FILTER_REJECT | FILTER_SKIP
      */
-    final public static function _filter($aNode, $aNodeTraverser) {
+    final public static function _filter($aNode, $aNodeTraverser)
+    {
         $n = $aNode->nodeType - 1;
 
         if (!((1 << $n) & $aNodeTraverser->whatToShow)) {

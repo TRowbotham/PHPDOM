@@ -1,16 +1,23 @@
 <?php
 namespace phpjs;
 
-// https://dom.spec.whatwg.org/#nodeiterator
-// https://developer.mozilla.org/en-US/docs/Web/API/NodeIterator
-final class NodeIterator {
+/**
+ * @see https://dom.spec.whatwg.org/#nodeiterator
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/NodeIterator
+ */
+final class NodeIterator
+{
     private $mFilter;
     private $mPointerBeforeReferenceNode;
     private $mReferenceNode;
     private $mRoot;
     private $mWhatToShow;
 
-    public function __construct(Node $aRoot, $aWhatToShow = NodeFilter::SHOW_ALL, callable $aFilter = null) {
+    public function __construct(
+        Node $aRoot,
+        $aWhatToShow = NodeFilter::SHOW_ALL,
+        callable $aFilter = null
+    ) {
         $this->mFilter = $aFilter;
         $this->mPointerBeforeReferenceNode = true;
         $this->mReferenceNode = $aRoot;
@@ -18,7 +25,15 @@ final class NodeIterator {
         $this->mWhatToShow = $aWhatToShow;
     }
 
-    public function __get($aName) {
+    public function __destruct()
+    {
+        $this->mFilter = null;
+        $this->mReferenceNode = null;
+        $this->mRoot = null;
+    }
+
+    public function __get($aName)
+    {
         switch ($aName) {
             case 'filter':
                 return $this->mFilter;
@@ -37,19 +52,22 @@ final class NodeIterator {
         }
     }
 
-    public function nextNode() {
+    public function nextNode()
+    {
         return $this->traverse('next');
     }
 
-    public function previousNode() {
+    public function previousNode()
+    {
         return $this->traverse('previous');
     }
 
-    public function detatch() {
-
+    public function detatch()
+    {
     }
 
-    public function _preremove($aNodeToBeRemoved) {
+    public function _preremove($aNodeToBeRemoved)
+    {
         if (!$aNodeToBeRemoved->contains($this->mReferenceNode)) {
             return;
         }
@@ -57,7 +75,8 @@ final class NodeIterator {
         if ($this->mPointerBeforeReferenceNode) {
             $root = $this->mRoot;
             $filter = function ($aNode) use ($root, $aNodeToBeRemoved) {
-                return $root->contains($aNode) && !$aNodeToBeRemoved->contains($aNode) ?
+                return $root->contains($aNode) &&
+                    !$aNodeToBeRemoved->contains($aNode) ?
                         NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_REJECT;
             };
             $iter = new TreeWalker($this->mRoot, NodeFilter::SHOW_ALL, $filter);
@@ -85,7 +104,8 @@ final class NodeIterator {
         $this->mReferenceNode = $node;
     }
 
-    private function traverse($aDirection) {
+    private function traverse($aDirection)
+    {
         $node = $this->mReferenceNode;
         $beforeNode = $this->mPointerBeforeReferenceNode;
 
@@ -140,7 +160,10 @@ final class NodeIterator {
                             }
                         }
 
-                        if ($this->mReferenceNode === $this->mRoot || !($node = $node->parentNode)) {
+                        if (
+                            $this->mReferenceNode === $this->mRoot ||
+                            !($node = $node->parentNode)
+                        ) {
                             return null;
                         }
                     } else {

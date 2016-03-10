@@ -22,18 +22,22 @@ final class DOMImplementation
     /**
      * @see https://dom.spec.whatwg.org/#dom-domimplementation-createdocument
      *
-     * @param  string            $aNamespace     The namespace of the element to be created, which becomes
-     *                                           the document's document element.
+     * @param string $aNamespace The namespace of the element to be created,
+     *     which becomes the document's document element.
      *
-     * @param  string|null       $aQualifiedName The local name of the element that is to become the document's
-     *                                           document element.
+     * @param string|null $aQualifiedName The local name of the element that is
+     *     to become the document's document element.
      *
-     * @param  DocumentType|null $aDoctype       Optional. A DocumentType object to be appended to the document.
+     * @param DocumentType|null $aDoctype Optional. A DocumentType object to be
+     *     appended to the document.
      *
      * @return XMLDocument
      */
-    public function createDocument($aNamespace, $aQualifiedName, DocumentType $aDoctype = null)
-    {
+    public function createDocument(
+        $aNamespace,
+        $aQualifiedName,
+        DocumentType $aDoctype = null
+    ) {
         $doc = new XMLDocument();
         $element = null;
 
@@ -53,9 +57,10 @@ final class DOMImplementation
             $doc->appendChild($element);
         }
 
-        // TODO: document’s origin is an alias to the origin of the context object’s associated document,
-        // and document’s effective script origin is an alias to the effective script origin of the context
-        // object’s associated document.
+        // TODO: document’s origin is an alias to the origin of the context
+        // object’s associated document, and document’s effective script origin
+        // is an alias to the effective script origin of the context object’s
+        // associated document.
 
         return $doc;
     }
@@ -63,17 +68,19 @@ final class DOMImplementation
     /**
      * @see https://dom.spec.whatwg.org/#dom-domimplementation-createdocumenttype
      *
-     * @param  string         $aQualifiedName The document type's name.
+     * @param string $aQualifiedName The document type's name.
      *
-     * @param  string         $aPublicId      The document type's public identifier.
+     * @param string $aPublicId The document type's public identifier.
      *
-     * @param  string         $aSystemId      The document type's system identifier.
+     * @param string $aSystemId The document type's system identifier.
      *
      * @return DocumentType
      *
-     * @throws InvalidCharacterError If the qualified name does not match the Name production.
+     * @throws InvalidCharacterError If the qualified name does not match the
+     *     Name production.
      *
-     * @throws NamespaceError        If the qualified name does not match the QName production.
+     * @throws NamespaceError If the qualified name does not match the QName
+     *     production.
      */
     public function createDocumentType($aQualifiedName, $aPublicId, $aSystemId)
     {
@@ -115,9 +122,10 @@ final class DOMImplementation
 
         $html->appendChild($doc->createElementNS(Namespaces::HTML, 'body'));
 
-        // TODO: doc’s origin is an alias to the origin of the context object’s associated document,
-        // and doc’s effective script origin is an alias to the effective script origin of the context
-        // object’s associated document.
+        // TODO: doc’s origin is an alias to the origin of the context object’s
+        // associated document, and doc’s effective script origin is an alias to
+        // the effective script origin of the context object’s associated
+        // document.
 
         return $doc;
     }
