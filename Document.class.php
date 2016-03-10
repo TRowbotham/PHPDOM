@@ -405,71 +405,136 @@ class Document extends Node {
         return $html;
     }
 
-    public function prettyPrintTree($aNode = null) {
-        $node = ($aNode instanceof Node ? [$aNode] : (is_array($aNode) ? $aNode : [$this]));
-
-        if (empty($node)) {
-            return '';
+    public static function prettyPrintTree(Node $aNode)
+    {
+        if (
+            !($aNode instanceof elements\Element) &&
+            !($aNode instanceof Document) &&
+            !($aNode instanceof DocumentFragment)
+        ) {
+            throw new InvalidNodeTypeError();
         }
 
-        $html = '<ul class="level">';
+        $s = '<ul class="level">';
+        $node = $aNode instanceof elements\html\HTMLTemplateElement ?
+            $aNode->content : $aNode;
 
-        foreach ($node as $childNode) {
-            switch ($childNode->nodeType) {
-                case Node::ELEMENT_NODE:
-                    $tagName = strtolower($childNode->nodeName);
-                    $html .= '<li>&lt;' . $tagName;
+        foreach ($node->mChildNodes as $currentNode) {
+            switch ($currentNode->mNodeType) {
+                case self::ELEMENT_NODE:
+                    switch ($currentNode->namespaceURI) {
+                        case Namespaces::HTML:
+                        case Namespaces::MATHML:
+                        case Namespaces::SVG:
+                            $tagname = $currentNode->localName;
 
-                    foreach($childNode->attributes as $attribute) {
-                        $html .= ' ' . $attribute->name;
+                            break;
 
-                        if (!Attr::_isBool($attribute->name)) {
-                            $html .= '="' . $attribute->value . '"';
+                        default:
+                            $tagname = $currentNode->tagName;
+                    }
+
+                    $s .= '<li>&lt;' . $tagname;
+
+                    foreach ($currentNode->attributes as $attr) {
+                        $s .= ' ' . $attr->name;
+                        $s .= '="' .
+                            parser\html\HTMLParser::escapeHTMLString(
+                                $attr->value,
+                                true
+                            ) . '"';
+                    }
+
+                    $s .= '&gt;';
+                    $localName = $currentNode->localName;
+
+                    // If the current node's local name is a known void element,
+                    // then move on to the current node's next sibling, if any.
+                    switch ($localName) {
+                        case 'area':
+                        case 'base':
+                        case 'basefont':
+                        case 'bgsound':
+                        case 'br':
+                        case 'col':
+                        case 'embed':
+                        case 'frame':
+                        case 'hr':
+                        case 'img':
+                        case 'input':
+                        case 'keygen':
+                        case 'link':
+                        case 'menuitem':
+                        case 'meta':
+                        case 'param':
+                        case 'source':
+                        case 'track':
+                        case 'wbr':
+                            continue 2;
+                    }
+
+                    if (
+                        ($localName == 'pre' ||
+                            $localName == 'textarea' ||
+                            $localName == 'listing') &&
+                        ($firstChild = $currentNode->mFirstChild) instanceof Text
+                    ) {
+                        if ($firstChild->data === "\t") {
+                            $s .= "\n";
                         }
                     }
 
-                    $html .= '&gt;' . $this->prettyPrintTree($childNode->childNodes);
+                    $s .= self::prettyPrintTree($currentNode);
+                    $s .= '&lt;/' . $tagname . '&gt;</li>';
 
-                    if (!$childNode->_isEndTagOmitted()) {
-                        $html .= '&lt;/' . $tagName . '&gt;</li>';
+                    break;
+
+                case self::TEXT_NODE:
+                    $s .= '<li>';
+
+                    switch ($currentNode->mParentNode->localName) {
+                        case 'style':
+                        case 'script':
+                        case 'xmp':
+                        case 'iframe':
+                        case 'noembed':
+                        case 'noframes':
+                        case 'plaintext':
+                        case 'noscript':
+                            $s .= $currentNode->data;
+
+                            break;
+
+                        default:
+                            $s .= htmlspecialchars($currentNode->data);
                     }
 
-                    break;
-
-                case Node::TEXT_NODE:
-                    $html .= '<li>' . $childNode->data . '<li>';
+                    $s .= '</li>';
 
                     break;
 
-                case Node::PROCESSING_INSTRUCTION_NODE:
-                    // TODO
-                    break;
-
-                case Node::COMMENT_NODE:
-                    $html .= '<li>&lt;!-- ' . $childNode->data . ' --&gt;</li>';
+                case self::COMMENT_NODE:
+                    $s .= '<li>&lt;!--' . $currentNode->data . '--&gt;</li>';
 
                     break;
 
-                case Node::DOCUMENT_TYPE_NODE:
-                    $html .= '<li>' . htmlentities($childNode->toHTML()) . '</li>';
+                case self::PROCESSING_INSTRUCTION_NODE:
+                    $s .= '<li>&lt;?' . $currentNode->target . ' ';
+                    $s .= $currentNode->data . '&gt;</li>';
 
                     break;
 
-                case Node::DOCUMENT_NODE:
-                case Node::DOCUMENT_FRAGMENT_NODE:
-                    $html = $this->prettyPrintTree($childNode->childNodes);
+                case self::DOCUMENT_TYPE_NODE:
+                    $s .= '<li>&lt;!DOCTYPE ' . $currentNode->name;
+                    $s .= '&gt;</li>';
 
-                    break;
-
-                default:
-                    # code...
                     break;
             }
         }
 
-        $html .= '</ul>';
+        $s .= '</ul>';
 
-        return $html;
+        return $s;
     }
 
     protected function getHTMLInterfaceFor($aLocalName) {
