@@ -9,21 +9,26 @@ use phpjs\exceptions\IndexSizeError;
  * @see https://dom.spec.whatwg.org/#characterdata
  * @see https://developer.mozilla.org/en-US/docs/Web/API/CharacterData
  *
- * @property        string          $data                       Represents the textual data contained by this Node.
+ * @property string $data Represents the textual data contained by this Node.
  *
- * @property-read   int             $length                     Represents the length of the data contained by this Node.
+ * @property-read int $length Represents the length of the data contained by
+ *     this Node.
  *
- * @property-read   Element|null    $nextElementSibling         Returns the next sibling that is an Element, if any.
+ * @property-read Element|null $nextElementSibling Returns the next sibling that
+ *     is an Element, if any.
  *
- * @property-read   Element|null    $previousElementSibling     Returns the previous sibling that is an Element, if any.
+ * @property-read Element|null $previousElementSibling Returns the previous
+ *     sibling that is an Element, if any.
  */
 abstract class CharacterData extends Node {
-    use ChildNode, NonDocumentTypeChildNode;
+    use ChildNode;
+    use NonDocumentTypeChildNode;
 
     protected $mData;
     protected $mLength;
 
-    public function __construct($aData) {
+    public function __construct($aData)
+    {
         parent::__construct();
 
         $this->mData = $aData;
@@ -70,11 +75,16 @@ abstract class CharacterData extends Node {
     }
 
     /**
-     * Removes the specified number of characters starting from the given offset.
+     * Removes the specified number of characters starting from the given
+     * offset.
      *
-     * @param  int $aOffset The offset where data deletion should begin.
+     * @param int $aOffset The offset where data deletion should begin.
      *
-     * @param  int $aCount  How many characters to delete starting from the given offset.
+     * @param int $aCount How many characters to delete starting from the
+     *     given offset.
+     *
+     * @throws IndexSizeError If the given offset is greater than the length
+     *     of the data.
      */
     public function deleteData($aOffset, $aCount) {
         $this->replaceData($aOffset, $aCount, '');
@@ -86,32 +96,44 @@ abstract class CharacterData extends Node {
      * @param  int      $aOffset The offset where insertion should begin.
      *
      * @param  string   $aData   The string data to be inserted.
+     *
+     * @throws IndexSizeError If the given offset is greater than the length
+     *     of the data.
      */
     public function insertData($aOffset, $aData) {
         $this->replaceData($aOffset, 0, $aData);
     }
 
     /**
-     * Replaces a portion of the string with the provided data begining at the given
-     * offset and lasting until the given count.
+     * Replaces a portion of the string with the provided data begining at the
+     * given offset and lasting until the given count.
      *
-     * @link   https://dom.spec.whatwg.org/#concept-CD-replace
+     * @see https://dom.spec.whatwg.org/#concept-CD-replace
      *
-     * @param  int      $aOffset The position within the string where the replacement should begin.
+     * @param int $aOffset The position within the string where the
+     *     replacement should begin.
      *
-     * @param  int      $aCount  The number of characters from the given offset that the replacement should
-     *                           extend to.
+     * @param int $aCount The number of characters from the given offset that
+     *     the replacement should extend to.
      *
-     * @param  string   $aData   The data to be inserted in to the string.
+     * @param string $aData The data to be inserted in to the string.
      *
-     * @throws IndexSizeError
+     * @throws IndexSizeError If the given offset is greater than the length
+     *     of the data.
      */
     public function replaceData($aOffset, $aCount, $aData) {
         $length = $this->mLength;
         $count = $aCount;
 
         if ($aOffset > $length) {
-            throw new IndexSizeError;
+            throw new IndexSizeError(
+                sprintf(
+                    'The offset should be less than the length of the data. The
+                    offset given is %d and the length of the data is %d.',
+                    $aOffset,
+                    $length
+                )
+            );
         }
 
         if ($aOffset + $count > $length) {
@@ -131,7 +153,10 @@ abstract class CharacterData extends Node {
             $startContainer = $range->startContainer;
             $startOffset = $range->startOffset;
 
-            if ($startContainer === $this && $startOffset > $aOffset && $startOffset <= $aOffset + $count) {
+            if ($startContainer === $this &&
+                $startOffset > $aOffset &&
+                $startOffset <= $aOffset + $count
+            ) {
                 $range->setStart($startContainer, $aOffset);
             }
         }
@@ -140,7 +165,10 @@ abstract class CharacterData extends Node {
             $endContainer = $range->endContainer;
             $endOffset = $range->endOffset;
 
-            if ($endContainer === $this && $endOffset > $aOffset && $endOffset <= $aOffset + $count) {
+            if ($endContainer === $this &&
+                $endOffset > $aOffset &&
+                $endOffset <= $aOffset + $count
+            ) {
                 $range->setEnd($endContainer, $aOffset);
             }
         }
@@ -150,7 +178,10 @@ abstract class CharacterData extends Node {
             $startOffset = $range->startOffset;
 
             if ($startContainer === $this && $startOffset > $aOffset + $count) {
-                $range->setStart($startContainer, $startOffset + $newDataLen - $count);
+                $range->setStart(
+                    $startContainer,
+                    $startOffset + $newDataLen - $count
+                );
             }
         }
 
@@ -159,7 +190,10 @@ abstract class CharacterData extends Node {
             $endOffset = $range->endOffset;
 
             if ($endContainer === $this && $endOffset > $aOffset + $count) {
-                $range->setEnd($endContainer, $endOffset + $newDataLen - $count);
+                $range->setEnd(
+                    $endContainer,
+                    $endOffset + $newDataLen - $count
+                );
             }
         }
     }
@@ -168,22 +202,31 @@ abstract class CharacterData extends Node {
      * Returns a portion of the nodes data string starting at the specified
      * offset.
      *
-     * @link   https://dom.spec.whatwg.org/#concept-CD-substring
+     * @see https://dom.spec.whatwg.org/#concept-CD-substring
      *
-     * @param  int      $aOffset The position in the string where the substring should begin.
+     * @param  int  $aOffset  The position in the string where the substring
+     *     should begin.
      *
-     * @param  int      $aCount  The number of characters the substring should include starting from
-     *                           the given offset.
+     * @param  int  $aCount  The number of characters the substring should
+     *     include starting from the given offset.
      *
      * @return string
      *
-     * @throws IndexSizeError
+     * @throws IndexSizeError If the given offset is greater than the length
+     *     of the data.
      */
     public function substringData($aOffset, $aCount) {
         $length = $this->mLength;
 
         if ($aOffset > $length) {
-            throw new IndexSizeError;
+            throw new IndexSizeError(
+                sprintf(
+                    'The offset should be less than the length of the data. The
+                    offset given is %d and the length of the data is %d.',
+                    $aOffset,
+                    $length
+                )
+            );
         }
 
         if ($aOffset + $aCount > $length) {
@@ -198,7 +241,7 @@ abstract class CharacterData extends Node {
      *
      * @internal
      *
-     * @link https://dom.spec.whatwg.org/#concept-node-length
+     * @see https://dom.spec.whatwg.org/#concept-node-length
      *
      * @return int
      */
