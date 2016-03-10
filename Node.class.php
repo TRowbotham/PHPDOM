@@ -134,9 +134,9 @@ abstract class Node implements EventTarget {
                 return $this->mPreviousSibling;
 
             case 'textContent':
-                switch (true) {
-                    case $this instanceof DocumentFragment:
-                    case $this instanceof Element:
+                switch ($this->mNodeType) {
+                    case self::DOCUMENT_FRAGMENT_NODE:
+                    case self::ELEMENT_NODE:
                         $tw = $this->mOwnerDocument->createTreeWalker($this, NodeFilter::SHOW_TEXT);
                         $textContent = '';
 
@@ -146,9 +146,9 @@ abstract class Node implements EventTarget {
 
                         return $textContent;
 
-                    case $this instanceof Text:
-                    case $this instanceof ProcessingInstruction:
-                    case $this instanceof Comment:
+                    case self::TEXT_NODE:
+                    case self::PROCESSING_INSTRUCTION_NODE:
+                    case self::COMMENT_NODE:
                         return $this->mData;
 
                     default:
@@ -162,9 +162,9 @@ abstract class Node implements EventTarget {
             case 'textContent':
                 $value = $aValue === null ? '' : $aValue;
 
-                switch (true) {
-                    case $this instanceof DocumentFragment:
-                    case $this instanceof Element:
+                switch ($this->mNodeType) {
+                    case self::DOCUMENT_FRAGMENT_NODE:
+                    case self::ELEMENT_NODE:
                         $node = null;
 
                         if ($value !== '') {
@@ -175,9 +175,9 @@ abstract class Node implements EventTarget {
 
                         break;
 
-                    case $this instanceof Text:
-                    case $this instanceof ProcessingInstruction:
-                    case $this instanceof Comment:
+                    case self::TEXT_NODE:
+                    case self::PROCESSING_INSTRUCTION_NODE:
+                    case self::COMMENT_NODE:
                         $this->replaceData(0, $this->length, $value);
 
                         break;
@@ -517,15 +517,15 @@ abstract class Node implements EventTarget {
             return null;
         }
 
-        switch (true) {
-            case $this instanceof Element:
+        switch ($this->mNodeType) {
+            case self::ELEMENT_NODE:
                 return Namespaces::locatePrefix($this, $aNamespace);
 
-            case $this instanceof Document:
+            case self::DOCUMENT_NODE:
                 return Namespaces::locatePrefix($this->mDoumentElement, $aNamespace);
 
-            case $this instanceof DocumentType:
-            case $this instanceof DocumentFragment:
+            case self::DOCUMENT_TYPE_NODE:
+            case self::DOCUMENT_FRAGMENT_NODE:
                 return null;
 
             default:
@@ -805,8 +805,8 @@ abstract class Node implements EventTarget {
         $doc = !$aDocument ? $this->mOwnerDocument : $aDocument;
         $class = get_class($this);
 
-        switch (true) {
-            case $this instanceof Document:
+        switch ($this->mNodeType) {
+            case self::DOCUMENT_NODE:
                 $copy = new $class();
                 $copy->mCharacterSet = $this->mCharacterSet;
                 $copy->mContentType = $this->mContentType;
@@ -816,12 +816,12 @@ abstract class Node implements EventTarget {
 
                 break;
 
-            case $this instanceof DocumentType:
+            case self::DOCUMENT_TYPE_NODE:
                 $copy = new $class($this->mName, $this->mPublicId, $this->mSystemId);
 
                 break;
 
-            case $this instanceof Element:
+            case self::ELEMENT_NODE:
                 $copy = new $class($this->mLocalName, $this->mNamespaceURI, $this->mPrefix);
 
                 foreach ($this->mAttributesList as $attr) {
@@ -832,13 +832,13 @@ abstract class Node implements EventTarget {
 
                 break;
 
-            case $this instanceof Text:
-            case $this instanceof Comment:
+            case self::TEXT_NODE:
+            case self::COMMENT_NODE:
                 $copy = new $class($this->mData);
 
                 break;
 
-            case $this instanceof ProcessingInstruction:
+            case self::PROCESSING_INSTRUCTION_NODE:
                 $copy = new $class($this->mTarget, $this->mData);
         }
 
