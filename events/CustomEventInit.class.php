@@ -1,10 +1,12 @@
 <?php
 namespace phpjs\events;
 
-class CustomEventInit extends EventInit {
+class CustomEventInit extends EventInit
+{
     public $detail;
 
-    public function __construct() {
+    public function __construct()
+    {
         parent::__construct();
 
         $this->detail = null;

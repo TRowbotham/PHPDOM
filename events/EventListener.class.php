@@ -1,6 +1,7 @@
 <?php
 namespace phpjs\events;
 
-interface EventListener {
+interface EventListener
+{
 	public function handleEvent(Event $aEvent);
 }
