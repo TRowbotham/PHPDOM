@@ -14,10 +14,16 @@ use phpjs\NonDocumentTypeChildNode;
 use phpjs\ParentNode;
 use phpjs\urls\URLInternal;
 
-// https://developer.mozilla.org/en-US/docs/Web/API/Element
-// https://dom.spec.whatwg.org/#element
-class Element extends Node implements \SplObserver {
-    use ChildNode, GetElementsBy, NonDocumentTypeChildNode, ParentNode;
+/**
+ * @see https://dom.spec.whatwg.org/#element
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/Element
+ */
+class Element extends Node implements \SplObserver
+{
+    use ChildNode;
+    use GetElementsBy;
+    use NonDocumentTypeChildNode;
+    use ParentNode;
 
     protected $mAttributes; // NamedNodeMap
     protected $mAttributesList;
@@ -28,7 +34,8 @@ class Element extends Node implements \SplObserver {
     protected $mPrefix;
     protected $mTagName;
 
-    public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null) {
+    public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null)
+    {
         parent::__construct();
 
         $this->mAttributes = new NamedNodeMap($this, $this->mAttributesList);
@@ -41,7 +48,8 @@ class Element extends Node implements \SplObserver {
         $this->mNodeType = self::ELEMENT_NODE;
         $this->mPrefix = $aPrefix;
         $this->mTagName = (!$this->mPrefix ? '' : $this->mPrefix . ':') .
-                          ($this->mOwnerDocument instanceof HTMLDocument ? strtoupper($aLocalName) : $aLocalName);
+            ($this->mOwnerDocument instanceof HTMLDocument ?
+                strtoupper($aLocalName) : $aLocalName);
     }
 
     public function __get( $aName ) {
@@ -102,7 +110,8 @@ class Element extends Node implements \SplObserver {
         }
     }
 
-    public function __set($aName, $aValue) {
+    public function __set($aName, $aValue)
+    {
         switch ($aName) {
             case 'className':
                 $this->_setAttributeValue('class', $aValue);
@@ -119,7 +128,8 @@ class Element extends Node implements \SplObserver {
         }
     }
 
-    public function closest($aSelectorRule) {
+    public function closest($aSelectorRule)
+    {
         // TODO
     }
 
@@ -128,11 +138,13 @@ class Element extends Node implements \SplObserver {
      *
      * @link https://dom.spec.whatwg.org/#dom-element-getattribute
      *
-     * @param  string       $aName The name of the attribute whose value is to be retrieved.
+     * @param string $aName The name of the attribute whose value is to be
+     *     retrieved.
      *
      * @return string|null
      */
-    public function getAttribute($aName) {
+    public function getAttribute($aName)
+    {
         $attr = $this->_getAttributeByName($aName);
 
         return $attr ? $attr->value : null;
@@ -143,27 +155,35 @@ class Element extends Node implements \SplObserver {
      *
      * @link https://dom.spec.whatwg.org/#dom-element-getattributenode
      *
-     * @param  string       $aName The name of the attribute that is to be retrieved.
+     * @param string $aName The name of the attribute that is to be retrieved.
      *
      * @return Attr|null
      */
-    public function getAttributeNode($aName) {
+    public function getAttributeNode($aName)
+    {
         return $this->_getAttributeByName($aName);
     }
 
     /**
-     * Retrieves the attribute node with the given namespace and local name, if any.
+     * Retrieves the attribute node with the given namespace and local name, if
+     * any.
      *
      * @link https://dom.spec.whatwg.org/#dom-element-getattributenodens
      *
-     * @param  string       $aNamespace The namespaceURI of the attribute node to be retrieved.
+     * @param string $aNamespace The namespaceURI of the attribute node to be
+     *     retrieved.
      *
-     * @param  string       $aLocalName The localName of the attribute node to be retrieved.
+     * @param string $aLocalName The localName of the attribute node to be
+     *     retrieved.
      *
      * @return Attr|null
      */
-    public function getAttributeNodeNS($aNamespace, $aLocalName) {
-        return $this->_getAttributeByNamespaceAndLocalName($aNamespace, $aLocalName);
+    public function getAttributeNodeNS($aNamespace, $aLocalName)
+    {
+        return $this->_getAttributeByNamespaceAndLocalName(
+            $aNamespace,
+            $aLocalName
+        );
     }
 
     /**
@@ -175,27 +195,34 @@ class Element extends Node implements \SplObserver {
      * @param  string       $aLocalName The localName of the attribute whose value is to be retrieved.
      * @return string|null
      */
-    public function getAttributeNS($aNamespace, $aLocalName) {
-        $attr = $this->_getAttributeByNamespaceAndLocalName($aNamespace, $aLocalName);
+    public function getAttributeNS($aNamespace, $aLocalName)
+    {
+        $attr = $this->_getAttributeByNamespaceAndLocalName(
+            $aNamespace,
+            $aLocalName
+        );
 
         return $attr ? $attr->value : null;
     }
 
     /**
-     * Returns true if the attribtue with the given name is present in the Element's
-     * attribute list, otherwise false.
+     * Returns true if the attribtue with the given name is present in the
+     * Element's attribute list, otherwise false.
      *
      * @link https://dom.spec.whatwg.org/#dom-element-hasattribute
      *
-     * @param  string  $aName The name of the attribute to find.
+     * @param string $aName The name of the attribute to find.
      *
      * @return bool
      */
-    public function hasAttribute($aName) {
+    public function hasAttribute($aName)
+    {
         $name = $aName;
 
-        if ($this->mNamespaceURI === Namespaces::HTML &&
-            $this->mOwnerDocument instanceof HTMLDocument) {
+        if (
+            $this->mNamespaceURI === Namespaces::HTML &&
+            $this->mOwnerDocument instanceof HTMLDocument
+        ) {
             $name = strtolower($aName);
         }
 
@@ -214,13 +241,14 @@ class Element extends Node implements \SplObserver {
      *
      * @link https://dom.spec.whatwg.org/#dom-element-hasattributens
      *
-     * @param  string  $aNamespace The namespace of the attribute to find.
+     * @param string $aNamespace The namespace of the attribute to find.
      *
-     * @param  string  $aLocalName The localName of the attribute to find.
+     * @param string $aLocalName The localName of the attribute to find.
      *
      * @return bool
      */
-    public function hasAttribueNS($aNamespace, $aLocalName) {
+    public function hasAttribueNS($aNamespace, $aLocalName)
+    {
         $namespace = $aNamespace === '' ? null : $aNamespace;
 
         foreach ($this->mAttributesList as $attr) {
@@ -239,7 +267,8 @@ class Element extends Node implements \SplObserver {
      *
      * @return bool
      */
-    public function hasAttributes() {
+    public function hasAttributes()
+    {
         return !empty($this->mAttributesList);
     }
 
@@ -247,7 +276,8 @@ class Element extends Node implements \SplObserver {
         // TODO
     }
 
-    public function matches( $aSelectorRule ) {
+    public function matches($aSelectorRule)
+    {
         // TODO
     }
 
@@ -257,9 +287,10 @@ class Element extends Node implements \SplObserver {
      *
      * @link https://dom.spec.whatwg.org/#dom-element-removeattribute
      *
-     * @param  string $aName The attributes name.
+     * @param string $aName The attributes name.
      */
-    public function removeAttribute($aName) {
+    public function removeAttribute($aName)
+    {
         $this->_removeAttributeByName($aName);
     }
 
@@ -268,17 +299,18 @@ class Element extends Node implements \SplObserver {
      *
      * @link https://dom.spec.whatwg.org/#dom-element-removeattributenode
      *
-     * @param  Attr   $aAttr The attribute to be removed.
+     * @param Attr $aAttr The attribute to be removed.
      *
-     * @return Attr          The Attr node that was removed.
+     * @return Attr The Attr node that was removed.
      *
      * @throws NotFoundError
      */
-    public function removeAttributeNode(Attr $aAttr) {
+    public function removeAttributeNode(Attr $aAttr)
+    {
         $index = array_search($aAttr, $this->mAttributesList);
 
         if ($index === false) {
-            throw new NotFoundError;
+            throw new NotFoundError();
         }
 
         $this->_removeAttribute($aAttr);
@@ -287,22 +319,28 @@ class Element extends Node implements \SplObserver {
     }
 
     /**
-     * Removes the attribute with the given namespace and local name from the Element's
-     * attribute list.
+     * Removes the attribute with the given namespace and local name from the
+     * Element's attribute list.
      *
      * @link https://dom.spec.whatwg.org/#dom-element-hasattributens
      *
-     * @param  string $aNamespace The namespaceURI of the attribute to be removed.
+     * @param string $aNamespace The namespaceURI of the attribute to be
+     *     removed.
      *
-     * @param  string $aLocalName The localName of the attribute to be removed.
+     * @param string $aLocalName The localName of the attribute to be removed.
      */
-    public function removeAttributeNS($aNamespace, $aLocalName) {
-        $this->_removeAttributeByNamespaceAndLocalName($aNamespace, $aLocalName);
+    public function removeAttributeNS($aNamespace, $aLocalName)
+    {
+        $this->_removeAttributeByNamespaceAndLocalName(
+            $aNamespace,
+            $aLocalName
+        );
     }
 
     /**
-     * Either adds a new attribute to the Element's attribute list or it modifies
-     * the value of an already existing attribute with the the same name.
+     * Either adds a new attribute to the Element's attribute list or it
+     * modifies the value of an already existing attribute with the the same
+     * name.
      *
      * @link https://dom.spec.whatwg.org/#dom-element-setattribute
      *
@@ -310,13 +348,16 @@ class Element extends Node implements \SplObserver {
      *
      * @param string $aValue The value of the attribute.
      */
-    public function setAttribute($aName, $aValue) {
+    public function setAttribute($aName, $aValue)
+    {
         $name = $aName;
 
         // TODO: Check Name production in XML documents
 
-        if ($this->mNamespaceURI === Namespaces::HTML &&
-            $this->mOwnerDocument instanceof HTMLDocument) {
+        if (
+            $this->mNamespaceURI === Namespaces::HTML &&
+            $this->mOwnerDocument instanceof HTMLDocument
+        ) {
             $name = strtolower($aName);
         }
 
@@ -338,7 +379,8 @@ class Element extends Node implements \SplObserver {
      *
      * @param Attr $aAttr The attribute to be appended.
      */
-    public function setAttributeNode(Attr $aAttr) {
+    public function setAttributeNode(Attr $aAttr)
+    {
         try {
             return $this->_setAttribute($aAttr);
         } catch (\Exception $e) {
@@ -353,35 +395,48 @@ class Element extends Node implements \SplObserver {
      *
      * @param Attr $aAttr The namespaced attribute to be appended.
      */
-    public function setAttributeNodeNS(Attr $aAttr) {
+    public function setAttributeNodeNS(Attr $aAttr)
+    {
         try {
-            return $this->_setAttribute($aAttr, $aAttr->namespaceURI, $aAttr->localName);
+            return $this->_setAttribute(
+                $aAttr,
+                $aAttr->namespaceURI,
+                $aAttr->localName
+            );
         } catch (\Exception $e) {
             throw $e;
         }
     }
 
     /**
-     * Either appends a new attribute or modifies the value of an existing attribute
-     * with the given namespace and name.
+     * Either appends a new attribute or modifies the value of an existing
+     * attribute with the given namespace and name.
      *
      * @param string $aNamespace The namespaceURI of the attribute.
      *
-     * @param string $aName      The name of the attribute.
+     * @param string $aName The name of the attribute.
      *
-     * @param string $aValue     The value of the attribute.
+     * @param string $aValue The value of the attribute.
      */
-    public function setAttributeNS($aNamespace, $aName, $aValue) {
+    public function setAttributeNS($aNamespace, $aName, $aValue)
+    {
         try {
             $parts = Namespaces::validateAndExtract($aNamespace, $aName);
         } catch (\Exception $e) {
             throw $e;
         }
 
-        $this->_setAttributeValue($parts['localName'], $aValue, $aName, $parts['prefix'], $parts['namespace']);
+        $this->_setAttributeValue(
+            $parts['localName'],
+            $aValue,
+            $aName,
+            $parts['prefix'],
+            $parts['namespace']
+        );
     }
 
-    public function toHTML() {
+    public function toHTML()
+    {
         $html = '';
 
         switch ($this->mNodeType) {
@@ -443,7 +498,8 @@ class Element extends Node implements \SplObserver {
         return $html;
     }
 
-    public function update(\SplSubject $aObject) {
+    public function update(\SplSubject $aObject)
+    {
 
     }
 
@@ -456,7 +512,8 @@ class Element extends Node implements \SplObserver {
      *
      * @param  Attr   $aAttr The Attr node to be appended.
      */
-    public function _appendAttribute(Attr $aAttr) {
+    public function _appendAttribute(Attr $aAttr)
+    {
         // TODO: Queue a mutation record for "attributes"
         $this->mAttributesList[] = $aAttr;
         $aAttr->_setOwnerElement($this);
@@ -472,10 +529,12 @@ class Element extends Node implements \SplObserver {
      *
      * @link https://dom.spec.whatwg.org/#concept-element-attributes-change
      *
-     * @param  Attr   $aAttr  The Attr whose value is to be changed.
-     * @param  string $aValue The new value of the given Attr.
+     * @param Attr $aAttr The Attr whose value is to be changed.
+     *
+     * @param string $aValue The new value of the given Attr.
      */
-    public function _changeAttributeValue(Attr $aAttr, $aValue) {
+    public function _changeAttributeValue(Attr $aAttr, $aValue)
+    {
         // TODO: Queue a mutation record for "attributes"
 
         // This is kind of hacky, but should work.
@@ -496,11 +555,12 @@ class Element extends Node implements \SplObserver {
      *
      * @link https://dom.spec.whatwg.org/#concept-element-attributes-get-by-name
      *
-     * @param  string       $aName The name of the attribute to find.
+     * @param string $aName The name of the attribute to find.
      *
      * @return Attr|null
      */
-    public function _getAttributeByName($aName) {
+    public function _getAttributeByName($aName)
+    {
         $name = $aName;
 
         if ($this->mNamespaceURI === Namespaces::HTML &&
@@ -518,20 +578,23 @@ class Element extends Node implements \SplObserver {
     }
 
     /**
-     * Returns the first Attr in the Element's attribute list that has the given namespace
-     * and local name.
+     * Returns the first Attr in the Element's attribute list that has the given
+     * namespace and local name.
      *
      * @internal
      *
      * @link https://dom.spec.whatwg.org/#concept-element-attributes-get-by-namespace
      *
-     * @param  string       $aNamespace The namespaceURI of the attribute to find.
+     * @param string $aNamespace The namespaceURI of the attribute to find.
      *
-     * @param  string       $aLocalName The localName of the attribute to find.
+     * @param string $aLocalName The localName of the attribute to find.
      *
      * @return Attr|null
      */
-    public function _getAttributeByNamespaceAndLocalName($aNamespace, $aLocalName) {
+    public function _getAttributeByNamespaceAndLocalName(
+        $aNamespace,
+        $aLocalName
+    ) {
         $namespace = $aNamespace === '' ? null : $aNamespace;
 
         foreach ($this->mAttributesList as $attr) {
@@ -544,7 +607,8 @@ class Element extends Node implements \SplObserver {
         return null;
     }
 
-    public function _isEndTagOmitted() {
+    public function _isEndTagOmitted()
+    {
         return $this->mEndTagOmitted;
     }
 
@@ -557,7 +621,8 @@ class Element extends Node implements \SplObserver {
      *
      * @param  Attr $aAttr The Attr to be removed.
      */
-    public function _removeAttribute(Attr $aAttr) {
+    public function _removeAttribute(Attr $aAttr)
+    {
         // TODO: Queue a mutation record for "attributes"
         $index = array_search($aAttr, $this->mAttributesList);
 
@@ -569,17 +634,19 @@ class Element extends Node implements \SplObserver {
     }
 
     /**
-     * Removes the attribute with the given name from the Element's attribute list.
+     * Removes the attribute with the given name from the Element's attribute
+     * list.
      *
      * @internal
      *
      * @link https://dom.spec.whatwg.org/#concept-element-attributes-remove-by-name
      *
-     * @param  string       $aName The name of the attribute to be removed.
+     * @param string $aName The name of the attribute to be removed.
      *
      * @return Attr|null
      */
-    public function _removeAttributeByName($aName) {
+    public function _removeAttributeByName($aName)
+    {
         $attr = $this->_getAttributeByName($aName);
 
         if ($attr) {
@@ -590,20 +657,24 @@ class Element extends Node implements \SplObserver {
     }
 
     /**
-     * Removes the attribtue with the given namespace and local name from the Element's attribute
-     * list.
+     * Removes the attribtue with the given namespace and local name from the
+     * Element's attribute list.
      *
      * @internal
      *
      * @link https://dom.spec.whatwg.org/#concept-element-attributes-remove-by-namespace
      *
-     * @param  string       $aNamespace The namespaceURI of the attribute to be removed.
+     * @param string $aNamespace The namespaceURI of the attribute to be
+     *     removed.
      *
-     * @param  string       $aLocalName The localName of the attribute to be removed.
+     * @param string $aLocalName The localName of the attribute to be removed.
      *
      * @return Attr|null
      */
-    public function _removeAttributeByNamespaceAndLocalName($aNamespace, $aLocalName) {
+    public function _removeAttributeByNamespaceAndLocalName(
+        $aNamespace,
+        $aLocalName
+    ) {
         $attr = $this->_getAttributeByNamespaceAndLocalName($aNamespace, $aLocalName);
 
         if ($attr) {
@@ -620,21 +691,34 @@ class Element extends Node implements \SplObserver {
      *
      * @link https://dom.spec.whatwg.org/#concept-element-attributes-set
      *
-     * @param Attr   $aAttr      The Attr to be appended to this Element's attribute list.
+     * @param Attr $aAttr The Attr to be appended to this Element's attribute
+     *     list.
      *
-     * @param string $aNamespace Optional.  Whether or not the attribute being appended is namespaced.
+     * @param string $aNamespace Optional. Whether or not the attribute being
+     *     appended is namespaced.
      *
-     * @param string $aLocalName Optional.  Whether or not the attribute being appended is namespaced.
+     * @param string $aLocalName Optional. Whether or not the attribute being
+     *     appended is namespaced.
      */
-    public function _setAttribute(Attr $aAttr, $aNamespace = null, $aLocalName = null) {
-        if ($aAttr->ownerElement !== null && !($aAttr->ownerElement instanceof Element)) {
-            throw new InUseAttributeError;
+    public function _setAttribute(
+        Attr $aAttr,
+        $aNamespace = null,
+        $aLocalName = null
+    ) {
+        if (
+            $aAttr->ownerElement !== null &&
+            !($aAttr->ownerElement instanceof Element)
+        ) {
+            throw new InUseAttributeError();
         }
 
         $oldAttr = null;
 
         if ($aNamespace && $aLocalName) {
-            $oldAttr = $this->_getAttributeByNamespaceAndLocalName($attr->namespaceURI, $attr->localName);
+            $oldAttr = $this->_getAttributeByNamespaceAndLocalName(
+                $attr->namespaceURI,
+                $attr->localName
+            );
         } else {
             $oldAttr = $this->_getAttributeByName($aAttr->name);
         }
@@ -661,15 +745,21 @@ class Element extends Node implements \SplObserver {
      *
      * @param string $aLocalName The localName of the attribute to find.
      *
-     * @param string $aValue     The value of the attribute.
+     * @param string $aValue The value of the attribute.
      *
-     * @param string $aName      The name of the attribute.
+     * @param string $aName The name of the attribute.
      *
-     * @param string $aPrefix    The namespace prefix of the attribute.
+     * @param string $aPrefix The namespace prefix of the attribute.
      *
      * @param string $aNamespace The namespaceURI of the attribute to find.
      */
-    public function _setAttributeValue($aLocalName, $aValue, $aName = null, $aPrefix = null, $aNamespace = null) {
+    public function _setAttributeValue(
+        $aLocalName,
+        $aValue,
+        $aName = null,
+        $aPrefix = null,
+        $aNamespace = null
+    ) {
         $name = !$aName ? $aLocalName : $aName;
         $prefix = !$aPrefix ? null : $aPrefix;
         $namespace = !$aNamespace ? null : $aNamespace;
@@ -685,14 +775,17 @@ class Element extends Node implements \SplObserver {
         $this->_changeAttributeValue($attr, $aValue);
     }
 
-    protected function attributeHookHandler($aHookType, Attr $aAttr) {
+    protected function attributeHookHandler($aHookType, Attr $aAttr)
+    {
         switch ($aAttr->name) {
             case 'class':
                 if ($aHookType == 'set') {
                     $value = $aAttr->value;
 
                     if (!empty($value)) {
-                        $this->mClassList->appendTokens(DOMTokenList::_parseOrderedSet($value));
+                        $this->mClassList->appendTokens(
+                            DOMTokenList::_parseOrderedSet($value)
+                        );
                     }
                 } elseif ($aHookType == 'removed') {
                     $this->mClassList->emptyList();
@@ -700,7 +793,10 @@ class Element extends Node implements \SplObserver {
         }
     }
 
-    protected function reflectURLAttributeValue($aName, $aMissingValueDefault = null) {
+    protected function reflectURLAttributeValue(
+        $aName,
+        $aMissingValueDefault = null
+    ) {
         $attr = $this->_getAttributeByNamespaceAndLocalName(null, $aName);
 
         if ($attr) {
@@ -717,15 +813,17 @@ class Element extends Node implements \SplObserver {
     }
 
     /**
-     * Gets the value of an attribute that is to be reflected as an object property.
+     * Gets the value of an attribute that is to be reflected as an object
+     * property.
      *
      * @link https://dom.spec.whatwg.org/#concept-reflect
      *
-     * @param  string $aName The name of the attribute that is to be reflected.
+     * @param string $aName The name of the attribute that is to be reflected.
      *
      * @return string
      */
-    protected function reflectStringAttributeValue($aName) {
+    protected function reflectStringAttributeValue($aName)
+    {
         $attr = $this->_getAttributeByNamespaceAndLocalName(null, $aName);
 
         return !$attr ? '' : $attr->value;
@@ -738,15 +836,16 @@ class Element extends Node implements \SplObserver {
      *
      * @internal
      *
-     * @param  string $aUrl         A URL string to be resolved.
+     * @param string $aUrl A URL string to be resolved.
      *
-     * @param  string       $aBase  Optional argument that should be an absolute URL that a relative URL can be
-     *                              resolved against.  Default is null.
+     * @param string $aBase Optional argument that should be an absolute URL
+     *     that a relative URL can be resolved against.  Default is null.
      *
-     * @return mixed[]|bool         An array containing the serialized absolute URL as well as the parsed URL or
-     *                              false on failure.
+     * @return mixed[]|bool An array containing the serialized absolute URL as
+     *     well as the parsed URL or false on failure.
      */
-    protected function resolveURL($aUrl, URLInternal $aBase = null) {
+    protected function resolveURL($aUrl, URLInternal $aBase = null)
+    {
         $url = $aUrl;
         $base = null;
 
@@ -768,16 +867,22 @@ class Element extends Node implements \SplObserver {
 
         $serializedURL = $parsedURL->serializeURL();
 
-        return array('absolute_url' => $serializedURL, 'parsed_url' => $parsedURL);
+        return array(
+            'absolute_url' => $serializedURL,
+            'parsed_url' => $parsedURL
+        );
     }
 
     /**
-     * Returns an array of Elements with the specified tagName that are immediate children
-     * of the parent.
-     * @param  string       $aTagName   The tagName to search for.
-     * @return Element[]                A list of Elements with the specified tagName.
+     * Returns an array of Elements with the specified tagName that are
+     * immediate children of the parent.
+     *
+     * @param string $aTagName The tagName to search for.
+     *
+     * @return Element[] A list of Elements with the specified tagName.
      */
-    protected function shallowGetElementsByTagName($aTagName) {
+    protected function shallowGetElementsByTagName($aTagName)
+    {
         $collection = array();
         $node = $this->mFirstChild;
         $tagName = strtoupper($aTagName);
