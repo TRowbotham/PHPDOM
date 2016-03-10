@@ -3,18 +3,68 @@ namespace phpjs;
 
 use phpjs\elements\Element;
 
-// https://developer.mozilla.org/en-US/docs/Web/API/Attr
-// https://dom.spec.whatwg.org/#attr
-
+/**
+ * Represents a content attribute on an Element.
+ *
+ * @see https://dom.spec.whatwg.org/#attr
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/Attr
+ *
+ * @property-read string $localName The attribute's local name.
+ *
+ * @property-read string $name The attribute's fully qualified name, usually in
+ *     the form of prefix:localName or localName if the attribute does not have
+ *     a namespace.
+ *
+ * @property-read string|null $namespaceURI The attribute's namespace or null
+ *     if it does not have a namespace.
+ *
+ * @property-read Element|null $ownerElement The Element to which this attribute
+ *     belongs to, or null if it is not owned by an Element.
+ *
+ * @property-read string|null $prefix The attribute's namespace prefix or null
+ *     if it does not have a namespace.
+ *
+ * @property-read string $value The value of the attribute.
+ */
 class Attr {
+    /**
+     * @var string
+     */
     protected $mLocalName;
+
+    /**
+     * @var string
+     */
     protected $mName;
+
+    /**
+     * @var string|null
+     */
     protected $mNamespaceURI;
+
+    /**
+     * @var Element|null
+     */
     protected $mOwnerElement;
+
+    /**
+     * @var string|null
+     */
     protected $mPrefix;
+
+    /**
+     * @var string
+     */
     protected $mValue;
 
-    public function __construct($aLocalName, $aValue, $aName = null, $aNamespace = null, $aPrefix = null, Element $aOwnerElement = null) {
+    public function __construct(
+        $aLocalName,
+        $aValue,
+        $aName = null,
+        $aNamespace = null,
+        $aPrefix = null,
+        Element $aOwnerElement = null
+    ) {
         $this->mLocalName = $aLocalName;
         $this->mName = $aName ? $aName : $aLocalName;
         $this->mNamespaceURI = $aNamespace;
@@ -23,7 +73,13 @@ class Attr {
         $this->mValue = $aValue;
     }
 
-    public function __get($aName) {
+    public function __destruct()
+    {
+        $this->mOwnerElement = null;
+    }
+
+    public function __get($aName)
+    {
         switch ($aName) {
             case 'localName':
                 return $this->mLocalName;
@@ -45,7 +101,8 @@ class Attr {
         }
     }
 
-    public function __set($aName, $aValue) {
+    public function __set($aName, $aValue)
+    {
         switch ($aName) {
             case 'value':
                 if (!$this->mOwnerElement) {
@@ -53,11 +110,11 @@ class Attr {
                 } else {
                     $this->mOwnerElement->_changeAttributeValue($this, $aValue);
                 }
-
         }
     }
 
-    public static function _isBool($aAttributeName) {
+    public static function _isBool($aAttributeName)
+    {
         switch ($aAttributeName) {
             case 'async':
             case 'autofocus':
@@ -84,7 +141,16 @@ class Attr {
         }
     }
 
-    public function _setOwnerElement(Element $aElement = null) {
+    /**
+     * Set's the attribute's owning Element.
+     *
+     * @internal
+     *
+     * @param Element|null $aElement The Element that this attribute belongs
+     *     to.
+     */
+    public function _setOwnerElement(Element $aElement = null)
+    {
         $this->mOwnerElement = $aElement;
     }
 }
