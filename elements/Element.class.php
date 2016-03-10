@@ -675,7 +675,10 @@ class Element extends Node implements \SplObserver
         $aNamespace,
         $aLocalName
     ) {
-        $attr = $this->_getAttributeByNamespaceAndLocalName($aNamespace, $aLocalName);
+        $attr = $this->_getAttributeByNamespaceAndLocalName(
+            $aNamespace,
+            $aLocalName
+        );
 
         if ($attr) {
             $this->_removeAttribute($attr);
@@ -764,7 +767,10 @@ class Element extends Node implements \SplObserver
         $prefix = !$aPrefix ? null : $aPrefix;
         $namespace = !$aNamespace ? null : $aNamespace;
 
-        $attr = $this->_getAttributeByNamespaceAndLocalName($namespace, $aLocalName);
+        $attr = $this->_getAttributeByNamespaceAndLocalName(
+            $namespace,
+            $aLocalName
+        );
 
         if (!$attr) {
             $attr = new Attr($aLocalName, $aValue, $name, $namespace, $prefix);

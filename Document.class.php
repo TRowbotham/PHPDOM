@@ -7,10 +7,16 @@ use phpjs\exceptions\HierarchyRequestError;
 use phpjs\exceptions\InvalidCharacterError;
 use phpjs\exceptions\NotSupportedError;
 
-// https://developer.mozilla.org/en-US/docs/Web/API/Document
-// https://html.spec.whatwg.org/#document
-class Document extends Node {
-    use GetElementsBy, NonElementParentNode, ParentNode;
+/**
+ * @see https://dom.spec.whatwg.org/#interface-document
+ * @see https://html.spec.whatwg.org/#document
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/Document
+ */
+class Document extends Node
+{
+    use GetElementsBy;
+    use NonElementParentNode;
+    use ParentNode;
 
     const NO_QUIRKS_MODE = 1;
     const LIMITED_QUIRKS_MODE = 2;
@@ -29,7 +35,8 @@ class Document extends Node {
     private $mNodeIteratorList;
     private $mURL;
 
-    public function __construct() {
+    public function __construct()
+    {
         parent::__construct();
 
         if (!static::$mDefaultDocument) {
@@ -93,7 +100,8 @@ class Document extends Node {
      *
      * @return Node         The newly adopted Node.
      */
-    public function adoptNode(Node $aNode) {
+    public function adoptNode(Node $aNode)
+    {
         if ($aNode instanceof Document) {
             throw new NotSupportedError;
         }
@@ -112,11 +120,12 @@ class Document extends Node {
      *
      * @link https://dom.spec.whatwg.org/#dom-document-createelement
      *
-     * @param  string       $aLocalName   The name of the element to create.
+     * @param string $aLocalName The name of the element to create.
      *
-     * @return HTMLElement                A known HTMLElement or HTMLUnknownElement.
+     * @return HTMLElement A known HTMLElement or HTMLUnknownElement.
      */
-    public function createElement($aLocalName) {
+    public function createElement($aLocalName)
+    {
         // TODO: Make sure localName matches the name production
 
         $localName = strtolower($aLocalName);
@@ -127,9 +136,13 @@ class Document extends Node {
         return $node;
     }
 
-    public function createElementNS($aNamespace, $aQualifiedName) {
+    public function createElementNS($aNamespace, $aQualifiedName)
+    {
         try {
-            $parts = Namespaces::validateAndExtract($aNamespace, $aQualifiedName);
+            $parts = Namespaces::validateAndExtract(
+                $aNamespace,
+                $aQualifiedName
+            );
         } catch (Exception $e) {
             throw $e;
         }
@@ -145,20 +158,26 @@ class Document extends Node {
                 $interface = 'phpjs\elements\Element';
         }
 
-        $node = new $interface($parts['localName'], $parts['namespace'], $parts['prefix']);
+        $node = new $interface(
+            $parts['localName'],
+            $parts['namespace'],
+            $parts['prefix']
+        );
         $node->mOwnerDocument = $this;
 
         return $node;
     }
 
-    public function createDocumentFragment() {
+    public function createDocumentFragment()
+    {
         $node = new DocumentFragment();
         $node->mOwnerDocument = $this;
 
         return $node;
     }
 
-    public function createComment($aData) {
+    public function createComment($aData)
+    {
         $node = new Comment($aData);
         $node->mOwnerDocument = $this;
 
@@ -170,13 +189,14 @@ class Document extends Node {
      *
      * @link https://dom.spec.whatwg.org/#dom-document-createevent
      *
-     * @param  string $aInterface The type of event interface to be created.
+     * @param string $aInterface The type of event interface to be created.
      *
      * @return Event
      *
      * @throws NotSupportedError
      */
-    public function createEvent($aInterface) {
+    public function createEvent($aInterface)
+    {
         $constructor = null;
         $interface = strtolower($aInterface);
 
@@ -203,23 +223,32 @@ class Document extends Node {
     }
 
     /**
-     * Returns a new NodeIterator object, which represents an iterator over the members of a list of the nodes in a
-     * subtree of the DOM.
-     * @param  Node             $aRoot       The root node of the iterator object.
-     * @param  int              $aWhatToShow Optional.  A bitmask of NodeFilter constants allowing the user
-     *                                          to filter for specific node types.
-     * @param  callable|null    $aFilter     A user defined function to determine whether or not to accept a node that has
-     *                                          passed the whatToShow check.
+     * Returns a new NodeIterator object, which represents an iterator over the
+     * members of a list of the nodes in a subtree of the DOM.
+     *
+     * @param Node $aRoot The root node of the iterator object.
+     *
+     * @param int $aWhatToShow Optional. A bitmask of NodeFilter constants
+     *     allowing the user to filter for specific node types.
+     *
+     * @param  callable|null $aFilter A user defined function to determine
+     *     whether or not to accept a node that has passed the whatToShow check.
+     *
      * @return NodeIterator
      */
-    public function createNodeIterator(Node $aRoot, $aWhatToShow = NodeFilter::SHOW_ALL, callable $aFilter = null) {
+    public function createNodeIterator(
+        Node $aRoot,
+        $aWhatToShow = NodeFilter::SHOW_ALL,
+        callable $aFilter = null
+    ) {
         $iter = new NodeIterator($aRoot, $aWhatToShow, $aFilter);
         $this->mNodeIteratorList[] = $iter;
 
         return $iter;
     }
 
-    public function createProcessingInstruction($aTarget, $aData) {
+    public function createProcessingInstruction($aTarget, $aData)
+    {
         // TODO: Make sure the Name matches the production
 
         if (strpos($aData, '?>') === false) {
@@ -232,7 +261,8 @@ class Document extends Node {
         return $pi;
     }
 
-    public function createRange() {
+    public function createRange()
+    {
         $range = new Range();
         $range->setStart($this, 0);
         $range->setEnd($this, 0);
@@ -240,7 +270,8 @@ class Document extends Node {
         return $range;
     }
 
-    public function createTextNode($aData) {
+    public function createTextNode($aData)
+    {
         $node = new Text($aData);
         $node->mOwnerDocument = $this;
 
@@ -248,19 +279,29 @@ class Document extends Node {
     }
 
     /**
-     * Returns a new TreeWalker object, which represents the nodes of a document subtree and a position within them.
-     * @param  Node             $aRoot       The root node of the DOM subtree being traversed.
-     * @param  int              $aWhatToShow Optional.  A bitmask of NodeFilter constants allowing the user
-     *                                          to filter for specific node types.
-     * @param  callable|null    $aFilter     A user defined function to determine whether or not to accept a node that has
-     *                                          passed the whatToShow check.
+     * Returns a new TreeWalker object, which represents the nodes of a document
+     * subtree and a position within them.
+     *
+     * @param Node $aRoot The root node of the DOM subtree being traversed.
+     *
+     * @param int $aWhatToShow Optional.  A bitmask of NodeFilter constants
+     *     allowing the user to filter for specific node types.
+     *
+     * @param callable|null $aFilter A user defined function to determine
+     *     whether or not to accept a node that has passed the whatToShow check.
+     *
      * @return TreeWalker
      */
-    public function createTreeWalker(Node $aRoot, $aWhatToShow = NodeFilter::SHOW_ALL, callable $aFilter = null) {
+    public function createTreeWalker(
+        Node $aRoot,
+        $aWhatToShow = NodeFilter::SHOW_ALL,
+        callable $aFilter = null
+    ) {
         return new TreeWalker($aRoot, $aWhatToShow, $aFilter);
     }
 
-    public function importNode(Node $aNode, $aDeep = false) {
+    public function importNode(Node $aNode, $aDeep = false)
+    {
         if ($aNode instanceof Document || $aNode instanceof ShadowRoot) {
             throw new NotSupportedError;
         }
@@ -304,11 +345,13 @@ class Document extends Node {
      *
      * @return int
      */
-    public function _getMode() {
+    public function _getMode()
+    {
         return $this->mMode;
     }
 
-    public function _getNodeIteratorCollection() {
+    public function _getNodeIteratorCollection()
+    {
         return $this->mNodeIteratorList;
     }
 
@@ -319,7 +362,8 @@ class Document extends Node {
      *
      * @param string $aType The MIME content type of the document.
      */
-    public function _setContentType($aType) {
+    public function _setContentType($aType)
+    {
         $this->mContentType = $aType;
     }
 
@@ -330,7 +374,8 @@ class Document extends Node {
      *
      * @param DocumentType $aDoctype The DocumentType node of the document.
      */
-    public function _setDoctype(DocumentType $aDoctype = null) {
+    public function _setDoctype(DocumentType $aDoctype = null)
+    {
         $this->mDoctype = $aDoctype;
     }
 
@@ -341,7 +386,8 @@ class Document extends Node {
      *
      * @param int $aMode An integer representing the current mode.
      */
-    public function _setMode($aMode) {
+    public function _setMode($aMode)
+    {
         $this->mMode = $aMode;
     }
 
@@ -352,7 +398,8 @@ class Document extends Node {
      *
      * @param string $aCharacterSet The document's character set
      */
-    public function _setCharacterSet($aCharacterSet) {
+    public function _setCharacterSet($aCharacterSet)
+    {
         if (!is_string($aCharacterSet)) {
             return;
         }
@@ -361,31 +408,37 @@ class Document extends Node {
     }
 
     /**
-     * @internal
      * Returns the first document created, which is assumed to be the global
-     * document.  This global document is the owning document for objects instantiated
-     * using its constructor.  These objects are DocumentFragment, Text, Comment, and
-     * ProcessingInstruction.
-     * @return Document|null Returns the global document.  If null is returned, then no
-     *                          document existed before the user attempted to instantiate
-     *                          an object that has an owning document.
+     * document.  This global document is the owning document for objects
+     * instantiated using its constructor.  These objects are DocumentFragment,
+     * Text, Comment, and ProcessingInstruction.
+     *
+     * @internal
+     *
+     * @return Document|null Returns the global document.  If null is returned,
+     *     then no document existed before the user attempted to instantiate an
+     *     object that has an owning document.
      */
-    public static function _getDefaultDocument() {
+    public static function _getDefaultDocument()
+    {
         return static::$mDefaultDocument;
     }
 
-    public function _printTree() {
+    public function _printTree()
+    {
         return $this->_traverseTree($this->mChildNodes, 0);
     }
 
-    private function _traverseTree($aNodes, $aLevel = 0) {
+    private function _traverseTree($aNodes, $aLevel = 0)
+    {
         if (empty($aNodes)) {
             return '';
         }
 
         $html = '<div class="tree-level">';
         foreach ($aNodes as $node) {
-            $name = $node->nodeName ? strtolower($node->nodeName) : get_class($node);
+            $name = $node->nodeName ?
+                strtolower($node->nodeName) : get_class($node);
             $html .= '<div class="tree-branch">';
             $html .= htmlspecialchars('<' . $name);
             if ($node instanceof Element) {
@@ -537,7 +590,8 @@ class Document extends Node {
         return $s;
     }
 
-    protected function getHTMLInterfaceFor($aLocalName) {
+    protected function getHTMLInterfaceFor($aLocalName)
+    {
         switch($aLocalName) {
             /**
              * These are elements whose tag name differs
