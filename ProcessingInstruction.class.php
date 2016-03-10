@@ -1,10 +1,12 @@
 <?php
 namespace phpjs;
 
-class ProcessingInstruction extends CharacterData {
+class ProcessingInstruction extends CharacterData
+{
     protected $mTarget;
 
-    public function __construct($aTarget, $aData) {
+    public function __construct($aTarget, $aData)
+    {
         parent::__construct($aData);
 
         $this->mNodeName = $aTarget;
@@ -12,7 +14,8 @@ class ProcessingInstruction extends CharacterData {
         $this->mTarget = $aTarget;
     }
 
-    public function __get($aName) {
+    public function __get($aName)
+    {
         switch ($aName) {
             case 'target':
                 return $this->mTarget;

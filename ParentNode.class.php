@@ -3,13 +3,18 @@ namespace phpjs;
 
 use phpjs\elements\Element;
 
-// https://developer.mozilla.org/en-US/docs/Web/API/ParentNode
-// https://dom.spec.whatwg.org/#interface-parentnode
-trait ParentNode {
+/**
+ * @see https://dom.spec.whatwg.org/#interface-parentnode
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/ParentNode
+ */
+trait ParentNode
+{
     /**
-     * Inserts nodes after the last child of this node, while replacing strings in nodes
-     * with equvilant Text nodes.
-     * @param Node|DOMString ...$aNodes One or more Nodes or strings to be appended to this Node.
+     * Inserts nodes after the last child of this node, while replacing strings
+     * in nodes with equvilant Text nodes.
+     *
+     * @param Node|DOMString ...$aNodes One or more Nodes or strings to be
+     *     appended to this Node.
      */
     public function append() {
         $node = $this->mutationMethodMacro(func_get_args());
@@ -17,24 +22,35 @@ trait ParentNode {
     }
 
     /**
-     * Inserts nodes before the first child of this node, while replacing strings in nodes with
-     * equivalent Text nodes.
-     * @param Node|DOMString ...$aNodes One or more Nodes or strings to be prepended to this node;
+     * Inserts nodes before the first child of this node, while replacing
+     * strings in nodes with equivalent Text nodes.
+     *
+     * @param Node|DOMString ...$aNodes One or more Nodes or strings to be
+     *     prepended to this node;
      */
-    public function prepend() {
+    public function prepend()
+    {
         $node = $this->mutationMethodMacro(func_get_args());
         $this->_preinsertNodeBeforeChild($node, $this->mFirstChild);
     }
 
-    private function filterChildElements($aNode) {
+    private function filterChildElements($aNode)
+    {
         return $aNode->nodeType == Node::ELEMENT_NODE;
     }
 
-    private function getChildren() {
-        return array_values(array_filter($this->mChildNodes, array($this, 'filterChildElements')));
+    private function getChildren()
+    {
+        return array_values(
+            array_filter(
+                $this->mChildNodes,
+                array($this, 'filterChildElements')
+            )
+        );
     }
 
-    private function getFirstElementChild() {
+    private function getFirstElementChild()
+    {
         $node = $this->mFirstChild;
 
         while ($node) {
@@ -48,7 +64,8 @@ trait ParentNode {
         return $node;
     }
 
-    private function getLastElementChild() {
+    private function getLastElementChild()
+    {
         $node = $this->mLastChild;
 
         while ($node) {
@@ -62,7 +79,8 @@ trait ParentNode {
         return $node;
     }
 
-    private function getChildElementCount() {
+    private function getChildElementCount()
+    {
         return count($this->getChildren());
     }
 }

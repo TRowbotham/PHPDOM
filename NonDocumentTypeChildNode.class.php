@@ -3,8 +3,10 @@ namespace phpjs;
 
 use phpjs\elements\Element;
 
-trait NonDocumentTypeChildNode {
-    private function getNextElementSibling() {
+trait NonDocumentTypeChildNode
+{
+    private function getNextElementSibling()
+    {
         $node = $this->nextSibling;
 
         while ($node) {
@@ -18,7 +20,8 @@ trait NonDocumentTypeChildNode {
         return $node;
     }
 
-    private function getPreviousElementSibling() {
+    private function getPreviousElementSibling()
+    {
         $node = $this->previousSibling;
 
         while ($node) {

@@ -1424,7 +1424,7 @@ abstract class Node implements EventTarget
         $nodes = $aNodes;
 
         // Turn all strings into Text nodes.
-        array_walk($nodes, function(&$aArg) {
+        array_walk($nodes, function (&$aArg) {
             if (is_string($aArg)) {
                 $aArg = new Text($aArg);
             }

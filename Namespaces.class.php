@@ -3,7 +3,8 @@ namespace phpjs;
 
 use phpjs\exceptions\NamespaceError;
 
-class Namespaces {
+class Namespaces
+{
     const HTML = 'http://www.w3.org/1999/xhtml';
     const SVG = 'http://www.w3.org/2000/svg';
     const XML = 'http://www.w3.org/XML/1998/namespace';
@@ -14,15 +15,16 @@ class Namespaces {
     /**
      * Finds the namespace associated with the given prefix on the given node.
      *
-     * @link https://dom.spec.whatwg.org/#locate-a-namespace
+     * @see https://dom.spec.whatwg.org/#locate-a-namespace
      *
-     * @param  Node         $aNode   The node whose namespace is to be found.
+     * @param Node $aNode The node whose namespace is to be found.
      *
-     * @param  string|null  $aPrefix The prefix of the namespace to be found.
+     * @param string|null $aPrefix The prefix of the namespace to be found.
      *
      * @return string|null
      */
-    public static function locateNamespace(Node $aNode, $aPrefix) {
+    public static function locateNamespace(Node $aNode, $aPrefix)
+    {
         switch ($aNode->nodeType) {
             case Node::ELEMENT_NODE:
                 if ($aNode->namespaceURI && $aNode->prefix === $aPrefix) {
@@ -30,9 +32,15 @@ class Namespaces {
                 }
 
                 foreach ($aNode->attributes as $attr) {
-                    if (($attr->namespaceURI === self::XMLNS && $attr->prefix === 'xmlns' &&
-                        $attr->localName === $aPrefix) || (!$aPrefix && $attr->namespaceURI === self::XMLNS &&
-                        !$attr->prefix && strcmp($attr->localName, 'xmlns') === 0)) {
+                    if (
+                        ($attr->namespaceURI === self::XMLNS &&
+                            $attr->prefix === 'xmlns' &&
+                            $attr->localName === $aPrefix) ||
+                        (!$aPrefix &&
+                            $attr->namespaceURI === self::XMLNS &&
+                            !$attr->prefix &&
+                            strcmp($attr->localName, 'xmlns') === 0)
+                    ) {
                         return $attr->value !== '' ? $attr->value : null;
                     }
                 }
@@ -66,15 +74,16 @@ class Namespaces {
     /**
      * Finds the prefix associated with the given namespace on the given node.
      *
-     * @link https://dom.spec.whatwg.org/#locate-a-namespace-prefix
+     * @see https://dom.spec.whatwg.org/#locate-a-namespace-prefix
      *
-     * @param  Node         $aNode      Thoe node whose prefix is to be found.
+     * @param Node $aNode Those node whose prefix is to be found.
      *
-     * @param  string|null  $aNamespace The namespace of the prefix to be found.
+     * @param string|null  $aNamespace The namespace of the prefix to be found.
      *
      * @return string|null
      */
-    public static function locatePrefix(Node $aNode, $aNamespace) {
+    public static function locatePrefix(Node $aNode, $aNamespace)
+    {
         if ($aNode->namespaceURI === $aNamespace && !$aNode->prefix) {
             return $aNode->prefix;
         }
@@ -92,11 +101,13 @@ class Namespaces {
         return null;
     }
 
-    public static function validate($aQualifiedName) {
+    public static function validate($aQualifiedName)
+    {
         // TODO
     }
 
-    public static function validateAndExtract($aNamespace, $aQualifiedName) {
+    public static function validateAndExtract($aNamespace, $aQualifiedName)
+    {
         $namespace = $aNamespace === '' ? null : $aNamespace;
         self::validate($aQualifiedName);
         $prefix = null;
@@ -107,28 +118,31 @@ class Namespaces {
         }
 
         if ($prefix && !$namespace) {
-            throw new NamespaceError;
+            throw new NamespaceError();
         }
 
         if ($prefix === 'xml' && $namespace === self::XML) {
-            throw new NamespaceError;
+            throw new NamespaceError();
         }
 
         if ((strcmp($aQualifiedName, 'xmlns') === 0 || $prefix === 'xmlns') &&
             $namespace === self::XMLNS) {
-            throw new NamespaceError;
+            throw new NamespaceError();
         }
 
-        if ($namespace === self::XMLNS && strcmp($aQualifiedName, 'xmlns') !== 0 &&
-            $prefix === 'xmlns') {
-            throw new NamespaceError;
+        if (
+            $namespace === self::XMLNS &&
+            strcmp($aQualifiedName, 'xmlns') !== 0 &&
+            $prefix === 'xmlns'
+        ) {
+            throw new NamespaceError();
         }
 
         return array(
-                    'namespace' => $namespace,
-                    'prefix' => $prefix,
-                    'localName' => $localName,
-                    'qualifiedName' => $aQualifiedName
-                );
+            'namespace' => $namespace,
+            'prefix' => $prefix,
+            'localName' => $localName,
+            'qualifiedName' => $aQualifiedName
+        );
     }
 }

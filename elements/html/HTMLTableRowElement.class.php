@@ -62,7 +62,7 @@ class HTMLTableRowElement extends HTMLElement
                 $tw = new TreeWalker(
                     $parentTable,
                     NodeFilter::SHOW_ELEMENT,
-                    function($aNode) {
+                    function ($aNode) {
                         return $aNode instanceof HTMLTableRowElement ?
                             NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
                     }
@@ -89,7 +89,7 @@ class HTMLTableRowElement extends HTMLElement
                 $tw = new TreeWalker(
                     $parent,
                     NodeFilter::SHOW_ELEMENT,
-                    function($aNode) {
+                    function ($aNode) {
                         return $aNode instanceof HTMLTableRowElement ?
                             NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
                     }

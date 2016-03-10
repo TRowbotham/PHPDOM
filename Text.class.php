@@ -6,21 +6,24 @@ use phpjs\exceptions\IndexSizeError;
 /**
  * Represents the text content of a Node.
  *
- * @link https://dom.spec.whatwg.org/#text
- * @link https://developer.mozilla.org/en-US/docs/Web/API/Text
+ * @see https://dom.spec.whatwg.org/#text
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/Text
  *
- * @property-read string $wholeText Returns the concatenated string data of all contingious Text nodes relative
- *                                  to this Node in tree order.
+ * @property-read string $wholeText Returns the concatenated string data of all
+ *     contingious Text nodes relative to this Node in tree order.
  */
-class Text extends CharacterData {
-    public function __construct($aData = '') {
+class Text extends CharacterData
+{
+    public function __construct($aData = '')
+    {
         parent::__construct($aData);
 
         $this->mNodeName = '#text';
         $this->mNodeType = Node::TEXT_NODE;
     }
 
-    public function __get($aName) {
+    public function __get($aName)
+    {
         switch ($aName) {
             case 'wholeText':
                 $wholeText = '';
@@ -46,11 +49,13 @@ class Text extends CharacterData {
         }
     }
 
-    public function __toString() {
+    public function __toString()
+    {
         return $this->mNodeName . ' ' . $this->mData;
     }
 
-    public function splitText($aOffset) {
+    public function splitText($aOffset)
+    {
         $length = $this->mLength;
 
         if ($aOffset > $length) {
@@ -64,13 +69,19 @@ class Text extends CharacterData {
         $ranges = Range::_getRangeCollection();
 
         if ($this->mParentNode) {
-            $this->mParentNode->_insertNodeBeforeChild($newNode, $this->mNextSibling);
+            $this->mParentNode->_insertNodeBeforeChild(
+                $newNode,
+                $this->mNextSibling
+            );
             $treeIndex = $this->_getTreeIndex();
 
             foreach ($ranges as $index => $range) {
                 $startOffset = $range->startOffset;
 
-                if ($range->startContainer === $this && $startOffset > $aOffset) {
+                if (
+                    $range->startContainer === $this &&
+                    $startOffset > $aOffset
+                ) {
                     $range->setStart($newNode, $startOffset - $aOffset);
                 }
             }
@@ -87,7 +98,10 @@ class Text extends CharacterData {
                 $startContainer = $range->startContainer;
                 $startOffset = $range->startOffset;
 
-                if ($startContainer === $this && $startOffset == $treeIndex + 1) {
+                if (
+                    $startContainer === $this &&
+                    $startOffset == $treeIndex + 1
+                ) {
                     $range->setStart($startContainer, $startOffset + 1);
                 }
             }
@@ -108,7 +122,10 @@ class Text extends CharacterData {
             foreach ($ranges as $index => $range) {
                 $startContainer = $range->startContainer;
 
-                if ($startContainer === $this && $range->startOffset > $aOffset) {
+                if (
+                    $startContainer === $this &&
+                    $range->startOffset > $aOffset
+                ) {
                     $range->setStart($startContainer, $aOffset);
                 }
             }
