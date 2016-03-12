@@ -324,7 +324,7 @@ class Document extends Node
         $oldDocument = $aNode->mOwnerDocument;
 
         if ($aNode->mParentNode) {
-            $aNode->mParentNode->_removeChild($aNode);
+            self::removeNode($aNode, $aNode->mParentNode);
         }
 
         $tw = $oldDocument->createTreeWalker($aNode);

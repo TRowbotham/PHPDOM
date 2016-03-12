@@ -85,7 +85,7 @@ trait ChildNode
             return;
         }
 
-        $this->mParentNode->_removeChild($this);
+        self::removeNode($this, $this->mParentNode);
     }
 
     /**

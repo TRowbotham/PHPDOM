@@ -622,7 +622,7 @@ abstract class Node implements EventTarget
             $length = $node->length;
 
             if (!$length) {
-                $this->_removeChild($node);
+                self::removeNode($node, $this);
                 continue;
             }
 
@@ -694,7 +694,7 @@ abstract class Node implements EventTarget
             }
 
             foreach ($contingiousTextNodes as $textNode) {
-                $textNode->mParentNode->removeChild($textNode);
+                self::removeNode($textNode, $textNode->mParentNode);
             }
 
             unset($contingiousTextNodes);
@@ -886,7 +886,7 @@ abstract class Node implements EventTarget
         $ownerDocument = $this->mOwnerDocument ?: $this;
         $ownerDocument->_adoptNode($aNewNode);
 
-        $this->_removeChild($aOldNode, true);
+        self::removeNode($aOldNode, $this, true);
 
         $nodes = $aNewNode instanceof DocumentFragment ?
             $aNewNode->childNodes : array($aNewNode);
@@ -1287,7 +1287,7 @@ abstract class Node implements EventTarget
 
         if ($isDocumentFragment) {
             foreach ($nodes as $node) {
-                $aNode->_removeChild($node, true);
+                self::removeNode($node, $aNode, true);
                 $count--;
             }
 
@@ -1391,7 +1391,7 @@ abstract class Node implements EventTarget
         }
 
         foreach ($removedNodes as $index => $node) {
-            $this->_removeChild($node, true);
+            self::removeNode($node, $this, true);
         }
 
         if ($aNode) {
@@ -1458,18 +1458,23 @@ abstract class Node implements EventTarget
     }
 
     /**
+     * Removes a node from its parent node.
+     *
      * @internal
      *
-     * @link https://dom.spec.whatwg.org/#concept-node-remove
+     * @see https://dom.spec.whatwg.org/#concept-node-remove
      *
      * @param Node $aNode The Node to be removed from the document tree.
      *
      * @param bool $aSuppressObservers Optional. If true, mutation events are
      *     ignored for this operation.
      */
-    protected function _removeChild($aNode, $aSuppressObservers = null)
-    {
-        $index = array_search($aNode, $this->mChildNodes);
+    public static function removeNode(
+        Node $aNode,
+        Node $aParent,
+        $aSuppressObservers = null
+    ) {
+        $index = array_search($aNode, $aParent->mChildNodes);
         $ranges = Range::_getRangeCollection();
 
         foreach ($ranges as $index => $range) {
@@ -1479,7 +1484,7 @@ abstract class Node implements EventTarget
                 $startContainer === $aNode ||
                 $aNode->contains($startContainer)
             ) {
-                $range->setStart($this, $index);
+                $range->setStart($aParent, $index);
             }
         }
 
@@ -1487,7 +1492,7 @@ abstract class Node implements EventTarget
             $endContainer = $range->endContainer;
 
             if ($endContainer === $aNode || $aNode->contains($endContainer)) {
-                $range->setEnd($this, $index);
+                $range->setEnd($aParent, $index);
             }
         }
 
@@ -1495,7 +1500,7 @@ abstract class Node implements EventTarget
             $startContainer = $range->startContainer;
             $startOffset = $range->startOffset;
 
-            if ($startContainer === $this && $startOffset > $index) {
+            if ($startContainer === $aParent && $startOffset > $index) {
                 $range->setStart($startContainer, $startOffset - 1);
             }
         }
@@ -1504,7 +1509,7 @@ abstract class Node implements EventTarget
             $endContainer = $range->endContainer;
             $endOffset = $range->endOffset;
 
-            if ($endContainer === $this && $endOffset > $index) {
+            if ($endContainer === $aParent && $endOffset > $index) {
                 $range->setEnd($endContainer, $endOffset - 1);
             }
         }
@@ -1515,7 +1520,13 @@ abstract class Node implements EventTarget
             $iter->_preremove($aNode);
         }
 
+        $oldPreviousSibling = $aNode->mPreviousSibling;
+        $oldNextSibling = $aNode->mNextSibling;
+
         array_splice($this->mChildNodes, $index, 1);
+
+        // TODO: For each inclusive descendant inclusiveDescendant of node, run
+        // the removing steps with inclusiveDescendant and parent.
 
         if ($this->mFirstChild === $aNode) {
             $this->mFirstChild = $aNode->mNextSibling;
@@ -1538,11 +1549,18 @@ abstract class Node implements EventTarget
         $aNode->mParentElement = null;
         $aNode->mParentNode = null;
 
-        // TODO: Unregister any registered observers whose subtree option is
-        // true
+        // TODO: For each inclusive ancestor inclusiveAncestor of parent, if
+        // inclusiveAncestor has any registered observers whose options' subtree
+        // is true, then for each such registered observer registered, append a
+        // transient registered observer whose observer and options are
+        // identical to those of registered and source which is registered to
+        // node’s list of registered observers.
 
         if (!$aSuppressObservers) {
-            // TODO: Queue a mutation record for "childList"
+            // TODO: If suppress observers flag is unset, queue a mutation
+            // record of "childList" for parent with removedNodes a list solely
+            // containing node, nextSibling oldNextSibling, and previousSibling
+            // oldPreviousSibling.
         }
     }
 
@@ -1600,7 +1618,7 @@ abstract class Node implements EventTarget
             throw new NotFoundError();
         }
 
-        $this->_removeChild($aChild);
+        self::removeNode($aChild, $this);
 
         return $aChild;
     }
