@@ -109,7 +109,7 @@ class Document extends Node
             throw new HierarchyRequestError;
         }
 
-        $this->_adoptNode($aNode);
+        self::adopt($aNode, $this);
 
         return $aNode;
     }
@@ -306,34 +306,39 @@ class Document extends Node
         }
 
         $clone = $aNode->cloneNode($aDeep);
-        $this->adoptNode($clone);
 
         return $clone;
     }
 
     /**
-     * Removes the node from its parent and adopts it and all its children.
+     * Removes a node from its parent and adopts it and all its children.
      *
      * @internal
      *
-     * @link https://dom.spec.whatwg.org/#concept-node-adopt
+     * @see https://dom.spec.whatwg.org/#concept-node-adopt
      *
-     * @param  Node   $aNode The Node to be adopted into this document.
+     * @param Node $aNode The node being adopted.
+     *
+     * @param Document $aDocument The document that is adopting the node.
      */
-    public function _adoptNode(Node $aNode) {
+    public static function adopt(Node $aNode, Document $aDocument)
+    {
         $oldDocument = $aNode->mOwnerDocument;
 
         if ($aNode->mParentNode) {
             self::removeNode($aNode, $aNode->mParentNode);
         }
 
-        $tw = $oldDocument->createTreeWalker($aNode);
-        $node = $aNode;
+        if ($aDocument !== $oldDocument) {
+            $iter = new NodeIterator($aNode, NodeFilter::SHOW_ALL);
 
-        while ($node) {
-            $node->mOwnerDocument = $this;
-            // TODO: Support adopting steps for nodes
-            $node = $tw->nextNode();
+            while (($node = $iter->nextNode())) {
+                $node->mOwnerDocument = $aDocument;
+            }
+
+            // TODO: For each descendant in node’s inclusive descendants, in
+            // tree order, run the adopting steps with descendant and
+            // oldDocument.
         }
     }
 
