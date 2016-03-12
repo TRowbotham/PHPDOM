@@ -7,16 +7,16 @@ namespace phpjs;
  */
 class DocumentFragment extends Node
 {
-	use NonElementParentNode;
+    use NonElementParentNode;
     use ParentNode;
 
-	public function __construct()
+    public function __construct()
     {
-		parent::__construct();
+        parent::__construct();
 
-		$this->mNodeName = '#document-fragment';
-		$this->mNodeType = Node::DOCUMENT_FRAGMENT_NODE;
-	}
+        $this->mNodeName = '#document-fragment';
+        $this->mNodeType = Node::DOCUMENT_FRAGMENT_NODE;
+    }
 
     public function __get($aName)
     {
