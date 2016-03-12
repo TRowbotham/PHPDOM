@@ -245,18 +245,22 @@ abstract class Node implements EventTarget
     /**
      * Returns a copy of the node upon which the method was called.
      *
-     * @link https://dom.spec.whatwg.org/#dom-node-clonenodedeep
+     * @see https://dom.spec.whatwg.org/#dom-node-clonenode
      *
      * @param boolean $aDeep If true, all child nodes and event listeners should
      *     be cloned as well.
      *
      * @return Node The copy of the node.
+     *
+     * @throws NotSupportedError If the node being cloned is a ShadowRoot.
      */
     public function cloneNode($aDeep = false)
     {
-        $ownerDocument = $this->mOwnerDocument ?: $this;
+        if ($this instanceof ShadowRoot) {
+            throw new NotSupportedError();
+        }
 
-        return $this->_cloneNode($ownerDocument, $aDeep);
+        return $this->_cloneNode(null, $aDeep);
     }
 
     /**
