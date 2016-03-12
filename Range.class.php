@@ -506,26 +506,166 @@ class Range {
         $originalEndOffset = $this->mEndOffset;
 
         if (
-            $startNode === $endNode &&
-            ($startNode instanceof Text ||
-                $startNode instanceof ProcessingInstruction ||
-                $startNode instanceof Comment)
+            $originalStartNode === $originalEndNode &&
+            ($originalStartNode instanceof Text ||
+                $originalStartNode instanceof ProcessingInstruction ||
+                $originalStartNode instanceof Comment)
         ) {
-            $clone = $startNode->cloneNode();
-            $clone->data = $startNode->substringData(
-                $startOffset,
-                $endOffset - $startOffset
+            $clone = $startNode->_cloneNode();
+            $clone->data = $originalStartNode->substringData(
+                $originalStartOffset,
+                $originalEndOffset - $originalStartOffset
             );
             $fragment->appendChild($clone);
-            $startNode->replaceData(
-                $startOffset,
-                $endOffset - $startOffset, ''
+            $originalStartNode->replaceData(
+                $originalStartOffset,
+                $originalEndOffset - $originalStartOffset,
+                ''
             );
 
             return $fragment;
         }
 
-        // TODO: Finish
+        $commonAncestor = Node::_getCommonAncestor(
+            $originalStartNode,
+            $originalEndNode
+        );
+        $firstPartiallyContainedChild = null;
+
+        if (!$originalStartNode->contains($originalEndNode)) {
+            foreach ($commonAncestor->childNodes as $node) {
+                if ($this->isPartiallyContainedNode($node)) {
+                    $firstPartiallyContainedChild = $node;
+                    break;
+                }
+            }
+        }
+
+        $lastPartiallyContainedChild = null;
+
+        if (!$originalEndNode->contains($originalStartNode)) {
+            foreach (array_reverse($commonAncestor->childNodes) as $node) {
+                if ($this->isPartiallyContainedNode($node)) {
+                    $lastPartiallyContainedChild = $node;
+                    break;
+                }
+            }
+        }
+
+        $tw = new TreeWalker(
+            $commonAncestor,
+            NodeFilter::SHOW_ALL,
+            function ($aNode) {
+                return $this->isFullyContainedNode($aNode) ?
+                        NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
+            }
+        );
+        $containsDocType = false;
+        $containedChildren = [];
+
+        while (($node = $tw->nextNode())) {
+            if (!$containsDocType && $node instanceof DocumentType) {
+                $containsDocType = true;
+            }
+
+            $containedChildren[] = $node;
+        }
+
+        if ($containsDocType) {
+            throw new HierarchyRequestError();
+        }
+
+        if ($originalStartNode->contains($originalEndNode)) {
+            $newNode = $originalStartNode;
+            $newOffset = $originalStartOffset;
+        } else {
+            $referenceNode = $originalStartNode;
+
+            while (true) {
+                $parent = $referenceNode->parentNode;
+
+                if (!$parent || $parent->contains($originalEndNode)) {
+                    break;
+                }
+
+                $referenceNode = $parent;
+
+                // If reference node’s parent is null, it would be the root of
+                // range, so would be an inclusive ancestor of original end
+                // node, and we could not reach this point.
+                $newNode = $referenceNode->parentNode;
+                $newOffset = $referenceNode->_getTreeIndex();
+            }
+        }
+
+        if (
+            $firstPartiallyContainedChild instanceof Text ||
+            $firstPartiallyContainedChild instanceof ProcessingInstruction ||
+            $firstPartiallyContainedChild instanceof Comment
+        ) {
+            $clone = $originalStartNode->_cloneNode();
+            $clone->data = $originalStartNode->substringData(
+                $originalStartOffset,
+                $originalStartNode->length - $originalStartOffset
+            );
+            $fragment->appendChild($clone);
+            $originalStartNode->replaceData(
+                $originalStartOffset,
+                $originalStartNode->length - $originalStartOffset,
+                ''
+            );
+        } elseif ($firstPartiallyContainedChild) {
+            $clone = $firstPartiallyContainedChild->_cloneNode();
+            $fragment->appendChild($clone);
+            $subrange = new Range();
+            $subrange->mStartContainer = $originalStartNode;
+            $subrange->mStartOffset = $originalStartOffset;
+            $subrange->mEndContainer = $firstPartiallyContainedChild;
+            $subrange->mEndOffset =
+                $firstPartiallyContainedChild->_getNodeLength();
+            $subfragment = $subrange->extractContents();
+            $clone->appendChild($subfragment);
+        }
+
+        foreach ($containedChildren as $child) {
+            $fragment->appendChild($child);
+        }
+
+        if (
+            $lastPartiallyContainedChild instanceof Text ||
+            $lastPartiallyContainedChild instanceof ProcessingInstruction ||
+            $lastPartiallyContainedChild instanceof Comment
+        ) {
+            // In this case, last partially contained child is original end node
+            $clone = $originalEndNode->_cloneNode();
+            $clone->data = $originalEndNode->substringData(
+                0,
+                $originalEndOffset
+            );
+            $fragment->appendChild($clone);
+            $originalEndNode->replaceData(
+                0,
+                $originalEndOffset,
+                ''
+            );
+        } elseif ($lastPartiallyContainedChild) {
+            $clone = $lastPartiallyContainedChild->_cloneNode();
+            $fragment->appendChild($clone);
+            $subrange = new Range();
+            $subrange->mStartContainer = $lastPartiallyContainedChild;
+            $subrange->mStartOffset = 0;
+            $subrange->mEndContainer = $originalEndNode;
+            $subrange->mEndOffset = $originalEndOffset;
+            $subfragment = $subrange->extractContents();
+            $clone->appendChild($subfragment);
+        }
+
+        $this->mStartContainer = $newNode;
+        $this->mStartOffset = $newOffset;
+        $this->mEndContainer = $newNode;
+        $this->mEndOffset = $newOffset;
+
+        return $fragment;
     }
 
     /**
