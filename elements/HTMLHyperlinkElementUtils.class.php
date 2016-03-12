@@ -59,7 +59,7 @@ trait HTMLHyperlinkElementUtils
 
                 if ($this->mUrl === null && !$this->hasAttribute('href')) {
                     return '';
-                } else if ($this->mUrl === null) {
+                } elseif ($this->mUrl === null) {
                     return $this->getAttribute('href');
                 }
 
