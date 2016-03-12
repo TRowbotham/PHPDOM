@@ -1409,16 +1409,20 @@ abstract class Node implements EventTarget
     }
 
     /**
+     * Converts an array of Nodes and strings and creates a single node,
+     * such as a DocumentFragment.  Any strings contained in the array will be
+     * turned in to Text nodes.
+     *
      * @internal
      *
-     * @link https://dom.spec.whatwg.org/#mutation-method-macro
+     * @see https://dom.spec.whatwg.org/#converting-nodes-into-a-node
      *
      * @param array $aNodes An array of Nodes and strings.
      *
      * @return DocumentFragment|Node If $aNodes > 1, then a DocumentFragment is
      *     returned, otherwise a single Node is returned.
      */
-    protected function mutationMethodMacro($aNodes)
+    protected static function convertNodesToNode($aNodes)
     {
         $node = null;
         $nodes = $aNodes;
@@ -1435,8 +1439,12 @@ abstract class Node implements EventTarget
         if (count($nodes) > 1) {
             $node = $this->mOwnerDocument->createDocumentFragment();
 
-            foreach ($nodes as $arg) {
-                $node->appendChild($arg);
+            try {
+                foreach ($nodes as $arg) {
+                    $node->appendChild($arg);
+                }
+            } catch (Exception $e) {
+                throw $e;
             }
         } else {
             $node = $nodes[0];

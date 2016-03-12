@@ -34,7 +34,7 @@ trait ChildNode
             $viableNextSibling = $viableNextSibling->nextSibling;
         }
 
-        $node = $this->mutationMethodMacro($nodes);
+        $node = Node::convertNodesToNode($nodes);
         $parent->_preinsertNodeBeforeChild($node, $viableNextSibling);
     }
 
@@ -65,7 +65,7 @@ trait ChildNode
             $viablePreviousSibling = $viablePreviousSibling->previousSibling;
         }
 
-        $node = $this->mutationMethodMacro(func_get_args());
+        $node = Node::convertNodesToNode(func_get_args());
         $viablePreviousSibling = $viablePreviousSibling ?
             $viablePreviousSibling->nextSibling : $parent->firstChild;
         $this->mParentNode->_preinsertNodeBeforeChild(
@@ -115,7 +115,7 @@ trait ChildNode
             $viableNextSibling = $viableNextSibling->nextSibling;
         }
 
-        $node = $this->mutationMethodMacro($nodes);
+        $node = Node::convertNodesToNode($nodes);
 
         if ($this->mParentNode === $parent) {
             $parent->replaceChild($node, $this);

@@ -17,7 +17,7 @@ trait ParentNode
      *     appended to this Node.
      */
     public function append() {
-        $node = $this->mutationMethodMacro(func_get_args());
+        $node = Node::convertNodesToNode(func_get_args());
         $this->_preinsertNodeBeforeChild($node, null);
     }
 
@@ -30,7 +30,7 @@ trait ParentNode
      */
     public function prepend()
     {
-        $node = $this->mutationMethodMacro(func_get_args());
+        $node = Node::convertNodesToNode(func_get_args());
         $this->_preinsertNodeBeforeChild($node, $this->mFirstChild);
     }
 
