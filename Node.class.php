@@ -1523,17 +1523,17 @@ abstract class Node implements EventTarget
         $oldPreviousSibling = $aNode->mPreviousSibling;
         $oldNextSibling = $aNode->mNextSibling;
 
-        array_splice($this->mChildNodes, $index, 1);
+        array_splice($aParent->mChildNodes, $index, 1);
 
         // TODO: For each inclusive descendant inclusiveDescendant of node, run
         // the removing steps with inclusiveDescendant and parent.
 
-        if ($this->mFirstChild === $aNode) {
-            $this->mFirstChild = $aNode->mNextSibling;
+        if ($aParent->mFirstChild === $aNode) {
+            $aParent->mFirstChild = $aNode->mNextSibling;
         }
 
-        if ($this->mLastChild === $aNode) {
-            $this->mLastChild = $aNode->mPreviousSibling;
+        if ($aParent->mLastChild === $aNode) {
+            $aParent->mLastChild = $aNode->mPreviousSibling;
         }
 
         if ($aNode->mPreviousSibling) {
