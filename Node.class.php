@@ -750,6 +750,113 @@ abstract class Node implements EventTarget
     }
 
     /**
+     * Removes a node from its parent node.
+     *
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#concept-node-remove
+     *
+     * @param Node $aNode The Node to be removed from the document tree.
+     *
+     * @param bool $aSuppressObservers Optional. If true, mutation events are
+     *     ignored for this operation.
+     */
+    public static function removeNode(
+        Node $aNode,
+        Node $aParent,
+        $aSuppressObservers = null
+    ) {
+        $index = array_search($aNode, $aParent->mChildNodes);
+        $ranges = Range::_getRangeCollection();
+
+        foreach ($ranges as $index => $range) {
+            $startContainer = $range->startContainer;
+
+            if (
+                $startContainer === $aNode ||
+                $aNode->contains($startContainer)
+            ) {
+                $range->setStart($aParent, $index);
+            }
+        }
+
+        foreach ($ranges as $index => $range) {
+            $endContainer = $range->endContainer;
+
+            if ($endContainer === $aNode || $aNode->contains($endContainer)) {
+                $range->setEnd($aParent, $index);
+            }
+        }
+
+        foreach ($ranges as $index => $range) {
+            $startContainer = $range->startContainer;
+            $startOffset = $range->startOffset;
+
+            if ($startContainer === $aParent && $startOffset > $index) {
+                $range->setStart($startContainer, $startOffset - 1);
+            }
+        }
+
+        foreach ($ranges as $index => $range) {
+            $endContainer = $range->endContainer;
+            $endOffset = $range->endOffset;
+
+            if ($endContainer === $aParent && $endOffset > $index) {
+                $range->setEnd($endContainer, $endOffset - 1);
+            }
+        }
+
+        $iterCollection = $aNode->mOwnerDocument->_getNodeIteratorCollection();
+
+        foreach ($iterCollection as $iter) {
+            $iter->_preremove($aNode);
+        }
+
+        $oldPreviousSibling = $aNode->mPreviousSibling;
+        $oldNextSibling = $aNode->mNextSibling;
+
+        array_splice($aParent->mChildNodes, $index, 1);
+
+        // TODO: For each inclusive descendant inclusiveDescendant of node, run
+        // the removing steps with inclusiveDescendant and parent.
+
+        if ($aParent->mFirstChild === $aNode) {
+            $aParent->mFirstChild = $aNode->mNextSibling;
+        }
+
+        if ($aParent->mLastChild === $aNode) {
+            $aParent->mLastChild = $aNode->mPreviousSibling;
+        }
+
+        if ($aNode->mPreviousSibling) {
+            $aNode->mPreviousSibling->mNextSibling = $aNode->mNextSibling;
+        }
+
+        if ($aNode->mNextSibling) {
+            $aNode->mNextSibling->mPreviousSibling = $aNode->mPreviousSibling;
+        }
+
+        $aNode->mPreviousSibling = null;
+        $aNode->mNextSibling = null;
+        $aNode->mParentElement = null;
+        $aNode->mParentNode = null;
+
+        // TODO: For each inclusive ancestor inclusiveAncestor of parent, if
+        // inclusiveAncestor has any registered observers whose options' subtree
+        // is true, then for each such registered observer registered, append a
+        // transient registered observer whose observer and options are
+        // identical to those of registered and source which is registered to
+        // node’s list of registered observers.
+
+        if (!$aSuppressObservers) {
+            // TODO: If suppress observers flag is unset, queue a mutation
+            // record of "childList" for parent with removedNodes a list solely
+            // containing node, nextSibling oldNextSibling, and previousSibling
+            // oldPreviousSibling.
+        }
+    }
+
+    /**
      * Replaces a node with another node.
      *
      * @link https://dom.spec.whatwg.org/#concept-node-replace
@@ -1455,113 +1562,6 @@ abstract class Node implements EventTarget
         }
 
         return $node;
-    }
-
-    /**
-     * Removes a node from its parent node.
-     *
-     * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#concept-node-remove
-     *
-     * @param Node $aNode The Node to be removed from the document tree.
-     *
-     * @param bool $aSuppressObservers Optional. If true, mutation events are
-     *     ignored for this operation.
-     */
-    public static function removeNode(
-        Node $aNode,
-        Node $aParent,
-        $aSuppressObservers = null
-    ) {
-        $index = array_search($aNode, $aParent->mChildNodes);
-        $ranges = Range::_getRangeCollection();
-
-        foreach ($ranges as $index => $range) {
-            $startContainer = $range->startContainer;
-
-            if (
-                $startContainer === $aNode ||
-                $aNode->contains($startContainer)
-            ) {
-                $range->setStart($aParent, $index);
-            }
-        }
-
-        foreach ($ranges as $index => $range) {
-            $endContainer = $range->endContainer;
-
-            if ($endContainer === $aNode || $aNode->contains($endContainer)) {
-                $range->setEnd($aParent, $index);
-            }
-        }
-
-        foreach ($ranges as $index => $range) {
-            $startContainer = $range->startContainer;
-            $startOffset = $range->startOffset;
-
-            if ($startContainer === $aParent && $startOffset > $index) {
-                $range->setStart($startContainer, $startOffset - 1);
-            }
-        }
-
-        foreach ($ranges as $index => $range) {
-            $endContainer = $range->endContainer;
-            $endOffset = $range->endOffset;
-
-            if ($endContainer === $aParent && $endOffset > $index) {
-                $range->setEnd($endContainer, $endOffset - 1);
-            }
-        }
-
-        $iterCollection = $aNode->mOwnerDocument->_getNodeIteratorCollection();
-
-        foreach ($iterCollection as $iter) {
-            $iter->_preremove($aNode);
-        }
-
-        $oldPreviousSibling = $aNode->mPreviousSibling;
-        $oldNextSibling = $aNode->mNextSibling;
-
-        array_splice($aParent->mChildNodes, $index, 1);
-
-        // TODO: For each inclusive descendant inclusiveDescendant of node, run
-        // the removing steps with inclusiveDescendant and parent.
-
-        if ($aParent->mFirstChild === $aNode) {
-            $aParent->mFirstChild = $aNode->mNextSibling;
-        }
-
-        if ($aParent->mLastChild === $aNode) {
-            $aParent->mLastChild = $aNode->mPreviousSibling;
-        }
-
-        if ($aNode->mPreviousSibling) {
-            $aNode->mPreviousSibling->mNextSibling = $aNode->mNextSibling;
-        }
-
-        if ($aNode->mNextSibling) {
-            $aNode->mNextSibling->mPreviousSibling = $aNode->mPreviousSibling;
-        }
-
-        $aNode->mPreviousSibling = null;
-        $aNode->mNextSibling = null;
-        $aNode->mParentElement = null;
-        $aNode->mParentNode = null;
-
-        // TODO: For each inclusive ancestor inclusiveAncestor of parent, if
-        // inclusiveAncestor has any registered observers whose options' subtree
-        // is true, then for each such registered observer registered, append a
-        // transient registered observer whose observer and options are
-        // identical to those of registered and source which is registered to
-        // node’s list of registered observers.
-
-        if (!$aSuppressObservers) {
-            // TODO: If suppress observers flag is unset, queue a mutation
-            // record of "childList" for parent with removedNodes a list solely
-            // containing node, nextSibling oldNextSibling, and previousSibling
-            // oldPreviousSibling.
-        }
     }
 
     /**
