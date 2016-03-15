@@ -35,7 +35,7 @@ trait ChildNode
         }
 
         $node = Node::convertNodesToNode($nodes);
-        $parent->_preinsertNodeBeforeChild($node, $viableNextSibling);
+        self::preinsertNode($node, $this, $viableNextSibling);
     }
 
     /**
@@ -68,10 +68,7 @@ trait ChildNode
         $node = Node::convertNodesToNode(func_get_args());
         $viablePreviousSibling = $viablePreviousSibling ?
             $viablePreviousSibling->nextSibling : $parent->firstChild;
-        $this->mParentNode->_preinsertNodeBeforeChild(
-            $node,
-            $viablePreviousSibling
-        );
+        self::preinsertNode($node, $this->mParentNode, $viablePreviousSibling);
     }
 
     /**
@@ -120,7 +117,7 @@ trait ChildNode
         if ($this->mParentNode === $parent) {
             $parent->replaceChild($node, $this);
         } else {
-            $parent->_preinsertNodeBeforeChild($node, $viableNextSibling);
+            self::preinsertNode($node, $parent, $viableNextSibling);
         }
     }
 }

@@ -239,7 +239,7 @@ abstract class Node implements EventTarget
      */
     public function appendChild(Node $aNode)
     {
-        return $this->_preinsertNodeBeforeChild($aNode, null);
+        return self::preinsertNode($aNode, $this, null);
     }
 
     /**
@@ -450,7 +450,7 @@ abstract class Node implements EventTarget
      */
     public function insertBefore(Node $aNewNode, Node $aRefNode = null)
     {
-        return $this->_preinsertNodeBeforeChild($aNewNode, $aRefNode);
+        return self::preinsertNode($aNewNode, $this, $aRefNode);
     }
 
     /**
@@ -699,6 +699,44 @@ abstract class Node implements EventTarget
 
             unset($contingiousTextNodes);
         }
+    }
+
+    /**
+     * Performs additional validation and preparation steps prior to inserting
+     * a node in to a parent node, optionally, in relation to another child
+     * node.
+     *
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#concept-node-pre-insert
+     *
+     * @param Node $aNode The node being inserted.
+     *
+     * @param Node $aParent The node that will play host to the inserted node.
+     *
+     * @param Node|null $aChild Optional.  A child node used as a reference to
+     *     where the new node should be inserted.
+     *
+     * @return Node The node that was inserted.
+     */
+    public static function preinsertNode(
+        Node $aNode,
+        Node $aParent,
+        Node $aChild = null
+    ) {
+        $aParent->_ensurePreinsertionValidity($aNode, $aChild);
+        $referenceChild = $aChild;
+
+        if ($referenceChild === $aNode) {
+            $referenceChild = $aNode->mNextSibling;
+        }
+
+        // The DOM4 spec states that nodes should be implicitly adopted
+        $ownerDocument = $aParent->mOwnerDocument ?: $aParent;
+        Document::adopt($aNode, $ownerDocument);
+        $aParent->_insertNodeBeforeChild($aNode, $referenceChild);
+
+        return $aNode;
     }
 
     /**
@@ -1437,38 +1475,6 @@ abstract class Node implements EventTarget
         if (!$aSuppressObservers) {
             // TODO: Queue a mutation record for "childList"
         }
-    }
-
-    /**
-     * @internal
-     *
-     * @link https://dom.spec.whatwg.org/#concept-node-pre-insert
-     *
-     * @param DocumentFragment|Node $aNode The nodes to be inserted into the
-     *     document tree.
-     *
-     * @param Node $aChild The reference node for where the new nodes should be
-     *     inserted.
-     *
-     * @return DocumentFragment|Node The nodes that were insterted into the
-     *     document tree.
-     */
-    public function _preinsertNodeBeforeChild($aNode, $aChild)
-    {
-        $this->_ensurePreinsertionValidity($aNode, $aChild);
-        $referenceChild = $aChild;
-
-        if ($referenceChild === $aNode) {
-            $referenceChild = $aNode->mNextSibling;
-        }
-
-        // The DOM4 spec states that nodes should be implicitly adopted
-        $ownerDocument = $this->mOwnerDocument ?: $this;
-        Document::adopt($aNode, $ownerDocument);
-
-        $this->_insertNodeBeforeChild($aNode, $referenceChild);
-
-        return $aNode;
     }
 
     /**

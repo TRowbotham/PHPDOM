@@ -18,7 +18,7 @@ trait ParentNode
      */
     public function append() {
         $node = Node::convertNodesToNode(func_get_args());
-        $this->_preinsertNodeBeforeChild($node, null);
+        self::preinsertNode($node, $this, null);
     }
 
     /**
@@ -31,7 +31,7 @@ trait ParentNode
     public function prepend()
     {
         $node = Node::convertNodesToNode(func_get_args());
-        $this->_preinsertNodeBeforeChild($node, $this->mFirstChild);
+        self::preinsertNode($node, $this, $this->mFirstChild);
     }
 
     private function filterChildElements($aNode)
