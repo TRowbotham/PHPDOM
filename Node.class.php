@@ -553,6 +553,117 @@ abstract class Node implements EventTarget
     }
 
     /**
+     * Inserts a node in to another node.
+     *
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#concept-node-insert
+     *
+     * @param Node $aNode The nodes to be inserted into the document tree.
+     *
+     * @param Node $aParent The node that will play host to the node being
+     *     inserted.
+     *
+     * @param Node|null $aChild Optional. A child node used as a reference to
+     *     where the new node should be inserted.
+     *
+     * @param bool|null $aSuppressObservers Optional. If true, mutation events
+     *     are ignored for this operation.
+     */
+    public static function insertNode(
+        Node $aNode,
+        Node $aParent,
+        Node $aChild = null,
+        $aSuppressObservers = null
+    ) {
+        $nodeIsFragment = $aNode->mNodeType === self::DOCUMENT_FRAGMENT_NODE;
+        $count = $nodeIsFragment ? count($aNode->mChildNodes) : 1;
+
+        if ($aChild) {
+            $childIndex = $aChild->_getTreeIndex();
+
+            foreach (Range::_getRangeCollection() as $range) {
+                $startContainer = $range->startContainer;
+                $startOffset = $range->startOffset;
+                $endContainer = $range->endContainer;
+                $endOffset = $range->endOffset;
+
+                if (
+                    $startContainer === $aParent &&
+                    $startOffset > $childIndex
+                ) {
+                    $range->setStart($startContainer, $startOffset + $count);
+                }
+
+                if (
+                    $endContainer === $aParent &&
+                    $endOffset > $childIndex
+                ) {
+                    $range->setEnd($endContainer, $endOffset + $count);
+                }
+            }
+        }
+
+        $nodes = $nodeIsFragment ? $aNode->mChildNodes : [$aNode];
+
+        if ($nodeIsFragment) {
+            foreach ($aNode->mChildNodes as $child) {
+                self::removeNode($child, $aNode, true);
+            }
+
+            // TODO: queue a mutation record of "childList" for node with
+            // removedNodes nodes.
+        }
+
+        $index = $aChild ?
+            array_search($aChild, $aParent->mChildNodes, true) :
+            count($aParent->mChildNodes);
+        $parentElement = $aParent->mNodeType === self::ELEMENT_NODE ?
+            $aParent : null;
+
+        if ($index === 0) {
+            $aParent->mFirstChild = $nodes[0];
+        }
+
+        foreach ($nodes as $node) {
+            $node->mParentNode = $aParent;
+            $node->mParentElement = $parentElement;
+
+            if ($aChild) {
+                $node->mPreviousSibling = $aChild->mPreviousSibling;
+                $node->mNextSibling = $aChild;
+
+                if ($aChild->mPreviousSibling) {
+                    $aChild->mPreviousSibling->mNextSibling = $node;
+                }
+
+                $aChild->mPreviousSibling = $node;
+            } else {
+                $node->mPreviousSibling = $aParent->mLastChild;
+
+                if ($aParent->mLastChild) {
+                    $aParent->mLastChild->mNextSibling = $node;
+                }
+
+                $aParent->mLastChild = $node;
+            }
+
+            array_splice($aParent->mChildNodes, $index++, 0, [$node]);
+
+            // TODO: For each inclusive descendant inclusiveDescendant of node,
+            // in tree order, run the insertion steps with inclusiveDescendant
+            // and parent.
+        }
+
+        if (!$aSuppressObservers) {
+            // TODO: If suppress observers flag is unset, queue a mutation
+            // record of "childList" for parent with addedNodes nodes,
+            // nextSibling child, and previousSibling child’s previous
+            // sibling or parent’s last child if child is null.
+        }
+    }
+
+    /**
      * Finds the namespace associated with the given prefix.
      *
      * @link https://dom.spec.whatwg.org/#dom-node-lookupnamespaceuri
@@ -734,7 +845,7 @@ abstract class Node implements EventTarget
         // The DOM4 spec states that nodes should be implicitly adopted
         $ownerDocument = $aParent->mOwnerDocument ?: $aParent;
         Document::adopt($aNode, $ownerDocument);
-        $aParent->_insertNodeBeforeChild($aNode, $referenceChild);
+        self::insertNode($aNode, $aParent, $referenceChild);
 
         return $aNode;
     }
@@ -1035,7 +1146,7 @@ abstract class Node implements EventTarget
 
         $nodes = $aNewNode instanceof DocumentFragment ?
             $aNewNode->childNodes : array($aNewNode);
-        $this->_insertNodeBeforeChild($aNewNode, $referenceChild, true);
+        self::insertNode($aNewNode, $this, $referenceChild, true);
 
         // TODO: Queue a mutation record for "childList"
 
@@ -1375,109 +1486,6 @@ abstract class Node implements EventTarget
     }
 
     /**
-     * @internal
-     *
-     * @link https://dom.spec.whatwg.org/#concept-node-insert
-     *
-     * @param DocumentFragment|Node $aNode The nodes to be inserted into the
-     *     document tree.
-     *
-     * @param Node $aChild The reference node for where the new nodes should be
-     *     inserted.
-     *
-     * @param bool $aSuppressObservers Optional. If true, mutation events are
-     *     ignored for this operation.
-     */
-    public function _insertNodeBeforeChild(
-        $aNode,
-        $aChild,
-        $aSuppressObservers = null
-    ) {
-        $isDocumentFragment = $aNode instanceof DocumentFragment;
-        $parentElement = $this instanceof Element ? $this : null;
-        $count = $isDocumentFragment ? count($aNode->mChildNodes) : 1;
-
-        if ($aChild) {
-            $ranges = Range::_getRangeCollection();
-
-            foreach ($ranges as $index => $range) {
-                $startContainer = $range->startContainer;
-                $startOffset = $range->startOffset;
-
-                if (
-                    $startContainer === $this &&
-                    $startOffset > $aChild->_getTreeIndex()
-                ) {
-                    $range->setStart($startContainer, $startOffset + $count);
-                }
-            }
-
-            foreach ($ranges as $index => $range) {
-                $endContainer = $range->endContainer;
-                $endOffset = $range->endOffset;
-
-                if (
-                    $endContainer === $this &&
-                    $endOffset > $aChild->_getTreeIndex()
-                ) {
-                    $range->setEnd($endContainer, $endOffset + $count);
-                }
-            }
-        }
-
-        $nodes = $isDocumentFragment ? $aNode->mChildNodes : array($aNode);
-        $index = $aChild ?
-            array_search($aChild, $this->mChildNodes) :
-            count($this->mChildNodes);
-
-        if ($isDocumentFragment) {
-            foreach ($nodes as $node) {
-                self::removeNode($node, $aNode, true);
-                $count--;
-            }
-
-            // TODO: Queue a mutation record for "childList"
-        }
-
-        if (
-            ($aChild && $aChild === $this->mChildNodes[0]) ||
-            (!$aChild && $index === 0 && $count)
-        ) {
-            $this->mFirstChild = $nodes[0];
-        }
-
-        foreach ($nodes as $newNode) {
-            $newNode->mParentNode = $this;
-            $newNode->mParentElement = $parentElement;
-
-            if ($aChild) {
-                $newNode->mPreviousSibling = $aChild->mPreviousSibling;
-                $newNode->mNextSibling = $aChild;
-
-                if ($aChild->mPreviousSibling) {
-                    $aChild->mPreviousSibling->mNextSibling = $newNode;
-                }
-
-                $aChild->mPreviousSibling = $newNode;
-            } else {
-                $newNode->mPreviousSibling = $this->mLastChild;
-
-                if ($this->mLastChild) {
-                    $this->mLastChild->mNextSibling = $newNode;
-                }
-
-                $this->mLastChild = $newNode;
-            }
-
-            array_splice($this->mChildNodes, $index++, 0, array($newNode));
-        }
-
-        if (!$aSuppressObservers) {
-            // TODO: Queue a mutation record for "childList"
-        }
-    }
-
-    /**
      * Replaces all nodes within a parent.
      *
      * @internal
@@ -1508,7 +1516,7 @@ abstract class Node implements EventTarget
         }
 
         if ($aNode) {
-            $this->_insertNodeBeforeChild($aNode, null, true);
+            self::insertNode($aNode, $this, null, true);
         }
 
         // TODO: Queue a mutation record for "childList"

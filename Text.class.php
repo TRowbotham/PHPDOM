@@ -69,10 +69,7 @@ class Text extends CharacterData
         $ranges = Range::_getRangeCollection();
 
         if ($this->mParentNode) {
-            $this->mParentNode->_insertNodeBeforeChild(
-                $newNode,
-                $this->mNextSibling
-            );
+            self::insertNode($newNode, $this->mParentNode, $this->mNextSibling);
             $treeIndex = $this->_getTreeIndex();
 
             foreach ($ranges as $index => $range) {
