@@ -859,7 +859,7 @@ abstract class Node implements EventTarget
      */
     public function removeChild(Node $aNode)
     {
-        return $this->preremoveChild($aNode);
+        return self::preremoveNode($aNode, $this);
     }
 
     /**
@@ -1579,6 +1579,34 @@ abstract class Node implements EventTarget
     }
 
     /**
+     * Removes a node from another node after making sure that they share
+     * the same parent node.
+     *
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#concept-node-pre-remove
+     *
+     * @param Node $aChild The node being removed.
+     *
+     * @param Node $aParent The parent of the node being removed.
+     *
+     * @return Node The node that was removed.
+     *
+     * @throws NotFoundError If the parent of the node being removed does not
+     *     match the given parent node.
+     */
+    protected static function preremoveNode(Node $aChild, Node $aParent)
+    {
+        if ($aChild->mParentNode !== $aParent) {
+            throw new NotFoundError();
+        }
+
+        self::removeNode($aChild, $aParent);
+
+        return $aChild;
+    }
+
+    /**
      * Invokes all callbacks associated with a given event and Node.
      *
      * @internal
@@ -1615,25 +1643,5 @@ abstract class Node implements EventTarget
 
             call_user_func($listeners[$i]['callback'], $aEvent);
         }
-    }
-
-    /**
-     * @internal
-     *
-     * @link https://dom.spec.whatwg.org/#concept-node-pre-remove
-     *
-     * @param Node $aChild The Node to be removed from the document tree.
-     *
-     * @return Node The Node that was removed.
-     */
-    private function preremoveChild($aChild)
-    {
-        if ($aChild->mParentNode !== $this) {
-            throw new NotFoundError();
-        }
-
-        self::removeNode($aChild, $this);
-
-        return $aChild;
     }
 }
