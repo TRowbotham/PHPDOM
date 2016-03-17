@@ -136,6 +136,15 @@ abstract class Node implements EventTarget
             case 'previousSibling':
                 return $this->mPreviousSibling;
 
+            case 'rootNode':
+                $root = $this;
+
+                while ($root->mParentNode) {
+                    $root = $root->mParentNode;
+                }
+
+                return $root;
+
             case 'textContent':
                 switch ($this->mNodeType) {
                     case self::DOCUMENT_FRAGMENT_NODE:
