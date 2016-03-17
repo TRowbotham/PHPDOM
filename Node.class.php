@@ -673,6 +673,22 @@ abstract class Node implements EventTarget
     }
 
     /**
+     * Checks if another node is the same node as this node.  This is equivilant
+     * to using the strict equality operator (===).
+     *
+     * @see https://dom.spec.whatwg.org/#dom-node-issamenode
+     *
+     * @param Node|null $aOtherNode Optional. The node whose equality is to be
+     *     checked.
+     *
+     * @return bool
+     */
+    public function isSameNode(Node $aOtherNode = null)
+    {
+        return $this === $aOtherNode;
+    }
+
+    /**
      * Finds the namespace associated with the given prefix.
      *
      * @link https://dom.spec.whatwg.org/#dom-node-lookupnamespaceuri
