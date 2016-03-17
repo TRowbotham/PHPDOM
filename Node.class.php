@@ -1587,7 +1587,7 @@ abstract class Node implements EventTarget
         // If we were given mutiple nodes, throw them all into a
         // DocumentFragment
         if (count($nodes) > 1) {
-            $node = $this->mOwnerDocument->createDocumentFragment();
+            $node = new DocumentFragment();
 
             try {
                 foreach ($nodes as $arg) {
