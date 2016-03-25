@@ -472,77 +472,9 @@ class Element extends Node implements \SplObserver
         );
     }
 
-    public function toHTML()
-    {
-        $html = '';
-
-        switch ($this->mNodeType) {
-            case self::ELEMENT_NODE:
-                $tagName = strtolower($this->mNodeName);
-                $html = '<' . $tagName;
-
-                foreach($this->mAttributesList as $attribute) {
-                    $html .= ' ' . $attribute->name;
-
-                    if (!Attr::_isBool($attribute->name)) {
-                        $html .= '="' . $attribute->value . '"';
-                    }
-                }
-
-                $html .= '>';
-
-                foreach($this->mChildNodes as $child) {
-                    $html .= $child->toHTML();
-                }
-
-                if (!$this->mEndTagOmitted) {
-                    $html .= '</' . $tagName . '>';
-                }
-
-                break;
-
-            case self::TEXT_NODE:
-                $html = $this->textContent;
-
-                break;
-
-            case self::PROCESSING_INSTRUCTION_NODE:
-                // TODO
-                break;
-
-            case self::COMMENT_NODE:
-                $html = '<!-- ' . $this->textContent . ' -->';
-
-                break;
-
-            case self::DOCUMENT_TYPE_NODE:
-                // TODO
-                break;
-
-            case self::DOCUMENT_NODE:
-            case self::DOCUMENT_FRAGMENT_NODE:
-                foreach ($this->mChildNodes as $child) {
-                    $html .= $child->toHTML();
-                }
-
-                break;
-
-            default:
-                # code...
-                break;
-        }
-
-        return $html;
-    }
-
     public function update(\SplSubject $aObject)
     {
 
-    }
-
-    public function _isEndTagOmitted()
-    {
-        return $this->mEndTagOmitted;
     }
 
     public function attributeHookHandler($aHookType, Attr $aAttr)
