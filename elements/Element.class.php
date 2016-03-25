@@ -254,6 +254,60 @@ class Element extends Node implements \SplObserver
 
     public function insertAdjacentHTML($aHTML) {
         // TODO
+    /**
+     * Inserts an element adjacent to the current element.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-element-insertadjacentelement
+     *
+     * @param string $aWhere The position relative to this node. Possible
+     *     values are:
+     *         - beforebegin - Inserts an element as this element's previous
+     *             sibling.
+     *         - afterend - Inserts an element as this element's next sibling.
+     *         - afterbegin - Inserts an element as this element's first child.
+     *         - beforeend - Inserts an element as this element's last child.
+     *
+     * @param Element $aElement The element to be inserted.
+     *
+     * @return null
+     */
+    public function insertAdjacentElement($aWhere, Element $aElement)
+    {
+        try {
+            return self::insertAdjacent($this, $aWhere, $aElement);
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+
+    /**
+     * Inserts plain text adjacent to the current element.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-element-insertadjacenttext
+     *
+     * @param string $aWhere The position relative to this node. Possible
+     *     values are:
+     *         - beforebegin - Inserts an element as this element's previous
+     *             sibling.
+     *         - afterend - Inserts an element as this element's next sibling.
+     *         - afterbegin - Inserts an element as this element's first child.
+     *         - beforeend - Inserts an element as this element's last child.
+     *
+     * @param string $aData The text to be inserted.
+     *
+     * @return null
+     */
+    public function insertAdjacentText($aWhere, $aData)
+    {
+        $text = new Text($aData);
+        $text->mOwnerDocument = $this->mOwnerDocument;
+
+        try {
+            self::insertAdjacent($this, $aWhere, $text);
+        } catch (\Exception $e) {
+            throw $e;
+        }
     }
 
     public function matches($aSelectorRule)
@@ -506,6 +560,82 @@ class Element extends Node implements \SplObserver
                 } elseif ($aHookType == 'removed') {
                     $this->mClassList->emptyList();
                 }
+        }
+    }
+
+    /**
+     * Inserts a node adjacent to an element.
+     *
+     * @see https://dom.spec.whatwg.org/#insert-adjacent
+     *
+     * @param Element $aElement The context element.
+     *
+     * @param string $aWhere The position relative to this node. Possible
+     *     values are:
+     *         - beforebegin - Inserts an element as this element's previous
+     *             sibling.
+     *         - afterend - Inserts an element as this element's next sibling.
+     *         - afterbegin - Inserts an element as this element's first child.
+     *         - beforeend - Inserts an element as this element's last child.
+     *
+     * @param Node $aNode The node to be inserted adjacent to the element.
+     *
+     * @return null
+     *
+     * @throws SyntaxError If an invalid value for "where" is given.
+     */
+    protected static function insertAdjacent(
+        Element $aElement,
+        $aWhere,
+        Node $aNode
+    ) {
+        switch (strtolower($aWhere)) {
+            case 'beforebegin':
+                if (!$aElement->mParentNode) {
+                    return null;
+                }
+
+                try {
+                    self::preinsertNode(
+                        $aNode,
+                        $aElement->mParentNode,
+                        $aElement
+                    );
+                } catch (\Exception $e) {
+                    throw $e;
+                }
+
+                break;
+
+            case 'afterbegin':
+                self::preinsertNode($aNode, $aElement, $aElement->mFirstChild);
+
+                break;
+
+            case 'beforeend':
+                self::preinsertNode($aNode, $aElement, null);
+
+                break;
+
+            case 'afterend':
+                if (!$aElement->mParentNode) {
+                    return null;
+                }
+
+                try {
+                    self::preinsertNode(
+                        $aNode,
+                        $aElement->mParentNode,
+                        $aElement->mNextSibling
+                    );
+                } catch (\Exception $e) {
+                    throw $e;
+                }
+
+                break;
+
+            default:
+                throw new SyntaxError();
         }
     }
 
