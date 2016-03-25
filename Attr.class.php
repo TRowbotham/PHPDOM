@@ -62,13 +62,12 @@ class Attr {
         $aValue,
         $aName = null,
         $aNamespace = null,
-        $aPrefix = null,
-        Element $aOwnerElement = null
+        $aPrefix = null
     ) {
         $this->mLocalName = $aLocalName;
         $this->mName = $aName ? $aName : $aLocalName;
         $this->mNamespaceURI = $aNamespace;
-        $this->mOwnerElement = $aOwnerElement;
+        $this->mOwnerElement = null;
         $this->mPrefix = $aPrefix;
         $this->mValue = $aValue;
     }
