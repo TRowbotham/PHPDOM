@@ -130,7 +130,7 @@ class HTMLLinkElement extends HTMLElement
         }
     }
 
-    protected function attributeHookHandler($aHookType, Attr $aAttr)
+    public function attributeHookHandler($aHookType, Attr $aAttr)
     {
         switch ($aAttr->name) {
             case 'rel':

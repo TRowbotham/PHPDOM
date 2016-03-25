@@ -773,7 +773,7 @@ class Element extends Node implements \SplObserver
         $this->_changeAttributeValue($attr, $aValue);
     }
 
-    protected function attributeHookHandler($aHookType, Attr $aAttr)
+    public function attributeHookHandler($aHookType, Attr $aAttr)
     {
         switch ($aAttr->name) {
             case 'class':
