@@ -1,4 +1,6 @@
 <?php
+namespace phpjs;
+
 use phpjs\Attr;
 use phpjs\elements\Element;
 use phpjs\exceptions\InUseAttributeError;
