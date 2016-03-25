@@ -1228,11 +1228,10 @@ abstract class Node implements EventTarget
                     $copyAttr = new Attr(
                         $attr->localName,
                         $attr->value,
-                        $attr->name,
                         $attr->namespaceURI,
                         $attr->prefix
                     );
-                    $copy->_appendAttribute($copyAttr);
+                    $copy->mAttributesList->appendAttr($copyAttr);
                 }
 
                 break;

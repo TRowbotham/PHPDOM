@@ -2,6 +2,7 @@
 namespace phpjs\elements;
 
 use phpjs\Attr;
+use phpjs\AttributeList;
 use phpjs\ChildNode;
 use phpjs\DOMTokenList;
 use phpjs\exceptions\InUseAttributeError;
@@ -25,7 +26,7 @@ class Element extends Node implements \SplObserver
     use NonDocumentTypeChildNode;
     use ParentNode;
 
-    protected $mAttributes; // NamedNodeMap
+    protected $mNamedNodeMap;
     protected $mAttributesList;
     protected $mClassList; // ClassList
     protected $mEndTagOmitted;
@@ -37,12 +38,11 @@ class Element extends Node implements \SplObserver
     public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null)
     {
         parent::__construct();
-
-        $this->mAttributes = new NamedNodeMap($this, $this->mAttributesList);
-        $this->mAttributesList = array();
+        $this->mAttributesList = new AttributeList();
         $this->mClassList = new DOMTokenList($this, 'class');
         $this->mEndTagOmitted = false;
         $this->mLocalName = strtolower($aLocalName);
+        $this->mNamedNodeMap = new NamedNodeMap($this, $this->mAttributesList);
         $this->mNamespaceURI = $aNamespaceURI;
         $this->mNodeName = strtoupper($aLocalName);
         $this->mNodeType = self::ELEMENT_NODE;
@@ -55,7 +55,7 @@ class Element extends Node implements \SplObserver
     public function __get( $aName ) {
         switch ($aName) {
             case 'attributes':
-                return $this->mAttributes;
+                return $this->mNamedNodeMap;
 
             case 'childElementCount':
                 return $this->getChildElementCount();
@@ -145,7 +145,7 @@ class Element extends Node implements \SplObserver
      */
     public function getAttribute($aName)
     {
-        $attr = $this->_getAttributeByName($aName);
+        $attr = $this->mAttributesList->getAttrByName($aName, $this);
 
         return $attr ? $attr->value : null;
     }
@@ -161,7 +161,7 @@ class Element extends Node implements \SplObserver
      */
     public function getAttributeNode($aName)
     {
-        return $this->_getAttributeByName($aName);
+        return $this->mAttributesList->getAttrByName($aName);
     }
 
     /**
@@ -180,9 +180,10 @@ class Element extends Node implements \SplObserver
      */
     public function getAttributeNodeNS($aNamespace, $aLocalName)
     {
-        return $this->_getAttributeByNamespaceAndLocalName(
+        return $this->mAttributesList->getAttrByNamespaceAndLocalName(
             $aNamespace,
-            $aLocalName
+            $aLocalName,
+            $this
         );
     }
 
@@ -197,12 +198,11 @@ class Element extends Node implements \SplObserver
      */
     public function getAttributeNS($aNamespace, $aLocalName)
     {
-        $attr = $this->_getAttributeByNamespaceAndLocalName(
-            $aNamespace,
-            $aLocalName
+        return $this->mAttributesList->getAttrValue(
+            $this,
+            $aLocalName,
+            $aNamespace
         );
-
-        return $attr ? $attr->value : null;
     }
 
     /**
@@ -217,22 +217,7 @@ class Element extends Node implements \SplObserver
      */
     public function hasAttribute($aName)
     {
-        $name = $aName;
-
-        if (
-            $this->mNamespaceURI === Namespaces::HTML &&
-            $this->mOwnerDocument instanceof HTMLDocument
-        ) {
-            $name = strtolower($aName);
-        }
-
-        foreach ($this->mAttributesList as $attr) {
-            if ($attr->name == $name) {
-                return true;
-            }
-        }
-
-        return false;
+        return !!$this->mAttributesList->getAttrByName($aName, $this);
     }
 
     /**
@@ -249,16 +234,11 @@ class Element extends Node implements \SplObserver
      */
     public function hasAttribueNS($aNamespace, $aLocalName)
     {
-        $namespace = $aNamespace === '' ? null : $aNamespace;
-
-        foreach ($this->mAttributesList as $attr) {
-            if ($attr->namespaceURI == $namespace &&
-                $attr->localName == $aLocalName) {
-                return true;
-            }
-        }
-
-        return false;
+        return !!$this->mAttributesList->getAttrByNamespaceAndLocalName(
+            $aNamespace,
+            $aLocalName,
+            $this
+        );
     }
 
     /**
@@ -269,7 +249,7 @@ class Element extends Node implements \SplObserver
      */
     public function hasAttributes()
     {
-        return !empty($this->mAttributesList);
+        return $this->mAttributesList->count() !== 0;
     }
 
     public function insertAdjacentHTML($aHTML) {
@@ -291,7 +271,7 @@ class Element extends Node implements \SplObserver
      */
     public function removeAttribute($aName)
     {
-        $this->_removeAttributeByName($aName);
+        $this->mAttributesList->removeAttrByName($aName, $this);
     }
 
     /**
@@ -307,13 +287,11 @@ class Element extends Node implements \SplObserver
      */
     public function removeAttributeNode(Attr $aAttr)
     {
-        $index = array_search($aAttr, $this->mAttributesList);
-
-        if ($index === false) {
+        if (!$this->mAttributesList->hasAttr($aAttr)) {
             throw new NotFoundError();
         }
 
-        $this->_removeAttribute($aAttr);
+        $this->mAttributesList->removeAttr($aAttr, $this);
 
         return $aAttr;
     }
@@ -331,9 +309,10 @@ class Element extends Node implements \SplObserver
      */
     public function removeAttributeNS($aNamespace, $aLocalName)
     {
-        $this->_removeAttributeByNamespaceAndLocalName(
+        $this->mAttributesList->removeAttrByNamespaceAndLocalName(
             $aNamespace,
-            $aLocalName
+            $aLocalName,
+            $this
         );
     }
 
@@ -344,32 +323,40 @@ class Element extends Node implements \SplObserver
      *
      * @link https://dom.spec.whatwg.org/#dom-element-setattribute
      *
-     * @param string $aName  The name of the attribute.
+     * @param string $aQualifiedName  The name of the attribute.
      *
      * @param string $aValue The value of the attribute.
      */
-    public function setAttribute($aName, $aValue)
+    public function setAttribute($aQualifiedName, $aValue)
     {
-        $name = $aName;
-
-        // TODO: Check Name production in XML documents
+        // TODO: If qualifiedName does not match the Name production in XML,
+        // throw an InvalidCharacterError exception.
 
         if (
             $this->mNamespaceURI === Namespaces::HTML &&
             $this->mOwnerDocument instanceof HTMLDocument
         ) {
-            $name = strtolower($aName);
+            $qualifiedName = strtolower($aQualifiedName);
+        } else {
+            $qualifiedName = $aQualifiedName;
         }
 
-        $attr = $this->_getAttributeByName($name);
+        $attribute = null;
 
-        if (!$attr) {
-            $attr = new Attr($name, $aValue);
-            $this->_appendAttribute($attr);
+        foreach ($this->mAttributesList as $attr) {
+            if ($attr->name === $qualifiedName) {
+                $attribute = $attr;
+                break;
+            }
+        }
+
+        if (!$attribute) {
+            $attribute = new Attr($qualifiedName, $aValue);
+            $this->mAttributesList->appendAttr($attribute, $this);
             return;
         }
 
-        $this->_changeAttributeValue($attr, $aValue);
+        $this->mAttributesList->changeAttr($attr, $this, $aValue);
     }
 
     /**
@@ -382,7 +369,7 @@ class Element extends Node implements \SplObserver
     public function setAttributeNode(Attr $aAttr)
     {
         try {
-            return $this->_setAttribute($aAttr);
+            return $this->mAttributesList->setAttr($aAttr, $this);
         } catch (\Exception $e) {
             throw $e;
         }
@@ -398,11 +385,7 @@ class Element extends Node implements \SplObserver
     public function setAttributeNodeNS(Attr $aAttr)
     {
         try {
-            return $this->_setAttribute(
-                $aAttr,
-                $aAttr->namespaceURI,
-                $aAttr->localName
-            );
+            return $this->mAttributesList->setAttr($aAttr, $this);
         } catch (\Exception $e) {
             throw $e;
         }
@@ -426,7 +409,8 @@ class Element extends Node implements \SplObserver
             throw $e;
         }
 
-        $this->_setAttributeValue(
+        $this->mAttributesList->setAttrValue(
+            $this,
             $parts['localName'],
             $aValue,
             $parts['prefix'],
