@@ -18,9 +18,11 @@ class NamedNodeMap implements \ArrayAccess, \SeekableIterator, \Countable
     private $mOwnerElement;
     private $mPosition;
 
-    public function __construct(Element $aOwnerElement, &$aAttributesList)
-    {
-        $this->mAttributesList = &$aAttributesList;
+    public function __construct(
+        Element $aOwnerElement,
+        AttributeList $aAttributesList
+    ) {
+        $this->mAttributesList = $aAttributesList;
         $this->mOwnerElement = $aOwnerElement;
         $this->mPosition = 0;
     }
@@ -29,13 +31,13 @@ class NamedNodeMap implements \ArrayAccess, \SeekableIterator, \Countable
     {
         switch ($aName) {
             case 'length':
-                return count($this->mAttributesList);
+                return $this->mAttributesList->count();
         }
     }
 
     public function count()
     {
-        return count($this->mAttributesList);
+        return $this->mAttributesList->count();
     }
 
     public function current()
@@ -45,20 +47,24 @@ class NamedNodeMap implements \ArrayAccess, \SeekableIterator, \Countable
 
     public function getNamedItem($aName)
     {
-        return $this->mOwnerElement->_getAttributeByName($aName);
+        return $this->mAttributesList->getAttrByName(
+            $aName,
+            $this->mOwnerElement
+        );
     }
 
     public function getNamedItemNS($aNamespace, $aLocalName)
     {
-        return $this->mOwnerElement->_getAttributeByNamespaceAndLocalName(
+        return $this->mAttributesList->getAttrByNamespaceAndLocalName(
             $aNamespace,
-            $aLocalName
+            $aLocalName,
+            $this->mOwnerElement
         );
     }
 
     public function item($aIndex)
     {
-        if ($aIndex >= count($this->mAttributesList)) {
+        if ($aIndex >= $this->mAttributesList->count()) {
             return null;
         }
 
@@ -82,7 +88,7 @@ class NamedNodeMap implements \ArrayAccess, \SeekableIterator, \Countable
 
     public function offsetExists($aOffset)
     {
-        return isset($this->mAttributesList[$aOffset]);
+        return $this->mAttributesList->offsetExists($aOffset);
     }
 
     public function offsetUnset($aOffset)
@@ -92,13 +98,15 @@ class NamedNodeMap implements \ArrayAccess, \SeekableIterator, \Countable
 
     public function offsetGet($aOffset)
     {
-        return isset($this->mAttributesList[$aOffset]) ?
-            $this->mAttributesList[$aOffset] : null;
+        return $this->mAttributesList->offsetGet($aOffset);
     }
 
     public function removeNamedItem($aName)
     {
-        $attr = $this->mOwnerElement->_removeAttributeByName($aName);
+        $attr = $this->mAttributesList->removeAttrByName(
+            $aName,
+            $this->mOwnerElement
+        );
 
         if (!$attr) {
             throw new NotFoundError();
@@ -109,9 +117,10 @@ class NamedNodeMap implements \ArrayAccess, \SeekableIterator, \Countable
 
     public function removeNamedItemNS($aNamespace, $aLocalName)
     {
-        $attr = $this->mOwnerElement->_removeAttributeByNamespaceAndLocalName(
+        $attr = $this->mAttributesList->removeAttrByNamespaceAndLocalName(
             $aNamespace,
-            $aLocalName
+            $aLocalName,
+            $this->mOwnerElement
         );
 
         if (!$attr) {
@@ -133,16 +142,26 @@ class NamedNodeMap implements \ArrayAccess, \SeekableIterator, \Countable
 
     public function setNamedItem(Attr $aAttr)
     {
-        return $this->mOwnerElement->_setAttribute($aAttr);
+        try {
+            return $this->mAttributesList->setAttr(
+                $aAttr,
+                $this->mOwnerElement
+            );
+        } catch (\Exception $e) {
+            throw $e;
+        }
     }
 
     public function setNamedItemNS(Attr $aAttr)
     {
-        return $this->mOwnerElement->_setAttribute(
-            $aAttr,
-            $aAttr->namespaceURI,
-            $aAttr->localName
-        );
+        try {
+            return $this->mAttributesList->setAttr(
+                $aAttr,
+                $this->mOwnerElement
+            );
+        } catch (\Exception $e) {
+            throw $e;
+        }
     }
 
     public function valid()
