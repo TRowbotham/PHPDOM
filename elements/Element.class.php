@@ -429,7 +429,6 @@ class Element extends Node implements \SplObserver
         $this->_setAttributeValue(
             $parts['localName'],
             $aValue,
-            $aName,
             $parts['prefix'],
             $parts['namespace']
         );
@@ -754,11 +753,9 @@ class Element extends Node implements \SplObserver
     public function _setAttributeValue(
         $aLocalName,
         $aValue,
-        $aName = null,
         $aPrefix = null,
         $aNamespace = null
     ) {
-        $name = !$aName ? $aLocalName : $aName;
         $prefix = !$aPrefix ? null : $aPrefix;
         $namespace = !$aNamespace ? null : $aNamespace;
 
@@ -768,7 +765,7 @@ class Element extends Node implements \SplObserver
         );
 
         if (!$attr) {
-            $attr = new Attr($aLocalName, $aValue, $name, $namespace, $prefix);
+            $attr = new Attr($aLocalName, $aValue, $namespace, $prefix);
             $this->_appendAttribute($attr);
             return;
         }

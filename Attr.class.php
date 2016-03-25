@@ -33,11 +33,6 @@ class Attr {
     protected $mLocalName;
 
     /**
-     * @var string
-     */
-    protected $mName;
-
-    /**
      * @var string|null
      */
     protected $mNamespaceURI;
@@ -60,12 +55,10 @@ class Attr {
     public function __construct(
         $aLocalName,
         $aValue,
-        $aName = null,
         $aNamespace = null,
         $aPrefix = null
     ) {
         $this->mLocalName = $aLocalName;
-        $this->mName = $aName ? $aName : $aLocalName;
         $this->mNamespaceURI = $aNamespace;
         $this->mOwnerElement = null;
         $this->mPrefix = $aPrefix;
@@ -84,7 +77,11 @@ class Attr {
                 return $this->mLocalName;
 
             case 'name':
-                return $this->mName;
+                if ($this->mPrefix) {
+                    return $this->mPrefix . ':' . $this->mLocalName;
+                }
+
+                return $this->mLocalName;
 
             case 'namespaceURI':
                 return $this->mNamespaceURI;
