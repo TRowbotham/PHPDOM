@@ -537,12 +537,7 @@ class Element extends Node implements \SplObserver
     {
         // TODO: Queue a mutation record for "attributes"
 
-        // This is kind of hacky, but should work.
-        $owner = $aAttr->ownerElement;
-        $aAttr->setOwnerElement(null);
-        $aAttr->value = $aValue;
-        $aAttr->setOwnerElement($owner);
-
+        $aAttr->setValue($aValue);
         $this->attributeHookHandler('set', $aAttr);
         $this->attributeHookHandler('changed', $aAttr);
     }

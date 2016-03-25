@@ -113,7 +113,7 @@ class Attr {
     }
 
     /**
-     * Set's the attribute's owning Element.
+     * Set the attribute's owning Element.
      *
      * @internal
      *
@@ -123,5 +123,18 @@ class Attr {
     public function setOwnerElement(Element $aElement = null)
     {
         $this->mOwnerElement = $aElement;
+    }
+
+    /**
+     * Sets the attribute's value without running the change algorithm when an
+     * owning element is present.
+     *
+     * @internal
+     *
+     * @param string $aValue The attribute's value.
+     */
+    public function setValue($aValue)
+    {
+        $this->mValue = $aValue;
     }
 }
