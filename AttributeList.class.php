@@ -80,6 +80,18 @@ class AttributeList implements \ArrayAccess, \Countable, \Iterator
     }
 
     /**
+     * Returns true if the given attribute is in the list.
+     *
+     * @param Attr $aAttr The attribute to find.
+     *
+     * @return bool
+     */
+    public function hasAttr(Attr $aAttr)
+    {
+        return array_search($aAttr, $this->mList, true) !== false;
+    }
+
+    /**
      * Gets an attribute using a fully qualified name.
      *
      * @see https://dom.spec.whatwg.org/#concept-element-attributes-get-by-name
