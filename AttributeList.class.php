@@ -45,8 +45,10 @@ class AttributeList implements \ArrayAccess, \Countable, \Iterator
      * @param Attr $aAttr The attribute whose value is to be changed.
      *
      * @param Element $aElement The element that owns the list.
+     *
+     * @param string $aValue The attribute's new value.
      */
-    public function changeAttr(Attr $aAttr, Element $aElement)
+    public function changeAttr(Attr $aAttr, Element $aElement, $aValue)
     {
         // TODO: Queue a mutation record of "attributes" for element with name
         // attribute’s local name, namespace attribute’s namespace, and
