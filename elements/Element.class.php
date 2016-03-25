@@ -539,9 +539,9 @@ class Element extends Node implements \SplObserver
 
         // This is kind of hacky, but should work.
         $owner = $aAttr->ownerElement;
-        $aAttr->_setOwnerElement(null);
+        $aAttr->setOwnerElement(null);
         $aAttr->value = $aValue;
-        $aAttr->_setOwnerElement($owner);
+        $aAttr->setOwnerElement($owner);
 
         $this->attributeHookHandler('set', $aAttr);
         $this->attributeHookHandler('changed', $aAttr);
@@ -628,7 +628,7 @@ class Element extends Node implements \SplObserver
 
         if ($index !== false) {
             array_splice($this->mAttributesList, $index, 1);
-            $aAttr->_setOwnerElement(null);
+            $aAttr->setOwnerElement(null);
             $this->attributeHookHandler('removed', $aAttr);
         }
     }

@@ -120,7 +120,7 @@ class Attr {
      * @param Element|null $aElement The Element that this attribute belongs
      *     to.
      */
-    public function _setOwnerElement(Element $aElement = null)
+    public function setOwnerElement(Element $aElement = null)
     {
         $this->mOwnerElement = $aElement;
     }
