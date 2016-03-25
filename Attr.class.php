@@ -113,34 +113,6 @@ class Attr {
         }
     }
 
-    public static function _isBool($aAttributeName)
-    {
-        switch ($aAttributeName) {
-            case 'async':
-            case 'autofocus':
-            case 'autoplay':
-            case 'checked':
-            case 'controls':
-            case 'disabled':
-            case 'default':
-            case 'defer':
-            case 'hidden':
-            case 'ismap':
-            case 'loop':
-            case 'multiple':
-            case 'novalidate':
-            case 'ping':
-            case 'readonly':
-            case 'required':
-            case 'reversed':
-            case 'scoped':
-                return true;
-
-            default:
-                return false;
-        }
-    }
-
     /**
      * Set's the attribute's owning Element.
      *
