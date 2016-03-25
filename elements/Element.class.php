@@ -151,6 +151,24 @@ class Element extends Node implements \SplObserver
     }
 
     /**
+     * Returns a list of all attribute names in order.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-element-getattributenames
+     *
+     * @return string[]
+     */
+    public function getAttributeNames()
+    {
+        $list = [];
+
+        foreach ($this->mAttributesList as $attr) {
+            $list[] = $attr->name;
+        }
+
+        return $list;
+    }
+
+    /**
      * Retrieves the attribute node with the given name, if any.
      *
      * @link https://dom.spec.whatwg.org/#dom-element-getattributenode
