@@ -519,7 +519,7 @@ class Element extends Node implements \SplObserver
     {
         switch ($aAttr->name) {
             case 'class':
-                if ($aHookType == 'set') {
+                if ($aHookType & AttributeList::ATTR_SET) {
                     $value = $aAttr->value;
 
                     if (!empty($value)) {
@@ -527,7 +527,7 @@ class Element extends Node implements \SplObserver
                             DOMTokenList::_parseOrderedSet($value)
                         );
                     }
-                } elseif ($aHookType == 'removed') {
+                } elseif ($aHookType & AttributeList::ATTR_REMOVED) {
                     $this->mClassList->emptyList();
                 }
         }

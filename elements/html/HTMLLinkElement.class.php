@@ -2,6 +2,7 @@
 namespace phpjs\elements\html;
 
 use phpjs\Attr;
+use phpjs\AttributeList;
 use phpjs\DOMTokenList;
 
 /**
@@ -142,7 +143,7 @@ class HTMLLinkElement extends HTMLElement
     {
         switch ($aAttr->name) {
             case 'rel':
-                if ($aHookType == 'set') {
+                if ($aHookType & AttributeList::ATTR_SET) {
                     $value = $aAttr->value;
 
                     if (!empty($value)) {
@@ -150,7 +151,7 @@ class HTMLLinkElement extends HTMLElement
                             DOMTokenList::_parseOrderedSet($value)
                         );
                     }
-                } elseif ($aHookType == 'removed') {
+                } elseif ($aHookType & AttributeList::ATTR_REMOVED) {
                     $this->mRelList->emptyList();
                 }
 

@@ -9,6 +9,11 @@ use phpjs\Namespaces;
 
 class AttributeList implements \ArrayAccess, \Countable, \Iterator
 {
+    const ATTR_ADDED = 0x1;
+    const ATTR_CHANGED = 0x2;
+    const ATTR_REMOVED = 0x4;
+    const ATTR_SET = 0x8;
+
     protected $mList;
     protected $mPosition;
 
@@ -35,8 +40,10 @@ class AttributeList implements \ArrayAccess, \Countable, \Iterator
 
         $this->mList[] = $aAttr;
         $aAttr->setOwnerElement($aElement);
-        $aElement->attributeHookHandler('set', $aAttr);
-        $aElement->attributeHookHandler('added', $aAttr);
+        $aElement->attributeHookHandler(
+            self::ATTR_SET | self::ATTR_ADDED,
+            $aAttr
+        );
     }
 
     /**
@@ -57,8 +64,10 @@ class AttributeList implements \ArrayAccess, \Countable, \Iterator
         // oldValue attribute’s value.
 
         $aAttr->setValue($aValue);
-        $aElement->attributeHookHandler('set', $aAttr);
-        $aElement->attributeHookHandler('changed', $aAttr);
+        $aElement->attributeHookHandler(
+            self::ATTR_SET | self::ATTR_CHANGED,
+            $aAttr
+        );
     }
 
     /**
@@ -268,7 +277,7 @@ class AttributeList implements \ArrayAccess, \Countable, \Iterator
         $index = array_search($aAttr, $this->mList, true);
         array_splice($this->mList, $index, 1);
         $aAttr->setOwnerElement(null);
-        $aElement->attributeHookHandler('removed', $aAttr);
+        $aElement->attributeHookHandler(self::ATTR_REMOVED, $aAttr);
     }
 
     /**
@@ -350,8 +359,10 @@ class AttributeList implements \ArrayAccess, \Countable, \Iterator
         array_splice($this->mList, $index, 1, [$aNewAttr]);
         $aOldAttr->setOwnerElement(null);
         $aNewAttr->setOwnerElement($aElement);
-        $aElement->attributeHookHandler('set', $aAttr);
-        $aElement->attributeHookHandler('changed', $aAttr);
+        $aElement->attributeHookHandler(
+            self::ATTR_SET | self::ATTR_CHANGED,
+            $aAttr
+        );
     }
 
     /**

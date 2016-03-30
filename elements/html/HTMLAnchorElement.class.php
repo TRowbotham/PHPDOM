@@ -2,6 +2,7 @@
 namespace phpjs\elements\html;
 
 use phpjs\Attr;
+use phpjs\AttributeList;
 use phpjs\DOMTokenList;
 
 /**
@@ -158,11 +159,11 @@ class HTMLAnchorElement extends HTMLElement
     {
         switch ($aAttr->name) {
             case 'href':
-                if ($aHookType == 'set') {
+                if ($aHookType & AttributeList::ATTR_SET) {
                     $resolvedURL = $this->resolveURL($aAttr->value);
                     $this->mUrl = $resolvedURL !== false ?
                         $resolvedURL['parsed_url'] : null;
-                } elseif ($aHookType == 'removed') {
+                } elseif ($aHookType & AttributeList::ATTR_REMOVED) {
                     $this->mUrl = null;
                 }
 
@@ -174,7 +175,7 @@ class HTMLAnchorElement extends HTMLElement
                 break;
 
             case 'rel':
-                if ($aHookType == 'set') {
+                if ($aHookType & AttributeList::ATTR_SET) {
                     $value = $aAttr->value;
 
                     if (!empty($value)) {
@@ -182,7 +183,7 @@ class HTMLAnchorElement extends HTMLElement
                             DOMTokenList::_parseOrderedSet($value)
                         );
                     }
-                } elseif ($aHookType == 'removed') {
+                } elseif ($aHookType & AttributeList::ATTR_REMOVED) {
                     $this->mRelList->emptyList();
                 }
 
