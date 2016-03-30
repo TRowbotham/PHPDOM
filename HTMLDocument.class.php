@@ -4,6 +4,7 @@ namespace phpjs;
 use phpjs\elements\html\HTMLBodyElement;
 use phpjs\elements\html\HTMLFrameSetElement;
 use phpjs\elements\html\HTMLHeadElement;
+use phpjs\elements\html\HTMLTitleElement;
 use phpjs\elements\svg\SVGElement;
 use phpjs\elements\svg\SVGTitleElement;
 use phpjs\exceptions\HierarchyRequestError;
