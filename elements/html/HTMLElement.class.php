@@ -136,21 +136,26 @@ class HTMLElement extends Element
     {
         switch ($aName) {
             case 'accessKey':
-                $this->_setAttributeValue($aName, $aValue);
+                $this->mAttributesList->setAttrValue($this, $aName, $aValue);
 
                 break;
 
             case 'contentEditable':
                 if (strcasecmp($aValue, 'inherit') === 0) {
-                    $this->_removeAttributeByNamespaceAndLocalName(
+                    $this->removeAttrByNamespaceAndLocalName(
                         null,
-                        $aName
+                        $aName,
+                        $this
                     );
                 } elseif (
                     strcasecmp($aValue, 'true') === 0 ||
                     strcasecmp($aValue, 'false') === 0
                 ) {
-                    $this->_setAttributeValue($aName, $aValue);
+                    $this->mAttributesList->setAttrValue(
+                        $this,
+                        $aName,
+                        $aValue
+                    );
                 } else {
                     throw new SyntaxError(
                         'The value must be one of "true", "false", or
@@ -161,32 +166,33 @@ class HTMLElement extends Element
                 break;
 
             case 'dir':
-                $this->_setAttributeValue($aName, $aValue);
+                $this->mAttributesList->setAttrValue($this, $aName, $aValue);
 
                 break;
 
             case 'draggable':
-                $this->_setAttributeValue($aName, $aValue);
+                $this->mAttributesList->setAttrValue($this, $aName, $aValue);
 
                 break;
 
             case 'dropzone':
-                $this->_setAttributeValue($aName, $aValue);
+                $this->mAttributesList->setAttrValue($this, $aName, $aValue);
 
                 break;
 
             case 'hidden':
-                $this->_setAttributeValue($aName, $aValue);
+                $this->mAttributesList->setAttrValue($this, $aName, $aValue);
 
                 break;
 
             case 'lang':
-                $this->_setAttributeValue($aName, $aValue);
+                $this->mAttributesList->setAttrValue($this, $aName, $aValue);
 
                 break;
 
             case 'spellcheck':
-                $this->_setAttributeValue(
+                $this->mAttributesList->setAttrValue(
+                    $this,
                     $aName,
                     ($aValue === true ? 'true' : 'false')
                 );
@@ -194,17 +200,22 @@ class HTMLElement extends Element
                 break;
 
             case 'tabIndex':
-                $this->_setAttributeValue('tabindex', $aValue);
+                $this->mAttributesList->setAttrValue(
+                    $this,
+                    'tabindex',
+                    $aValue
+                );
 
                 break;
 
             case 'title':
-                $this->_setAttributeValue($aName, $aValue);
+                $this->mAttributesList->setAttrValue($this, $aName, $aValue);
 
                 break;
 
             case 'translate':
-                $this->_setAttributeValue(
+                $this->mAttributesList->setAttrValue(
+                    $this,
                     $aName,
                     ($aValue === true ? 'yes' : 'no')
                 );
@@ -223,16 +234,22 @@ class HTMLElement extends Element
 
     protected function reflectBooleanAttributeValue($aName)
     {
-        $attr = $this->_getAttributeByNamespaceAndLocalName(null, $aName);
-
-        return !!$attr;
+        return !!$this->mAttributesList->getAttrByNamespaceAndLocalName(
+            null,
+            $aName,
+            $this
+        );
     }
 
     protected function reflectEnumeratedStringAttributeValue(
         $aName,
         $aMissingValueDefault = null
     ) {
-        $attr = $this->_getAttributeByNamespaceAndLocalName(null, $aName);
+        $attr = $this->mAttributesList->getAttrByNamespaceAndLocalName(
+            null,
+            $aName,
+            $this
+        );
 
         if (!$attr && $aMissingValueDefault !== null) {
             return null;
@@ -247,7 +264,11 @@ class HTMLElement extends Element
         $aMissingValueDefault = null,
         array $aStateMap = array()
     ) {
-        $attr = $this->_getAttributeByNamespaceAndLocalName(null, $aName);
+        $attr = $this->mAttributesList->getAttrByNamespaceAndLocalName(
+            null,
+            $aName
+            $this
+        );
         $state = null;
 
         if ($attr) {

@@ -67,13 +67,13 @@ class Element extends Node implements \SplObserver
                 return $this->mClassList;
 
             case 'className':
-                return $this->reflectStringAttributeValue('class');
+                return $this->mAttributesList->getAttrValue($this, 'class');
 
             case 'firstElementChild':
                 return $this->getFirstElementChild();
 
             case 'id':
-                return $this->reflectStringAttributeValue($aName);
+                return $this->mAttributesList->getAttrValue($this, $aName);
 
             case 'innerHTML':
                 $rv = '';
@@ -114,12 +114,12 @@ class Element extends Node implements \SplObserver
     {
         switch ($aName) {
             case 'className':
-                $this->_setAttributeValue('class', $aValue);
+                $this->mAttributesList->setAttrValue($this, 'class', $aValue);
 
                 break;
 
             case 'id':
-                $this->_setAttributeValue($aName, $aValue);
+                $this->mAttributesList->setAttrValue($this, $aName, $aValue);
 
                 break;
 
@@ -593,7 +593,11 @@ class Element extends Node implements \SplObserver
         $aName,
         $aMissingValueDefault = null
     ) {
-        $attr = $this->_getAttributeByNamespaceAndLocalName(null, $aName);
+        $attr = $this->mAttributesList->getAttrByNamespaceAndLocalName(
+            null,
+            $aName,
+            $this
+        );
 
         if ($attr) {
             $url = $this->resolveURL($attr->value, self::$mBaseURI);
@@ -620,9 +624,7 @@ class Element extends Node implements \SplObserver
      */
     protected function reflectStringAttributeValue($aName)
     {
-        $attr = $this->_getAttributeByNamespaceAndLocalName(null, $aName);
-
-        return !$attr ? '' : $attr->value;
+        return $this->mAttributesList->getAttrValue($this, $aName);
     }
 
     /**

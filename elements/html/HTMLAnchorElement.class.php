@@ -119,32 +119,26 @@ class HTMLAnchorElement extends HTMLElement
     {
         switch ($aName) {
             case 'download':
-                $this->_setAttributeValue($aName, $aValue);
 
                 break;
 
             case 'hrefLang':
-                $this->_setAttributeValue($aName, $aValue);
 
                 break;
 
             case 'ping':
-                $this->_setAttributeValue($aName, $aValue);
 
                 break;
 
             case 'rel':
-                $this->_setAttributeValue($aName, $aValue);
 
                 break;
 
             case 'target':
-                $this->_setAttributeValue($aName, $aValue);
 
                 break;
 
             case 'type':
-                $this->_setAttributeValue($aName, $aValue);
 
                 break;
 
