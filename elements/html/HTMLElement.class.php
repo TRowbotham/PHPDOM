@@ -266,7 +266,7 @@ class HTMLElement extends Element
     ) {
         $attr = $this->mAttributesList->getAttrByNamespaceAndLocalName(
             null,
-            $aName
+            $aName,
             $this
         );
         $state = null;
