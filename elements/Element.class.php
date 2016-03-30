@@ -113,6 +113,14 @@ class Element extends Node implements \SplObserver
     public function __set($aName, $aValue)
     {
         switch ($aName) {
+            case 'classList':
+                $this->mClassList->value = $this->mAttributesList->getAttrValue(
+                    $this,
+                    'class'
+                );
+
+                break;
+
             case 'className':
                 $this->mAttributesList->setAttrValue($this, 'class', $aValue);
 
