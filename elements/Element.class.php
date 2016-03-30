@@ -151,6 +151,18 @@ class Element extends Node implements \SplObserver
     }
 
     /**
+     * Returns the element's internal attribute list.
+     *
+     * @internal
+     *
+     * @return AttributeList
+     */
+    public function getAttributeList()
+    {
+        return $this->mAttributesList;
+    }
+
+    /**
      * Returns a list of all attribute names in order.
      *
      * @see https://dom.spec.whatwg.org/#dom-element-getattributenames
