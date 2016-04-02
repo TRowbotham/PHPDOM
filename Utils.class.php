@@ -201,7 +201,7 @@ class Utils
             self::collectCodePointSequence($aInput, $position, '/\s/');
         }
 
-        return $tokens;
+        return array_keys($tokens);
     }
 
     /**
