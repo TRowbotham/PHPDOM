@@ -186,7 +186,7 @@ class Utils
     public static function parseOrderedSet($aInput)
     {
         $position = 0;
-        $tokens = array();
+        $tokens = [];
         $length = mb_strlen($aInput);
 
         self::collectCodePointSequence($aInput, $position, '/\s/');
@@ -194,8 +194,8 @@ class Utils
         while ($position < $length) {
             $token = self::collectCodePointSequence($aInput, $position, '/\S/');
 
-            if ($token && !in_array($token, $tokens)) {
-                $tokens[] = $token;
+            if (!isset($tokens[$token])) {
+                $tokens[$token] = 1;
             }
 
             self::collectCodePointSequence($aInput, $position, '/\s/');
