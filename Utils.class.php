@@ -71,7 +71,7 @@ class Utils
             if (++$position >= $length) {
                 return false;
             }
-        } else if ($aInput[$position] == '+') {
+        } elseif ($aInput[$position] == '+') {
             if (++$position >= $length) {
                 return false;
             }
@@ -87,7 +87,13 @@ class Utils
             return false;
         }
 
-        $value *= intval(self::collectCodePointSequence($aInput, $position, '/\d/'));
+        $value *= intval(
+            self::collectCodePointSequence(
+                $aInput,
+                $position,
+                '/\d/'
+            )
+        );
 
         if ($position >= $length) {
             goto Conversion;
@@ -125,7 +131,7 @@ class Utils
             if (++$position >= $length) {
                 return false;
             }
-        } else if ($aInput[$position] == '+') {
+        } elseif ($aInput[$position] == '+') {
             if (++$position >= $length) {
                 return false;
             }
@@ -135,7 +141,14 @@ class Utils
             return false;
         }
 
-        $value = intval(self::collectCodePointSequence($aInput, $position, '/\d/'), 10);
+        $value = intval(
+            self::collectCodePointSequence(
+                $aInput,
+                $position,
+                '/\d/'
+            ),
+            10
+        );
 
         return $sign == 'positive' ? $value : 0 - $value;
     }
@@ -161,14 +174,14 @@ class Utils
     }
 
     /**
-     * Takes an input string and then parses the string for tokens while skipping
-     * over whitespace.
+     * Takes an input string and then parses the string for tokens while
+     * skipping over whitespace.
      *
      * @see https://dom.spec.whatwg.org/#concept-ordered-set-parser
      *
-     * @param  string   $aInput A space delimited string of tokens to be parsed.
+     * @param string $aInput A space delimited string of tokens to be parsed.
      *
-     * @return string[]         Array containing the parsed tokens.
+     * @return string[] Array containing the parsed tokens.
      */
     public static function parseOrderedSet($aInput)
     {
@@ -192,35 +205,24 @@ class Utils
     }
 
     /**
-     * Parses a string for a token and returns that token.  If the $aSkipWhitespace argument
-     * is set, then whitespace is collected, but the caller ignores returned whitespace.
+     * Parses a string for a token and returns that token.
      *
      * @see https://dom.spec.whatwg.org/#collect-a-code-point-sequence
      *
-     * @param  string   $aInput             String of tokens to be parsed.
-     * @param  int      &$aPosition         Current position in the token string.
-     * @param  bool     $aSkipWhitespace    Whether to skip whitespace characters or not.
-     * @return string                       Concatenated list of characters.
+     * @param string $aInput String of tokens to be parsed.
+     *
+     * @param int &$aPosition Current position in the token string.
+     *
+     * @param string $aPattern A regular expresion representing a set of
+     *     characers that should be collected.
+     *
+     * @return string Concatenated list of characters.
      */
-    /*public static function collectCodePointSequence($aInput, &$aPosition, $aCodePoints = null)
-    {
-        $result = '';
-        $length = strlen($aInput);
-
-        while ($aPosition < $length) {
-            if (($aCodePoints && !preg_match($aCodePoints, $aInput[$aPosition]))) {
-                break;
-            }
-
-            $result .= $aInput[$aPosition];
-            $aPosition++;
-        }
-
-        return $result;
-    }*/
-
-    public static function collectCodePointSequence($aInput, &$aPosition, $aPattern)
-    {
+    public static function collectCodePointSequence(
+        $aInput,
+        &$aPosition,
+        $aPattern
+    ) {
         $result = '';
         $length = mb_strlen($aInput);
         $c = mb_substr($aInput, $aPosition, 1);
@@ -251,7 +253,11 @@ class Utils
         $length = mb_strlen($aInput);
 
         while ($position < $length) {
-            $token = self::collectCodePointSequence($aInput, $position, '/[^\x20]/');
+            $token = self::collectCodePointSequence(
+                $aInput,
+                $position,
+                '/[^\x20]/'
+            );
 
             if ($token) {
                 $tokens[] = $token;
@@ -265,10 +271,13 @@ class Utils
 
     /**
      * Takes an array and concatenates the values of the array into a string
-     * with each token separated by U+0020.  See the following link for more info:
-     * https://dom.spec.whatwg.org/#concept-ordered-set-serializer
-     * @param  array $aSet An ordered set of tokens.
-     * @return string      Concatenated string of tokens.
+     * with each token separated by U+0020.
+     *
+     * @see https://dom.spec.whatwg.org/#concept-ordered-set-serializer
+     *
+     * @param string[] $aSet An ordered set of tokens.
+     *
+     * @return string Concatenated string of tokens.
      */
     public static function serializeOrderedSet($aSet, $aIsAssoc = false)
     {
