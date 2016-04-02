@@ -225,16 +225,15 @@ class Utils
     ) {
         $result = '';
         $length = mb_strlen($aInput);
-        $c = mb_substr($aInput, $aPosition, 1);
 
         while ($aPosition < $length) {
+            $c = mb_substr($aInput, $aPosition++, 1);
+
             if (!preg_match($aPattern, $c)) {
                 break;
             }
 
             $result .= $c;
-            $aPosition++;
-            $c = mb_substr($aInput, $aPosition, 1);
         }
 
         return $result;
