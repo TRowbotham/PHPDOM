@@ -285,7 +285,7 @@ class Utils
             $set = '';
 
             foreach ($aSet as $key => $value) {
-                if ($count != 0) {
+                if ($count++ != 0) {
                     $set .= "\x20";
                 }
 
