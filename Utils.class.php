@@ -227,13 +227,14 @@ class Utils
         $length = mb_strlen($aInput);
 
         while ($aPosition < $length) {
-            $c = mb_substr($aInput, $aPosition++, 1);
+            $c = mb_substr($aInput, $aPosition, 1);
 
             if (!preg_match($aPattern, $c)) {
                 break;
             }
 
             $result .= $c;
+            $aPosition++;
         }
 
         return $result;
