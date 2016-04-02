@@ -187,7 +187,7 @@ class Utils
     {
         $position = 0;
         $tokens = array();
-        $length = strlen($aInput);
+        $length = mb_strlen($aInput);
 
         self::collectCodePointSequence($aInput, $position, '/\s/');
 
