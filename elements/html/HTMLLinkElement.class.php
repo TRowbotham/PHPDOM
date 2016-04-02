@@ -4,6 +4,7 @@ namespace phpjs\elements\html;
 use phpjs\Attr;
 use phpjs\AttributeList;
 use phpjs\DOMTokenList;
+use phpjs\Utils;
 
 /**
  * Represents the HTML <link> element.
@@ -148,7 +149,7 @@ class HTMLLinkElement extends HTMLElement
 
                     if (!empty($value)) {
                         $this->mRelList->appendTokens(
-                            DOMTokenList::_parseOrderedSet($value)
+                            Utils::parseOrderedSet($value)
                         );
                     }
                 } elseif ($aHookType & AttributeList::ATTR_REMOVED) {

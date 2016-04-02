@@ -14,6 +14,7 @@ use phpjs\Node;
 use phpjs\NonDocumentTypeChildNode;
 use phpjs\ParentNode;
 use phpjs\urls\URLInternal;
+use phpjs\Utils;
 
 /**
  * @see https://dom.spec.whatwg.org/#element
@@ -524,7 +525,7 @@ class Element extends Node implements \SplObserver
 
                     if (!empty($value)) {
                         $this->mClassList->appendTokens(
-                            DOMTokenList::_parseOrderedSet($value)
+                            Utils::parseOrderedSet($value)
                         );
                     }
                 } elseif ($aHookType & AttributeList::ATTR_REMOVED) {

@@ -15,7 +15,7 @@ trait GetElementsBy
      */
     public function getElementsByClassName($aClassName)
     {
-        $classes = DOMTokenList::_parseOrderedSet($aClassName);
+        $classes = Utils::parseOrderedSet($aClassName);
 
         if (empty($classes)) {
             return $classes;
