@@ -452,7 +452,7 @@ class AttributeList implements \ArrayAccess, \Countable, \Iterator
             return;
         }
 
-        $this->changeAttr($attr, $aElement);
+        $this->changeAttr($attr, $aElement, $aValue);
     }
 
     /**
