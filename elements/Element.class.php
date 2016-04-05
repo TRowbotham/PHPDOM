@@ -34,23 +34,19 @@ class Element extends Node implements \SplObserver
     protected $mLocalName;
     protected $mNamespaceURI;
     protected $mPrefix;
-    protected $mTagName;
 
-    public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null)
+    protected function __construct()
     {
         parent::__construct();
+
         $this->mAttributesList = new AttributeList();
         $this->mClassList = new DOMTokenList($this, 'class');
         $this->mEndTagOmitted = false;
-        $this->mLocalName = strtolower($aLocalName);
+        $this->mLocalName = '';
         $this->mNamedNodeMap = new NamedNodeMap($this, $this->mAttributesList);
-        $this->mNamespaceURI = $aNamespaceURI;
-        $this->mNodeName = strtoupper($aLocalName);
+        $this->mNamespaceURI = null;
         $this->mNodeType = self::ELEMENT_NODE;
-        $this->mPrefix = $aPrefix;
-        $this->mTagName = (!$this->mPrefix ? '' : $this->mPrefix . ':') .
-            ($this->mOwnerDocument instanceof HTMLDocument ?
-                strtoupper($aLocalName) : $aLocalName);
+        $this->mPrefix = null;
     }
 
     public function __get( $aName ) {
@@ -104,7 +100,7 @@ class Element extends Node implements \SplObserver
                 return $this->getPreviousElementSibling();
 
             case 'tagName':
-                return $this->mTagName;
+                return $this->mNodeName;
 
             default:
                 return parent::__get($aName);
@@ -140,6 +136,30 @@ class Element extends Node implements \SplObserver
     public function closest($aSelectorRule)
     {
         // TODO
+    }
+
+    /**
+     * Creates a new instance of an the specified element interface and
+     * intializes that elements local name, namespace, and namespace prefix.
+     *
+     * @param string $aLocalName The element's local name that you are creating.
+     *
+     * @param string $aNamespace The namespace that the element belongs to.
+     *
+     * @param string|null $aPrefix Optional. The namespace prefix of the
+     *     element.
+     *
+     * @return Element
+     */
+    public static function create($aLocalName, $aNamespace, $aPrefix = null)
+    {
+        $element = new static();
+        $element->mLocalName = $aLocalName;
+        $element->mNamespaceURI = $aNamespace;
+        $element->mPrefix = $aPrefix;
+            strtoupper($qualifiedName) : $qualifiedName;
+
+        return $element;
     }
 
     /**

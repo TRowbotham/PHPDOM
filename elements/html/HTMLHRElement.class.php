@@ -6,9 +6,9 @@ namespace phpjs\elements\html;
  */
 class HTMLHRElement extends HTMLElement
 {
-    public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null)
+    protected function __construct()
     {
-        parent::__construct($aLocalName, $aNamespaceURI, $aPrefix);
+        parent::__construct();
 
         $this->mEndTagOmitted = true;
     }

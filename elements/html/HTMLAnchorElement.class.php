@@ -72,9 +72,9 @@ class HTMLAnchorElement extends HTMLElement
     private $mPing;
     private $mRelList;
 
-    public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null)
+    protected function __construct()
     {
-        parent::__construct($aLocalName, $aNamespaceURI, $aPrefix);
+        parent::__construct();
 
         $this->initHTMLHyperlinkElementUtils();
         $this->mPing = new DOMTokenList($this, 'ping');

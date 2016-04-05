@@ -16,9 +16,9 @@ class HTMLImageElement extends HTMLElement
     private $mUseMap;
     private $mWidth;
 
-    public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null)
+    protected function __construct()
     {
-        parent::__construct($aLocalName, $aNamespaceURI, $aPrefix);
+        parent::__construct();
 
         $this->mEndTagOmitted = true;
         $this->mAlt = '';

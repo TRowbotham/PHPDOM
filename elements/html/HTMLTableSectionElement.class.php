@@ -15,9 +15,9 @@ use phpjs\exceptions\IndexSizeError;
  */
 class HTMLTableSectionElement extends HTMLElement
 {
-    public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null)
+    protected function __construct()
     {
-        parent::__construct($aLocalName, $aNamespaceURI, $aPrefix);
+        parent::__construct();
     }
 
     public function __get($aName)

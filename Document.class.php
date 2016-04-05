@@ -129,7 +129,7 @@ class Document extends Node
 
         $localName = strtolower($aLocalName);
         $interface = $this->getHTMLInterfaceFor($localName);
-        $node = new $interface($localName, Namespaces::HTML);
+        $node = $interface::create($localName, Namespaces::HTML);
         $node->mOwnerDocument = $this;
 
         return $node;
@@ -157,7 +157,7 @@ class Document extends Node
                 $interface = 'phpjs\elements\Element';
         }
 
-        $node = new $interface(
+        $node = $interface::create(
             $parts['localName'],
             $parts['namespace'],
             $parts['prefix']

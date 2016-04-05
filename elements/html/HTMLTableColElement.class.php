@@ -9,9 +9,9 @@ class HTMLTableColElement extends HTMLElement
 {
     private $mSpan;
 
-    public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null)
+    protected function __construct()
     {
-        parent::__construct($aLocalName, $aNamespaceURI, $aPrefix);
+        parent::__construct();
 
         if (strcasecmp($aLocalName, 'col') == 0) {
             $this->mEndTagOmitted = true;

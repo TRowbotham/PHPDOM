@@ -8,9 +8,9 @@ class HTMLDataElement extends HTMLElement
 {
     private $mValue;
 
-    public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null)
+    protected function __construct()
     {
-        parent::__construct($aLocalName, $aNamespaceURI, $aPrefix);
+        parent::__construct();
 
         $this->mValue = '';
     }

@@ -11,9 +11,9 @@ class HTMLModElement extends HTMLElement
     private $mCite;
     private $mDateTime;
 
-    public function __construct($aLocalName, $aNamespaceURI, $aPrefix = null)
+    protected function __construct()
     {
-        parent::__construct($aLocalName, $aNamespaceURI, $aPrefix);
+        parent::__construct();
 
         $this->mCite = '';
         $this->mDateTime = '';
