@@ -663,6 +663,11 @@ class Document extends Node
 
                 break;
 
+            case 'menuitem':
+                $interfaceName = 'MenuItem';
+
+                break;
+
             case 'ol':
                 $interfaceName = 'OList';
 
@@ -750,12 +755,13 @@ class Document extends Node
             case 'figure':
             case 'footer':
             case 'header':
-            case 'hrgroup':
+            case 'hgroup':
             case 'i':
             case 'kbd':
             case 'main':
             case 'mark':
             case 'nav':
+            case 'noscript':
             case 'rp':
             case 'rt':
             case 'rtc':
@@ -766,6 +772,7 @@ class Document extends Node
             case 'small':
             case 'strong':
             case 'sub':
+            case 'summary':
             case 'sup':
             case 'u':
             case 'var':
@@ -785,7 +792,10 @@ class Document extends Node
             case 'body':
             case 'button':
             case 'canvas':
+            case 'content':
             case 'data':
+            case 'details':
+            case 'dialog':
             case 'div':
             case 'embed':
             case 'form':
@@ -797,6 +807,7 @@ class Document extends Node
             case 'legend':
             case 'link':
             case 'map':
+            case 'menu':
             case 'meta':
             case 'meter':
             case 'object':
@@ -812,6 +823,7 @@ class Document extends Node
             case 'span':
             case 'style':
             case 'table':
+            case 'template':
             case 'time':
             case 'title':
             case 'track':
