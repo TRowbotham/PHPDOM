@@ -20,8 +20,6 @@ class HTMLMetaElement extends HTMLElement
     protected function __construct()
     {
         parent::__construct();
-
-        $this->mEndTagOmitted = true;
     }
 
     public function __get($aName)

@@ -9,7 +9,5 @@ class HTMLHRElement extends HTMLElement
     protected function __construct()
     {
         parent::__construct();
-
-        $this->mEndTagOmitted = true;
     }
 }

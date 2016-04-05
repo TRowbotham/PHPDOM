@@ -13,10 +13,6 @@ class HTMLTableColElement extends HTMLElement
     {
         parent::__construct();
 
-        if (strcasecmp($aLocalName, 'col') == 0) {
-            $this->mEndTagOmitted = true;
-        }
-
         $this->mSpan = 0;
     }
 

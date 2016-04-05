@@ -20,7 +20,6 @@ class HTMLImageElement extends HTMLElement
     {
         parent::__construct();
 
-        $this->mEndTagOmitted = true;
         $this->mAlt = '';
         $this->mCrossOrigin = '';
         $this->mHeight = 0;

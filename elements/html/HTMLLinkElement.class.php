@@ -47,7 +47,6 @@ class HTMLLinkElement extends HTMLElement
     {
         parent::__construct();
 
-        $this->mEndTagOmitted = true;
         $this->mRelList = new DOMTokenList($this, 'rel');
         $this->mSizes = new DOMTokenList($this, 'sizes');
     }

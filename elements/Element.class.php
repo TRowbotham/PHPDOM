@@ -30,7 +30,6 @@ class Element extends Node implements \SplObserver
     protected $mNamedNodeMap;
     protected $mAttributesList;
     protected $mClassList; // ClassList
-    protected $mEndTagOmitted;
     protected $mLocalName;
     protected $mNamespaceURI;
     protected $mPrefix;
@@ -41,7 +40,6 @@ class Element extends Node implements \SplObserver
 
         $this->mAttributesList = new AttributeList();
         $this->mClassList = new DOMTokenList($this, 'class');
-        $this->mEndTagOmitted = false;
         $this->mLocalName = '';
         $this->mNamedNodeMap = new NamedNodeMap($this, $this->mAttributesList);
         $this->mNamespaceURI = null;

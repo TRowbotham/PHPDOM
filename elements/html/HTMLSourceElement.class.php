@@ -16,7 +16,6 @@ class HTMLSourceElement extends HTMLElement
     {
 		parent::__construct();
 
-		$this->mEndTagOmitted = true;
         $this->mMedia = '';
         $this->mSizes = '';
         $this->mSrc = '';
