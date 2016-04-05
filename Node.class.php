@@ -1216,7 +1216,7 @@ abstract class Node implements EventTarget
                 break;
 
             case self::ELEMENT_NODE:
-                $copy = new $class(
+                $copy = $class::create(
                     $this->mLocalName,
                     $this->mNamespaceURI,
                     $this->mPrefix
