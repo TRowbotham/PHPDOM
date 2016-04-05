@@ -510,7 +510,8 @@ abstract class Node implements EventTarget
                 strcmp($this->namespaceURI, $aOtherNode->namespaceURI) !== 0 ||
                 strcmp($this->prefix, $aOtherNode->prefix) !== 0 ||
                 strcmp($this->localName, $aOtherNode->localName) !== 0 ||
-                $this->mAttributes->length !== $aOtherNode->attributes->length
+                $this->mAttributesList->count() !==
+                $aOtherNode->attributes->length
             ) {
                 return false;
             }
