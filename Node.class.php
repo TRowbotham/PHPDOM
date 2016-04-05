@@ -795,19 +795,19 @@ abstract class Node implements EventTarget
                 $ranges = Range::_getRangeCollection();
                 $treeIndex = $currentNode->_getTreeIndex();
 
-                foreach ($ranges as $index => $range) {
+                foreach ($ranges as $range) {
                     if ($range->startContainer === $currentNode) {
                         $range->setStart($node, $range->startOffset + $length);
                     }
                 }
 
-                foreach ($ranges as $index => $range) {
+                foreach ($ranges as $range) {
                     if ($range->endContainer === $currentNode) {
                         $range->setStart($node, $range->endOffset + $length);
                     }
                 }
 
-                foreach ($ranges as $index => $range) {
+                foreach ($ranges as $range) {
                     if (
                         $range->startContainer === $currentNode->mParentNode &&
                         $range->startOffset == $treeIndex
@@ -816,7 +816,7 @@ abstract class Node implements EventTarget
                     }
                 }
 
-                foreach ($ranges as $index => $range) {
+                foreach ($ranges as $range) {
                     if (
                         $range->endContainer === $currentNode->mParentNode &&
                         $range->endOffset == $treeIndex
@@ -832,8 +832,6 @@ abstract class Node implements EventTarget
             foreach ($contingiousTextNodes as $textNode) {
                 self::removeNode($textNode, $textNode->mParentNode);
             }
-
-            unset($contingiousTextNodes);
         }
     }
 
@@ -943,7 +941,7 @@ abstract class Node implements EventTarget
         $index = array_search($aNode, $aParent->mChildNodes);
         $ranges = Range::_getRangeCollection();
 
-        foreach ($ranges as $index => $range) {
+        foreach ($ranges as $range) {
             $startContainer = $range->startContainer;
 
             if (
@@ -954,7 +952,7 @@ abstract class Node implements EventTarget
             }
         }
 
-        foreach ($ranges as $index => $range) {
+        foreach ($ranges as $range) {
             $endContainer = $range->endContainer;
 
             if ($endContainer === $aNode || $aNode->contains($endContainer)) {
@@ -962,7 +960,7 @@ abstract class Node implements EventTarget
             }
         }
 
-        foreach ($ranges as $index => $range) {
+        foreach ($ranges as $range) {
             $startContainer = $range->startContainer;
             $startOffset = $range->startOffset;
 
@@ -971,7 +969,7 @@ abstract class Node implements EventTarget
             }
         }
 
-        foreach ($ranges as $index => $range) {
+        foreach ($ranges as $range) {
             $endContainer = $range->endContainer;
             $endOffset = $range->endOffset;
 
