@@ -157,6 +157,10 @@ class Element extends Node implements \SplObserver
         $element->mLocalName = $aLocalName;
         $element->mNamespaceURI = $aNamespace;
         $element->mPrefix = $aPrefix;
+        $qualifiedName = $aPrefix === null ? $aLocalName :
+            $aPrefix . ':' . $aLocalName;
+        $element->mNodeName = $aNamespace === Namespaces::HTML &&
+            $element->mOwnerDocument instanceof HTMLDocument ?
             strtoupper($qualifiedName) : $qualifiedName;
 
         return $element;
