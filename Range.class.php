@@ -94,7 +94,7 @@ class Range {
 
         $originalStartNode = $this->mStartContainer;
         $originalStartOffset = $this->mStartOffset;
-        $originalEndNode = $this->mEndNode;
+        $originalEndNode = $this->mEndContainer;
         $originalEndOffset = $this->mEndOffset;
 
         if ($originalStartNode === $originalEndNode &&
