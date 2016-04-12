@@ -290,14 +290,31 @@ abstract class Node implements EventTarget
             return 0;
         }
 
-        if (
-            $reference->mOwnerDocument !== $aOtherNode->mOwnerDocument ||
-            !$reference->mParentNode ||
-            !$aOtherNode->mParentNode
-        ) {
-            return self::DOCUMENT_POSITION_DISCONNECTED |
-                self::DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC |
-                self::DOCUMENT_POSITION_PRECEDING;
+        $referenceRoot = self::getRootNode($reference);
+
+        if ($referenceRoot !== self::getRootNode($aOtherNode)) {
+            $ret = self::DOCUMENT_POSITION_DISCONNECTED |
+                self::DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC;
+            $position = strcmp(
+                spl_object_hash($this),
+                spl_object_hash($aOtherNode)
+            );
+
+            // Pointer comparison is supposed to be used to determine whether
+            // a node is following or preceding another node in this case,
+            // however, PHP does not have pointers. So, comparing their string
+            // hashes is the closest thing we can do to get the desired result.
+            // Testing shows that this intermittently returns the incorrect
+            // result based on the object hash comparison, but I don't really
+            // see any alternatives other than going back to always returning
+            // the same value for everything.
+            if ($position < 0) {
+                $ret |= self::DOCUMENT_POSITION_PRECEDING;
+            } else {
+                $ret |= self::DOCUMENT_POSITION_FOLLOWING;
+            }
+
+            return $ret;
         }
 
         if ($aOtherNode->contains($reference)) {
