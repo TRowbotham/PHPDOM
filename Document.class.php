@@ -43,6 +43,7 @@ class Document extends Node
             static::$mDefaultDocument = $this;
         }
 
+        $this->mCharacterSet = 'utf-8';
         $this->mContentType = '';
         $this->mDoctype = null;
         $this->mImplementation = new DOMImplementation($this);
