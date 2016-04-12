@@ -196,7 +196,7 @@ class Range {
             $subrange = new Range();
             $subrange->setStart($lastPartiallyContainedChild, 0);
             $subrange->setEnd($originalEndNode, $originalEndOffset);
-            $subfragment = $subrange->cloneRange();
+            $subfragment = $subrange->cloneContents();
             $clone->appendChild($subfragment);
         }
 
