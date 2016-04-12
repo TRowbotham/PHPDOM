@@ -161,7 +161,7 @@ class Range {
                 $originalStartNode->length - $originalStartOffset
             );
             $fragment->appendChild($clone);
-        } else {
+        } elseif ($firstPartiallyContainedChild) {
             $clone = $firstPartiallyContainedChild->cloneNode();
             $fragment->appendChild($clone);
             $subrange = new Range();
