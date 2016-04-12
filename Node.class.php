@@ -137,13 +137,7 @@ abstract class Node implements EventTarget
                 return $this->mPreviousSibling;
 
             case 'rootNode':
-                $root = $this;
-
-                while ($root->mParentNode) {
-                    $root = $root->mParentNode;
-                }
-
-                return $root;
+                return self::getRootNode($this);
 
             case 'textContent':
                 switch ($this->mNodeType) {
@@ -1506,6 +1500,28 @@ abstract class Node implements EventTarget
     public function _getNodeLength()
     {
         return count($this->mChildNodes);
+    }
+
+    /**
+     * Gets a node's root.
+     *
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#concept-tree-root
+     *
+     * @param Node $aNode The node whose root is to be returned.
+     *
+     * @return Node The node's root.
+     */
+    public static function getRootNode(Node $aNode)
+    {
+        $root = $aNode;
+
+        while ($root->mParentNode) {
+            $root = $root->mParentNode;
+        }
+
+        return $root;
     }
 
     /**
