@@ -138,21 +138,16 @@ class Range {
             }
         }
 
-        $containedChildren = array();
-        $node = $firstPartiallyContainedChild;
+        $containedChildren = [];
 
-        while ($node) {
-            $containedChildren[] = $node;
+        foreach ($commonAncestor->childNodes as $child) {
+            if ($this->isFullyContainedNode($child)) {
+                if ($child instanceof DocumentType) {
+                    throw new HierarchyRequestError();
+                }
 
-            if ($node instanceof DocumentType) {
-                throw new HierarchyRequestError();
+                $containedChildren[] = $child;
             }
-
-            if ($node === $lastPartiallyContainedChild) {
-                break;
-            }
-
-            $node = $node->nextSibling;
         }
 
         if (
