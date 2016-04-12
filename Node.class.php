@@ -327,30 +327,17 @@ abstract class Node implements EventTarget
                 self::DOCUMENT_POSITION_FOLLOWING;
         }
 
-        $commonParent = $reference->mParentNode;
-
-        while ($commonParent) {
-            if ($commonParent->contains($aOtherNode)) {
-                break;
+        $tw = new TreeWalker(
+            $referenceRoot,
+            NodeFilter::SHOW_ALL,
+            function ($aNode) use ($aOtherNode) {
+                return $aNode === $aOtherNode ? NodeFilter::FILTER_ACCEPT :
+                    NodeFilter::FILTER_SKIP;
             }
+        );
+        $tw->currentNode = $reference;
 
-            $commonParent = $commonParent->mParentNode;
-        }
-
-        $referenceKey = -1;
-        $otherKey = -1;
-
-        foreach ($commonParent->mChildNodes as $child) {
-            if ($referenceKey < 0 && $child->contains($reference)) {
-                $referenceKey = key($commonParent->mChildNodes);
-            }
-
-            if ($otherKey < 0 && $child->contains($aOtherNode)) {
-                $otherKey = key($commonParent->mChildNodes);
-            }
-        }
-
-        if ($otherKey < $referenceKey) {
+        if ($tw->previousNode()) {
             return self::DOCUMENT_POSITION_PRECEDING;
         }
 
