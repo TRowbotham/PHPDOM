@@ -243,7 +243,7 @@ class Range {
     /**
      * Compares the boundary points of this Range with another Range.
      *
-     * @see https://dom.spec.whatwg.org/#dom-range-compareboundarypointshow-sourcerange
+     * @see https://dom.spec.whatwg.org/#dom-range-compareboundarypoints
      *
      * @param int $aHow A constant describing how the two Ranges should be
      *     compared.  Possible values:
@@ -272,9 +272,9 @@ class Range {
             throw new NotSupportedError();
         }
 
-        $rootElement = Node::_getRootElement($aSourceRange->startContainer);
+        $sourceRangeRoot = Node::getRootNode($aSourceRange->startContainer);
 
-        if (Node::_getRootElement($this->mStartContainer) !== $rootElement) {
+        if (Node::getRootNode($this->mStartContainer) !== $sourceRangeRoot) {
             throw new WrongDocumentError();
         }
 
@@ -348,9 +348,9 @@ class Range {
      */
     public function comparePoint(Node $aNode, $aOffset)
     {
-        $rootElement = Node::_getRootElement($this->mStartContainer);
+        $root = Node::getRootNode($this->mStartContainer);
 
-        if (Node::_getRootElement($aNode) !== $rootElement) {
+        if (Node::getRootNode($aNode) !== $root) {
             throw new WrongDocumentError();
         }
 
@@ -743,9 +743,9 @@ class Range {
      */
     public function intersectsNode(Node $aNode)
     {
-        $rootElement = Node::_getRootElement($this->mStartContainer);
+        $root = Node::getRootNode($this->mStartContainer);
 
-        if (Node::_getRootElement($aNode) !== $rootElement) {
+        if (Node::getRootNode($aNode) !== $root) {
             return false;
         }
 
@@ -789,9 +789,9 @@ class Range {
      */
     public function isPointInRange(Node $aNode, $aOffset)
     {
-        $rootElement = Node::_getRootElement($this->mStartContainer);
+        $root = Node::getRootNode($this->mStartContainer);
 
-        if (Node::_getRootElement($aNode) !== $rootElement) {
+        if (Node::getRootNode($aNode) !== $root) {
             return false;
         }
 
@@ -1039,7 +1039,7 @@ class Range {
         }
 
         $tw = new TreeWalker(
-            Node::_getRootElement($this->mStartContainer),
+            Node::getRootNode($this->mStartContainer),
             NodeFilter::SHOW_TEXT,
             function ($aNode) {
                 return $this->isFullyContainedNode($aNode) ?
@@ -1100,7 +1100,7 @@ class Range {
         }
 
         $tw = new TreeWalker(
-            Node::_getRootElement($aB[0]),
+            Node::getRootNode($aB[0]),
             NodeFilter::SHOW_ALL,
             function ($aNode) use ($aA) {
                 return $aNode === $aA[0] ?
@@ -1162,9 +1162,9 @@ class Range {
     {
         $startBP = array($this->mStartContainer, $this->mStartOffset);
         $endBP = array($this->mEndContainer, $this->mEndOffset);
-        $rootElement = Node::_getRootElement($this->mStartContainer);
+        $root = Node::getRootNode($this->mStartContainer);
 
-        return Node::_getRootElement($aNode) === $rootElement &&
+        return Node::getRootNode($aNode) === $root &&
                 $this->computePosition(array($aNode, 0), $startBP) == 'after' &&
                 $this->computePosition(array(
                     $aNode,
@@ -1226,8 +1226,8 @@ class Range {
                     $this->computePosition($bp, array(
                         $this->mEndContainer, $this->mEndOffset
                     )) == 'after' ||
-                    Node::_getRootElement($this->mStartContainer) !==
-                    Node::_getRootElement($aNode)
+                    Node::getRootNode($this->mStartContainer) !==
+                    Node::getRootNode($aNode)
                 ) {
                     $this->mEndContainer = $aNode;
                     $this->mEndOffset = $aOffset;
@@ -1243,8 +1243,8 @@ class Range {
                     $this->computePosition($bp, array(
                         $this->mStartContainer, $this->mStartOffset
                     )) == 'before' ||
-                    Node::_getRootElement($this->mStartContainer) !==
-                    Node::_getRootElement($aNode)
+                    Node::getRootNode($this->mStartContainer) !==
+                    Node::getRootNode($aNode)
                 ) {
                     $this->mStartContainer = $aNode;
                     $this->mStartOffset = $aOffset;
