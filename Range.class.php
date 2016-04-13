@@ -1015,27 +1015,35 @@ class Range {
     /**
      * Concatenates the contents of the Range in to a string.
      *
-     * @see https://dom.spec.whatwg.org/#dom-Range-toString
+     * @see https://dom.spec.whatwg.org/#dom-range-stringifier
      *
      * @return string
      */
     public function toString()
     {
         $s = '';
+        $owner = $this->mStartContainer->ownerDocument ?:
+            $this->mStartContainer;
+        $encoding = $owner->characterSet;
 
         if (
             $this->mStartContainer === $this->mEndContainer &&
             $this->mStartContainer instanceof Text
         ) {
-            return substr(
+            return mb_substr(
                 $this->mStartContainer->data,
                 $this->mStartOffset,
-                $this->mEndOffset
+                $this->mEndOffset,
+                $encoding
             );
         }
 
         if ($this->mStartContainer instanceof Text) {
-            $s .= substr($this->mStartContainer->data, $this->mStartOffset);
+            $s .= mb_substr(
+                $this->mStartContainer->data,
+                $this->mStartOffset,
+                null,
+                $encoding);
         }
 
         $tw = new TreeWalker(
@@ -1053,7 +1061,12 @@ class Range {
         }
 
         if ($this->mEndContainer instanceof Text) {
-            $s .= substr($this->mEndContainer->data, 0, $this->mEndOffset);
+            $s .= mb_substr(
+                $this->mEndContainer->data,
+                0,
+                $this->mEndOffset,
+                $encoding
+            );
         }
 
         return $s;
