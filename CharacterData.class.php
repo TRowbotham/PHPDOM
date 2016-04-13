@@ -20,7 +20,8 @@ use phpjs\exceptions\IndexSizeError;
  * @property-read Element|null $previousElementSibling Returns the previous
  *     sibling that is an Element, if any.
  */
-abstract class CharacterData extends Node {
+abstract class CharacterData extends Node
+{
     use ChildNode;
     use NonDocumentTypeChildNode;
 
@@ -35,7 +36,8 @@ abstract class CharacterData extends Node {
         $this->mLength = mb_strlen($aData, $this->mOwnerDocument->characterSet);
     }
 
-    public function __get($aName) {
+    public function __get($aName)
+    {
         switch ($aName) {
             case 'data':
                 return $this->mData;
@@ -52,7 +54,8 @@ abstract class CharacterData extends Node {
         }
     }
 
-    public function __set($aName, $aValue) {
+    public function __set($aName, $aValue)
+    {
         switch ($aName) {
             case 'data':
             case 'nodeValue':
@@ -70,7 +73,8 @@ abstract class CharacterData extends Node {
      *
      * @param  string $aData The string data to be appended to the Node.
      */
-    public function appendData($aData) {
+    public function appendData($aData)
+    {
         $this->replaceData($this->mLength, 0, $aData);
     }
 
@@ -86,7 +90,8 @@ abstract class CharacterData extends Node {
      * @throws IndexSizeError If the given offset is greater than the length
      *     of the data.
      */
-    public function deleteData($aOffset, $aCount) {
+    public function deleteData($aOffset, $aCount)
+    {
         $this->replaceData($aOffset, $aCount, '');
     }
 
@@ -100,7 +105,8 @@ abstract class CharacterData extends Node {
      * @throws IndexSizeError If the given offset is greater than the length
      *     of the data.
      */
-    public function insertData($aOffset, $aData) {
+    public function insertData($aOffset, $aData)
+    {
         $this->replaceData($aOffset, 0, $aData);
     }
 
@@ -121,7 +127,8 @@ abstract class CharacterData extends Node {
      * @throws IndexSizeError If the given offset is greater than the length
      *     of the data.
      */
-    public function replaceData($aOffset, $aCount, $aData) {
+    public function replaceData($aOffset, $aCount, $aData)
+    {
         $length = $this->mLength;
         $count = $aCount;
 
@@ -216,7 +223,8 @@ abstract class CharacterData extends Node {
      * @throws IndexSizeError If the given offset is greater than the length
      *     of the data.
      */
-    public function substringData($aOffset, $aCount) {
+    public function substringData($aOffset, $aCount)
+    {
         $length = $this->mLength;
 
         if ($aOffset > $length) {
@@ -246,7 +254,8 @@ abstract class CharacterData extends Node {
      *
      * @return int
      */
-    public function _getNodeLength() {
+    public function _getNodeLength()
+    {
         return $this->mLength;
     }
 }
