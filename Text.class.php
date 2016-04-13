@@ -59,11 +59,11 @@ class Text extends CharacterData
         $length = $this->mLength;
 
         if ($aOffset > $length) {
-            throw new IndexSizeError;
+            throw new IndexSizeError();
         }
 
         $count = $length - $aOffset;
-        $newData = substr($this->mData, $aOffset, $count);
+        $newData = $this->substringData($aOffset, $count);
         $newNode = new Text($newData);
         $newNode->mOwnerDocument = $this->mOwnerDocument;
         $ranges = Range::_getRangeCollection();

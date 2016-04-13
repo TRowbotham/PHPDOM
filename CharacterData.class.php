@@ -32,7 +32,7 @@ abstract class CharacterData extends Node {
         parent::__construct();
 
         $this->mData = $aData;
-        $this->mLength = strlen($aData);
+        $this->mLength = mb_strlen($aData, $this->mOwnerDocument->characterSet);
     }
 
     public function __get($aName) {
@@ -141,11 +141,12 @@ abstract class CharacterData extends Node {
         }
 
         // TODO: Queue a mutation record for "characterData"
-        $this->mData = substr_replace($this->mData, $aData, $aOffset, 0);
-        $newDataLen = strlen($aData);
-        $this->mLength = $newDataLen + strlen($this->mData);
-        $deleteOffset = $aOffset + $newDataLen;
-        $this->mData = substr($this->mData, 0, $deleteOffset);
+        $encoding = $this->mOwnerDocument->characterSet;
+        $this->mData = mb_substr($this->mData, 0, $aOffset, $encoding) .
+            $aData .
+            mb_substr($this->mData, $aOffset + $count, null, $encoding);
+        $newDataLen = mb_strlen($aData, $encoding);
+        $this->mLength = mb_strlen($this->mData, $encoding);
 
         $ranges = Range::_getRangeCollection();
 
@@ -230,10 +231,10 @@ abstract class CharacterData extends Node {
         }
 
         if ($aOffset + $aCount > $length) {
-            return substr($this->mData, $aOffset);
+            return mb_substr($this->mData, $aOffset);
         }
 
-        return substr($this->mData, $aOffset, $aOffset + $aCount);
+        return mb_substr($this->mData, $aOffset, $aOffset + $aCount);
     }
 
     /**
