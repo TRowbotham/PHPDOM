@@ -671,21 +671,18 @@ abstract class Node implements EventTarget
      *
      * @param Node $aNode The nodes to be inserted into the document tree.
      *
-     * @param Node $aParent The node that will play host to the node being
-     *     inserted.
-     *
      * @param Node|null $aChild Optional. A child node used as a reference to
      *     where the new node should be inserted.
      *
      * @param bool|null $aSuppressObservers Optional. If true, mutation events
      *     are ignored for this operation.
      */
-    public static function insertNode(
+    public function insertNode(
         Node $aNode,
-        Node $aParent,
         Node $aChild = null,
         $aSuppressObservers = null
     ) {
+        $parent = $this;
         $nodeIsFragment = $aNode->mNodeType === self::DOCUMENT_FRAGMENT_NODE;
         $count = $nodeIsFragment ? count($aNode->mChildNodes) : 1;
 
@@ -699,14 +696,14 @@ abstract class Node implements EventTarget
                 $endOffset = $range->endOffset;
 
                 if (
-                    $startContainer === $aParent &&
+                    $startContainer === $parent &&
                     $startOffset > $childIndex
                 ) {
                     $range->setStart($startContainer, $startOffset + $count);
                 }
 
                 if (
-                    $endContainer === $aParent &&
+                    $endContainer === $parent &&
                     $endOffset > $childIndex
                 ) {
                     $range->setEnd($endContainer, $endOffset + $count);
@@ -726,17 +723,17 @@ abstract class Node implements EventTarget
         }
 
         $index = $aChild ?
-            array_search($aChild, $aParent->mChildNodes, true) :
-            count($aParent->mChildNodes);
-        $parentElement = $aParent->mNodeType === self::ELEMENT_NODE ?
-            $aParent : null;
+            array_search($aChild, $parent->mChildNodes, true) :
+            count($parent->mChildNodes);
+        $parentElement = $parent->mNodeType === self::ELEMENT_NODE ?
+            $parent : null;
 
         if ($index === 0) {
-            $aParent->mFirstChild = $nodes[0];
+            $parent->mFirstChild = $nodes[0];
         }
 
         foreach ($nodes as $node) {
-            $node->mParentNode = $aParent;
+            $node->mParentNode = $parent;
             $node->mParentElement = $parentElement;
 
             if ($aChild) {
@@ -749,16 +746,16 @@ abstract class Node implements EventTarget
 
                 $aChild->mPreviousSibling = $node;
             } else {
-                $node->mPreviousSibling = $aParent->mLastChild;
+                $node->mPreviousSibling = $parent->mLastChild;
 
-                if ($aParent->mLastChild) {
-                    $aParent->mLastChild->mNextSibling = $node;
+                if ($parent->mLastChild) {
+                    $parent->mLastChild->mNextSibling = $node;
                 }
 
-                $aParent->mLastChild = $node;
+                $parent->mLastChild = $node;
             }
 
-            array_splice($aParent->mChildNodes, $index++, 0, [$node]);
+            array_splice($parent->mChildNodes, $index++, 0, [$node]);
 
             // TODO: For each inclusive descendant inclusiveDescendant of node,
             // in tree order, run the insertion steps with inclusiveDescendant
@@ -969,7 +966,7 @@ abstract class Node implements EventTarget
         // The DOM4 spec states that nodes should be implicitly adopted
         $ownerDocument = $aParent->mOwnerDocument ?: $aParent;
         Document::adopt($aNode, $ownerDocument);
-        self::insertNode($aNode, $aParent, $referenceChild);
+        $aParent->insertNode($aNode, $referenceChild);
 
         return $aNode;
     }
@@ -1566,7 +1563,7 @@ abstract class Node implements EventTarget
         }
 
         if ($aNode) {
-            self::insertNode($aNode, $this, null, true);
+            $this->insertNode($aNode, null, true);
         }
 
         // TODO: Queue a mutation record for "childList"
