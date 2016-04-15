@@ -290,9 +290,9 @@ abstract class Node implements EventTarget
             return 0;
         }
 
-        $referenceRoot = self::getRootNode($reference);
+        $referenceRoot = $reference->getRootNode();
 
-        if ($referenceRoot !== self::getRootNode($aOtherNode)) {
+        if ($referenceRoot !== $aOtherNode->getRootNode()) {
             $ret = self::DOCUMENT_POSITION_DISCONNECTED |
                 self::DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC;
             $position = strcmp(
@@ -1639,7 +1639,7 @@ abstract class Node implements EventTarget
      */
     protected function getRootNode()
     {
-        $root = $aNode;
+        $root = $this;
 
         while ($root->mParentNode) {
             $root = $root->mParentNode;
