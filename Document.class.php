@@ -325,7 +325,7 @@ class Document extends Node
         $oldDocument = $aNode->mOwnerDocument;
 
         if ($aNode->mParentNode) {
-            self::removeNode($aNode, $aNode->mParentNode);
+            $aNode->mParentNode->removeNode($aNode);
         }
 
         if ($aDocument !== $oldDocument) {

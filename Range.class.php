@@ -460,7 +460,7 @@ class Range {
         }
 
         foreach ($nodesToRemove as $node) {
-            Node::removeNode($node, $node->parentNode);
+            $node->parentNode->removeNode($node);
         }
 
         if (
@@ -712,7 +712,7 @@ class Range {
         }
 
         if (!$aNode->parentNode) {
-            Node::removeNode($aNode, $aNode->parentNode);
+            $aNode->parentNode->removeNode($aNode);
         }
 
         $newOffset = !$referenceNode ?

@@ -715,7 +715,7 @@ abstract class Node implements EventTarget
 
         if ($nodeIsFragment) {
             foreach ($aNode->mChildNodes as $child) {
-                self::removeNode($child, $aNode, true);
+                $aNode->removeNode($child, true);
             }
 
             // TODO: queue a mutation record of "childList" for node with
@@ -856,7 +856,7 @@ abstract class Node implements EventTarget
             $length = $node->length;
 
             if (!$length) {
-                self::removeNode($node, $this);
+                $this->removeNode($node);
                 continue;
             }
 
@@ -928,7 +928,7 @@ abstract class Node implements EventTarget
             }
 
             foreach ($contingiousTextNodes as $textNode) {
-                self::removeNode($textNode, $textNode->mParentNode);
+                $textNode->mParentNode->removeNode($textNode);
             }
         }
     }
@@ -978,7 +978,7 @@ abstract class Node implements EventTarget
      */
     public function removeChild(Node $aNode)
     {
-        return self::preremoveNode($aNode, $this);
+        return $this->preremoveNode($aNode);
     }
 
     /**
@@ -1029,12 +1029,12 @@ abstract class Node implements EventTarget
      * @param bool $aSuppressObservers Optional. If true, mutation events are
      *     ignored for this operation.
      */
-    public static function removeNode(
+    public function removeNode(
         Node $aNode,
-        Node $aParent,
         $aSuppressObservers = null
     ) {
-        $index = array_search($aNode, $aParent->mChildNodes);
+        $parent = $this;
+        $index = array_search($aNode, $parent->mChildNodes);
         $ranges = Range::_getRangeCollection();
 
         foreach ($ranges as $range) {
@@ -1044,7 +1044,7 @@ abstract class Node implements EventTarget
                 $startContainer === $aNode ||
                 $aNode->contains($startContainer)
             ) {
-                $range->setStart($aParent, $index);
+                $range->setStart($parent, $index);
             }
         }
 
@@ -1052,7 +1052,7 @@ abstract class Node implements EventTarget
             $endContainer = $range->endContainer;
 
             if ($endContainer === $aNode || $aNode->contains($endContainer)) {
-                $range->setEnd($aParent, $index);
+                $range->setEnd($parent, $index);
             }
         }
 
@@ -1060,7 +1060,7 @@ abstract class Node implements EventTarget
             $startContainer = $range->startContainer;
             $startOffset = $range->startOffset;
 
-            if ($startContainer === $aParent && $startOffset > $index) {
+            if ($startContainer === $parent && $startOffset > $index) {
                 $range->setStart($startContainer, $startOffset - 1);
             }
         }
@@ -1069,7 +1069,7 @@ abstract class Node implements EventTarget
             $endContainer = $range->endContainer;
             $endOffset = $range->endOffset;
 
-            if ($endContainer === $aParent && $endOffset > $index) {
+            if ($endContainer === $parent && $endOffset > $index) {
                 $range->setEnd($endContainer, $endOffset - 1);
             }
         }
@@ -1083,17 +1083,17 @@ abstract class Node implements EventTarget
         $oldPreviousSibling = $aNode->mPreviousSibling;
         $oldNextSibling = $aNode->mNextSibling;
 
-        array_splice($aParent->mChildNodes, $index, 1);
+        array_splice($parent->mChildNodes, $index, 1);
 
         // TODO: For each inclusive descendant inclusiveDescendant of node, run
         // the removing steps with inclusiveDescendant and parent.
 
-        if ($aParent->mFirstChild === $aNode) {
-            $aParent->mFirstChild = $aNode->mNextSibling;
+        if ($parent->mFirstChild === $aNode) {
+            $parent->mFirstChild = $aNode->mNextSibling;
         }
 
-        if ($aParent->mLastChild === $aNode) {
-            $aParent->mLastChild = $aNode->mPreviousSibling;
+        if ($parent->mLastChild === $aNode) {
+            $parent->mLastChild = $aNode->mPreviousSibling;
         }
 
         if ($aNode->mPreviousSibling) {
@@ -1557,7 +1557,7 @@ abstract class Node implements EventTarget
         }
 
         foreach ($removedNodes as $index => $node) {
-            self::removeNode($node, $this, true);
+            $this->removeNode($node, true);
         }
 
         if ($aNode) {
@@ -1680,20 +1680,23 @@ abstract class Node implements EventTarget
      *
      * @param Node $aChild The node being removed.
      *
-     * @param Node $aParent The parent of the node being removed.
-     *
      * @return Node The node that was removed.
      *
      * @throws NotFoundError If the parent of the node being removed does not
      *     match the given parent node.
      */
-    protected static function preremoveNode(Node $aChild, Node $aParent)
+    protected function preremoveNode(Node $aChild)
     {
-        if ($aChild->mParentNode !== $aParent) {
+        $parent = $this;
+
+        if ($aChild->mParentNode !== $parent) {
             throw new NotFoundError();
         }
 
-        self::removeNode($aChild, $aParent);
+        $parent->removeNode($aChild);
+
+        return $aChild;
+    }
 
         return $aChild;
     }
