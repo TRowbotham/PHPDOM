@@ -60,7 +60,8 @@ class Document extends Node
         $this->mURL = new urls\URL($url);
     }
 
-    public function __get($aName) {
+    public function __get($aName)
+    {
         switch ($aName) {
             case 'characterSet':
                 return $this->mCharacterSet;
@@ -115,6 +116,22 @@ class Document extends Node
         return $aNode;
     }
 
+    public function createComment($aData)
+    {
+        $node = new Comment($aData);
+        $node->mOwnerDocument = $this;
+
+        return $node;
+    }
+
+    public function createDocumentFragment()
+    {
+        $node = new DocumentFragment();
+        $node->mOwnerDocument = $this;
+
+        return $node;
+    }
+
     /**
      * Creates an HTMLElement with the specified tag name.
      *
@@ -163,22 +180,6 @@ class Document extends Node
             $parts['namespace'],
             $parts['prefix']
         );
-        $node->mOwnerDocument = $this;
-
-        return $node;
-    }
-
-    public function createDocumentFragment()
-    {
-        $node = new DocumentFragment();
-        $node->mOwnerDocument = $this;
-
-        return $node;
-    }
-
-    public function createComment($aData)
-    {
-        $node = new Comment($aData);
         $node->mOwnerDocument = $this;
 
         return $node;
@@ -300,15 +301,6 @@ class Document extends Node
         return new TreeWalker($aRoot, $aWhatToShow, $aFilter);
     }
 
-    public function importNode(Node $aNode, $aDeep = false)
-    {
-        if ($aNode instanceof Document || $aNode instanceof ShadowRoot) {
-            throw new NotSupportedError();
-        }
-
-        return $aNode->doCloneNode(null, $aDeep);
-    }
-
     /**
      * Removes a node from its parent and adopts it and all its children.
      *
@@ -340,75 +332,6 @@ class Document extends Node
     }
 
     /**
-     * Gets the value of the document's mode.
-     *
-     * @internal
-     *
-     * @return int
-     */
-    public function _getMode()
-    {
-        return $this->mMode;
-    }
-
-    public function _getNodeIteratorCollection()
-    {
-        return $this->mNodeIteratorList;
-    }
-
-    /**
-     * Sets the document's content type.
-     *
-     * @internal
-     *
-     * @param string $aType The MIME content type of the document.
-     */
-    public function _setContentType($aType)
-    {
-        $this->mContentType = $aType;
-    }
-
-    /**
-     * Associates a DocumentType node with the document.
-     *
-     * @internal
-     *
-     * @param DocumentType $aDoctype The DocumentType node of the document.
-     */
-    public function _setDoctype(DocumentType $aDoctype = null)
-    {
-        $this->mDoctype = $aDoctype;
-    }
-
-    /**
-     * Sets the document's mode.
-     *
-     * @internal
-     *
-     * @param int $aMode An integer representing the current mode.
-     */
-    public function _setMode($aMode)
-    {
-        $this->mMode = $aMode;
-    }
-
-    /**
-     * @internal
-     *
-     * Sets the document's character set.
-     *
-     * @param string $aCharacterSet The document's character set
-     */
-    public function _setCharacterSet($aCharacterSet)
-    {
-        if (!is_string($aCharacterSet)) {
-            return;
-        }
-
-        $this->mCharacterSet = $aCharacterSet;
-    }
-
-    /**
      * Returns the first document created, which is assumed to be the global
      * document.  This global document is the owning document for objects
      * instantiated using its constructor.  These objects are DocumentFragment,
@@ -425,38 +348,30 @@ class Document extends Node
         return static::$mDefaultDocument;
     }
 
-    public function _printTree()
+    /**
+     * Gets the value of the document's mode.
+     *
+     * @internal
+     *
+     * @return int
+     */
+    public function _getMode()
     {
-        return $this->_traverseTree($this->mChildNodes, 0);
+        return $this->mMode;
     }
 
-    private function _traverseTree($aNodes, $aLevel = 0)
+    public function _getNodeIteratorCollection()
     {
-        if (empty($aNodes)) {
-            return '';
+        return $this->mNodeIteratorList;
+    }
+
+    public function importNode(Node $aNode, $aDeep = false)
+    {
+        if ($aNode instanceof Document || $aNode instanceof ShadowRoot) {
+            throw new NotSupportedError();
         }
 
-        $html = '<div class="tree-level">';
-        foreach ($aNodes as $node) {
-            $name = $node->nodeName ?
-                strtolower($node->nodeName) : get_class($node);
-            $html .= '<div class="tree-branch">';
-            $html .= htmlspecialchars('<' . $name);
-            if ($node instanceof Element) {
-                foreach($node->attributes as $attribute) {
-                    $html .= ' ' . $attribute->name;
-
-                    if (!Attr::_isBool($attribute->name)) {
-                        $html .= '="' . $attribute->value . '"';
-                    }
-                }
-            }
-            $html .= '></div>';
-            $html .= $this->_traverseTree($node->childNodes, ++$aLevel);
-        }
-        $html .= '</div>';
-
-        return $html;
+        return $aNode->doCloneNode(null, $aDeep);
     }
 
     public static function prettyPrintTree(Node $aNode)
@@ -589,6 +504,63 @@ class Document extends Node
         $s .= '</ul>';
 
         return $s;
+    }
+
+    public function _printTree()
+    {
+        return $this->_traverseTree($this->mChildNodes, 0);
+    }
+
+    /**
+     * @internal
+     *
+     * Sets the document's character set.
+     *
+     * @param string $aCharacterSet The document's character set
+     */
+    public function _setCharacterSet($aCharacterSet)
+    {
+        if (!is_string($aCharacterSet)) {
+            return;
+        }
+
+        $this->mCharacterSet = $aCharacterSet;
+    }
+
+    /**
+     * Sets the document's content type.
+     *
+     * @internal
+     *
+     * @param string $aType The MIME content type of the document.
+     */
+    public function _setContentType($aType)
+    {
+        $this->mContentType = $aType;
+    }
+
+    /**
+     * Associates a DocumentType node with the document.
+     *
+     * @internal
+     *
+     * @param DocumentType $aDoctype The DocumentType node of the document.
+     */
+    public function _setDoctype(DocumentType $aDoctype = null)
+    {
+        $this->mDoctype = $aDoctype;
+    }
+
+    /**
+     * Sets the document's mode.
+     *
+     * @internal
+     *
+     * @param int $aMode An integer representing the current mode.
+     */
+    public function _setMode($aMode)
+    {
+        $this->mMode = $aMode;
     }
 
     protected function getHTMLInterfaceFor($aLocalName)
@@ -834,5 +806,34 @@ class Document extends Node
         }
 
         return 'phpjs\\elements\\html\\HTML' . $interfaceName . 'Element';
+    }
+
+    private function _traverseTree($aNodes, $aLevel = 0)
+    {
+        if (empty($aNodes)) {
+            return '';
+        }
+
+        $html = '<div class="tree-level">';
+        foreach ($aNodes as $node) {
+            $name = $node->nodeName ?
+                strtolower($node->nodeName) : get_class($node);
+            $html .= '<div class="tree-branch">';
+            $html .= htmlspecialchars('<' . $name);
+            if ($node instanceof Element) {
+                foreach($node->attributes as $attribute) {
+                    $html .= ' ' . $attribute->name;
+
+                    if (!Attr::_isBool($attribute->name)) {
+                        $html .= '="' . $attribute->value . '"';
+                    }
+                }
+            }
+            $html .= '></div>';
+            $html .= $this->_traverseTree($node->childNodes, ++$aLevel);
+        }
+        $html .= '</div>';
+
+        return $html;
     }
 }
