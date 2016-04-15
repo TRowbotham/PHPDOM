@@ -242,7 +242,7 @@ abstract class Node implements EventTarget
      */
     public function appendChild(Node $aNode)
     {
-        return self::preinsertNode($aNode, $this, null);
+        return $this->preinsertNode($aNode, null);
     }
 
     /**
@@ -559,7 +559,7 @@ abstract class Node implements EventTarget
      */
     public function insertBefore(Node $aNewNode, Node $aRefNode = null)
     {
-        return self::preinsertNode($aNewNode, $this, $aRefNode);
+        return $this->preinsertNode($aNewNode, $aRefNode);
     }
 
     /**
@@ -944,19 +944,17 @@ abstract class Node implements EventTarget
      *
      * @param Node $aNode The node being inserted.
      *
-     * @param Node $aParent The node that will play host to the inserted node.
-     *
      * @param Node|null $aChild Optional.  A child node used as a reference to
      *     where the new node should be inserted.
      *
      * @return Node The node that was inserted.
      */
-    public static function preinsertNode(
+    public function preinsertNode(
         Node $aNode,
-        Node $aParent,
         Node $aChild = null
     ) {
-        $aParent->_ensurePreinsertionValidity($aNode, $aChild);
+        $parent = $this;
+        $parent->_ensurePreinsertionValidity($aNode, $aChild);
         $referenceChild = $aChild;
 
         if ($referenceChild === $aNode) {
@@ -964,9 +962,9 @@ abstract class Node implements EventTarget
         }
 
         // The DOM4 spec states that nodes should be implicitly adopted
-        $ownerDocument = $aParent->mOwnerDocument ?: $aParent;
+        $ownerDocument = $parent->mOwnerDocument ?: $parent;
         Document::adopt($aNode, $ownerDocument);
-        $aParent->insertNode($aNode, $referenceChild);
+        $parent->insertNode($aNode, $referenceChild);
 
         return $aNode;
     }

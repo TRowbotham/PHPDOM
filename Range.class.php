@@ -720,7 +720,7 @@ class Range {
         $newOffset += $aNode instanceof DocumentFragment ?
             $aNode->_getNodeLength() : 1;
 
-        Node::preinsertNode($aNode, $parent, $referenceNode);
+        $parent->preinsertNode($aNode, $referenceNode);
 
         if (
             $this->mStartContainer === $this->mEndContainer &&
