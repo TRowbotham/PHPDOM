@@ -137,7 +137,7 @@ abstract class Node implements EventTarget
                 return $this->mPreviousSibling;
 
             case 'rootNode':
-                return self::getRootNode($this);
+                return $this->getRootNode();
 
             case 'textContent':
                 switch ($this->mNodeType) {
@@ -1536,28 +1536,6 @@ abstract class Node implements EventTarget
     }
 
     /**
-     * Gets a node's root.
-     *
-     * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#concept-tree-root
-     *
-     * @param Node $aNode The node whose root is to be returned.
-     *
-     * @return Node The node's root.
-     */
-    public static function getRootNode(Node $aNode)
-    {
-        $root = $aNode;
-
-        while ($root->mParentNode) {
-            $root = $root->mParentNode;
-        }
-
-        return $root;
-    }
-
-    /**
      * Replaces all nodes within a parent.
      *
      * @internal
@@ -1648,6 +1626,26 @@ abstract class Node implements EventTarget
         }
 
         return $node;
+    }
+
+    /**
+     * Gets a node's root.
+     *
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#concept-tree-root
+     *
+     * @return Node The node's root.
+     */
+    protected function getRootNode()
+    {
+        $root = $aNode;
+
+        while ($root->mParentNode) {
+            $root = $root->mParentNode;
+        }
+
+        return $root;
     }
 
     /**
