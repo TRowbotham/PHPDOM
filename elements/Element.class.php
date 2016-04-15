@@ -589,9 +589,8 @@ class Element extends Node implements \SplObserver
                 }
 
                 try {
-                    self::preinsertNode(
+                    $aElement->mParentNode->preinsertNode(
                         $aNode,
-                        $aElement->mParentNode,
                         $aElement
                     );
                 } catch (\Exception $e) {
@@ -601,12 +600,12 @@ class Element extends Node implements \SplObserver
                 break;
 
             case 'afterbegin':
-                self::preinsertNode($aNode, $aElement, $aElement->mFirstChild);
+                $aElement->preinsertNode($aNode, $aElement->mFirstChild);
 
                 break;
 
             case 'beforeend':
-                self::preinsertNode($aNode, $aElement, null);
+                $aElement->preinsertNode($aNode, null);
 
                 break;
 
@@ -616,9 +615,8 @@ class Element extends Node implements \SplObserver
                 }
 
                 try {
-                    self::preinsertNode(
+                    $aElement->mParentNode->preinsertNode(
                         $aNode,
-                        $aElement->mParentNode,
                         $aElement->mNextSibling
                     );
                 } catch (\Exception $e) {
