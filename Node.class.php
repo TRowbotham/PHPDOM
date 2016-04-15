@@ -1127,7 +1127,7 @@ abstract class Node implements EventTarget
     /**
      * Replaces a node with another node.
      *
-     * @link https://dom.spec.whatwg.org/#concept-node-replace
+     * @see https://dom.spec.whatwg.org/#dom-node-replacechild
      *
      * @param Node $aNewNode The node to be inserted into the DOM.
      *
@@ -1141,135 +1141,7 @@ abstract class Node implements EventTarget
      */
     public function replaceChild(Node $aNewNode, Node $aOldNode)
     {
-        if (
-            !($this instanceof Document) &&
-            !($this instanceof DocumentFragment) &&
-            !($this instanceof Element)
-        ) {
-            throw new HierarchyRequestError();
-        }
-
-        if ($this === $aNewNode || $aNewNode->contains($this)) {
-            throw new HierarchyRequestError();
-        }
-
-        if ($aOldNode->parentNode !== $this) {
-            throw new NotFoundError();
-        }
-
-        if (
-            !($aNewNode instanceof DocumentFragment) &&
-            !($aNewNode instanceof DocumentType) &&
-            !($aNewNode instanceof Element) &&
-            !($aNewNode instanceof Text) &&
-            !($aNewNode instanceof ProcessingInstruction) &&
-            !($aNewNode instanceof Comment)
-        ) {
-            throw new HierarchyRequestError();
-        }
-
-        if (
-            ($aNewNode instanceof Text && $this instanceof Document) ||
-            ($aNewNode instanceof DocumentType && !($this instanceof Document))
-        ) {
-            throw new HierarchyRequestError();
-        }
-
-        if ($this instanceof Document) {
-            if ($aNewNode instanceof DocumentFragment) {
-                $hasTextNode = array_filter(
-                    $this->mChildNodes,
-                    function ($node) {
-                        return $node instanceof Text;
-                    }
-                );
-
-                if ($aNewNode->childElementCount > 1 || $hasTextNode) {
-                    throw new HierarchyRequestError();
-                } else {
-                    $node = $aOldNode->nextSibling;
-                    $docTypeFollowsChild = false;
-
-                    while ($node) {
-                        if ($node instanceof DocumentType) {
-                            $docTypeFollowsChild = true;
-                            break;
-                        }
-
-                        $node = $node->nextSibling;
-                    }
-
-                    if (
-                        $this->childElementCount == 1 &&
-                        ($this->children[0] !== $aOldNode ||
-                            $docTypeFollowsChild)
-                    ) {
-                        throw new HierarchyRequestError();
-                    }
-                }
-            } elseif ($aNewNode instanceof Element) {
-                $node = $aOldNode->nextSibling;
-                $docTypeFollowsChild = false;
-
-                while ($node) {
-                    if ($node instanceof DocumentType) {
-                        $docTypeFollowsChild = true;
-                        break;
-                    }
-
-                    $node = $node->nextSibling;
-                }
-
-                if ($this->childElementCount > 1 || $docTypeFollowsChild) {
-                    throw new HierarchyRequestError();
-                }
-            } elseif ($aNewNode instanceof DocumentType) {
-                $hasDocTypeNotChild = false;
-
-                foreach ($this->mChildNodes as $node) {
-                    if ($node instanceof DocumentType &&
-                        $node !== $aOldNode) {
-                        $hasDocTypeNotChild = true;
-                    }
-                }
-
-                $node = $aOldNode->previousSibling;
-                $elementPrecedesChild = false;
-
-                while ($node) {
-                    if ($node instanceof Element) {
-                        $elementPrecedesChild = true;
-                        break;
-                    }
-
-                    $node = $node->previousSibling;
-                }
-
-                if ($hasDocTypeNotChild || $elementPrecedesChild) {
-                    throw new HierarchyRequestError();
-                }
-            }
-        }
-
-        $referenceChild = $aOldNode->nextSibling;
-
-        if ($referenceChild === $aNewNode) {
-            $referenceChild = $aNewNode->nextSibling;
-        }
-
-        // The DOM4 spec states that nodes should be implicitly adopted
-        $ownerDocument = $this->mOwnerDocument ?: $this;
-        Document::adopt($aNewNode, $ownerDocument);
-
-        self::removeNode($aOldNode, $this, true);
-
-        $nodes = $aNewNode instanceof DocumentFragment ?
-            $aNewNode->childNodes : array($aNewNode);
-        self::insertNode($aNewNode, $this, $referenceChild, true);
-
-        // TODO: Queue a mutation record for "childList"
-
-        return $aOldNode;
+        return $this->replaceNode($aNewNode, $aOldNode);
     }
 
     /**
@@ -1697,6 +1569,181 @@ abstract class Node implements EventTarget
 
         return $aChild;
     }
+
+    /**
+     * Replaces a node with another node inside this node.
+     *
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#concept-node-replace
+     *
+     * @param Node $aNode The node being inserted.
+     *
+     * @param Node $aChild The node being replaced.
+     *
+     * @return Node The node that was replaced.
+     */
+    protected function replaceNode(
+        Node $aNode,
+        Node $aChild
+    ) {
+        $parent = $this;
+
+        switch ($parent->mNodeType) {
+            case self::DOCUMENT_NODE:
+            case self::DOCUMENT_FRAGMENT_NODE:
+            case self::ELEMENT_NODE:
+                break;
+
+            default:
+                throw new HierarchyRequestError();
+        }
+
+        if ($aNode->isHostIncludingInclusiveAncestorOf($parent)) {
+            throw new HierarchyRequestError();
+        }
+
+        if ($aChild->mParentNode !== $parent) {
+            throw new HierarchyRequestError();
+        }
+
+        switch ($aNode->mNodeType) {
+            case self::DOCUMENT_FRAGMENT_NODE:
+            case self::DOCUMENT_TYPE_NODE:
+            case self::ELEMENT_NODE:
+            case self::TEXT_NODE:
+            case self::PROCESSING_INSTRUCTION_NODE:
+            case self::COMMENT_NODE:
+                break;
+
+            default:
+                throw new HierarchyRequestError();
+        }
+
+        if (
+            $aNode->mNodeType === self::TEXT_NODE &&
+            $parent->mNodeType === self::DOCUMENT_NODE
+        ) {
+            throw new HierarchyRequestError();
+        }
+
+        if (
+            $aNode->mNodeType === self::DOCUMENT_TYPE_NODE &&
+            $parent->mNodeType !== self::DOCUMENT_NODE
+        ) {
+            throw new HierarchyRequestError();
+        }
+
+        if ($parent->mNodeType === self::DOCUMENT_NODE) {
+            switch ($aNode->mNodeType) {
+                case self::DOCUMENT_FRAGMENT_NODE:
+                    $elementChildren = 0;
+
+                    foreach ($aNode->mChildNodes as $child) {
+                        switch ($child->mNodeType) {
+                            case self::ELEMENT_NODE:
+                                $elementChildren++;
+
+                                if ($elementChildren > 1) {
+                                    throw new HierarchyRequestError();
+                                }
+
+                                break;
+
+                            case self::TEXT_NODE:
+                                throw new HierarchyRequestError();
+                        }
+                    }
+
+                    if ($elementChildren === 1) {
+                        foreach ($parent->mChildNodes as $child) {
+                            if (
+                                $child->mNodeType === self::ELEMENT_NODE &&
+                                $child !== $aChild
+                            ) {
+                                throw new HierarchyRequestError();
+                            }
+                        }
+
+                        $tw = new TreeWalker(
+                            $parent,
+                            NodeFilter::SHOW_DOCUMENT_TYPE
+                        );
+                        $tw->currentNode = $aChild;
+
+                        if ($tw->nextNode()) {
+                            throw new HierarchyRequestError();
+                        }
+                    }
+
+                    break;
+
+                case self::ELEMENT_NODE:
+                    foreach ($parent->mChildNodes as $child) {
+                        if (
+                            $child->mNodeType === self::ELEMENT_NODE &&
+                            $child !== $aChild
+                        ) {
+                            throw new HierarchyRequestError();
+                        }
+                    }
+
+                    $tw = new TreeWalker(
+                        $parent,
+                        NodeFilter::SHOW_DOCUMENT_TYPE
+                    );
+                    $tw->currentNode = $aChild;
+
+                    if ($tw->nextNode()) {
+                        throw new HierarchyRequestError();
+                    }
+
+                    break;
+
+                case self::DOCUMENT_TYPE_NODE:
+                    foreach ($parent->mChildNodes as $child) {
+                        if (
+                            $child->mNodeType === self::DOCUMENT_TYPE_NODE &&
+                            $child !== $aChild
+                        ) {
+                            throw new HierarchyRequestError();
+                        }
+                    }
+
+                    $tw = new TreeWalker(
+                        $parent,
+                        NodeFilter::SHOW_ELEMENT
+                    );
+                    $tw->currentNode = $aChild;
+
+                    if ($tw->previousNode()) {
+                        throw new HierarchyRequestError();
+                    }
+            }
+        }
+
+        $referenceChild = $aChild->mNextSibling;
+
+        if ($referenceChild === $aNode) {
+            $referenceChild = $aNode->mNextSibling;
+        }
+
+        $previousSibling = $aChild->mPreviousSibling;
+        $parent->mOwnerDocument->doAdoptNode($aNode);
+        $removedNodes = [];
+
+        if ($aChild->mParentNode) {
+            $removedNodes[] = $aChild;
+            $aChild->mParentNode->removeNode($aChild, true);
+        }
+
+        $nodes = $aNode->mNodeType === self::DOCUMENT_FRAGMENT_NODE ?
+            $aNode->mChildNodes : [$aNode];
+        $parent->insertNode($aNode, $referenceChild, true);
+
+        // TODO: Queue a mutation record of "childList" for target parent with
+        // addedNodes nodes, removedNodes removedNodes, nextSibling reference
+        // child, and previousSibling previousSibling.
 
         return $aChild;
     }

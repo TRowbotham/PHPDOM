@@ -120,7 +120,7 @@ class HTMLDocument extends Document
                 }
 
                 if ($currentBody) {
-                    $this->replaceChild($aValue, $currentBody);
+                    $this->replaceNode($aValue, $currentBody);
                     return;
                 }
 

@@ -115,7 +115,7 @@ trait ChildNode
         $node = Node::convertNodesToNode($nodes);
 
         if ($this->mParentNode === $parent) {
-            $parent->replaceChild($node, $this);
+            $parent->replaceNode($node, $this);
         } else {
             $parent->preinsertNode($node, $viableNextSibling);
         }
