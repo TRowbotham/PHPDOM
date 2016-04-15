@@ -537,6 +537,252 @@ abstract class Node implements EventTarget
     }
 
     /**
+     * Ensures that a node is allowed to be inserted into its parent.
+     *
+     * @internal
+     *
+     * @link https://dom.spec.whatwg.org/#concept-node-ensure-pre-insertion-validity
+     *
+     * @param DocumentFragment|Node $aNode The nodes being inserted into the
+     *     document tree.
+     *
+     * @param Node $aChild The reference node for where the new nodes should be
+     *     inserted.
+     *
+     * @throws HierarchyRequestError
+     *
+     * @throws NotFoundError
+     */
+    public function _ensurePreinsertionValidity($aNode, $aChild)
+    {
+        if (
+            !($this instanceof Document) &&
+            !($this instanceof DocumentFragment) &&
+            !($this instanceof Element)
+        ) {
+            throw new HierarchyRequestError();
+        }
+
+        if ($this === $aNode || $aNode->contains($this)) {
+            throw new HierarchyRequestError;
+        }
+
+        if ($aChild !== null && $this !== $aChild->mParentNode) {
+            throw new NotFoundError;
+        }
+
+        if (!($aNode instanceof DocumentFragment) &&
+            !($aNode instanceof DocumentType) &&
+            !($aNode instanceof Element) &&
+            !($aNode instanceof Text) &&
+            !($aNode instanceof ProcessingInstruction) &&
+            !($aNode instanceof Comment)
+        ) {
+            throw new HierarchyRequestError();
+        }
+
+        if (
+            ($aNode instanceof Text && $this instanceof Document) ||
+            ($aNode instanceof DocumentType && !($this instanceof Document))
+        ) {
+            throw new HierarchyRequestError();
+        }
+
+        if ($this instanceof Document) {
+            if ($aNode instanceof DocumentFragment) {
+                $hasTextNode = false;
+
+                foreach ($aNode->mChildNodes as $node) {
+                    if ($node instanceof Text) {
+                        $hasTextNode = true;
+
+                        break;
+                    }
+                }
+
+                if ($aNode->childElementCount > 1 || $hasTextNode) {
+                    throw new HierarchyRequestError();
+                } else {
+                    if (
+                        $aNode->childElementCount == 1 &&
+                        ($this->childElementCount ||
+                            $aChild instanceof DocumentType)
+                    ) {
+                        throw new HierarchyRequestError();
+                    }
+
+                    if ($aChild !== null) {
+                        $tw = new TreeWalker(
+                            $aChild,
+                            NodeFilter::SHOW_DOCUMENT_TYPE
+                        );
+
+                        if ($tw->nextNode() !== null) {
+                            throw new HierarchyRequestError();
+                        }
+                    }
+                }
+            } elseif ($aNode instanceof Element) {
+                $parentHasElementChild = false;
+
+                foreach ($this->mChildNodes as $node) {
+                    if ($node instanceof Element) {
+                        $parentHasElementChild = true;
+
+                        break;
+                    }
+                }
+
+                if ($parentHasElementChild || $aChild instanceof DocumentType) {
+                    throw new HierarchyRequestError();
+                }
+
+                if ($aChild !== null) {
+                    $tw = new TreeWalker(
+                        $aChild,
+                        NodeFilter::SHOW_DOCUMENT_TYPE
+                    );
+
+                    if ($tw->nextNode() !== null) {
+                        throw new HierarchyRequestError();
+                    }
+                }
+            } elseif ($aNode instanceof DocumentType) {
+                $parentHasDocTypeChild = false;
+
+                foreach ($this->mChildNodes as $node) {
+                    if ($node instanceof DocumentType) {
+                        $parentHasDocTypeChild = true;
+
+                        break;
+                    }
+                }
+
+                if ($aChild !== null) {
+                    $ownerDocument = $this->mOwnerDocument ?: $this;
+                    $tw = new TreeWalker(
+                        $ownerDocument,
+                        NodeFilter::SHOW_ELEMENT
+                    );
+                    $tw->currentNode = $aChild;
+
+                    if ($tw->previousNode() !== null) {
+                        throw new HierarchyRequestError();
+                    }
+                }
+
+                $parentHasElementChild = false;
+
+                foreach ($this->mChildNodes as $node) {
+                    if ($node instanceof Element) {
+                        $parentHasElementChild = true;
+
+                        break;
+                    }
+                }
+
+                if (
+                    $parentHasDocTypeChild ||
+                    ($aChild !== null && $parentHasElementChild)
+                ) {
+                    throw new HierarchyRequestError();
+                }
+            }
+        }
+    }
+
+    /**
+     * Gets the bottom most common ancestor of two nodes, if any.  If null is
+     * returned, the two nodes do not have a common ancestor.
+     *
+     * @internal
+     */
+    public static function _getCommonAncestor(Node $aNodeA, Node $aNodeB)
+    {
+        $nodeA = $aNodeA;
+
+        while ($nodeA) {
+            $nodeB = $aNodeB;
+
+            while ($nodeB) {
+                if ($nodeB === $nodeA) {
+                    break 2;
+                }
+
+                $nodeB = $nodeB->mParentNode;
+            }
+
+            $nodeA = $nodeA->mParentNode;
+        }
+
+        return $nodeA;
+    }
+
+    /**
+     * Returns the Node's length.
+     *
+     * @internal
+     *
+     * @link https://dom.spec.whatwg.org/#concept-node-length
+     *
+     * @return int
+     */
+    public function _getNodeLength()
+    {
+        return count($this->mChildNodes);
+    }
+
+    /**
+     * Gets the root element of the given node.
+     *
+     * @link https://html.spec.whatwg.org/multipage/infrastructure.html#root-element
+     *
+     * @param Node $aNode The node whose root element is to be found.
+     *
+     * @return Element|null
+     */
+    public static function _getRootElement(Node $aNode)
+    {
+        if ($aNode instanceof Document) {
+            return $aNode->firstElementChild;
+        }
+
+        if (!$aNode->mParentElement) {
+            return $aNode;
+        }
+
+        $node = $aNode->mParentElement;
+
+        while ($node && $node->mParentElement) {
+            $node = $node->mParentElement;
+        }
+
+        return $node;
+    }
+
+    /**
+     * Returns the Node's index.
+     *
+     * @internal
+     *
+     * @link https://dom.spec.whatwg.org/#concept-tree-index
+     *
+     * @return int
+     */
+    public function _getTreeIndex()
+    {
+        $index = 0;
+        $sibling = $this->mPreviousSibling;
+
+        while ($sibling) {
+            $index++;
+            $sibling = $sibling->mPreviousSibling;
+        }
+
+        return $index;
+    }
+
+    /**
      * Returns a boolean indicating whether or not the current node contains any
      * nodes.
      *
@@ -560,106 +806,6 @@ abstract class Node implements EventTarget
     public function insertBefore(Node $aNewNode, Node $aRefNode = null)
     {
         return $this->preinsertNode($aNewNode, $aRefNode);
-    }
-
-    /**
-     * Returns whether or not the namespace of the node is the node's default
-     * namespace.
-     *
-     * @link https://dom.spec.whatwg.org/#dom-node-isdefaultnamespace
-     *
-     * @param string|null $aNamespace A namespaceURI to check against.
-     *
-     * @return bool
-     */
-    public function isDefaultNamespace($aNamespace)
-    {
-        $namespace = $aNamespace === '' ? null : $aNamespace;
-        $defaultNamespace = Namespaces::locateNamespace($this, null);
-
-        return $defaultNamespace === $namespace;
-    }
-
-    /**
-     * Compares two nodes to see if they are equal.
-     *
-     * @link https://dom.spec.whatwg.org/#dom-node-isequalnode
-     * @link https://dom.spec.whatwg.org/#concept-node-equals
-     *
-     * @param Node $aNode The node you want to compare the current node to.
-     *
-     * @return boolean Returns true if the two nodes are the same, otherwise
-     *     false.
-     */
-    public function isEqualNode(Node $aOtherNode = null)
-    {
-        if (!$aOtherNode || $this->mNodeType != $aOtherNode->mNodeType) {
-            return false;
-        }
-
-        if ($this instanceof DocumentType) {
-            if (
-                strcmp($this->name, $aOtherNode->name) !== 0 ||
-                strcmp($this->publicId, $aOtherNode->publicId) !== 0 ||
-                strcmp($this->systemId, $aOtherNode->systemId) !== 0
-            ) {
-                return false;
-            }
-        } elseif ($this instanceof Element) {
-            if (
-                strcmp($this->namespaceURI, $aOtherNode->namespaceURI) !== 0 ||
-                strcmp($this->prefix, $aOtherNode->prefix) !== 0 ||
-                strcmp($this->localName, $aOtherNode->localName) !== 0 ||
-                $this->mAttributesList->count() !==
-                $aOtherNode->attributes->length
-            ) {
-                return false;
-            }
-        } elseif ($this instanceof ProcessingInstruction) {
-            if (strcmp($this->target, $aOtherNode->target) !== 0 ||
-                strcmp($this->data, $aOtherNode->data) !== 0) {
-                return false;
-            }
-        } elseif ($this instanceof Text || $this instanceof Comment) {
-            if (strcmp($this->data, $aOtherNode->data) !== 0) {
-                return false;
-            }
-        }
-
-        if ($this instanceof Element) {
-            for ($i = 0; $i < count($this->mAttributesList); $i++) {
-                if (
-                    strcmp(
-                        $this->mAttributesList[$i]->namespaceURI,
-                        $aOtherNode->attributes[$i]->namespaceURI
-                    ) !== 0 ||
-                    strcmp(
-                        $this->mAttributesList[$i]->prefix,
-                        $aOtherNode->attributes[$i]->prefix
-                    ) !== 0 ||
-                    strcmp(
-                        $this->mAttributesList[$i]->localName,
-                        $aOtherNode->attributes[$i]->localName
-                    ) !== 0
-                ) {
-                    return false;
-                }
-            }
-        }
-
-        if (count($this->mChildNodes) !== count($aOtherNode->childNodes)) {
-            return false;
-        }
-
-        for ($i = 0; $i < count($this->mChildNodes); $i++) {
-            if (!$this->mChildNodes[$i]->isEqualNode(
-                    $aOtherNode->childNodes[$i]
-                )) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     /**
@@ -768,6 +914,106 @@ abstract class Node implements EventTarget
             // nextSibling child, and previousSibling child’s previous
             // sibling or parent’s last child if child is null.
         }
+    }
+
+    /**
+     * Returns whether or not the namespace of the node is the node's default
+     * namespace.
+     *
+     * @link https://dom.spec.whatwg.org/#dom-node-isdefaultnamespace
+     *
+     * @param string|null $aNamespace A namespaceURI to check against.
+     *
+     * @return bool
+     */
+    public function isDefaultNamespace($aNamespace)
+    {
+        $namespace = $aNamespace === '' ? null : $aNamespace;
+        $defaultNamespace = Namespaces::locateNamespace($this, null);
+
+        return $defaultNamespace === $namespace;
+    }
+
+    /**
+     * Compares two nodes to see if they are equal.
+     *
+     * @link https://dom.spec.whatwg.org/#dom-node-isequalnode
+     * @link https://dom.spec.whatwg.org/#concept-node-equals
+     *
+     * @param Node $aNode The node you want to compare the current node to.
+     *
+     * @return boolean Returns true if the two nodes are the same, otherwise
+     *     false.
+     */
+    public function isEqualNode(Node $aOtherNode = null)
+    {
+        if (!$aOtherNode || $this->mNodeType != $aOtherNode->mNodeType) {
+            return false;
+        }
+
+        if ($this instanceof DocumentType) {
+            if (
+                strcmp($this->name, $aOtherNode->name) !== 0 ||
+                strcmp($this->publicId, $aOtherNode->publicId) !== 0 ||
+                strcmp($this->systemId, $aOtherNode->systemId) !== 0
+            ) {
+                return false;
+            }
+        } elseif ($this instanceof Element) {
+            if (
+                strcmp($this->namespaceURI, $aOtherNode->namespaceURI) !== 0 ||
+                strcmp($this->prefix, $aOtherNode->prefix) !== 0 ||
+                strcmp($this->localName, $aOtherNode->localName) !== 0 ||
+                $this->mAttributesList->count() !==
+                $aOtherNode->attributes->length
+            ) {
+                return false;
+            }
+        } elseif ($this instanceof ProcessingInstruction) {
+            if (strcmp($this->target, $aOtherNode->target) !== 0 ||
+                strcmp($this->data, $aOtherNode->data) !== 0) {
+                return false;
+            }
+        } elseif ($this instanceof Text || $this instanceof Comment) {
+            if (strcmp($this->data, $aOtherNode->data) !== 0) {
+                return false;
+            }
+        }
+
+        if ($this instanceof Element) {
+            for ($i = 0; $i < count($this->mAttributesList); $i++) {
+                if (
+                    strcmp(
+                        $this->mAttributesList[$i]->namespaceURI,
+                        $aOtherNode->attributes[$i]->namespaceURI
+                    ) !== 0 ||
+                    strcmp(
+                        $this->mAttributesList[$i]->prefix,
+                        $aOtherNode->attributes[$i]->prefix
+                    ) !== 0 ||
+                    strcmp(
+                        $this->mAttributesList[$i]->localName,
+                        $aOtherNode->attributes[$i]->localName
+                    ) !== 0
+                ) {
+                    return false;
+                }
+            }
+        }
+
+        if (count($this->mChildNodes) !== count($aOtherNode->childNodes)) {
+            return false;
+        }
+
+        for ($i = 0; $i < count($this->mChildNodes); $i++) {
+            if (!$this->mChildNodes[$i]->isEqualNode(
+                    $aOtherNode->childNodes[$i]
+                )) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -1159,250 +1405,6 @@ abstract class Node implements EventTarget
     }
 
     /**
-     * @internal
-     *
-     * @link https://dom.spec.whatwg.org/#concept-node-ensure-pre-insertion-validity
-     *
-     * @param DocumentFragment|Node $aNode The nodes being inserted into the
-     *     document tree.
-     *
-     * @param Node $aChild The reference node for where the new nodes should be
-     *     inserted.
-     *
-     * @throws HierarchyRequestError
-     *
-     * @throws NotFoundError
-     */
-    public function _ensurePreinsertionValidity($aNode, $aChild)
-    {
-        if (
-            !($this instanceof Document) &&
-            !($this instanceof DocumentFragment) &&
-            !($this instanceof Element)
-        ) {
-            throw new HierarchyRequestError();
-        }
-
-        if ($this === $aNode || $aNode->contains($this)) {
-            throw new HierarchyRequestError;
-        }
-
-        if ($aChild !== null && $this !== $aChild->mParentNode) {
-            throw new NotFoundError;
-        }
-
-        if (!($aNode instanceof DocumentFragment) &&
-            !($aNode instanceof DocumentType) &&
-            !($aNode instanceof Element) &&
-            !($aNode instanceof Text) &&
-            !($aNode instanceof ProcessingInstruction) &&
-            !($aNode instanceof Comment)
-        ) {
-            throw new HierarchyRequestError();
-        }
-
-        if (
-            ($aNode instanceof Text && $this instanceof Document) ||
-            ($aNode instanceof DocumentType && !($this instanceof Document))
-        ) {
-            throw new HierarchyRequestError();
-        }
-
-        if ($this instanceof Document) {
-            if ($aNode instanceof DocumentFragment) {
-                $hasTextNode = false;
-
-                foreach ($aNode->mChildNodes as $node) {
-                    if ($node instanceof Text) {
-                        $hasTextNode = true;
-
-                        break;
-                    }
-                }
-
-                if ($aNode->childElementCount > 1 || $hasTextNode) {
-                    throw new HierarchyRequestError();
-                } else {
-                    if (
-                        $aNode->childElementCount == 1 &&
-                        ($this->childElementCount ||
-                            $aChild instanceof DocumentType)
-                    ) {
-                        throw new HierarchyRequestError();
-                    }
-
-                    if ($aChild !== null) {
-                        $tw = new TreeWalker(
-                            $aChild,
-                            NodeFilter::SHOW_DOCUMENT_TYPE
-                        );
-
-                        if ($tw->nextNode() !== null) {
-                            throw new HierarchyRequestError();
-                        }
-                    }
-                }
-            } elseif ($aNode instanceof Element) {
-                $parentHasElementChild = false;
-
-                foreach ($this->mChildNodes as $node) {
-                    if ($node instanceof Element) {
-                        $parentHasElementChild = true;
-
-                        break;
-                    }
-                }
-
-                if ($parentHasElementChild || $aChild instanceof DocumentType) {
-                    throw new HierarchyRequestError();
-                }
-
-                if ($aChild !== null) {
-                    $tw = new TreeWalker(
-                        $aChild,
-                        NodeFilter::SHOW_DOCUMENT_TYPE
-                    );
-
-                    if ($tw->nextNode() !== null) {
-                        throw new HierarchyRequestError();
-                    }
-                }
-            } elseif ($aNode instanceof DocumentType) {
-                $parentHasDocTypeChild = false;
-
-                foreach ($this->mChildNodes as $node) {
-                    if ($node instanceof DocumentType) {
-                        $parentHasDocTypeChild = true;
-
-                        break;
-                    }
-                }
-
-                if ($aChild !== null) {
-                    $ownerDocument = $this->mOwnerDocument ?: $this;
-                    $tw = new TreeWalker(
-                        $ownerDocument,
-                        NodeFilter::SHOW_ELEMENT
-                    );
-                    $tw->currentNode = $aChild;
-
-                    if ($tw->previousNode() !== null) {
-                        throw new HierarchyRequestError();
-                    }
-                }
-
-                $parentHasElementChild = false;
-
-                foreach ($this->mChildNodes as $node) {
-                    if ($node instanceof Element) {
-                        $parentHasElementChild = true;
-
-                        break;
-                    }
-                }
-
-                if (
-                    $parentHasDocTypeChild ||
-                    ($aChild !== null && $parentHasElementChild)
-                ) {
-                    throw new HierarchyRequestError();
-                }
-            }
-        }
-    }
-
-    /**
-     * Gets the bottom most common ancestor of two nodes, if any.  If null is
-     * returned, the two nodes do not have a common ancestor.
-     *
-     * @internal
-     */
-    public static function _getCommonAncestor(Node $aNodeA, Node $aNodeB)
-    {
-        $nodeA = $aNodeA;
-
-        while ($nodeA) {
-            $nodeB = $aNodeB;
-
-            while ($nodeB) {
-                if ($nodeB === $nodeA) {
-                    break 2;
-                }
-
-                $nodeB = $nodeB->mParentNode;
-            }
-
-            $nodeA = $nodeA->mParentNode;
-        }
-
-        return $nodeA;
-    }
-
-    /**
-     * Gets the root element of the given node.
-     *
-     * @link https://html.spec.whatwg.org/multipage/infrastructure.html#root-element
-     *
-     * @param Node $aNode The node whose root element is to be found.
-     *
-     * @return Element|null
-     */
-    public static function _getRootElement(Node $aNode)
-    {
-        if ($aNode instanceof Document) {
-            return $aNode->firstElementChild;
-        }
-
-        if (!$aNode->mParentElement) {
-            return $aNode;
-        }
-
-        $node = $aNode->mParentElement;
-
-        while ($node && $node->mParentElement) {
-            $node = $node->mParentElement;
-        }
-
-        return $node;
-    }
-
-    /**
-     * Returns the Node's index.
-     *
-     * @internal
-     *
-     * @link https://dom.spec.whatwg.org/#concept-tree-index
-     *
-     * @return int
-     */
-    public function _getTreeIndex()
-    {
-        $index = 0;
-        $sibling = $this->mPreviousSibling;
-
-        while ($sibling) {
-            $index++;
-            $sibling = $sibling->mPreviousSibling;
-        }
-
-        return $index;
-    }
-
-    /**
-     * Returns the Node's length.
-     *
-     * @internal
-     *
-     * @link https://dom.spec.whatwg.org/#concept-node-length
-     *
-     * @return int
-     */
-    public function _getNodeLength()
-    {
-        return count($this->mChildNodes);
-    }
-
-    /**
      * Replaces all nodes within a parent.
      *
      * @internal
@@ -1437,17 +1439,6 @@ abstract class Node implements EventTarget
         }
 
         // TODO: Queue a mutation record for "childList"
-    }
-
-    protected function getBaseURI()
-    {
-        $ssl = isset($_SERVER['HTTPS']) && $_SERVER["HTTPS"] == 'on';
-        $port = in_array($_SERVER['SERVER_PORT'], array(80, 443)) ?
-            '' : ':' . $_SERVER['SERVER_PORT'];
-        $url = ($ssl ? 'https' : 'http') . '://' . $_SERVER['SERVER_NAME'] .
-            $port . $_SERVER['REQUEST_URI'];
-
-        return $url;
     }
 
     /**
@@ -1493,6 +1484,17 @@ abstract class Node implements EventTarget
         }
 
         return $node;
+    }
+
+    protected function getBaseURI()
+    {
+        $ssl = isset($_SERVER['HTTPS']) && $_SERVER["HTTPS"] == 'on';
+        $port = in_array($_SERVER['SERVER_PORT'], array(80, 443)) ?
+            '' : ':' . $_SERVER['SERVER_PORT'];
+        $url = ($ssl ? 'https' : 'http') . '://' . $_SERVER['SERVER_NAME'] .
+            $port . $_SERVER['REQUEST_URI'];
+
+        return $url;
     }
 
     /**
