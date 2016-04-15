@@ -1649,6 +1649,33 @@ abstract class Node implements EventTarget
     }
 
     /**
+     * Checks if the node is an inclusive ancestor of the given node, including
+     * any nodes that may be hosted.
+     *
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#concept-tree-host-including-inclusive-ancestor
+     *
+     * @param Node $aNode The potential descendant node.
+     *
+     * @return bool Whether the node is an inclusive ancestor or not.
+     */
+    protected function isHostIncludingInclusiveAncestorOf(Node $aNode)
+    {
+        $ret = false;
+
+        if ($aNode instanceof Element) {
+            $host = $aNode->getRootNode()->mHost;
+
+            if ($host && $this->isHostIncludingInclusiveAncestorOf($host)) {
+                $ret = true;
+            }
+        }
+
+        return $ret || $this->contains($aNode);
+    }
+
+    /**
      * Removes a node from another node after making sure that they share
      * the same parent node.
      *
