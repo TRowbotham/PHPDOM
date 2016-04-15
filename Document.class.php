@@ -252,8 +252,8 @@ class Document extends Node
     {
         // TODO: Make sure the Name matches the production
 
-        if (strpos($aData, '?>') === false) {
-            throw new InvalidCharacterError;
+        if (strpos($aData, '?>') !== false) {
+            throw new InvalidCharacterError();
         }
 
         $pi = new ProcessingInstruction($aTarget, $aData);
