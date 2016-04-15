@@ -303,12 +303,10 @@ class Document extends Node
     public function importNode(Node $aNode, $aDeep = false)
     {
         if ($aNode instanceof Document || $aNode instanceof ShadowRoot) {
-            throw new NotSupportedError;
+            throw new NotSupportedError();
         }
 
-        $clone = $aNode->cloneNode($aDeep);
-
-        return $clone;
+        return $aNode->doCloneNode(null, $aDeep);
     }
 
     /**
