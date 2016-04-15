@@ -102,7 +102,7 @@ class Range {
                 $originalStartNode instanceof ProcessingInstruction ||
                 $originalStartNode instanceof Comment)
         ) {
-            $clone = $originalStartNode->cloneNode();
+            $clone = $originalStartNode->doCloneNode();
             $clone->data = $originalStartNode->substringData(
                 $originalStartOffset,
                 $originalEndOffset - $originalStartOffset
@@ -155,14 +155,14 @@ class Range {
             $firstPartiallyContainedChild instanceof ProcessingInstruction ||
             $firstPartiallyContainedChild instanceof Comment
         ) {
-            $clone = $originalStartNode->cloneNode();
+            $clone = $originalStartNode->doCloneNode();
             $clone->data = $originalStartNode->substringData(
                 $originalStartOffset,
                 $originalStartNode->length - $originalStartOffset
             );
             $fragment->appendChild($clone);
         } elseif ($firstPartiallyContainedChild) {
-            $clone = $firstPartiallyContainedChild->cloneNode();
+            $clone = $firstPartiallyContainedChild->doCloneNode();
             $fragment->appendChild($clone);
             $subrange = new Range();
             $subrange->setStart($originalStartNode, $originalStartOffset);
@@ -175,7 +175,7 @@ class Range {
         }
 
         foreach ($containedChildren as $child) {
-            $clone = $child->cloneNode(true);
+            $clone = $child->doCloneNode(null, true);
             $fragment->appendChild($clone);
         }
 
@@ -184,14 +184,14 @@ class Range {
             $lastPartiallyContainedChild instanceof ProcessingInstruction ||
             $lastPartiallyContainedChild instanceof Comment
         ) {
-            $clone = $originalEndNode->cloneNode();
+            $clone = $originalEndNode->doCloneNode();
             $clone->data = $originalEndNode->substringData(
                 0,
                 $originalEndOffset
             );
             $fragment->appendChild($clone);
         } elseif ($lastPartiallyContainedChild) {
-            $clone = $lastPartiallyContainedChild->cloneNode();
+            $clone = $lastPartiallyContainedChild->doCloneNode();
             $fragment->appendChild($clone);
             $subrange = new Range();
             $subrange->setStart($lastPartiallyContainedChild, 0);
@@ -506,7 +506,7 @@ class Range {
                 $originalStartNode instanceof ProcessingInstruction ||
                 $originalStartNode instanceof Comment)
         ) {
-            $clone = $startNode->_cloneNode();
+            $clone = $originalStartNode->doCloneNode();
             $clone->data = $originalStartNode->substringData(
                 $originalStartOffset,
                 $originalEndOffset - $originalStartOffset
@@ -598,7 +598,7 @@ class Range {
             $firstPartiallyContainedChild instanceof ProcessingInstruction ||
             $firstPartiallyContainedChild instanceof Comment
         ) {
-            $clone = $originalStartNode->_cloneNode();
+            $clone = $originalStartNode->doCloneNode();
             $clone->data = $originalStartNode->substringData(
                 $originalStartOffset,
                 $originalStartNode->length - $originalStartOffset
@@ -610,7 +610,7 @@ class Range {
                 ''
             );
         } elseif ($firstPartiallyContainedChild) {
-            $clone = $firstPartiallyContainedChild->_cloneNode();
+            $clone = $firstPartiallyContainedChild->doCloneNode();
             $fragment->appendChild($clone);
             $subrange = new Range();
             $subrange->mStartContainer = $originalStartNode;
@@ -632,7 +632,7 @@ class Range {
             $lastPartiallyContainedChild instanceof Comment
         ) {
             // In this case, last partially contained child is original end node
-            $clone = $originalEndNode->_cloneNode();
+            $clone = $originalEndNode->doCloneNode();
             $clone->data = $originalEndNode->substringData(
                 0,
                 $originalEndOffset
@@ -644,7 +644,7 @@ class Range {
                 ''
             );
         } elseif ($lastPartiallyContainedChild) {
-            $clone = $lastPartiallyContainedChild->_cloneNode();
+            $clone = $lastPartiallyContainedChild->doCloneNode();
             $fragment->appendChild($clone);
             $subrange = new Range();
             $subrange->mStartContainer = $lastPartiallyContainedChild;

@@ -263,7 +263,7 @@ abstract class Node implements EventTarget
             throw new NotSupportedError();
         }
 
-        return $this->_cloneNode(null, $aDeep);
+        return $this->doCloneNode(null, $aDeep);
     }
 
     /**
@@ -432,6 +432,108 @@ abstract class Node implements EventTarget
 
         return !$aEvent->cancelable ||
             !($aEvent->_getFlags() & Event::EVENT_CANCELED);
+    }
+
+    /**
+     * Clones the given node and performs any node specific cloning steps
+     * if the interface defines them.
+     *
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#concept-node-clone
+     *
+     * @param Node $aNode The node being cloned.
+     *
+     * @param Document|null $aDocument The document that will own the cloned
+     *     node.
+     *
+     * @param bool $aCloneChildren Optional. If set, all children of the cloned
+     *     node will also be cloned.
+     *
+     * @return Node The newly created node.
+     */
+    public function doCloneNode(
+        Document $aDocument = null,
+        $aCloneChildren = null
+    ) {
+        $node = $this;
+        $document = $aDocument ?: $node->mOwnerDocument;
+
+        switch ($node->mNodeType) {
+            case self::ELEMENT_NODE:
+                $copy = static::create(
+                    $node->mLocalName,
+                    $node->mNamespaceURI,
+                    $node->mPrefix
+                );
+
+                foreach ($node->mAttributesList as $attr) {
+                    $copyAttr = new Attr(
+                        $attr->localName,
+                        $attr->value,
+                        $attr->namespaceURI,
+                        $attr->prefix
+                    );
+                    $copy->mAttributesList->appendAttr($copyAttr, $copy);
+                }
+
+                break;
+
+            case self::DOCUMENT_NODE:
+                $copy = new static();
+                $copy->mCharacterSet = $node->mCharacterSet;
+                $copy->mContentType = $node->mContentType;
+                $copy->mMode = $node->mMode;
+
+                break;
+
+            case self::DOCUMENT_TYPE_NODE:
+                $copy = new static(
+                    $this->mName,
+                    $this->mPublicId,
+                    $this->mSystemId
+                );
+
+                break;
+
+            case self::TEXT_NODE:
+            case self::COMMENT_NODE:
+                $copy = new static($node->mData);
+
+                break;
+
+            case self::PROCESSING_INSTRUCTION_NODE:
+                $copy = new static($node->mTarget, $node->mData);
+
+                break;
+
+            default:
+                // If we have reached this point, then we don't know what type
+                // of Node is being cloned. This is probably a bad thing.
+                $copy = new static();
+        }
+
+        if ($copy instanceof Document) {
+            $copy->mOwnerDocument = $copy;
+            $document = $copy;
+        } else {
+            $copy->mOwnerDocument = $document;
+        }
+
+        // If the node being cloned defines custom cloning steps, perform them
+        // now.
+        if (method_exists($node, 'doCloningSteps')) {
+            $this->doCloningSteps($copy, $document, $aCloneChildren);
+        }
+
+        if ($aCloneChildren) {
+            foreach ($node->mChildNodes as $child) {
+                $copyChild = $child->doCloneNode($document, true);
+                $copy->appendChild($copyChild);
+            }
+        }
+
+        return $copy;
     }
 
     /**
@@ -1187,79 +1289,6 @@ abstract class Node implements EventTarget
         if ($this->mNodeType !== self::DOCUMENT_NODE) {
             $this->mOwnerDocument = $aDocument;
         }
-    }
-
-    public function _cloneNode($aDocument = null, $aCloneChildren = false)
-    {
-        $doc = !$aDocument ? $this->mOwnerDocument : $aDocument;
-        $class = get_class($this);
-
-        switch ($this->mNodeType) {
-            case self::DOCUMENT_NODE:
-                $copy = new $class();
-                $copy->mCharacterSet = $this->mCharacterSet;
-                $copy->mContentType = $this->mContentType;
-                // Set URL
-                // Set Type
-                $copy->mMode = $this->mMode;
-
-                break;
-
-            case self::DOCUMENT_TYPE_NODE:
-                $copy = new $class(
-                    $this->mName,
-                    $this->mPublicId,
-                    $this->mSystemId
-                );
-
-                break;
-
-            case self::ELEMENT_NODE:
-                $copy = $class::create(
-                    $this->mLocalName,
-                    $this->mNamespaceURI,
-                    $this->mPrefix
-                );
-
-                foreach ($this->mAttributesList as $attr) {
-                    $copyAttr = new Attr(
-                        $attr->localName,
-                        $attr->value,
-                        $attr->namespaceURI,
-                        $attr->prefix
-                    );
-                    $copy->mAttributesList->appendAttr($copyAttr);
-                }
-
-                break;
-
-            case self::TEXT_NODE:
-            case self::COMMENT_NODE:
-                $copy = new $class($this->mData);
-
-                break;
-
-            case self::PROCESSING_INSTRUCTION_NODE:
-                $copy = new $class($this->mTarget, $this->mData);
-        }
-
-        if ($copy instanceof Document) {
-            $copy->mOwnerDocument = $copy;
-            $doc = $copy;
-        } else {
-            $copy->mOwnerDocument = $doc;
-        }
-
-        // TODO: Run any specification specific cloning steps
-
-        if ($aCloneChildren) {
-            foreach ($this->mChildNodes as $child) {
-                $copyChild = $child->_cloneNode($doc, true);
-                $copy->appendChild($copyChild);
-            }
-        }
-
-        return $copy;
     }
 
     /**
