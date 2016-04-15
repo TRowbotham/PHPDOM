@@ -963,7 +963,7 @@ abstract class Node implements EventTarget
 
         // The DOM4 spec states that nodes should be implicitly adopted
         $ownerDocument = $parent->mOwnerDocument ?: $parent;
-        Document::adopt($aNode, $ownerDocument);
+        $ownerDocument->doAdoptNode($aNode);
         $parent->insertNode($aNode, $referenceChild);
 
         return $aNode;
@@ -1415,7 +1415,7 @@ abstract class Node implements EventTarget
     {
         if ($aNode) {
             $ownerDocument = $this->mOwnerDocument ?: $this;
-            Document::adopt($aNode, $ownerDocument);
+            $ownerDocument->doAdoptNode($aNode);
         }
 
         $removedNodes = $this->mChildNodes;

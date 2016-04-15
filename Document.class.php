@@ -110,7 +110,7 @@ class Document extends Node
             throw new HierarchyRequestError;
         }
 
-        self::adopt($aNode, $this);
+        $this->doAdoptNode($aNode);
 
         return $aNode;
     }
@@ -317,10 +317,8 @@ class Document extends Node
      * @see https://dom.spec.whatwg.org/#concept-node-adopt
      *
      * @param Node $aNode The node being adopted.
-     *
-     * @param Document $aDocument The document that is adopting the node.
      */
-    public static function adopt(Node $aNode, Document $aDocument)
+    public function doAdoptNode(Node $aNode)
     {
         $oldDocument = $aNode->mOwnerDocument;
 
@@ -328,11 +326,11 @@ class Document extends Node
             $aNode->mParentNode->removeNode($aNode);
         }
 
-        if ($aDocument !== $oldDocument) {
+        if ($this !== $oldDocument) {
             $iter = new NodeIterator($aNode, NodeFilter::SHOW_ALL);
 
             while (($node = $iter->nextNode())) {
-                $node->mOwnerDocument = $aDocument;
+                $node->mOwnerDocument = $this;
             }
 
             // TODO: For each descendant in node’s inclusive descendants, in
