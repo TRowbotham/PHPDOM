@@ -1,6 +1,7 @@
 <?php
 namespace phpjs;
 
+use phpjs\DocumentType;
 use phpjs\events\Event;
 use phpjs\events\CustomEvent;
 use phpjs\exceptions\HierarchyRequestError;
@@ -26,7 +27,6 @@ class Document extends Node
 
     protected $mCharacterSet;
     protected $mContentType;
-    protected $mDoctype; // DocumentType
     protected $mMode;
 
     private $mCompatMode;
@@ -45,7 +45,6 @@ class Document extends Node
 
         $this->mCharacterSet = 'utf-8';
         $this->mContentType = '';
-        $this->mDoctype = null;
         $this->mImplementation = new DOMImplementation($this);
         $this->mMode = self::NO_QUIRKS_MODE;
         $this->mNodeIteratorList = array();
@@ -72,7 +71,14 @@ class Document extends Node
             case 'contentType':
                 return $this->mContentType;
             case 'doctype':
-                return $this->mDoctype;
+                foreach ($this->mChildNodes as $child) {
+                    if ($child instanceof DocumentType) {
+                        return $child;
+                    }
+                }
+
+                return null;
+
             case 'documentElement':
                 return $this->getFirstElementChild();
             case 'documentURI':
@@ -537,18 +543,6 @@ class Document extends Node
     public function _setContentType($aType)
     {
         $this->mContentType = $aType;
-    }
-
-    /**
-     * Associates a DocumentType node with the document.
-     *
-     * @internal
-     *
-     * @param DocumentType $aDoctype The DocumentType node of the document.
-     */
-    public function _setDoctype(DocumentType $aDoctype = null)
-    {
-        $this->mDoctype = $aDoctype;
     }
 
     /**
