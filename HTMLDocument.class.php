@@ -6,7 +6,7 @@ use phpjs\elements\html\HTMLFrameSetElement;
 use phpjs\elements\html\HTMLHeadElement;
 use phpjs\elements\html\HTMLHtmlElement;
 use phpjs\elements\html\HTMLTitleElement;
-use phpjs\elements\svg\SVGElement;
+use phpjs\elements\svg\SVGSVGElement;
 use phpjs\elements\svg\SVGTitleElement;
 use phpjs\exceptions\HierarchyRequestError;
 
@@ -40,38 +40,8 @@ class HTMLDocument extends Document
                 return $this->getHeadElement();
 
             case 'title':
-                $root = self::_getRootElement($this);
+                return $this->getTitle();
 
-                if (
-                    $root instanceof SVGElement &&
-                    $root->namespaceURI === Namespaces::SVG
-                ) {
-                    $nodeFilter = function ($aNode) {
-                        return $aNode instanceof SVGTitleElement ?
-                            NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
-                    };
-                } else {
-                    $nodeFilter = function ($aNode) {
-                        return $aNode instanceof HTMLTitleElement ?
-                            NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
-                    };
-                }
-
-                $value = '';
-                $tw = new TreeWalker(
-                    $this,
-                    NodeFilter::SHOW_ELEMENT,
-                    $nodeFilter
-                );
-                $title = $tw->nextNode();
-
-                foreach ($title->childNodes as $node) {
-                    if ($node instanceof Text) {
-                        $value .= $node->data;
-                    }
-                }
-
-                return $value;
             default:
                 return parent::__get($aName);
         }
@@ -238,6 +208,83 @@ class HTMLDocument extends Document
                     return $child;
                 }
             }
+        }
+
+        return null;
+    }
+
+    /**
+     * Gets the text of the document's title element.
+     *
+     * @internal
+     *
+     * @see https://html.spec.whatwg.org/multipage/dom.html#document.title
+     *
+     * @return string
+     */
+    protected function getTitle()
+    {
+        $element = $this->getTitleElement();
+        $value = '';
+
+        if ($element) {
+            // Concatenate the text data of all the text node children of the
+            // title element.
+            foreach ($element->mChildNodes as $child) {
+                if ($child instanceof Text) {
+                    $value .= $child->data;
+                }
+            }
+        }
+
+        // Trim whitespace and replace consecutive whitespace with a single
+        // space.
+        if (!empty($value)) {
+            return preg_replace(
+                ['/^\s+/', '/\s+$/', '/\s+/'],
+                ['', '', '\x{0020}'],
+                $value
+            );
+        }
+
+        return $value;
+    }
+
+    /**
+     * Gets the document's title element. The title element is the
+     * first title element in the document element if the document element is
+     * an svg element, othwerwise it is the first title element in the document.
+     *
+     * @internal
+     *
+     * @see https://html.spec.whatwg.org/multipage/dom.html#document.title
+     *
+     * @return Element|null
+     */
+    protected function getTitleElement()
+    {
+        $docElement = $this->getFirstElementChild();
+
+        if ($docElement && $docElement instanceof SVGSVGElement) {
+            // Find the first child of the document element that is a svg title
+            // element.
+            foreach ($docElement->mChildNodes as $child) {
+                if ($child instanceof SVGTitleElement) {
+                    return $child;
+                }
+            }
+        } elseif ($docElement) {
+            // Find the first title element in the document.
+            $tw = new TreeWalker(
+                $this,
+                NodeFilter::SHOW_ELEMENT,
+                function ($aNode) {
+                    return $aNode instanceof HTMLTitleElement ?
+                        NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
+                }
+            );
+
+            return $tw->nextNode();
         }
 
         return null;
