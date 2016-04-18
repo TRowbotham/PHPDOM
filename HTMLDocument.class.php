@@ -51,33 +51,7 @@ class HTMLDocument extends Document
     {
         switch ($aName) {
             case 'body':
-                if (
-                    !($aValue instanceof HTMLBodyElement) &&
-                    !($aValue instanceof HTMLFrameSetElement)
-                ) {
-                    throw new HierarchyRequestError();
-                    return;
-                }
-
-                $currentBody = $this->body;
-
-                if ($aValue === $currentBody) {
-                    return;
-                }
-
-                if ($currentBody) {
-                    $this->replaceNode($aValue, $currentBody);
-                    return;
-                }
-
-                $root = $this->documentElement;
-
-                if (!$root) {
-                    throw new HierarchyRequestError();
-                    return;
-                }
-
-                $root->appendChild($aValue);
+                $this->setBodyElement($aValue);
 
                 break;
 
@@ -288,5 +262,56 @@ class HTMLDocument extends Document
         }
 
         return null;
+    }
+
+    /**
+     * Sets the document's body element.
+     *
+     * @internal
+     *
+     * @see https://html.spec.whatwg.org/multipage/dom.html#dom-document-body
+     *
+     * @param HTMLElement $aNewBody The new body element.
+     */
+    protected function setBodyElement($aNewBody)
+    {
+        // The document's body can only be a body or frameset element. If the
+        // new value being passed is not one of these, then throw an exception
+        // and abort the algorithm.
+        $isValidBody = $aNewBody instanceof HTMLBodyElement ||
+            $aNewBody instanceof HTMLFrameSetElement
+
+        if (!$isValidBody) {
+            throw new HierarchyRequestError();
+            return;
+        }
+
+        $oldBody = $this->getBodyElement();
+
+        // Don't try setting the document's body to the same node.
+        if ($aNewBody === $oldBody) {
+            return;
+        }
+
+        // If there is a pre-existing body element, then replace it with the
+        // new body element.
+        if ($oldBody) {
+            $oldBody->mParentNode->replaceNode($aNewBody, $oldBody);
+            return;
+        }
+
+        $docElement = $this->getFirstElementChild();
+
+        // A body element can only exist as a child of the document element.
+        // Throw an exception and abort the algorithm if the document element
+        // does not exist.
+        if (!$docElement) {
+            throw new HierarchyRequestError();
+            return;
+        }
+
+        if (!$oldBody) {
+            $docElement->appendChild($aNewBody);
+        }
     }
 }
