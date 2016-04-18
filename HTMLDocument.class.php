@@ -231,7 +231,7 @@ class HTMLDocument extends Document
         // new value being passed is not one of these, then throw an exception
         // and abort the algorithm.
         $isValidBody = $aNewBody instanceof HTMLBodyElement ||
-            $aNewBody instanceof HTMLFrameSetElement
+            $aNewBody instanceof HTMLFrameSetElement;
 
         if (!$isValidBody) {
             throw new HierarchyRequestError();
