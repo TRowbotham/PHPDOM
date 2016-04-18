@@ -37,18 +37,7 @@ class HTMLDocument extends Document
                 return $this->getBodyElement();
 
             case 'head':
-                $node = $this->documentElement ?
-                    $this->documentElement->firstChild : null;
-
-                while ($node) {
-                    if ($node instanceof HTMLHeadElement) {
-                        break;
-                    }
-
-                    $node = $node->nextSibling;
-                }
-
-                return $node;
+                return $this->getHeadElement();
 
             case 'title':
                 $root = self::_getRootElement($this);
@@ -219,6 +208,33 @@ class HTMLDocument extends Document
                     $child instanceof HTMLFrameSetElement;
 
                 if ($isValidBody) {
+                    return $child;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Gets the document's head element. The document's head element is the
+     * first child of the html element that is a head element.
+     *
+     * @internal
+     *
+     * @see https://html.spec.whatwg.org/multipage/dom.html#dom-document-head
+     *
+     * @return HTMLHeadElement|null
+     */
+    protected function getHeadElement()
+    {
+        $docElement = $this->getFirstElementChild();
+
+        if ($docElement && $docElement instanceof HTMLHtmlElement) {
+            // Get the first child in the document element that is a head
+            // element.
+            foreach ($docElement->mChildNodes as $child) {
+                if ($child instanceof HTMLHeadElement) {
                     return $child;
                 }
             }
