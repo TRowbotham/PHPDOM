@@ -34,12 +34,12 @@ trait ParentNode
         $this->preinsertNode($node, $this->mFirstChild);
     }
 
-    private function filterChildElements($aNode)
+    protected function filterChildElements($aNode)
     {
         return $aNode->nodeType == Node::ELEMENT_NODE;
     }
 
-    private function getChildren()
+    protected function getChildren()
     {
         return array_values(
             array_filter(
@@ -49,7 +49,7 @@ trait ParentNode
         );
     }
 
-    private function getFirstElementChild()
+    protected function getFirstElementChild()
     {
         $node = $this->mFirstChild;
 
@@ -64,7 +64,7 @@ trait ParentNode
         return $node;
     }
 
-    private function getLastElementChild()
+    protected function getLastElementChild()
     {
         $node = $this->mLastChild;
 
@@ -79,7 +79,7 @@ trait ParentNode
         return $node;
     }
 
-    private function getChildElementCount()
+    protected function getChildElementCount()
     {
         return count($this->getChildren());
     }
