@@ -56,55 +56,7 @@ class HTMLDocument extends Document
                 break;
 
             case 'title':
-                if (!is_string($aValue)) {
-                    return;
-                }
-
-                $root = self::_getRootElement($this);
-
-                if (
-                    $root instanceof SVGElement &&
-                    $root->namespaceURI === Namespaces::SVG
-                ) {
-                    $element = $root->firstChild;
-
-                    while ($element) {
-                        if ($element instanceof SVGTitleElement) {
-                            break;
-                        }
-
-                        $element = $element->nextSibling;
-                    }
-
-                    if (!$element) {
-                        // TODO: Create title element with SVG namespace
-                    }
-
-                    $element->textContent = $aValue;
-                } elseif ($root && $root->namespaceURI === Namespaces::HTML) {
-                    $tw = new TreeWalker(
-                        $root,
-                        NodeFilter::SHOW_ELEMENT,
-                        function ($aNode) {
-                            return $aNode instanceof HTMLTitleElement ?
-                                NodeFilter::FILTER_ACCEPT :
-                                NodeFilter::FILTER_SKIP;
-                        }
-                    );
-                    $element = $tw->nextNode();
-
-                    if (!$element && !$this->head) {
-                        return;
-                    }
-
-                    if (!$element) {
-                        $element = $this->head->appendChild(
-                            $this->createElement('title')
-                        );
-                    }
-
-                    $element->textContent = $aValue;
-                }
+                $this->setTitle($aValue);
 
                 break;
 
@@ -312,6 +264,69 @@ class HTMLDocument extends Document
 
         if (!$oldBody) {
             $docElement->appendChild($aNewBody);
+        }
+    }
+
+    /**
+     * Sets the text of the document's title element.
+     *
+     * @internal
+     *
+     * @see https://html.spec.whatwg.org/multipage/dom.html#document.title
+     *
+     * @param string $aNewTitle The new title.
+     */
+    protected function setTitle($aNewTitle)
+    {
+        $docElement = $this->getFirstElementChild();
+        $element = null;
+
+        if ($docElement && $docElement instanceof SVGSVGElement) {
+            // Find the first child of the document element that is an
+            // svg title element.
+            foreach ($docElement->mChildNodes as $child) {
+                if ($child instanceof SVGTitleElement) {
+                    $element = $child;
+                    break;
+                }
+            }
+
+            // If there is no pre-existing svg title element, then create one
+            // and insert it as the first child of the document element.
+            if (!$element) {
+                $element = SVGSVGElement::create(
+                    'svg',
+                    Namespaces::SVG
+                );
+                $docElement->insertNode($element, $docElement->mFirstChild);
+            }
+
+            $element->textContent = $aNewTitle;
+        } elseif (
+            $docElement &&
+            $docElement->namespaceURI === Namespaces::HTML
+        ) {
+            $title = $this->getTitleElement();
+            $head = $this->getHeadElement();
+
+            // The title element can only exist in the head element. If neither
+            // of these exist, then there is no title element to set and no
+            // place to insert a new one.
+            if (!$title && !$head) {
+                return;
+            }
+
+            // If there is no pre-existing title element, then create one
+            // and append it to the head element.
+            if (!$title) {
+                $element = HTMLTitleElement::create(
+                    'title',
+                    Namespaces::HTML
+                );
+                $head->appendChild($element);
+            }
+
+            $element->textContent = $aNewTitle;
         }
     }
 }
