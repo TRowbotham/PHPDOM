@@ -590,6 +590,11 @@ class Document extends Node
 
                 break;
 
+            case 'frameset':
+                $interfaceName = 'FrameSet';
+
+                break;
+
             case 'hr':
                 $interfaceName = 'HR';
 
