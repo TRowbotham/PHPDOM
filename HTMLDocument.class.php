@@ -306,19 +306,19 @@ class HTMLDocument extends Document
             $docElement &&
             $docElement->namespaceURI === Namespaces::HTML
         ) {
-            $title = $this->getTitleElement();
+            $element = $this->getTitleElement();
             $head = $this->getHeadElement();
 
             // The title element can only exist in the head element. If neither
             // of these exist, then there is no title element to set and no
             // place to insert a new one.
-            if (!$title && !$head) {
+            if (!$element && !$head) {
                 return;
             }
 
             // If there is no pre-existing title element, then create one
             // and append it to the head element.
-            if (!$title) {
+            if (!$element) {
                 $element = HTMLTitleElement::create(
                     'title',
                     Namespaces::HTML
