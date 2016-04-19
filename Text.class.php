@@ -113,7 +113,7 @@ class Text extends CharacterData
             }
         }
 
-        $this->replaceData($aOffset, $count, $this->mData);
+        $this->replaceData($aOffset, $count, '');
 
         if (!$this->mParentNode) {
             foreach ($ranges as $index => $range) {
