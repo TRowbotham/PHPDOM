@@ -61,4 +61,12 @@ class DocumentType extends Node
     {
         return 0;
     }
+
+    /**
+     * @see Node::getNodeName
+     */
+    protected function getNodeName()
+    {
+        return $this->mName;
+    }
 }

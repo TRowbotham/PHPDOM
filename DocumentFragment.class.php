@@ -19,7 +19,6 @@ class DocumentFragment extends Node
         parent::__construct();
 
         $this->mHost = null;
-        $this->mNodeName = '#document-fragment';
         $this->mNodeType = Node::DOCUMENT_FRAGMENT_NODE;
     }
 
@@ -56,5 +55,13 @@ class DocumentFragment extends Node
     public function setHost(Element $aHost = null)
     {
         $this->mHost = $aHost;
+    }
+
+    /**
+     * @see Node::getNodeName
+     */
+    protected function getNodeName()
+    {
+        return '#document-fragment';
     }
 }

@@ -98,7 +98,7 @@ class Element extends Node implements \SplObserver
                 return $this->getPreviousElementSibling();
 
             case 'tagName':
-                return $this->mNodeName;
+                return $this->getTagName();
 
             default:
                 return parent::__get($aName);
@@ -155,11 +155,6 @@ class Element extends Node implements \SplObserver
         $element->mLocalName = $aLocalName;
         $element->mNamespaceURI = $aNamespace;
         $element->mPrefix = $aPrefix;
-        $qualifiedName = $aPrefix === null ? $aLocalName :
-            $aPrefix . ':' . $aLocalName;
-        $element->mNodeName = $aNamespace === Namespaces::HTML &&
-            $element->mOwnerDocument instanceof HTMLDocument ?
-            strtoupper($qualifiedName) : $qualifiedName;
 
         return $element;
     }
@@ -554,6 +549,33 @@ class Element extends Node implements \SplObserver
                     $this->mClassList->emptyList();
                 }
         }
+    }
+
+    /**
+     * @see Node::getNodeName
+     */
+    protected function getNodeName()
+    {
+        return $this->getTagName();
+    }
+
+    /**
+     * Gets the element's tag name.
+     *
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#dom-element-tagname
+     *
+     * @return string
+     */
+    protected function getTagName()
+    {
+        $qualifiedName = $this->mPrefix === null ? $this->mLocalName :
+            $this->mPrefix . ':' . $this->mLocalName;
+
+        return $this->mNamespaceURI === Namespaces::HTML &&
+            $this->mOwnerDocument instanceof HTMLDocument ?
+            strtoupper($qualifiedName) : $qualifiedName;
     }
 
     /**

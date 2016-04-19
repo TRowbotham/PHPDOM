@@ -66,7 +66,6 @@ abstract class Node implements EventTarget
     protected $mFirstChild; // Node
     protected $mLastChild; // Node
     protected $mNextSibling; // Node
-    protected $mNodeName; // String
     protected $mNodeType; // int
     protected $mNodeValue; // String
     protected $mOwnerDocument; // Document
@@ -88,7 +87,6 @@ abstract class Node implements EventTarget
         $this->mFirstChild = null;
         $this->mLastChild = null;
         $this->mNextSibling = null;
-        $this->mNodeName = '';
         $this->mNodeType = '';
         $this->mNodeValue = null;
         $this->mOwnerDocument = Document::_getDefaultDocument();
@@ -116,7 +114,7 @@ abstract class Node implements EventTarget
                 return $this->mNextSibling;
 
             case 'nodeName':
-                return $this->mNodeName;
+                return $this->getNodeName();
 
             case 'nodeType':
                 return $this->mNodeType;
@@ -1496,6 +1494,17 @@ abstract class Node implements EventTarget
 
         return $url;
     }
+
+    /**
+     * Gets the name of the node.
+     *
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#dom-node-nodename
+     *
+     * @return string
+     */
+    abstract protected function getNodeName();
 
     /**
      * Gets a node's root.

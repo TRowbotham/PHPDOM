@@ -9,7 +9,6 @@ class ProcessingInstruction extends CharacterData
     {
         parent::__construct($aData);
 
-        $this->mNodeName = $aTarget;
         $this->mNodeType = Node::PROCESSING_INSTRUCTION_NODE;
         $this->mTarget = $aTarget;
     }
@@ -20,5 +19,13 @@ class ProcessingInstruction extends CharacterData
             case 'target':
                 return $this->mTarget;
         }
+    }
+
+    /**
+     * @see Node::getNodeName
+     */
+    protected function getNodeName()
+    {
+        return $this->mTarget;
     }
 }

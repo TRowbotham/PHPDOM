@@ -18,7 +18,6 @@ class Text extends CharacterData
     {
         parent::__construct($aData);
 
-        $this->mNodeName = '#text';
         $this->mNodeType = Node::TEXT_NODE;
     }
 
@@ -51,7 +50,7 @@ class Text extends CharacterData
 
     public function __toString()
     {
-        return $this->mNodeName . ' ' . $this->mData;
+        return $this->getNodeName() . ' ' . $this->mData;
     }
 
     public function splitText($aOffset)
@@ -137,5 +136,13 @@ class Text extends CharacterData
         }
 
         return $newNode;
+    }
+
+    /**
+     * @see Node::getNodeName
+     */
+    protected function getNodeName()
+    {
+        return '#text';
     }
 }

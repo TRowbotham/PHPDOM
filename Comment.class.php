@@ -7,11 +7,18 @@ class Comment extends CharacterData {
     public function __construct($aData = '') {
         parent::__construct($aData);
 
-        $this->mNodeName = '#comment';
         $this->mNodeType = Node::COMMENT_NODE;
     }
 
     public function toHTML() {
         return '<!-- ' . $this->mData . ' -->';
+    }
+
+    /**
+     * @see Node::getNodeName
+     */
+    protected function getNodeName()
+    {
+        return '#comment';
     }
 }

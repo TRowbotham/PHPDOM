@@ -48,7 +48,6 @@ class Document extends Node
         $this->mImplementation = new DOMImplementation($this);
         $this->mMode = self::NO_QUIRKS_MODE;
         $this->mNodeIteratorList = array();
-        $this->mNodeName = '#document';
         $this->mNodeType = self::DOCUMENT_NODE;
         $this->mOwnerDocument = null; // Documents own themselves.
 
@@ -805,6 +804,14 @@ class Document extends Node
         }
 
         return 'phpjs\\elements\\html\\HTML' . $interfaceName . 'Element';
+    }
+
+    /**
+     * @see Node::getNodeName
+     */
+    protected function getNodeName()
+    {
+        return '#document';
     }
 
     private function _traverseTree($aNodes, $aLevel = 0)
