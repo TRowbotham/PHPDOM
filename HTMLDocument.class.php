@@ -168,7 +168,7 @@ class HTMLDocument extends Document
         if (!empty($value)) {
             return preg_replace(
                 ['/^\s+/', '/\s+$/', '/\s+/'],
-                ['', '', '\x{0020}'],
+                ['', '', ' '],
                 $value
             );
         }
