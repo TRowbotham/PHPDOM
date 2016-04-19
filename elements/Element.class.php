@@ -8,6 +8,7 @@ use phpjs\DOMTokenList;
 use phpjs\exceptions\InUseAttributeError;
 use phpjs\exceptions\NotFoundError;
 use phpjs\GetElementsBy;
+use phpjs\HTMLDocument;
 use phpjs\NamedNodeMap;
 use phpjs\Namespaces;
 use phpjs\Node;
