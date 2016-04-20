@@ -30,7 +30,6 @@ abstract class URLUtils
         \x{F0000}-\x{FFFFD}
         \x{100000}-\x{10FFFD}
          ]/u';
-    const REGEX_ASCII_WHITESPACE = '/[\x{0009}\x{000A}\x{000D}]/';
     const REGEX_ASCII_DOMAIN = '/[\x{0000}\x{0009}\x{000A}\x{000D}\x{0020}#%\/:
         ?@[\\\\\]]/';
     const REGEX_WINDOWS_DRIVE_LETTER = '/[\x{0041}-\x{005A}\x{0061}-\x{007A}][:
