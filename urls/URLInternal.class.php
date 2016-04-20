@@ -760,7 +760,8 @@ class URLInternal
                                 // This is a (platform-independent) Windows
                                 // drive letter quirk.
                                 $buffer = mb_substr($buffer, 0, 1, $encoding) .
-                                    ':';
+                                    ':' .
+                                    mb_substr($buffer, 2, null, $encoding);
                             }
 
                             $url->mPath->push($buffer);
@@ -775,31 +776,34 @@ class URLInternal
                             $url->mFragment = '';
                             $state = self::FRAGMENT_STATE;
                         }
-                    } elseif (
-                        preg_match(URLUtils::REGEX_ASCII_WHITESPACE, $c)
-                    ) {
-                        // Syntax violation
                     } else {
                         if (
                             !preg_match(URLUtils::REGEX_URL_CODE_POINTS, $c) &&
-                            $c != '%'
+                            $c !== '%'
                         ) {
                             // Syntax violation
                         }
 
-                        if (
-                            $c === '%' &&
-                            !ctype_xdigit(
-                                mb_substr($input, $pointer + 1, 2, $encoding)
-                            )
-                        ) {
-                            // Syntax violation
-                        }
-
-                        $buffer .= URLUtils::utf8PercentEncode(
-                            $c,
-                            URLUtils::ENCODE_SET_DEFAULT
+                        $remaining = mb_substr(
+                            $input,
+                            $pointer + 1,
+                            2,
+                            $encoding
                         );
+
+                        if ($c === '%' && !ctype_xdigit($remaining)) {
+                            // Syntax violation
+                        }
+
+                        if ($c === '%' && strtolower($remaining) === '2e') {
+                            $buffer .= '.';
+                            $pointer++;
+                        } else {
+                            $buffer .= URLUtils::utf8PercentEncode(
+                                $c,
+                                URLUtils::ENCODE_SET_DEFAULT
+                            );
+                        }
                     }
 
                     break;
