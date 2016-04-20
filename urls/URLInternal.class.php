@@ -621,7 +621,7 @@ class URLInternal
                             $url->mHost = $base->mHost;
                             $url->mPath = clone $base->mPath;
                             self::popURLPath($url);
-                        } elseif ($base && $base->mScheme == 'file') {
+                        } elseif ($base && $base->mScheme === 'file') {
                             // Syntax violation
                         } else {
                             $state = self::PATH_STATE;
@@ -696,10 +696,6 @@ class URLInternal
                             $buffer = '';
                             $state = self::PATH_START_STATE;
                         }
-                    } elseif (
-                        preg_match(URLUtils::REGEX_ASCII_WHITESPACE, $c)
-                    ) {
-                        // Syntax violation
                     } else {
                         $buffer .= $c;
                     }
