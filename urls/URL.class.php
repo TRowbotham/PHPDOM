@@ -75,7 +75,7 @@ class URL {
                 return $password === null ? '' : $password;
 
             case 'pathname':
-                if ($this->mUrl->isFlagSet(URLInternal::FLAG_NON_RELATIVE)) {
+                if ($this->mUrl->isFlagSet(URLInternal::FLAG_CANNOT_BE_A_BASE_URL)) {
                     return $this->mUrl->getPath()[0];
                 }
 
@@ -135,7 +135,7 @@ class URL {
                 break;
 
             case 'host':
-                if ($this->mUrl->isFlagSet(URLInternal::FLAG_NON_RELATIVE)) {
+                if ($this->mUrl->isFlagSet(URLInternal::FLAG_CANNOT_BE_A_BASE_URL)) {
                     // Terminate these steps
                     return;
                 }
@@ -145,7 +145,7 @@ class URL {
                 break;
 
             case 'hostname':
-                if ($this->mUrl->isFlagSet(URLInternal::FLAG_NON_RELATIVE)) {
+                if ($this->mUrl->isFlagSet(URLInternal::FLAG_CANNOT_BE_A_BASE_URL)) {
                     // Terminate these steps
                     return;
                 }
@@ -167,7 +167,7 @@ class URL {
                 break;
 
             case 'password':
-                if ($this->mUrl->getHost() === null || $this->mUrl->isFlagSet(URLInternal::FLAG_NON_RELATIVE)) {
+                if ($this->mUrl->getHost() === null || $this->mUrl->isFlagSet(URLInternal::FLAG_CANNOT_BE_A_BASE_URL)) {
                     // Terminate these steps
                     return;
                 }
@@ -177,7 +177,7 @@ class URL {
                 break;
 
             case 'pathname':
-                if ($this->mUrl->isFlagSet(URLInternal::FLAG_NON_RELATIVE)) {
+                if ($this->mUrl->isFlagSet(URLInternal::FLAG_CANNOT_BE_A_BASE_URL)) {
                     // Terminate these steps
                     return;
                 }
@@ -191,7 +191,7 @@ class URL {
                 break;
 
             case 'port':
-                if ($this->mUrl->getHost() === null || $this->mUrl->isFlagSet(URLInternal::FLAG_NON_RELATIVE) || $this->mUrl->getScheme() == 'file') {
+                if ($this->mUrl->getHost() === null || $this->mUrl->isFlagSet(URLInternal::FLAG_CANNOT_BE_A_BASE_URL) || $this->mUrl->getScheme() == 'file') {
                     // Terminate these steps
                     return;
                 }
@@ -221,7 +221,7 @@ class URL {
                 break;
 
             case 'username':
-                if ($this->mUrl->getHost() === null || $this->mUrl->isFlagSet(URLInternal::FLAG_NON_RELATIVE)) {
+                if ($this->mUrl->getHost() === null || $this->mUrl->isFlagSet(URLInternal::FLAG_CANNOT_BE_A_BASE_URL)) {
                     // Terminate these steps
                     return;
                 }

@@ -714,7 +714,7 @@ class Element extends Node implements \SplObserver
         // TODO: Handle encoding
         $encoding = 'utf-8';
 
-        if ($aBase && $aBase->isFlagSet(URLInternal::FLAG_NON_RELATIVE)) {
+        if ($aBase && $aBase->isFlagSet(URLInternal::FLAG_CANNOT_BE_A_BASE_URL)) {
             $base = $aBase;
         } else {
             $base = self::$mBaseURI;

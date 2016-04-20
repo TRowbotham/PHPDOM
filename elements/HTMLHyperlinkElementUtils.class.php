@@ -95,7 +95,7 @@ trait HTMLHyperlinkElementUtils
                     return '';
                 }
 
-                if ($this->mUrl->isFlagSet(URLInternal::FLAG_NON_RELATIVE)) {
+                if ($this->mUrl->isFlagSet(URLInternal::FLAG_CANNOT_BE_A_BASE_URL)) {
                     return $this->mUrl->getPath()[0];
                 }
 
@@ -186,7 +186,7 @@ trait HTMLHyperlinkElementUtils
 
                 if (
                     $this->mUrl === null ||
-                    $this->mUrl->isFlagSet(URLInternal::FLAG_NON_RELATIVE)
+                    $this->mUrl->isFlagSet(URLInternal::FLAG_CANNOT_BE_A_BASE_URL)
                 ) {
                     // Terminate these steps
                     return;
@@ -211,7 +211,7 @@ trait HTMLHyperlinkElementUtils
 
                 if (
                     $this->mUrl === null ||
-                    $this->mUrl->isFlagSet(URLInternal::FLAG_NON_RELATIVE)
+                    $this->mUrl->isFlagSet(URLInternal::FLAG_CANNOT_BE_A_BASE_URL)
                 ) {
                     // Terminate these steps
                     return;
@@ -243,7 +243,7 @@ trait HTMLHyperlinkElementUtils
                 if (
                     $this->mUrl === null ||
                     $this->mUrl->getHost() === null ||
-                    $this->mUrl->isFlagSet(URLInternal::FLAG_NON_RELATIVE)
+                    $this->mUrl->isFlagSet(URLInternal::FLAG_CANNOT_BE_A_BASE_URL)
                 ) {
                     // Terminate these steps
                     return;
@@ -263,7 +263,7 @@ trait HTMLHyperlinkElementUtils
 
                 if (
                     $this->mUrl === null ||
-                    $this->mUrl->isFlagSet(URLInternal::FLAG_NON_RELATIVE)
+                    $this->mUrl->isFlagSet(URLInternal::FLAG_CANNOT_BE_A_BASE_URL)
                 ) {
                     // Terminate these steps
                     return;
@@ -294,7 +294,7 @@ trait HTMLHyperlinkElementUtils
                 if (
                     $this->mUrl === null ||
                     $this->mUrl->getHost() === null ||
-                    $this->mUrl->isFlagSet(URLInternal::FLAG_NON_RELATIVE) ||
+                    $this->mUrl->isFlagSet(URLInternal::FLAG_CANNOT_BE_A_BASE_URL) ||
                     $this->mUrl->getScheme() == 'file'
                 ) {
                     // Terminate these steps
@@ -375,7 +375,7 @@ trait HTMLHyperlinkElementUtils
                 if (
                     $this->mUrl === null ||
                     $this->mUrl->getHost() === null ||
-                    $this->mUrl->isFlagSet(URLInternal::FLAG_NON_RELATIVE)
+                    $this->mUrl->isFlagSet(URLInternal::FLAG_CANNOT_BE_A_BASE_URL)
                 ) {
                     // Terminate these steps
                     return;
@@ -409,7 +409,7 @@ trait HTMLHyperlinkElementUtils
     {
         if (
             $this->mUrl === null ||
-            $this->mUrl->isFlagSet(URLInternal::FLAG_NON_RELATIVE)
+            $this->mUrl->isFlagSet(URLInternal::FLAG_CANNOT_BE_A_BASE_URL)
         ) {
             // Terminate these steps
             return;

@@ -27,7 +27,7 @@ class URLInternal
 
     const FLAG_ARRAY = 1;
     const FLAG_AT = 2;
-    const FLAG_NON_RELATIVE = 4;
+    const FLAG_CANNOT_BE_A_BASE_URL = 4;
 
     private static $singleDotPathSegment = array(
         '.' => '',
@@ -223,7 +223,7 @@ class URLInternal
                         ) {
                             $state = self::PATH_OR_AUTHORITY_STATE;
                         } else {
-                            $url->mFlags |= URLInternal::FLAG_NON_RELATIVE;
+                            $url->mFlags |= URLInternal::FLAG_CANNOT_BE_A_BASE_URL;
                             $url->mPath->push('');
                             $state = self::NON_RELATIVE_PATH_STATE;
                         }
@@ -245,20 +245,20 @@ class URLInternal
                 case self::NO_SCHEME_STATE:
                     if (
                         !$base ||
-                        ($base->mFlags & URLInternal::FLAG_NON_RELATIVE &&
+                        ($base->mFlags & URLInternal::FLAG_CANNOT_BE_A_BASE_URL &&
                             $c !== '#')
                     ) {
                         // Syntax violation. Return failure
                         return false;
                     } elseif (
-                        $base->mFlags & URLInternal::FLAG_NON_RELATIVE &&
+                        $base->mFlags & URLInternal::FLAG_CANNOT_BE_A_BASE_URL &&
                         $c == '#'
                     ) {
                         $url->mScheme = $base->mScheme;
                         $url->mPath = clone $base->mPath;
                         $url->mQuery = $base->mQuery;
                         $url->mFragment = '';
-                        $url->mFlags |= URLInternal::FLAG_NON_RELATIVE;
+                        $url->mFlags |= URLInternal::FLAG_CANNOT_BE_A_BASE_URL;
                         $state = self::FRAGMENT_STATE;
                     } elseif ($base->mScheme !== 'file') {
                         $state = self::RELATIVE_STATE;
@@ -1176,7 +1176,7 @@ class URLInternal
             $output .= '//';
         }
 
-        if ($this->mFlags & URLInternal::FLAG_NON_RELATIVE) {
+        if ($this->mFlags & URLInternal::FLAG_CANNOT_BE_A_BASE_URL) {
             $output .= $this->mPath[0];
         } else {
             $output .= '/';
