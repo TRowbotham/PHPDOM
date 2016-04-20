@@ -327,7 +327,7 @@ class URLInternal
                         $url->mFragment = '';
                         $state = self::FRAGMENT_STATE;
                     } else {
-                        if ($url->isSpecial() && $c === '/') {
+                        if ($url->isSpecial() && $c === '\\') {
                             // Syntax violation
                             $state = self::RELATIVE_SLASH_STATE;
                         } else {
