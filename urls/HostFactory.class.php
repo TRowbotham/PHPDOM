@@ -1,31 +1,37 @@
 <?php
 namespace phpjs\urls;
 
-abstract class HostFactory {
+abstract class HostFactory
+{
     /**
      * Parses a host.
      *
-     * @link https://url.spec.whatwg.org/#concept-host-parser
+     * @see https://url.spec.whatwg.org/#concept-host-parser
      *
-     * @param  string               $aInput       A IPv4, IPv6 address, or a domain.
+     * @param string $aInput A IPv4, IPv6 address, or a domain.
      *
-     * @param  bool|null            $aUnicodeFlag Optional argument, that when set to true, causes the domain
-     *                                            to be encoded using unicode instead of ASCII.  Default is null.
+     * @param bool|null $aUnicodeFlag Optional argument, that when set to true,
+     *     causes the domain to be encoded using unicode instead of ASCII.
+     *     Default is null.
      *
-     * @return Host|string|bool                   Returns a Host if it was successfully parsed or false if parsing
-     *                                            fails.
+     * @return Host|string|bool Returns a Host if it was successfully parsed or
+     *     false if parsing fails.
      */
-    public static function parse($aInput, $aUnicodeFlag = null) {
+    public static function parse($aInput, $aUnicodeFlag = null)
+    {
         if ($aInput[0] == '[') {
-            if ($aInput[strlen($aInput) - 1] != ']') {
+            $len = strlen($aInput);
+
+            if ($aInput[$len - 1] != ']') {
                 // Syntax violation
                 return false;
             }
 
-            return IPv6Address::parse(substr($aInput, 1, strlen($aInput) - 2));
+            return IPv6Address::parse(substr($aInput, 1, $len - 2));
         }
 
-        // TODO: Let domain be the result of utf-8 decode without BOM on the percent decoding of utf-8 encode on input
+        // TODO: Let domain be the result of utf-8 decode without BOM on the
+        // percent decoding of utf-8 encode on input
         $domain = URLUtils::percentDecode(URLUtils::encode($aInput));
         $asciiDomain = URLUtils::domainToASCII($domain);
 
@@ -44,19 +50,21 @@ abstract class HostFactory {
             return $ipv4Host;
         }
 
-        return $aUnicodeFlag ? URLUtils::domainToUnicode($domain) : $asciiDomain;
+        return $aUnicodeFlag ?
+            URLUtils::domainToUnicode($domain) : $asciiDomain;
     }
 
     /**
      * Serializes a host.
      *
-     * @link https://url.spec.whatwg.org/#concept-host-serializer
+     * @see https://url.spec.whatwg.org/#concept-host-serializer
      *
      * @param  Host|string $aHost A domain or an IPv4 or IPv6 address.
      *
      * @return string
      */
-    public static function serialize($aHost) {
+    public static function serialize($aHost)
+    {
         if ($aHost instanceof IPv4Address) {
             return $aHost->serialize();
         }
