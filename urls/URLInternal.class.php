@@ -919,10 +919,7 @@ class URLInternal
                 case self::FRAGMENT_STATE:
                     if ($c === ''/* EOF */) {
                         // Do nothing
-                    } elseif (
-                        preg_match(URLUtils::REGEX_ASCII_WHITESPACE, $c) ||
-                        preg_match('/\x{0000}/', $c)
-                    ) {
+                    } elseif ($c === "\0") {
                         // Syntax violation
                     } else {
                         if (
