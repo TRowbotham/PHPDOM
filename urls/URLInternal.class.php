@@ -833,10 +833,7 @@ class URLInternal
                             // Syntax violation
                         }
 
-                        if (
-                            $c !== ''/* EOF */ &&
-                            !preg_match(URLUtils::REGEX_ASCII_WHITESPACE, $c)
-                        ) {
+                        if ($c !== ''/* EOF */) {
                             if (!$url->mPath->isEmpty()) {
                                 $url->mPath[0] .= URLUtils::utf8PercentEncode(
                                     $c
