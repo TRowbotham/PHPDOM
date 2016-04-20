@@ -21,7 +21,7 @@ class URLInternal
     const FILE_HOST_STATE = 16;
     const PATH_START_STATE = 17;
     const PATH_STATE = 18;
-    const NON_RELATIVE_PATH_STATE = 19;
+    const CANNOT_BE_A_BASE_URL_PATH_STATE = 19;
     const QUERY_STATE = 20;
     const FRAGMENT_STATE = 21;
 
@@ -225,7 +225,7 @@ class URLInternal
                         } else {
                             $url->mFlags |= URLInternal::FLAG_CANNOT_BE_A_BASE_URL;
                             $url->mPath->push('');
-                            $state = self::NON_RELATIVE_PATH_STATE;
+                            $state = self::CANNOT_BE_A_BASE_URL_PATH_STATE;
                         }
                     } elseif (!$aStateOverride) {
                         $buffer = '';
@@ -824,7 +824,7 @@ class URLInternal
 
                     break;
 
-                case self::NON_RELATIVE_PATH_STATE:
+                case self::CANNOT_BE_A_BASE_URL_PATH_STATE:
                     if ($c === '?') {
                         $url->mQuery = '';
                         $state = self::QUERY_STATE;
