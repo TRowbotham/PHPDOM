@@ -165,7 +165,7 @@ class URLInternal
                         preg_match('/[+\-.]/', $c)
                     ) {
                         $buffer .= strtolower($c);
-                    } elseif ($c == ':') {
+                    } elseif ($c === ':') {
                         if ($aStateOverride) {
                             $bufferIsSpecialScheme = isset(
                                 URLUtils::$specialSchemes[$buffer]
@@ -192,7 +192,7 @@ class URLInternal
                         $offset = $pointer + 1;
                         $urlIsSpecial = $url->isSpecial();
 
-                        if ($url->mScheme == 'file') {
+                        if ($url->mScheme === 'file') {
                             if (
                                 mb_strpos(
                                     $input,
@@ -208,7 +208,7 @@ class URLInternal
                         } elseif (
                             $urlIsSpecial &&
                             $base &&
-                            $base->mScheme == $url->mScheme
+                            $base->mScheme === $url->mScheme
                         ) {
                             $state = self::SPECIAL_RELATIVE_OR_AUTHORITY_STATE;
                         } elseif ($urlIsSpecial) {
@@ -246,7 +246,7 @@ class URLInternal
                     if (
                         !$base ||
                         ($base->mFlags & URLInternal::FLAG_NON_RELATIVE &&
-                            $c != '#')
+                            $c !== '#')
                     ) {
                         // Syntax violation. Return failure
                         return false;
@@ -260,7 +260,7 @@ class URLInternal
                         $url->mFragment = '';
                         $url->mFlags |= URLInternal::FLAG_NON_RELATIVE;
                         $state = self::FRAGMENT_STATE;
-                    } elseif ($base->mScheme != 'file') {
+                    } elseif ($base->mScheme !== 'file') {
                         $state = self::RELATIVE_STATE;
                         $pointer--;
                     } else {
@@ -274,7 +274,7 @@ class URLInternal
                     $offset = $pointer + 1;
 
                     if (
-                        $c == '/' &&
+                        $c === '/' &&
                         mb_strpos($input, '/', $offset, $encoding) === $offset
                     ) {
                         $state = self::SPECIAL_AUTHORITY_IGNORE_SLASHES_STATE;
@@ -288,7 +288,7 @@ class URLInternal
                     break;
 
                 case self::PATH_OR_AUTHORITY_STATE:
-                    if ($c == '/') {
+                    if ($c === '/') {
                         $state = self::AUTHORITY_STATE;
                     } else {
                         $state = self::PATH_STATE;
@@ -307,9 +307,9 @@ class URLInternal
                         $url->mPort = $base->mPort;
                         $url->mPath = clone $base->mPath;
                         $url->mQuery = $base->mQuery;
-                    } elseif ($c == '/') {
+                    } elseif ($c === '/') {
                         $state = self::RELATIVE_SLASH_STATE;
-                    } elseif ($c == '?') {
+                    } elseif ($c === '?') {
                         $url->mUsername = $base->mUsername;
                         $url->mPassword = $base->mPassword;
                         $url->mHost = $base->mHost;
@@ -317,7 +317,7 @@ class URLInternal
                         $url->mPath = clone $base->mPath;
                         $url->mQuery = '';
                         $state = self::QUERY_STATE;
-                    } elseif ($c == '#') {
+                    } elseif ($c === '#') {
                         $url->mUsername = $base->mUsername;
                         $url->mPassword = $base->mPassword;
                         $url->mHost = $base->mHost;
@@ -327,7 +327,7 @@ class URLInternal
                         $url->mFragment = '';
                         $state = self::FRAGMENT_STATE;
                     } else {
-                        if ($url->isSpecial() && $c == '/') {
+                        if ($url->isSpecial() && $c === '/') {
                             // Syntax violation
                             $state = self::RELATIVE_SLASH_STATE;
                         } else {
@@ -349,8 +349,8 @@ class URLInternal
                     break;
 
                 case self::RELATIVE_SLASH_STATE:
-                    if ($c == '/' || ($url->isSpecial() && $c == '\\')) {
-                        if ($c == '\\') {
+                    if ($c === '/' || ($url->isSpecial() && $c === '\\')) {
+                        if ($c === '\\') {
                             // Syntax violation
                         }
 
@@ -370,8 +370,8 @@ class URLInternal
                     $offset = $pointer + 1;
 
                     if (
-                        $c == '/' &&
-                        mb_strpos($input, '/', $offset, $encoding) == $offset
+                        $c === '/' &&
+                        mb_strpos($input, '/', $offset, $encoding) === $offset
                     ) {
                         $state = self::SPECIAL_AUTHORITY_IGNORE_SLASHES_STATE;
                         $pointer++;
@@ -384,7 +384,7 @@ class URLInternal
                     break;
 
                 case self::SPECIAL_AUTHORITY_IGNORE_SLASHES_STATE:
-                    if ($c != '/' && $c != '\\') {
+                    if ($c !== '/' && $c !== '\\') {
                         $state = self::AUTHORITY_STATE;
                         $pointer--;
                     } else {
@@ -394,7 +394,7 @@ class URLInternal
                     break;
 
                 case self::AUTHORITY_STATE:
-                    if ($c == '@') {
+                    if ($c === '@') {
                         // Syntax violation
 
                         if ($url->mFlags & URLInternal::FLAG_AT) {
@@ -415,7 +415,10 @@ class URLInternal
                                 continue;
                             }
 
-                            if ($codePoint == ':' && $url->mPassword === null) {
+                            if (
+                                $codePoint === ':' &&
+                                $url->mPassword === null
+                            ) {
                                 $url->mPassword = '';
                                 continue;
                             }
@@ -435,10 +438,10 @@ class URLInternal
                         $buffer = '';
                     } elseif (
                         ($c === ''/* EOF */ ||
-                            $c == '/' ||
-                            $c == '?' ||
-                            $c == '#') ||
-                        ($url->isSpecial() && $c == '\\')
+                            $c === '/' ||
+                            $c === '?' ||
+                            $c === '#') ||
+                        ($url->isSpecial() && $c === '\\')
                     ) {
                         $pointer -= mb_strlen($buffer, $encoding) + 1;
                         $buffer = '';
@@ -452,7 +455,7 @@ class URLInternal
                 case self::HOST_STATE:
                 case self::HOSTNAME_STATE:
                     if (
-                        $c == ':' &&
+                        $c === ':' &&
                         !($url->mFlags & URLInternal::FLAG_ARRAY)
                     ) {
                         if ($url->isSpecial() && !$buffer) {
@@ -471,16 +474,16 @@ class URLInternal
                         $buffer = '';
                         $state = self::PORT_STATE;
 
-                        if ($aStateOverride == self::HOSTNAME_STATE) {
+                        if ($aStateOverride === self::HOSTNAME_STATE) {
                             // Terminate this algorithm
                             break;
                         }
                     } elseif (
                         ($c === ''/* EOF */ ||
-                            $c == '/' ||
-                            $c == '?' ||
-                            $c == '#') ||
-                        ($url->isSpecial() && $c == '\\')
+                            $c === '/' ||
+                            $c === '?' ||
+                            $c === '#') ||
+                        ($url->isSpecial() && $c === '\\')
                     ) {
                         $pointer--;
 
@@ -509,9 +512,9 @@ class URLInternal
                     ) {
                         // Syntax violation
                     } else {
-                        if ($c == '[') {
+                        if ($c === '[') {
                             $url->mFlags |= URLInternal::FLAG_ARRAY;
-                        } elseif ($c == ']') {
+                        } elseif ($c === ']') {
                             $url->mFlags &= ~URLInternal::FLAG_ARRAY;
                         } else {
                             $buffer .= $c;
@@ -525,10 +528,10 @@ class URLInternal
                         $buffer .= $c;
                     } elseif (
                         ($c === ''/* EOF */ ||
-                            $c == '/' ||
-                            $c == '?' ||
-                            $c == '#') ||
-                        ($url->isSpecial() && $c == '\\') ||
+                            $c === '/' ||
+                            $c === '?' ||
+                            $c === '#') ||
+                        ($url->isSpecial() && $c === '\\') ||
                         $aStateOverride
                     ) {
                         if ($buffer) {
@@ -574,28 +577,28 @@ class URLInternal
                     break;
 
                 case self::FILE_STATE:
-                    if ($url->mScheme == 'file') {
+                    if ($url->mScheme === 'file') {
                         if ($c === ''/* EOF */) {
-                            if ($base && $base->mScheme == 'file') {
+                            if ($base && $base->mScheme === 'file') {
                                 $url->mHost = $base->mHost;
                                 $url->mPath = clone $base->mPath;
                                 $url->mQuery = $base->mQuery;
                             }
-                        } elseif ($c == '/' || $c == '\\') {
-                            if ($c == '\\') {
+                        } elseif ($c === '/' || $c === '\\') {
+                            if ($c === '\\') {
                                 // Syntax violation
                             }
 
                             $state = self::FILE_SLASH_STATE;
-                        } elseif ($c == '?') {
-                            if ($base && $base->mScheme == 'file') {
+                        } elseif ($c === '?') {
+                            if ($base && $base->mScheme === 'file') {
                                 $url->mHost = $base->mHost;
                                 $url->mPath = clone $base->mPath;
                                 $url->mQuery = '';
                                 $state = self::QUERY_STATE;
                             }
-                        } elseif ($c == '#') {
-                            if ($base && $base->mScheme == 'file') {
+                        } elseif ($c === '#') {
+                            if ($base && $base->mScheme === 'file') {
                                 $url->mHost = $base->mHost;
                                 $url->mPath = clone $base->mPath;
                                 $url->mQuery = $base->mQuery;
@@ -645,8 +648,8 @@ class URLInternal
                     break;
 
                 case self::FILE_SLASH_STATE:
-                    if ($c == '/' || $c == '\\') {
-                        if ($c == '\\') {
+                    if ($c === '/' || $c === '\\') {
+                        if ($c === '\\') {
                             // Syntax violation
                         }
 
@@ -654,7 +657,7 @@ class URLInternal
                     } else {
                         if (
                             $base &&
-                            $base->mScheme == 'file' &&
+                            $base->mScheme === 'file' &&
                             preg_match(
                                 URLUtils::REGEX_NORMALIZED_WINDOWS_DRIVE_LETTER,
                                 $base->mPath[0])
@@ -674,13 +677,12 @@ class URLInternal
                 case self::FILE_HOST_STATE:
                     if (
                         $c === ''/* EOF */ ||
-                        $c == '/' ||
-                        $c == '\\' ||
-                        $c == '?' ||
-                        $c == '#'
+                        $c === '/' ||
+                        $c === '\\' ||
+                        $c === '?' ||
+                        $c === '#'
                     ) {
                         $pointer--;
-
 
                         if (
                             preg_match(
@@ -703,7 +705,7 @@ class URLInternal
                                 return false;
                             }
 
-                            if ($host != 'localhost') {
+                            if ($host !== 'localhost') {
                                 $url->mHost = $host;
                             }
 
@@ -723,13 +725,13 @@ class URLInternal
                 case self::PATH_START_STATE:
                     $urlIsSpecial = $url->isSpecial();
 
-                    if ($urlIsSpecial && $c == '\\') {
+                    if ($urlIsSpecial && $c === '\\') {
                         // Syntax violation
                     }
 
                     $state = self::PATH_STATE;
 
-                    if ($c != '/' && !($urlIsSpecial && $c == '\\')) {
+                    if ($c !== '/' && !($urlIsSpecial && $c === '\\')) {
                         $pointer--;
                     }
 
@@ -738,33 +740,33 @@ class URLInternal
                 case self::PATH_STATE:
                     if (
                         $c === ''/* EOF */ ||
-                        $c == '/' ||
-                        ($url->isSpecial() && $c == '\\') ||
-                        (!$aStateOverride && ($c == '?' || $c == '#'))
+                        $c === '/' ||
+                        ($url->isSpecial() && $c === '\\') ||
+                        (!$aStateOverride && ($c === '?' || $c === '#'))
                     ) {
                         $urlIsSpecial = $url->isSpecial();
 
-                        if ($urlIsSpecial && $c == '\\') {
+                        if ($urlIsSpecial && $c === '\\') {
                             // Syntax violation
                         }
 
                         if (isset(self::$doubleDotPathSegment[$buffer])) {
                             self::popURLPath($url);
 
-                            if ($c != '/' && !($urlIsSpecial && $c == '\\')) {
+                            if ($c !== '/' && !($urlIsSpecial && $c === '\\')) {
                                 $url->mPath->push('');
                             }
                         } elseif (
                             isset(self::$singleDotPathSegment[$buffer]) &&
-                            $c != '/' &&
-                            !($url->isSpecial() && $c == '\\')
+                            $c !== '/' &&
+                            !($url->isSpecial() && $c === '\\')
                         ) {
                             $url->mPath->push('');
                         } elseif (
                             !isset(self::$singleDotPathSegment[$buffer])
                         ) {
                             if (
-                                $url->mScheme == 'file' &&
+                                $url->mScheme === 'file' &&
                                 $url->mPath->isEmpty() &&
                                 preg_match(
                                     URLUtils::REGEX_WINDOWS_DRIVE_LETTER,
@@ -786,10 +788,10 @@ class URLInternal
 
                         $buffer = '';
 
-                        if ($c == '?') {
+                        if ($c === '?') {
                             $url->mQuery = '';
                             $state = self::QUERY_STATE;
-                        } elseif ($c == '#') {
+                        } elseif ($c === '#') {
                             $url->mFragment = '';
                             $state = self::FRAGMENT_STATE;
                         }
@@ -806,7 +808,7 @@ class URLInternal
                         }
 
                         if (
-                            $c == '%' &&
+                            $c === '%' &&
                             !ctype_xdigit(
                                 mb_substr($input, $pointer + 1, 2, $encoding)
                             )
@@ -823,23 +825,23 @@ class URLInternal
                     break;
 
                 case self::NON_RELATIVE_PATH_STATE:
-                    if ($c == '?') {
+                    if ($c === '?') {
                         $url->mQuery = '';
                         $state = self::QUERY_STATE;
-                    } elseif ($c == '#') {
+                    } elseif ($c === '#') {
                         $url->mFragment = '';
                         $state = self::FRAGMENT_STATE;
                     } else {
                         if (
                             $c !== ''/* EOF */ &&
                             !preg_match(URLUtils::REGEX_URL_CODE_POINTS, $c) &&
-                            $c != '%'
+                            $c !== '%'
                         ) {
                             // Syntax violation
                         }
 
                         if (
-                            $c == '%' &&
+                            $c === '%' &&
                             !ctype_xdigit(
                                 mb_substr($input, $pointer + 1, 2, $encoding)
                             )
@@ -862,11 +864,14 @@ class URLInternal
                     break;
 
                 case self::QUERY_STATE:
-                    if ($c === ''/* EOF */ || (!$aStateOverride && $c == '#')) {
+                    if (
+                        $c === ''/* EOF */ ||
+                        (!$aStateOverride && $c === '#')
+                    ) {
                         if (
                             !$url->isSpecial() ||
-                            $url->mScheme == 'ws' ||
-                            $url->mScheme == 'wss'
+                            $url->mScheme === 'ws' ||
+                            $url->mScheme === 'wss'
                         ) {
                             $encoding = 'utf-8';
                         }
@@ -895,7 +900,7 @@ class URLInternal
 
                         $buffer = '';
 
-                        if ($c == '#') {
+                        if ($c === '#') {
                             $url->mFragment = '';
                             $state = self::FRAGMENT_STATE;
                         }
@@ -906,13 +911,13 @@ class URLInternal
                     } else {
                         if (
                             !preg_match(URLUtils::REGEX_URL_CODE_POINTS, $c) &&
-                            $c != '%'
+                            $c !== '%'
                         ) {
                             // Syntax violation
                         }
 
                         if (
-                            $c == '%' &&
+                            $c === '%' &&
                             !ctype_xdigit(
                                 mb_substr($input, $pointer + 1, 2, $encoding)
                                 )
@@ -936,13 +941,13 @@ class URLInternal
                     } else {
                         if (
                             !preg_match(URLUtils::REGEX_URL_CODE_POINTS, $c) &&
-                            $c != '%'
+                            $c !== '%'
                         ) {
                             // Syntax violation
                         }
 
                         if (
-                            $c == '%' &&
+                            $c === '%' &&
                             !ctype_xdigit(
                                 mb_substr($input, $pointer + 1, 2, $encoding)
                             )
@@ -1125,7 +1130,10 @@ class URLInternal
             array_map(array('self', 'domainToUnicode'), $hostParts)
         );
 
-        if ($aOrigin['port'] != URLUtils::$specialSchemes[$aOrigin['scheme']]) {
+        if (
+            $aOrigin['port'] !==
+            URLUtils::$specialSchemes[$aOrigin['scheme']]
+        ) {
             $result .= ':' . intval($aOrigin['port'], 10);
         }
 
@@ -1164,7 +1172,7 @@ class URLInternal
             if ($this->mPort !== null) {
                 $output .= ':' . $this->mPort;
             }
-        } elseif ($this->mHost === null && $this->mScheme == 'file') {
+        } elseif ($this->mHost === null && $this->mScheme === 'file') {
             $output .= '//';
         }
 
@@ -1346,7 +1354,7 @@ class URLInternal
                 }
             }
 
-            if ($aUrl->mScheme != 'file' || !$containsDriveLetter) {
+            if ($aUrl->mScheme !== 'file' || !$containsDriveLetter) {
                 $aUrl->mPath->pop();
             }
         }
