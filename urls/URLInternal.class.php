@@ -524,14 +524,15 @@ class URLInternal
                                 return false;
                             }
 
-                            if (
-                                isset(
-                                    URLUtils::$specialSchemes[$url->mScheme]
-                                ) &&
-                                URLUtils::$specialSchemes[
+                            $isSpecial = $url->isSpecial();
+
+                            if ($isSpecial) {
+                                $defaultPort = URLUtils::$specialSchemes[
                                     $url->mScheme
-                                ] == $port
-                            ) {
+                                ];
+                            }
+
+                            if ($isSpecial && $defaultPort === $port) {
                                 $url->mPort = null;
                             } else {
                                 $url->mPort = $port;
@@ -547,10 +548,6 @@ class URLInternal
 
                         $state = self::PATH_START_STATE;
                         $pointer--;
-                    } elseif (
-                        preg_match(URLUtils::REGEX_ASCII_WHITESPACE, $c)
-                    ) {
-                        // Syntax violation
                     } else {
                         // Syntax violation. Return failure.
                         return false;
