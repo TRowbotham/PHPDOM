@@ -247,17 +247,13 @@ class URLInternal
                     break;
 
                 case self::NO_SCHEME_STATE:
-                    if (
-                        !$base ||
-                        ($base->mFlags & URLInternal::FLAG_CANNOT_BE_A_BASE_URL &&
-                            $c !== '#')
-                    ) {
+                    $cannotBeBase = $base &&
+                        $base->mFlags & URLInternal::FLAG_CANNOT_BE_A_BASE_URL;
+
+                    if (!$base || ($cannotBeBase && $c !== '#') {
                         // Syntax violation. Return failure
                         return false;
-                    } elseif (
-                        $base->mFlags & URLInternal::FLAG_CANNOT_BE_A_BASE_URL &&
-                        $c == '#'
-                    ) {
+                    } elseif ($cannotBeBase && $c === '#') {
                         $url->mScheme = $base->mScheme;
                         $url->mPath = clone $base->mPath;
                         $url->mQuery = $base->mQuery;
