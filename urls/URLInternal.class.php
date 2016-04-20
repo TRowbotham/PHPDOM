@@ -199,7 +199,7 @@ class URLInternal
                                     '//',
                                     $offset,
                                     $encoding
-                                ) === $offset
+                                ) !== $offset
                             ) {
                                 // Syntax violation
                             }
@@ -210,6 +210,8 @@ class URLInternal
                             $base &&
                             $base->mScheme === $url->mScheme
                         ) {
+                            // This means that base's cannot-be-a-base-URL flag
+                            // is unset.
                             $state = self::SPECIAL_RELATIVE_OR_AUTHORITY_STATE;
                         } elseif ($urlIsSpecial) {
                             $state = self::SPECIAL_AUTHORITY_SLASHES_STATE;
@@ -222,8 +224,10 @@ class URLInternal
                             ) === $offset
                         ) {
                             $state = self::PATH_OR_AUTHORITY_STATE;
+                            $pointer++;
                         } else {
-                            $url->mFlags |= URLInternal::FLAG_CANNOT_BE_A_BASE_URL;
+                            $url->mFlags |=
+                                URLInternal::FLAG_CANNOT_BE_A_BASE_URL;
                             $url->mPath->push('');
                             $state = self::CANNOT_BE_A_BASE_URL_PATH_STATE;
                         }
