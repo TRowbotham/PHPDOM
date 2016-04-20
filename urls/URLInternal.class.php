@@ -395,22 +395,14 @@ class URLInternal
                         // Syntax violation
 
                         if ($flag_at) {
-                            $buffer .= '%40';
+                            $buffer = '%40' . $buffer;
                         }
 
                         $flag_at = true;
-                        $length = $length = mb_strlen($buffer, $encoding);
+                        $length = mb_strlen($buffer, $encoding);
+
                         for ($i = 0; $i < $length; $i++) {
                             $codePoint = mb_substr($buffer, $i, 1, $encoding);
-
-                            if (
-                                preg_match(
-                                    URLUtils::REGEX_ASCII_WHITESPACE,
-                                    $codePoint
-                                )
-                            ) {
-                                continue;
-                            }
 
                             if (
                                 $codePoint === ':' &&
