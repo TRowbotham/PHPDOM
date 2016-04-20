@@ -25,9 +25,7 @@ class URLInternal
     const QUERY_STATE = 20;
     const FRAGMENT_STATE = 21;
 
-    const FLAG_ARRAY = 1;
-    const FLAG_AT = 2;
-    const FLAG_CANNOT_BE_A_BASE_URL = 4;
+    const FLAG_CANNOT_BE_A_BASE_URL = 1;
 
     private static $singleDotPathSegment = array(
         '.' => '',
@@ -136,9 +134,8 @@ class URLInternal
         // getting an output encoding algorithm.
         $encoding = $aEncodingOverride ?: 'utf-8';
         $buffer = '';
-        // TODO: Let the @ flag and [] flag be unset.  Are these supposed to be
-        // local to this parser invocation or are they flags set on the URL
-        // itself?
+        $flag_at = false;
+        $flag_array = false;
         $len = mb_strlen($input, $encoding);
 
         for ($pointer = 0; $pointer <= $len; $pointer++) {
@@ -397,11 +394,11 @@ class URLInternal
                     if ($c === '@') {
                         // Syntax violation
 
-                        if ($url->mFlags & URLInternal::FLAG_AT) {
+                        if ($flag_at) {
                             $buffer .= '%40';
                         }
 
-                        $url->mFlags |= URLInternal::FLAG_AT;
+                        $flag_at = true;
                         $length = $length = mb_strlen($buffer, $encoding);
                         for ($i = 0; $i < $length; $i++) {
                             $codePoint = mb_substr($buffer, $i, 1, $encoding);
@@ -454,10 +451,7 @@ class URLInternal
 
                 case self::HOST_STATE:
                 case self::HOSTNAME_STATE:
-                    if (
-                        $c === ':' &&
-                        !($url->mFlags & URLInternal::FLAG_ARRAY)
-                    ) {
+                    if ($c === ':' && !$flag_array) {
                         if ($url->isSpecial() && !$buffer) {
                             // Return failure
                             return false;
@@ -513,9 +507,9 @@ class URLInternal
                         // Syntax violation
                     } else {
                         if ($c === '[') {
-                            $url->mFlags |= URLInternal::FLAG_ARRAY;
+                            $flag_array = true;
                         } elseif ($c === ']') {
-                            $url->mFlags &= ~URLInternal::FLAG_ARRAY;
+                            $flag_array = false;
                         } else {
                             $buffer .= $c;
                         }
