@@ -1280,7 +1280,7 @@ class URLInternal
     {
         $this->mUsername = '';
 
-        for ($i = 0, $len = mb_strlen($aPassword); $i < $len; $i++) {
+        for ($i = 0, $len = mb_strlen($aUsername); $i < $len; $i++) {
             $this->mUsername .= URLUtils::utf8PercentEncode(
                 mb_substr($aUsername, $i, 1),
                 URLUtils::ENCODE_SET_USERINFO
