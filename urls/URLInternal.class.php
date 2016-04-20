@@ -250,7 +250,7 @@ class URLInternal
                     $cannotBeBase = $base &&
                         $base->mFlags & URLInternal::FLAG_CANNOT_BE_A_BASE_URL;
 
-                    if (!$base || ($cannotBeBase && $c !== '#') {
+                    if (!$base || ($cannotBeBase && $c !== '#')) {
                         // Syntax violation. Return failure
                         return false;
                     } elseif ($cannotBeBase && $c === '#') {
