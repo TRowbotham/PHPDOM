@@ -2,6 +2,8 @@
 namespace phpjs;
 
 use phpjs\elements\Element;
+use phpjs\NodeFilter;
+use phpjs\TreeWalker;
 
 /**
  * @see https://dom.spec.whatwg.org/#interface-documentfragment
@@ -63,5 +65,51 @@ class DocumentFragment extends Node
     protected function getNodeName()
     {
         return '#document-fragment';
+    }
+
+    /**
+     * @see Node::getNodeValue
+     */
+    protected function getNodeValue()
+    {
+        return null;
+    }
+
+    /**
+     * @see Node::getTextContent
+     */
+    protected function getTextContent()
+    {
+        $tw = new TreeWalker($this, NodeFilter::SHOW_TEXT);
+        $data = '';
+
+        while (($node = $tw->nextNode())) {
+            $data .= $node->data;
+        }
+
+        return $data;
+    }
+
+    /**
+     * @see Node::setNodeValue
+     */
+    protected function setNodeValue($aNewValue)
+    {
+        // Do nothing.
+    }
+
+    /**
+     * @see Node::setTextContent
+     */
+    protected function setTextContent($aNewValue)
+    {
+        $node = null;
+
+        if (!empty($aNewValue)) {
+            $new = new Text($aNewValue);
+            $node->mOwnerDocument = $this->mOwnerDocument;
+        }
+
+        $this->_replaceAll($node);
     }
 }

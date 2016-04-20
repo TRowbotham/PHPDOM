@@ -21,4 +21,36 @@ class Comment extends CharacterData {
     {
         return '#comment';
     }
+
+    /**
+     * @see Node::getNodeValue
+     */
+    protected function getNodeValue()
+    {
+        return $this->mData;
+    }
+
+    /**
+     * @see Node::getTextContent
+     */
+    protected function getTextContent()
+    {
+        return $this->mData;
+    }
+
+    /**
+     * @see Node::setNodeValue
+     */
+    protected function setNodeValue($aNewValue)
+    {
+        $this->replaceData(0, $this->mLength, $aNewValue);
+    }
+
+    /**
+     * @see Node::setTextContent
+     */
+    protected function setTextContent($aNewValue)
+    {
+        $this->replaceData(0, $this->mLength, $aNewValue);
+    }
 }

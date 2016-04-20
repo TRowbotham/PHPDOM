@@ -1,7 +1,8 @@
 <?php
 namespace phpjs\urls;
 
-class URLInternal {
+class URLInternal
+{
     const SCHEME_START_STATE = 1;
     const SCHEME_STATE = 2;
     const NO_SCHEME_STATE = 3;
@@ -28,8 +29,16 @@ class URLInternal {
     const FLAG_AT = 2;
     const FLAG_NON_RELATIVE = 4;
 
-    private static $singleDotPathSegment = array('.' => '', '%2e' => '');
-    private static $doubleDotPathSegment = array('..' => '', '.%2e' => '', '%2e.' => '', '%2e%2e' => '');
+    private static $singleDotPathSegment = array(
+        '.' => '',
+        '%2e' => ''
+    );
+    private static $doubleDotPathSegment = array(
+        '..' => '',
+        '.%2e' => '',
+        '%2e.' => '',
+        '%2e%2e' => ''
+    );
 
     private $mFlags;
     private $mFragment;
@@ -41,7 +50,8 @@ class URLInternal {
     private $mScheme;
     private $mUsername;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->mFlags = 0;
         $this->mFragment = null;
         $this->mHost = null;
@@ -54,30 +64,43 @@ class URLInternal {
     }
 
     /**
-     * Parses a string as a URL.  The string can be an absolute URL or a relative URL.  If a relative URL is give,
-     * a base URL must also be given so that a complete URL can be resolved.  It can also parse individual parts of a URL
-     * when the state machine starts in a specific state.
+     * Parses a string as a URL. The string can be an absolute URL or a relative
+     * URL. If a relative URL is give, a base URL must also be given so that a
+     * complete URL can be resolved.  It can also parse individual parts of a
+     * URL when the state machine starts in a specific state.
      *
-     * @link https://url.spec.whatwg.org/#concept-basic-url-parser
+     * @see https://url.spec.whatwg.org/#concept-basic-url-parser
      *
-     * @param  string           $aInput    The URL string that is to be parsed.
+     * @param string $aInput The URL string that is to be parsed.
      *
-     * @param  URLInternal|null $aBaseUrl  Optional argument that is only needed if the input is a relative URL.  This represents the base URL,
-     *                                     which in most cases, is the document's URL, it may also be a node's base URI or whatever base URL you
-     *                                     wish to resolve relative URLs against. Default is null.
+     * @param URLInternal|null $aBaseUrl Optional argument that is only needed
+     *     if the input is a relative URL.  This represents the base URL, which
+     *     in most cases, is the document's URL, it may also be a node's base
+     *     URI or whatever base URL you wish to resolve relative URLs against.
+     *     Default is null.
      *
-     * @param  string           $aEncoding Optional argument that overrides the default encoding.  Default is UTF-8.
+     * @param string $aEncoding Optional argument that overrides the default
+     *     encoding. Default is UTF-8.
      *
-     * @param  URLInternal|null $aUrl      Optional argument.  This represents an existing URL object that should be modified based on the input
-     *                                     URL and optional base URL.  Default is null.
+     * @param URLInternal|null $aUrl Optional argument. This represents an
+     *     existing URL object that should be modified based on the input URL
+     *     and optional base URL.  Default is null.
      *
-     * @param  int|null         $aState    Optional argument. An integer that determines what state the state machine will begin parsing the
-     *                                     input URL from.  Suppling a value for this parameter will override the default state of SCHEME_START_STATE.
-     *                                     Default is null.
+     * @param int|null $aState Optional argument. An integer that determines
+     *     what state the state machine will begin parsing the input URL from.
+     *     Suppling a value for this parameter will override the default state
+     *     of SCHEME_START_STATE. Default is null.
      *
-     * @return URLInternal|bool            Returns a URL object upon successfully parsing the input or false if parsing input failed.
+     * @return URLInternal|bool Returns a URL object upon successfully parsing
+     *     the input or false if parsing input failed.
      */
-    public static function basicURLParser($aInput, URLInternal $aBaseUrl = null, $aEncoding = null, URLInternal $aUrl = null, $aState = null) {
+    public static function basicURLParser(
+        $aInput,
+        URLInternal $aBaseUrl = null,
+        $aEncoding = null,
+        URLInternal $aUrl = null,
+        $aState = null
+    ) {
         if ($aUrl) {
             $url = $aUrl;
             $input = $aInput;
@@ -90,8 +113,9 @@ class URLInternal {
         $base = $aBaseUrl;
         $encoding = $aEncoding ? $aEncoding : 'utf-8';
         $buffer = '';
+        $len = mb_strlen($input, $encoding);
 
-        for ($pointer = 0, $len = mb_strlen($input, $encoding); $pointer <= $len; $pointer++) {
+        for ($pointer = 0; $pointer <= $len; $pointer++) {
             $c = mb_substr($input, $pointer, 1, $encoding);
 
             switch ($state) {
@@ -110,15 +134,22 @@ class URLInternal {
                     break;
 
                 case self::SCHEME_STATE:
-                    if (preg_match(URLUtils::REGEX_ASCII_ALPHANUMERIC, $c) || preg_match('/[+\-.]/', $c)) {
+                    if (
+                        preg_match(URLUtils::REGEX_ASCII_ALPHANUMERIC, $c) ||
+                        preg_match('/[+\-.]/', $c)
+                    ) {
                         $buffer .= strtolower($c);
                     } elseif ($c == ':') {
                         if ($aState) {
-                            $bufferIsSpecialScheme = isset(URLUtils::$specialSchemes[$buffer]);
+                            $bufferIsSpecialScheme = isset(
+                                URLUtils::$specialSchemes[$buffer]
+                            );
                             $urlIsSpecial = $url->isSpecial();
 
-                            if (($urlIsSpecial && !$bufferIsSpecialScheme) ||
-                                (!$urlIsSpecial && $bufferIsSpecialScheme)) {
+                            if (
+                                ($urlIsSpecial && !$bufferIsSpecialScheme) ||
+                                (!$urlIsSpecial && $bufferIsSpecialScheme)
+                            ) {
                                 // Terminate this algorithm.
                                 break;
                             }
@@ -136,16 +167,34 @@ class URLInternal {
                         $urlIsSpecial = $url->isSpecial();
 
                         if ($url->mScheme == 'file') {
-                            if (mb_strpos($input, '//', $offset, $encoding) === $offset) {
+                            if (
+                                mb_strpos(
+                                    $input,
+                                    '//',
+                                    $offset,
+                                    $encoding
+                                ) === $offset
+                            ) {
                                 // Syntax violation
                             }
 
                             $state = self::FILE_STATE;
-                        } elseif ($urlIsSpecial && $base && $base->mScheme == $url->mScheme) {
+                        } elseif (
+                            $urlIsSpecial &&
+                            $base &&
+                            $base->mScheme == $url->mScheme
+                        ) {
                             $state = self::SPECIAL_RELATIVE_OR_AUTHORITY_STATE;
                         } elseif ($urlIsSpecial) {
                             $state = self::SPECIAL_AUTHORITY_SLASHES_STATE;
-                        } else if (mb_strpos($input, '/', $offset, $encoding) === $offset) {
+                        } elseif (
+                            mb_strpos(
+                                $input,
+                                '/',
+                                $offset,
+                                $encoding
+                            ) === $offset
+                        ) {
                             $state = self::PATH_OR_AUTHORITY_STATE;
                         } else {
                             $url->mFlags |= URLInternal::FLAG_NON_RELATIVE;
@@ -156,8 +205,9 @@ class URLInternal {
                         $buffer = '';
                         $state = self::NO_SCHEME_STATE;
 
-                        // Reset the pointer to poing at the first code point.  The pointer needs to be set to -1 to compensate for the
-                        // loop incrementing pointer after this iteration.
+                        // Reset the pointer to poing at the first code point.
+                        // The pointer needs to be set to -1 to compensate for
+                        // the loop incrementing pointer after this iteration.
                         $pointer = -1;
                     } else {
                         // Syntax violation. Terminate this algorithm.
@@ -167,17 +217,24 @@ class URLInternal {
                     break;
 
                 case self::NO_SCHEME_STATE:
-                    if (!$base || ($base->mFlags & URLInternal::FLAG_NON_RELATIVE && $c != '#')) {
+                    if (
+                        !$base ||
+                        ($base->mFlags & URLInternal::FLAG_NON_RELATIVE &&
+                            $c != '#')
+                    ) {
                         // Syntax violation. Return failure
                         return false;
-                    } else if ($base->mFlags & URLInternal::FLAG_NON_RELATIVE && $c == '#') {
+                    } elseif (
+                        $base->mFlags & URLInternal::FLAG_NON_RELATIVE &&
+                        $c == '#'
+                    ) {
                         $url->mScheme = $base->mScheme;
                         $url->mPath = clone $base->mPath;
                         $url->mQuery = $base->mQuery;
                         $url->mFragment = '';
                         $url->mFlags |= URLInternal::FLAG_NON_RELATIVE;
                         $state = self::FRAGMENT_STATE;
-                    } else if ($base->mScheme != 'file') {
+                    } elseif ($base->mScheme != 'file') {
                         $state = self::RELATIVE_STATE;
                         $pointer--;
                     } else {
@@ -190,7 +247,10 @@ class URLInternal {
                 case self::SPECIAL_RELATIVE_OR_AUTHORITY_STATE:
                     $offset = $pointer + 1;
 
-                    if ($c == '/' && mb_strpos($input, '/', $offset, $encoding) === $offset) {
+                    if (
+                        $c == '/' &&
+                        mb_strpos($input, '/', $offset, $encoding) === $offset
+                    ) {
                         $state = self::SPECIAL_AUTHORITY_IGNORE_SLASHES_STATE;
                         $pointer++;
                     } else {
@@ -221,9 +281,9 @@ class URLInternal {
                         $url->mPort = $base->mPort;
                         $url->mPath = clone $base->mPath;
                         $url->mQuery = $base->mQuery;
-                    } else if ($c == '/') {
+                    } elseif ($c == '/') {
                         $state = self::RELATIVE_SLASH_STATE;
-                    } else if ($c == '?') {
+                    } elseif ($c == '?') {
                         $url->mUsername = $base->mUsername;
                         $url->mPassword = $base->mPassword;
                         $url->mHost = $base->mHost;
@@ -231,7 +291,7 @@ class URLInternal {
                         $url->mPath = clone $base->mPath;
                         $url->mQuery = '';
                         $state = self::QUERY_STATE;
-                    } else if ($c == '#') {
+                    } elseif ($c == '#') {
                         $url->mUsername = $base->mUsername;
                         $url->mPassword = $base->mPassword;
                         $url->mHost = $base->mHost;
@@ -283,7 +343,10 @@ class URLInternal {
                 case self::SPECIAL_AUTHORITY_SLASHES_STATE:
                     $offset = $pointer + 1;
 
-                    if ($c == '/' && mb_strpos($input, '/', $offset, $encoding) == $offset) {
+                    if (
+                        $c == '/' &&
+                        mb_strpos($input, '/', $offset, $encoding) == $offset
+                    ) {
                         $state = self::SPECIAL_AUTHORITY_IGNORE_SLASHES_STATE;
                         $pointer++;
                     } else {
@@ -313,11 +376,16 @@ class URLInternal {
                         }
 
                         $url->mFlags |= URLInternal::FLAG_AT;
-
-                        for ($i = 0, $length = mb_strlen($buffer, $encoding); $i < $length; $i++) {
+                        $length = $length = mb_strlen($buffer, $encoding);
+                        for ($i = 0; $i < $length; $i++) {
                             $codePoint = mb_substr($buffer, $i, 1, $encoding);
 
-                            if (preg_match(URLUtils::REGEX_ASCII_WHITESPACE, $codePoint)) {
+                            if (
+                                preg_match(
+                                    URLUtils::REGEX_ASCII_WHITESPACE,
+                                    $codePoint
+                                )
+                            ) {
                                 continue;
                             }
 
@@ -326,7 +394,10 @@ class URLInternal {
                                 continue;
                             }
 
-                            $encodedCodePoints = URLUtils::utf8PercentEncode($codePoint, URLUtils::ENCODE_SET_USERINFO);
+                            $encodedCodePoints = URLUtils::utf8PercentEncode(
+                                $codePoint,
+                                URLUtils::ENCODE_SET_USERINFO
+                            );
 
                             if ($url->mPassword !== null) {
                                 $url->mPassword .= $encodedCodePoints;
@@ -336,7 +407,13 @@ class URLInternal {
                         }
 
                         $buffer = '';
-                    } else if (($c === ''/* EOF */ || $c == '/' || $c == '?' || $c == '#') || ($url->isSpecial() && $c == '\\')) {
+                    } elseif (
+                        ($c === ''/* EOF */ ||
+                            $c == '/' ||
+                            $c == '?' ||
+                            $c == '#') ||
+                        ($url->isSpecial() && $c == '\\')
+                    ) {
                         $pointer -= mb_strlen($buffer, $encoding) + 1;
                         $buffer = '';
                         $state = self::HOST_STATE;
@@ -348,7 +425,10 @@ class URLInternal {
 
                 case self::HOST_STATE:
                 case self::HOSTNAME_STATE:
-                    if ($c == ':' && !($url->mFlags & URLInternal::FLAG_ARRAY)) {
+                    if (
+                        $c == ':' &&
+                        !($url->mFlags & URLInternal::FLAG_ARRAY)
+                    ) {
                         if ($url->isSpecial() && !$buffer) {
                             // Return failure
                             return false;
@@ -369,7 +449,13 @@ class URLInternal {
                             // Terminate this algorithm
                             break;
                         }
-                    } else if (($c === ''/* EOF */ || $c == '/' || $c == '?' || $c == '#') || ($url->isSpecial() && $c == '\\')) {
+                    } elseif (
+                        ($c === ''/* EOF */ ||
+                            $c == '/' ||
+                            $c == '?' ||
+                            $c == '#') ||
+                        ($url->isSpecial() && $c == '\\')
+                    ) {
                         $pointer--;
 
                         if ($url->isSpecial() && !$buffer) {
@@ -392,12 +478,14 @@ class URLInternal {
                             // Terminate this algorithm
                             break;
                         }
-                    } else if (preg_match(URLUtils::REGEX_ASCII_WHITESPACE, $c)) {
+                    } elseif (
+                        preg_match(URLUtils::REGEX_ASCII_WHITESPACE, $c)
+                    ) {
                         // Syntax violation
                     } else {
                         if ($c == '[') {
                             $url->mFlags |= URLInternal::FLAG_ARRAY;
-                        } else if ($c == ']') {
+                        } elseif ($c == ']') {
                             $url->mFlags &= ~URLInternal::FLAG_ARRAY;
                         } else {
                             $buffer .= $c;
@@ -409,7 +497,14 @@ class URLInternal {
                 case self::PORT_STATE:
                     if (ctype_digit($c)) {
                         $buffer .= $c;
-                    } else if (($c === ''/* EOF */ || $c == '/' || $c == '?' || $c == '#') || ($url->isSpecial() && $c == '\\') || $aState) {
+                    } elseif (
+                        ($c === ''/* EOF */ ||
+                            $c == '/' ||
+                            $c == '?' ||
+                            $c == '#') ||
+                        ($url->isSpecial() && $c == '\\') ||
+                        $aState
+                    ) {
                         if ($buffer) {
                             $port = intval($buffer, 10);
 
@@ -418,7 +513,14 @@ class URLInternal {
                                 return false;
                             }
 
-                            if (isset(URLUtils::$specialSchemes[$url->mScheme]) && URLUtils::$specialSchemes[$url->mScheme] == $port) {
+                            if (
+                                isset(
+                                    URLUtils::$specialSchemes[$url->mScheme]
+                                ) &&
+                                URLUtils::$specialSchemes[
+                                    $url->mScheme
+                                ] == $port
+                            ) {
                                 $url->mPort = null;
                             } else {
                                 $url->mPort = $port;
@@ -434,7 +536,9 @@ class URLInternal {
 
                         $state = self::PATH_START_STATE;
                         $pointer--;
-                    } else if (preg_match(URLUtils::REGEX_ASCII_WHITESPACE, $c)) {
+                    } elseif (
+                        preg_match(URLUtils::REGEX_ASCII_WHITESPACE, $c)
+                    ) {
                         // Syntax violation
                     } else {
                         // Syntax violation. Return failure.
@@ -451,20 +555,20 @@ class URLInternal {
                                 $url->mPath = clone $base->mPath;
                                 $url->mQuery = $base->mQuery;
                             }
-                        } else if ($c == '/' || $c == '\\') {
+                        } elseif ($c == '/' || $c == '\\') {
                             if ($c == '\\') {
                                 // Syntax violation
                             }
 
                             $state = self::FILE_SLASH_STATE;
-                        } else if ($c == '?') {
+                        } elseif ($c == '?') {
                             if ($base && $base->mScheme == 'file') {
                                 $url->mHost = $base->mHost;
                                 $url->mPath = clone $base->mPath;
                                 $url->mQuery = '';
                                 $state = self::QUERY_STATE;
                             }
-                        } else if ($c == '#') {
+                        } elseif ($c == '#') {
                             if ($base && $base->mScheme == 'file') {
                                 $url->mHost = $base->mHost;
                                 $url->mPath = clone $base->mPath;
@@ -474,14 +578,36 @@ class URLInternal {
                             }
                         } else {
                             // Platform-independent Windows drive letter quirk
-                            if ($base && $base->mScheme == 'file' && (
-                                !preg_match(URLUtils::REGEX_WINDOWS_DRIVE_LETTER, mb_substr($input, $pointer, 2, $encoding)) ||
-                                mb_strlen(mb_substr($input, $pointer, mb_strlen($input, $encoding), $encoding), $encoding) == 1 ||
-                                !preg_match('/[/\\?#]/', mb_substr($input, $pointer + 2, 1, $encoding)))) {
+                            $shouldPopPath = $base &&
+                                $base->mScheme === 'file' &&
+                                (!preg_match(
+                                    URLUtils::REGEX_WINDOWS_DRIVE_LETTER,
+                                    mb_substr($input, $pointer, 2, $encoding)
+                                ) ||
+                                mb_strlen(
+                                    mb_substr(
+                                        $input,
+                                        $pointer,
+                                        mb_strlen($input, $encoding),
+                                        $encoding
+                                    ),
+                                    $encoding
+                                ) == 1 ||
+                                !preg_match(
+                                    '/[/\\?#]/',
+                                    mb_substr(
+                                        $input,
+                                        $pointer + 2,
+                                        1,
+                                        $encoding
+                                    )
+                                ));
+
+                            if ($shouldPopPath) {
                                 $url->mHost = $base->mHost;
                                 $url->mPath = clone $base->mPath;
                                 self::popURLPath($url);
-                            } else if ($base && $base->mScheme == 'file') {
+                            } elseif ($base && $base->mScheme == 'file') {
                                 // Syntax violation
                             } else {
                                 $state = self::PATH_STATE;
@@ -500,9 +626,16 @@ class URLInternal {
 
                         $state = self::FILE_HOST_STATE;
                     } else {
-                        if ($base && $base->mScheme == 'file' && preg_match(URLUtils::REGEX_NORMALIZED_WINDOWS_DRIVE_LETTER, $base->mPath[0])) {
-                            // This is a (platform-independent) Windows drive letter quirk. Both url’s and base’s
-                            // host are null under these conditions and therefore not copied.
+                        if (
+                            $base &&
+                            $base->mScheme == 'file' &&
+                            preg_match(
+                                URLUtils::REGEX_NORMALIZED_WINDOWS_DRIVE_LETTER,
+                                $base->mPath[0])
+                        ) {
+                            // This is a (platform-independent) Windows drive
+                            // letter quirk. Both url’s and base’s host are null
+                            // under these conditions and therefore not copied.
                             $url->mPath->push($base->mPath[0]);
                         }
 
@@ -513,15 +646,28 @@ class URLInternal {
                     break;
 
                 case self::FILE_HOST_STATE:
-                    if ($c === ''/* EOF */ || $c == '/' || $c == '\\' || $c == '?' || $c == '#') {
+                    if (
+                        $c === ''/* EOF */ ||
+                        $c == '/' ||
+                        $c == '\\' ||
+                        $c == '?' ||
+                        $c == '#'
+                    ) {
                         $pointer--;
 
 
-                        if (preg_match(URLUtils::REGEX_WINDOWS_DRIVE_LETTER, $buffer)) {
-                            // This is a (platform-independent) Windows drive letter quirk. buffer is not reset here and instead used in the path state.
+                        if (
+                            preg_match(
+                                URLUtils::REGEX_WINDOWS_DRIVE_LETTER,
+                                $buffer
+                            )
+                        ) {
+                            // This is a (platform-independent) Windows drive
+                            // letter quirk. buffer is not reset here and
+                            // instead used in the path state.
                             // Syntax violation
                             $state = self::PATH_STATE;
-                        } else if (!$buffer) {
+                        } elseif (!$buffer) {
                             $state = self::PATH_START_STATE;
                         } else {
                             $host = HostFactory::parse($buffer);
@@ -538,7 +684,9 @@ class URLInternal {
                             $buffer = '';
                             $state = self::PATH_START_STATE;
                         }
-                    } else if (preg_match(URLUtils::REGEX_ASCII_WHITESPACE, $c)) {
+                    } elseif (
+                        preg_match(URLUtils::REGEX_ASCII_WHITESPACE, $c)
+                    ) {
                         // Syntax violation
                     } else {
                         $buffer .= $c;
@@ -562,7 +710,12 @@ class URLInternal {
                     break;
 
                 case self::PATH_STATE:
-                    if ($c === ''/* EOF */ || $c == '/' || ($url->isSpecial() && $c == '\\') || (!$aState && ($c == '?' || $c == '#'))) {
+                    if (
+                        $c === ''/* EOF */ ||
+                        $c == '/' ||
+                        ($url->isSpecial() && $c == '\\') ||
+                        (!$aState && ($c == '?' || $c == '#'))
+                    ) {
                         $urlIsSpecial = $url->isSpecial();
 
                         if ($urlIsSpecial && $c == '\\') {
@@ -575,17 +728,31 @@ class URLInternal {
                             if ($c != '/' && !($urlIsSpecial && $c == '\\')) {
                                 $url->mPath->push('');
                             }
-                        } else if (isset(self::$singleDotPathSegment[$buffer]) && $c != '/' && !($url->isSpecial() && $c == '\\')) {
+                        } elseif (
+                            isset(self::$singleDotPathSegment[$buffer]) &&
+                            $c != '/' &&
+                            !($url->isSpecial() && $c == '\\')
+                        ) {
                             $url->mPath->push('');
-                        } else if (!isset(self::$singleDotPathSegment[$buffer])) {
-                            if ($url->mScheme == 'file' && $url->mPath->isEmpty() && preg_match(URLUtils::REGEX_WINDOWS_DRIVE_LETTER, $buffer)) {
+                        } elseif (
+                            !isset(self::$singleDotPathSegment[$buffer])
+                        ) {
+                            if (
+                                $url->mScheme == 'file' &&
+                                $url->mPath->isEmpty() &&
+                                preg_match(
+                                    URLUtils::REGEX_WINDOWS_DRIVE_LETTER,
+                                    $buffer)
+                            ) {
                                 if ($url->mHost !== null) {
                                     // Syntax violation
                                 }
 
                                 $url->mHost = null;
-                                // This is a (platform-independent) Windows drive letter quirk.
-                                $buffer = mb_substr($buffer, 0, 1, $encoding) . ':';
+                                // This is a (platform-independent) Windows
+                                // drive letter quirk.
+                                $buffer = mb_substr($buffer, 0, 1, $encoding) .
+                                    ':';
                             }
 
                             $url->mPath->push($buffer);
@@ -596,22 +763,35 @@ class URLInternal {
                         if ($c == '?') {
                             $url->mQuery = '';
                             $state = self::QUERY_STATE;
-                        } else if ($c == '#') {
+                        } elseif ($c == '#') {
                             $url->mFragment = '';
                             $state = self::FRAGMENT_STATE;
                         }
-                    } else if (preg_match(URLUtils::REGEX_ASCII_WHITESPACE, $c)) {
+                    } elseif (
+                        preg_match(URLUtils::REGEX_ASCII_WHITESPACE, $c)
+                    ) {
                         // Syntax violation
                     } else {
-                        if (!preg_match(URLUtils::REGEX_URL_CODE_POINTS, $c) && $c != '%') {
+                        if (
+                            !preg_match(URLUtils::REGEX_URL_CODE_POINTS, $c) &&
+                            $c != '%'
+                        ) {
                             // Syntax violation
                         }
 
-                        if ($c == '%' && !ctype_xdigit(mb_substr($input, $pointer + 1, 2, $encoding))) {
+                        if (
+                            $c == '%' &&
+                            !ctype_xdigit(
+                                mb_substr($input, $pointer + 1, 2, $encoding)
+                            )
+                        ) {
                             // Syntax violation
                         }
 
-                        $buffer .= URLUtils::utf8PercentEncode($c, URLUtils::ENCODE_SET_DEFAULT);
+                        $buffer .= URLUtils::utf8PercentEncode(
+                            $c,
+                            URLUtils::ENCODE_SET_DEFAULT
+                        );
                     }
 
                     break;
@@ -620,21 +800,35 @@ class URLInternal {
                     if ($c == '?') {
                         $url->mQuery = '';
                         $state = self::QUERY_STATE;
-                    } else if ($c == '#') {
+                    } elseif ($c == '#') {
                         $url->mFragment = '';
                         $state = self::FRAGMENT_STATE;
                     } else {
-                        if ($c !== ''/* EOF */ && !preg_match(URLUtils::REGEX_URL_CODE_POINTS, $c) && $c != '%') {
+                        if (
+                            $c !== ''/* EOF */ &&
+                            !preg_match(URLUtils::REGEX_URL_CODE_POINTS, $c) &&
+                            $c != '%'
+                        ) {
                             // Syntax violation
                         }
 
-                        if ($c == '%' && !ctype_xdigit(mb_substr($input, $pointer + 1, 2, $encoding))) {
+                        if (
+                            $c == '%' &&
+                            !ctype_xdigit(
+                                mb_substr($input, $pointer + 1, 2, $encoding)
+                            )
+                        ) {
                             // Syntax violation
                         }
 
-                        if ($c !== ''/* EOF */ && !preg_match(URLUtils::REGEX_ASCII_WHITESPACE, $c)) {
+                        if (
+                            $c !== ''/* EOF */ &&
+                            !preg_match(URLUtils::REGEX_ASCII_WHITESPACE, $c)
+                        ) {
                             if (!$url->mPath->isEmpty()) {
-                                $url->mPath[0] .= URLUtils::utf8PercentEncode($c);
+                                $url->mPath[0] .= URLUtils::utf8PercentEncode(
+                                    $c
+                                );
                             }
                         }
                     }
@@ -643,17 +837,31 @@ class URLInternal {
 
                 case self::QUERY_STATE:
                     if ($c === ''/* EOF */ || (!$aState && $c == '#')) {
-                        if (!$url->isSpecial() || $url->mScheme == 'ws' || $url->mScheme == 'wss') {
+                        if (
+                            !$url->isSpecial() ||
+                            $url->mScheme == 'ws' ||
+                            $url->mScheme == 'wss'
+                        ) {
                             $encoding = 'utf-8';
                         }
 
                         $buffer = mb_convert_encoding($buffer, $encoding);
+                        $length = strlen($buffer);
 
-                        for ($i = 0, $length = strlen($buffer); $i < $length; $i++) {
+                        for ($i = 0; $i < $length; $i++) {
                             $byteOrd = ord($buffer[$i]);
 
-                            if ($byteOrd < 0x21 || $byteOrd > 0x7E || $byteOrd == 0x22 || $byteOrd == 0x23 || $byteOrd == 0x3C || $byteOrd == 0x3E) {
-                                $url->mQuery .= URLUtils::percentEncode($buffer[$i]);
+                            if (
+                                $byteOrd < 0x21 ||
+                                $byteOrd > 0x7E ||
+                                $byteOrd == 0x22 ||
+                                $byteOrd == 0x23 ||
+                                $byteOrd == 0x3C ||
+                                $byteOrd == 0x3E
+                            ) {
+                                $url->mQuery .= URLUtils::percentEncode(
+                                    $buffer[$i]
+                                );
                             } else {
                                 $url->mQuery .= $buffer[$i];
                             }
@@ -665,14 +873,24 @@ class URLInternal {
                             $url->mFragment = '';
                             $state = self::FRAGMENT_STATE;
                         }
-                    } else if (preg_match(URLUtils::REGEX_ASCII_WHITESPACE, $c)) {
+                    } elseif (
+                        preg_match(URLUtils::REGEX_ASCII_WHITESPACE, $c)
+                    ) {
                         // Syntax violation
                     } else {
-                        if (!preg_match(URLUtils::REGEX_URL_CODE_POINTS, $c) && $c != '%') {
+                        if (
+                            !preg_match(URLUtils::REGEX_URL_CODE_POINTS, $c) &&
+                            $c != '%'
+                        ) {
                             // Syntax violation
                         }
 
-                        if ($c == '%' && !ctype_xdigit(mb_substr($input, $pointer + 1, 2, $encoding))) {
+                        if (
+                            $c == '%' &&
+                            !ctype_xdigit(
+                                mb_substr($input, $pointer + 1, 2, $encoding)
+                                )
+                        ) {
                             // Syntax violation
                         }
 
@@ -684,14 +902,25 @@ class URLInternal {
                 case self::FRAGMENT_STATE:
                     if ($c === ''/* EOF */) {
                         // Do nothing
-                    } else if (preg_match(URLUtils::REGEX_ASCII_WHITESPACE, $c) || preg_match('/\x{0000}/', $c)) {
+                    } elseif (
+                        preg_match(URLUtils::REGEX_ASCII_WHITESPACE, $c) ||
+                        preg_match('/\x{0000}/', $c)
+                    ) {
                         // Syntax violation
                     } else {
-                        if (!preg_match(URLUtils::REGEX_URL_CODE_POINTS, $c) && $c != '%') {
+                        if (
+                            !preg_match(URLUtils::REGEX_URL_CODE_POINTS, $c) &&
+                            $c != '%'
+                        ) {
                             // Syntax violation
                         }
 
-                        if ($c == '%' && !ctype_xdigit(mb_substr($input, $pointer + 1, 2, $encoding))) {
+                        if (
+                            $c == '%' &&
+                            !ctype_xdigit(
+                                mb_substr($input, $pointer + 1, 2, $encoding)
+                            )
+                        ) {
                             // Syntax violation
                         }
 
@@ -708,14 +937,16 @@ class URLInternal {
     public static function domainToASCII($aDomain) {
         //$asciiDomain = HostFactory::parse($aDomain);
 
-        // TODO: Return the empty string if asciiDomain is not a domain, and asciiDomain otherwise.
+        // TODO: Return the empty string if asciiDomain is not a domain, and
+        // asciiDomain otherwise.
         return $aDomain;
     }
 
     public static function domainToUnicode($aDomain) {
         //$unicodeDomain = HostFactory::parse($aDomain);
 
-        // TODO: Return the empty string if unicodeDomain is not a domain, and unicodeDomain otherwise.
+        // TODO: Return the empty string if unicodeDomain is not a domain, and
+        // unicodeDomain otherwise.
         return $aDomain;
     }
 
@@ -730,7 +961,7 @@ class URLInternal {
     /**
      * Computes a URL's origin.
      *
-     * @link https://url.spec.whatwg.org/#origin
+     * @see https://url.spec.whatwg.org/#origin
      *
      * @return array
      */
@@ -753,16 +984,25 @@ class URLInternal {
             case 'ws':
             case 'wss':
                 return array(
-                            'scheme' => $this->mScheme,
-                            'host' => $this->mHost,
-                            'port' => ($this->mPort === null ? URLUtils::$specialSchemes[$this->mScheme] : $this->mPort)
-                        );
+                        'scheme' => $this->mScheme,
+                        'host' => $this->mHost,
+                        'port' => ($this->mPort === null ?
+                            URLUtils::$specialSchemes[$this->mScheme] :
+                            $this->mPort
+                        )
+                    );
 
                 break;
 
             case 'file':
-                // TODO: Unfortunate as it is, this is left as an exercise to the reader. When in doubt, return a new globally unique identifier.
-                return array('scheme' => $this->mScheme, 'host' => '', 'port' => '');
+                // TODO: Unfortunate as it is, this is left as an exercise to
+                // the reader. When in doubt, return a new globally unique
+                // identifier.
+                return array(
+                    'scheme' => $this->mScheme,
+                    'host' => '',
+                    'port' => ''
+                );
 
             default:
                 // TODO: Return a new globally unique identifier.
@@ -770,71 +1010,82 @@ class URLInternal {
         }
     }
 
-    public function getPassword() {
+    public function getPassword()
+    {
         return $this->mPassword;
     }
 
-    public function getPath() {
+    public function getPath()
+    {
         return $this->mPath;
     }
 
-    public function getPort() {
+    public function getPort()
+    {
         return $this->mPort;
     }
 
-    public function getQuery() {
+    public function getQuery()
+    {
         return $this->mQuery;
     }
 
-    public function getScheme() {
+    public function getScheme()
+    {
         return $this->mScheme;
     }
 
-    public function getUsername() {
+    public function getUsername()
+    {
         return $this->mUsername;
     }
 
     /**
      * Determines whether two URLs are equal to eachother.
      *
-     * @link https://url.spec.whatwg.org/#concept-url-equals
+     * @see https://url.spec.whatwg.org/#concept-url-equals
      *
-     * @param  URLInternal $aOtherUrl        A URL to compare equality against.
+     * @param URLInternal $aOtherUrl A URL to compare equality against.
      *
-     * @param  bool|null   $aExcludeFragment Optional argument that determines whether a URL's
-     *                                       fragment should be factored into equality.
+     * @param bool|null $aExcludeFragment Optional argument that determines
+     *     whether a URL's fragment should be factored into equality.
      *
      * @return bool
      */
-    public function isEqual(URLInternal $aOtherUrl, $aExcludeFragment = null) {
-        return $this->serializeURL($aExcludeFragment) == $aOtherUrl->serializeURL($aExcludeFragment);
+    public function isEqual(URLInternal $aOtherUrl, $aExcludeFragment = null)
+    {
+        return $this->serializeURL($aExcludeFragment) ===
+            $aOtherUrl->serializeURL($aExcludeFragment);
     }
 
-    public function isFlagSet($aFlag) {
-        return (bool)($this->mFlags & $aFlag);
+    public function isFlagSet($aFlag)
+    {
+        return (bool) ($this->mFlags & $aFlag);
     }
 
     /**
      * Returns whether or not the URL's scheme is a special scheme.
      *
-     * @link https://url.spec.whatwg.org/#is-special
+     * @see https://url.spec.whatwg.org/#is-special
      *
-     * @return boolean
+     * @return bool
      */
-    public function isSpecial() {
+    public function isSpecial()
+    {
         return isset(URLUtils::$specialSchemes[$this->mScheme]);
     }
 
     /**
      * Serializes an origin using Unicode.
      *
-     * @link https://html.spec.whatwg.org/multipage/browsers.html#unicode-serialisation-of-an-origin
+     * @see https://html.spec.whatwg.org/multipage/browsers.html#unicode-serialisation-of-an-origin
      *
-     * @param  array    $aOrigin An origin.
+     * @param array $aOrigin An origin.
      *
      * @return string
      */
-    public static function serializeOriginAsUnicode($aOrigin) {
+    public static function serializeOriginAsUnicode($aOrigin)
+    {
         if (!is_array($aOrigin)) {
             return 'null';
         }
@@ -843,7 +1094,10 @@ class URLInternal {
         $result .= '://';
 
         $hostParts = explode('.', HostFactory::parse($aOrigin['host']));
-        $result .= implode('.', array_map(array('self', 'domainToUnicode'), $hostParts));
+        $result .= implode(
+            '.',
+            array_map(array('self', 'domainToUnicode'), $hostParts)
+        );
 
         if ($aOrigin['port'] != URLUtils::$specialSchemes[$aOrigin['scheme']]) {
             $result .= ':' . intval($aOrigin['port'], 10);
@@ -855,13 +1109,15 @@ class URLInternal {
     /**
      * Serializes a URL object.
      *
-     * @link https://url.spec.whatwg.org/#concept-url-serializer
+     * @see https://url.spec.whatwg.org/#concept-url-serializer
      *
-     * @param  bool|null    $aExcludeFragment Optional argument, that, when specified will exclude the URL's
-     *                                        fragment from being serialized.
+     * @param bool|null $aExcludeFragment Optional argument, that, when
+     *     specified will exclude the URL's fragment from being serialized.
+     *
      * @return string
      */
-    public function serializeURL($aExcludeFragment = null) {
+    public function serializeURL($aExcludeFragment = null)
+    {
         $output = $this->mScheme . ':';
 
         if ($this->mHost !== null) {
@@ -882,7 +1138,7 @@ class URLInternal {
             if ($this->mPort !== null) {
                 $output .= ':' . $this->mPort;
             }
-        } else if ($this->mHost === null && $this->mScheme == 'file') {
+        } elseif ($this->mHost === null && $this->mScheme == 'file') {
             $output .= '//';
         }
 
@@ -911,94 +1167,117 @@ class URLInternal {
         return $output;
     }
 
-    public function setFlag($aFlag) {
+    public function setFlag($aFlag)
+    {
         $this->mFlags |= $aFlag;
     }
 
-    public function setFragment($aFragment) {
+    public function setFragment($aFragment)
+    {
         $this->mFragment = $aFragment;
     }
 
-    public function setHost($aHost) {
+    public function setHost($aHost)
+    {
         $this->mHost = $aHost;
     }
 
-    public function setPassword($aPassword) {
+    public function setPassword($aPassword)
+    {
         $this->mPassword = $aPassword;
     }
 
     /**
      * Set the URL's password and reparses the URL.
      *
-     * @link https://url.spec.whatwg.org/#set-the-password
+     * @see https://url.spec.whatwg.org/#set-the-password
      *
      * @param string $aPassword The URL's password.
      */
-    public function setPasswordSteps($aPassword) {
+    public function setPasswordSteps($aPassword)
+    {
         if ($aPassword === '') {
             $this->mPassword = null;
         } else {
             $this->mPassword = '';
 
             for ($i = 0, $len = mb_strlen($aPassword); $i < $len; $i++) {
-                $this->mPassword .= URLUtils::utf8PercentEncode(mb_substr($aPassword, $i, 1), URLUtils::ENCODE_SET_USERINFO);
+                $this->mPassword .= URLUtils::utf8PercentEncode(
+                    mb_substr($aPassword, $i, 1),
+                    URLUtils::ENCODE_SET_USERINFO
+                );
             }
         }
     }
 
-    public function setPath(\SplDoublyLinkedList $aPath) {
+    public function setPath(\SplDoublyLinkedList $aPath)
+    {
         $this->mPath = $aPath;
     }
 
-    public function setPort($aPort) {
+    public function setPort($aPort)
+    {
         $this->mPort = $aPort;
     }
 
-    public function setQuery($aQuery) {
+    public function setQuery($aQuery)
+    {
         $this->mQuery = $aQuery;
     }
 
-    public function setScheme($aScheme) {
+    public function setScheme($aScheme)
+    {
         $this->mScheme = $aScheme;
     }
 
-    public function setUsername($aUsername) {
+    public function setUsername($aUsername)
+    {
         $this->mUsername = $aUsername;
     }
 
     /**
      * Sets the URLs username and reparses the URL.
      *
-     * @link https://url.spec.whatwg.org/#set-the-username
+     * @see https://url.spec.whatwg.org/#set-the-username
      *
      * @param string $aUsername The URL's username.
      */
-    public function setUsernameSteps($aUsername) {
+    public function setUsernameSteps($aUsername)
+    {
         $this->mUsername = '';
 
         for ($i = 0, $len = mb_strlen($aPassword); $i < $len; $i++) {
-            $this->mUsername .= URLUtils::utf8PercentEncode(mb_substr($aUsername, $i, 1), URLUtils::ENCODE_SET_USERINFO);
+            $this->mUsername .= URLUtils::utf8PercentEncode(
+                mb_substr($aUsername, $i, 1),
+                URLUtils::ENCODE_SET_USERINFO
+            );
         }
     }
 
-    public function unsetFlag($aFlag) {
+    public function unsetFlag($aFlag)
+    {
         $this->mFlags &= ~$aFlag;
     }
 
     /**
      * Parses a URL.
      *
-     * @link https://url.spec.whatwg.org/#concept-url-parser
+     * @see https://url.spec.whatwg.org/#concept-url-parser
      *
-     * @param string            $aInput    The URL string to be parsed.
+     * @param string $aInput The URL string to be parsed.
      *
-     * @param URLInternal|null  $aBase     A base URL to resolve relative URLs against.
+     * @param URLInternal|null $aBase A base URL to resolve relative URLs
+     *     against.
      *
-     * @param string            $aEncoding The character encoding of the URL.
+     * @param string $aEncoding The character encoding of the URL.
      *
      * @return URLInternal|bool
      */
-    public static function URLParser($aInput, URLInternal $aBase = null, $aEncoding = null) {
+    public static function URLParser(
+        $aInput,
+        URLInternal $aBase = null,
+        $aEncoding = null
+    ) {
         $url = self::basicURLParser($aInput, $aBase, $aEncoding);
 
         if ($url === false) {
@@ -1009,8 +1288,11 @@ class URLInternal {
             return $url;
         }
 
-        // TODO: If the first string in url’s path is not in the blob URL store, return url
-        // TODO: Set url’s object to a structured clone of the entry in the blob URL store corresponding to the first string in url’s path
+        // TODO: If the first string in url’s path is not in the blob URL store,
+        // return url
+
+        // TODO: Set url’s object to a structured clone of the entry in the blob
+        // URL store corresponding to the first string in url’s path
 
         return $url;
     }
@@ -1019,7 +1301,7 @@ class URLInternal {
      * Removes the last string from a URL's path if its scheme is not "file"
      * and the path does not contain a normalized Windows drive letter.
      *
-     * @link https://url.spec.whatwg.org/#pop-a-urls-path
+     * @see https://url.spec.whatwg.org/#pop-a-urls-path
      *
      * @param  URLInternal $aUrl The URL of the path that is to be popped.
      */
@@ -1028,7 +1310,11 @@ class URLInternal {
             $containsDriveLetter = false;
 
             foreach ($aUrl->mPath as $path) {
-                if (preg_match(URLUtils::REGEX_NORMALIZED_WINDOWS_DRIVE_LETTER, $path)) {
+                if (
+                    preg_match(
+                        URLUtils::REGEX_NORMALIZED_WINDOWS_DRIVE_LETTER,
+                        $path)
+                ) {
                     $containsDriveLetter = true;
                     break;
                 }

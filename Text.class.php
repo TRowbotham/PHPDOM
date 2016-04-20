@@ -145,4 +145,36 @@ class Text extends CharacterData
     {
         return '#text';
     }
+
+    /**
+     * @see Node::getNodeValue
+     */
+    protected function getNodeValue()
+    {
+        return $this->mData;
+    }
+
+    /**
+     * @see Node::getTextContent
+     */
+    protected function getTextContent()
+    {
+        return $this->mData;
+    }
+
+    /**
+     * @see Node::setNodeValue
+     */
+    protected function setNodeValue($aNewValue)
+    {
+        $this->replaceData(0, $this->mLength, $aNewValue);
+    }
+
+    /**
+     * @see Node::setTextContent
+     */
+    protected function setTextContent($aNewValue)
+    {
+        $this->replaceData(0, $this->mLength, $aNewValue);
+    }
 }
