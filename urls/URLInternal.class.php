@@ -493,18 +493,14 @@ class URLInternal
                             // Terminate this algorithm
                             break;
                         }
-                    } elseif (
-                        preg_match(URLUtils::REGEX_ASCII_WHITESPACE, $c)
-                    ) {
-                        // Syntax violation
                     } else {
                         if ($c === '[') {
                             $flag_array = true;
                         } elseif ($c === ']') {
                             $flag_array = false;
-                        } else {
-                            $buffer .= $c;
                         }
+
+                        $buffer .= $c;
                     }
 
                     break;
