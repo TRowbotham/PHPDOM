@@ -556,71 +556,76 @@ class URLInternal
                     break;
 
                 case self::FILE_STATE:
-                    if ($url->mScheme === 'file') {
-                        if ($c === ''/* EOF */) {
-                            if ($base && $base->mScheme === 'file') {
-                                $url->mHost = $base->mHost;
-                                $url->mPath = clone $base->mPath;
-                                $url->mQuery = $base->mQuery;
-                            }
-                        } elseif ($c === '/' || $c === '\\') {
-                            if ($c === '\\') {
-                                // Syntax violation
-                            }
+                    $url->mScheme = 'file';
 
-                            $state = self::FILE_SLASH_STATE;
-                        } elseif ($c === '?') {
-                            if ($base && $base->mScheme === 'file') {
-                                $url->mHost = $base->mHost;
-                                $url->mPath = clone $base->mPath;
-                                $url->mQuery = '';
-                                $state = self::QUERY_STATE;
-                            }
-                        } elseif ($c === '#') {
-                            if ($base && $base->mScheme === 'file') {
-                                $url->mHost = $base->mHost;
-                                $url->mPath = clone $base->mPath;
-                                $url->mQuery = $base->mQuery;
-                                $url->mFragment = $base->mFragment;
-                                $state = self::FRAGMENT_STATE;
-                            }
-                        } else {
-                            // Platform-independent Windows drive letter quirk
-                            $shouldPopPath = $base &&
-                                $base->mScheme === 'file' &&
-                                (!preg_match(
-                                    URLUtils::REGEX_WINDOWS_DRIVE_LETTER,
-                                    mb_substr($input, $pointer, 2, $encoding)
-                                ) ||
-                                mb_strlen(
-                                    mb_substr(
-                                        $input,
-                                        $pointer,
-                                        mb_strlen($input, $encoding),
-                                        $encoding
-                                    ),
+                    if ($c === ''/* EOF */) {
+                        if ($base && $base->mScheme === 'file') {
+                            $url->mHost = $base->mHost;
+                            $url->mPath = clone $base->mPath;
+                            $url->mQuery = $base->mQuery;
+                        }
+                    } elseif ($c === '/' || $c === '\\') {
+                        if ($c === '\\') {
+                            // Syntax violation
+                        }
+
+                        $state = self::FILE_SLASH_STATE;
+                    } elseif ($c === '?') {
+                        if ($base && $base->mScheme === 'file') {
+                            $url->mHost = $base->mHost;
+                            $url->mPath = clone $base->mPath;
+                            $url->mQuery = '';
+                            $state = self::QUERY_STATE;
+                        }
+                    } elseif ($c === '#') {
+                        if ($base && $base->mScheme === 'file') {
+                            $url->mHost = $base->mHost;
+                            $url->mPath = clone $base->mPath;
+                            $url->mQuery = $base->mQuery;
+                            $url->mFragment = '';
+                            $state = self::FRAGMENT_STATE;
+                        }
+                    } else {
+                        // Platform-independent Windows drive letter quirk
+                        $shouldPopPath = $base &&
+                            $base->mScheme === 'file' &&
+                            // If c and the first code point of remaining are
+                            // not a Windows drive letter
+                            (!preg_match(
+                                URLUtils::REGEX_WINDOWS_DRIVE_LETTER,
+                                mb_substr($input, $pointer, 2, $encoding)
+                            ) ||
+                            // If remaining consists of at least 1 code point
+                            mb_strlen(
+                                mb_substr(
+                                    $input,
+                                    $pointer + 1,
+                                    null,
                                     $encoding
-                                ) == 1 ||
-                                !preg_match(
-                                    '/[/\\?#]/',
-                                    mb_substr(
-                                        $input,
-                                        $pointer + 2,
-                                        1,
-                                        $encoding
-                                    )
-                                ));
+                                ),
+                                $encoding
+                            ) == 1 ||
+                            // If remaining's second code point is not /, \, ?,
+                            // or #.
+                            !preg_match(
+                                '/[/\\?#]/',
+                                mb_substr(
+                                    $input,
+                                    $pointer + 2,
+                                    1,
+                                    $encoding
+                                )
+                            ));
 
-                            if ($shouldPopPath) {
-                                $url->mHost = $base->mHost;
-                                $url->mPath = clone $base->mPath;
-                                self::popURLPath($url);
-                            } elseif ($base && $base->mScheme == 'file') {
-                                // Syntax violation
-                            } else {
-                                $state = self::PATH_STATE;
-                                $pointer--;
-                            }
+                        if ($shouldPopPath) {
+                            $url->mHost = $base->mHost;
+                            $url->mPath = clone $base->mPath;
+                            self::popURLPath($url);
+                        } elseif ($base && $base->mScheme == 'file') {
+                            // Syntax violation
+                        } else {
+                            $state = self::PATH_STATE;
+                            $pointer--;
                         }
                     }
 
