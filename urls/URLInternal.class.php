@@ -849,6 +849,8 @@ class URLInternal
                         $c === ''/* EOF */ ||
                         (!$aStateOverride && $c === '#')
                     ) {
+                        $oldEncoding = $encoding;
+
                         if (
                             !$url->isSpecial() ||
                             $url->mScheme === 'ws' ||
@@ -857,7 +859,14 @@ class URLInternal
                             $encoding = 'utf-8';
                         }
 
-                        $buffer = mb_convert_encoding($buffer, $encoding);
+                        if ($encoding !== $oldEncoding) {
+                            $buffer = mb_convert_encoding(
+                                $buffer,
+                                $encoding,
+                                $oldEncoding
+                            );
+                        }
+
                         $length = strlen($buffer);
 
                         for ($i = 0; $i < $length; $i++) {
@@ -885,10 +894,6 @@ class URLInternal
                             $url->mFragment = '';
                             $state = self::FRAGMENT_STATE;
                         }
-                    } elseif (
-                        preg_match(URLUtils::REGEX_ASCII_WHITESPACE, $c)
-                    ) {
-                        // Syntax violation
                     } else {
                         if (
                             !preg_match(URLUtils::REGEX_URL_CODE_POINTS, $c) &&
@@ -901,7 +906,7 @@ class URLInternal
                             $c === '%' &&
                             !ctype_xdigit(
                                 mb_substr($input, $pointer + 1, 2, $encoding)
-                                )
+                            )
                         ) {
                             // Syntax violation
                         }
