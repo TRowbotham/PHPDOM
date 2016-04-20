@@ -47,36 +47,55 @@ abstract class URLUtils {
     /**
      * Converts a domain name to ASCII.
      *
-     * @link https://url.spec.whatwg.org/#concept-domain-to-ascii
+     * @see https://url.spec.whatwg.org/#concept-domain-to-ascii
      *
-     * @param  string       $aDomain    The domain name to be converted.
+     * @param string $aDomain The domain name to be converted.
      *
      * @return string|bool              Returns the domain name upon success or false on failure.
      */
     public static function domainToASCII($aDomain) {
-        // TODO: Let result be the result of running Unicode ToASCII with domain_name set to domain, UseSTD3ASCIIRules set to false,
-        // processing_option set to Transitional_Processing, and VerifyDnsLength set to false.
+        // Let result be the result of running Unicode ToASCII with domain_name
+        // set to domain, UseSTD3ASCIIRules set to false, processing_option set
+        // to Transitional_Processing, and VerifyDnsLength set to false.
+        $result = idn_to_ascii(
+            $aDomain,
+            IDNA_USE_STD3_RULES,
+            INTL_IDNA_VARIANT_UTS46
+        );
 
-        // TODO: If result is a failure value, syntax violation, return failure.
+        if (!$result) {
+            // Syntax violation
+            return false;
+        }
 
-        return $aDomain;
+        return $result;
     }
 
     /**
      * Converts a domain name to Unicode.
      *
-     * @link https://url.spec.whatwg.org/#concept-domain-to-ascii
+     * @see https://url.spec.whatwg.org/#concept-domain-to-ascii
      *
-     * @param  string       $aDomain    The domain name to be converted.
+     * @param string $aDomain The domain name to be converted.
      *
-     * @return string|bool              Returns the domain name upon success or false on failure.
+     * @return string|bool Returns the domain name upon success or false on
+     *     failure.
      */
     public static function domainToUnicode($aDomain) {
-        // TODO: Let result be the result of running Unicode ToUnicode with domain_name set to domain, UseSTD3ASCIIRules set to false.
+        // Let result be the result of running Unicode ToUnicode with
+        // domain_name set to domain, UseSTD3ASCIIRules set to false.
+        $result = idn_to_utf8(
+            $aDomain,
+            IDNA_USE_STD3_RULES,
+            INTL_IDNA_VARIANT_UTS46
+        );
 
-        // TODO: Signify syntax violations for any returned errors, and then, return result.
+        if (!$result) {
+            // Syntax violation
+            return false;
+        }
 
-        return $aDomain;
+        return $result;
     }
 
     public static function encode($aStream, $aEncoding = 'UTF-8') {
