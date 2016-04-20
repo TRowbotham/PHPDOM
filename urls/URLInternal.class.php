@@ -73,46 +73,72 @@ class URLInternal
      *
      * @param string $aInput The URL string that is to be parsed.
      *
-     * @param URLInternal|null $aBaseUrl Optional argument that is only needed
+     * @param URLInternal|null $aBase Optional argument that is only needed
      *     if the input is a relative URL.  This represents the base URL, which
      *     in most cases, is the document's URL, it may also be a node's base
      *     URI or whatever base URL you wish to resolve relative URLs against.
      *     Default is null.
      *
-     * @param string $aEncoding Optional argument that overrides the default
-     *     encoding. Default is UTF-8.
+     * @param string $aEncodingOverride Optional argument that overrides the
+     *     default encoding. Default is UTF-8.
      *
      * @param URLInternal|null $aUrl Optional argument. This represents an
      *     existing URL object that should be modified based on the input URL
      *     and optional base URL.  Default is null.
      *
-     * @param int|null $aState Optional argument. An integer that determines
-     *     what state the state machine will begin parsing the input URL from.
-     *     Suppling a value for this parameter will override the default state
-     *     of SCHEME_START_STATE. Default is null.
+     * @param int|null $aStateOverride Optional argument. An integer that
+     *     determineswhat state the state machine will begin parsing the input
+     *     URL from. Suppling a value for this parameter will override the
+     *     default state of SCHEME_START_STATE. Default is null.
      *
      * @return URLInternal|bool Returns a URL object upon successfully parsing
      *     the input or false if parsing input failed.
      */
     public static function basicURLParser(
         $aInput,
-        URLInternal $aBaseUrl = null,
-        $aEncoding = null,
+        URLInternal $aBase = null,
+        $aEncodingOverride = null,
         URLInternal $aUrl = null,
-        $aState = null
+        $aStateOverride = null
     ) {
-        if ($aUrl) {
-            $url = $aUrl;
-            $input = $aInput;
-        } else {
+        $url = $aUrl;
+        $input = $aInput;
+
+        if (!$aUrl) {
             $url = new URLInternal();
-            $input = trim($aInput);
+            $containsC0Chars = preg_match(
+                '/^[\x{0000}-\x{001F}]|[\x{0000}-\x{001F}]$/',
+                $aInput
+            );
+
+            // A URL should not contain any leading C0 control and space
+            // characters.
+            if ($containsC0Chars) {
+                // Syntax violation.
+
+                // Remove any leading or trailing C0 control and space
+                // characters.
+                $input = trim($aInput);
+            }
         }
 
-        $state = $aState ? $aState : self::SCHEME_START_STATE;
-        $base = $aBaseUrl;
-        $encoding = $aEncoding ? $aEncoding : 'utf-8';
+        // A URL should not contain any tab or newline characters.
+        if (preg_match('/[\x{0009}\x{000A}\x{000D}]/', $input)) {
+            // Syntax violation
+
+            // Remove all tab and newline characters.
+            $input = str_replace(["\t", "\n", "\r"], '', $input);
+        }
+
+        $state = $aStateOverride ?: self::SCHEME_START_STATE;
+        $base = $aBase;
+        // TODO: If encoding override is given, set it to the result of the
+        // getting an output encoding algorithm.
+        $encoding = $aEncodingOverride ?: 'utf-8';
         $buffer = '';
+        // TODO: Let the @ flag and [] flag be unset.  Are these supposed to be
+        // local to this parser invocation or are they flags set on the URL
+        // itself?
         $len = mb_strlen($input, $encoding);
 
         for ($pointer = 0; $pointer <= $len; $pointer++) {
@@ -123,7 +149,7 @@ class URLInternal
                     if (preg_match(URLUtils::REGEX_ASCII_ALPHA, $c)) {
                         $buffer .= strtolower($c);
                         $state = self::SCHEME_STATE;
-                    } elseif (!$aState) {
+                    } elseif (!$aStateOverride) {
                         $state = self::NO_SCHEME_STATE;
                         $pointer--;
                     } else {
@@ -140,7 +166,7 @@ class URLInternal
                     ) {
                         $buffer .= strtolower($c);
                     } elseif ($c == ':') {
-                        if ($aState) {
+                        if ($aStateOverride) {
                             $bufferIsSpecialScheme = isset(
                                 URLUtils::$specialSchemes[$buffer]
                             );
@@ -158,7 +184,7 @@ class URLInternal
                         $url->mScheme = $buffer;
                         $buffer = '';
 
-                        if ($aState) {
+                        if ($aStateOverride) {
                             // Terminate this algoritm
                             break;
                         }
@@ -201,7 +227,7 @@ class URLInternal
                             $url->mPath->push('');
                             $state = self::NON_RELATIVE_PATH_STATE;
                         }
-                    } elseif (!$aState) {
+                    } elseif (!$aStateOverride) {
                         $buffer = '';
                         $state = self::NO_SCHEME_STATE;
 
@@ -445,7 +471,7 @@ class URLInternal
                         $buffer = '';
                         $state = self::PORT_STATE;
 
-                        if ($aState == self::HOSTNAME_STATE) {
+                        if ($aStateOverride == self::HOSTNAME_STATE) {
                             // Terminate this algorithm
                             break;
                         }
@@ -474,7 +500,7 @@ class URLInternal
                         $buffer = '';
                         $state = self::PATH_START_STATE;
 
-                        if ($aState) {
+                        if ($aStateOverride) {
                             // Terminate this algorithm
                             break;
                         }
@@ -503,7 +529,7 @@ class URLInternal
                             $c == '?' ||
                             $c == '#') ||
                         ($url->isSpecial() && $c == '\\') ||
-                        $aState
+                        $aStateOverride
                     ) {
                         if ($buffer) {
                             $port = intval($buffer, 10);
@@ -529,7 +555,7 @@ class URLInternal
                             $buffer = '';
                         }
 
-                        if ($aState) {
+                        if ($aStateOverride) {
                             // Terminate this algorithm
                             break;
                         }
@@ -714,7 +740,7 @@ class URLInternal
                         $c === ''/* EOF */ ||
                         $c == '/' ||
                         ($url->isSpecial() && $c == '\\') ||
-                        (!$aState && ($c == '?' || $c == '#'))
+                        (!$aStateOverride && ($c == '?' || $c == '#'))
                     ) {
                         $urlIsSpecial = $url->isSpecial();
 
@@ -836,7 +862,7 @@ class URLInternal
                     break;
 
                 case self::QUERY_STATE:
-                    if ($c === ''/* EOF */ || (!$aState && $c == '#')) {
+                    if ($c === ''/* EOF */ || (!$aStateOverride && $c == '#')) {
                         if (
                             !$url->isSpecial() ||
                             $url->mScheme == 'ws' ||
@@ -1269,16 +1295,16 @@ class URLInternal
      * @param URLInternal|null $aBase A base URL to resolve relative URLs
      *     against.
      *
-     * @param string $aEncoding The character encoding of the URL.
+     * @param string $aEncodingOverride The character encoding of the URL.
      *
      * @return URLInternal|bool
      */
     public static function URLParser(
         $aInput,
         URLInternal $aBase = null,
-        $aEncoding = null
+        $aEncodingOverride = null
     ) {
-        $url = self::basicURLParser($aInput, $aBase, $aEncoding);
+        $url = self::basicURLParser($aInput, $aBase, $aEncodingOverride);
 
         if ($url === false) {
             return false;
