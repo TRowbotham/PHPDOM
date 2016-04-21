@@ -613,7 +613,7 @@ class URLInternal
                             // If remaining's second code point is not /, \, ?,
                             // or #.
                             !preg_match(
-                                '/[/\\?#]/',
+                                '/[\/\\\\?#]/',
                                 mb_substr(
                                     $input,
                                     $pointer + 2,
