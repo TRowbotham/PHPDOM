@@ -6,14 +6,16 @@ use phpjs\exceptions\TypeError;
 /**
  * Represents a URL that can be manipulated.
  *
- * @link https://url.spec.whatwg.org/#api
- * @link https://developer.mozilla.org/en-US/docs/Web/API/URL
+ * @see https://url.spec.whatwg.org/#api
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/URL
  */
-class URL {
+class URL
+{
     private $mSearchParams;
     private $mUrl;
 
-	public function __construct($aUrl, $aBase = null) {
+	public function __construct($aUrl, $aBase = null)
+    {
         $this->mSearchParams = null;
         $this->mUrl = null;
         $parsedBase = null;
@@ -43,7 +45,8 @@ class URL {
         $this->mUrl = null;
     }
 
-    public function __get($aName) {
+    public function __get($aName)
+    {
         switch ($aName) {
             case 'hash':
                 $fragment = $this->mUrl->getFragment();
@@ -81,7 +84,9 @@ class URL {
                 return $password === null ? '' : $password;
 
             case 'pathname':
-                if ($this->mUrl->isFlagSet(URLInternal::FLAG_CANNOT_BE_A_BASE_URL)) {
+                if ($this->mUrl->isFlagSet(
+                        URLInternal::FLAG_CANNOT_BE_A_BASE_URL
+                )) {
                     return $this->mUrl->getPath()[0];
                 }
 
@@ -119,7 +124,8 @@ class URL {
         }
     }
 
-    public function __set($aName, $aValue) {
+    public function __set($aName, $aValue)
+    {
         switch ($aName) {
             case 'hash':
                 if ($this->mUrl->getScheme() == 'javascript') {
@@ -136,27 +142,49 @@ class URL {
 
                 $input = $aValue[0] == '#' ? substr($aValue, 1) : $aValue;
                 $this->mUrl->setFragment('');
-                URLInternal::basicURLParser($input, null, null, $this->mUrl, URLInternal::FRAGMENT_STATE);
+                URLInternal::basicURLParser(
+                    $input,
+                    null,
+                    null,
+                    $this->mUrl,
+                    URLInternal::FRAGMENT_STATE
+                );
 
                 break;
 
             case 'host':
-                if ($this->mUrl->isFlagSet(URLInternal::FLAG_CANNOT_BE_A_BASE_URL)) {
+                if ($this->mUrl->isFlagSet(
+                        URLInternal::FLAG_CANNOT_BE_A_BASE_URL
+                )) {
                     // Terminate these steps
                     return;
                 }
 
-                URLInternal::basicURLParser($aValue, null, null, $this->mUrl, URLInternal::HOST_STATE);
+                URLInternal::basicURLParser(
+                    $aValue,
+                    null,
+                    null,
+                    $this->mUrl,
+                    URLInternal::HOST_STATE
+                );
 
                 break;
 
             case 'hostname':
-                if ($this->mUrl->isFlagSet(URLInternal::FLAG_CANNOT_BE_A_BASE_URL)) {
+                if ($this->mUrl->isFlagSet(
+                        URLInternal::FLAG_CANNOT_BE_A_BASE_URL
+                )) {
                     // Terminate these steps
                     return;
                 }
 
-                URLInternal::basicURLParser($aValue, null, null, $this->mUrl, URLInternal::HOSTNAME_STATE);
+                URLInternal::basicURLParser(
+                    $aValue,
+                    null,
+                    null,
+                    $this->mUrl,
+                    URLInternal::HOSTNAME_STATE
+                );
 
                 break;
 
@@ -173,7 +201,11 @@ class URL {
                 break;
 
             case 'password':
-                if ($this->mUrl->getHost() === null || $this->mUrl->isFlagSet(URLInternal::FLAG_CANNOT_BE_A_BASE_URL)) {
+                if ($this->mUrl->getHost() === null ||
+                    $this->mUrl->isFlagSet(
+                        URLInternal::FLAG_CANNOT_BE_A_BASE_URL
+                    )
+                ) {
                     // Terminate these steps
                     return;
                 }
@@ -183,7 +215,9 @@ class URL {
                 break;
 
             case 'pathname':
-                if ($this->mUrl->isFlagSet(URLInternal::FLAG_CANNOT_BE_A_BASE_URL)) {
+                if ($this->mUrl->isFlagSet(
+                        URLInternal::FLAG_CANNOT_BE_A_BASE_URL
+                )) {
                     // Terminate these steps
                     return;
                 }
@@ -192,22 +226,45 @@ class URL {
                     $this->mUrl->getPath()->pop();
                 }
 
-                URLInternal::basicURLParser($aValue, null, null, $this->mUrl, URLInternal::PATH_START_STATE);
+                URLInternal::basicURLParser(
+                    $aValue,
+                    null,
+                    null,
+                    $this->mUrl,
+                    URLInternal::PATH_START_STATE
+                );
 
                 break;
 
             case 'port':
-                if ($this->mUrl->getHost() === null || $this->mUrl->isFlagSet(URLInternal::FLAG_CANNOT_BE_A_BASE_URL) || $this->mUrl->getScheme() == 'file') {
+                if ($this->mUrl->getHost() === null ||
+                    $this->mUrl->isFlagSet(
+                        URLInternal::FLAG_CANNOT_BE_A_BASE_URL
+                    ) ||
+                    $this->mUrl->getScheme() == 'file'
+                ) {
                     // Terminate these steps
                     return;
                 }
 
-                URLInternal::basicURLParser($aValue, null, null, $this->mUrl, URLInternal::PORT_STATE);
+                URLInternal::basicURLParser(
+                    $aValue,
+                    null,
+                    null,
+                    $this->mUrl,
+                    URLInternal::PORT_STATE
+                );
 
                 break;
 
             case 'protocol':
-                URLInternal::basicURLParser($aValue . ':', null, null, $this->mUrl, URLInternal::SCHEME_START_STATE);
+                URLInternal::basicURLParser(
+                    $aValue . ':',
+                    null,
+                    null,
+                    $this->mUrl,
+                    URLInternal::SCHEME_START_STATE
+                );
 
                 break;
 
@@ -221,13 +278,24 @@ class URL {
 
                 $input = $aValue[0] == '?' ? substr($aValue, 1) : $aValue;
                 $this->mUrl->setQuery('');
-                URLInternal::basicURLParser($input, null, null, $this->mUrl, URLInternal::QUERY_STATE);
-                $this->mSearchParams->_mutateList(URLUtils::urlencodedStringParser($input));
+                URLInternal::basicURLParser(
+                    $input,
+                    null,
+                    null,
+                    $this->mUrl,
+                    URLInternal::QUERY_STATE
+                );
+                $this->mSearchParams->_mutateList(
+                    URLUtils::urlencodedStringParser($input)
+                );
 
                 break;
 
             case 'username':
-                if ($this->mUrl->getHost() === null || $this->mUrl->isFlagSet(URLInternal::FLAG_CANNOT_BE_A_BASE_URL)) {
+                if ($this->mUrl->getHost() === null ||
+                    $this->mUrl->isFlagSet(
+                        URLInternal::FLAG_CANNOT_BE_A_BASE_URL
+                )) {
                     // Terminate these steps
                     return;
                 }
