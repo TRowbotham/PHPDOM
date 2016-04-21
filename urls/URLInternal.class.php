@@ -629,10 +629,10 @@ class URLInternal
                             self::popURLPath($url);
                         } elseif ($base && $base->mScheme === 'file') {
                             // Syntax violation
-                        } else {
-                            $state = self::PATH_STATE;
-                            $pointer--;
                         }
+
+                        $state = self::PATH_STATE;
+                        $pointer--;
                     }
 
                     break;
