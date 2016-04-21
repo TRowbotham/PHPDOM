@@ -22,74 +22,44 @@ class IPv4Address extends Host
      */
     public static function parse($aInput)
     {
-        $syntaxViolationFlag = null;
-        $parts = explode('.', $aInput);
-        $len = count($parts);
-        $lastIndex = $len - 1;
+        $isIPv4 = filter_var($aInput, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4);
 
-        if ($parts[$lastIndex] === '') {
-            $syntaxViolationFlag = true;
-            array_pop($parts);
-        }
+        if ($isIPv4 !== false) {
+            return new IPv4Address(inet_pton($aInput));
+        } else {
+            $syntaxViolationFlag = null;
+            $parts = explode('.', $aInput);
+            $len = count($parts);
+            $lastIndex = $len - 1;
 
-        if ($len > 4) {
-            return $aInput;
-        }
+            if ($parts[$lastIndex] === '') {
+                $syntaxViolationFlag = true;
+                array_pop($parts);
+                $len--;
+            }
 
-        $numbers = array();
-
-        foreach($parts as $part) {
-            if ($part === '') {
+            if ($len > 4) {
                 return $aInput;
             }
 
-            $n = self::parseIPv4Number($part, $syntaxViolationFlag);
+            $numbers = [];
 
-            if ($n === false) {
-                return $aInput;
-            }
+            foreach($parts as $part) {
+                if ($part === '') {
+                    return $aInput;
+                }
 
-            $numbers[] = $n;
-        }
+                $n = self::parseIPv4Number($part, $syntaxViolationFlag);
 
-        if ($syntaxViolationFlag) {
-            // Syntax violation
-        }
+                if ($n === false) {
+                    return $aInput;
+                }
 
-        foreach ($numbers as $n) {
-            if ($n > 255) {
-                // Syntax violation
+                $numbers[] = $n;
             }
         }
 
-        $numCount = count($numbers);
-
-        for ($i = 0; $i < $numCount - 1; $i++) {
-            if ($numbers[$i] > 255) {
-                return false;
-            }
-        }
-
-        if ($numbers[$numCount - 1] >= pow(256, 5 - $numCount)) {
-            // Syntax violation
-            return false;
-        }
-
-        $ipv4 = gmp_init(array_pop($numbers), 10);
-        $counter = 0;
-
-        foreach ($numbers as $n) {
-            $ipv4 = gmp_add(
-                $ipv4,
-                gmp_mul(
-                    gmp_init($n, 10),
-                    gmp_init(pow(256, 3 - $counter), 10)
-                )
-            );
-            $counter++;
-        }
-
-        return new IPv4Address($ipv4);
+        return false;
     }
 
     /**
@@ -101,20 +71,7 @@ class IPv4Address extends Host
      */
     public function serialize()
     {
-        $output = '';
-        $n = $this->mHost;
-
-        for ($i = 0; $i < 4; $i++) {
-            $output = gmp_strval(gmp_mod($n, '256')) . $output;
-
-            if ($i < 3) {
-                $output = '.' . $output;
-            }
-
-            $n = gmp_div($n, '256');
-        }
-
-        return $output;
+        return inet_ntop($this->mHost);
     }
 
     /**
