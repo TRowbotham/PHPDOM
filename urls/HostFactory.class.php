@@ -19,10 +19,10 @@ abstract class HostFactory
      */
     public static function parse($aInput, $aUnicodeFlag = null)
     {
-        if ($aInput[0] == '[') {
+        if ($aInput !== '' && $aInput[0] === '[') {
             $len = strlen($aInput);
 
-            if ($aInput[$len - 1] != ']') {
+            if ($aInput[$len - 1] !== ']') {
                 // Syntax violation
                 return false;
             }
