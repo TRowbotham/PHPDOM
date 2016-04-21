@@ -51,7 +51,7 @@ abstract class HostFactory
         }
 
         return $aUnicodeFlag ?
-            URLUtils::domainToUnicode($domain) : $asciiDomain;
+            URLUtils::domainToUnicode($asciiDomain) : $asciiDomain;
     }
 
     /**
