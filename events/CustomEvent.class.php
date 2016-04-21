@@ -27,6 +27,12 @@ class CustomEvent extends Event
         $this->mDetail =& $initDict->detail;
     }
 
+    public function __destruct()
+    {
+        $this->mDetail = null;
+        parent::__destruct();
+    }
+
     public function __get($aName)
     {
         switch ($aName) {

@@ -58,6 +58,19 @@ class Document extends Node
         $this->mURL = new urls\URL($url);
     }
 
+    public function __destruct()
+    {
+        $this->mImplementation = null;
+        $this->mNodeIteratorList = null;
+        $this->mURL = null;
+
+        if (self::$mRefCount == 1) {
+            self::$mDefaultDocument = null;
+        }
+
+        parent::__destruct();
+    }
+
     public function __get($aName)
     {
         switch ($aName) {

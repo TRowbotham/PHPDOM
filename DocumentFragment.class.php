@@ -24,6 +24,12 @@ class DocumentFragment extends Node
         $this->mNodeType = Node::DOCUMENT_FRAGMENT_NODE;
     }
 
+    public function __destruct()
+    {
+        $this->mHost = null;
+        parent::__destruct();
+    }
+
     public function __get($aName)
     {
         switch ($aName) {

@@ -36,6 +36,11 @@ class URLSearchParams implements \Iterator {
         }
     }
 
+    public function __destruct()
+    {
+        $this->mUrl = null;
+    }
+
     /**
      * Appends a new key -> value pair to the end of the query string.
      *

@@ -51,7 +51,16 @@ class Element extends Node implements \SplObserver
         $this->mPrefix = null;
     }
 
-    public function __get( $aName ) {
+    public function __destruct()
+    {
+        $this->mAttributesList = null;
+        $this->mClassList = null;
+        $this->mNamedNodeMap = null;
+        parent::__destruct();
+    }
+
+    public function __get($aName)
+    {
         switch ($aName) {
             case 'attributes':
                 return $this->mNamedNodeMap;

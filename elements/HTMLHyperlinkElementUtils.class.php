@@ -11,6 +11,11 @@ trait HTMLHyperlinkElementUtils
 {
     protected $mUrl;
 
+    private function HTMLHyperlinkElementUtilsDestructor()
+    {
+        $this->mUrl = null;
+    }
+
     private function HTMLHyperlinkElementUtilsGetter($aName)
     {
         switch ($aName) {

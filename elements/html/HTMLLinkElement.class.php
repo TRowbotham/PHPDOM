@@ -51,6 +51,12 @@ class HTMLLinkElement extends HTMLElement
         $this->mSizes = new DOMTokenList($this, 'sizes');
     }
 
+    {
+        $this->mRelList = null;
+        $this->mSizes = null;
+        parent::__destruct();
+    }
+
     public function __get($aName)
     {
         switch ($aName) {

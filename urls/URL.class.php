@@ -37,6 +37,12 @@ class URL {
         $this->mSearchParams->_setUrl($parsedURL);
 	}
 
+    public function __destruct()
+    {
+        $this->mSearchParams = null;
+        $this->mUrl = null;
+    }
+
     public function __get($aName) {
         switch ($aName) {
             case 'hash':

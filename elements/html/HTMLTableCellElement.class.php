@@ -38,6 +38,12 @@ class HTMLTableCellElement extends HTMLElement
         $this->mRowSpan = 1;
     }
 
+    public function __destruct()
+    {
+        $this->mHeaders = null;
+        parent::__destruct();
+    }
+
     public function __get($aName)
     {
         switch ($aName) {

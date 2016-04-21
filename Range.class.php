@@ -51,6 +51,11 @@ class Range {
         $this->mStartOffset = 0;
     }
 
+    public function __destruct()
+    {
+        $this->mEndContainer = null;
+        $this->mStartContainer = null;
+    }
 
     public function __get($aName)
     {

@@ -71,6 +71,7 @@ abstract class Node implements EventTarget
     protected $mParentNode; // Node
     protected $mParentElement; // Element
     protected $mPreviousSibling; // Node
+    protected static $mRefCount = 0;
 
     private $mEvents;
 
@@ -90,6 +91,26 @@ abstract class Node implements EventTarget
         $this->mParentElement = null;
         $this->mParentNode = null;
         $this->mPreviousSibling = null;
+        self::$mRefCount++;
+    }
+
+    public function __destruct()
+    {
+        $this->mChildNodes = null;
+        $this->mEvents = null;
+        $this->mFirstChild = null;
+        $this->mLastChild = null;
+        $this->mNextSibling = null;
+        $this->mOwnerDocument = null;
+        $this->mParentElement = null;
+        $this->mParentNode = null;
+        $this->mPreviousSibling = null;
+
+        if (self::$mRefCount === 1) {
+            self::$mBaseURI = null;
+        }
+
+        self::$mRefCount--;
     }
 
     public function __get($aName)

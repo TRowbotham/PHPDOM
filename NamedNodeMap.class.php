@@ -27,6 +27,12 @@ class NamedNodeMap implements \ArrayAccess, \SeekableIterator, \Countable
         $this->mPosition = 0;
     }
 
+    public function __destruct()
+    {
+        $this->mAttributesList = null;
+        $this->mOwnerElement = null;
+    }
+
     public function __get($aName)
     {
         switch ($aName) {

@@ -61,6 +61,11 @@ class URLInternal
         $this->mUsername = '';
     }
 
+    public function __destruct()
+    {
+        $this->mPath = null;
+    }
+
     /**
      * Parses a string as a URL. The string can be an absolute URL or a relative
      * URL. If a relative URL is give, a base URL must also be given so that a
