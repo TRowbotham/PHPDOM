@@ -1161,11 +1161,6 @@ class URLInternal
         return $output;
     }
 
-    public function setFlag($aFlag)
-    {
-        $this->mFlags |= $aFlag;
-    }
-
     public function setFragment($aFragment)
     {
         $this->mFragment = $aFragment;
@@ -1246,11 +1241,6 @@ class URLInternal
                 URLUtils::ENCODE_SET_USERINFO
             );
         }
-    }
-
-    public function unsetFlag($aFlag)
-    {
-        $this->mFlags &= ~$aFlag;
     }
 
     /**
