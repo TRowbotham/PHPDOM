@@ -18,6 +18,9 @@ class ProcessingInstruction extends CharacterData
         switch ($aName) {
             case 'target':
                 return $this->mTarget;
+
+            default:
+                return parent::__get($aName);
         }
     }
 
