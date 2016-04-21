@@ -109,24 +109,25 @@ class URLInternal
 
         if (!$aUrl) {
             $url = new URLInternal();
-            $containsC0Chars = preg_match(
-                '/^[\x{0000}-\x{001F}]|[\x{0000}-\x{001F}]$/',
-                $aInput
+
+            // Remove any leading or trailing C0 control and space characters.
+            $input = preg_replace(
+                '/^[\x00-\x1F\x20]+|[\x00-\x1F\x20]+$/',
+                '',
+                $input,
+                -1,
+                $count
             );
 
             // A URL should not contain any leading C0 control and space
             // characters.
-            if ($containsC0Chars) {
+            if ($count > 0) {
                 // Syntax violation.
-
-                // Remove any leading or trailing C0 control and space
-                // characters.
-                $input = trim($aInput);
             }
         }
 
         // A URL should not contain any tab or newline characters.
-        if (preg_match('/[\x{0009}\x{000A}\x{000D}]/', $input)) {
+        if (preg_match('/[\x09\x0A\x0D]+/', $input)) {
             // Syntax violation
 
             // Remove all tab and newline characters.
