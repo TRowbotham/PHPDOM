@@ -1,22 +1,26 @@
 <?php
 namespace phpjs\urls;
 
-class IPv6Address extends Host {
-    protected function __construct($aHost) {
+class IPv6Address extends Host
+{
+    protected function __construct($aHost)
+    {
         parent::__construct($aHost);
     }
 
     /**
      * Parses an IPv6 string.
      *
-     * @link https://url.spec.whatwg.org/#concept-ipv6-parser
+     * @see https://url.spec.whatwg.org/#concept-ipv6-parser
      *
-     * @param  string           $aInput [description]
+     * @param string $aInput An IPv6 address.
      *
-     * @return IPv6Address|bool         Returns an IPv6Address if the string was successfully parsed
-     *                                  as an IPv6 address or false if the input is not an IPv6 address.
+     * @return IPv6Address|bool Returns an IPv6Address if the string was
+     *     successfully parsed as an IPv6 address or false if the input is not
+     *     an IPv6 address.
      */
-    public static function parse($aInput) {
+    public static function parse($aInput)
+    {
         $address = '0:0:0:0:0:0:0:0';
         $piecePointer = 0;
         $piece = substr($address, $piecePointer, 1);
@@ -173,11 +177,12 @@ class IPv6Address extends Host {
     /**
      * Serializes an IPv6 address.
      *
-     * @link https://url.spec.whatwg.org/#concept-ipv6-serializer
+     * @see https://url.spec.whatwg.org/#concept-ipv6-serializer
      *
      * @return string
      */
-    public function serialize() {
+    public function serialize()
+    {
         $output = '';
         $compressPointer = null;
 
