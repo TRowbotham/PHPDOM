@@ -803,7 +803,7 @@ class URLInternal
 
                         if ($c === '%' && strtolower($remaining) === '2e') {
                             $buffer .= '.';
-                            $pointer++;
+                            $pointer += 2;
                         } else {
                             $buffer .= URLUtils::utf8PercentEncode(
                                 $c,
