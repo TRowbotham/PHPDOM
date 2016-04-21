@@ -450,7 +450,7 @@ class URLInternal
                 case self::HOST_STATE:
                 case self::HOSTNAME_STATE:
                     if ($c === ':' && !$flag_array) {
-                        if ($url->isSpecial() && !$buffer) {
+                        if ($url->isSpecial() && $buffer === '') {
                             // Return failure
                             return false;
                         }
@@ -479,7 +479,7 @@ class URLInternal
                     ) {
                         $pointer--;
 
-                        if ($url->isSpecial() && !$buffer) {
+                        if ($url->isSpecial() && $buffer === '') {
                             // Return failure
                             return false;
                         }
@@ -522,7 +522,7 @@ class URLInternal
                         ($url->isSpecial() && $c === '\\') ||
                         $aStateOverride
                     ) {
-                        if ($buffer) {
+                        if ($buffer !== '') {
                             $port = intval($buffer, 10);
 
                             if ($port > pow(2, 16) - 1) {
@@ -685,7 +685,7 @@ class URLInternal
                             // instead used in the path state.
                             // Syntax violation
                             $state = self::PATH_STATE;
-                        } elseif (!$buffer) {
+                        } elseif ($buffer === '') {
                             $state = self::PATH_START_STATE;
                         } else {
                             $host = HostFactory::parse($buffer);
