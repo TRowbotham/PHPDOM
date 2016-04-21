@@ -814,6 +814,38 @@ class Document extends Node
         return '#document';
     }
 
+    /**
+     * @see Node::getNodeValue
+     */
+    protected function getNodeValue()
+    {
+        return null;
+    }
+
+    /**
+     * @see Node::getTextContent
+     */
+    protected function getTextContent()
+    {
+        return null;
+    }
+
+    /**
+     * @see Node::setNodeValue
+     */
+    protected function setNodeValue($aNewValue)
+    {
+        // Do nothing.
+    }
+
+    /**
+     * @see Node::setTextContent
+     */
+    protected function setTextContent($aNewValue)
+    {
+        // Do nothing.
+    }
+
     private function _traverseTree($aNodes, $aLevel = 0)
     {
         if (empty($aNodes)) {

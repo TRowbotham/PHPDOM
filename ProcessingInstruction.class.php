@@ -31,4 +31,36 @@ class ProcessingInstruction extends CharacterData
     {
         return $this->mTarget;
     }
+
+    /**
+     * @see Node::getNodeValue
+     */
+    protected function getNodeValue()
+    {
+        return null;
+    }
+
+    /**
+     * @see Node::getTextContent
+     */
+    protected function getTextContent()
+    {
+        return $this->mData;
+    }
+
+    /**
+     * @see Node::setNodeValue
+     */
+    protected function setNodeValue($aNewValue)
+    {
+        $this->replaceData(0, $this->mLength, $aNewValue);
+    }
+
+    /**
+     * @see Node::setTextContent
+     */
+    protected function setTextContent($aNewValue)
+    {
+        $this->replaceData(0, $this->mLength, $aNewValue);
+    }
 }

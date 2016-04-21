@@ -12,8 +12,11 @@ use phpjs\HTMLDocument;
 use phpjs\NamedNodeMap;
 use phpjs\Namespaces;
 use phpjs\Node;
+use phpjs\NodeFilter;
 use phpjs\NonDocumentTypeChildNode;
 use phpjs\ParentNode;
+use phpjs\Text;
+use phpjs\TreeWalker;
 use phpjs\urls\URLInternal;
 use phpjs\Utils;
 
@@ -561,6 +564,29 @@ class Element extends Node implements \SplObserver
     }
 
     /**
+     * @see Node::getNodeValue
+     */
+    protected function getNodeValue()
+    {
+        return null;
+    }
+
+    /**
+     * @see Node::getTextContent
+     */
+    protected function getTextContent()
+    {
+        $tw = new TreeWalker($this, NodeFilter::SHOW_TEXT);
+        $data = '';
+
+        while (($node = $tw->nextNode())) {
+            $data .= $node->data;
+        }
+
+        return $data;
+    }
+
+    /**
      * Gets the element's tag name.
      *
      * @internal
@@ -733,6 +759,29 @@ class Element extends Node implements \SplObserver
             'absolute_url' => $serializedURL,
             'parsed_url' => $parsedURL
         );
+    }
+
+    /**
+     * @see Node::setNodeValue
+     */
+    protected function setNodeValue($aNewValue)
+    {
+        // Do nothing.
+    }
+
+    /**
+     * @see Node::setTextContent
+     */
+    protected function setTextContent($aNewValue)
+    {
+        $node = null;
+
+        if (!empty($aNewValue)) {
+            $node = new Text($aNewValue);
+            $node->mOwnerDocument = $this->mOwnerDocument;
+        }
+
+        $this->_replaceAll($node);
     }
 
     /**

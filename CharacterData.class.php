@@ -45,8 +45,6 @@ abstract class CharacterData extends Node
                 return $this->mLength;
             case 'nextElementSibling':
                 return $this->getNextElementSibling();
-            case 'nodeValue':
-                return $this->mData;
             case 'previousElementSibling':
                 return $this->getPreviousElementSibling();
             default:

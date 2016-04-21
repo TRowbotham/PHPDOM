@@ -67,12 +67,10 @@ abstract class Node implements EventTarget
     protected $mLastChild; // Node
     protected $mNextSibling; // Node
     protected $mNodeType; // int
-    protected $mNodeValue; // String
     protected $mOwnerDocument; // Document
     protected $mParentNode; // Node
     protected $mParentElement; // Element
     protected $mPreviousSibling; // Node
-    protected $mTextContent; // String
 
     private $mEvents;
 
@@ -88,7 +86,6 @@ abstract class Node implements EventTarget
         $this->mLastChild = null;
         $this->mNextSibling = null;
         $this->mNodeType = '';
-        $this->mNodeValue = null;
         $this->mOwnerDocument = Document::_getDefaultDocument();
         $this->mParentElement = null;
         $this->mParentNode = null;
@@ -120,7 +117,7 @@ abstract class Node implements EventTarget
                 return $this->mNodeType;
 
             case 'nodeValue':
-                return $this->mNodeValue;
+                return $this->getNodeValue();
 
             case 'ownerDocument':
                 return $this->mOwnerDocument;
@@ -138,55 +135,20 @@ abstract class Node implements EventTarget
                 return $this->getRootNode();
 
             case 'textContent':
-                switch ($this->mNodeType) {
-                    case self::DOCUMENT_FRAGMENT_NODE:
-                    case self::ELEMENT_NODE:
-                        $tw = new TreeWalker($this, NodeFilter::SHOW_TEXT);
-                        $textContent = '';
-
-                        while ($node = $tw->nextNode()) {
-                            $textContent .= $node->data;
-                        }
-
-                        return $textContent;
-
-                    case self::TEXT_NODE:
-                    case self::PROCESSING_INSTRUCTION_NODE:
-                    case self::COMMENT_NODE:
-                        return $this->mData;
-
-                    default:
-                        return null;
-                }
+                return $this->getTextContent();
         }
     }
 
     public function __set($aName, $aValue)
     {
         switch ($aName) {
+            case 'nodeValue':
+                $this->setNodeValue($aValue);
+
+                break;
+
             case 'textContent':
-                $value = $aValue === null ? '' : $aValue;
-
-                switch ($this->mNodeType) {
-                    case self::DOCUMENT_FRAGMENT_NODE:
-                    case self::ELEMENT_NODE:
-                        $node = null;
-
-                        if ($value !== '') {
-                            $node = new Text($value);
-                        }
-
-                        $this->_replaceAll($node);
-
-                        break;
-
-                    case self::TEXT_NODE:
-                    case self::PROCESSING_INSTRUCTION_NODE:
-                    case self::COMMENT_NODE:
-                        $this->replaceData(0, $this->length, $value);
-
-                        break;
-                }
+                $this->setTextContent($aValue);
         }
     }
 
@@ -1507,6 +1469,17 @@ abstract class Node implements EventTarget
     abstract protected function getNodeName();
 
     /**
+     * Gets the value of the node.
+     *
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#dom-node-nodevalue
+     *
+     * @return string|null
+     */
+    abstract protected function getNodeValue();
+
+    /**
      * Gets a node's root.
      *
      * @internal
@@ -1525,6 +1498,17 @@ abstract class Node implements EventTarget
 
         return $root;
     }
+
+    /**
+     * Gets the concatenation of all descendant text nodes.
+     *
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#dom-node-textcontent
+     *
+     * @return string|null
+     */
+    abstract protected function getTextContent();
 
     /**
      * Checks if the node is an inclusive ancestor of the given node, including
@@ -1758,6 +1742,28 @@ abstract class Node implements EventTarget
 
         return $aChild;
     }
+
+    /**
+     * Sets the node's value.
+     *
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#dom-node-nodevalue
+     *
+     * @param string $aNewValue The node's new value.
+     */
+    abstract protected function setNodeValue($aNewValue);
+
+    /**
+     * Sets the nodes text content.
+     *
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#dom-node-textcontent
+     *
+     * @param string|null $aNewValue The new text to be inserted into the node.
+     */
+    abstract protected function setTextContent($aNewValue);
 
     /**
      * Invokes all callbacks associated with a given event and Node.
