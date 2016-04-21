@@ -977,7 +977,7 @@ class URLInternal
      *
      * @see https://url.spec.whatwg.org/#origin
      *
-     * @return array
+     * @return Origin
      */
     public function getOrigin() {
         switch ($this->mScheme) {
@@ -985,8 +985,14 @@ class URLInternal
                 $url = self::basicURLParser($this->mPath[0]);
 
                 if ($url === false) {
-                    // TODO: Return globally unique identifier.
-                    return;
+                    // Return a new opaque origin
+                    return new Origin(
+                        $this->mScheme,
+                        $this->mHost,
+                        $this->mPort,
+                        null,
+                        true
+                    );
                 }
 
                 return $url->getOrigin();
@@ -997,30 +1003,35 @@ class URLInternal
             case 'https':
             case 'ws':
             case 'wss':
-                return array(
-                        'scheme' => $this->mScheme,
-                        'host' => $this->mHost,
-                        'port' => ($this->mPort === null ?
-                            URLUtils::$specialSchemes[$this->mScheme] :
-                            $this->mPort
-                        )
-                    );
-
-                break;
+                // Return a tuple consiting of URL's scheme, host, port, and
+                // null
+                return new Origin(
+                    $this->mScheme,
+                    $this->mHost,
+                    $this->mPort,
+                    null
+                );
 
             case 'file':
-                // TODO: Unfortunate as it is, this is left as an exercise to
-                // the reader. When in doubt, return a new globally unique
-                // identifier.
-                return array(
-                    'scheme' => $this->mScheme,
-                    'host' => '',
-                    'port' => ''
+                // Unfortunate as it is, this is left as an exercise to the
+                // reader. When in doubt, return a new opaque origin.
+                return new Origin(
+                    $this->mScheme,
+                    $this->mHost,
+                    $this->mPort,
+                    null,
+                    true
                 );
 
             default:
-                // TODO: Return a new globally unique identifier.
-                return;
+                // Return a new opaque origin.
+                return new Origin(
+                    $this->mScheme,
+                    $this->mHost,
+                    $this->mPort,
+                    null,
+                    true
+                );
         }
     }
 
@@ -1087,40 +1098,6 @@ class URLInternal
     public function isSpecial()
     {
         return isset(URLUtils::$specialSchemes[$this->mScheme]);
-    }
-
-    /**
-     * Serializes an origin using Unicode.
-     *
-     * @see https://html.spec.whatwg.org/multipage/browsers.html#unicode-serialisation-of-an-origin
-     *
-     * @param array $aOrigin An origin.
-     *
-     * @return string
-     */
-    public static function serializeOriginAsUnicode($aOrigin)
-    {
-        if (!is_array($aOrigin)) {
-            return 'null';
-        }
-
-        $result = $aOrigin['scheme'];
-        $result .= '://';
-
-        $hostParts = explode('.', HostFactory::parse($aOrigin['host']));
-        $result .= implode(
-            '.',
-            array_map(array('self', 'domainToUnicode'), $hostParts)
-        );
-
-        if (
-            $aOrigin['port'] !==
-            URLUtils::$specialSchemes[$aOrigin['scheme']]
-        ) {
-            $result .= ':' . intval($aOrigin['port'], 10);
-        }
-
-        return $result;
     }
 
     /**

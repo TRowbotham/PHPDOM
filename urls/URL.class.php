@@ -67,7 +67,7 @@ class URL {
                 return $this->mUrl->serializeURL();
 
             case 'origin':
-                return URLInternal::serializeOriginAsUnicode($this->mUrl->getOrigin());
+                return $this->mUrl->getOrigin()->serializeAsUnicode();
 
             case 'password':
                 $password = $this->mUrl->getPassword();
