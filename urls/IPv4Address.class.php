@@ -1,23 +1,27 @@
 <?php
 namespace phpjs\urls;
 
-class IPv4Address extends Host {
-    protected function __construct($aHost) {
+class IPv4Address extends Host
+{
+    protected function __construct($aHost)
+    {
         parent::__construct($aHost);
     }
 
     /**
      * Takes a string and parses it as an IPv4 address.
      *
-     * @link https://url.spec.whatwg.org/#concept-ipv4-parser
+     * @see https://url.spec.whatwg.org/#concept-ipv4-parser
      *
-     * @param  string                   $aInput  A string representing an IPv4 address.
+     * @param string $aInput A string representing an IPv4 address.
      *
-     * @return IPv4Address|string|bool           Returns a IPv4Address object if the input is a valid IPv4 address
-     *                                           or a string if the input is determined to be a domain.  This
-     *                                           will return false if the input is neither a domain or IPv4 address.
+     * @return IPv4Address|string|bool Returns a IPv4Address object if the input
+     *     is a valid IPv4 address or a string if the input is determined to be
+     *     a domain. This will return false if the input is neither a domain or
+     *     IPv4 address.
      */
-    public static function parse($aInput) {
+    public static function parse($aInput)
+    {
         $syntaxViolationFlag = null;
         $parts = explode('.', $aInput);
         $len = count($parts);
@@ -75,7 +79,13 @@ class IPv4Address extends Host {
         $counter = 0;
 
         foreach ($numbers as $n) {
-            $ipv4 = gmp_add($ipv4, gmp_mul(gmp_init($n, 10), gmp_init(pow(256, 3 - $counter), 10)));
+            $ipv4 = gmp_add(
+                $ipv4,
+                gmp_mul(
+                    gmp_init($n, 10),
+                    gmp_init(pow(256, 3 - $counter), 10)
+                )
+            );
             $counter++;
         }
 
@@ -85,11 +95,12 @@ class IPv4Address extends Host {
     /**
      * Serializes an IPv4 address in to a string.
      *
-     * @link https://url.spec.whatwg.org/#concept-ipv4-serializer
+     * @see https://url.spec.whatwg.org/#concept-ipv4-serializer
      *
      * @return string
      */
-    public function serialize() {
+    public function serialize()
+    {
         $output = '';
         $n = $this->mHost;
 
@@ -109,16 +120,17 @@ class IPv4Address extends Host {
     /**
      * Takes a string and parses it as a valid IPv4 number.
      *
-     * @link https://url.spec.whatwg.org/#ipv4-number-parser
+     * @see https://url.spec.whatwg.org/#ipv4-number-parser
      *
-     * @param  string       $aInput                 A string of numbers to be parsed.
+     * @param string $aInput A string of numbers to be parsed.
      *
-     * @param  bool|null    &$aSyntaxViolationFlag  A flag that represents if there was a syntax violation
-     *                                              while parsing.
+     * @param bool|null &$aSyntaxViolationFlag  A flag that represents if there
+     *     was a syntax violation while parsing.
      *
-     * @return int|bool                             Returns a bool on failure and an int otherwise.
+     * @return int|bool Returns a bool on failure and an int otherwise.
      */
-    protected static function parseIPv4Number($aInput, &$aSyntaxViolationFlag) {
+    protected static function parseIPv4Number($aInput, &$aSyntaxViolationFlag)
+    {
         $input = $aInput;
         $R = 10;
 
@@ -142,8 +154,9 @@ class IPv4Address extends Host {
             return false;
         }
 
-        // TODO: Return the mathematical integer value that is represented by input in
-        // radix-R notation, using ASCII hex digits for digits with values 0 through 15.
+        // TODO: Return the mathematical integer value that is represented by
+        // input in radix-R notation, using ASCII hex digits for digits with
+        // values 0 through 15.
         return intval($input, $R);
     }
 }
