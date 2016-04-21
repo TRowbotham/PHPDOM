@@ -139,7 +139,7 @@ class Origin
         $result .= '://';
         $result .= HostFactory::serialize($this->mHost);
 
-        if ($this->mPort) {
+        if ($this->mPort !== null) {
             $result .= ':' . intval($this->mPort, 10);
         }
 
