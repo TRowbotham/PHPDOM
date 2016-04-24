@@ -68,7 +68,7 @@ abstract class URLUtils
         // to Transitional_Processing, and VerifyDnsLength set to false.
         $result = idn_to_ascii(
             $aDomain,
-            IDNA_USE_STD3_RULES,
+            0,
             INTL_IDNA_VARIANT_UTS46
         );
 
@@ -96,7 +96,7 @@ abstract class URLUtils
         // domain_name set to domain, UseSTD3ASCIIRules set to false.
         $result = idn_to_utf8(
             $aDomain,
-            IDNA_USE_STD3_RULES,
+            0,
             INTL_IDNA_VARIANT_UTS46
         );
 
