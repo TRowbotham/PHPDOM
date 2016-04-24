@@ -22,11 +22,14 @@ class Document extends Node
     const NO_QUIRKS_MODE = 1;
     const LIMITED_QUIRKS_MODE = 2;
     const QUIRKS_MODE = 3;
+    const INERT_TEMPLATE_DOCUMENT = 0x1;
 
     protected static $mDefaultDocument = null;
 
     protected $mCharacterSet;
     protected $mContentType;
+    protected $mFlags;
+    protected $mInertTemplateDocument;
     protected $mMode;
 
     private $mCompatMode;
@@ -45,7 +48,9 @@ class Document extends Node
 
         $this->mCharacterSet = 'utf-8';
         $this->mContentType = '';
+        $this->mFlags = 0;
         $this->mImplementation = new DOMImplementation($this);
+        $this->mInertTemplateDocument = null;
         $this->mMode = self::NO_QUIRKS_MODE;
         $this->mNodeIteratorList = array();
         $this->mNodeType = self::DOCUMENT_NODE;
@@ -357,6 +362,33 @@ class Document extends Node
     }
 
     /**
+     * Returns the special proxy document responsible for owning all of a
+     * template element's content's children.
+     *
+     * @internal
+     *
+     * @see https://html.spec.whatwg.org/multipage/scripting.html#appropriate-template-contents-owner-document
+     *
+     * @return Document
+     */
+    public function getAppropriateTemplateContentsOwnerDocument()
+    {
+        $doc = $this;
+
+        if (!($this->mFlags & self::INERT_TEMPLATE_DOCUMENT)) {
+            if (!$this->mInertTemplateDocument) {
+                $newDoc = new static();
+                $newDoc->mFlags |= self::INERT_TEMPLATE_DOCUMENT;
+                $this->mInertTemplateDocument = $newDoc;
+            }
+
+            $doc = $this->mInertTemplateDocument;
+        }
+
+        return $doc;
+    }
+
+    /**
      * Returns the first document created, which is assumed to be the global
      * document.  This global document is the owning document for objects
      * instantiated using its constructor.  These objects are DocumentFragment,
@@ -371,6 +403,18 @@ class Document extends Node
     public static function _getDefaultDocument()
     {
         return static::$mDefaultDocument;
+    }
+
+    /**
+     * Gets the flags set on the document.
+     *
+     * @internal
+     *
+     * @return int
+     */
+    public function getFlags()
+    {
+        return $this->mFlags;
     }
 
     /**
@@ -433,10 +477,10 @@ class Document extends Node
                     foreach ($currentNode->attributes as $attr) {
                         $s .= ' ' . $attr->name;
                         $s .= '="' .
-                            parser\html\HTMLParser::escapeHTMLString(
+                            htmlentities(parser\html\HTMLParser::escapeHTMLString(
                                 $attr->value,
                                 true
-                            ) . '"';
+                            ) . '"');
                     }
 
                     $s .= '&gt;';
@@ -565,6 +609,18 @@ class Document extends Node
     }
 
     /**
+     * Sets flags on the document.
+     *
+     * @internal
+     *
+     * @param int $aFlag Bitwise flags.
+     */
+    public function setFlags($aFlag)
+    {
+        $this->mFlags |= $aFlag;
+    }
+
+    /**
      * Sets the document's mode.
      *
      * @internal
@@ -574,6 +630,18 @@ class Document extends Node
     public function _setMode($aMode)
     {
         $this->mMode = $aMode;
+    }
+
+    /**
+     * Unsets bitwise flags on the document.
+     *
+     * @internal
+     *
+     * @param int $aFlag Bitwise flags.
+     */
+    public function unsetFlags($aFlag)
+    {
+        $this->mFlags &= ~$aFlag;
     }
 
     protected function getHTMLInterfaceFor($aLocalName)
