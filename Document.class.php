@@ -343,9 +343,16 @@ class Document extends Node
                 $node->mOwnerDocument = $this;
             }
 
-            // TODO: For each descendant in node’s inclusive descendants, in
+            // For each descendant in node’s inclusive descendants, in
             // tree order, run the adopting steps with descendant and
             // oldDocument.
+            $iter = new NodeIterator($aNode);
+
+            while (($descendant = $iter->nextNode())) {
+                if (method_exists($descendant, 'doAdoptingSteps')) {
+                    $descendant->doAdoptingSteps($oldDocument);
+                }
+            }
         }
     }
 
