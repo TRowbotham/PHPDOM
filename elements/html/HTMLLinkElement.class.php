@@ -51,6 +51,7 @@ class HTMLLinkElement extends HTMLElement
         $this->mSizes = new DOMTokenList($this, 'sizes');
     }
 
+    public function __destruct()
     {
         $this->mRelList = null;
         $this->mSizes = null;
