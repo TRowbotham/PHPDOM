@@ -2,6 +2,8 @@
 namespace phpjs;
 
 use phpjs\DocumentType;
+use phpjs\elements\html\HTMLHtmlElement;
+use phpjs\elements\html\HTMLHeadElement;
 use phpjs\events\Event;
 use phpjs\events\CustomEvent;
 use phpjs\exceptions\HierarchyRequestError;

@@ -4,6 +4,7 @@ namespace phpjs\elements;
 use phpjs\Attr;
 use phpjs\AttributeList;
 use phpjs\ChildNode;
+use phpjs\Document;
 use phpjs\DOMTokenList;
 use phpjs\exceptions\InUseAttributeError;
 use phpjs\exceptions\NotFoundError;
