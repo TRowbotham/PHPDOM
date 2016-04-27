@@ -161,9 +161,12 @@ class HTMLAnchorElement extends HTMLElement
         switch ($aAttr->name) {
             case 'href':
                 if ($aHookType & AttributeList::ATTR_SET) {
-                    $resolvedURL = $this->resolveURL($aAttr->value);
+                    $resolvedURL = $this->parseURL(
+                        $aAttr->value,
+                        $this->mOwnerDocument
+                    );
                     $this->mUrl = $resolvedURL !== false ?
-                        $resolvedURL['parsed_url'] : null;
+                        $resolvedURL['urlRecord'] : null;
                 } elseif ($aHookType & AttributeList::ATTR_REMOVED) {
                     $this->mUrl = null;
                 }

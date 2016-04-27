@@ -688,6 +688,48 @@ class Element extends Node implements \SplObserver
         }
     }
 
+    /**
+     * Resolves a URL to the absolute URL that it implies.
+     *
+     * @see https://html.spec.whatwg.org/multipage/infrastructure.html#parse-a-url
+     *
+     * @internal
+     *
+     * @param string $aUrl A URL string to be resolved.
+     *
+     * @param string $aDocumentOrEnvironmentSetting Either a document or
+     *     environment settings object that contain a base URL.
+     *
+     * @return mixed[]|bool An array containing the serialized absolute URL as
+     *     well as the parsed URL or false on failure.
+     */
+    protected function parseURL($aUrl, $aDocumentOrEnvironmentSetting)
+    {
+        if ($aDocumentOrEnvironmentSetting instanceof Document) {
+            $encoding = $aDocumentOrEnvironmentSetting->characterSet;
+            $baseURL = $aDocumentOrEnvironmentSetting->getBaseURL();
+        } else {
+            // TODO: Let encoding be the environment settings object'a API URL
+            // character encoding.  Let baseURL be the environment settings
+            // object's API base URL.
+        }
+
+        $urlRecord = URLInternal::URLParser(
+            $aUrl,
+            $baseURL,
+            $encoding
+        );
+
+        if ($urlRecord === false) {
+            return false;
+        }
+
+        return [
+            'urlRecord' => $urlRecord,
+            'urlString' => $urlRecord->serializeURL()
+        ];
+    }
+
     protected function reflectURLAttributeValue(
         $aName,
         $aMissingValueDefault = null
@@ -699,10 +741,13 @@ class Element extends Node implements \SplObserver
         );
 
         if ($attr) {
-            $url = $this->resolveURL($attr->value, self::$mBaseURI);
+            $url = $this->parseURL(
+                $attr->value,
+                $this->mOwnerDocument
+            );
 
             if ($url !== false) {
-                return $url['serialized_url'];
+                return $url['urlString'];
             }
         } elseif ($aMissingValueDefault !== null) {
             return $aMissingValueDefault;
@@ -724,50 +769,6 @@ class Element extends Node implements \SplObserver
     protected function reflectStringAttributeValue($aName)
     {
         return $this->mAttributesList->getAttrValue($this, $aName);
-    }
-
-    /**
-     * Resolves a URL to the absolute URL that it implies.
-     *
-     * @link https://html.spec.whatwg.org/multipage/infrastructure.html#resolve-a-url
-     *
-     * @internal
-     *
-     * @param string $aUrl A URL string to be resolved.
-     *
-     * @param string $aBase Optional argument that should be an absolute URL
-     *     that a relative URL can be resolved against.  Default is null.
-     *
-     * @return mixed[]|bool An array containing the serialized absolute URL as
-     *     well as the parsed URL or false on failure.
-     */
-    protected function resolveURL($aUrl, URLInternal $aBase = null)
-    {
-        $url = $aUrl;
-        $base = null;
-
-        // TODO: Handle encoding
-        $encoding = 'utf-8';
-
-        if ($aBase && $aBase->isFlagSet(URLInternal::FLAG_CANNOT_BE_A_BASE_URL)) {
-            $base = $aBase;
-        } else {
-            $base = self::$mBaseURI;
-        }
-
-        $parsedURL = URLInternal::URLParser($url, $base, $encoding);
-
-        if ($parsedURL === false) {
-            // Abort these steps.  The URL cannot be resolved.
-            return false;
-        }
-
-        $serializedURL = $parsedURL->serializeURL();
-
-        return array(
-            'absolute_url' => $serializedURL,
-            'parsed_url' => $parsedURL
-        );
     }
 
     /**

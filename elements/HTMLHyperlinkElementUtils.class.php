@@ -432,8 +432,11 @@ trait HTMLHyperlinkElementUtils
             return;
         }
 
-        $resolvedURL = $this->resolveURL($this->getAttribute('href'));
+        $resolvedURL = $this->parseURL(
+            $this->getAttribute('href'),
+            $this->mOwnerDocument
+        );
         $this->mUrl = $resolvedURL !== false ?
-            $resolvedURL['parsed_url'] : null;
+            $resolvedURL['urlRecord'] : null;
     }
 }
