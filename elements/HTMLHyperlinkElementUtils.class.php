@@ -420,23 +420,32 @@ trait HTMLHyperlinkElementUtils
      * @internal
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#reinitialise-url
-     * @see https://html.spec.whatwg.org/multipage/semantics.html#concept-hyperlink-url-set
      */
-    private function reinitialiseUrl()
+    protected function reinitialiseUrl()
     {
-        if (
-            $this->mUrl === null ||
-            $this->mUrl->isFlagSet(URLInternal::FLAG_CANNOT_BE_A_BASE_URL)
-        ) {
+        $shouldTerminate = $this->mUrl && $this->mUrl->getScheme() === 'blob' &&
+            $this->mUrl->isFlagSet(URLInternal::FLAG_CANNOT_BE_A_BASE_URL);
+
+        if ($shouldTerminate) {
             // Terminate these steps
             return;
         }
 
-        $resolvedURL = $this->parseURL(
-            $this->getAttribute('href'),
-            $this->mOwnerDocument
-        );
-        $this->mUrl = $resolvedURL !== false ?
-            $resolvedURL['urlRecord'] : null;
+        $this->setURL();
+    }
+
+    /**
+     * Sets this Element's URL to the result of parsing it's href content
+     * attribute or null if parsing fails.
+     *
+     * @internal
+     *
+     * @see https://html.spec.whatwg.org/multipage/semantics.html#concept-hyperlink-url-set
+     */
+    protected function setURL()
+    {
+        $href = $this->mAttributesList->getAttrValue($this, 'href', null);
+        $url = $this->parseURL($href, $this->mOwnerDocument);
+        $this->mUrl = $url === false ? null : $url['urlRecord'];
     }
 }
