@@ -7,6 +7,7 @@ use phpjs\events\CustomEvent;
 use phpjs\exceptions\HierarchyRequestError;
 use phpjs\exceptions\InvalidCharacterError;
 use phpjs\exceptions\NotSupportedError;
+use phpjs\urls\URLInternal;
 
 /**
  * @see https://dom.spec.whatwg.org/#interface-document
@@ -55,12 +56,7 @@ class Document extends Node
         $this->mNodeIteratorList = array();
         $this->mNodeType = self::DOCUMENT_NODE;
         $this->mOwnerDocument = null; // Documents own themselves.
-
-        $ssl = isset($_SERVER['HTTPS']) && $_SERVER["HTTPS"] == 'on';
-        $port = in_array($_SERVER['SERVER_PORT'], array(80, 443)) ? '' : ':' . $_SERVER['SERVER_PORT'];
-        $url = ($ssl ? 'https' : 'http') . '://' . $_SERVER['SERVER_NAME'] . $port . $_SERVER['REQUEST_URI'];
-
-        $this->mURL = new urls\URL($url);
+        $this->mURL = null;
     }
 
     public function __destruct()
@@ -100,7 +96,7 @@ class Document extends Node
                 return $this->getFirstElementChild();
             case 'documentURI':
             case 'URL':
-                return $this->mURL->href;
+                return $this->mURL->serializeURL();
             case 'firstElementChild':
                 return $this->getFirstElementChild();
             case 'implementation':
@@ -108,7 +104,7 @@ class Document extends Node
             case 'lastElementChild':
                 return $this->getLastElementChild();
             case 'origin':
-                return $this->mURL->origin;
+                return $this->mURL->getOrigin()->serializeAsUnicode();
             default:
                 return parent::__get($aName);
         }
@@ -916,6 +912,31 @@ class Document extends Node
     protected function getTextContent()
     {
         return null;
+    }
+
+    /**
+     * Gets the Document's URL address.
+     *
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#concept-document-url
+     *
+     * @return string
+     */
+    protected function getURL()
+    {
+        if (!isset($this->mURL)) {
+            $ssl = isset($_SERVER['HTTPS']) && $_SERVER["HTTPS"] == 'on';
+            $port = in_array($_SERVER['SERVER_PORT'], array(80, 443)) ?
+                '' : ':' . $_SERVER['SERVER_PORT'];
+            $url = ($ssl ? 'https' : 'http') . '://' . $_SERVER['SERVER_NAME'] .
+                $port . $_SERVER['REQUEST_URI'];
+
+            $this->mURL = URLInternal::basicURLParser($url);
+        }
+
+
+        return $this->mURL;
     }
 
     /**

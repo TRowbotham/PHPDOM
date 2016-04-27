@@ -61,7 +61,6 @@ abstract class Node implements EventTarget
     const DOCUMENT_POSITION_CONTAINED_BY = 0x10;
     const DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC = 0x20;
 
-    protected static $mBaseURI;
     protected $mChildNodes; // NodeList
     protected $mFirstChild; // Node
     protected $mLastChild; // Node
@@ -77,10 +76,6 @@ abstract class Node implements EventTarget
 
     protected function __construct()
     {
-        if (!self::$mBaseURI) {
-            self::$mBaseURI = URLInternal::basicURLParser($this->getBaseURI());
-        }
-
         $this->mChildNodes = array();
         $this->mEvents = array();
         $this->mFirstChild = null;
@@ -105,11 +100,6 @@ abstract class Node implements EventTarget
         $this->mParentElement = null;
         $this->mParentNode = null;
         $this->mPreviousSibling = null;
-
-        if (self::$mRefCount === 1) {
-            self::$mBaseURI = null;
-        }
-
         self::$mRefCount--;
     }
 
@@ -117,7 +107,7 @@ abstract class Node implements EventTarget
     {
         switch ($aName) {
             case 'baseURI':
-                return $this->getBaseURI();
+                return $this->mOwnerDocument->getURL()->serializeURL();
 
             case 'childNodes':
                 return $this->mChildNodes;
@@ -1465,17 +1455,6 @@ abstract class Node implements EventTarget
         }
 
         return $node;
-    }
-
-    protected function getBaseURI()
-    {
-        $ssl = isset($_SERVER['HTTPS']) && $_SERVER["HTTPS"] == 'on';
-        $port = in_array($_SERVER['SERVER_PORT'], array(80, 443)) ?
-            '' : ':' . $_SERVER['SERVER_PORT'];
-        $url = ($ssl ? 'https' : 'http') . '://' . $_SERVER['SERVER_NAME'] .
-            $port . $_SERVER['REQUEST_URI'];
-
-        return $url;
     }
 
     /**
