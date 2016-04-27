@@ -1,8 +1,8 @@
 <?php
 namespace phpjs\elements;
 
+use phpjs\urls\HostFactory;
 use phpjs\urls\URLInternal;
-use phpjs\urls\URLUtils;
 
 /**
  * @see https://html.spec.whatwg.org/multipage/semantics.html#htmlhyperlinkelementutils
