@@ -385,6 +385,44 @@ class Document extends Node
     }
 
     /**
+     * Gets the document's base URL, which is either the document's address or
+     * the value of a base element's href attribute.
+     *
+     * @internal
+     *
+     * @see https://html.spec.whatwg.org/multipage/infrastructure.html#document-base-url
+     *
+     * @return URLInternal
+     */
+    public function getBaseURL()
+    {
+        $head = $this->getHeadElement();
+        $base = null;
+
+        if ($head) {
+            // A base element is only valid if it is the first base element
+            // within the head element.
+            foreach ($head->mChildNodes as $child) {
+                $isValidBase = $child instanceof HTMLBaseElement &&
+                    $child->hasAttribute('href');
+
+                if ($isValidBase) {
+                    $base = $child;
+                    break;
+                }
+            }
+        }
+
+        // We don't have a valid base element to use as a base URL, use the
+        // fallback base URL.
+        if (!$base) {
+            return $this->getFallbackBaseURL();
+        }
+
+        return $base->getFrozenBaseURL();
+    }
+
+    /**
      * Returns the first document created, which is assumed to be the global
      * document.  This global document is the owning document for objects
      * instantiated using its constructor.  These objects are DocumentFragment,
@@ -399,6 +437,19 @@ class Document extends Node
     public static function _getDefaultDocument()
     {
         return static::$mDefaultDocument;
+    }
+
+    public function getFallbackBaseURL()
+    {
+        // TODO: If the Document is an iframe srcdoc document, then return the
+        // document base URL of the Document's browsing context's browsing
+        // context container's node document and abort these steps.
+
+        // TODO: If the document's address is about:blank, and the Document's
+        // browsing context has a creator browsing context, then return the
+        // creator base URL and abort these steps.
+
+        return $this->getURL();
     }
 
     /**
@@ -638,6 +689,33 @@ class Document extends Node
     public function unsetFlags($aFlag)
     {
         $this->mFlags &= ~$aFlag;
+    }
+
+    /**
+     * Gets the document's head element. The document's head element is the
+     * first child of the html element that is a head element.
+     *
+     * @internal
+     *
+     * @see https://html.spec.whatwg.org/multipage/dom.html#dom-document-head
+     *
+     * @return HTMLHeadElement|null
+     */
+    protected function getHeadElement()
+    {
+        $docElement = $this->getFirstElementChild();
+
+        if ($docElement && $docElement instanceof HTMLHtmlElement) {
+            // Get the first child in the document element that is a head
+            // element.
+            foreach ($docElement->mChildNodes as $child) {
+                if ($child instanceof HTMLHeadElement) {
+                    return $child;
+                }
+            }
+        }
+
+        return null;
     }
 
     protected function getHTMLInterfaceFor($aLocalName)

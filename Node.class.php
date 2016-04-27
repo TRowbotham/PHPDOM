@@ -107,7 +107,7 @@ abstract class Node implements EventTarget
     {
         switch ($aName) {
             case 'baseURI':
-                return $this->mOwnerDocument->getURL()->serializeURL();
+                return $this->mOwnerDocument->getBaseURL()->serializeURL();
 
             case 'childNodes':
                 return $this->mChildNodes;
