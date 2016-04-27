@@ -98,7 +98,7 @@ class Document extends Node
                 return $this->getFirstElementChild();
             case 'documentURI':
             case 'URL':
-                return $this->mURL->serializeURL();
+                return $this->getURL()->serializeURL();
             case 'firstElementChild':
                 return $this->getFirstElementChild();
             case 'implementation':
@@ -106,7 +106,7 @@ class Document extends Node
             case 'lastElementChild':
                 return $this->getLastElementChild();
             case 'origin':
-                return $this->mURL->getOrigin()->serializeAsUnicode();
+                return $this->getURL()->getOrigin()->serializeAsUnicode();
             default:
                 return parent::__get($aName);
         }
