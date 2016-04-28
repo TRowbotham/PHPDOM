@@ -102,7 +102,7 @@ class HTMLBaseElement extends HTMLElement
         if ($href !== null) {
             // Parse the Element's href attribute.
             $urlRecord = URLInternal::URLParser(
-                $href,
+                $href->value,
                 $fallbackBaseURL,
                 $document->characterSet
             );
