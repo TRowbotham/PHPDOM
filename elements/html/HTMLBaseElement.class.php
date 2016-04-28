@@ -57,7 +57,7 @@ class HTMLBaseElement extends HTMLElement
                 $this->mAttributesList->setAttrValue(
                     $this,
                     $aName,
-                    null
+                    $aValue
                 );
 
                 break;
