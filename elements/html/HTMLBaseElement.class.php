@@ -1,6 +1,8 @@
 <?php
 namespace phpjs\elements\html;
 
+use phpjs\urls\URLInternal;
+
 /**
  * @see https://html.spec.whatwg.org/multipage/semantics.html#the-base-element
  */
@@ -88,17 +90,23 @@ class HTMLBaseElement extends HTMLElement
     {
         $document = $this->mOwnerDocument;
         $fallbackBaseURL = $document->getFallbackBaseURL();
-
-        // Parse the Element's href attribute.
-        $urlRecord = URLInternal::URLParser(
-            $this->mAttributesList->getAttrByNamespaceAndLocalName(
-                null,
-                'href',
-                $this
-            ),
-            $fallbackBaseURL,
-            $document->characterSet
+        $urlRecord = false;
+        $href = $this->mAttributesList->getAttrByNamespaceAndLocalName(
+            null,
+            'href',
+            $this
         );
+
+        // Don't bother trying to parse a URL if the element does not have an
+        // href content attribute.
+        if ($href !== null) {
+            // Parse the Element's href attribute.
+            $urlRecord = URLInternal::URLParser(
+                $href,
+                $fallbackBaseURL,
+                $document->characterSet
+            );
+        }
 
         // TODO: Set element's frozen base URL to document's fallback base URL
         // if urlRecord is failure or running Is base allowed for Document? on
