@@ -4,6 +4,7 @@ namespace phpjs\elements\html;
 use phpjs\Attr;
 use phpjs\AttributeList;
 use phpjs\DOMTokenList;
+use phpjs\elements\HTMLHyperlinkElementUtils;
 use phpjs\Utils;
 
 /**
@@ -67,7 +68,7 @@ use phpjs\Utils;
  */
 class HTMLAnchorElement extends HTMLElement
 {
-    use \phpjs\elements\HTMLHyperlinkElementUtils;
+    use HTMLHyperlinkElementUtils;
 
     private $mPing;
     private $mRelList;
@@ -76,16 +77,16 @@ class HTMLAnchorElement extends HTMLElement
     {
         parent::__construct();
 
-        $this->initHTMLHyperlinkElementUtils();
         $this->mPing = new DOMTokenList($this, 'ping');
         $this->mRelList = new DOMTokenList($this, 'rel');
+        $this->setURL();
     }
 
     public function __destruct()
     {
         $this->mPing = null;
         $this->mRelList = null;
-        $this->HTMLHyperLinkElementUtilsDestructor();
+        $this->mUrl = null;
         parent::__destruct();
     }
 
@@ -94,25 +95,59 @@ class HTMLAnchorElement extends HTMLElement
         switch ($aName) {
             case 'download':
                 return $this->reflectStringAttributeValue($aName);
+
+            case 'hash':
+                return $this->getHash();
+
+            case 'host':
+                return $this->getHost();
+
+            case 'hostname':
+                return $this->getHostname();
+
+            case 'href':
+                return $this->getHref();
+
             case 'hrefLang':
                 return $this->reflectStringAttributeValue('hreflang');
+
+            case 'origin':
+                return $this->getOrigin();
+
+            case 'password':
+                return $this->getPassword();
+
+            case 'pathname':
+                return $this->getPathname();
+
             case 'ping':
                 return $this->reflectStringAttributeValue($aName);
+
+            case 'port':
+                return $this->getPort();
+
+            case 'protocol':
+                return $this->getProtocol();
+
             case 'rel':
                 return $this->reflectStringAttributeValue($aName);
+
             case 'relList':
                 return $this->mRelList;
+
+            case 'search':
+                return $this->getSearch();
+
             case 'target':
                 return $this->reflectStringAttributeValue($aName);
+
             case 'type':
                 return $this->reflectStringAttributeValue($aName);
+
+            case 'username':
+                return $this->getUsername();
+
             default:
-                $rv = $this->HTMLHyperlinkElementUtilsGetter($aName);
-
-                if ($rv != 'HTMLHyperlinkElementUtilsGetter') {
-                    return $rv;
-                }
-
                 return parent::__get($aName);
         }
     }
@@ -125,8 +160,38 @@ class HTMLAnchorElement extends HTMLElement
 
                 break;
 
+            case 'hash':
+                $this->setHash($aValue);
+
+                break;
+
+            case 'host':
+                $this->setHost($aValue);
+
+                break;
+
+            case 'hostname':
+                $this->setHostname($aValue);
+
+                break;
+
+            case 'href':
+                $this->setHref($aValue);
+
+                break;
+
             case 'hrefLang':
                 $this->mAttributesList->setAttrValue($this, $aName, $aValue);
+
+                break;
+
+            case 'password':
+                $this->setPassword($aValue);
+
+                break;
+
+            case 'pathname':
+                $this->setPathname($aValue);
 
                 break;
 
@@ -135,8 +200,23 @@ class HTMLAnchorElement extends HTMLElement
 
                 break;
 
+            case 'port':
+                $this->setPort($aValue);
+
+                break;
+
+            case 'protocol':
+                $this->setProtocol($aValue);
+
+                break;
+
             case 'rel':
                 $this->mAttributesList->setAttrValue($this, $aName, $aValue);
+
+                break;
+
+            case 'search':
+                $this->setSearch($aValue);
 
                 break;
 
@@ -150,8 +230,12 @@ class HTMLAnchorElement extends HTMLElement
 
                 break;
 
+            case 'username':
+                $this->setUsername($aValue);
+
+                break;
+
             default:
-                $this->HTMLHyperlinkElementUtilsSetter($aName, $aValue);
                 parent::__set($aName, $aValue);
         }
     }
@@ -160,16 +244,7 @@ class HTMLAnchorElement extends HTMLElement
     {
         switch ($aAttr->name) {
             case 'href':
-                if ($aHookType & AttributeList::ATTR_SET) {
-                    $resolvedURL = $this->parseURL(
-                        $aAttr->value,
-                        $this->mOwnerDocument
-                    );
-                    $this->mUrl = $resolvedURL !== false ?
-                        $resolvedURL['urlRecord'] : null;
-                } elseif ($aHookType & AttributeList::ATTR_REMOVED) {
-                    $this->mUrl = null;
-                }
+                $this->setURL();
 
                 break;
 
