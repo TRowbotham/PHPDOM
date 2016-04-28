@@ -877,6 +877,14 @@ abstract class Node implements EventTarget
             // TODO: For each inclusive descendant inclusiveDescendant of node,
             // in tree order, run the insertion steps with inclusiveDescendant
             // and parent.
+
+            $iter = new NodeIterator($node);
+
+            while (($descendant = $iter->nextNode())) {
+                if (method_exists($descendant, 'doInsertingSteps')) {
+                    $descendant->doInsertingSteps();
+                }
+            }
         }
 
         if (!$aSuppressObservers) {
