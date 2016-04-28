@@ -43,7 +43,7 @@ class HTMLBaseElement extends HTMLElement
                 );
 
             default:
-                parent::__get($aName);
+                return parent::__get($aName);
         }
     }
 
