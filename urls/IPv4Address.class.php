@@ -136,16 +136,20 @@ class IPv4Address extends Host
     {
         $input = $aInput;
         $R = 10;
+        $len = strlen($input);
 
-        if (strlen($input) > 1 && stripos($input, '0x') === 0) {
+        if ($len > 1 &&
+            (substr($input, 0, 2) === '0x' || substr($input, 0, 2) === '0X')
+        ) {
             $aSyntaxViolationFlag = true;
             $input = substr($input, 2);
             $R = 16;
+            $len -= 2;
         }
 
         if ($input === '') {
             return 0;
-        } else if (strlen($input) > 1 && $input[0] === '0') {
+        } else if ($len > 1 && $input[0] === '0') {
             $syntaxViolationFlag = true;
             $input = substr($input, 1);
             $R = 8;
