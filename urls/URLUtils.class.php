@@ -353,7 +353,7 @@ abstract class URLUtils
 
         if (!$inCodeSet && $aEncodeSet >= self::ENCODE_SET_DEFAULT) {
             $inCodeSet = $inCodeSet || preg_match(
-                '/[\x{0020}"#<>?`,{}]/',
+                '/[\x{0020}"#<>?`{}]/',
                 $aCodePoint
             );
         }
