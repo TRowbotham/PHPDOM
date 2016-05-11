@@ -54,6 +54,26 @@ class URLSearchParams implements \Iterator {
     }
 
     /**
+     * Returns all name-value pairs stringified in the correct order.
+     *
+     * @return string The query string.
+     */
+    public function __toString()
+    {
+        $list = array();
+        $output = '';
+
+        foreach ($this->mIndex as $sequenceId => $name) {
+            $list[] = [
+                'name' => $name,
+                'value' => $this->mParams[$name][$sequenceId]
+            ];
+        }
+
+        return URLUtils::urlencodedSerializer($list);
+    }
+
+    /**
      * Appends a new key -> value pair to the end of the query string.
      *
      * @see https://url.spec.whatwg.org/#dom-urlsearchparams-append
@@ -203,26 +223,6 @@ class URLSearchParams implements \Iterator {
     }
 
     /**
-     * Returns all key -> value pairs stringified in the correct order.
-     *
-     * @return string The query string.
-     */
-    public function toString()
-    {
-        $list = array();
-        $output = '';
-
-        foreach ($this->mIndex as $sequenceId => $name) {
-            $list[] = [
-                'name' => $name,
-                'value' => $this->mParams[$name][$sequenceId]
-            ];
-        }
-
-        return URLUtils::urlencodedSerializer($list);
-    }
-
-    /**
      * Returns whether or not the iterator's current postion is a valid one.
      *
      * @return boolean
@@ -278,7 +278,7 @@ class URLSearchParams implements \Iterator {
      */
     protected function update() {
         if ($this->mUrl) {
-            $this->mUrl->setQuery($this->toString());
+            $this->mUrl->setQuery($this->__toString());
         }
     }
 }
