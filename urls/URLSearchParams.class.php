@@ -1,6 +1,8 @@
 <?php
 namespace phpjs\urls;
 
+use phpjs\Utils;
+
 /**
  * An object containing a list of all URL query parameters.  This allows you to
  * manipulate a URL's query string in a granular manner.
@@ -15,24 +17,34 @@ class URLSearchParams implements \Iterator {
     private $mSequenceId;
     private $mUrl;
 
-    public function __construct($aSearchParams = '')
+    public function __construct($aInit = '')
     {
-        $this->mIndex = array();
-        $this->mParams = array();
+        $init = Utils::toString($aInit);
         $this->mPosition = 0;
-        $this->mSequenceId = 0;
         $this->mUrl = null;
 
-        if ($aSearchParams instanceof URLSearchParams) {
-            $this->mIndex = $aSearchParams->mIndex;
-            $this->mParams = $aSearchParams->mParams;
-            $this->mSequenceId = $aSearchParams->mSequenceId;
-        } elseif (is_string($aSearchParams)) {
-            $pairs = URLUtils::urlencodedStringParser($aSearchParams);
+        if (is_string($init)) {
+            $this->mIndex = [];
+            $this->mParams = [];
+            $this->mSequenceId = 0;
+
+            // If init is given, is a string, and starts with "?", remove the
+            // first code point from init.
+            if ($init !== '' && mb_substr($init, 0, 1) === '?') {
+                $init = mb_substr($init, 1);
+            }
+
+            $pairs = URLUtils::urlencodedStringParser($init);
 
             foreach ($pairs as $pair) {
-                $this->append($pair['name'], $pair['value']);
+                $this->mIndex[$this->mSequenceId] = $pair['name'];
+                $this->mParams[$pair['name']][$this->mSequenceId++] =
+                    $pair['value'];
             }
+        } elseif ($init instanceof self) {
+            $this->mIndex = $init->mIndex;
+            $this->mParams = $init->mParams;
+            $this->mSequenceId = $init->mSequenceId;
         }
     }
 
