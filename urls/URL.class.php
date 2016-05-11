@@ -36,7 +36,9 @@ class URL
         }
 
         $this->mUrl = $parsedURL;
-        $this->mSearchParams = new URLSearchParams($this->mUrl->getQuery());
+        $query = $this->mUrl->getQuery();
+        $query = $query === null ? '' : '?' . $query;
+        $this->mSearchParams = new URLSearchParams($query);
         $this->mSearchParams->_setUrl($parsedURL);
 	}
 
@@ -204,6 +206,9 @@ class URL
                 }
 
                 $this->mUrl = $parsedURL;
+                $query = $this->mUrl->getQuery();
+                $query = $query === null ? '' : '?' . $query;
+                $this->mSearchParams = new URLSearchParams($query);
                 $this->mSearchParams->_setUrl($parsedURL);
 
                 break;
