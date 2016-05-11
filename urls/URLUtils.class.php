@@ -138,7 +138,7 @@ abstract class URLUtils
                 $output .= $aByteSequence[$i];
             } else {
                 // TODO: utf-8 decode without BOM
-                $bytePoint = bin2hex(substr($aByteSequence, $i + 1, 2));
+                $bytePoint = pack('H*', substr($aByteSequence, $i + 1, 2));
                 $output .= $bytePoint;
                 $i += 2;
             }
