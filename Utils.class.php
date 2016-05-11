@@ -3,29 +3,35 @@ namespace phpjs;
 
 class Utils
 {
-    public static function toString($aValue)
+    /**
+     * Tries to return a string representation of the variable, however, it may
+     * return the original value if none of the conditions are met.
+     *
+     * @internal
+     *
+     * @param mixed $aValue A variable to be converted to a string.
+     *
+     * @param bool $aTreatNullAsEmptyString Whether or not a null value should
+     *    be represented as an empty string or represented as the literal string
+     *    "null".
+     *
+     * @return mixed
+     */
+    public static function toString($aValue, $aTreatNullAsEmptyString = false)
     {
         if (is_string($aValue)) {
             return $aValue;
-        } elseif (is_int($aValue) || is_float($aValue)) {
-            return (string)$aValue;
         } elseif (is_bool($aValue)) {
             return $aValue ? 'true' : 'false';
-        } elseif (is_object($aValue)) {
-            $stringable = false;
-
-            if (($stringable = method_exists($aValue, '__toString'))) {
-                $value = $aValue->__toString();
-            } elseif (($stringable = method_exists($aValue, 'toString'))) {
-                $value = $aValue->toString();
-            }
-
-            if ($stringable) {
-                return $value;
-            }
+        } elseif ($aValue === null) {
+            return $aTreatNullAsEmptyString ? '' : 'null';
+        } elseif (is_scalar($aValue)) {
+            return (string) $aValue;
+        } elseif (is_object($aValue) && method_exists($aValue, '__toString')) {
+            return (string) $aValue;
         }
 
-        return '';
+        return $aValue;
     }
 
     public static function intAsString($aValue)
