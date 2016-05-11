@@ -157,7 +157,7 @@ class URLInternal
                         $pointer--;
                     } else {
                         // Syntax violation. Terminate this algorithm.
-                        break;
+                        break 2;
                     }
 
                     break;
@@ -180,7 +180,7 @@ class URLInternal
                                 (!$urlIsSpecial && $bufferIsSpecialScheme)
                             ) {
                                 // Terminate this algorithm.
-                                break;
+                                break 2;
                             }
                         }
 
@@ -189,7 +189,7 @@ class URLInternal
 
                         if ($aStateOverride) {
                             // Terminate this algoritm
-                            break;
+                            break 2;
                         }
 
                         $offset = $pointer + 1;
@@ -244,7 +244,7 @@ class URLInternal
                         $pointer = -1;
                     } else {
                         // Syntax violation. Terminate this algorithm.
-                        break;
+                        break 2;
                     }
 
                     break;
@@ -468,7 +468,7 @@ class URLInternal
 
                         if ($aStateOverride === self::HOSTNAME_STATE) {
                             // Terminate this algorithm
-                            break;
+                            break 2;
                         }
                     } elseif (
                         ($c === ''/* EOF */ ||
@@ -497,7 +497,7 @@ class URLInternal
 
                         if ($aStateOverride) {
                             // Terminate this algorithm
-                            break;
+                            break 2;
                         }
                     } else {
                         if ($c === '[') {
@@ -549,7 +549,7 @@ class URLInternal
 
                         if ($aStateOverride) {
                             // Terminate this algorithm
-                            break;
+                            break 2;
                         }
 
                         $state = self::PATH_START_STATE;
