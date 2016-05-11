@@ -2,6 +2,7 @@
 namespace phpjs\urls;
 
 use phpjs\exceptions\TypeError;
+use phpjs\Utils;
 
 /**
  * Represents a URL that can be manipulated.
@@ -126,6 +127,13 @@ class URL
 
     public function __set($aName, $aValue)
     {
+        $value = Utils::toString($aValue);
+
+        // Treat all non-string values as an empty string.
+        if (!is_string($aValue)) {
+            $value = '';
+        }
+
         switch ($aName) {
             case 'hash':
                 if ($this->mUrl->getScheme() == 'javascript') {
@@ -133,14 +141,14 @@ class URL
                     return;
                 }
 
-                if ($aValue === '') {
+                if ($value === '') {
                     $this->mUrl->setFragment(null);
 
                     // Terminate these steps
                     return;
                 }
 
-                $input = $aValue[0] == '#' ? substr($aValue, 1) : $aValue;
+                $input = $value[0] == '#' ? substr($value, 1) : $value;
                 $this->mUrl->setFragment('');
                 URLInternal::basicURLParser(
                     $input,
@@ -161,7 +169,7 @@ class URL
                 }
 
                 URLInternal::basicURLParser(
-                    $aValue,
+                    $value,
                     null,
                     null,
                     $this->mUrl,
@@ -179,7 +187,7 @@ class URL
                 }
 
                 URLInternal::basicURLParser(
-                    $aValue,
+                    $value,
                     null,
                     null,
                     $this->mUrl,
@@ -189,10 +197,10 @@ class URL
                 break;
 
             case 'href':
-                $parsedURL = URLInternal::basicURLParser($aValue);
+                $parsedURL = URLInternal::basicURLParser($value);
 
                 if ($parsedURL === false) {
-                    throw new TypeError($aValue . ' is not a valid URL.');
+                    throw new TypeError($value . ' is not a valid URL.');
                 }
 
                 $this->mUrl = $parsedURL;
@@ -210,7 +218,7 @@ class URL
                     return;
                 }
 
-                $this->mUrl->setPasswordSteps($aValue);
+                $this->mUrl->setPasswordSteps($value);
 
                 break;
 
@@ -227,7 +235,7 @@ class URL
                 }
 
                 URLInternal::basicURLParser(
-                    $aValue,
+                    $value,
                     null,
                     null,
                     $this->mUrl,
@@ -248,7 +256,7 @@ class URL
                 }
 
                 URLInternal::basicURLParser(
-                    $aValue,
+                    $value,
                     null,
                     null,
                     $this->mUrl,
@@ -259,7 +267,7 @@ class URL
 
             case 'protocol':
                 URLInternal::basicURLParser(
-                    $aValue . ':',
+                    $value . ':',
                     null,
                     null,
                     $this->mUrl,
@@ -271,12 +279,14 @@ class URL
             case 'search':
                 $query = $this->mUrl->getQuery();
 
-                if ($aValue === '') {
+                if ($value === '') {
                     $this->mUrl->setQuery(null);
                     $this->mSearchParams->_mutateList(null);
+
+                    return;
                 }
 
-                $input = $aValue[0] == '?' ? substr($aValue, 1) : $aValue;
+                $input = $value[0] == '?' ? substr($value, 1) : $value;
                 $this->mUrl->setQuery('');
                 URLInternal::basicURLParser(
                     $input,
@@ -300,7 +310,7 @@ class URL
                     return;
                 }
 
-                $this->mUrl->setUsernameSteps($aValue);
+                $this->mUrl->setUsernameSteps($value);
 
                 break;
         }
