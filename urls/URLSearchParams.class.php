@@ -84,8 +84,15 @@ class URLSearchParams implements \Iterator {
      */
     public function append($aName, $aValue)
     {
-        $this->mIndex[$this->mSequenceId] = $aName;
-        $this->mParams[$aName][$this->mSequenceId++] = $aValue;
+        $name = Utils::toString($aName);
+        $value = Utils::toString($aValue);
+
+        if (!is_string($name) || !is_string($value)) {
+            return;
+        }
+
+        $this->mIndex[$this->mSequenceId] = $name;
+        $this->mParams[$name][$this->mSequenceId++] = $value;
         $this->update();
     }
 
@@ -113,11 +120,17 @@ class URLSearchParams implements \Iterator {
      */
     public function delete($aName)
     {
-        foreach ($this->mParams[$aName] as $key => $value) {
+        $name = Utils::toString($aName);
+
+        if (!is_string($name) || !isset($this->mParams[$name])) {
+            return;
+        }
+
+        foreach ($this->mParams[$name] as $key => $value) {
             unset($this->mIndex[$key]);
         }
 
-        unset($this->mParams[$aName]);
+        unset($this->mParams[$name]);
         $this->update();
     }
 
@@ -132,7 +145,10 @@ class URLSearchParams implements \Iterator {
      */
     public function get($aName)
     {
-        return $this->has($aName) ? reset($this->mParams[$aName]) : null;
+        $name = Utils::toString($aName);
+
+        return is_string($name) && isset($this->mParams[$name]) ?
+            reset($this->mParams[$name]) : null;
     }
 
     /**
@@ -146,7 +162,10 @@ class URLSearchParams implements \Iterator {
      */
     public function getAll($aName)
     {
-        return $this->has($aName) ? array_values($this->mParams[$aName]) : [];
+        $name = Utils::toString($aName);
+
+        return is_string($name) && isset($this->mParams[$name]) ?
+            array_values($this->mParams[$name]) : [];
     }
 
     /**
@@ -161,7 +180,9 @@ class URLSearchParams implements \Iterator {
      */
     public function has($aName)
     {
-        return isset($this->mParams[$aName]);
+        $name = Utils::toString($aName);
+
+        return is_string($name) && isset($this->mParams[$name]);
     }
 
     /**
@@ -206,17 +227,26 @@ class URLSearchParams implements \Iterator {
      */
     public function set($aName, $aValue)
     {
-        if ($this->has($aName)) {
-            for ($i = count($this->mParams[$aName]) - 1; $i > 0; $i--) {
-                end($this->mParams[$aName]);
-                unset($this->mIndex[key($this->mParams[$aName])]);
-                array_pop($this->mParams[$aName]);
+        $name = Utils::toString($aName);
+        $value = Utils::toString($aValue);
+
+        if (!is_string($name) || !is_string($value)) {
+            return;
+        }
+
+        if (isset($this->mParams[$name])) {
+            for ($i = count($this->mParams[$name]) - 1; $i > 0; $i--) {
+                end($this->mParams[$name]);
+                unset($this->mIndex[key($this->mParams[$name])]);
+                array_pop($this->mParams[$name]);
             }
 
-            reset($this->mParams[$aName]);
-            $this->mParams[$aName][key($this->mParams[$aName])] = $aValue;
+            reset($this->mParams[$name]);
+            $this->mParams[$name][key($this->mParams[$name])] = $value;
         } else {
-            $this->append($aName, $aValue);
+            // Append the value
+            $this->mIndex[$this->mSequenceId] = $name;
+            $this->mParams[$name][$this->mSequenceId++] = $value;
         }
 
         $this->update();
