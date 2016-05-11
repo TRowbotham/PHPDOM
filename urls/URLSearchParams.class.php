@@ -93,7 +93,7 @@ class URLSearchParams implements \Iterator {
      */
     public function delete($aName)
     {
-        foreach ($this->mParams[$aName] as $key) {
+        foreach ($this->mParams[$aName] as $key => $value) {
             unset($this->mIndex[$key]);
         }
 
