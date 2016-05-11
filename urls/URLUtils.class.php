@@ -292,34 +292,53 @@ abstract class URLUtils
     }
 
     /**
-     * Serializes a list of name-value pairs to be used in a URL.
+     * Takes a list of name-value or name-value-type tuples and serializes them.
+     * The HTML standard invokes this algorithm with name-value-type tuples.
+     * This is primarily used for data that needs to be
+     * application/x-www-form-urlencoded.
      *
      * @see https://url.spec.whatwg.org/#concept-urlencoded-serializer
      *
-     * @param string[] $aPairs A list of name-value pairs to be serialized.
+     * @param string[] $aTuples A list of name-value-type tuples to be
+     *     serialized.
      *
-     * @param string $aEncoding Optionally allows you to set a different
-     *     encoding to be used. Default value is UTF-8.
+     * @param string|null $aEncodingOverride The encoding to use for the data.
+     *     By default, it will use UTF-8.
      *
      * @return string
      */
     public static function urlencodedSerializer(
-        array $aPairs,
-        $aEncoding = 'UTF-8'
+        array $aTuples,
+        $aEncodingOverride = null
     ) {
+        // TODO: If encoding override is given, set encoding to the result of
+        // getting an output encoding from encoding override.
+        $encoding = $aEncodingOverride ?: 'UTF-8';
         $output = '';
 
-        foreach ($aPairs as $key => $pair) {
+        foreach ($aTuples as $key => $tuple) {
+            $outputPair = [];
+            $outputPair['name'] = self::urlencodedByteSerializer(
+                mb_convert_encoding($tuple['name'], $encoding)
+            );
+
+            if (isset($tuple['type']) && $tuple['type'] === 'hidden' &&
+                $tuple['name'] === '_charset_'
+            ) {
+                $outputPair['value'] = $encoding;
+            } elseif (isset($tuple['type']) && $tuple['type'] === 'file') {
+                $outputPair['value'] = $tuple['value'];
+            } else {
+                $outputPair['value'] = self::urlencodedByteSerializer(
+                    mb_convert_encoding($tuple['value'], $encoding)
+                );
+            }
+
             if ($key > 0) {
                 $output .= '&';
             }
 
-            $output .= self::urlencodedByteSerializer(
-                mb_convert_encoding($pair['name'], $aEncoding)
-            ) . '=';
-            $output .= self::urlencodedByteSerializer(
-                mb_convert_encoding($pair['value'], $aEncoding)
-            );
+            $output .= $outputPair['name'] . '=' . $outputPair['value'];
         }
 
         return $output;
