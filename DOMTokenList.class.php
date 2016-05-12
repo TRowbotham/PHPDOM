@@ -5,311 +5,462 @@ use phpjs\elements\Element;
 use phpjs\exceptions\InvalidCharacterError;
 use phpjs\exceptions\SyntaxError;
 
-// https://developer.mozilla.org/en-US/docs/Web/API/DOMTokenList
-// https://dom.spec.whatwg.org/#interface-domtokenlist
-class DOMTokenList implements \ArrayAccess, \Iterator {
+/**
+ * @see https://dom.spec.whatwg.org/#interface-domtokenlist
+ *
+ * @property-read int $length Returns the number of tokens in the list.
+ *
+ * @property string $value
+ */
+class DOMTokenList implements
+    \ArrayAccess,
+    AttributeChangeObserver,
+    \Countable,
+    \Iterator
+{
     protected $mAttrLocalName;
+    protected $mElement;
+    protected $mIndex;
+    protected $mLength;
+    protected $mPosition;
     protected $mTokens;
 
-    private $mElement;
-    private $mPosition;
-
-    public function __construct(Element $aElement, $aAttrLocalName = null) {
+    public function __construct(Element $aElement, $aAttrLocalName)
+    {
         $this->mAttrLocalName = $aAttrLocalName;
         $this->mElement = $aElement;
+        $this->mIndex = [];
+        $this->mLength = 0;
         $this->mPosition = 0;
         $this->mTokens = [];
+        $attrList = $this->mElement->getAttributeList();
+        $attrList->observe($this);
+        $attr = $attrList->getAttrByNamespaceAndLocalName(
+            null,
+            $this->mAttrLocalName,
+            $this->mElement
+        );
+        $value = $attr ? $attr->value : null;
+
+        $this->onAttributeChanged(
+            $this->mElement,
+            $this->mAttrLocalName,
+            $value,
+            $value,
+            null
+        );
+    }
+
+    public function __destruct()
+    {
+        $this->mElement = null;
+        $this->mIndex = null;
+        $this->mTokens = null;
     }
 
     public function __get($aName) {
         switch ($aName) {
             case 'length':
-                return count($this->mTokens);
+                return $this->mLength;
 
             case 'value':
-                return $this->serializeOrderedSet($this->mTokens);
+                return $this->mElement->getAttributeList()->getAttrValue(
+                    $this->mElement,
+                    $this->mAttrLocalName
+                );
         }
     }
 
-    public function __set($aName, $aValue) {
+    public function __set($aName, $aValue)
+    {
         switch ($aName) {
             case 'value':
-                $this->mTokens = Utils::parseOrderedSet($aValue);
+                $this->mElement->getAttributeList()->setAttrValue(
+                    $this->mElement,
+                    $this->mAttrLocalName,
+                    $aValue
+                );
         }
     }
 
     /**
-     * Adds all arguments to the token list except for those that
-     * already exist in the list.  A SyntaxError will be thrown if
-     * one of the tokens is an empty string and a InvalidCharacterError
-     * will be thrown if one of the tokens contains ASCII whitespace.
-     * @param string $aTokens... One or more tokens to be added to the token
-     *                           list.
+     * Gets the value of the attribute of the associated element's associated
+     * attribute's local name.
+     *
+     * @see https://dom.spec.whatwg.org/#concept-dtl-serialize
+     *
+     * @return string
      */
-    public function add($aTokens) {
-        if (!func_num_args()) {
-            return;
-        }
-
-        $tokens = func_get_args();
-        array_walk($tokens, array($this, 'checkToken'));
-
-        $this->_add($tokens);
-        $this->update();
+    public function __toString()
+    {
+        return $this->mElement->getAttributeList()->getAttrValue(
+            $this->mElement,
+            $this->mAttrLocalName
+        );
     }
 
     /**
-     * Appends a list of tokens to the token list without running the object's update steps.
+     * Adds all the arguments to the token list except for those that
+     * already exist in the list.
      *
-     * @internal
+     * @see https://dom.spec.whatwg.org/#dom-domtokenlist-add
      *
-     * @param  string[]  $aTokens A list of tokens to be added.
+     * @param string ...$aTokens One or more tokens to be added to the token
+     *     list.
+     *
+     * @throws SyntaxError If the token is an empty string.
+     *
+     * @throws InvalidCharacterError If the token contains ASCII whitespace.
      */
-    public function appendTokens(array $aTokens) {
-        $this->mTokens = [];
+    public function add(...$aTokens)
+    {
+        foreach ($aTokens as $token) {
+            if ($token === '') {
+                throw new SyntaxError();
+            }
+
+            if (preg_match('/\s/', $token)) {
+                throw new InvalidCharacterError();
+            }
+        }
 
         foreach ($aTokens as $token) {
-            if (!empty($token) && !preg_match('/\s/', $token) && !in_array($token, $this->mTokens)) {
-                $this->mTokens[] = $token;
+            if (!isset($this->mTokens[$token])) {
+                $this->mIndex[] = $token;
+                $this->mTokens[$token] = $this->mLength++;
+            }
+        }
+
+        $this->mElement->getAttributeList()->setAttrValue(
+            $this->mElement,
+            $this->mAttrLocalName,
+            Utils::serializeOrderedSet($this->mIndex)
+        );
+    }
+
+    /**
+     * Checks if the given token is contained in the list.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-domtokenlist-contains
+     *
+     * @param string $aToken A token to check against the token list.
+     *
+     * @return bool Returns true if the token is present, and false otherwise.
+     *
+     * @throws SyntaxError If the token is an empty string.
+     *
+     * @throws InvalidCharacterError If the token contains ASCII whitespace.
+     */
+    public function contains($aToken)
+    {
+        return isset($this->mTokens[$aToken]);
+    }
+
+    /**
+     * Gets the number of tokens in the list.
+     *
+     * @return int
+     */
+    public function count()
+    {
+        return $this->mLength;
+    }
+
+    /**
+     * Gets the current token that the iterator is pointing to.
+     *
+     * @return string
+     */
+    public function current()
+    {
+        return $this->mIndex[$this->mPosition];
+    }
+
+    /**
+     * @see AttributeChangeObserver
+     */
+    public function onAttributeChanged(
+        Element $aElement,
+        $aLocalName,
+        $aOldValue,
+        $aValue,
+        $aNamespace
+    ) {
+        if ($aLocalName === $this->mAttrLocalName && $aNamespace === null) {
+            $this->mIndex = [];
+            $this->mLength = 0;
+            $this->mTokens = [];
+
+            if ($aValue !== null) {
+                foreach (Utils::parseOrderedSet($aValue) as $token) {
+                    $this->mIndex[] = $token;
+                    $this->mTokens[$token] = $this->mLength++;
+                }
             }
         }
     }
 
     /**
-     * Returns true if the token is present, and false otherwise.
-     * A SyntaxError will be thrown if one of the tokens is an empty string
-     * and a InvalidCharacterError will be thrown if one of the tokens contains
-     * ASCII whitespace.
-     * @param  string $aToken A token to check against the token list
-     * @return bool           Returns true if the token is present, and false
-     *                        otherwise.
-     */
-    public function contains($aToken) {
-        $this->checkToken($aToken);
-
-        return $this->_contains($aToken);
-    }
-
-    /**
-     * Returns the iterator's current element.
-     * @return string|null
-     */
-    public function current() {
-        return $this->item($this->mPosition);
-    }
-
-    /**
-     * Removes all items from the list without running the object's update steps.
+     * Gets the token at the given index.
      *
-     * @internal
+     * @see https://dom.spec.whatwg.org/#dom-domtokenlist-item
+     *
+     * @param int $aIndex An integer index.
+     *
+     * @return string|null The token at the specified index or null if
+     *     the index does not exist.
      */
-    public function emptyList() {
-        $this->mTokens = [];
+    public function item($aIndex)
+    {
+        if ($aIndex >= $this->mLength) {
+            return null;
+        }
+
+        return isset($this->mIndex[$aIndex]) ? $this->mIndex[$aIndex] : null;
     }
 
     /**
-     * Returns the token at the specified index.
-     * @param  int    $aIndex An integer index.
-     * @return string         The token at the specified index or null if the
-     *                        index does not exist.
-     */
-    public function item($aIndex) {
-        return is_int($aIndex) && isset($this->mTokens[$aIndex]) ? $this->mTokens[$aIndex] : null;
-    }
-
-    /**
-     * Returns the iterator's current pointer.
+     * Gets the current position of the iterator.
+     *
      * @return int
      */
-    public function key() {
+    public function key()
+    {
         return $this->mPosition;
     }
 
     /**
-     * Advances the iterator's pointer by 1.
+     * Advances the iterator to the next item.
      */
-    public function next() {
+    public function next()
+    {
         $this->mPosition++;
     }
 
     /**
-     * Used with isset() to check if there is a token at the specified index
-     * location.
-     * @param  int  $aOffset An integer index.
-     * @return bool          Returns true if the index exists in the token list,
-     *                       otherwise false.
+     * Checks if the given index offset exists in the list of tokens.
+     *
+     * @param int $aIndex The integer index to check.
+     *
+     * @return bool
      */
-    public function offsetExists($aOffset) {
-        return isset($this->mTokens[$aOffset]);
+    public function offsetExists($aIndex)
+    {
+        return $aIndex > $this->mLength;
     }
 
     /**
-     * Returns the token at the specified index.
-     * @param  int    $aOffset An integer index.
-     * @return string          The token at the specified index or null if the
-     *                         index does not exist.
+     * Gets the token at the given index.
+     *
+     * @param int $aIndex An integer index.
+     *
+     * @return string|null The token at the specified index or null if
+     *     the index does not exist.
      */
-    public function offsetGet($aOffset) {
-        return $this->item($aOffset);
+    public function offsetGet($aIndex)
+    {
+        if ($aIndex >= $this->mLength) {
+            return null;
+        }
+
+        return isset($this->mIndex[$aIndex]) ? $this->mIndex[$aIndex] : null;
     }
 
     /**
-     * Tokens cannont be created or their values modified using array notation.
+     * Setting a token using array notation is not permitted.  Use the add() or
+     * toggle() methods instead.
      */
-    public function offsetSet($aOffset, $aValue) {}
-    public function offsetUnset($aOffset) {}
+    public function offsetSet($aIndex, $aValue)
+    {
+
+    }
 
     /**
-     * Removes all arguments if they are present in the token list.
-     * A SyntaxError will be thrown if one of the tokens is an empty string
-     * and a InvalidCharacterError will be thrown if one of the tokens contains
-     * ASCII whitespace.
-     * @param  string $aTokens... One or more tokens to be removed.
+     * Unsetting a token using array notation is not permitted.  Use the
+     * remove() or toggle() methods instead.
      */
-    public function remove($aTokens) {
-        if (!func_num_args()) {
+    public function offsetUnset($aIndex)
+    {
+
+    }
+
+    /**
+     * Removes all the arguments from the token list.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-domtokenlist-remove
+     *
+     * @param string ...$aTokens One or more tokens to be removed.
+     *
+     * @throws SyntaxError If the token is an empty string.
+     *
+     * @throws InvalidCharacterError If the token contains ASCII whitespace.
+     */
+    public function remove(...$aTokens)
+    {
+        foreach ($aTokens as $token) {
+            if ($token === '') {
+                throw new SyntaxError();
+            }
+
+            if (preg_match('/\s/', $token)) {
+                throw new InvalidCharacterError();
+            }
+        }
+
+        foreach ($aTokens as $token) {
+            if (isset($this->mTokens[$token])) {
+                array_splice($this->mIndex, $this->mTokens[$token], 1);
+                unset($this->mTokens[$token]);
+                $this->mLength--;
+            }
+        }
+
+        $this->mElement->getAttributeList()->setAttrValue(
+            $this->mElement,
+            $this->mAttrLocalName,
+            Utils::serializeOrderedSet($this->mIndex)
+        );
+    }
+
+    /**
+     * Replaces a token in the token list with another token.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-domtokenlist-replace
+     *
+     * @param string $aToken The token to be replaced.
+     *
+     * @param string $aNewToken The token to be inserted.
+     *
+     * @throws SyntaxError If either token is an empty string.
+     *
+     * @throws InvalidCharacterError If either token contains ASCII whitespace.
+     */
+    public function replace($aToken, $aNewToken)
+    {
+        if ($aToken === '' || $aNewToken === '') {
+            throw new SyntaxError();
+        }
+
+        if (preg_match('/\s/', $aToken) || preg_match('/\s/', $aNewToken)) {
+            throw new InvalidCharacterError();
+        }
+
+        if (!isset($this->mTokens[$aToken])) {
             return;
         }
 
-        $tokens = func_get_args();
-        array_walk($tokens, array($this, 'checkToken'));
-        $this->_remove($tokens);
-        $this->update();
+        $index = $this->mTokens[$aToken];
+        unset($this->mTokens[$aToken]);
+        array_splice($this->mIndex, $index, 1, [$aNewToken]);
+        $this->mTokens[$aNewToken] = $index;
+
+        $this->mElement->getAttributeList()->setAttrValue(
+            $this->mElement,
+            $this->mAttrLocalName,
+            Utils::serializeOrderedSet($this->mIndex)
+        );
     }
 
     /**
-     * Rewinds the iterator pointer to the beginning.
+     * Rewinds the iterator to the beginning.
      */
-    public function rewind() {
+    public function rewind()
+    {
         $this->mPosition = 0;
     }
 
     /**
-     * Adds or removes a token from the list based on whether or not it is
-     * presently in the list.  A SyntaxError will be thrown if one of the tokens
-     * is an empty string and a InvalidCharacterError will be thrown if one of
-     * the tokens contains ASCII whitespace.
-     * @param  string $aToken The token to be toggled.
-     * @param  bool   $aForce If the token is present and $aForce is null or
-     *                        false, the token is removed from the list.  If the
-     *                        token is not present and $aForce is null or true,
-     *                        the token is added to the list.
-     * @return bool           Returns true if the token is present in the list,
-     *                        otherwise false.
-     */
-    public function toggle($aToken, $aForce = null) {
-        $contains = $this->contains($aToken);
-
-        if ($contains) {
-            if (!$aForce) {
-                $this->_remove(array($aToken));
-                $rv = false;
-            } else {
-                $rv = true;
-            }
-        } else {
-            if ($aForce === false) {
-                $rv = false;
-            } else {
-                $this->_add(array($aToken));
-                $rv = true;
-            }
-        }
-
-        $this->update();
-
-        return $rv;
-    }
-
-    /**
-     * Returns the list of tokens as a string with each token separated by a
-     * space.
-     * @return string Stringified token list.
-     */
-    public function toString() {
-        return $this->serializeOrderedSet($this->mTokens);
-    }
-
-    /**
-     * Checks if the iterator's current pointer points to a valid position.
+     * Checks if the token is a valid token for the associated attribute name,
+     * if the associated attribute local name has a list of supported tokens.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-domtokenlist-supports
+     *
+     * @param string $aToken The token to check.
+     *
      * @return bool
+     *
+     * @throws TypeError If the associated attribute's local name does not
+     *     define a list of supported tokens.
      */
-    public function valid() {
-        return isset($this->mTokens[$this->mPosition]);
+    public function supports($aToken)
+    {
+        // TODO: This may not be worth implementing since we cannot accurately
+        //     determine which values any particular browser actually supports.
+        // If the associated attribute’s local name does not define supported
+        //     tokens, throw a TypeError.
+        // Let lowercase token be a copy of token, converted to ASCII lowercase.
+        // If lowercase token is present in supported tokens, return true.
+        // Return false.
+        return true;
     }
 
     /**
-     * Takes an array and concatenates the values of the array into a string
-     * with each token separated by U+0020.  See the following link for more info:
-     * https://dom.spec.whatwg.org/#concept-ordered-set-serializer
-     * @param  array $aSet An ordered set of tokens.
-     * @return string      Concatenated string of tokens.
+     * Toggles the presence of the given token in the token list.  If force is
+     * true, the token is added to the list and it is removed from the list if
+     * force is false.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-domtokenlist-toggle
+     *
+     * @param string $aToken The token to be toggled.
+     *
+     * @param bool $aForce Optional. Whether or not the token should be
+     *     forcefully added or removed.
+     *
+     * @return bool Returns true if the token is present, and false otherwise.
+     *
+     * @throws SyntaxError If either token is an empty string.
+     *
+     * @throws InvalidCharacterError If either token contains ASCII whitespace.
      */
-    protected function serializeOrderedSet($aSet) {
-        return implode(chr(0x20), $aSet);
-    }
-
-    /**
-     * Adds all tokens in the array to the token list except for those that
-     * already exist in the list.
-     * @param array $aTokens One or more tokens to be added to the token
-     *                       list.
-     */
-    private function _add($aTokens) {
-        foreach ($aTokens as $token) {
-            if (!$this->_contains($token)) {
-                $this->mTokens[] = $token;
-            }
-        }
-    }
-
-    /**
-     * Returns true if the token is present, and false otherwise.
-     * @param  string $aToken A token to check against the token list
-     * @return bool           Returns true if the token is present, and false
-     *                        otherwise.
-     */
-    private function _contains($aToken) {
-        return in_array($aToken, $this->mTokens);
-    }
-
-    /**
-     * Removes all tokens that are present in $aTokens if they are also present
-     * in the token list.
-     * @param  array $aTokens An array of tokens to be removed.
-     */
-    private function _remove($aTokens) {
-        foreach ($aTokens as $token) {
-            $key = array_search($token, $this->mTokens);
-            array_splice($this->mTokens, $key, 1);
-        }
-    }
-
-    /**
-     * Takes a single token and checks to make sure it is not an empty string
-     * and does not contain any ASCII whitespace characters.
-     * @param  string $aToken A token to validate.
-     */
-    private function checkToken($aToken) {
-        if (empty($aToken)) {
-            throw new SyntaxError;
+    public function toggle($aToken, $aForce = null)
+    {
+        if ($aToken === '') {
+            throw new SyntaxError();
         }
 
         if (preg_match('/\s/', $aToken)) {
-            throw new InvalidCharacterError;
+            throw new InvalidCharacterError();
+        }
+
+        if (isset($this->mTokens[$aToken])) {
+            if (!$aForce) {
+                array_splice($this->mIndex, $this->mTokens[$aToken], 1);
+                unset($this->mTokens[$aToken]);
+                $this->mLength--;
+                $this->mElement->getAttributeList()->setAttrValue(
+                    $this->mElement,
+                    $this->mAttrLocalName,
+                    Utils::serializeOrderedSet($this->mIndex)
+                );
+
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            if ($aForce === false) {
+                return false;
+            } else {
+                $this->mIndex[] = $aToken;
+                $this->mTokens[$aToken] = $this->mLength++;
+                $this->mElement->getAttributeList()->setAttrValue(
+                    $this->mElement,
+                    $this->mAttrLocalName,
+                    Utils::serializeOrderedSet($this->mIndex)
+                );
+
+                return true;
+            }
         }
     }
 
     /**
-     * If there is no associated attribute, then terminate the update steps.
-     * Otherwise, set an attribute value on the associated element using the
-     * provided attribute local name.
+     * Checks if the iterator's position is valid.
+     *
+     * @return bool
      */
-    private function update() {
-        if (!$this->mAttrLocalName) {
-            return;
-        }
-
-        $this->mElement->setAttribute($this->mAttrLocalName, $this->toString());
+    public function valid()
+    {
+        return isset($this->mIndex[$this->mPosition]);
     }
 }
