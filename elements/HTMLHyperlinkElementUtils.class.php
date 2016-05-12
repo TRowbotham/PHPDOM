@@ -507,7 +507,7 @@ trait HTMLHyperlinkElementUtils
 
             $this->mUrl->setQuery('');
             URLInternal::basicURLParser(
-                $aValue,
+                $input,
                 null,
                 $this->mOwnerDocument->characterSet,
                 $this->mUrl,
