@@ -219,7 +219,7 @@ trait HTMLHyperlinkElementUtils
             return;
         }
 
-        $this->setPasswordSteps($aValue);
+        $this->mUrl->setPasswordSteps($aValue);
         $this->mAttributesList->setAttrValue(
             $this,
             'href',
