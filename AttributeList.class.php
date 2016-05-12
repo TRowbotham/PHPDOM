@@ -2,6 +2,7 @@
 namespace phpjs;
 
 use phpjs\Attr;
+use phpjs\AttributeChangeObserver;
 use phpjs\elements\Element;
 use phpjs\exceptions\InUseAttributeError;
 use phpjs\HTMLDocument;
@@ -9,18 +10,21 @@ use phpjs\Namespaces;
 
 class AttributeList implements \ArrayAccess, \Countable, \Iterator
 {
-    const ATTR_ADDED = 0x1;
-    const ATTR_CHANGED = 0x2;
-    const ATTR_REMOVED = 0x4;
-    const ATTR_SET = 0x8;
-
     protected $mList;
+    protected $mObservers;
     protected $mPosition;
 
     public function __construct()
     {
         $this->mList = [];
+        $this->mObservers = new \SplObjectStorage();
         $this->mPosition = 0;
+    }
+
+    public function __destruct()
+    {
+        $this->mList = null;
+        $this->mObservers = null;
     }
 
     /**
@@ -38,12 +42,18 @@ class AttributeList implements \ArrayAccess, \Countable, \Iterator
         // attribute’s local name, namespace attribute’s namespace, and
         // oldValue null.
 
+        foreach ($this->mObservers as $observer) {
+            $observer->onAttributeChanged(
+                $aElement,
+                $aAttr->localName,
+                null,
+                $aAttr->value,
+                $aAttr->namespaceURI
+            );
+        }
+
         $this->mList[] = $aAttr;
         $aAttr->setOwnerElement($aElement);
-        $aElement->attributeHookHandler(
-            self::ATTR_SET | self::ATTR_ADDED,
-            $aAttr
-        );
     }
 
     /**
@@ -63,11 +73,17 @@ class AttributeList implements \ArrayAccess, \Countable, \Iterator
         // attribute’s local name, namespace attribute’s namespace, and
         // oldValue attribute’s value.
 
+        foreach ($this->mObservers as $observer) {
+            $observer->onAttributeChanged(
+                $aElement,
+                $aAttr->localName,
+                $aAttr->value,
+                $aValue,
+                $aAttr->namespaceURI
+            );
+        }
+
         $aAttr->setValue($aValue);
-        $aElement->attributeHookHandler(
-            self::ATTR_SET | self::ATTR_CHANGED,
-            $aAttr
-        );
     }
 
     /**
@@ -274,10 +290,19 @@ class AttributeList implements \ArrayAccess, \Countable, \Iterator
         // attribute’s local name, namespace attribute’s namespace, and
         // oldValue attribute’s value.
 
+        foreach ($this->mObservers as $observer) {
+            $observer->onAttributeChanged(
+                $aElement,
+                $aAttr->localName,
+                $aAttr->value,
+                null,
+                $aAttr->namespaceURI
+            );
+        }
+
         $index = array_search($aAttr, $this->mList, true);
         array_splice($this->mList, $index, 1);
         $aAttr->setOwnerElement(null);
-        $aElement->attributeHookHandler(self::ATTR_REMOVED, $aAttr);
     }
 
     /**
@@ -355,14 +380,20 @@ class AttributeList implements \ArrayAccess, \Countable, \Iterator
         // oldAttr’s local name, namespace oldAttr’s namespace, and oldValue
         // oldAttr’s value.
 
+        foreach ($this->mObservers as $observer) {
+            $observer->onAttributeChanged(
+                $aElement,
+                $aOldAttr->localName,
+                $aOldAttr->value,
+                $aNewAttr->value,
+                $aOldAttr->namespaceURI
+            );
+        }
+
         $index = array_search($aOldAttr, $this->mList);
         array_splice($this->mList, $index, 1, [$aNewAttr]);
         $aOldAttr->setOwnerElement(null);
         $aNewAttr->setOwnerElement($aElement);
-        $aElement->attributeHookHandler(
-            self::ATTR_SET | self::ATTR_CHANGED,
-            $aAttr
-        );
     }
 
     /**
@@ -463,5 +494,17 @@ class AttributeList implements \ArrayAccess, \Countable, \Iterator
     public function valid()
     {
         return isset($this->mList[$this->mPosition]);
+    }
+
+    public function observe(AttributeChangeObserver $aObserver)
+    {
+        if (!$this->mObservers->contains($aObserver)) {
+            $this->mObservers->attach($aObserver);
+        }
+    }
+
+    public function unobserve(AttributeChangeObserver $aObserver)
+    {
+        $this->mObservers->detach($aObserver);
     }
 }

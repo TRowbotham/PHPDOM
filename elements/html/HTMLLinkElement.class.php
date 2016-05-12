@@ -1,10 +1,7 @@
 <?php
 namespace phpjs\elements\html;
 
-use phpjs\Attr;
-use phpjs\AttributeList;
 use phpjs\DOMTokenList;
-use phpjs\Utils;
 
 /**
  * Represents the HTML <link> element.
@@ -143,34 +140,6 @@ class HTMLLinkElement extends HTMLElement
 
             default:
                 parent::__set($aName, $aValue);
-        }
-    }
-
-    public function attributeHookHandler($aHookType, Attr $aAttr)
-    {
-        switch ($aAttr->name) {
-            case 'rel':
-                if ($aHookType & AttributeList::ATTR_SET) {
-                    $value = $aAttr->value;
-
-                    if (!empty($value)) {
-                        $this->mRelList->appendTokens(
-                            Utils::parseOrderedSet($value)
-                        );
-                    }
-                } elseif ($aHookType & AttributeList::ATTR_REMOVED) {
-                    $this->mRelList->emptyList();
-                }
-
-                break;
-
-            case 'sizes':
-                $this->mSizes->value = $aAttr->value;
-
-                break;
-
-            default:
-                parent::attributeHookHandler($aHookType, $aAttr);
         }
     }
 }

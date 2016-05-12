@@ -1,11 +1,9 @@
 <?php
 namespace phpjs\elements\html;
 
-use phpjs\Attr;
-use phpjs\AttributeList;
 use phpjs\DOMTokenList;
+use phpjs\elements\Element;
 use phpjs\elements\HTMLHyperlinkElementUtils;
-use phpjs\Utils;
 
 /**
  * Represents the HTML anchor element <a>.
@@ -79,6 +77,7 @@ class HTMLAnchorElement extends HTMLElement
 
         $this->mPing = new DOMTokenList($this, 'ping');
         $this->mRelList = new DOMTokenList($this, 'rel');
+        $this->mAttributesList->observe($this);
         $this->setURL();
     }
 
@@ -121,7 +120,7 @@ class HTMLAnchorElement extends HTMLElement
                 return $this->getPathname();
 
             case 'ping':
-                return $this->reflectStringAttributeValue($aName);
+                return $this->mPing;
 
             case 'port':
                 return $this->getPort();
@@ -140,6 +139,9 @@ class HTMLAnchorElement extends HTMLElement
 
             case 'target':
                 return $this->reflectStringAttributeValue($aName);
+
+            case 'text':
+                return $this->getTextContent();
 
             case 'type':
                 return $this->reflectStringAttributeValue($aName);
@@ -196,7 +198,7 @@ class HTMLAnchorElement extends HTMLElement
                 break;
 
             case 'ping':
-                $this->mAttributesList->setAttrValue($this, $aName, $aValue);
+                $this->mPing->value = $aValue;
 
                 break;
 
@@ -225,6 +227,11 @@ class HTMLAnchorElement extends HTMLElement
 
                 break;
 
+            case 'text':
+                $this->setTextContent($aValue);
+
+                break;
+
             case 'type':
                 $this->mAttributesList->setAttrValue($this, $aName, $aValue);
 
@@ -240,36 +247,26 @@ class HTMLAnchorElement extends HTMLElement
         }
     }
 
-    public function attributeHookHandler($aHookType, Attr $aAttr)
-    {
-        switch ($aAttr->name) {
-            case 'href':
-                $this->setURL();
-
-                break;
-
-            case 'ping':
-                $this->mPing->value = $aAttr->value;
-
-                break;
-
-            case 'rel':
-                if ($aHookType & AttributeList::ATTR_SET) {
-                    $value = $aAttr->value;
-
-                    if (!empty($value)) {
-                        $this->mRelList->appendTokens(
-                            Utils::parseOrderedSet($value)
-                        );
-                    }
-                } elseif ($aHookType & AttributeList::ATTR_REMOVED) {
-                    $this->mRelList->emptyList();
-                }
-
-                break;
-
-            default:
-                parent::attributeHookHandler($aHookType, $aAttr);
+    /**
+     * @see AttributeChangeObserver
+     */
+    public function onAttributeChanged(
+        Element $aElement,
+        $aLocalName,
+        $aOldValue,
+        $aValue,
+        $aNamespace
+    ) {
+        if ($aLocalName === 'href' && $aNamespace === null) {
+            $this->setURL();
+        } else {
+            parent::onAttributeChanged(
+                $aElement,
+                $aLocalName,
+                $aOldValue,
+                $aValue,
+                $aNamespace
+            );
         }
     }
 }

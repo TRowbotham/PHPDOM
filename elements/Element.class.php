@@ -2,6 +2,7 @@
 namespace phpjs\elements;
 
 use phpjs\Attr;
+use phpjs\AttributeChangeObserver;
 use phpjs\AttributeList;
 use phpjs\ChildNode;
 use phpjs\Document;
@@ -19,13 +20,12 @@ use phpjs\ParentNode;
 use phpjs\Text;
 use phpjs\TreeWalker;
 use phpjs\urls\URLInternal;
-use phpjs\Utils;
 
 /**
  * @see https://dom.spec.whatwg.org/#element
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Element
  */
-class Element extends Node implements \SplObserver
+class Element extends Node implements AttributeChangeObserver
 {
     use ChildNode;
     use GetElementsBy;
@@ -171,6 +171,19 @@ class Element extends Node implements \SplObserver
         $element->mPrefix = $aPrefix;
 
         return $element;
+    }
+
+    /**
+     * @see AttributeChangeObserver
+     */
+    public function onAttributeChanged(
+        Element $aElement,
+        $aLocalName,
+        $aOldValue,
+        $aValue,
+        $aNamespace
+    ) {
+        // Do nothing.
     }
 
     /**
@@ -540,29 +553,6 @@ class Element extends Node implements \SplObserver
             $parts['prefix'],
             $parts['namespace']
         );
-    }
-
-    public function update(\SplSubject $aObject)
-    {
-
-    }
-
-    public function attributeHookHandler($aHookType, Attr $aAttr)
-    {
-        switch ($aAttr->name) {
-            case 'class':
-                if ($aHookType & AttributeList::ATTR_SET) {
-                    $value = $aAttr->value;
-
-                    if (!empty($value)) {
-                        $this->mClassList->appendTokens(
-                            Utils::parseOrderedSet($value)
-                        );
-                    }
-                } elseif ($aHookType & AttributeList::ATTR_REMOVED) {
-                    $this->mClassList->emptyList();
-                }
-        }
     }
 
     /**
