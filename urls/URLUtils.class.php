@@ -219,39 +219,29 @@ abstract class URLUtils
      *     indicates if the charset specfied in the byte sequence should be used
      *     in place of the specified encoding argument. Default is null.
      *
-     * @param bool $aIsIndex Optional argument that, if set to true, prepends
-     *     an = character to the first byte sequence if one does not exist.
-     *     Default is null.
-     *
      * @return string[]
      */
     public static function urlencodedParser(
         $aInput,
-        $aEncoding = 'utf-8',
-        $aUseCharset = null,
-        $aIsIndex = null
+        $aEncodingOverride = null,
+        $aUseCharset = null
     ) {
-        $input = $aInput;
+        $encoding = $aEncodingOverride ?: 'UTF-8';
+        $len = strlen($aInput);
 
-        if ($aEncoding != 'utf-8') {
-            for ($i = 0, $len = strlen($input); $i < $len; $i++) {
-                if ($aInput[$i] > 0x7F) {
+        if ($encoding !== 'UTF-8') {
+            for ($i = 0; $i < $len; $i++) {
+                // This can only happen if input was not generated through the
+                // application/x-www-form-urlencoded serializer or through
+                // URLSearchParams.
+                if ($aInput[$i] > "\x7F") {
                     return false;
                 }
             }
         }
 
-        $sequences = explode('&', $input);
-
-        if (
-            $aIsIndex &&
-            !empty($squences) &&
-            strpos($squences[0], '=') === false
-        ) {
-            $sequences[0] = '=' . $sequences[0];
-        }
-
-        $pairs = array();
+        $sequences = explode('&', $aInput);
+        $tuples = [];
 
         foreach ($sequences as $bytes) {
             if ($bytes === '') {
@@ -262,30 +252,39 @@ abstract class URLUtils
 
             if ($pos !== false) {
                 $name = substr($bytes, 0, $pos);
-                $str = substr($bytes, $pos + 1);
-                $value = $str !== false ? $str : '';
+                $value = substr($bytes, $pos + 1);
             } else {
                 $name = $bytes;
                 $value = '';
             }
 
-            $name = str_replace('+', chr(0x20), $name);
-            $value = str_replace('+', chr(0x20), $value);
+            $name = str_replace('+', "\x20", $name);
+            $value = str_replace('+', "\x20", $value);
 
-            // TODO: If use _charset_ flag is set and name is `_charset_`
+            if ($aUseCharset && $name === '_charset_') {
+                // TODO: Let result be the result of getting an encoding for
+                // value, decoded. If result is not failure, unset use _charset_
+                // flag and set encoding to result.
+            }
 
-            $pairs[] = array('name' => $name, 'value' => $value);
+            $tuples[] = [
+                'name' => $name,
+                'value' => $value
+            ];
         }
 
-        $output = array();
+        $output = [];
 
-        foreach ($pairs as $pair) {
-            // TODO: Run encoding override’s decoder on the percent decoding of
-            // the name and value from pairs
-            $output[] = array(
-                'name' => self::percentDecode($pair['name']),
-                'value' => self::percentDecode($pair['value'])
-            );
+        foreach ($tuples as $tuple) {
+            // TODO: For each name-value tuple in tuples, append a new
+            // name-value tuple to output where the new name and value appended
+            // to output are the result of running decode on the percent
+            // decoding of the name and value from tuples, respectively, using
+            // encoding.
+            $output[] = [
+                'name' => self::percentDecode($tuple['name']),
+                'value' => self::percentDecode($tuple['value'])
+            ];
         }
 
         return $output;
