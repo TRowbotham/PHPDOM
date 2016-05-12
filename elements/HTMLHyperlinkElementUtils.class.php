@@ -572,7 +572,7 @@ trait HTMLHyperlinkElementUtils
 
             $this->mUrl->setFragment('');
             URLInternal::basicURLParser(
-                $aValue,
+                $input,
                 null,
                 $this->mOwnerDocument->characterSet,
                 $this->mUrl,
