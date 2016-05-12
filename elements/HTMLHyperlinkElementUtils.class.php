@@ -574,7 +574,7 @@ trait HTMLHyperlinkElementUtils
             URLInternal::basicURLParser(
                 $input,
                 null,
-                $this->mOwnerDocument->characterSet,
+                null,
                 $this->mUrl,
                 URLInternal::FRAGMENT_STATE
             );
