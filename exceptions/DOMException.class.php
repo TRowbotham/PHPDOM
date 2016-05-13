@@ -4,7 +4,7 @@ namespace phpjs\exceptions;
 /**
  * @see https://heycam.github.io/webidl/#dfn-DOMException
  */
-class DOMException extends DOMException
+class DOMException extends \Exception
 {
     public function __construct($aMessage = '')
     {
