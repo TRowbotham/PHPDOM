@@ -1310,8 +1310,15 @@ abstract class Node implements EventTarget
 
         array_splice($parent->mChildNodes, $index, 1);
 
-        // TODO: For each inclusive descendant inclusiveDescendant of node, run
+        // For each inclusive descendant inclusiveDescendant of node, run
         // the removing steps with inclusiveDescendant and parent.
+        $iter = new NodeIterator($aNode);
+
+        while (($descendant = $iter->nextNode())) {
+            if (method_exists($descendant, 'doRemovingSteps')) {
+                $descendant->doRemovingSteps($parent);
+            }
+        }
 
         if ($parent->mFirstChild === $aNode) {
             $parent->mFirstChild = $aNode->mNextSibling;
