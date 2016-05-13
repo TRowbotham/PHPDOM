@@ -124,10 +124,7 @@ class Element extends Node implements AttributeChangeObserver
     {
         switch ($aName) {
             case 'classList':
-                $this->mClassList->value = $this->mAttributesList->getAttrValue(
-                    $this,
-                    'class'
-                );
+                $this->mClassList->value = $aValue;
 
                 break;
 
