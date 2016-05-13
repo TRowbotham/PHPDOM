@@ -45,7 +45,7 @@ final class DOMImplementation
 
         if (!empty($aQualifiedName)) {
             try {
-                $element = $doc->createElementNS($aNameSpace, $aQualifiedName);
+                $element = $doc->createElementNS($aNamespace, $aQualifiedName);
             } catch (DOMException $e) {
                 throw $e;
             }
