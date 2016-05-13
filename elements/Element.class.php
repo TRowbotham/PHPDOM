@@ -7,6 +7,7 @@ use phpjs\AttributeList;
 use phpjs\ChildNode;
 use phpjs\Document;
 use phpjs\DOMTokenList;
+use phpjs\exceptions\DOMException;
 use phpjs\exceptions\InUseAttributeError;
 use phpjs\exceptions\NotFoundError;
 use phpjs\GetElementsBy;
@@ -356,7 +357,7 @@ class Element extends Node implements AttributeChangeObserver
     {
         try {
             return self::insertAdjacent($this, $aWhere, $aElement);
-        } catch (\Exception $e) {
+        } catch (DOMException $e) {
             throw $e;
         }
     }
@@ -386,7 +387,7 @@ class Element extends Node implements AttributeChangeObserver
 
         try {
             self::insertAdjacent($this, $aWhere, $text);
-        } catch (\Exception $e) {
+        } catch (DOMException $e) {
             throw $e;
         }
     }
@@ -505,7 +506,7 @@ class Element extends Node implements AttributeChangeObserver
     {
         try {
             return $this->mAttributesList->setAttr($aAttr, $this);
-        } catch (\Exception $e) {
+        } catch (DOMException $e) {
             throw $e;
         }
     }
@@ -521,7 +522,7 @@ class Element extends Node implements AttributeChangeObserver
     {
         try {
             return $this->mAttributesList->setAttr($aAttr, $this);
-        } catch (\Exception $e) {
+        } catch (DOMException $e) {
             throw $e;
         }
     }
@@ -540,7 +541,7 @@ class Element extends Node implements AttributeChangeObserver
     {
         try {
             $parts = Namespaces::validateAndExtract($aNamespace, $aName);
-        } catch (\Exception $e) {
+        } catch (DOMException $e) {
             throw $e;
         }
 
@@ -640,7 +641,7 @@ class Element extends Node implements AttributeChangeObserver
                         $aNode,
                         $aElement
                     );
-                } catch (\Exception $e) {
+                } catch (DOMException $e) {
                     throw $e;
                 }
 
@@ -666,7 +667,7 @@ class Element extends Node implements AttributeChangeObserver
                         $aNode,
                         $aElement->mNextSibling
                     );
-                } catch (\Exception $e) {
+                } catch (DOMException $e) {
                     throw $e;
                 }
 

@@ -4,7 +4,7 @@ namespace phpjs\exceptions;
 /**
  * @see https://heycam.github.io/webidl/#wrongdocumenterror
  */
-class WrongDocumentError extends \Exception
+class WrongDocumentError extends DOMException
 {
     public function __construct($aMessage = '')
     {

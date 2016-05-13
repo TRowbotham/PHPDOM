@@ -2,9 +2,9 @@
 namespace phpjs\exceptions;
 
 /**
- * @see https://heycam.github.io/webidl/#idl-exceptions
+ * @see https://heycam.github.io/webidl/#dfn-DOMException
  */
-class TypeError extends DOMException
+class DOMException extends DOMException
 {
     public function __construct($aMessage = '')
     {

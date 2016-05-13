@@ -4,7 +4,7 @@ namespace phpjs\exceptions;
 /**
  * @see https://heycam.github.io/webidl/#notfounderror
  */
-class NotFoundError extends \Exception
+class NotFoundError extends DOMException
 {
     public function __construct($aMessage = '')
     {

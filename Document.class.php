@@ -7,6 +7,7 @@ use phpjs\elements\html\HTMLHtmlElement;
 use phpjs\elements\html\HTMLHeadElement;
 use phpjs\events\Event;
 use phpjs\events\CustomEvent;
+use phpjs\exceptions\DOMException;
 use phpjs\exceptions\HierarchyRequestError;
 use phpjs\exceptions\InvalidCharacterError;
 use phpjs\exceptions\NotSupportedError;

@@ -4,7 +4,7 @@ namespace phpjs\exceptions;
 /**
  * @see https://heycam.github.io/webidl/#hierarchyrequesterror
  */
-class HierarchyRequestError extends \Exception
+class HierarchyRequestError extends DOMException
 {
     public function __construct($aMessage = '')
     {

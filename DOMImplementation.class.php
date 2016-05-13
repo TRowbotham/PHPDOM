@@ -1,6 +1,8 @@
 <?php
 namespace phpjs;
 
+use phpjs\exceptions\DOMException;
+
 /**
  * @see https://dom.spec.whatwg.org/#interface-domimplementation
  * @see https://developer.mozilla.org/en-US/docs/Web/API/DOMImplementation
@@ -44,7 +46,7 @@ final class DOMImplementation
         if (!empty($aQualifiedName)) {
             try {
                 $element = $doc->createElementNS($aNameSpace, $aQualifiedName);
-            } catch (\Exception $e) {
+            } catch (DOMException $e) {
                 throw $e;
             }
         }
@@ -86,7 +88,7 @@ final class DOMImplementation
     {
         try {
             Namespaces::validate($aQualifiedName);
-        } catch (\Exception $e) {
+        } catch (DOMException $e) {
             throw $e;
         }
 

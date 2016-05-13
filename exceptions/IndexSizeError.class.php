@@ -4,7 +4,7 @@ namespace phpjs\exceptions;
 /**
  * @see https://heycam.github.io/webidl/#indexsizeerror
  */
-class IndexSizeError extends \Exception
+class IndexSizeError extends DOMException
 {
     public function __construct($aMessage = '')
     {

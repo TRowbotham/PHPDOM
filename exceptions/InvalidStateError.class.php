@@ -4,7 +4,7 @@ namespace phpjs\exceptions;
 /**
  * @see https://heycam.github.io/webidl/#invalidstateerror
  */
-class InvalidStateError extends \Exception
+class InvalidStateError extends DOMException
 {
     public function __construct($aMessage = '')
     {

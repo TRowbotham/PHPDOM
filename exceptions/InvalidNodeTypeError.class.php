@@ -4,7 +4,7 @@ namespace phpjs\exceptions;
 /**
  * @see https://heycam.github.io/webidl/#invalidnodetypeerror
  */
-class InvalidNodeTypeError extends \Exception
+class InvalidNodeTypeError extends DOMException
 {
     public function __construct($aMessage = '')
     {

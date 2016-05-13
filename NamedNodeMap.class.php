@@ -2,6 +2,7 @@
 namespace phpjs;
 
 use phpjs\elements\Element;
+use phpjs\exceptions\DOMException;
 use phpjs\exceptions\NotFoundError;
 
 /**
@@ -153,7 +154,7 @@ class NamedNodeMap implements \ArrayAccess, \SeekableIterator, \Countable
                 $aAttr,
                 $this->mOwnerElement
             );
-        } catch (\Exception $e) {
+        } catch (DOMException $e) {
             throw $e;
         }
     }
@@ -165,7 +166,7 @@ class NamedNodeMap implements \ArrayAccess, \SeekableIterator, \Countable
                 $aAttr,
                 $this->mOwnerElement
             );
-        } catch (\Exception $e) {
+        } catch (DOMException $e) {
             throw $e;
         }
     }

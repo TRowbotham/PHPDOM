@@ -4,7 +4,7 @@ namespace phpjs\exceptions;
 /**
  * @see https://heycam.github.io/webidl/#inuseattributeerror
  */
-class InUseAttributeError extends \Exception
+class InUseAttributeError extends DOMException
 {
     public function __construct($aMessage = '')
     {

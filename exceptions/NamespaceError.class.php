@@ -4,7 +4,7 @@ namespace phpjs\exceptions;
 /**
  * @see https://heycam.github.io/webidl/#namespaceerror
  */
-class NamespaceError extends \Exception
+class NamespaceError extends DOMException
 {
     public function __construct($aMessage = '')
     {

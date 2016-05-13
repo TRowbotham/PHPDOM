@@ -4,7 +4,7 @@ namespace phpjs\exceptions;
 /**
  * @see https://heycam.github.io/webidl/#invalidcharactererror
  */
-class InvalidCharacterError extends \Exception
+class InvalidCharacterError extends DOMException
 {
     public function __construct($aMessage = '')
     {

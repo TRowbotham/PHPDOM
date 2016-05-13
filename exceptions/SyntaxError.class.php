@@ -4,7 +4,7 @@ namespace phpjs\exceptions;
 /**
  * @see https://heycam.github.io/webidl/#syntaxerror
  */
-class SyntaxError extends \Exception
+class SyntaxError extends DOMException
 {
     public function __construct($aMessage = '')
     {

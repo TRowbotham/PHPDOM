@@ -4,7 +4,7 @@ namespace phpjs\exceptions;
 /**
  * @see https://heycam.github.io/webidl/#notsupportederror
  */
-class NotSupportedError extends \Exception
+class NotSupportedError extends DOMException
 {
     public function __construct($aMessage = '')
     {
