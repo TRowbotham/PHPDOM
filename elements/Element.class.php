@@ -50,6 +50,7 @@ class Element extends Node implements AttributeChangeObserver
         $this->mNamespaceURI = null;
         $this->mNodeType = self::ELEMENT_NODE;
         $this->mPrefix = null;
+        $this->mAttributesList->observe($this);
     }
 
     public function __destruct()
