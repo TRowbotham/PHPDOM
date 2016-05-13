@@ -138,6 +138,62 @@ class Document extends Node
         return $aNode;
     }
 
+    /**
+     * Creates a new Attr object that with the given name.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-document-createattribute
+     *
+     * @param string $aLocalName The name of the attribute.
+     *
+     * @return Attr
+     *
+     * @throws InvalidCharacterError
+     */
+    public function createAttribute($aLocalName)
+    {
+        // TODO: If localName does not match the Name production in XML, then
+        // throw an InvalidCharacterError.
+
+        $localName = $this instanceof HTMLDocument ? strtolower($aLocalName) :
+            $aLocalName;
+
+        return new Attr($localName, '');
+    }
+
+    /**
+     * Creates a new Attr object with the given namespace and the name and
+     * prefix for the given namespace.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-document-createattributens
+     *
+     * @param string $aNamespace The attribute's namespace.
+     *
+     * @param string $aQualifiedName The attribute's qualified name.
+     *
+     * @return Attr
+     *
+     * @throws NamespaceError
+     *
+     * @throws InvalidCharacterError
+     */
+    public function createAttributeNS($aNamespace, $aQualifiedName)
+    {
+        try {
+            list(
+                $namespace,
+                $prefix,
+                $localName
+            ) = Namespaces::validateAndExtract(
+                $aNamespace,
+                $aQualifiedName
+            );
+        } catch (DOMException $e) {
+            throw $e;
+        }
+
+        return new Attr($localName, '', $namespace, $prefix);
+    }
+
     public function createComment($aData)
     {
         $node = new Comment($aData);
