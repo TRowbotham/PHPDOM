@@ -51,7 +51,7 @@ class Document extends Node
         }
 
         $this->mCharacterSet = 'utf-8';
-        $this->mContentType = '';
+        $this->mContentType = 'application/xml';
         $this->mFlags = 0;
         $this->mImplementation = new DOMImplementation($this);
         $this->mInertTemplateDocument = null;
