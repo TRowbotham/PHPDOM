@@ -138,11 +138,11 @@ class Namespaces
             throw new NamespaceError();
         }
 
-        return array(
-            'namespace' => $namespace,
-            'prefix' => $prefix,
-            'localName' => $localName,
-            'qualifiedName' => $aQualifiedName
-        );
+        return [
+            $namespace,
+            $prefix,
+            $localName,
+            $aQualifiedName
+        ];
     }
 }

@@ -540,17 +540,24 @@ class Element extends Node implements AttributeChangeObserver
     public function setAttributeNS($aNamespace, $aName, $aValue)
     {
         try {
-            $parts = Namespaces::validateAndExtract($aNamespace, $aName);
+            list(
+                $namespace,
+                $prefix,
+                $localName
+            ) = Namespaces::validateAndExtract(
+                $aNamespace,
+                $aName
+            );
         } catch (DOMException $e) {
             throw $e;
         }
 
         $this->mAttributesList->setAttrValue(
             $this,
-            $parts['localName'],
+            $localName,
             $aValue,
-            $parts['prefix'],
-            $parts['namespace']
+            $prefix,
+            $namespace
         );
     }
 
