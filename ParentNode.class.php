@@ -17,7 +17,8 @@ trait ParentNode
      *     appended to this Node.
      */
     public function append() {
-        $node = Node::convertNodesToNode(func_get_args());
+        $owner = $this->mOwnerDocument ?: $this;
+        $node = Node::convertNodesToNode(func_get_args(), $owner);
         $this->preinsertNode($node, null);
     }
 
@@ -30,7 +31,8 @@ trait ParentNode
      */
     public function prepend()
     {
-        $node = Node::convertNodesToNode(func_get_args());
+        $owner = $this->mOwnerDocument ?: $this;
+        $node = Node::convertNodesToNode(func_get_args(), $owner);
         $this->preinsertNode($node, $this->mFirstChild);
     }
 

@@ -34,7 +34,7 @@ trait ChildNode
             $viableNextSibling = $viableNextSibling->nextSibling;
         }
 
-        $node = Node::convertNodesToNode($nodes);
+        $node = Node::convertNodesToNode($nodes, $this->mOwnerDocument);
         $this->preinsertNode($node, $viableNextSibling);
     }
 
@@ -65,7 +65,10 @@ trait ChildNode
             $viablePreviousSibling = $viablePreviousSibling->previousSibling;
         }
 
-        $node = Node::convertNodesToNode(func_get_args());
+        $node = Node::convertNodesToNode(
+            func_get_args(),
+            $this->mOwnerDocument
+        );
         $viablePreviousSibling = $viablePreviousSibling ?
             $viablePreviousSibling->nextSibling : $parent->firstChild;
         $this->mParentNode->preinsertNode($node, $viablePreviousSibling);
@@ -112,7 +115,7 @@ trait ChildNode
             $viableNextSibling = $viableNextSibling->nextSibling;
         }
 
-        $node = Node::convertNodesToNode($nodes);
+        $node = Node::convertNodesToNode($nodes, $this->mOwnerDocument);
 
         if ($this->mParentNode === $parent) {
             $parent->replaceNode($node, $this);

@@ -4,6 +4,7 @@ namespace phpjs;
 use phpjs\elements\Element;
 use phpjs\events\Event;
 use phpjs\events\EventTarget;
+use phpjs\exceptions\DOMException;
 use phpjs\exceptions\HierarchyRequestError;
 use phpjs\exceptions\InvalidStateError;
 use phpjs\exceptions\NotFoundError;
@@ -1438,35 +1439,41 @@ abstract class Node implements EventTarget
      *
      * @param array $aNodes An array of Nodes and strings.
      *
+     * @param Document $aDocument Context object's node document.
+     *
      * @return DocumentFragment|Node If $aNodes > 1, then a DocumentFragment is
      *     returned, otherwise a single Node is returned.
      */
-    protected static function convertNodesToNode($aNodes)
+    protected static function convertNodesToNode($aNodes, $aDocument)
     {
         $node = null;
-        $nodes = $aNodes;
 
-        // Turn all strings into Text nodes.
-        array_walk($nodes, function (&$aArg) {
-            if (is_string($aArg)) {
-                $aArg = new Text($aArg);
+        // Replace each string in nodes with a new Text node whose data is the
+        // string and node document is document.
+        foreach ($aNodes as &$potentialNode) {
+            if (is_string($potentialNode)) {
+                $potentialNode = new Text($potentialNode);
+                $potentialNode->mOwnerDocument = $aDocument;
             }
-        });
+        }
 
-        // If we were given mutiple nodes, throw them all into a
-        // DocumentFragment
-        if (count($nodes) > 1) {
+        // If nodes contains one node, set node to that node. Otherwise, set
+        // node to a new DocumentFragment whose node document is document, and
+        // then append each node in nodes, if any, to it. Rethrow any
+        // exceptions.
+        if (count($aNodes) == 1) {
+            $node = $aNodes[0];
+        } else {
             $node = new DocumentFragment();
+            $node->mOwnerDocument = $aDocument;
 
             try {
-                foreach ($nodes as $arg) {
-                    $node->appendChild($arg);
+                foreach ($aNodes as $child) {
+                    $node->appendChild($child);
                 }
-            } catch (Exception $e) {
+            } catch (DOMException $e) {
                 throw $e;
             }
-        } else {
-            $node = $nodes[0];
         }
 
         return $node;
