@@ -1,6 +1,7 @@
 <?php
 namespace phpjs;
 
+use phpjs\exceptions\DOMException;
 use phpjs\exceptions\NamespaceError;
 
 class Namespaces
@@ -106,34 +107,52 @@ class Namespaces
         // TODO
     }
 
+    /**
+     * Validates that the given name is valid in the given namespace and returns
+     * the input broken down into its individual parts.
+     *
+     * @see https://dom.spec.whatwg.org/#validate-and-extract
+     *
+     * @param string $aNamespace A namespace.
+     *
+     * @param string $aQualifiedName The qualified name to validate.
+     *
+     * @return string[] Returns the namespace, namespace prefix, and localName.
+     *
+     * @throws NamespaceError
+     */
     public static function validateAndExtract($aNamespace, $aQualifiedName)
     {
         $namespace = $aNamespace === '' ? null : $aNamespace;
-        self::validate($aQualifiedName);
+
+        try {
+            self::validate($aQualifiedName);
+        } catch (DOMException $e) {
+            throw $e;
+        }
+
         $prefix = null;
         $localName = $aQualifiedName;
 
-        if (strpos($aQualifiedName, ':') !== false) {
-            list($prefix, $localName) = explode(':', $aQualifiedName);
+        if (mb_strpos($aQualifiedName, ':') !== false) {
+            list($prefix, $localName) = explode(':', $aQualifiedName, 2);
         }
 
-        if ($prefix && !$namespace) {
+        if ($prefix !== null && $namespace === null) {
             throw new NamespaceError();
         }
 
-        if ($prefix === 'xml' && $namespace === self::XML) {
+        if ($prefix === 'xml' && $namespace !== self::XML) {
             throw new NamespaceError();
         }
 
-        if ((strcmp($aQualifiedName, 'xmlns') === 0 || $prefix === 'xmlns') &&
-            $namespace === self::XMLNS) {
+        if (($aQualifiedName === 'xmlns' || $prefix === 'xmlns') &&
+            $namespace !== self::XMLNS) {
             throw new NamespaceError();
         }
 
-        if (
-            $namespace === self::XMLNS &&
-            strcmp($aQualifiedName, 'xmlns') !== 0 &&
-            $prefix === 'xmlns'
+        if ($namespace === self::XMLNS && $aQualifiedName !== 'xmlns' &&
+            $prefix !== 'xmlns'
         ) {
             throw new NamespaceError();
         }
@@ -141,8 +160,7 @@ class Namespaces
         return [
             $namespace,
             $prefix,
-            $localName,
-            $aQualifiedName
+            $localName
         ];
     }
 }
