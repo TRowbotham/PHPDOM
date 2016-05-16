@@ -1,6 +1,7 @@
 <?php
 namespace phpjs;
 
+use phpjs\elements\ElementFactory;
 use phpjs\elements\html\HTMLBodyElement;
 use phpjs\elements\html\HTMLFrameSetElement;
 use phpjs\elements\html\HTMLHtmlElement;
@@ -266,8 +267,9 @@ class HTMLDocument extends Document
             // If there is no pre-existing svg title element, then create one
             // and insert it as the first child of the document element.
             if (!$element) {
-                $element = SVGSVGElement::create(
-                    'svg',
+                $element = ElementFactory::create(
+                    $docElement->mOwnerDocument,
+                    'title',
                     Namespaces::SVG
                 );
                 $docElement->insertNode($element, $docElement->mFirstChild);
@@ -291,7 +293,8 @@ class HTMLDocument extends Document
             // If there is no pre-existing title element, then create one
             // and append it to the head element.
             if (!$element) {
-                $element = HTMLTitleElement::create(
+                $element = ElementFactory::create(
+                    $docElement->mOwnerDocument,
                     'title',
                     Namespaces::HTML
                 );

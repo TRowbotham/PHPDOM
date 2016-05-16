@@ -1,7 +1,9 @@
 <?php
 namespace phpjs\elements\html;
 
+use phpjs\elements\ElementFactory;
 use phpjs\exceptions\IndexSizeError;
+use phpjs\Namespaces;
 use phpjs\NodeFilter;
 
 /**
@@ -130,7 +132,11 @@ class HTMLTableRowElement extends HTMLElement
             throw new IndexSizeError();
         }
 
-        $td = $this->mOwnerDocument->createElement('td');
+        $td = ElementFactory::create(
+            $this->mOwnerDocument,
+            'td',
+            Namesapces::HTML
+        );
 
         if ($aIndex == -1 || $aIndex == $numCells) {
             $this->appendChild($td);

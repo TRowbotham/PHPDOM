@@ -1,6 +1,7 @@
 <?php
 namespace phpjs;
 
+use phpjs\elements\ElementFactory;
 use phpjs\exceptions\DOMException;
 
 /**
@@ -45,7 +46,11 @@ final class DOMImplementation
 
         if (!empty($aQualifiedName)) {
             try {
-                $element = $doc->createElementNS($aNamespace, $aQualifiedName);
+                $element = ElementFactory::createNS(
+                    $doc,
+                    $namespace,
+                    $qualifiedName
+                );
             } catch (DOMException $e) {
                 throw $e;
             }
@@ -112,17 +117,21 @@ final class DOMImplementation
         $docType->setOwnerDocument($doc);
         $doc->appendChild($docType);
 
-        $html = $doc->createElementNS(Namespaces::HTML, 'html');
-        $head = $doc->createElementNS(Namespaces::HTML, 'head');
+        $html = ElementFactory::create($doc, 'html', Namespaces::HTML);
+        $head = ElementFactory::create($doc, 'head', Namespaces::HTML);
         $doc->appendChild($html)->appendChild($head);
 
         if (is_string($aTitle)) {
-            $title = $doc->createElementNS(Namespaces::HTML, 'title');
+            $title = ElementFactory::create($doc, 'title', Namespaces::HTML);
             $head->appendChild($title);
             $title->appendChild(new Text($aTitle));
         }
 
-        $html->appendChild($doc->createElementNS(Namespaces::HTML, 'body'));
+        $html->appendChild(ElementFactory::create(
+            $doc,
+            'body',
+            Namespaces::HTML
+        ));
 
         // TODO: doc’s origin is an alias to the origin of the context object’s
         // associated document, and doc’s effective script origin is an alias to

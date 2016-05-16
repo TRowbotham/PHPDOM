@@ -433,7 +433,8 @@ abstract class Node implements EventTarget
 
         switch ($node->mNodeType) {
             case self::ELEMENT_NODE:
-                $copy = static::create(
+                $copy = ElementFactory::create(
+                    $document,
                     $node->mLocalName,
                     $node->mNamespaceURI,
                     $node->mPrefix

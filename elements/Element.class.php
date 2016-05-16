@@ -153,6 +153,10 @@ class Element extends Node implements AttributeChangeObserver
      * Creates a new instance of an the specified element interface and
      * intializes that elements local name, namespace, and namespace prefix.
      *
+     * @internal
+     *
+     * @param Document|null $aDocument The element's owner document.
+     *
      * @param string $aLocalName The element's local name that you are creating.
      *
      * @param string $aNamespace The namespace that the element belongs to.
@@ -162,11 +166,16 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @return Element
      */
-    public static function create($aLocalName, $aNamespace, $aPrefix = null)
-    {
+    public static function create(
+        $aDocument,
+        $aLocalName,
+        $aNamespace,
+        $aPrefix = null
+    ) {
         $element = new static();
         $element->mLocalName = $aLocalName;
         $element->mNamespaceURI = $aNamespace;
+        $element->mOwnerDocument = $aDocument;
         $element->mPrefix = $aPrefix;
 
         return $element;

@@ -1,7 +1,9 @@
 <?php
 namespace phpjs\elements\html;
 
+use phpjs\elements\ElementFactory;
 use phpjs\exceptions\IndexSizeError;
+use phpjs\Namespaces;
 
 /**
  * Represents the HTML table sectioning elements <thead>, <tfoot>, and <tbody>.
@@ -48,7 +50,11 @@ class HTMLTableSectionElement extends HTMLElement
             throw new IndexSizeError();
         }
 
-        $tr = $this->mOwnerDocument->createElement('tr');
+        $tr = ElementFactory::create(
+            $this->mOwnerDocument,
+            'tr',
+            Namespaces::HTML
+        );
 
         if ($aIndex == -1 || $aIndex == $numRows) {
             $this->appendChild($tr);
