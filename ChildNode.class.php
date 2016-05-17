@@ -20,7 +20,7 @@ trait ChildNode
         $parent = $this->mParentNode;
         $nodes = func_get_args();
 
-        if (!$parent || !func_num_args()) {
+        if (!$parent) {
             return;
         }
 
@@ -51,7 +51,7 @@ trait ChildNode
         $parent = $this->mParentNode;
         $nodes = func_get_args();
 
-        if (!$parent || !func_num_args()) {
+        if (!$parent) {
             return;
         }
 
@@ -101,7 +101,7 @@ trait ChildNode
         $parent = $this->mParentNode;
         $nodes = func_get_args();
 
-        if (!$parent || !func_num_args()) {
+        if (!$parent) {
             return;
         }
 
