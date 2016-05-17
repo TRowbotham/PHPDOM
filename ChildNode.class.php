@@ -35,7 +35,7 @@ trait ChildNode
         }
 
         $node = Node::convertNodesToNode($nodes, $this->mOwnerDocument);
-        $this->preinsertNode($node, $viableNextSibling);
+        $parent->preinsertNode($node, $viableNextSibling);
     }
 
     /**
