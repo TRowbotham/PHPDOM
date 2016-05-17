@@ -21,6 +21,7 @@ use phpjs\ParentNode;
 use phpjs\Text;
 use phpjs\TreeWalker;
 use phpjs\urls\URLInternal;
+use phpjs\Utils;
 
 /**
  * @see https://dom.spec.whatwg.org/#element
@@ -617,7 +618,7 @@ class Element extends Node implements AttributeChangeObserver
 
         return $this->mNamespaceURI === Namespaces::HTML &&
             $this->mOwnerDocument instanceof HTMLDocument ?
-            strtoupper($qualifiedName) : $qualifiedName;
+            Utils::toASCIIUppercase($qualifiedName) : $qualifiedName;
     }
 
     /**
