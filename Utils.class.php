@@ -34,6 +34,62 @@ class Utils
         return $aValue;
     }
 
+    /**
+     * Replaces all characters in the range U+0041 to U+005A, inclusive, with
+     * the corresponding characters in the range U+0061 to U+007A, inclusive.
+     *
+     * @see https://dom.spec.whatwg.org/#converted-to-ascii-uppercase
+     *
+     * @param string $aValue A string.
+     *
+     * @return string
+     */
+    public static function toASCIILowercase($aValue)
+    {
+        $len = mb_strlen($aValue);
+        $output = '';
+
+        for ($i = 0; $i < $len; $i++) {
+            $codePoint = mb_substr($aValue, $i, 1);
+
+            if ($codePoint >= "\x41" && $codePoint <= "\x5A") {
+                $output .= mb_strtolower($codePoint);
+            } else {
+                $output .= $codePoint;
+            }
+        }
+
+        return $output;
+    }
+
+    /**
+     * Replaces all characters in the range U+0061 to U+007A, inclusive, with
+     * the corresponding characters in the range U+0041 to U+005A, inclusive.
+     *
+     * @see https://dom.spec.whatwg.org/#converted-to-ascii-lowercase
+     *
+     * @param string $aValue A string.
+     *
+     * @return string
+     */
+    public static function toASCIIUppercase($aValue)
+    {
+        $len = mb_strlen($aValue);
+        $output = '';
+
+        for ($i = 0; $i < $len; $i++) {
+            $codePoint = mb_substr($aValue, $i, 1);
+
+            if ($codePoint >= "\x61" && $codePoint <= "\x7A") {
+                $output .= mb_strtoupper($codePoint);
+            } else {
+                $output .= $codePoint;
+            }
+        }
+
+        return $output;
+    }
+
     public static function intAsString($aValue)
     {
         if (is_string($aValue) && is_int(intval($aValue))) {
