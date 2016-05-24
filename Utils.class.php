@@ -7,24 +7,35 @@ class Utils
      * Tries to return a string representation of the variable, however, it may
      * return the original value if none of the conditions are met.
      *
-     * @internal
-     *
      * @param mixed $aValue A variable to be converted to a string.
      *
      * @param bool $aTreatNullAsEmptyString Whether or not a null value should
      *    be represented as an empty string or represented as the literal string
      *    "null".
      *
+     * @param bool $aNullable If true, null is an accepted value and it will
+     *     return null instead of a string and it will take precedence
+     *     over the $aTreatNullAsEmptyString argument.
+     *
      * @return mixed
      */
-    public static function DOMString($aValue, $aTreatNullAsEmptyString = false)
-    {
+    public static function DOMString(
+        $aValue,
+        $aTreatNullAsEmptyString = false,
+        $aNullable = false
+    ) {
         if (is_string($aValue)) {
             return $aValue;
         } elseif (is_bool($aValue)) {
             return $aValue ? 'true' : 'false';
         } elseif ($aValue === null) {
-            return $aTreatNullAsEmptyString ? '' : 'null';
+            if ($aNullable) {
+                return null;
+            } elseif ($aTreatNullAsEmptyString) {
+                return '';
+            } else {
+                return 'null';
+            }
         } elseif (is_scalar($aValue)) {
             return (string) $aValue;
         } elseif (is_object($aValue) && method_exists($aValue, '__toString')) {
