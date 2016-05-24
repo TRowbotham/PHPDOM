@@ -19,7 +19,7 @@ class URLSearchParams implements \Iterator {
 
     public function __construct($aInit = '')
     {
-        $init = Utils::toString($aInit);
+        $init = Utils::DOMString($aInit);
         $this->mPosition = 0;
         $this->mUrl = null;
 
@@ -84,8 +84,8 @@ class URLSearchParams implements \Iterator {
      */
     public function append($aName, $aValue)
     {
-        $name = Utils::toString($aName);
-        $value = Utils::toString($aValue);
+        $name = Utils::DOMString($aName);
+        $value = Utils::DOMString($aValue);
 
         if (!is_string($name) || !is_string($value)) {
             return;
@@ -120,7 +120,7 @@ class URLSearchParams implements \Iterator {
      */
     public function delete($aName)
     {
-        $name = Utils::toString($aName);
+        $name = Utils::DOMString($aName);
 
         if (!is_string($name) || !isset($this->mParams[$name])) {
             return;
@@ -145,7 +145,7 @@ class URLSearchParams implements \Iterator {
      */
     public function get($aName)
     {
-        $name = Utils::toString($aName);
+        $name = Utils::DOMString($aName);
 
         return is_string($name) && isset($this->mParams[$name]) ?
             reset($this->mParams[$name]) : null;
@@ -162,7 +162,7 @@ class URLSearchParams implements \Iterator {
      */
     public function getAll($aName)
     {
-        $name = Utils::toString($aName);
+        $name = Utils::DOMString($aName);
 
         return is_string($name) && isset($this->mParams[$name]) ?
             array_values($this->mParams[$name]) : [];
@@ -180,7 +180,7 @@ class URLSearchParams implements \Iterator {
      */
     public function has($aName)
     {
-        $name = Utils::toString($aName);
+        $name = Utils::DOMString($aName);
 
         return is_string($name) && isset($this->mParams[$name]);
     }
@@ -227,8 +227,8 @@ class URLSearchParams implements \Iterator {
      */
     public function set($aName, $aValue)
     {
-        $name = Utils::toString($aName);
-        $value = Utils::toString($aValue);
+        $name = Utils::DOMString($aName);
+        $value = Utils::DOMString($aValue);
 
         if (!is_string($name) || !is_string($value)) {
             return;

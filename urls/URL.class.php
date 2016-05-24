@@ -129,7 +129,7 @@ class URL
 
     public function __set($aName, $aValue)
     {
-        $value = Utils::toString($aValue);
+        $value = Utils::DOMString($aValue);
 
         // Treat all non-string values as an empty string.
         if (!is_string($aValue)) {

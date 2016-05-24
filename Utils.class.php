@@ -17,7 +17,7 @@ class Utils
      *
      * @return mixed
      */
-    public static function toString($aValue, $aTreatNullAsEmptyString = false)
+    public static function DOMString($aValue, $aTreatNullAsEmptyString = false)
     {
         if (is_string($aValue)) {
             return $aValue;
