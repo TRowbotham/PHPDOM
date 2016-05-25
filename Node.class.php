@@ -2,6 +2,7 @@
 namespace phpjs;
 
 use phpjs\elements\Element;
+use phpjs\elements\ElementFactory;
 use phpjs\events\Event;
 use phpjs\events\EventTarget;
 use phpjs\exceptions\DOMException;
