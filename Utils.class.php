@@ -38,8 +38,12 @@ class Utils
             }
         } elseif (is_scalar($aValue)) {
             return (string) $aValue;
-        } elseif (is_object($aValue) && method_exists($aValue, '__toString')) {
-            return (string) $aValue;
+        } elseif (is_object($aValue)) {
+            if (method_exists($aValue, '__toString')) {
+                return (string) $aValue;
+            } else {
+                return '[object ' . get_class($aValue) . ']';
+            }
         }
 
         return $aValue;
