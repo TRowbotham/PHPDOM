@@ -4,8 +4,11 @@ namespace phpjs;
 class Utils
 {
     /**
-     * Tries to return a string representation of the variable, however, it may
-     * return the original value if none of the conditions are met.
+     * Returns a string representation of the given value. If the nullable
+     * option is true, then this method has a chance to return null, otherwise,
+     * it will always return a string. According to the spec, a DOMString
+     * should be a UTF-16 encoded string, however, we intentionally skip this at
+     * the present time.
      *
      * @param mixed $aValue A variable to be converted to a string.
      *
@@ -46,7 +49,7 @@ class Utils
             }
         }
 
-        return $aValue;
+        return '';
     }
 
     /**
