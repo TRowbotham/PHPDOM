@@ -102,9 +102,14 @@ class Attr {
         switch ($aName) {
             case 'value':
                 if (!$this->mOwnerElement) {
-                    $this->mValue = $aValue;
+                    $this->mValue = Utils::DOMString($aValue);
                 } else {
-                    $this->mOwnerElement->_changeAttributeValue($this, $aValue);
+                    $attrList = $this->mOwnerElement->getAttributeList();
+                    $attrList->changeAttrValue(
+                        $this,
+                        $this->mOwnerElement,
+                        Utils::DOMString($aValue)
+                    );
                 }
         }
     }
