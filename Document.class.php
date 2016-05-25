@@ -5,6 +5,7 @@ use phpjs\DocumentType;
 use phpjs\elements\html\HTMLBaseElement;
 use phpjs\elements\html\HTMLHtmlElement;
 use phpjs\elements\html\HTMLHeadElement;
+use phpjs\elements\ElementFactory;
 use phpjs\events\Event;
 use phpjs\events\CustomEvent;
 use phpjs\exceptions\DOMException;
@@ -12,6 +13,7 @@ use phpjs\exceptions\HierarchyRequestError;
 use phpjs\exceptions\InvalidCharacterError;
 use phpjs\exceptions\NotSupportedError;
 use phpjs\urls\URLInternal;
+use phpjs\Utils;
 
 /**
  * @see https://dom.spec.whatwg.org/#interface-document
@@ -222,46 +224,69 @@ class Document extends Node
      */
     public function createElement($aLocalName)
     {
-        // TODO: Make sure localName matches the name production
+        $localName = Utils::DOMString($aLocalName);
 
-        $localName = strtolower($aLocalName);
-        $interface = $this->getHTMLInterfaceFor($localName);
-        $node = $interface::create($localName, Namespaces::HTML);
-        $node->mOwnerDocument = $this;
-
-        return $node;
-    }
-
-    public function createElementNS($aNamespace, $aQualifiedName)
-    {
-        try {
-            $parts = Namespaces::validateAndExtract(
-                $aNamespace,
-                $aQualifiedName
-            );
-        } catch (Exception $e) {
-            throw $e;
+        // If localName does not match the Name production, then throw an
+        // InvalidCharacterError.
+        if (!preg_match(Namespaces::NAME_PRODUCTION, $localName)) {
+            throw new InvalidCharacterError();
         }
 
-        // We only support the HTML namespace currently.
-        switch ($parts['namespace']) {
-            case Namespaces::HTML:
-                $interface = $this->getHTMLInterfaceFor($parts['localName']);
+        // If the context object is an HTML document, let localName be converted
+        // to ASCII lowercase.
+        if ($this instanceof HTMLDocument) {
+            $localName = Utils::toASCIILowercase($localName);
+        }
+
+        // Let namespace be the HTML namespace, if the context object’s content
+        // type is "text/html" or "application/xhtml+xml", and null otherwise.
+        switch ($this->mContentType) {
+            case 'text/html':
+            case 'application/xhtml+xml':
+                $namespace = Namespaces::HTML;
 
                 break;
 
             default:
-                $interface = 'phpjs\elements\Element';
+                $namespace = null;
         }
 
-        $node = $interface::create(
-            $parts['localName'],
-            $parts['namespace'],
-            $parts['prefix']
-        );
-        $node->mOwnerDocument = $this;
+        try {
+            $element = ElementFactory::create(
+                $this,
+                $localName,
+                $namespace,
+                null
+            );
+        } catch (DOMException $e) {
+            throw $e;
+        }
 
-        return $node;
+        return $element;
+    }
+
+    /**
+     * Creates an Element in a particular namespace.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-document-createelementns
+     *
+     * @param string|null $aNamespace The element's namespace.
+     *
+     * @param string $aQualifiedName The element's qualified name.
+     *
+     * @return Element
+     *
+     * @throws InvalidCharacterError
+     *
+     * @throws NamespaceError
+     */
+    public function createElementNS($aNamespace, $aQualifiedName)
+    {
+        return ElementFactory::createNS(
+            $this,
+            Utils::DOMString($aNamespace, false, true),
+            Utils::DOMString($aQualifiedName)
+        );
     }
 
     /**
@@ -776,256 +801,6 @@ class Document extends Node
         }
 
         return null;
-    }
-
-    protected function getHTMLInterfaceFor($aLocalName)
-    {
-        switch($aLocalName) {
-            /**
-             * These are elements whose tag name differs
-             * from its DOM interface name, so map the tag
-             * name to the interface name.
-             */
-            case 'a':
-                $interfaceName = 'Anchor';
-
-                break;
-
-            case 'br':
-                $interfaceName = 'BR';
-
-                break;
-
-            case 'datalist':
-                $interfaceName = 'DataList';
-
-                break;
-
-            case 'dl':
-                $interfaceName = 'DList';
-
-                break;
-
-            case 'fieldset':
-                $interfaceName = 'FieldSet';
-
-                break;
-
-            case 'frameset':
-                $interfaceName = 'FrameSet';
-
-                break;
-
-            case 'hr':
-                $interfaceName = 'HR';
-
-                break;
-
-            case 'h1':
-            case 'h2':
-            case 'h3':
-            case 'h4':
-            case 'h5':
-            case 'h6':
-                $interfaceName = 'Heading';
-
-                break;
-
-            case 'iframe':
-                $interfaceName = 'IFrame';
-
-                break;
-
-            case 'img':
-                $interfaceName = 'Image';
-
-                break;
-
-            case 'ins':
-            case 'del':
-                $interfaceName = 'Mod';
-
-                break;
-
-            case 'li':
-                $interfaceName = 'LI';
-
-                break;
-
-            case 'menuitem':
-                $interfaceName = 'MenuItem';
-
-                break;
-
-            case 'ol':
-                $interfaceName = 'OList';
-
-                break;
-
-            case 'optgroup':
-                $interfaceName = 'OptGroup';
-
-                break;
-
-            case 'p':
-                $interfaceName = 'Paragraph';
-
-                break;
-
-            case 'blockquote':
-            case 'cite':
-            case 'q':
-                $interfaceName = 'Quote';
-
-                break;
-
-            case 'caption':
-                $interfaceName = 'TableCaption';
-
-                break;
-
-            case 'td':
-                $interfaceName = 'TableDataCell';
-
-                break;
-
-            case 'th':
-                $interfaceName = 'TableHeaderCell';
-
-                break;
-
-            case 'col':
-            case 'colgroup':
-                $interfaceName = 'TableCol';
-
-                break;
-
-            case 'tr':
-                $interfaceName = 'TableRow';
-
-                break;
-
-            case 'tbody':
-            case 'thead':
-            case 'tfoot':
-                $interfaceName = 'TableSection';
-
-                break;
-
-            case 'textarea':
-                $interfaceName = 'TextArea';
-
-                break;
-
-            case 'ul':
-                $interfaceName = 'UList';
-
-                break;
-
-            /**
-             * These are known HTML elements that don't have their
-             * own DOM interface, but should not be classified as
-             * HTMLUnknownElements.
-             */
-            case 'abbr':
-            case 'address':
-            case 'article':
-            case 'aside':
-            case 'b':
-            case 'bdi':
-            case 'bdo':
-            case 'cite':
-            case 'code':
-            case 'dd':
-            case 'dfn':
-            case 'dt':
-            case 'em':
-            case 'figcaption':
-            case 'figure':
-            case 'footer':
-            case 'header':
-            case 'hgroup':
-            case 'i':
-            case 'kbd':
-            case 'main':
-            case 'mark':
-            case 'nav':
-            case 'noscript':
-            case 'rp':
-            case 'rt':
-            case 'rtc':
-            case 'ruby':
-            case 's':
-            case 'samp':
-            case 'section':
-            case 'small':
-            case 'strong':
-            case 'sub':
-            case 'summary':
-            case 'sup':
-            case 'u':
-            case 'var':
-            case 'wbr':
-                $interfaceName = '';
-
-                break;
-
-            /**
-             * These are known HTML elements that have their own
-             * DOM interface and their names do not differ from
-             * their interface names.
-             */
-            case 'area':
-            case 'audio':
-            case 'base':
-            case 'body':
-            case 'button':
-            case 'canvas':
-            case 'content':
-            case 'data':
-            case 'details':
-            case 'dialog':
-            case 'div':
-            case 'embed':
-            case 'form':
-            case 'head':
-            case 'html':
-            case 'input':
-            case 'keygen':
-            case 'label':
-            case 'legend':
-            case 'link':
-            case 'map':
-            case 'menu':
-            case 'meta':
-            case 'meter':
-            case 'object':
-            case 'option':
-            case 'output':
-            case 'param':
-            case 'picture':
-            case 'pre':
-            case 'progress':
-            case 'script':
-            case 'select':
-            case 'source':
-            case 'span':
-            case 'style':
-            case 'table':
-            case 'template':
-            case 'time':
-            case 'title':
-            case 'track':
-            case 'video':
-                $interfaceName = ucfirst($aLocalName);
-
-                break;
-
-            default:
-                $interfaceName = 'Unknown';
-        }
-
-        return 'phpjs\\elements\\html\\HTML' . $interfaceName . 'Element';
     }
 
     /**
