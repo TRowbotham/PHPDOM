@@ -3,6 +3,7 @@ namespace phpjs;
 
 use phpjs\exceptions\DOMException;
 use phpjs\exceptions\NamespaceError;
+use phpjs\exceptions\InvalidCharacterError;
 
 class Namespaces
 {
@@ -111,9 +112,29 @@ class Namespaces
         return null;
     }
 
+    /**
+     * Ensures that a qualified name is a valid one.
+     *
+     * @see https://dom.spec.whatwg.org/#validate
+     *
+     * @param string $aQualifiedName The qualified name to validate.
+     *
+     * @throws InvalidCharacterError If the qualified name does not match the
+     *     XML 'Name' production.
+     *
+     * @throws NamespaceError If the qualified name does not match the XML
+     *     'QName' production.
+     */
     public static function validate($aQualifiedName)
     {
-        // TODO
+        // If qualifiedName does not match the 'Name' production, then throw an
+        // InvalidCharacterError.
+        if (!preg_match(self::NAME_PRODUCTION, $aQualifiedName)) {
+            throw new InvalidCharacterError();
+        }
+
+        // TODO: If qualifiedName does not match the 'QName' production, then
+        // throw a NamespaceError.
     }
 
     /**
