@@ -56,7 +56,6 @@ abstract class CharacterData extends Node
     {
         switch ($aName) {
             case 'data':
-            case 'nodeValue':
                 $this->replaceData(0, $this->mLength, $aValue);
 
                 break;
