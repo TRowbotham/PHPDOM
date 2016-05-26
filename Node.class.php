@@ -1051,7 +1051,7 @@ abstract class Node implements EventTarget
 
             case self::DOCUMENT_NODE:
                 return Namespaces::locatePrefix(
-                    $this->mDoumentElement,
+                    $this->getFirstElementChild(),
                     $aNamespace
                 );
 
