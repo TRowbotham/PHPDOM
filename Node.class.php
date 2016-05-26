@@ -1114,7 +1114,7 @@ abstract class Node implements EventTarget
                 $startNode = $startNode->mNextSibling;
             }
 
-            $node->replaceData($length, 0, $data);
+            $node->doReplaceData($length, 0, $data);
             $currentNode = $node->mNextSibling;
 
             while ($currentNode instanceof Text) {

@@ -112,7 +112,7 @@ class Text extends CharacterData
             }
         }
 
-        $this->replaceData($aOffset, $count, '');
+        $this->doReplaceData($aOffset, $count, '');
 
         if (!$this->mParentNode) {
             foreach ($ranges as $index => $range) {
@@ -167,7 +167,7 @@ class Text extends CharacterData
      */
     protected function setNodeValue($aNewValue)
     {
-        $this->replaceData(0, $this->mLength, $aNewValue);
+        $this->doReplaceData(0, $this->mLength, $aNewValue);
     }
 
     /**
@@ -175,6 +175,6 @@ class Text extends CharacterData
      */
     protected function setTextContent($aNewValue)
     {
-        $this->replaceData(0, $this->mLength, $aNewValue);
+        $this->doReplaceData(0, $this->mLength, $aNewValue);
     }
 }

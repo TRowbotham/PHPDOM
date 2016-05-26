@@ -56,7 +56,7 @@ abstract class CharacterData extends Node
     {
         switch ($aName) {
             case 'data':
-                $this->replaceData(0, $this->mLength, $aValue);
+                $this->doReplaceData(0, $this->mLength, $aValue);
 
                 break;
 
@@ -72,7 +72,7 @@ abstract class CharacterData extends Node
      */
     public function appendData($aData)
     {
-        $this->replaceData($this->mLength, 0, $aData);
+        $this->doReplaceData($this->mLength, 0, $aData);
     }
 
     /**
@@ -89,7 +89,7 @@ abstract class CharacterData extends Node
      */
     public function deleteData($aOffset, $aCount)
     {
-        $this->replaceData($aOffset, $aCount, '');
+        $this->doReplaceData($aOffset, $aCount, '');
     }
 
     /**
@@ -104,14 +104,14 @@ abstract class CharacterData extends Node
      */
     public function insertData($aOffset, $aData)
     {
-        $this->replaceData($aOffset, 0, $aData);
+        $this->doReplaceData($aOffset, 0, $aData);
     }
 
     /**
      * Replaces a portion of the string with the provided data begining at the
      * given offset and lasting until the given count.
      *
-     * @see https://dom.spec.whatwg.org/#concept-CD-replace
+     * @see https://dom.spec.whatwg.org/#dom-characterdata-replacedata
      *
      * @param int $aOffset The position within the string where the
      *     replacement should begin.
@@ -125,6 +125,27 @@ abstract class CharacterData extends Node
      *     of the data.
      */
     public function replaceData($aOffset, $aCount, $aData)
+    {
+        $this->doReplaceData($aOffset, $aCount, $aData);
+    }
+
+    /**
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#concept-cd-replace
+     *
+     * @param int $aOffset The position within the string where the
+     *     replacement should begin.
+     *
+     * @param int $aCount The number of characters from the given offset that
+     *     the replacement should extend to.
+     *
+     * @param string $aData The data to be inserted in to the string.
+     *
+     * @throws IndexSizeError If the given offset is greater than the length
+     *     of the data.
+     */
+    public function doReplaceData($aOffset, $aCount, $aData)
     {
         $length = $this->mLength;
         $count = $aCount;

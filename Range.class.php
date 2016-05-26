@@ -412,7 +412,7 @@ class Range {
                 $originalStartNode instanceof ProcessingInstruction ||
                 $originalStartNode instanceof Comment)
         ) {
-            $originalStartNode->replaceData(
+            $originalStartNode->doReplaceData(
                 $originalStartOffset,
                 $originalEndOffset - $originalStartOffset,
                 ''
@@ -457,7 +457,7 @@ class Range {
             $originalStartNode instanceof ProcessingInstruction ||
             $originalStartNode instanceof Comment
         ) {
-            $originalStartNode->replaceData(
+            $originalStartNode->doReplaceData(
                 $originalStartOffset,
                 $originalStartNode->length - $originalStartOffset,
                 ''
@@ -473,7 +473,7 @@ class Range {
             $originalEndNode instanceof ProcessingInstruction ||
             $originalEndNode instanceof Comment
         ) {
-            $originalEndNode->replaceData(0, $originalEndOffset, '');
+            $originalEndNode->doReplaceData(0, $originalEndOffset, '');
         }
 
         $this->setStartOrEnd('start', $newNode, $newOffset);
@@ -517,7 +517,7 @@ class Range {
                 $originalEndOffset - $originalStartOffset
             );
             $fragment->appendChild($clone);
-            $originalStartNode->replaceData(
+            $originalStartNode->doReplaceData(
                 $originalStartOffset,
                 $originalEndOffset - $originalStartOffset,
                 ''
@@ -609,7 +609,7 @@ class Range {
                 $originalStartNode->length - $originalStartOffset
             );
             $fragment->appendChild($clone);
-            $originalStartNode->replaceData(
+            $originalStartNode->doReplaceData(
                 $originalStartOffset,
                 $originalStartNode->length - $originalStartOffset,
                 ''
@@ -643,7 +643,7 @@ class Range {
                 $originalEndOffset
             );
             $fragment->appendChild($clone);
-            $originalEndNode->replaceData(
+            $originalEndNode->doReplaceData(
                 0,
                 $originalEndOffset,
                 ''
