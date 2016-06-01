@@ -56,7 +56,11 @@ abstract class CharacterData extends Node
     {
         switch ($aName) {
             case 'data':
-                $this->doReplaceData(0, $this->mLength, $aValue);
+                $this->doReplaceData(
+                    0,
+                    $this->mLength,
+                    Utils::DOMString($aValue, true)
+                );
 
                 break;
 
@@ -72,7 +76,7 @@ abstract class CharacterData extends Node
      */
     public function appendData($aData)
     {
-        $this->doReplaceData($this->mLength, 0, $aData);
+        $this->doReplaceData($this->mLength, 0, Utils::DOMString($aData));
     }
 
     /**
@@ -104,7 +108,7 @@ abstract class CharacterData extends Node
      */
     public function insertData($aOffset, $aData)
     {
-        $this->doReplaceData($aOffset, 0, $aData);
+        $this->doReplaceData($aOffset, 0, Utils::DOMString($aData));
     }
 
     /**
@@ -126,7 +130,7 @@ abstract class CharacterData extends Node
      */
     public function replaceData($aOffset, $aCount, $aData)
     {
-        $this->doReplaceData($aOffset, $aCount, $aData);
+        $this->doReplaceData($aOffset, $aCount, Utils::DOMString($aData));
     }
 
     /**
