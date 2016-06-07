@@ -78,7 +78,7 @@ class DOMTokenList implements
                 $this->mElement->getAttributeList()->setAttrValue(
                     $this->mElement,
                     $this->mAttrLocalName,
-                    $aValue
+                    Utils::DOMString($aValue)
                 );
         }
     }
@@ -114,7 +114,9 @@ class DOMTokenList implements
      */
     public function add(...$aTokens)
     {
-        foreach ($aTokens as $token) {
+        foreach ($aTokens as &$token) {
+            $token = Utils::DOMString($token);
+
             if ($token === '') {
                 throw new SyntaxError();
             }
@@ -153,7 +155,7 @@ class DOMTokenList implements
      */
     public function contains($aToken)
     {
-        return isset($this->mTokens[$aToken]);
+        return isset($this->mTokens[Utils::DOMString($aToken)]);
     }
 
     /**
@@ -297,7 +299,9 @@ class DOMTokenList implements
      */
     public function remove(...$aTokens)
     {
-        foreach ($aTokens as $token) {
+        foreach ($aTokens as &$token) {
+            $token = Utils::DOMString($token);
+
             if ($token === '') {
                 throw new SyntaxError();
             }
@@ -337,22 +341,25 @@ class DOMTokenList implements
      */
     public function replace($aToken, $aNewToken)
     {
-        if ($aToken === '' || $aNewToken === '') {
+        $token = Utils::DOMString($aToken);
+        $newToken = Utils::DOMString($aNewToken);
+
+        if ($token === '' || $newToken === '') {
             throw new SyntaxError();
         }
 
-        if (preg_match('/\s/', $aToken) || preg_match('/\s/', $aNewToken)) {
+        if (preg_match('/\s/', $token) || preg_match('/\s/', $newToken)) {
             throw new InvalidCharacterError();
         }
 
-        if (!isset($this->mTokens[$aToken])) {
+        if (!isset($this->mTokens[$token])) {
             return;
         }
 
-        $index = $this->mTokens[$aToken];
-        unset($this->mTokens[$aToken]);
-        array_splice($this->mIndex, $index, 1, [$aNewToken]);
-        $this->mTokens[$aNewToken] = $index;
+        $index = $this->mTokens[$token];
+        unset($this->mTokens[$token]);
+        array_splice($this->mIndex, $index, 1, [$newToken]);
+        $this->mTokens[$newToken] = $index;
 
         $this->mElement->getAttributeList()->setAttrValue(
             $this->mElement,
@@ -414,18 +421,20 @@ class DOMTokenList implements
      */
     public function toggle($aToken, $aForce = null)
     {
-        if ($aToken === '') {
+        $token = Utils::DOMString($aToken);
+
+        if ($token === '') {
             throw new SyntaxError();
         }
 
-        if (preg_match('/\s/', $aToken)) {
+        if (preg_match('/\s/', $token)) {
             throw new InvalidCharacterError();
         }
 
-        if (isset($this->mTokens[$aToken])) {
+        if (isset($this->mTokens[$token])) {
             if (!$aForce) {
-                array_splice($this->mIndex, $this->mTokens[$aToken], 1);
-                unset($this->mTokens[$aToken]);
+                array_splice($this->mIndex, $this->mTokens[$token], 1);
+                unset($this->mTokens[$token]);
                 $this->mLength--;
                 $this->mElement->getAttributeList()->setAttrValue(
                     $this->mElement,
@@ -441,8 +450,8 @@ class DOMTokenList implements
             if ($aForce === false) {
                 return false;
             } else {
-                $this->mIndex[] = $aToken;
-                $this->mTokens[$aToken] = $this->mLength++;
+                $this->mIndex[] = $token;
+                $this->mTokens[$token] = $this->mLength++;
                 $this->mElement->getAttributeList()->setAttrValue(
                     $this->mElement,
                     $this->mAttrLocalName,
