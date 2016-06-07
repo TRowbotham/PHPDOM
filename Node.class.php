@@ -194,7 +194,7 @@ abstract class Node implements EventTarget
         }
 
         $listener = array(
-            'type' => $aEventName,
+            'type' => Utils::DOMString($aEventName),
             'callback' => $aCallback,
             'capture' => $aUseCapture
         );
@@ -910,7 +910,12 @@ abstract class Node implements EventTarget
      */
     public function isDefaultNamespace($aNamespace)
     {
-        $namespace = $aNamespace === '' ? null : $aNamespace;
+        $namespace = Utils::DOMString($aNamespace, false, true);
+
+        if ($namespace === '') {
+            $namespace = null;
+        }
+
         $defaultNamespace = Namespaces::locateNamespace($this, null);
 
         return $defaultNamespace === $namespace;
@@ -1025,9 +1030,13 @@ abstract class Node implements EventTarget
      */
     public function lookupNamespaceURI($aPrefix)
     {
-        $prefix = $aPrefix === '' ? null : $aPrefix;
+        $prefix = Utils::DOMString($aPrefix, false, true);
 
-        return Namespaces::locateNamespace($this, $aPrefix);
+        if ($prefix === '') {
+            $prefix = null;
+        }
+
+        return Namespaces::locateNamespace($this, $prefix);
     }
 
     /**
@@ -1041,18 +1050,20 @@ abstract class Node implements EventTarget
      */
     public function lookupPrefix($aNamespace)
     {
-        if ($aNamespace === null || $aNamespace === '') {
+        $namespace = Utils::DOMString($aNamespace, false, true);
+
+        if ($namespace === null || $namespace === '') {
             return null;
         }
 
         switch ($this->mNodeType) {
             case self::ELEMENT_NODE:
-                return Namespaces::locatePrefix($this, $aNamespace);
+                return Namespaces::locatePrefix($this, $namespace);
 
             case self::DOCUMENT_NODE:
                 return Namespaces::locatePrefix(
                     $this->getFirstElementChild(),
-                    $aNamespace
+                    $namespace
                 );
 
             case self::DOCUMENT_TYPE_NODE:
@@ -1063,7 +1074,7 @@ abstract class Node implements EventTarget
                 return $this->mParentElement ?
                     Namespaces::locatePrefix(
                         $this->mParentElement,
-                        $aNamespace
+                        $namespace
                     ) : null;
         }
     }
@@ -1234,7 +1245,7 @@ abstract class Node implements EventTarget
         }
 
         $listener = array(
-            'type' => $aEventName,
+            'type' => Utils::DOMString($aEventName),
             'callback' => $callback,
             'capture' => $aUseCapture
         );
