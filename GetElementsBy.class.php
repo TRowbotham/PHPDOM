@@ -17,7 +17,7 @@ trait GetElementsBy
     {
         $classes = Utils::parseOrderedSet(
             Utils::DOMString($aClassName)
-        };
+        );
 
         if (empty($classes)) {
             return $classes;
