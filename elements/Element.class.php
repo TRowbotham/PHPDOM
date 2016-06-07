@@ -825,9 +825,10 @@ class Element extends Node implements AttributeChangeObserver
     protected function setTextContent($aNewValue)
     {
         $node = null;
+        $newValue = Utils::DOMString($aNewValue, true);
 
-        if (!empty($aNewValue)) {
-            $node = new Text($aNewValue);
+        if ($newValue !== '') {
+            $node = new Text($newValue);
             $node->mOwnerDocument = $this->mOwnerDocument;
         }
 

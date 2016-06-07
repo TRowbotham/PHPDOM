@@ -110,9 +110,10 @@ class DocumentFragment extends Node
     protected function setTextContent($aNewValue)
     {
         $node = null;
+        $newValue = Utils::DOMString($aNewValue, true);
 
-        if (!empty($aNewValue)) {
-            $new = new Text($aNewValue);
+        if ($newValue !== '') {
+            $new = new Text($newValue);
             $node->mOwnerDocument = $this->mOwnerDocument;
         }
 

@@ -167,7 +167,11 @@ class Text extends CharacterData
      */
     protected function setNodeValue($aNewValue)
     {
-        $this->doReplaceData(0, $this->mLength, $aNewValue);
+        $this->doReplaceData(
+            0,
+            $this->mLength,
+            Utils::DOMString($aNewValue, true)
+        );
     }
 
     /**
@@ -175,6 +179,10 @@ class Text extends CharacterData
      */
     protected function setTextContent($aNewValue)
     {
-        $this->doReplaceData(0, $this->mLength, $aNewValue);
+        $this->doReplaceData(
+            0,
+            $this->mLength,
+            Utils::DOMString($aNewValue, true)
+        );
     }
 }
