@@ -119,6 +119,7 @@ final class DOMImplementation
     public function createHTMLDocument($aTitle = '')
     {
         $doc = new HTMLDocument();
+        $doc->_setContentType('text/html');
         $docType = new DocumentType('html', '', '');
         $docType->setOwnerDocument($doc);
         $doc->appendChild($docType);
@@ -142,10 +143,8 @@ final class DOMImplementation
             Namespaces::HTML
         ));
 
-        // TODO: doc’s origin is an alias to the origin of the context object’s
-        // associated document, and doc’s effective script origin is an alias to
-        // the effective script origin of the context object’s associated
-        // document.
+        // TODO: doc's origin is the origin of the context object's associated
+        // document
 
         return $doc;
     }
