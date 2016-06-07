@@ -131,12 +131,20 @@ class Element extends Node implements AttributeChangeObserver
                 break;
 
             case 'className':
-                $this->mAttributesList->setAttrValue($this, 'class', $aValue);
+                $this->mAttributesList->setAttrValue(
+                    $this,
+                    'class',
+                    Utils::DOMString($aValue)
+                );
 
                 break;
 
             case 'id':
-                $this->mAttributesList->setAttrValue($this, $aName, $aValue);
+                $this->mAttributesList->setAttrValue(
+                    $this,
+                    $aName,
+                    Utils::DOMString($aValue)
+                );
 
                 break;
 
@@ -207,7 +215,10 @@ class Element extends Node implements AttributeChangeObserver
      */
     public function getAttribute($aName)
     {
-        $attr = $this->mAttributesList->getAttrByName($aName, $this);
+        $attr = $this->mAttributesList->getAttrByName(
+            Utils::DOMString($aName),
+            $this
+        );
 
         return $attr ? $attr->value : null;
     }
@@ -253,7 +264,7 @@ class Element extends Node implements AttributeChangeObserver
      */
     public function getAttributeNode($aName)
     {
-        return $this->mAttributesList->getAttrByName($aName);
+        return $this->mAttributesList->getAttrByName(Utils::DOMString($aName));
     }
 
     /**
@@ -273,8 +284,8 @@ class Element extends Node implements AttributeChangeObserver
     public function getAttributeNodeNS($aNamespace, $aLocalName)
     {
         return $this->mAttributesList->getAttrByNamespaceAndLocalName(
-            $aNamespace,
-            $aLocalName,
+            Utils::DOMString($aNamespace, false, true),
+            Utils::DOMString($aLocalName),
             $this
         );
     }
@@ -292,8 +303,8 @@ class Element extends Node implements AttributeChangeObserver
     {
         return $this->mAttributesList->getAttrValue(
             $this,
-            $aLocalName,
-            $aNamespace
+            Utils::DOMString($aLocalName),
+            Utils::DOMString($aNamespace, false, true)
         );
     }
 
@@ -335,8 +346,8 @@ class Element extends Node implements AttributeChangeObserver
     public function hasAttributeNS($aNamespace, $aLocalName)
     {
         return !!$this->mAttributesList->getAttrByNamespaceAndLocalName(
-            $aNamespace,
-            $aLocalName,
+            Utils::DOMString($aNamespace, false, true),
+            Utils::DOMString($aLocalName),
             $this
         );
     }
@@ -374,7 +385,11 @@ class Element extends Node implements AttributeChangeObserver
     public function insertAdjacentElement($aWhere, Element $aElement)
     {
         try {
-            return self::insertAdjacent($this, $aWhere, $aElement);
+            return self::insertAdjacent(
+                $this,
+                Utils::DOMString($aWhere),
+                $aElement
+            );
         } catch (DOMException $e) {
             throw $e;
         }
@@ -404,7 +419,11 @@ class Element extends Node implements AttributeChangeObserver
         $text->mOwnerDocument = $this->mOwnerDocument;
 
         try {
-            self::insertAdjacent($this, $aWhere, $text);
+            self::insertAdjacent(
+                $this,
+                Utils::DOMString($aWhere),
+                $text
+            );
         } catch (DOMException $e) {
             throw $e;
         }
@@ -483,15 +502,15 @@ class Element extends Node implements AttributeChangeObserver
      */
     public function setAttribute($aQualifiedName, $aValue)
     {
+        $qualifiedName = Utils::DOMString($aQualifiedName);
+
         // TODO: If qualifiedName does not match the Name production in XML,
         // throw an InvalidCharacterError exception.
 
         if ($this->mNamespaceURI === Namespaces::HTML &&
             $this->mOwnerDocument instanceof HTMLDocument
         ) {
-            $qualifiedName = Utils::toASCIILowercase($aQualifiedName);
-        } else {
-            $qualifiedName = $aQualifiedName;
+            $qualifiedName = Utils::toASCIILowercase($qualifiedName);
         }
 
         $attribute = null;
@@ -504,12 +523,16 @@ class Element extends Node implements AttributeChangeObserver
         }
 
         if (!$attribute) {
-            $attribute = new Attr($qualifiedName, $aValue);
+            $attribute = new Attr($qualifiedName, Utils::DOMString($aValue));
             $this->mAttributesList->appendAttr($attribute, $this);
             return;
         }
 
-        $this->mAttributesList->changeAttr($attr, $this, $aValue);
+        $this->mAttributesList->changeAttr(
+            $attr,
+            $this,
+            Utils::DOMString($aValue)
+        );
     }
 
     /**
@@ -562,8 +585,8 @@ class Element extends Node implements AttributeChangeObserver
                 $prefix,
                 $localName
             ) = Namespaces::validateAndExtract(
-                $aNamespace,
-                $aName
+                Utils::DOMString($aNamespace, false, true),
+                Utils::DOMString($aName)
             );
         } catch (DOMException $e) {
             throw $e;
