@@ -303,13 +303,21 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @link https://dom.spec.whatwg.org/#dom-element-hasattribute
      *
-     * @param string $aName The name of the attribute to find.
+     * @param string $aQualifiedName The name of the attribute to find.
      *
      * @return bool
      */
-    public function hasAttribute($aName)
+    public function hasAttribute($aQualifiedName)
     {
-        return !!$this->mAttributesList->getAttrByName($aName, $this);
+        $qualifiedName = Utils::DOMString($aQualifiedName);
+
+        if ($this->mNamespaceURI === Namespaces::HTML &&
+            $this->mOwnerDocument instanceof HTMLDocument
+        ) {
+            $qualifiedName = Utils::toASCIILowercase($aQualifiedName);
+        }
+
+        return !!$this->mAttributesList->getAttrByName($aQualifiedName, $this);
     }
 
     /**
