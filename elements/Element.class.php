@@ -486,11 +486,10 @@ class Element extends Node implements AttributeChangeObserver
         // TODO: If qualifiedName does not match the Name production in XML,
         // throw an InvalidCharacterError exception.
 
-        if (
-            $this->mNamespaceURI === Namespaces::HTML &&
+        if ($this->mNamespaceURI === Namespaces::HTML &&
             $this->mOwnerDocument instanceof HTMLDocument
         ) {
-            $qualifiedName = strtolower($aQualifiedName);
+            $qualifiedName = Utils::toASCIILowercase($aQualifiedName);
         } else {
             $qualifiedName = $aQualifiedName;
         }
