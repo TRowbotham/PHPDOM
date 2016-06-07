@@ -504,8 +504,11 @@ class Element extends Node implements AttributeChangeObserver
     {
         $qualifiedName = Utils::DOMString($aQualifiedName);
 
-        // TODO: If qualifiedName does not match the Name production in XML,
+        // If qualifiedName does not match the Name production in XML,
         // throw an InvalidCharacterError exception.
+        if (!preg_match(Namespaces::NAME_PRODUCTION, $qualifiedName)) {
+            throw new InvalidCharacterError();
+        }
 
         if ($this->mNamespaceURI === Namespaces::HTML &&
             $this->mOwnerDocument instanceof HTMLDocument
