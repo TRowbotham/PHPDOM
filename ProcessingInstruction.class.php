@@ -53,7 +53,7 @@ class ProcessingInstruction extends CharacterData
      */
     protected function setNodeValue($aNewValue)
     {
-        $this->replaceData(0, $this->mLength, $aNewValue);
+        $this->doReplaceData(0, $this->mLength, $aNewValue);
     }
 
     /**
@@ -61,6 +61,6 @@ class ProcessingInstruction extends CharacterData
      */
     protected function setTextContent($aNewValue)
     {
-        $this->replaceData(0, $this->mLength, $aNewValue);
+        $this->doReplaceData(0, $this->mLength, $aNewValue);
     }
 }
