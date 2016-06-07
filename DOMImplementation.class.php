@@ -66,10 +66,23 @@ final class DOMImplementation
             $doc->appendChild($element);
         }
 
-        // TODO: document’s origin is an alias to the origin of the context
-        // object’s associated document, and document’s effective script origin
-        // is an alias to the effective script origin of the context object’s
+        // TODO: document's origin is the origin of the context object's
         // associated document.
+
+        switch ($namespace) {
+            case Namespaces::HTML:
+                $doc->_setContentType('application/xhtml+xml');
+
+                break;
+
+            case Namespaces::SVG:
+                $doc->_setContentType('image/svg+xml');
+
+                break;
+
+            default:
+                $doc->_setContentType('application/xml');
+        }
 
         return $doc;
     }
