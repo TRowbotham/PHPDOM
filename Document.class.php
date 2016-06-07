@@ -158,7 +158,7 @@ class Document extends Node
 
         // If localName does not match the Name production in XML, then
         // throw an InvalidCharacterError.
-        if (!preg_match( Namespaces::NAME_PRODUCTION, $localName)) {
+        if (!preg_match(Namespaces::NAME_PRODUCTION, $localName)) {
             throw new InvalidCharacterError();
         }
 
@@ -323,7 +323,7 @@ class Document extends Node
         }
 
         if (!$constructor) {
-            throw new NotSupportedError;
+            throw new NotSupportedError();
         }
 
         $event = new $constructor('');
