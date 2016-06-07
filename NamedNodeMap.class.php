@@ -55,7 +55,7 @@ class NamedNodeMap implements \ArrayAccess, \SeekableIterator, \Countable
     public function getNamedItem($aName)
     {
         return $this->mAttributesList->getAttrByName(
-            $aName,
+            Utils::DOMString($aName),
             $this->mOwnerElement
         );
     }
@@ -63,8 +63,8 @@ class NamedNodeMap implements \ArrayAccess, \SeekableIterator, \Countable
     public function getNamedItemNS($aNamespace, $aLocalName)
     {
         return $this->mAttributesList->getAttrByNamespaceAndLocalName(
-            $aNamespace,
-            $aLocalName,
+            Utils::DOMString($aNamespace, false, true),
+            Utils::DOMString($aLocalName),
             $this->mOwnerElement
         );
     }
@@ -111,7 +111,7 @@ class NamedNodeMap implements \ArrayAccess, \SeekableIterator, \Countable
     public function removeNamedItem($aName)
     {
         $attr = $this->mAttributesList->removeAttrByName(
-            $aName,
+            Utils::DOMString($aName),
             $this->mOwnerElement
         );
 
@@ -125,8 +125,8 @@ class NamedNodeMap implements \ArrayAccess, \SeekableIterator, \Countable
     public function removeNamedItemNS($aNamespace, $aLocalName)
     {
         $attr = $this->mAttributesList->removeAttrByNamespaceAndLocalName(
-            $aNamespace,
-            $aLocalName,
+            Utils::DOMString($aNamespace, false, true),
+            Utils::DOMString($aLocalName),
             $this->mOwnerElement
         );
 
