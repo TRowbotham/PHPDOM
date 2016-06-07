@@ -1464,8 +1464,8 @@ abstract class Node implements EventTarget
         // Replace each string in nodes with a new Text node whose data is the
         // string and node document is document.
         foreach ($aNodes as &$potentialNode) {
-            if (is_string($potentialNode)) {
-                $potentialNode = new Text($potentialNode);
+            if (!($potentialNode instanceof self)) {
+                $potentialNode = new Text(Utils::DOMString($potentialNode));
                 $potentialNode->mOwnerDocument = $aDocument;
             }
         }
