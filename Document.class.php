@@ -162,8 +162,8 @@ class Document extends Node
             throw new InvalidCharacterError();
         }
 
-        $localName = $this instanceof HTMLDocument ? strtolower($localName) :
-            $localName;
+        $localName = $this instanceof HTMLDocument ?
+            Utils::toASCIILowercase($localName) : $localName;
 
         return new Attr($localName, '');
     }
