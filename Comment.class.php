@@ -5,7 +5,7 @@ namespace phpjs;
 // https://dom.spec.whatwg.org/#comment
 class Comment extends CharacterData {
     public function __construct($aData = '') {
-        parent::__construct($aData);
+        parent::__construct(Utils::DOMString($aData));
 
         $this->mNodeType = Node::COMMENT_NODE;
     }

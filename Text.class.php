@@ -16,7 +16,7 @@ class Text extends CharacterData
 {
     public function __construct($aData = '')
     {
-        parent::__construct($aData);
+        parent::__construct(Utils::DOMString($aData));
 
         $this->mNodeType = Node::TEXT_NODE;
     }
