@@ -332,7 +332,7 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @return bool
      */
-    public function hasAttribueNS($aNamespace, $aLocalName)
+    public function hasAttributeNS($aNamespace, $aLocalName)
     {
         return !!$this->mAttributesList->getAttrByNamespaceAndLocalName(
             $aNamespace,
