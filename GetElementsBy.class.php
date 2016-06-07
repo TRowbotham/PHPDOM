@@ -15,7 +15,9 @@ trait GetElementsBy
      */
     public function getElementsByClassName($aClassName)
     {
-        $classes = Utils::parseOrderedSet($aClassName);
+        $classes = Utils::parseOrderedSet(
+            Utils::DOMString($aClassName)
+        };
 
         if (empty($classes)) {
             return $classes;
@@ -55,16 +57,17 @@ trait GetElementsBy
     public function getElementsByTagName($aLocalName)
     {
         $collection = array();
+        $localName = Utils::DOMString($aLocalName);
 
-        if (strcmp($aLocalName, '*') === 0) {
+        if (strcmp($localName, '*') === 0) {
             $nodeFilter = null;
         } elseif ($this instanceof Document) {
-            $nodeFilter = function ($aNode) use ($aLocalName) {
+            $nodeFilter = function ($aNode) use ($localName) {
                 if (
                     ($aNode->namespaceURI === Namespaces::HTML &&
-                    strcmp($aNode->localName, strtolower($aLocalName)) === 0) ||
+                    strcmp($aNode->localName, strtolower($localName)) === 0) ||
                     ($aNode->namespaceURI === Namespaces::HTML &&
-                    strcmp($aNode->localName, $aLocalName) === 0)
+                    strcmp($aNode->localName, $localName) === 0)
                 ) {
                     return NodeFilter::FILTER_ACCEPT;
                 }
@@ -72,8 +75,8 @@ trait GetElementsBy
                 return NodeFilter::FILTER_SKIP;
             };
         } else {
-            $nodeFilter = function ($aNode) use ($aLocalName) {
-                return strcmp($aNode->localName, $aLocalName) === 0 ?
+            $nodeFilter = function ($aNode) use ($localName) {
+                return strcmp($aNode->localName, $localName) === 0 ?
                     NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
             };
         }
@@ -107,17 +110,19 @@ trait GetElementsBy
      */
     public function getElementsByTagNameNS($aNamespace, $aLocalName)
     {
-        $namespace = strcmp($aNamespace, '') === 0 ? null : $aNamespace;
+        $namespace = Utils::DOMString($aNamespace, false, true);
+        $namespace = $namespace === '' ? null : $namespace;
+        $localName = Utils::DOMString($aLocalName);
         $collection = array();
 
-        if (strcmp($namespace, '*') === 0 && strcmp($aLocalName, '*') === 0) {
+        if (strcmp($namespace, '*') === 0 && strcmp($localName, '*') === 0) {
             $nodeFilter = null;
         } elseif (strcmp($namespace, '*') === 0) {
-            $nodeFilter = function ($aNode) use ($aLocalName) {
-                return strcmp($aNode->localName, $aLocalName) === 0 ?
+            $nodeFilter = function ($aNode) use ($localName) {
+                return strcmp($aNode->localName, $localName) === 0 ?
                     NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
             };
-        } elseif (strcmp($aLocalName, '*') === 0) {
+        } elseif (strcmp($localName, '*') === 0) {
             $nodeFilter =  function ($aNode) use ($namespace) {
                 return strcmp($aNode->namespaceURI, $namespace) === 0 ?
                     NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
