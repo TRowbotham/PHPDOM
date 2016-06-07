@@ -154,10 +154,13 @@ class Document extends Node
      */
     public function createAttribute($aLocalName)
     {
-        // TODO: If localName does not match the Name production in XML, then
         $localName = Utils::DOMString($aLocalName);
 
+        // If localName does not match the Name production in XML, then
         // throw an InvalidCharacterError.
+        if (!preg_match( Namespaces::NAME_PRODUCTION, $localName)) {
+            throw new InvalidCharacterError();
+        }
 
         $localName = $this instanceof HTMLDocument ? strtolower($localName) :
             $localName;
@@ -356,7 +359,13 @@ class Document extends Node
 
     public function createProcessingInstruction($aTarget, $aData)
     {
-        // TODO: Make sure the Name matches the production
+        $target = Utils::DOMString($aTarget);
+
+        // If target does not match the Name production, then throw an
+        // InvalidCharacterError.
+        if (!preg_match(Namespaces::NAME_PRODUCTION, $target)) {
+            throw new InvalidCharacterError();
+        }
 
         $data = Utils::DOMString($aData);
 
@@ -364,7 +373,7 @@ class Document extends Node
             throw new InvalidCharacterError();
         }
 
-        $pi = new ProcessingInstruction(Utils::DOMString($aTarget), $data);
+        $pi = new ProcessingInstruction($target, $data);
         $pi->mOwnerDocument = $this;
 
         return $pi;
