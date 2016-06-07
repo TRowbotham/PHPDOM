@@ -63,12 +63,13 @@ trait GetElementsBy
             $nodeFilter = null;
         } elseif ($this instanceof Document) {
             $nodeFilter = function ($aNode) use ($localName) {
-                if (
+                $shouldAccept = ($aNode->namespaceURI === Namespaces::HTML &&
+                    $aNode->localName === Utils::toASCIILowercase($localName)
+                    ) ||
                     ($aNode->namespaceURI === Namespaces::HTML &&
-                    strcmp($aNode->localName, strtolower($localName)) === 0) ||
-                    ($aNode->namespaceURI === Namespaces::HTML &&
-                    strcmp($aNode->localName, $localName) === 0)
-                ) {
+                    $aNode->localName === $localName);
+
+                if ($shouldAccept) {
                     return NodeFilter::FILTER_ACCEPT;
                 }
 
