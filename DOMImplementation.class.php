@@ -41,10 +41,12 @@ final class DOMImplementation
         $aQualifiedName,
         DocumentType $aDoctype = null
     ) {
+        $namespace = Utils::DOMString($aNamespace, false, true);
+        $qualifiedName = Utils::DOMString($aQualifiedName, true);
         $doc = new XMLDocument();
         $element = null;
 
-        if (!empty($aQualifiedName)) {
+        if ($qualifiedName !== '') {
             try {
                 $element = ElementFactory::createNS(
                     $doc,
@@ -91,6 +93,10 @@ final class DOMImplementation
      */
     public function createDocumentType($aQualifiedName, $aPublicId, $aSystemId)
     {
+        $qualifiedName = Utils::DOMString($aQualifiedName);
+        $publicId = Utils::DOMString($aPublicId);
+        $systemId = Utils::DOMString($aSystemId);
+
         try {
             Namespaces::validate($aQualifiedName);
         } catch (DOMException $e) {
@@ -106,11 +112,11 @@ final class DOMImplementation
     /**
      * @see https://dom.spec.whatwg.org/#dom-domimplementation-createhtmldocument
      *
-     * @param  string|null   $aTitle Optional. The title of the document.
+     * @param string $aTitle Optional. The title of the document.
      *
      * @return HTMLDocument
      */
-    public function createHTMLDocument($aTitle = null)
+    public function createHTMLDocument($aTitle = '')
     {
         $doc = new HTMLDocument();
         $docType = new DocumentType('html', '', '');
@@ -120,11 +126,14 @@ final class DOMImplementation
         $html = ElementFactory::create($doc, 'html', Namespaces::HTML);
         $head = ElementFactory::create($doc, 'head', Namespaces::HTML);
         $doc->appendChild($html)->appendChild($head);
+        $titleText = Utils::DOMString($aTitle);
 
-        if (is_string($aTitle)) {
+        if (is_string($titleText)) {
             $title = ElementFactory::create($doc, 'title', Namespaces::HTML);
             $head->appendChild($title);
-            $title->appendChild(new Text($aTitle));
+            $text = new Text($titleText);
+            $text->setOwnerDocument($doc);
+            $title->appendChild($text);
         }
 
         $html->appendChild(ElementFactory::create(
