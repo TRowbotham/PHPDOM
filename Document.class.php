@@ -155,10 +155,12 @@ class Document extends Node
     public function createAttribute($aLocalName)
     {
         // TODO: If localName does not match the Name production in XML, then
+        $localName = Utils::DOMString($aLocalName);
+
         // throw an InvalidCharacterError.
 
-        $localName = $this instanceof HTMLDocument ? strtolower($aLocalName) :
-            $aLocalName;
+        $localName = $this instanceof HTMLDocument ? strtolower($localName) :
+            $localName;
 
         return new Attr($localName, '');
     }
@@ -187,8 +189,8 @@ class Document extends Node
                 $prefix,
                 $localName
             ) = Namespaces::validateAndExtract(
-                $aNamespace,
-                $aQualifiedName
+                Utils::DOMString($aNamespace, false, true),
+                Utils::DOMString($aQualifiedName)
             );
         } catch (DOMException $e) {
             throw $e;
@@ -303,7 +305,7 @@ class Document extends Node
     public function createEvent($aInterface)
     {
         $constructor = null;
-        $interface = strtolower($aInterface);
+        $interface = strtolower(Utils::DOMString($aInterface));
 
         switch ($interface) {
             case 'customevent':
@@ -356,11 +358,13 @@ class Document extends Node
     {
         // TODO: Make sure the Name matches the production
 
-        if (strpos($aData, '?>') !== false) {
+        $data = Utils::DOMString($aData);
+
+        if (strpos($data, '?>') !== false) {
             throw new InvalidCharacterError();
         }
 
-        $pi = new ProcessingInstruction($aTarget, $aData);
+        $pi = new ProcessingInstruction(Utils::DOMString($aTarget), $data);
         $pi->mOwnerDocument = $this;
 
         return $pi;
