@@ -136,7 +136,7 @@ class AttributeList implements \ArrayAccess, \Countable, \Iterator
             $aElement->namespaceURI === Namespaces::HTML &&
             $aElement->ownerDocument instanceof HTMLDocument
         ) {
-            $qualifiedName = strtolower($aQualifiedName);
+            $qualifiedName = Utils::toASCIILowercase($aQualifiedName);
         } else {
             $qualifiedName = $aQualifiedName;
         }
