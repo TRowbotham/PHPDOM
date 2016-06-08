@@ -133,10 +133,14 @@ class Event
     /**
      * If the even'ts cancelable property is true, it signals that the operation
      * that caused the event needs to be canceled.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-event-preventdefault
      */
     public function preventDefault()
     {
-        if ($this->mCancelable) {
+        if ($this->mCancelable &&
+            !($this->mFlags & EventFlags::IN_PASSIVE_LISTENER)
+        ) {
             $this->mFlags |= EventFlags::CANCELED;
         }
     }
