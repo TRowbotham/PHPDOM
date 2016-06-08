@@ -1,6 +1,8 @@
 <?php
 namespace phpjs\events;
 
+use phpjs\Utils;
+
 /**
  * Represents an event which can be dispatched to different objects to signal
  * the occurance of an event.
@@ -63,9 +65,9 @@ class Event
 
     public function __construct($aType, EventInit $aEventInitDict = null)
     {
-        $this->mBubbles = $aEventInitDict ? $aEventInitDict->bubbles : false;
-        $this->mCancelable = $aEventInitDict ?
-            $aEventInitDict->cancelable : false;
+        $initDict = $aEventInitDict ?: new EventInit();
+        $this->mBubbles = $initDict->bubbles;
+        $this->mCancelable =  $initDict->cancelable;
         $this->mCurrentTarget = null;
         $this->mEventPhase = self::NONE;
         $this->mFlags |= EventFlags::INITIALIZED;
@@ -108,6 +110,8 @@ class Event
     /**
      * Initializes or reinitializes an event.
      *
+     * @see https://dom.spec.whatwg.org/#dom-event-initevent
+     *
      * @param string $aType The type of event to be created.
      *
      * @param boolean $aBubbles Optional. Whether or not the event will bubble
@@ -123,15 +127,7 @@ class Event
             return;
         }
 
-        $this->mBubbles = $aBubbles;
-        $this->mCancelable = $aCancelable;
-        $this->mFlags |= EventFlags::INITIALIZED;
-        $this->mFlags &= ~EventFlags::STOP_PROPAGATION &
-            ~EventFlags::STOP_IMMEDIATE_PROPAGATION &
-            ~EventFlags::CANCELED;
-        $this->mIsTrusted = false;
-        $this->mTarget = null;
-        $this->mType = $aType;
+        $this->init(Utils::DOMString($aType), $aBubbles, $aCancelable);
     }
 
     /**
@@ -198,5 +194,29 @@ class Event
     public function _unsetFlag($aFlag)
     {
         $this->mFlags &= ~$aFlag;
+    }
+
+    /**
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#concept-event-initialize
+     *
+     * @param string $aType The event type.
+     *
+     * @param bool $aBubbles Whether the event bubbles or not.
+     *
+     * @param bool $aCancelable Whether the event is cancelable or not.
+     */
+    protected function init($aType, $aBubbles, $aCancelable)
+    {
+        $this->mFlags |= EventFlags::INTIALIZED;
+        $this->mFlags &= ~(EventFlags::STOP_PROPAGATION |
+            EventFlags::STOP_IMMEDIATE_PROPAGATION |
+            EventFlags::CANCELED);
+        $this->mIsTrusted = false;
+        $this->mTarget = null;
+        $this->mType = $aType;
+        $this->mBubbles = $aBubbles;
+        $this->mCancelable = $aCancelable;
     }
 }

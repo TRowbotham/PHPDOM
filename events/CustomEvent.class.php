@@ -1,6 +1,8 @@
 <?php
 namespace phpjs\events;
 
+use phpjs\Utils;
+
 /**
  * Represents a custom event defined by the user which they can use to signal
  * that an event has occured in their code.
@@ -46,6 +48,8 @@ class CustomEvent extends Event
     /**
      * Initializes or reinitializes a CustomEvent.
      *
+     * @see https://dom.spec.whatwg.org/#dom-customevent-initcustomevent
+     *
      * @param string $aType The type of event to be created.
      *
      * @param boolean $aBubbles Optional.  Whether or not the event will bubble
@@ -64,11 +68,11 @@ class CustomEvent extends Event
         $aCancelable = false,
         &$aDetail = null
     ) {
-        if ($this->mFlags & self::EVENT_DISPATCHED) {
+        if ($this->mFlags & EventFlags::DISPATCH) {
             return;
         }
 
-        $this->initEvent($aType, $aBubbles, $aCancelable);
+        $this->init(Utils::DOMString($aType), $aBubbles, $aCancelable);
         $this->mDetail =& $aDetail;
     }
 }
