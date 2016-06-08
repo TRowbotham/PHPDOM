@@ -176,6 +176,58 @@ abstract class EventTarget
     }
 
     /**
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#concept-flatten-options
+     *
+     * @param bool|bool[] $aOptions A boolean or array of booleans.
+     *
+     * @return bool
+     */
+    private function flattenOptions($aOptions)
+    {
+        $capture = false;
+
+        if (is_bool($aOptions)) {
+            $capture = $aOptions;
+        } elseif (is_array($aOptions)) {
+            if (isset($aOptions['capture']) && is_bool($aOptions['capture'])) {
+                $capture = $aOptions['capture'];
+            }
+        }
+
+        return $capture;
+    }
+
+    /**
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#event-flatten-more
+     *
+     * @param bool|bool[] $aOptions A boolean or array of booleans.
+     *
+     * @return bool[]
+     */
+    private function flattenMoreOptions($aOptions)
+    {
+        $capture = $this->flattenOptions($aOptions);
+        $once = false;
+        $passive = false;
+
+        if (is_array($aOptions)) {
+            if (isset($aOptions['passive']) && is_bool($aOptions['passive'])) {
+                $passive = $aOptions['passive'];
+            }
+
+            if (isset($aOptions['once']) && is_bool($aOptions['once'])) {
+                $passive = $aOptions['once'];
+            }
+        }
+
+        return [$capture, $passive, $once];
+    }
+
+    /**
      * Invokes all callbacks associated with a given event and Node.
      *
      * @internal
