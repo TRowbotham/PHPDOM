@@ -160,6 +160,22 @@ abstract class EventTarget
     }
 
     /**
+     * Always returns null except for Nodes, Shadow Roots, and Documents, which
+     * override this algorithm.
+     *
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#get-the-parent
+     *
+     * @param Event $aEvent The Event object
+     *
+     * @return EventTarget|null
+     */
+    protected function getTheParent($aEvent) {
+        return null;
+    }
+
+    /**
      * Invokes all callbacks associated with a given event and Node.
      *
      * @internal

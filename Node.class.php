@@ -1389,6 +1389,23 @@ abstract class Node extends EventTarget
     }
 
     /**
+     * Returns node's assigned slot, if node is assigned, node's parent
+     * otherwise.
+     *
+     * @see EventTarget::getTheParent
+     *
+     * @param Event $aEvent An Event object.
+     *
+     * @return HTMLSlotElement|null
+     */
+    protected function getTheParent($aEvent)
+    {
+        // We currently don't support the HTMLSlotElement, so this will always
+        // return the node's parent.
+        return $this->mParentNode;
+    }
+
+    /**
      * Gets the concatenation of all descendant text nodes.
      *
      * @internal

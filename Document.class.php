@@ -841,6 +841,29 @@ class Document extends Node
     }
 
     /**
+     * Returns null if event’s type attribute value is "load" or document does
+     * not have a browsing context, and the document’s associated Window
+     * object otherwise.
+     *
+     * @see EventTarget::getTheParent
+     *
+     * @param Event $aEvent An Event object
+     *
+     * @return Document|null
+     */
+    protected function getTheParent($aEvent)
+    {
+        // We don't currently support browsing contexts.
+        if ($aEvent->type === 'load') {
+            return null;
+        }
+
+        // We don't currently support the concept of a Window object, so return
+        // the document itself.
+        return $this;
+    }
+
+    /**
      * Gets the Document's URL address.
      *
      * @internal
