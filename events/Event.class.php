@@ -51,12 +51,6 @@ class Event
     const AT_TARGET = 2;
     const BUBBLING_PHASE = 3;
 
-    const EVENT_STOP_PROPAGATION = 1;
-    const EVENT_STOP_IMMEDIATE_PROPAGATION = 2;
-    const EVENT_CANCELED = 4;
-    const EVENT_INITIALIZED = 8;
-    const EVENT_DISPATCHED = 16;
-
     protected $mBubbles;
     protected $mCancelable;
     protected $mCurrentTarget;
@@ -74,7 +68,7 @@ class Event
             $aEventInitDict->cancelable : false;
         $this->mCurrentTarget = null;
         $this->mEventPhase = self::NONE;
-        $this->mFlags |= self::EVENT_INITIALIZED;
+        $this->mFlags |= EventFlags::INITIALIZED;
         $this->mIsTrusted = false;
         $this->mTarget = null;
         $this->mTimeStamp = microtime();
@@ -97,7 +91,7 @@ class Event
             case 'currentTarget':
                 return $this->mCurrentTarget;
             case 'defaultPrevented':
-                return $this->mFlags & self::EVENT_CANCELED;
+                return $this->mFlags & EventFlags::CANCELED;
             case 'eventPhase':
                 return $this->mEventPhase;
             case 'isTrusted':
@@ -125,16 +119,16 @@ class Event
      */
     public function initEvent($aType, $aBubbles = false, $aCancelable = false)
     {
-        if ($this->mFlags & self::EVENT_DISPATCHED) {
+        if ($this->mFlags & EventFlags::DISPATCH) {
             return;
         }
 
         $this->mBubbles = $aBubbles;
         $this->mCancelable = $aCancelable;
-        $this->mFlags |= self::EVENT_INITIALIZED;
-        $this->mFlags &= ~self::EVENT_STOP_PROPAGATION &
-            ~self::EVENT_STOP_IMMEDIATE_PROPAGATION &
-            ~self::EVENT_CANCELED;
+        $this->mFlags |= EventFlags::INITIALIZED;
+        $this->mFlags &= ~EventFlags::STOP_PROPAGATION &
+            ~EventFlags::STOP_IMMEDIATE_PROPAGATION &
+            ~EventFlags::CANCELED;
         $this->mIsTrusted = false;
         $this->mTarget = null;
         $this->mType = $aType;
@@ -147,7 +141,7 @@ class Event
     public function preventDefault()
     {
         if ($this->mCancelable) {
-            $this->mFlags |= self::EVENT_CANCELED;
+            $this->mFlags |= EventFlags::CANCELED;
         }
     }
 
@@ -157,7 +151,7 @@ class Event
      */
     public function stopPropagation()
     {
-        $this->mFlags |= self::EVENT_STOP_PROPAGATION;
+        $this->mFlags |= EventFlags::STOP_PROPAGATION;
     }
 
     /**
@@ -167,8 +161,8 @@ class Event
      */
     public function stopImmediatePropagation()
     {
-        $this->mFlags |= self::EVENT_STOP_PROPAGATION |
-            self::EVENT_STOP_IMMEDIATE_PROPAGATION;
+        $this->mFlags |= EventFlags::STOP_PROPAGATION |
+            EventFlags::STOP_IMMEDIATE_PROPAGATION;
     }
 
     public function _getFlags()

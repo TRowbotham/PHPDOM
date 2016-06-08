@@ -105,15 +105,15 @@ abstract class EventTarget
     public function dispatchEvent(Event $aEvent)
     {
         $flags = $aEvent->_getFlags();
-        $eventState = $flags & Event::EVENT_DISPATCHED ||
-            $flags & Event::EVENT_INITIALIZED;
+        $eventState = $flags & EventFlags::DISPATCH ||
+            $flags & EventFlags::INITIALIZED;
 
         if ($eventState) {
             throw new InvalidStateError();
         }
 
         $aEvent->_setIsTrusted(false);
-        $aEvent->_setFlag(Event::EVENT_DISPATCHED);
+        $aEvent->_setFlag(EventFlags::DISPATCH);
         $aEvent->_setTarget($this);
         $eventPath = array();
         $node = $this->mParentNode;
@@ -126,7 +126,7 @@ abstract class EventTarget
         $aEvent->_setEventPhase(Event::CAPTURING_PHASE);
 
         foreach ($eventPath as $eventTarget) {
-            if ($aEvent->_getFlags() & Event::EVENT_STOP_PROPAGATION) {
+            if ($aEvent->_getFlags() & EventFlags::STOP_PROPAGATION) {
                 break;
             }
 
@@ -135,7 +135,7 @@ abstract class EventTarget
 
         $aEvent->_setEventPhase(Event::AT_TARGET);
 
-        if (!($aEvent->_getFlags() & Event::EVENT_STOP_PROPAGATION)) {
+        if (!($aEvent->_getFlags() & EventFlags::STOP_PROPAGATION)) {
             $this->invokeEventListener($aEvent, $aEvent->target);
         }
 
@@ -143,7 +143,7 @@ abstract class EventTarget
             $aEvent->_setEventPhase(Event::BUBBLING_PHASE);
 
             foreach (array_reverse($eventPath) as $eventTarget) {
-                if ($aEvent->_getFlags() & Event::EVENT_STOP_PROPAGATION) {
+                if ($aEvent->_getFlags() & EventFlags::STOP_PROPAGATION) {
                     break;
                 }
 
@@ -151,12 +151,12 @@ abstract class EventTarget
             }
         }
 
-        $aEvent->_unsetFlag(Event::EVENT_DISPATCHED);
+        $aEvent->_unsetFlag(EventFlags::DISPATCH);
         $aEvent->_setEventPhase(Event::NONE);
         $aEvent->_setCurrentTarget(null);
 
         return !$aEvent->cancelable ||
-            !($aEvent->_getFlags() & Event::EVENT_CANCELED);
+            !($aEvent->_getFlags() & EventFlags::CANCELED);
     }
 
     /**
@@ -245,7 +245,7 @@ abstract class EventTarget
 
         for ($i = 0, $count = count($listeners); $i < $count; $i++) {
             if (
-                $aEvent->_getFlags() & Event::EVENT_STOP_IMMEDIATE_PROPAGATION
+                $aEvent->_getFlags() & EventFlags::STOP_IMMEDIATE_PROPAGATION
             ) {
                 break;
             }
