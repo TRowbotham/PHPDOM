@@ -165,37 +165,86 @@ class Event
             EventFlags::STOP_IMMEDIATE_PROPAGATION;
     }
 
-    public function _getFlags()
+    /**
+     * Gets the flags set for the Event object.
+     *
+     * @internal
+     *
+     * @return int
+     */
+    public function getFlags()
     {
         return $this->mFlags;
     }
 
-    public function _setCurrentTarget($aTarget)
+    /**
+     * Sets the Event object's current target.
+     *
+     * @internal
+     *
+     * @param mixed $aTarget The current event target.
+     */
+    public function setCurrentTarget($aTarget)
     {
         $this->mCurrentTarget = $aTarget;
     }
 
-    public function _setEventPhase($aPhase)
+    /**
+     * Sets the Event object's event phase.
+     *
+     * @internal
+     *
+     * @param int $aPhase An integer representing the current event phase.
+     */
+    public function setEventPhase($aPhase)
     {
         $this->mEventPhase = $aPhase;
     }
 
-    public function _setFlag($aFlag)
+    /**
+     * Sets a bitwise flag.
+     *
+     * @internal
+     *
+     * @param int $aFlag A bitwise flag.
+     */
+    public function setFlag($aFlag)
     {
         $this->mFlags |= $aFlag;
     }
 
-    public function _setIsTrusted($aIsTrusted)
+    /**
+     * Sets the Event object's trusted state.
+     *
+     * @internal
+     *
+     * @param bool $aIsTrusted The trusted state of the event.
+     */
+    public function setIsTrusted($aIsTrusted)
     {
         $this->mIsTrusted = $aIsTrusted;
     }
 
-    public function _setTarget($aTarget)
+    /**
+     * Sets the Event object's target.
+     *
+     * @internal
+     *
+     * @param mixed $aTarget The event's target.
+     */
+    public function setTarget($aTarget)
     {
         $this->mTarget = $aTarget;
     }
 
-    public function _unsetFlag($aFlag)
+    /**
+     * Unsets a bitwise flag.
+     *
+     * @internal
+     *
+     * @param int $aFlag A bitwise flag.
+     */
+    public function unsetFlag($aFlag)
     {
         $this->mFlags &= ~$aFlag;
     }
