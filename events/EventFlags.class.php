@@ -1,4 +1,6 @@
 <?php
+namespace phpjs\events;
+
 abstract class EventFlags
 {
     const STOP_PROPAGATION = 1;
