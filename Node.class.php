@@ -1492,19 +1492,22 @@ abstract class Node extends EventTarget
      *
      * @return bool Whether the node is an inclusive ancestor or not.
      */
-    protected function isHostIncludingInclusiveAncestorOf(Node $aNode)
+    protected function isHostIncludingInclusiveAncestorOf(Node $aNode = null)
     {
-        $ret = false;
+        $isInclusiveAncestor = $this->isInclusiveAncestorOf($aNode);
+        $root = null;
+        $host = null;
 
-        if ($aNode instanceof Element) {
-            $host = $aNode->getRootNode()->mHost;
+        if (!$isInclusiveAncestor && $aNode) {
+            $root = $aNode->getRootNode();
 
-            if ($host && $this->isHostIncludingInclusiveAncestorOf($host)) {
-                $ret = true;
+            if ($root instanceof DocumentFragment) {
+                $host = $root->getHost();
             }
         }
 
-        return $ret || $this->contains($aNode);
+        return $isInclusiveAncestor || ($root && $host &&
+            $this->isHostIncludingInclusiveAncestorOf($host));
     }
 
     /**
