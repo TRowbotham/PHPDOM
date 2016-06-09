@@ -1417,6 +1417,70 @@ abstract class Node extends EventTarget
     abstract protected function getTextContent();
 
     /**
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#concept-tree-ancestor
+     *
+     * @param Node|null $aOtherNode A Node.
+     *
+     * @return bool
+     */
+    public function isAncestorOf($aOtherNode)
+    {
+        while ($aOtherNode) {
+            if ($aOtherNode->mParentNode === $this) {
+                break;
+            }
+
+            $aOtherNode = $aOtherNode->mParentNode;
+        }
+
+        return $aOtherNode !== null;
+    }
+
+    /**
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#concept-tree-inclusive-ancestor
+     *
+     * @param Node|null $aOtherNode A Node.
+     *
+     * @return bool
+     */
+    public function isInclusiveAncestorOf($aOtherNode)
+    {
+        return $aOtherNode === $this || $this->isAncestorOf($aOtherNode);
+    }
+
+    /**
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#concept-tree-descendant
+     *
+     * @param Node|null $aOtherNode A Node.
+     *
+     * @return bool
+     */
+    public function isDescendantOf($aOtherNode)
+    {
+        return $aOtherNode->isAncestorOf($this);
+    }
+
+    /**
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#concept-tree-inclusive-descendant
+     *
+     * @param Node|null $aOtherNode A Node.
+     *
+     * @return bool
+     */
+    public function isInclusiveDescendantOf($aOtherNode)
+    {
+        return $aOtherNode === $this || $this->isDescendantOf($aOtherNode);
+    }
+
+    /**
      * Checks if the node is an inclusive ancestor of the given node, including
      * any nodes that may be hosted.
      *
@@ -1441,6 +1505,72 @@ abstract class Node extends EventTarget
         }
 
         return $ret || $this->contains($aNode);
+    }
+
+    /**
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#concept-shadow-including-descendant
+     *
+     * @param Node|null $aOtherNode A Node.
+     *
+     * @return bool
+     */
+    public function isShadowIncludingDescendantOf($aOtherNode)
+    {
+        $isDescendant = $this->isDescendantOf($aOtherNode);
+        $root = null;
+
+        if (!$isDescendant) {
+            $root = $this->getRootNode();
+        }
+
+        return $isDescendant || ($root && $root instanceof ShadowRoot &&
+            $root->host->isShadowIncludingDescendantOf($aOtherNode));
+    }
+
+    /**
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#concept-shadow-including-inclusive-descendant
+     *
+     * @param Node|null $aOtherNode A Node.
+     *
+     * @return bool
+     */
+    public function isShadowIncludingInclusiveDescendantOf($aOtherNode)
+    {
+        return $this === $aOtherNode ||
+            $this->isShadowIncludingDescendantOf($aOtherNode);
+    }
+
+    /**
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#concept-shadow-including-ancestor
+     *
+     * @param Node|null $aOtherNode A Node.
+     *
+     * @return bool
+     */
+    public function isShadowIncludingAncestorOf($aOtherNode)
+    {
+        return $aOtherNode->isShadowIncludingDescendantOf($this);
+    }
+
+    /**
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#concept-shadow-including-inclusive-ancestor
+     *
+     * @param Node|null $aOtherNode A Node.
+     *
+     * @return bool
+     */
+    public function isShadowIncludingInclusiveAncestorOf($aOtherNode)
+    {
+        return $this === $aOtherNode ||
+            $aOtherNode->isShadowIncludingAncestorOf($this);
     }
 
     /**
