@@ -51,6 +51,18 @@ class DocumentFragment extends Node
     }
 
     /**
+     * Gets a DocumentFragment's host object.
+     *
+     * @internal
+     *
+     * @return Element|null
+     */
+    public function getHost()
+    {
+        return $this->mHost;
+    }
+
+    /**
      * Sets a DocumentFragment's host element, if it has one.
      *
      * @internal
