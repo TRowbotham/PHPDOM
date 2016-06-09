@@ -104,7 +104,7 @@ abstract class EventTarget
      */
     public function dispatchEvent(Event $aEvent)
     {
-        $flags = $aEvent->_getFlags();
+        $flags = $aEvent->getFlags();
         $eventState = $flags & EventFlags::DISPATCH ||
             $flags & EventFlags::INITIALIZED;
 
