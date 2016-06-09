@@ -8,6 +8,6 @@ abstract class EventFlags
     const CANCELED = 4;
     const IN_PASSIVE_LISTENER = 8;
     const COMPOSED = 16;
-    const INTIALIZED = 32;
+    const INITIALIZED = 32;
     const DISPATCH = 64;
 }
