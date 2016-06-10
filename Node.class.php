@@ -1573,7 +1573,7 @@ abstract class Node extends EventTarget
     public function isShadowIncludingInclusiveAncestorOf($aOtherNode)
     {
         return $this === $aOtherNode ||
-            $aOtherNode->isShadowIncludingAncestorOf($this);
+            $this->isShadowIncludingAncestorOf($aOtherNode);
     }
 
     /**
