@@ -93,7 +93,7 @@ class Event
             case 'currentTarget':
                 return $this->mCurrentTarget;
             case 'defaultPrevented':
-                return $this->mFlags & EventFlags::CANCELED;
+                return (bool) ($this->mFlags & EventFlags::CANCELED);
             case 'eventPhase':
                 return $this->mEventPhase;
             case 'isTrusted':
