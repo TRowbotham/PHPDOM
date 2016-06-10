@@ -59,6 +59,7 @@ class Event
     protected $mEventPhase;
     protected $mFlags;
     protected $mIsTrusted;
+    protected $mPath;
     protected $mTarget;
     protected $mTimeStamp;
     protected $mType;
@@ -72,6 +73,7 @@ class Event
         $this->mEventPhase = self::NONE;
         $this->mFlags |= EventFlags::INITIALIZED;
         $this->mIsTrusted = false;
+        $this->mPath = new \SplDoublyLinkedList();
         $this->mTarget = null;
         $this->mTimeStamp = microtime();
         $this->mType = $aType;
@@ -211,6 +213,28 @@ class Event
     public function setFlag($aFlag)
     {
         $this->mFlags |= $aFlag;
+    }
+
+    /**
+     * Gets the Event object's path.
+     *
+     * @internal
+     *
+     * @return SPLDoublyLinkedList
+     */
+    public function getPath()
+    {
+        return $this->mPath;
+    }
+
+    /**
+     * Empties the Event object's path by creating a new one.
+     *
+     * @internal
+     */
+    public function emptyPath()
+    {
+        $this->mPath = new \SplDoublyLinkedList();
     }
 
     /**
