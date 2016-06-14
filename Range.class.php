@@ -277,9 +277,9 @@ class Range {
             throw new NotSupportedError();
         }
 
-        $sourceRangeRoot = $aSourceRange->startContainer->rootNode;
+        $sourceRangeRoot = $aSourceRange->startContainer->getRootNode();
 
-        if ($this->mStartContainer->rootNode !== $sourceRangeRoot) {
+        if ($this->mStartContainer->getRootNode() !== $sourceRangeRoot) {
             throw new WrongDocumentError();
         }
 
@@ -353,9 +353,9 @@ class Range {
      */
     public function comparePoint(Node $aNode, $aOffset)
     {
-        $root = $this->mStartContainer->rootNode;
+        $root = $this->mStartContainer->getRootNode();
 
-        if ($aNode->rootNode !== $root) {
+        if ($aNode->getRootNode() !== $root) {
             throw new WrongDocumentError();
         }
 
@@ -748,9 +748,9 @@ class Range {
      */
     public function intersectsNode(Node $aNode)
     {
-        $root = $this->mStartContainer->rootNode;
+        $root = $this->mStartContainer->getRootNode();
 
-        if ($aNode->rootNode !== $root) {
+        if ($aNode->getRootNode() !== $root) {
             return false;
         }
 
@@ -794,9 +794,9 @@ class Range {
      */
     public function isPointInRange(Node $aNode, $aOffset)
     {
-        $root = $this->mStartContainer->rootNode;
+        $root = $this->mStartContainer->getRootNode();
 
-        if ($aNode->rootNode !== $root) {
+        if ($aNode->getRootNode() !== $root) {
             return false;
         }
 
@@ -1052,7 +1052,7 @@ class Range {
         }
 
         $tw = new TreeWalker(
-            $this->mStartContainer->rootNode,
+            $this->mStartContainer->getRootNode(),
             NodeFilter::SHOW_TEXT,
             function ($aNode) {
                 return $this->isFullyContainedNode($aNode) ?
@@ -1118,7 +1118,7 @@ class Range {
         }
 
         $tw = new TreeWalker(
-            $aB[0]->rootNode,
+            $aB[0]->getRootNode(),
             NodeFilter::SHOW_ALL,
             function ($aNode) use ($aA) {
                 return $aNode === $aA[0] ?
@@ -1180,9 +1180,9 @@ class Range {
     {
         $startBP = array($this->mStartContainer, $this->mStartOffset);
         $endBP = array($this->mEndContainer, $this->mEndOffset);
-        $root = $this->mStartContainer->rootNode;
+        $root = $this->mStartContainer->getRootNode();
 
-        return $aNode->rootNode === $root &&
+        return $aNode->getRootNode() === $root &&
                 $this->computePosition(array($aNode, 0), $startBP) == 'after' &&
                 $this->computePosition(array(
                     $aNode,
@@ -1240,11 +1240,11 @@ class Range {
 
         switch ($aType) {
             case 'start':
-                if (
-                    $this->computePosition($bp, array(
+                if ($this->computePosition($bp, array(
                         $this->mEndContainer, $this->mEndOffset
                     )) == 'after' ||
-                    $this->mStartContainer->rootNode !== $aNode->rootNode
+                    $this->mStartContainer->getRootNode() !==
+                    $aNode->getRootNode()
                 ) {
                     $this->mEndContainer = $aNode;
                     $this->mEndOffset = $aOffset;
@@ -1256,11 +1256,11 @@ class Range {
                 break;
 
             case 'end':
-                if (
-                    $this->computePosition($bp, array(
+                if ($this->computePosition($bp, array(
                         $this->mStartContainer, $this->mStartOffset
                     )) == 'before' ||
-                    $this->mStartContainer->rootNode !== $aNode->rootNode
+                    $this->mStartContainer->getRootNode() !==
+                    $aNode->getRootNode()
                 ) {
                     $this->mStartContainer = $aNode;
                     $this->mStartOffset = $aOffset;

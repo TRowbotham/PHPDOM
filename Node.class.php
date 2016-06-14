@@ -140,9 +140,6 @@ abstract class Node extends EventTarget
             case 'previousSibling':
                 return $this->mPreviousSibling;
 
-            case 'rootNode':
-                return $this->getRootNode();
-
             case 'textContent':
                 return $this->getTextContent();
         }
@@ -1371,18 +1368,27 @@ abstract class Node extends EventTarget
     /**
      * Gets a node's root.
      *
-     * @internal
-     *
      * @see https://dom.spec.whatwg.org/#concept-tree-root
      *
-     * @return Node The node's root.
+     * @param array $aOptions The only valid argument is a key named "composed"
+     *     with a boolean value.
+     *
+     * @return Node If the value of the "composed" key is true, then the
+     *     shadow-including root will be returned, otherwise, the root will be
+     *     returned.
      */
-    protected function getRootNode()
+    public function getRootNode($aOptions = [])
     {
         $root = $this;
 
         while ($root->mParentNode) {
             $root = $root->mParentNode;
+        }
+
+        if (isset($aOptions['composed']) && $aOptions['composed'] === true &&
+            $root instanceof ShadowRoot
+        ) {
+            $root = $root->host->getRootNode($aOptions);
         }
 
         return $root;
