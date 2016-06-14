@@ -1535,7 +1535,7 @@ abstract class Node extends EventTarget
         }
 
         return $isDescendant || ($root && $root instanceof ShadowRoot &&
-            $root->host->isShadowIncludingDescendantOf($aOtherNode));
+            $root->host->isShadowIncludingInclusiveDescendantOf($aOtherNode));
     }
 
     /**
