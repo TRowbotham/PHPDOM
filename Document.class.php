@@ -853,14 +853,9 @@ class Document extends Node
      */
     protected function getTheParent($aEvent)
     {
-        // We don't currently support browsing contexts.
-        if ($aEvent->type === 'load') {
-            return null;
-        }
-
-        // We don't currently support the concept of a Window object, so return
-        // the document itself.
-        return $this;
+        // We don't currently support browsing contexts or the concept of a
+        // Window object, so return null as this is the end of the chain.
+        return null;
     }
 
     /**
