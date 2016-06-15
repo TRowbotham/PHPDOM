@@ -357,7 +357,7 @@ abstract class EventTarget
     {
         $found = false;
 
-        foreach ($listeners as $index => $listener) {
+        foreach ($aListeners as $index => $listener) {
             if ($listener->getRemoved() == false) {
                 // If event’s type attribute value is not listener’s type,
                 // terminate these substeps (and run them for the next event
