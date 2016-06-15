@@ -10,49 +10,65 @@ use phpjs\Utils;
  */
 abstract class EventTarget
 {
-    private $mEvents;
+    private $mListeners;
 
     protected function __construct()
     {
-        $this->mEvents = [];
+        $this->mListeners = [];
     }
 
 	/**
      * Registers a callback for a specified event on the current node.
      *
-     * @param string $aEventName The name of the event to listen for.
+     * @param string $aType The name of the event to listen for.
      *
      * @param callable|EventListener $aCallback A callback that will be executed
      *     when the event occurs.  If an object that inherits from the
      *     EventListener interface is given, it will use the handleEvent method
      *     on the object as the callback.
      *
-     * @param boolean $aUseCapture Optional. Specifies whether or not the event
-     *     should be handled during the capturing or bubbling phase.
+     * @param bool|bool[] $aOptions Optional. If a boolean is give, it specifies
+     *     whether or not the event should be handled during the capturing or
+     *     bubbling phase. If an array is given, the following keys and values
+     *     are accepted:
+     *
+     *         [
+     *             capture => boolean
+     *             passive => boolean
+     *             once    => boolean
+     *         ]
+     *
      */
     public function addEventListener(
-        $aEventName,
+        $aType,
         $aCallback,
-        $aUseCapture = false
+        $aOptions = false
     ) {
-        if (!$aCallback) {
+        // If callback is null, terminate these steps.
+        if ($aCallback === null) {
             return;
         }
 
+        list($capture, $passive, $once) = $this->flattenMoreOptions($aOptions);
+
         if (is_object($aCallback) && $aCallback instanceof EventListener) {
-            $callback = array($aCallback, 'handleEvent');
-        } else {
+            $callback = [$aCallback, 'handleEvent'];
+        } elseif (is_callable($aCallback)) {
             $callback = $aCallback;
+        } else {
+            return;
         }
 
-        $listener = array(
-            'type' => Utils::DOMString($aEventName),
-            'callback' => $aCallback,
-            'capture' => $aUseCapture
+        $listener = new Listener(
+            Utils::DOMString($aType),
+            $callback,
+            $capture,
+            $once,
+            $passive
         );
 
-        if (!in_array($listener, $this->mEvents)) {
-            array_unshift($this->mEvents, $listener);
+        if (!in_array($listener, $this->mListeners)) {
+            $this->mListeners[] = $listener;
         }
     }
 
