@@ -7,8 +7,8 @@ use phpjs\Utils;
  * Represents an event which can be dispatched to different objects to signal
  * the occurance of an event.
  *
- * @link https://dom.spec.whatwg.org/#event
- * @link https://developer.mozilla.org/en-US/docs/Web/API/Event
+ * @see https://dom.spec.whatwg.org/#event
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/Event
  *
  * @property-read bool $bubbles Returns true if the event will traverse through
  *     its ancestors in reverse tree order, otherwise false.
@@ -16,7 +16,7 @@ use phpjs\Utils;
  * @property-read bool $cancelable Returns true if the event's default action
  *     can be prevented, otherwise false.
  *
- * @property-read Node|object $currentTarget Returns the current object or Node
+ * @property-read EventTarget $currentTarget Returns the current EventTarget
  *     whose event listeners are currently being invoked.
  *
  * @property-read bool $defaultPrevented Returns true if the event's
@@ -24,7 +24,7 @@ use phpjs\Utils;
  *     is true, otherwise false.
  *
  * @property-read int $eventPhase Returns the current phase that the event is
- *     in.  One of the following possibilities:
+ *     in.  One of the following constants:
  *
  *         - NONE: Events that are not currently being dispatched.
  *         - CAPTURING_PHASE: Events that are currently invoking event listeners
@@ -38,8 +38,8 @@ use phpjs\Utils;
  * @property-read bool $isTrusted Returns true if the event was dispatched by
  *     the browser, otherwise false.
  *
- * @property-read Node|object $target Returns the Node or object that dispatched
- *     the event.
+ * @property-read EventTarget $target Returns the EventTarget that the event was
+ *     dispatched to.
  *
  * @property-read int $timeStamp Returns the creation time of the even in
  *     milliseconds.
