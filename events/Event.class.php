@@ -16,6 +16,9 @@ use phpjs\Utils;
  * @property-read bool $cancelable Returns true if the event's default action
  *     can be prevented, otherwise false.
  *
+ * @property-read bool $composed Returns true if the event crosses a shadow root
+ *     boundary, false otherwise.
+ *
  * @property-read EventTarget $currentTarget Returns the current EventTarget
  *     whose event listeners are currently being invoked.
  *
@@ -92,6 +95,8 @@ class Event
                 return $this->mBubbles;
             case 'cancelable':
                 return $this->mCancelable;
+            case 'composed':
+                return (bool) ($this->mFlags & EventFlags::COMPOSED);
             case 'currentTarget':
                 return $this->mCurrentTarget;
             case 'defaultPrevented':
@@ -130,6 +135,43 @@ class Event
         }
 
         $this->init(Utils::DOMString($aType), $aBubbles, $aCancelable);
+    }
+
+    /**
+     * Returns the path that the event will take to and from the target that the
+     * event was dispated to.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-event-composedpath
+     *
+     * @return EventTarget[]
+     */
+    public function composedPath()
+    {
+        $composedPath = [];
+        $currentTarget = $this->mCurrentTarget;
+
+        // Clone event's path and set its iterator mode to the default as
+        // the Event's path could have its iterator set in reverse if the Event
+        // is currently in the capturing phase.
+        $path = clone $this->mPath;
+        $path->setIteratorMode(
+            \SplDoublyLinkedList::IT_MODE_FIFO |
+            \SplDoublyLinkedList::IT_MODE_KEEP
+        );
+
+        foreach ($path as $tuple) {
+            // If currentTarget is a node and tuple’s item is an unclosed
+            // node of currentTarget, or currentTarget is not a node, then
+            // append tuple’s item to composedPath.
+            if (($this->mCurrentTarget instanceof Node &&
+                    $tuple['item']->isUnclosedNodeOf($this->mCurrentTarget)) ||
+                !($this->mCurrentTarget instanceof Node)
+            ) {
+                $composedPath[] = $tuple;
+            }
+        }
+
+        return $composedPath;
     }
 
     /**

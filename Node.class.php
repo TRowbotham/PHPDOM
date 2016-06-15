@@ -1583,6 +1583,31 @@ abstract class Node extends EventTarget
     }
 
     /**
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#concept-unclosed-node
+     *
+     * @param Node|null $aOtherNode A Node.
+     *
+     * @return bool
+     */
+    public function isUnclosedNodeOf($aOtherNode)
+    {
+        $root = $this->getRootNode();
+
+        if (!($root instanceof ShadowRoot) ||
+            $root->isShadowIncludingInclusiveAncestorOf($aOtherNode) ||
+            ($root instanceof ShadowRoot &&
+                $root->mode == ShadowRootMode::OPEN &&
+                $root->host->isUnclosedNodeOf($aOtherNode))
+        ) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Removes a node from another node after making sure that they share
      * the same parent node.
      *
