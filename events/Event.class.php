@@ -262,6 +262,18 @@ class Event
     }
 
     /**
+     * Sets the Event object's type.
+     *
+     * @internal
+     *
+     * @param string $aType The event's type.
+     */
+    public function setType($aType)
+    {
+        $this->mType = $aType;
+    }
+
+    /**
      * Unsets a bitwise flag.
      *
      * @internal
