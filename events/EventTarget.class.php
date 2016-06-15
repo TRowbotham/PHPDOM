@@ -75,36 +75,54 @@ abstract class EventTarget
 	/**
      * Unregisters a callback for a specified event on the current node.
      *
-     * @param string $aEventName The name of the event to listen for.
+     * @param string $aType The name of the event to listen for.
      *
      * @param callable|EventListener $aCallback A callback that will be executed
      *     when the event occurs.  If an object that inherits from the
      *     EventListener interface is given, it will use the handleEvent method
      *     on the object as the callback.
      *
-     * @param boolean $aUseCapture Optional. Specifies whether or not the event
-     *     should be handled during the capturing or bubbling phase.
+     * @param bool|bool[] $aOptions Optional. If a boolean is give, it specifies
+     *     whether or not the event should be handled during the capturing or
+     *     bubbling phase. If an array is given, the following keys and values
+     *     are accepted:
+     *
+     *          [
+     *              capture => boolean
+     *          ]
      */
     public function removeEventListener(
-        $aEventName,
+        $aType,
         $aCallback,
-        $aUseCapture = false
+        $aOptions = false
     ) {
-        if (is_object($aCallback) && $aCallback instanceof EventListener) {
-            $callback = array($aCallback, 'handleEvent');
-        } else {
-            $callback = $aCallback;
+        // If callback is null, terminate these steps.
+        if ($aCallback === null) {
+            return;
         }
 
-        $listener = array(
-            'type' => Utils::DOMString($aEventName),
-            'callback' => $callback,
-            'capture' => $aUseCapture
-        );
-        $index = array_search($listener, $this->mEvents);
+        $capture = $this->flattenOptions($aOptions);
 
-        if ($index !== false) {
-            array_splice($this->mEvents, $index, 1);
+        if (is_object($aCallback) && $aCallback instanceof EventListener) {
+            $callback = [$aCallback, 'handleEvent'];
+        } elseif (is_callable($aCallback)) {
+            $callback = $aCallback;
+        } else {
+            return;
+        }
+
+        $listener = new Listener(
+            Utils::DOMString($aType),
+            $callback,
+            $capture
+        );
+
+        foreach ($this->mListeners as $index => $eventListener) {
+            if ($eventListener->isEqual($listener)) {
+                $eventListener->setRemoved(true);
+                array_splice($this->mListeners, $index, 1);
+                break;
+            }
         }
     }
 
