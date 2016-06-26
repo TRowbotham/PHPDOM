@@ -50,7 +50,7 @@ class Document extends Node
             static::$mDefaultDocument = $this;
         }
 
-        $this->mCharacterSet = 'utf-8';
+        $this->mCharacterSet = 'UTF-8';
         $this->mContentType = 'application/xml';
         $this->mFlags = 0;
         $this->mImplementation = new DOMImplementation($this);
