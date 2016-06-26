@@ -26,9 +26,6 @@ class Document extends Node
     use NonElementParentNode;
     use ParentNode;
 
-    const NO_QUIRKS_MODE = 1;
-    const LIMITED_QUIRKS_MODE = 2;
-    const QUIRKS_MODE = 3;
     const INERT_TEMPLATE_DOCUMENT = 0x1;
 
     protected static $mDefaultDocument = null;
@@ -58,7 +55,7 @@ class Document extends Node
         $this->mFlags = 0;
         $this->mImplementation = new DOMImplementation($this);
         $this->mInertTemplateDocument = null;
-        $this->mMode = self::NO_QUIRKS_MODE;
+        $this->mMode = DocumentMode::NO_QUIRKS;
         $this->mNodeIteratorList = array();
         $this->mNodeType = self::DOCUMENT_NODE;
         $this->mOwnerDocument = null; // Documents own themselves.
