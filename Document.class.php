@@ -567,11 +567,23 @@ class Document extends Node
      *
      * @internal
      *
-     * @return int
+     * @return int The document's current mode.
      */
-    public function _getMode()
+    public function getMode()
     {
         return $this->mMode;
+    }
+
+    /**
+     * Sets the document's mode.
+     *
+     * @internal
+     *
+     * @param int $aMode An integer representing the current mode.
+     */
+    public function setMode($aMode)
+    {
+        $this->mMode = $aMode;
     }
 
     public function _getNodeIteratorCollection()
@@ -763,18 +775,6 @@ class Document extends Node
     public function setFlags($aFlag)
     {
         $this->mFlags |= $aFlag;
-    }
-
-    /**
-     * Sets the document's mode.
-     *
-     * @internal
-     *
-     * @param int $aMode An integer representing the current mode.
-     */
-    public function _setMode($aMode)
-    {
-        $this->mMode = $aMode;
     }
 
     /**
