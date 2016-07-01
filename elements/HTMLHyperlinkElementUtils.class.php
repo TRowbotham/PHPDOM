@@ -619,8 +619,25 @@ trait HTMLHyperlinkElementUtils
      */
     protected function setURL()
     {
-        $href = $this->mAttributesList->getAttrValue($this, 'href', null);
-        $url = $this->parseURL($href, $this->mOwnerDocument);
+        $href = $this->mAttributesList->getAttrByNamespaceAndLocalName(
+            null,
+            'href',
+            $this
+        );
+
+        // If this element's href content attribute is absent, set this
+        // element's url to null.
+        if (!$href) {
+            $this->mUrl = null;
+            return;
+        }
+
+        // Otherwise, parse this element's href content attribute value relative
+        // to this element's node document.
+        $url = $this->parseURL($href->value, $this->mOwnerDocument);
+
+        // If parsing is successful, set this element's url to the result;
+        // otherwise, set this element's url to null.
         $this->mUrl = $url === false ? null : $url['urlRecord'];
     }
 }
