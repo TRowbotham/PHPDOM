@@ -56,7 +56,7 @@ class ProcessingInstruction extends CharacterData
         $this->doReplaceData(
             0,
             $this->mLength,
-            Utils::DOMString($aNewValue, true);
+            Utils::DOMString($aNewValue, true)
         );
     }
 
