@@ -37,7 +37,7 @@ class ProcessingInstruction extends CharacterData
      */
     protected function getNodeValue()
     {
-        return null;
+        return $this->mData;
     }
 
     /**
