@@ -453,8 +453,8 @@ abstract class EventTarget
         if (is_bool($aOptions)) {
             $capture = $aOptions;
         } elseif (is_array($aOptions)) {
-            if (isset($aOptions['capture']) && is_bool($aOptions['capture'])) {
-                $capture = $aOptions['capture'];
+            if (isset($aOptions['capture'])) {
+                $capture = (bool) $aOptions['capture'];
             }
         }
 
@@ -477,12 +477,12 @@ abstract class EventTarget
         $passive = false;
 
         if (is_array($aOptions)) {
-            if (isset($aOptions['passive']) && is_bool($aOptions['passive'])) {
-                $passive = $aOptions['passive'];
+            if (isset($aOptions['passive'])) {
+                $passive = (bool) $aOptions['passive'];
             }
 
-            if (isset($aOptions['once']) && is_bool($aOptions['once'])) {
-                $passive = $aOptions['once'];
+            if (isset($aOptions['once'])) {
+                $passive = (bool) $aOptions['once'];
             }
         }
 
