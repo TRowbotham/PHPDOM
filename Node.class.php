@@ -1016,7 +1016,6 @@ abstract class Node extends EventTarget
             $currentNode = $node->mNextSibling;
 
             while ($currentNode instanceof Text) {
-                $ranges = Range::_getRangeCollection();
                 $treeIndex = $currentNode->_getTreeIndex();
 
                 foreach ($ranges as $range) {
