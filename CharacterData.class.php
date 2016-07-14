@@ -154,7 +154,7 @@ abstract class CharacterData extends Node
         $length = $this->mLength;
         $count = $aCount;
 
-        if ($aOffset > $length) {
+        if ($aOffset < 0 || $aOffset > $length) {
             throw new IndexSizeError(
                 sprintf(
                     'The offset should be less than the length of the data. The
@@ -249,7 +249,7 @@ abstract class CharacterData extends Node
     {
         $length = $this->mLength;
 
-        if ($aOffset > $length) {
+        if ($aOffset < 0 || $aOffset > $length) {
             throw new IndexSizeError(
                 sprintf(
                     'The offset should be less than the length of the data. The
