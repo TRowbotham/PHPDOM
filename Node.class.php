@@ -735,7 +735,7 @@ abstract class Node extends EventTarget
         $parentElement = $parent->mNodeType === self::ELEMENT_NODE ?
             $parent : null;
 
-        if ($index === 0) {
+        if ($index === 0 && !empty($nodes)) {
             $parent->mFirstChild = $nodes[0];
         }
 
