@@ -544,7 +544,7 @@ abstract class Node extends EventTarget
 
                 if (
                     $parentHasDocTypeChild ||
-                    ($aChild !== null && $parentHasElementChild)
+                    ($aChild === null && $parentHasElementChild)
                 ) {
                     throw new HierarchyRequestError();
                 }
