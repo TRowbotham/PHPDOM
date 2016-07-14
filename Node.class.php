@@ -976,7 +976,7 @@ abstract class Node extends EventTarget
     {
         $ownerDocument = $this->mOwnerDocument ?: $this;
         $nextSibling = $this->mNextSibling;
-        $tw = $ownerDocument->createTreeWalker($this, NodeFilter::SHOW_TEXT);
+        $tw = $ownerDocument->createNodeIterator($this, NodeFilter::SHOW_TEXT);
 
         while ($node = $tw->nextNode()) {
             $length = $node->length;
