@@ -1014,6 +1014,7 @@ abstract class Node extends EventTarget
 
             $node->doReplaceData($length, 0, $data);
             $currentNode = $node->mNextSibling;
+            $ranges = Range::_getRangeCollection();
 
             while ($currentNode instanceof Text) {
                 $treeIndex = $currentNode->_getTreeIndex();
