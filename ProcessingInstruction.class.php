@@ -25,50 +25,17 @@ class ProcessingInstruction extends CharacterData
     }
 
     /**
-     * @see Node::getNodeName
+     * Gets the name of the node.
+     *
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#dom-node-nodename
+     * @see Node::getNodeName()
+     *
+     * @return string Returns the node's target.
      */
     protected function getNodeName()
     {
         return $this->mTarget;
-    }
-
-    /**
-     * @see Node::getNodeValue
-     */
-    protected function getNodeValue()
-    {
-        return $this->mData;
-    }
-
-    /**
-     * @see Node::getTextContent
-     */
-    protected function getTextContent()
-    {
-        return $this->mData;
-    }
-
-    /**
-     * @see Node::setNodeValue
-     */
-    protected function setNodeValue($aNewValue)
-    {
-        $this->doReplaceData(
-            0,
-            $this->mLength,
-            Utils::DOMString($aNewValue, true)
-        );
-    }
-
-    /**
-     * @see Node::setTextContent
-     */
-    protected function setTextContent($aNewValue)
-    {
-        $this->doReplaceData(
-            0,
-            $this->mLength,
-            Utils::DOMString($aNewValue, true)
-        );
     }
 }

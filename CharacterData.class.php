@@ -280,4 +280,72 @@ abstract class CharacterData extends Node
     {
         return $this->mLength;
     }
+
+    /**
+     * Gets the value of the node.
+     *
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#dom-node-nodevalue
+     * @see Node::getNodeValue()
+     *
+     * @return string
+     */
+    protected function getNodeValue()
+    {
+        return $this->mData;
+    }
+
+    /**
+     * Sets the node's value.
+     *
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#dom-node-nodevalue
+     * @see Node::setNodeValue()
+     *
+     * @param string|null $aNewValue The node's new value.
+     */
+    protected function setNodeValue($aNewValue)
+    {
+        $this->doReplaceData(
+            0,
+            $this->mLength,
+            Utils::DOMString($aNewValue, true)
+        );
+    }
+
+    /**
+     * Gets the concatenation of all descendant text nodes.
+     *
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#dom-node-textcontent
+     * @see Node::getTextContent()
+     *
+     * @return string
+     */
+    protected function getTextContent()
+    {
+        return $this->mData;
+    }
+
+    /**
+     * Sets the nodes text content.
+     *
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#dom-node-textcontent
+     * @see Node::setTextContent()
+     *
+     * @param string|null $aNewValue The new text to be inserted into the node.
+     */
+    protected function setTextContent($aNewValue)
+    {
+        $this->doReplaceData(
+            0,
+            $this->mLength,
+            Utils::DOMString($aNewValue, true)
+        );
+    }
 }
