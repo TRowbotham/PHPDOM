@@ -340,7 +340,7 @@ class Event
      */
     protected function init($aType, $aBubbles, $aCancelable)
     {
-        $this->mFlags |= EventFlags::INTIALIZED;
+        $this->mFlags |= EventFlags::INITIALIZED;
         $this->mFlags &= ~(EventFlags::STOP_PROPAGATION |
             EventFlags::STOP_IMMEDIATE_PROPAGATION |
             EventFlags::CANCELED);
