@@ -66,8 +66,16 @@ abstract class EventTarget
             $once,
             $passive
         );
+        $found = false;
 
-        if (!in_array($listener, $this->mListeners)) {
+        foreach ($this->mListeners as $l) {
+            if ($l->isEqual($listener)) {
+                $found = true;
+                break;
+            }
+        }
+
+        if (!$found) {
             $this->mListeners[] = $listener;
         }
     }
@@ -342,6 +350,8 @@ abstract class EventTarget
 
     /**
      * Invokes all callbacks associated with a given event and object.
+     *
+     * @internal
      *
      * @see https://dom.spec.whatwg.org/#concept-event-listener-inner-invoke
      *
