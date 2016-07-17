@@ -6,8 +6,7 @@ use phpjs\elements\html\HTMLBaseElement;
 use phpjs\elements\html\HTMLHtmlElement;
 use phpjs\elements\html\HTMLHeadElement;
 use phpjs\elements\ElementFactory;
-use phpjs\events\Event;
-use phpjs\events\CustomEvent;
+use phpjs\events\EventFlags;
 use phpjs\exceptions\DOMException;
 use phpjs\exceptions\HierarchyRequestError;
 use phpjs\exceptions\InvalidCharacterError;
@@ -309,14 +308,14 @@ class Document extends Node
 
         switch ($interface) {
             case 'customevent':
-                $constructor = 'CustomEvent';
+                $constructor = '\\phpjs\\events\\CustomEvent';
 
                 break;
 
             case 'event':
             case 'events':
             case 'htmlevents':
-                $constructor = 'Event';
+                $constructor = '\\phpjs\\events\\Event';
         }
 
         if (!$constructor) {
@@ -324,7 +323,7 @@ class Document extends Node
         }
 
         $event = new $constructor('');
-        $event->_unsetFlag(Event::EVENT_INITIALIZED);
+        $event->unsetFlag(EventFlags::INITIALIZED);
 
         return $event;
     }
