@@ -49,15 +49,17 @@ class DocumentType extends Node
     }
 
     /**
-     * Returns the Node's length.
+     * Returns the Node's length, which is 0, as a DocumentType cannot have
+     * children.
      *
      * @internal
      *
      * @see https://dom.spec.whatwg.org/#concept-node-length
+     * @see Node::getLength()
      *
      * @return int
      */
-    public function _getNodeLength()
+    public function getLength()
     {
         return 0;
     }

@@ -452,6 +452,21 @@ class Document extends Node
     }
 
     /**
+     * Returns the Node's length, which is the number of child nodes.
+     *
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#concept-node-length
+     * @see Node::getLength()
+     *
+     * @return int
+     */
+    public function getLength()
+    {
+        return count($this->mChildNodes);
+    }
+
+    /**
      * Returns the special proxy document responsible for owning all of a
      * template element's content's children.
      *

@@ -605,6 +605,21 @@ class Element extends Node implements AttributeChangeObserver
     }
 
     /**
+     * Returns the Node's length, which is the number of child nodes.
+     *
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#concept-node-length
+     * @see Node::getLength()
+     *
+     * @return int
+     */
+    public function getLength()
+    {
+        return count($this->mChildNodes);
+    }
+
+    /**
      * @see Node::getNodeName
      */
     protected function getNodeName()

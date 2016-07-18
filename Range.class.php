@@ -173,7 +173,7 @@ class Range {
             $subrange->setStart($originalStartNode, $originalStartOffset);
             $subrange->setEnd(
                 $firstPartiallyContainedChild,
-                $firstPartiallyContainedChild->_getNodeLength()
+                $firstPartiallyContainedChild->getLength()
             );
             $subfragment = $subrange->cloneRange();
             $clone->appendChild($subfragment);
@@ -363,7 +363,7 @@ class Range {
             throw new InvalidNodeTypeError();
         }
 
-        if ($aOffset > $aNode->_getNodeLength()) {
+        if ($aOffset > $aNode->getLength()) {
             throw new IndexSizeError();
         }
 
@@ -622,7 +622,7 @@ class Range {
             $subrange->mStartOffset = $originalStartOffset;
             $subrange->mEndContainer = $firstPartiallyContainedChild;
             $subrange->mEndOffset =
-                $firstPartiallyContainedChild->_getNodeLength();
+                $firstPartiallyContainedChild->getLength();
             $subfragment = $subrange->extractContents();
             $clone->appendChild($subfragment);
         }
@@ -721,9 +721,9 @@ class Range {
         }
 
         $newOffset = !$referenceNode ?
-            $parent->_getNodeLength() : $referenceNode->_getTreeIndex();
+            $parent->getLength() : $referenceNode->_getTreeIndex();
         $newOffset += $aNode instanceof DocumentFragment ?
-            $aNode->_getNodeLength() : 1;
+            $aNode->getLength() : 1;
 
         $parent->preinsertNode($aNode, $referenceNode);
 
@@ -804,7 +804,7 @@ class Range {
             throw new InvalidNodeTypeError();
         }
 
-        if ($aOffset > $aNode->_getNodeLength()) {
+        if ($aOffset > $aNode->getLength()) {
             throw new IndexSizeError();
         }
 
@@ -867,7 +867,7 @@ class Range {
         $this->mStartContainer = $aNode;
         $this->mStartOffset = 0;
         $this->mEndContainer = $aNode;
-        $this->mEndOffset = $aNode->_getNodeLength();
+        $this->mEndOffset = $aNode->getLength();
     }
 
     /**
@@ -1186,7 +1186,7 @@ class Range {
                 $this->computePosition(array($aNode, 0), $startBP) == 'after' &&
                 $this->computePosition(array(
                     $aNode,
-                    $aNode->_getNodeLength()
+                    $aNode->getLength()
                 ), $endBP) == 'before';
     }
 
@@ -1232,7 +1232,7 @@ class Range {
             throw new InvalidNodeTypeError();
         }
 
-        if ($aOffset > $aNode->_getNodeLength()) {
+        if ($aOffset > $aNode->getLength()) {
             throw new IndexSizeError();
         }
 

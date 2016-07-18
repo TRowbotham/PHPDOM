@@ -268,15 +268,17 @@ abstract class CharacterData extends Node
     }
 
     /**
-     * Returns the Node's length.
+     * Returns the Node's length, which is the number of codepoints in the data
+     * attribute.
      *
      * @internal
      *
      * @see https://dom.spec.whatwg.org/#concept-node-length
+     * @see Node::getLength()
      *
      * @return int
      */
-    public function _getNodeLength()
+    public function getLength()
     {
         return $this->mLength;
     }
