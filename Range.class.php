@@ -1038,7 +1038,7 @@ class Range {
             return mb_substr(
                 $this->mStartContainer->data,
                 $this->mStartOffset,
-                $this->mEndOffset,
+                $this->mEndOffset - $this->mStartOffset,
                 $encoding
             );
         }
