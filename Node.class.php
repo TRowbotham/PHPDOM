@@ -580,34 +580,6 @@ abstract class Node extends EventTarget
     }
 
     /**
-     * Gets the root element of the given node.
-     *
-     * @link https://html.spec.whatwg.org/multipage/infrastructure.html#root-element
-     *
-     * @param Node $aNode The node whose root element is to be found.
-     *
-     * @return Element|null
-     */
-    public static function _getRootElement(Node $aNode)
-    {
-        if ($aNode instanceof Document) {
-            return $aNode->firstElementChild;
-        }
-
-        if (!$aNode->mParentElement) {
-            return $aNode;
-        }
-
-        $node = $aNode->mParentElement;
-
-        while ($node && $node->mParentElement) {
-            $node = $node->mParentElement;
-        }
-
-        return $node;
-    }
-
-    /**
      * Returns the Node's length.
      *
      * @internal
