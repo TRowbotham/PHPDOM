@@ -1,7 +1,13 @@
 <?php
 namespace phpjs;
 
-abstract class NodeFilter {
+/**
+ * An object implementing NodeFilter can be used as a filter callback that can
+ * further refine the results beyond what the whatToShow bitmask can filter.
+ *
+ * @see https://dom.spec.whatwg.org/#interface-nodefilter
+ */
+interface NodeFilter {
     const FILTER_ACCEPT = 1;
     const FILTER_REJECT = 2;
     const FILTER_SKIP = 3;
@@ -20,32 +26,18 @@ abstract class NodeFilter {
     const SHOW_DOCUMENT_FRAGMENT = 0x400;
     const SHOW_NOTATION = 0x800;
 
-    final public function acceptNode(Node $aNode)
-    {
-    }
-
     /**
-     * Filters a node.
+     * A method used to filter the nodes returned by NodeIterator and TreeWalker
+     * objects.
      *
-     * @param Node $aNode The node to check.
+     * @see https://dom.spec.whatwg.org/#dom-nodefilter-acceptnode
      *
-     * @param NodeIterator|TreeWalker $aNodeTraverser An iterator to traverse
-     *     the DOM tree.
+     * @param  Node   $aNode The current node being processed.
      *
-     * @return int Can be one of FILTER_ACCEPT | FILTER_REJECT | FILTER_SKIP
+     * @return int Returns one of NodeFilter's FILTER_* constants.
+     *     - NodeFilter::FILTER_ACCEPT
+     *     - NodeFilter::FILTER_REJECT
+     *     - NodeFilter::FILTER_SKIP
      */
-    final public static function _filter($aNode, $aNodeTraverser)
-    {
-        $n = $aNode->nodeType - 1;
-
-        if (!((1 << $n) & $aNodeTraverser->whatToShow)) {
-            return NodeFilter::FILTER_SKIP;
-        }
-
-        if (!$aNodeTraverser->filter) {
-            return NodeFilter::FILTER_ACCEPT;
-        }
-
-        return call_user_func($aNodeTraverser->filter, $aNode);
-    }
+    public function acceptNode(Node $aNode);
 }

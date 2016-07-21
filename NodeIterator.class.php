@@ -7,6 +7,8 @@ namespace phpjs;
  */
 final class NodeIterator
 {
+    use NodeFilterUtils;
+
     private $mFilter;
     private $mPointerBeforeReferenceNode;
     private $mReferenceNode;
@@ -16,9 +18,14 @@ final class NodeIterator
     public function __construct(
         Node $aRoot,
         $aWhatToShow = NodeFilter::SHOW_ALL,
-        callable $aFilter = null
+        $aFilter = null
     ) {
-        $this->mFilter = $aFilter;
+        $this->mFilter = null;
+
+        if ($aFilter instanceof NodeFilter || is_callable($aFilter)) {
+            $this->mFilter = $aFilter;
+        }
+
         $this->mPointerBeforeReferenceNode = true;
         $this->mReferenceNode = $aRoot;
         $this->mRoot = $aRoot;
@@ -171,7 +178,7 @@ final class NodeIterator
                     }
             }
 
-            $result = NodeFilter::_filter($node, $this);
+            $result = $this->filterNode($node);
 
             if ($result == NodeFilter::FILTER_ACCEPT) {
                 break;

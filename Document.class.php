@@ -337,15 +337,16 @@ class Document extends Node
      * @param int $aWhatToShow Optional. A bitmask of NodeFilter constants
      *     allowing the user to filter for specific node types.
      *
-     * @param  callable|null $aFilter A user defined function to determine
-     *     whether or not to accept a node that has passed the whatToShow check.
+     * @param NodeFilter|callable|null $aFilter A user defined function to
+     *     determine whether or not to accept a node that has passed the
+     *     whatToShow check.
      *
      * @return NodeIterator
      */
     public function createNodeIterator(
         Node $aRoot,
         $aWhatToShow = NodeFilter::SHOW_ALL,
-        callable $aFilter = null
+        $aFilter = null
     ) {
         $iter = new NodeIterator($aRoot, $aWhatToShow, $aFilter);
         $this->mNodeIteratorList[] = $iter;
@@ -401,15 +402,16 @@ class Document extends Node
      * @param int $aWhatToShow Optional.  A bitmask of NodeFilter constants
      *     allowing the user to filter for specific node types.
      *
-     * @param callable|null $aFilter A user defined function to determine
-     *     whether or not to accept a node that has passed the whatToShow check.
+     * @param NodeFilter|callable|null $aFilter A user defined function to
+     *     determine whether or not to accept a node that has passed the
+     *     whatToShow check.
      *
      * @return TreeWalker
      */
     public function createTreeWalker(
         Node $aRoot,
         $aWhatToShow = NodeFilter::SHOW_ALL,
-        callable $aFilter = null
+        $aFilter = null
     ) {
         return new TreeWalker($aRoot, $aWhatToShow, $aFilter);
     }
