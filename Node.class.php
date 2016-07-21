@@ -580,20 +580,6 @@ abstract class Node extends EventTarget
     }
 
     /**
-     * Returns the Node's length.
-     *
-     * @internal
-     *
-     * @link https://dom.spec.whatwg.org/#concept-node-length
-     *
-     * @return int
-     */
-    public function _getNodeLength()
-    {
-        return count($this->mChildNodes);
-    }
-
-    /**
      * Gets the root element of the given node.
      *
      * @link https://html.spec.whatwg.org/multipage/infrastructure.html#root-element
@@ -620,6 +606,17 @@ abstract class Node extends EventTarget
 
         return $node;
     }
+
+    /**
+     * Returns the Node's length.
+     *
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#concept-node-length
+     *
+     * @return int
+     */
+    abstract public function getLength();
 
     /**
      * Returns the Node's index.
