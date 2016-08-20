@@ -399,6 +399,37 @@ class Document extends Node
     }
 
     /**
+     * Creates a new CDATA Section node, with data as its data.
+     *
+     * @param  string $aData The node's content.
+     *
+     * @return CDATASection A CDATASection node.
+     */
+    public function createCDATASection($aData)
+    {
+        // If context object is an HTML document, then throw a
+        // NotSupportedError.
+        if ($this instanceof HTMLDocument) {
+            throw new NotSupportedError();
+        }
+
+        $data = Utils::DOMString($aData);
+
+        // If data contains the string "]]>", then throw an
+        // InvalidCharacterError.
+        if (mb_strpos($data, ']]>') !== false) {
+            throw new InvalidCharacterError();
+        }
+
+        // Return a new CDATASection node with its data set to data and node
+        // document set to the context object.
+        $node = new CDATASection($data);
+        $node->setOwnerDocument($this);
+
+        return $node;
+    }
+
+    /**
      * Returns a new TreeWalker object, which represents the nodes of a document
      * subtree and a position within them.
      *
