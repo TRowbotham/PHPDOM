@@ -232,7 +232,7 @@ class Attr extends Node {
     }
 
     /**
-     * Gets the concatenation of all descendant text nodes.
+     * Gets the attribute's value.
      *
      * @internal
      *
