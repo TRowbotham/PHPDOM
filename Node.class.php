@@ -211,20 +211,76 @@ abstract class Node extends EventTarget
      */
     public function compareDocumentPosition(Node $aOtherNode)
     {
-        $reference = $this;
-
-        if ($reference === $aOtherNode) {
+        // If context object is other, then return zero.
+        if ($this === $aOtherNode) {
             return 0;
         }
 
-        $referenceRoot = $reference->getRootNode();
+        $node1 = $aOtherNode;
+        $node2 = $this;
+        $attr1 = null;
 
-        if ($referenceRoot !== $aOtherNode->getRootNode()) {
+        // If node1 is an attribute, then:
+        if ($node1 instanceof Attr) {
+            $attr1 = $node1;
+            $ownerElement = $attr1->ownerElement;
+
+            // If attr1’s element is non-null, then set node1 to attr1’s
+            // element.
+            if ($ownerElement) {
+                $node1 = $ownerElement;
+            }
+        }
+
+        // If node2 is an attribute, then:
+        if ($node2 instanceof Attr) {
+            $attr2 = $node2;
+            $ownerElement = $attr2->ownerElement;
+
+            // If attr2’s element is node1 and attr1 is non-null, then:
+            if ($attr1 && $ownerElement === $node1) {
+                foreach ($ownerElement->getAttributeList() as $node2Attribute) {
+                    // If node2Attribute equals attr1, then return the result of
+                    // adding DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC and
+                    // DOCUMENT_POSITION_PRECEDING.
+                    if ($node2Attribute->isEqualNode($attr1)) {
+                        return self::DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC |
+                            self::DOCUMENT_POSITION_PRECEDING;
+                    }
+
+                    // If node2Attribute equals attr2, then return the result of
+                    // adding DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC and
+                    // DOCUMENT_POSITION_FOLLOWING.
+                    if ($node2Attribute->isEqualNode($attr2)) {
+                        return self::DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC |
+                            self::DOCUMENT_POSITION_FOLLOWING;
+                    }
+                }
+            }
+
+            // If attr2’s element is non-null, then set node2 to attr2’s
+            // element.
+            if ($ownerElement) {
+                $node2 = $ownerElement;
+            }
+        }
+
+        $node2Root = $node2->getRootNode();
+
+        // If node1’s root is not node2’s root or node1 and node2 are
+        // attributes, then return the result of adding
+        // DOCUMENT_POSITION_DISCONNECTED,
+        // DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC, and either
+        // DOCUMENT_POSITION_PRECEDING or DOCUMENT_POSITION_FOLLOWING, with the
+        // constraint that this is to be consistent, together.
+        if ($node1->getRootNode() !== $node2Root ||
+            ($node1 instanceof Attr && $node2 instanceof Attr)
+        ) {
             $ret = self::DOCUMENT_POSITION_DISCONNECTED |
                 self::DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC;
             $position = strcmp(
-                spl_object_hash($this),
-                spl_object_hash($aOtherNode)
+                spl_object_hash($node2),
+                spl_object_hash($node1)
             );
 
             // Pointer comparison is supposed to be used to determine whether
@@ -236,38 +292,42 @@ abstract class Node extends EventTarget
             // see any alternatives other than going back to always returning
             // the same value for everything.
             if ($position < 0) {
-                $ret |= self::DOCUMENT_POSITION_PRECEDING;
-            } else {
-                $ret |= self::DOCUMENT_POSITION_FOLLOWING;
+                return $ret | self::DOCUMENT_POSITION_PRECEDING;
             }
 
-            return $ret;
+            return $ret | self::DOCUMENT_POSITION_FOLLOWING;
         }
 
-        if ($aOtherNode->contains($reference)) {
+        // If node1 is an ancestor of node2, then return the result of adding
+        // DOCUMENT_POSITION_CONTAINS to DOCUMENT_POSITION_PRECEDING.
+        if ($node1->isAncestorOf($node2)) {
             return self::DOCUMENT_POSITION_CONTAINS |
                 self::DOCUMENT_POSITION_PRECEDING;
         }
 
-        if ($reference->contains($aOtherNode)) {
+        // If node1 is a descendant of node2, then return the result of
+        // adding DOCUMENT_POSITION_CONTAINED_BY to DOCUMENT_POSITION_FOLLOWING.
+        if ($node1->isDescendantOf($node2)) {
             return self::DOCUMENT_POSITION_CONTAINED_BY |
                 self::DOCUMENT_POSITION_FOLLOWING;
         }
 
         $tw = new TreeWalker(
-            $referenceRoot,
+            $node2Root,
             NodeFilter::SHOW_ALL,
-            function ($aNode) use ($aOtherNode) {
-                return $aNode === $aOtherNode ? NodeFilter::FILTER_ACCEPT :
+            function ($aNode) use ($node1) {
+                return $aNode === $node1 ? NodeFilter::FILTER_ACCEPT :
                     NodeFilter::FILTER_SKIP;
             }
         );
-        $tw->currentNode = $reference;
+        $tw->currentNode = $node2;
 
+        // If node1 is preceding node2, then return DOCUMENT_POSITION_PRECEDING.
         if ($tw->previousNode()) {
             return self::DOCUMENT_POSITION_PRECEDING;
         }
 
+        // Return DOCUMENT_POSITION_FOLLOWING.
         return self::DOCUMENT_POSITION_FOLLOWING;
     }
 
@@ -353,6 +413,18 @@ abstract class Node extends EventTarget
                     $this->mName,
                     $this->mPublicId,
                     $this->mSystemId
+                );
+
+                break;
+
+            case self::ATTRIBUTE_NODE:
+                // Set copy's namespace, namespace prefix, local name, and
+                // value, to those of node.
+                $copy = new static(
+                    $this->mLocalName,
+                    $this->mValue,
+                    $this->mNamespaceURI,
+                    $this->mPrefix
                 );
 
                 break;
@@ -812,6 +884,13 @@ abstract class Node extends EventTarget
             ) {
                 return false;
             }
+        } elseif ($this instanceof Attr) {
+            if ($this->namespaceURI !== $aOtherNode->namespaceURI ||
+                $this->localName !== $aOtherNode->localName ||
+                $this->value !== $aOtherNode->value
+            ) {
+                return false;
+            }
         } elseif ($this instanceof ProcessingInstruction) {
             if (strcmp($this->target, $aOtherNode->target) !== 0 ||
                 strcmp($this->data, $aOtherNode->data) !== 0) {
@@ -824,31 +903,24 @@ abstract class Node extends EventTarget
         }
 
         if ($this instanceof Element) {
-            for ($i = 0; $i < count($this->mAttributesList); $i++) {
-                if (
-                    strcmp(
-                        $this->mAttributesList[$i]->namespaceURI,
-                        $aOtherNode->attributes[$i]->namespaceURI
-                    ) !== 0 ||
-                    strcmp(
-                        $this->mAttributesList[$i]->prefix,
-                        $aOtherNode->attributes[$i]->prefix
-                    ) !== 0 ||
-                    strcmp(
-                        $this->mAttributesList[$i]->localName,
-                        $aOtherNode->attributes[$i]->localName
-                    ) !== 0
-                ) {
+            foreach ($this->mAttributesList as $i => $attribute) {
+                $isEqual = $attribute->isEqualNode(
+                    $aOtherNode->mAttributesList[$i]
+                );
+
+                if (!$isEqual) {
                     return false;
                 }
             }
         }
 
-        if (count($this->mChildNodes) !== count($aOtherNode->childNodes)) {
+        $childNodeCount = count($this->mChildNodes);
+
+        if ($childNodeCount !== count($aOtherNode->childNodes)) {
             return false;
         }
 
-        for ($i = 0; $i < count($this->mChildNodes); $i++) {
+        for ($i = 0; $i < $childNodeCount; $i++) {
             if (!$this->mChildNodes[$i]->isEqualNode(
                     $aOtherNode->childNodes[$i]
                 )) {
@@ -924,6 +996,17 @@ abstract class Node extends EventTarget
 
             case self::DOCUMENT_TYPE_NODE:
             case self::DOCUMENT_FRAGMENT_NODE:
+                return null;
+
+            case self::ATTRIBUTE_NODE:
+                $ownerElement = $this->ownerElement;
+
+                // Return the result of locating a namespace prefix for its
+                // element, if its element is non-null, and null otherwise.
+                if ($ownerElement) {
+                    return Namespaces::locatePrefix($ownerElement, $namespace);
+                }
+
                 return null;
 
             default:

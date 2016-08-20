@@ -160,8 +160,10 @@ class Document extends Node
 
         $localName = $this instanceof HTMLDocument ?
             Utils::toASCIILowercase($localName) : $localName;
+        $attribute = new Attr($localName, '');
+        $attribute->setOwnerDocument($this);
 
-        return new Attr($localName, '');
+        return $attribute;
     }
 
     /**
@@ -195,7 +197,10 @@ class Document extends Node
             throw $e;
         }
 
-        return new Attr($localName, '', $namespace, $prefix);
+        $attribute = new Attr($localName, '', $namespace, $prefix);
+        $attribute->setOwnerDocument($this);
+
+        return $attribute;
     }
 
     public function createComment($aData)

@@ -26,7 +26,7 @@ use phpjs\elements\Element;
  *
  * @property-read string $value The value of the attribute.
  */
-class Attr {
+class Attr extends Node {
     /**
      * @var string
      */
@@ -58,7 +58,10 @@ class Attr {
         $aNamespace = null,
         $aPrefix = null
     ) {
+        parent::__construct();
+
         $this->mLocalName = $aLocalName;
+        $this->mNodeType = self::ATTRIBUTE_NODE;
         $this->mNamespaceURI = $aNamespace;
         $this->mOwnerElement = null;
         $this->mPrefix = $aPrefix;
@@ -94,6 +97,9 @@ class Attr {
 
             case 'value':
                 return $this->mValue;
+
+            default:
+                return parent::__get($aValue);
         }
     }
 
@@ -101,16 +107,12 @@ class Attr {
     {
         switch ($aName) {
             case 'value':
-                if (!$this->mOwnerElement) {
-                    $this->mValue = Utils::DOMString($aValue);
-                } else {
-                    $attrList = $this->mOwnerElement->getAttributeList();
-                    $attrList->changeAttrValue(
-                        $this,
-                        $this->mOwnerElement,
-                        Utils::DOMString($aValue)
-                    );
-                }
+                $this->setExistingAttributeValue(Utils::DOMString($aValue));
+
+                break;
+
+            default:
+                parent::__set($aName, $aValue);
         }
     }
 
@@ -138,5 +140,124 @@ class Attr {
     public function setValue($aValue)
     {
         $this->mValue = $aValue;
+    }
+
+    /**
+     * Sets the value of an existing attribute.
+     *
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#set-an-existing-attribute-value
+     *
+     * @param string $aValue The attribute's value.
+     */
+    protected function setExistingAttributeValue($aValue)
+    {
+        if (!$this->mOwnerElement) {
+            $this->mValue = $aValue;
+            return;
+        }
+
+        $attrList = $this->mOwnerElement->getAttributeList();
+        $attrList->changeAttr(
+            $this,
+            $this->mOwnerElement,
+            $aValue
+        );
+    }
+
+    /**
+     * Gets the name of the node.
+     *
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#dom-node-nodename
+     * @see Node::getNodeName()
+     *
+     * @return string Returns the attirbute's qualified name.
+     */
+    protected function getNodeName()
+    {
+        if ($this->mPrefix) {
+            return $this->mPrefix . ':' . $this->mLocalName;
+        }
+
+        return $this->mLocalName;
+    }
+
+    /**
+     * Returns the Node's length, which is the number of child nodes.
+     *
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#concept-node-length
+     * @see Node::getLength()
+     *
+     * @return int
+     */
+    public function getLength()
+    {
+        // Attr nodes cannot contain children, so just return 0.
+        return 0;
+    }
+
+    /**
+     * Gets the value of the node.
+     *
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#dom-node-nodevalue
+     * @see Node::getNodeValue()
+     *
+     * @return string
+     */
+    protected function getNodeValue()
+    {
+        return $this->mValue;
+    }
+
+    /**
+     * Sets the node's value.
+     *
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#dom-node-nodevalue
+     * @see Node::setNodeValue()
+     *
+     * @param string|null $aNewValue The node's new value.
+     */
+    protected function setNodeValue($aNewValue)
+    {
+        $this->setExistingAttributeValue($aNewValue);
+    }
+
+    /**
+     * Gets the concatenation of all descendant text nodes.
+     *
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#dom-node-textcontent
+     * @see Node::getTextContent()
+     *
+     * @return string
+     */
+    protected function getTextContent()
+    {
+        return $this->mValue;
+    }
+
+    /**
+     * Sets the nodes text content.
+     *
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#dom-node-textcontent
+     * @see Node::setTextContent()
+     *
+     * @param string|null $aNewValue The new attribute value.
+     */
+    protected function setTextContent($aNewValue)
+    {
+        $this->setExistingAttributeValue($aNewValue);
     }
 }

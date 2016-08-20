@@ -73,6 +73,18 @@ class Namespaces
             case Node::DOCUMENT_FRAGMENT_NODE:
                 return null;
 
+            case Node::ATTRIBUTE_NODE:
+                $ownerElement = $aNode->ownerElement;
+
+                // If its element is null, then return null.
+                if (!$ownerElement) {
+                    return null;
+                }
+
+                // Return the result of running locate a namespace on its
+                // element using prefix.
+                return self::locateNamespace($ownerElement, $aPrefix);
+
             default:
                 if (!$aNode->parentElement) {
                     return null;

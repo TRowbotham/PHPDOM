@@ -479,6 +479,7 @@ class AttributeList implements \ArrayAccess, \Countable, \Iterator
 
         if (!$attr) {
             $attr = new Attr($aLocalName, $aValue, $aNamespace, $aPrefix);
+            $attr->setOwnerDocument($aElement->ownerDocument);
             $this->appendAttr($attr, $aElement);
             return;
         }
