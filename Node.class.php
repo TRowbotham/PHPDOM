@@ -389,13 +389,8 @@ abstract class Node extends EventTarget
                 );
 
                 foreach ($node->mAttributesList as $attr) {
-                    $copyAttr = new Attr(
-                        $attr->localName,
-                        $attr->value,
-                        $attr->namespaceURI,
-                        $attr->prefix
-                    );
-                    $copy->mAttributesList->appendAttr($copyAttr, $copy);
+                    $copyAttribute = $attr->doCloneNode();
+                    $copy->mAttributesList->appendAttr($copyAttribute, $copy);
                 }
 
                 break;
