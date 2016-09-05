@@ -1022,28 +1022,34 @@ abstract class Node extends EventTarget
      * "Normalizes" the node and its sub-tree so that there are no empty text
      * nodes present and there are no text nodes that appear consecutively.
      *
-     * @link https://dom.spec.whatwg.org/#dom-node-normalize
+     * @see https://dom.spec.whatwg.org/#dom-node-normalize
      */
     public function normalize()
     {
         $ownerDocument = $this->mOwnerDocument ?: $this;
-        $nextSibling = $this->mNextSibling;
-        $tw = $ownerDocument->createNodeIterator($this, NodeFilter::SHOW_TEXT);
+        $iter = $ownerDocument->createNodeIterator(
+            $this,
+            NodeFilter::SHOW_TEXT
+        );
 
-        while ($node = $tw->nextNode()) {
-            $length = $node->length;
+        while ($node = $iter->nextNode()) {
+            $length = $node->getLength();
 
-            if (!$length) {
-                $this->removeNode($node);
+            // If length is zero, then remove node and continue with the next
+            // exclusive Text node, if any.
+            if ($length == 0) {
+                $node->mParentNode->removeNode($node);
                 continue;
             }
 
+            // Let data be the concatenation of the data of node’s contiguous
+            // exclusive Text nodes (excluding itself), in tree order.
             $data = '';
-            $contingiousTextNodes = array();
+            $contingiousTextNodes = [];
             $startNode = $node->mPreviousSibling;
 
             while ($startNode) {
-                if (!($startNode instanceof Text)) {
+                if ($startNode->mNodeType != self::TEXT_NODE) {
                     break;
                 }
 
@@ -1055,7 +1061,7 @@ abstract class Node extends EventTarget
             $startNode = $node->mNextSibling;
 
             while ($startNode) {
-                if (!($startNode instanceof Text)) {
+                if ($startNode->mNodeType != self::TEXT_NODE) {
                     break;
                 }
 
@@ -1064,47 +1070,62 @@ abstract class Node extends EventTarget
                 $startNode = $startNode->mNextSibling;
             }
 
+            // Replace data with node node, offset length, count 0, and data
+            // data.
             $node->doReplaceData($length, 0, $data);
             $currentNode = $node->mNextSibling;
             $ranges = Range::_getRangeCollection();
 
-            while ($currentNode instanceof Text) {
+            while ($currentNode && $currentNode->mNodeType == self::TEXT_NODE) {
                 $treeIndex = $currentNode->_getTreeIndex();
 
+                // For each range whose start node is currentNode, add length to
+                // its start offset and set its start node to node.
                 foreach ($ranges as $range) {
                     if ($range->startContainer === $currentNode) {
                         $range->setStart($node, $range->startOffset + $length);
                     }
                 }
 
+                // For each range whose end node is currentNode, add length to
+                // its end offset and set its end node to node.
                 foreach ($ranges as $range) {
                     if ($range->endContainer === $currentNode) {
-                        $range->setStart($node, $range->endOffset + $length);
+                        $range->setEnd($node, $range->endOffset + $length);
                     }
                 }
 
+                // For each range whose start node is currentNode’s parent and
+                // start offset is currentNode’s index, set its start node to
+                // node and its start offset to length.
                 foreach ($ranges as $range) {
-                    if (
-                        $range->startContainer === $currentNode->mParentNode &&
+                    if ($range->startContainer === $currentNode->mParentNode &&
                         $range->startOffset == $treeIndex
                     ) {
                         $range->setStart($node, $length);
                     }
                 }
 
+                // For each range whose end node is currentNode’s parent and end
+                // offset is currentNode’s index, set its end node to node and
+                // its end offset to length.
                 foreach ($ranges as $range) {
-                    if (
-                        $range->endContainer === $currentNode->mParentNode &&
+                    if ($range->endContainer === $currentNode->mParentNode &&
                         $range->endOffset == $treeIndex
                     ) {
                         $range->setEnd($node, $length);
                     }
                 }
 
-                $length += $currentNode->length;
-                $currentNode = $currentNode->mPextSibling;
+                // Add currentNode’s length to length.
+                $length += $currentNode->getLength();
+
+                // Set currentNode to its next sibling.
+                $currentNode = $currentNode->mNextSibling;
             }
 
+            // Remove node’s contiguous exclusive Text nodes (excluding itself),
+            // in tree order.
             foreach ($contingiousTextNodes as $textNode) {
                 $textNode->mParentNode->removeNode($textNode);
             }
