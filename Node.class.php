@@ -219,62 +219,51 @@ abstract class Node extends EventTarget
         $node1 = $aOtherNode;
         $node2 = $this;
         $attr1 = null;
+        $attr2 = null;
 
-        // If node1 is an attribute, then:
+        // If node1 is an attribute, then set attr1 to node1 and node1 to
+        // attr1’s element.
         if ($node1 instanceof Attr) {
             $attr1 = $node1;
-            $ownerElement = $attr1->ownerElement;
-
-            // If attr1’s element is non-null, then set node1 to attr1’s
-            // element.
-            if ($ownerElement) {
-                $node1 = $ownerElement;
-            }
+            $node1 = $attr1->ownerElement;
         }
 
         // If node2 is an attribute, then:
         if ($node2 instanceof Attr) {
             $attr2 = $node2;
-            $ownerElement = $attr2->ownerElement;
+            $node2 = $attr2->ownerElement;
 
-            // If attr2’s element is node1 and attr1 is non-null, then:
-            if ($attr1 && $ownerElement === $node1) {
-                foreach ($ownerElement->getAttributeList() as $node2Attribute) {
-                    // If node2Attribute equals attr1, then return the result of
-                    // adding DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC and
+            // If attr1 and node1 are non-null, and node2 is node1, then:
+            if ($attr1 && $node1 && $node2 === $node1) {
+                foreach ($node2->getAttributeList() as $attr) {
+                    // If attr equals attr1, then return the result of adding
+                    // DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC and
                     // DOCUMENT_POSITION_PRECEDING.
-                    if ($node2Attribute->isEqualNode($attr1)) {
+                    if ($attr->isEqualNode($attr1)) {
                         return self::DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC |
                             self::DOCUMENT_POSITION_PRECEDING;
                     }
 
-                    // If node2Attribute equals attr2, then return the result of
-                    // adding DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC and
+                    // If attr equals attr2, then return the result of adding
+                    // DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC and
                     // DOCUMENT_POSITION_FOLLOWING.
-                    if ($node2Attribute->isEqualNode($attr2)) {
+                    if ($attr->isEqualNode($attr2)) {
                         return self::DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC |
                             self::DOCUMENT_POSITION_FOLLOWING;
                     }
                 }
             }
-
-            // If attr2’s element is non-null, then set node2 to attr2’s
-            // element.
-            if ($ownerElement) {
-                $node2 = $ownerElement;
-            }
         }
 
         $node2Root = $node2->getRootNode();
 
-        // If node1’s root is not node2’s root or node1 and node2 are
-        // attributes, then return the result of adding
-        // DOCUMENT_POSITION_DISCONNECTED,
+        // If node1 or node2 is null, or node1’s root is not node2’s root, then
+        // return the result of adding DOCUMENT_POSITION_DISCONNECTED,
         // DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC, and either
         // DOCUMENT_POSITION_PRECEDING or DOCUMENT_POSITION_FOLLOWING, with the
         // constraint that this is to be consistent, together.
-        if ($node1->getRootNode() !== $node2Root ||
-            ($node1 instanceof Attr && $node2 instanceof Attr)
+        if ($node1 === null || $node2 === null ||
+            $node1->getRootNode() !== $node2Root
         ) {
             $ret = self::DOCUMENT_POSITION_DISCONNECTED |
                 self::DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC;
@@ -298,16 +287,22 @@ abstract class Node extends EventTarget
             return $ret | self::DOCUMENT_POSITION_FOLLOWING;
         }
 
-        // If node1 is an ancestor of node2, then return the result of adding
+        // If node1 is an ancestor of node2 and attr1 is null, or node1 is node2
+        // and attr2 is non-null, then return the result of adding
         // DOCUMENT_POSITION_CONTAINS to DOCUMENT_POSITION_PRECEDING.
-        if ($node1->isAncestorOf($node2)) {
+        if (($node1->isAncestorOf($node2) && $attr1 === null) ||
+            ($node1 === $node2 && $attr1)
+        ) {
             return self::DOCUMENT_POSITION_CONTAINS |
                 self::DOCUMENT_POSITION_PRECEDING;
         }
 
-        // If node1 is a descendant of node2, then return the result of
-        // adding DOCUMENT_POSITION_CONTAINED_BY to DOCUMENT_POSITION_FOLLOWING.
-        if ($node1->isDescendantOf($node2)) {
+        // If node1 is a descendant of node2 and attr2 is null, or node1 is
+        // node2 and attr1 is non-null, then return the result of adding
+        // DOCUMENT_POSITION_CONTAINED_BY to DOCUMENT_POSITION_FOLLOWING.
+        if (($node1->isDescendantOf($node2) && $attr2 === null) ||
+            ($node1 === $node2 && $attr1)
+        ) {
             return self::DOCUMENT_POSITION_CONTAINED_BY |
                 self::DOCUMENT_POSITION_FOLLOWING;
         }
@@ -323,6 +318,10 @@ abstract class Node extends EventTarget
         $tw->currentNode = $node2;
 
         // If node1 is preceding node2, then return DOCUMENT_POSITION_PRECEDING.
+        //
+        // NOTE: Due to the way attributes are handled in this algorithm this
+        // results in a node’s attributes counting as preceding that node’s
+        // children, despite attributes not participating in a tree.
         if ($tw->previousNode()) {
             return self::DOCUMENT_POSITION_PRECEDING;
         }
