@@ -279,7 +279,11 @@ abstract class EventTarget
             }
         }
 
-        $aEvent->unsetFlag(EventFlags::DISPATCH);
+        $aEvent->unsetFlag(
+            EventFlags::DISPATCH |
+            EventFlags::STOP_PROPAGATION |
+            EventFlags::STOP_IMMEDIATE_PROPAGATION
+        );
         $aEvent->setEventPhase(Event::NONE);
         $aEvent->setCurrentTarget(null);
         $aEvent->emptyPath();
