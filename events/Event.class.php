@@ -167,7 +167,7 @@ class Event
                     $tuple['item']->isUnclosedNodeOf($this->mCurrentTarget)) ||
                 !($this->mCurrentTarget instanceof Node)
             ) {
-                $composedPath[] = $tuple;
+                $composedPath[] = $tuple['item'];
             }
         }
 
