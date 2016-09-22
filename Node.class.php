@@ -480,24 +480,34 @@ abstract class Node extends EventTarget
      *
      * @throws NotFoundError
      */
-    public function _ensurePreinsertionValidity($aNode, $aChild)
+    public function ensurePreinsertionValidity($aNode, $aChild)
     {
-        if (
-            !($this instanceof Document) &&
-            !($this instanceof DocumentFragment) &&
-            !($this instanceof Element)
+        $parent = $this;
+
+        // Only Documents, DocumentFragments, and Elements can be parent nodes.
+        // Throw a HierarchyRequestError if parent is not one of these types.
+        if (!($parent instanceof Document) &&
+            !($parent instanceof DocumentFragment) &&
+            !($parent instanceof Element)
         ) {
             throw new HierarchyRequestError();
         }
 
-        if ($this === $aNode || $aNode->contains($this)) {
-            throw new HierarchyRequestError;
+        // If node is a host-including inclusive ancestor of parent, throw a
+        // HierarchyRequestError.
+        if ($aNode->isHostIncludingInclusiveAncestorOf($parent)) {
+            throw new HierarchyRequestError();
         }
 
-        if ($aChild !== null && $this !== $aChild->mParentNode) {
-            throw new NotFoundError;
+        // If child is not null and its parent is not parent, then throw a
+        // NotFoundError.
+        if ($aChild !== null && $aChild->mParentNode !== $parent) {
+            throw new NotFoundError();
         }
 
+        // If node is not a DocumentFragment, DocumentType, Element, Text,
+        // ProcessingInstruction, or Comment node, throw a
+        // HierarchyRequestError.
         if (!($aNode instanceof DocumentFragment) &&
             !($aNode instanceof DocumentType) &&
             !($aNode instanceof Element) &&
@@ -508,110 +518,130 @@ abstract class Node extends EventTarget
             throw new HierarchyRequestError();
         }
 
-        if (
-            ($aNode instanceof Text && $this instanceof Document) ||
-            ($aNode instanceof DocumentType && !($this instanceof Document))
+        // If either node is a Text node and parent is a document, or node is a
+        // doctype and parent is not a document, throw a HierarchyRequestError.
+        if (($aNode instanceof Text && $parent instanceof Document) ||
+            ($aNode instanceof DocumentType && !($parent instanceof Document))
         ) {
             throw new HierarchyRequestError();
         }
 
-        if ($this instanceof Document) {
-            if ($aNode instanceof DocumentFragment) {
-                $hasTextNode = false;
+        if (!($parent instanceof Document)) {
+            return;
+        }
 
-                foreach ($aNode->mChildNodes as $node) {
-                    if ($node instanceof Text) {
-                        $hasTextNode = true;
+        if ($aNode instanceof DocumentFragment) {
+            $elementChildren = 0;
 
-                        break;
-                    }
-                }
+            // Documents cannot contain more than one element child or text
+            // nodes. Throw a HierarchyRequestError if the document fragment
+            // has more than 1 element child or a text node.
+            foreach ($aNode->mChildNodes as $child) {
+                if ($child instanceof Element) {
+                    $elementChildren++;
 
-                if ($aNode->childElementCount > 1 || $hasTextNode) {
-                    throw new HierarchyRequestError();
-                } else {
-                    if (
-                        $aNode->childElementCount == 1 &&
-                        ($this->childElementCount ||
-                            $aChild instanceof DocumentType)
-                    ) {
+                    if ($elementChildren > 1) {
                         throw new HierarchyRequestError();
                     }
-
-                    if ($aChild !== null) {
-                        $tw = new TreeWalker(
-                            $aChild,
-                            NodeFilter::SHOW_DOCUMENT_TYPE
-                        );
-
-                        if ($tw->nextNode() !== null) {
-                            throw new HierarchyRequestError();
-                        }
-                    }
-                }
-            } elseif ($aNode instanceof Element) {
-                $parentHasElementChild = false;
-
-                foreach ($this->mChildNodes as $node) {
-                    if ($node instanceof Element) {
-                        $parentHasElementChild = true;
-
-                        break;
-                    }
                 }
 
-                if ($parentHasElementChild || $aChild instanceof DocumentType) {
+                if ($elementChildren > 1 || $child instanceof Text) {
                     throw new HierarchyRequestError();
                 }
+            }
 
-                if ($aChild !== null) {
-                    $tw = new TreeWalker(
-                        $aChild,
-                        NodeFilter::SHOW_DOCUMENT_TYPE
-                    );
+            if ($elementChildren == 0) {
+                return;
+            }
 
-                    if ($tw->nextNode() !== null) {
-                        throw new HierarchyRequestError();
-                    }
+            // Documents cannot contain more than one element child. Throw a
+            // HierarchyRequestError if both the document fragment and
+            // document contain an element child.
+            foreach ($parent->mChildNodes as $child) {
+                if ($child->mNodeType === self::ELEMENT_NODE) {
+                    throw new HierarchyRequestError();
                 }
-            } elseif ($aNode instanceof DocumentType) {
-                $parentHasDocTypeChild = false;
+            }
 
-                foreach ($this->mChildNodes as $node) {
-                    if ($node instanceof DocumentType) {
-                        $parentHasDocTypeChild = true;
+            // An element cannot preceed a doctype in the tree. Throw a
+            // HierarchyRequestError if we try to insert an element before
+            // the doctype.
+            if ($aChild instanceof DocumentType) {
+                throw new HierarchyRequestError();
+            }
 
-                        break;
-                    }
+            if ($aChild === null) {
+                return;
+            }
+
+            // The document element must follow the doctype in the tree.
+            // Throw a HierarchyRequestError if we try to insert an element
+            // before a node that preceedes the doctype.
+            $tw = new TreeWalker($parent, NodeFilter::SHOW_DOCUMENT_TYPE);
+            $tw->currentNode = $aChild;
+
+            if ($tw->nextNode()) {
+                throw new HierarchyRequestError();
+            }
+        } elseif ($aNode instanceof Element) {
+            // A Document cannot contain more than 1 element child. Throw a
+            // HierarchyRequestError if the parent already contains an element
+            // child.
+            foreach ($parent->mChildNodes as $child) {
+                if ($child instanceof Element) {
+                    throw new HierarchyRequestError();
+                }
+            }
+
+            // The document element must follow the doctype in the tree. Throw
+            // a HierarchyRequestError if we try to insert an element before the
+            // doctype.
+            if ($aChild instanceof DocumentType) {
+                throw new HierarchyRequestError();
+            }
+
+            if ($aChild === null) {
+                return;
+            }
+
+            // Again, the document element must follow the doctype in the tree.
+            // Throw a HierarchyRequestError if we try to insert an element
+            // before a node that preceedes the doctype.
+            $tw = new TreeWalker($parent, NodeFilter::SHOW_DOCUMENT_TYPE);
+            $tw->currentNode = $aChild;
+
+            if ($tw->nextNode()) {
+                throw new HierarchyRequestError();
+            }
+        } elseif ($aNode instanceof DocumentType) {
+            // A document can only contain 1 doctype definition. Throw a
+            // HierarchyRequestError if we try to insert a doctype into a
+            // document that already contains a doctype.
+            foreach ($parent->mChildNodes as $child) {
+                if ($child instanceof DocumentType) {
+                    throw new HierarchyRequestError();
+                }
+            }
+
+            // The doctype must preceed any elements. Throw a
+            // HierarchyRequestError if we try to insert a doctype before a
+            // node that follows an element.
+            if ($aChild !== null) {
+                $tw = new TreeWalker($parent, NodeFilter::SHOW_ELEMENT);
+                $tw->currentNode = $aChild;
+
+                if ($tw->previousNode()) {
+                    throw new HierarchyRequestError();
                 }
 
-                if ($aChild !== null) {
-                    $ownerDocument = $this->mOwnerDocument ?: $this;
-                    $tw = new TreeWalker(
-                        $ownerDocument,
-                        NodeFilter::SHOW_ELEMENT
-                    );
-                    $tw->currentNode = $aChild;
+                return;
+            }
 
-                    if ($tw->previousNode() !== null) {
-                        throw new HierarchyRequestError();
-                    }
-                }
-
-                $parentHasElementChild = false;
-
-                foreach ($this->mChildNodes as $node) {
-                    if ($node instanceof Element) {
-                        $parentHasElementChild = true;
-
-                        break;
-                    }
-                }
-
-                if (
-                    $parentHasDocTypeChild ||
-                    ($aChild === null && $parentHasElementChild)
-                ) {
+            // The doctype must preceed any elements. Throw a
+            // HierarchyRequestError if we try to append a doctype to a parent
+            // that already contains an element.
+            foreach ($parent->mChildNodes as $child) {
+                if ($child->mNodeType instanceof Element) {
                     throw new HierarchyRequestError();
                 }
             }
@@ -1147,7 +1177,7 @@ abstract class Node extends EventTarget
         Node $aChild = null
     ) {
         $parent = $this;
-        $parent->_ensurePreinsertionValidity($aNode, $aChild);
+        $parent->ensurePreinsertionValidity($aNode, $aChild);
         $referenceChild = $aChild;
 
         if ($referenceChild === $aNode) {

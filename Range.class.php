@@ -706,7 +706,7 @@ class Range {
 
         $parent = !$referenceNode ?
             $this->mStartContainer : $referenceNode->parentNode;
-        $parent->_ensurePreinsertionValidity($aNode, $referenceNode);
+        $parent->ensurePreinsertionValidity($aNode, $referenceNode);
 
         if ($this->mStartContainer instanceof Text) {
             $this->mStartContainer->splitText($this->mStartOffset);
