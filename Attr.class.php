@@ -99,7 +99,7 @@ class Attr extends Node {
                 return $this->mValue;
 
             default:
-                return parent::__get($aValue);
+                return parent::__get($aName);
         }
     }
 
