@@ -108,6 +108,17 @@ class Utils
         return $output;
     }
 
+    public static function unsignedLong($aOffset)
+    {
+        $normalizedOffset = $aOffset % pow(2, 32);
+
+        if ($normalizedOffset < 0) {
+            $normalizedOffset += pow(2, 32);
+        }
+
+        return $normalizedOffset;
+    }
+
     public static function intAsString($aValue)
     {
         if (is_string($aValue) && is_int(intval($aValue))) {

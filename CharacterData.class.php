@@ -93,7 +93,11 @@ abstract class CharacterData extends Node
      */
     public function deleteData($aOffset, $aCount)
     {
-        $this->doReplaceData($aOffset, $aCount, '');
+        $this->doReplaceData(
+            Utils::unsignedLong($aOffset),
+            Utils::unsignedLong($aCount),
+            ''
+        );
     }
 
     /**
@@ -108,7 +112,11 @@ abstract class CharacterData extends Node
      */
     public function insertData($aOffset, $aData)
     {
-        $this->doReplaceData($aOffset, 0, Utils::DOMString($aData));
+        $this->doReplaceData(
+            Utils::unsignedLong($aOffset),
+            0,
+            Utils::DOMString($aData)
+        );
     }
 
     /**
@@ -130,7 +138,11 @@ abstract class CharacterData extends Node
      */
     public function replaceData($aOffset, $aCount, $aData)
     {
-        $this->doReplaceData($aOffset, $aCount, Utils::DOMString($aData));
+        $this->doReplaceData(
+            Utils::unsignedLong($aOffset),
+            Utils::unsignedLong($aCount),
+            Utils::DOMString($aData)
+        );
     }
 
     /**
@@ -169,11 +181,18 @@ abstract class CharacterData extends Node
             $count = $length - $aOffset;
         }
 
-        // TODO: Queue a mutation record for "characterData"
+        // TODO: Queue a mutation record of "characterData" for node with
+        // oldValue node’s data.
+
         $encoding = $this->mOwnerDocument->characterSet;
         $this->mData = mb_substr($this->mData, 0, $aOffset, $encoding) .
             $aData .
-            mb_substr($this->mData, $aOffset + $count, null, $encoding);
+            mb_substr(
+                $this->mData,
+                $aOffset + $count,
+                $length - $aOffset,
+                $encoding
+            );
         $newDataLen = mb_strlen($aData, $encoding);
         $this->mLength = mb_strlen($this->mData, $encoding);
 
@@ -248,6 +267,8 @@ abstract class CharacterData extends Node
     public function substringData($aOffset, $aCount)
     {
         $length = $this->mLength;
+        $aOffset = Utils::unsignedLong($aOffset);
+        $count = Utils::unsignedLong($aCount);
 
         if ($aOffset < 0 || $aOffset > $length) {
             throw new IndexSizeError(
@@ -260,11 +281,11 @@ abstract class CharacterData extends Node
             );
         }
 
-        if ($aOffset + $aCount > $length) {
+        if ($aOffset + $count > $length) {
             return mb_substr($this->mData, $aOffset);
         }
 
-        return mb_substr($this->mData, $aOffset, $aOffset + $aCount);
+        return mb_substr($this->mData, $aOffset, $count);
     }
 
     /**
