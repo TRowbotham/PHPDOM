@@ -135,7 +135,7 @@ class HTMLTableRowElement extends HTMLElement
         $td = ElementFactory::create(
             $this->mOwnerDocument,
             'td',
-            Namesapces::HTML
+            Namespaces::HTML
         );
 
         if ($aIndex == -1 || $aIndex == $numCells) {
