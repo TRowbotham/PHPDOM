@@ -36,7 +36,6 @@ class Document extends Node
     protected $mMode;
 
     private $mCompatMode;
-    private $mEvents;
     private $mImplementation;
     private $mIsIframeSrcdoc;
     private $mNodeIteratorList;
