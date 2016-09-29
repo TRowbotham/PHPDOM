@@ -38,6 +38,7 @@ class Document extends Node
     private $mCompatMode;
     private $mEvents;
     private $mImplementation;
+    private $mIsIframeSrcdoc;
     private $mNodeIteratorList;
     private $mURL;
 
@@ -53,6 +54,7 @@ class Document extends Node
         $this->mContentType = 'application/xml';
         $this->mFlags = 0;
         $this->mImplementation = new DOMImplementation($this);
+        $this->mIsIframeSrcdoc = false;
         $this->mInertTemplateDocument = null;
         $this->mMode = DocumentMode::NO_QUIRKS;
         $this->mNodeIteratorList = array();
@@ -633,6 +635,16 @@ class Document extends Node
     public function setMode($aMode)
     {
         $this->mMode = $aMode;
+    }
+
+    public function isIframeSrcdoc()
+    {
+        return $this->mIsIframeSrcdoc;
+    }
+
+    public function markAsIframeSrcdoc()
+    {
+        $this->mIsIframeSrcdoc = true;
     }
 
     public function _getNodeIteratorCollection()
