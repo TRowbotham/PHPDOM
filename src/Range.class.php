@@ -1,11 +1,13 @@
 <?php
 namespace phpjs;
 
+use phpjs\elements\ElementFactory;
 use phpjs\exceptions\HierarchyRequestError;
 use phpjs\exceptions\IndexSizeError;
 use phpjs\exceptions\InvalidNodeTypeError;
 use phpjs\exceptions\NotSupportedError;
 use phpjs\exceptions\WrongDocumentError;
+use phpjs\parser\ParserFactory;
 
 /**
  * Represents a sequence of content within a node tree.
@@ -1087,6 +1089,68 @@ class Range {
     public static function _getRangeCollection()
     {
         return self::$mCollection;
+    }
+
+    /**
+     * @see https://w3c.github.io/DOM-Parsing/#idl-def-range-createcontextualfragment(domstring)
+     *
+     * @param string $aFragment
+     *
+     * @return DocumentFragment
+     */
+    public function createContextualFragment($aFragment)
+    {
+        $node = $this->mStartContainer;
+
+        switch ($node->nodeType) {
+            case Node::DOCUMENT_NODE:
+            case Node::DOCUMENT_FRAGMENT_NODE:
+                $element = null;
+
+                break;
+
+            case Node::ELEMENT_NODE:
+                $element = $node;
+
+                break;
+
+            case Node::TEXT_NODE:
+            case Node::COMMENT_NODE:
+                $element = $node->parentNode;
+
+                break;
+
+            case Node::DOCUMENT_TYPE_NODE:
+            case Node::PROCESSING_INSTRUCTION_NODE:
+                // DOM4 prevents this case.
+                return;
+        }
+
+        // If either element is null or element's node document is an HTML
+        // document and element's local name is "html" and element's namespace
+        // is the HTML namespace, then let element be a new Element with "body"
+        // as its local name, the HTML namespace as its namespace, and the
+        // context object's node document as its node document.
+        if ($element === null ||
+            ($element->ownerDocument instanceof HTMLDocument &&
+                $element->localName === 'html' &&
+                $element->namespaceURI === Namespaces::HTML)
+        ) {
+            $element = ElementFactory::create(
+                $this->mStartContainer->ownerDocument ?: $this->mStartContainer,
+                'body',
+                Namespaces::HTML
+            );
+
+            // Let fragment node be the result of invoking the fragment parsing
+            // algorithm with fragment as markup, and element as the context
+            // element.
+            $fragmentNode = ParserFactory::parseFragment($aFragment, $element);
+
+            // TODO: Unmark all scripts in fragment node as "already started".
+
+            return $fragmentNode;
+        }
     }
 
     /**
