@@ -29,6 +29,8 @@ use phpjs\urls\URLInternal;
  *
  * @property string|null         $nodeValue
  *
+ * @property-read bool           $isConnected
+ *
  * @property-read Document|null  $ownerDocument
  *
  * @property-read Node|null      $parentNode
@@ -112,6 +114,11 @@ abstract class Node extends EventTarget
 
             case 'firstChild':
                 return $this->mFirstChild;
+
+            case 'isConnected':
+                $options = ['composed' => true];
+
+                return $this->getRootNode($options) instanceof Document;
 
             case 'lastChild':
                 return $this->mLastChild;
