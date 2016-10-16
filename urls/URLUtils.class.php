@@ -5,37 +5,37 @@ abstract class URLUtils
 {
     const REGEX_C0_CONTROLS = '/[\x{0000}-\x{001F}]/';
     const REGEX_ASCII_ALPHA = '/[\x{0041}-\x{005A}\x{0061}-\x{007A}]/';
-    const REGEX_ASCII_ALPHANUMERIC = '/[\x{0030}-\x{0039}\x{0041}-\x{005A}
-        \x{0061}-\x{007A}]/';
-    const REGEX_URL_CODE_POINTS = '/[\x{0030}-\x{0039}\x{0041}-\x{005A}
-        \x{0061}-\x{007A}
-        !$&\'()*+,\-.\/:;=?@_~
-        \x{00A0}-\x{D7DD}
-        \x{E000}-\x{FDCF}
-        \x{FDF0}-\x{FFFD}
-        \x{10000}-\x{1FFFD}
-        \x{20000}-\x{2FFFD}
-        \x{30000}-\x{3FFFD}
-        \x{40000}-\x{4FFFD}
-        \x{50000}-\x{5FFFD}
-        \x{60000}-\x{6FFFD}
-        \x{70000}-\x{7FFFD}
-        \x{80000}-\x{8FFFD}
-        \x{90000}-\x{9FFFD}
-        \x{A0000}-\x{AFFFD}
-        \x{B0000}-\x{BFFFD}
-        \x{C0000}-\x{CFFFD}
-        \x{D0000}-\x{DFFFD}
-        \x{E0000}-\x{EFFFD}
-        \x{F0000}-\x{FFFFD}
-        \x{100000}-\x{10FFFD}
-         ]/u';
-    const REGEX_ASCII_DOMAIN = '/[\x{0000}\x{0009}\x{000A}\x{000D}\x{0020}#%\/:
-        ?@[\\\\\]]/';
-    const REGEX_WINDOWS_DRIVE_LETTER = '/[\x{0041}-\x{005A}\x{0061}-\x{007A}][:
-        |]/';
-    const REGEX_NORMALIZED_WINDOWS_DRIVE_LETTER = '/[\x{0041}-\x{005A}
-        \x{0061}-\x{007A}]:/';
+    const REGEX_ASCII_ALPHANUMERIC = '/[\x{0030}-\x{0039}\x{0041}-\x{005A}' .
+        '\x{0061}-\x{007A}]/';
+    const REGEX_URL_CODE_POINTS = '/[\x{0030}-\x{0039}\x{0041}-\x{005A}' .
+        '\x{0061}-\x{007A}' .
+        '!$&\'()*+,\-.\/:;=?@_~' .
+        '\x{00A0}-\x{D7DD}' .
+        '\x{E000}-\x{FDCF}' .
+        '\x{FDF0}-\x{FFFD}' .
+        '\x{10000}-\x{1FFFD}' .
+        '\x{20000}-\x{2FFFD}' .
+        '\x{30000}-\x{3FFFD}' .
+        '\x{40000}-\x{4FFFD}' .
+        '\x{50000}-\x{5FFFD}' .
+        '\x{60000}-\x{6FFFD}' .
+        '\x{70000}-\x{7FFFD}' .
+        '\x{80000}-\x{8FFFD}' .
+        '\x{90000}-\x{9FFFD}' .
+        '\x{A0000}-\x{AFFFD}' .
+        '\x{B0000}-\x{BFFFD}' .
+        '\x{C0000}-\x{CFFFD}' .
+        '\x{D0000}-\x{DFFFD}' .
+        '\x{E0000}-\x{EFFFD}' .
+        '\x{F0000}-\x{FFFFD}' .
+        '\x{100000}-\x{10FFFD}' .
+         ']/u';
+    const REGEX_ASCII_DOMAIN = '/[\x{0000}\x{0009}\x{000A}\x{000D}\x{0020}#%' .
+        '\/:?@[\\\\\]]/';
+    const REGEX_WINDOWS_DRIVE_LETTER = '/[\x{0041}-\x{005A}\x{0061}-\x{007A}]' .
+        '[:|]/';
+    const REGEX_NORMALIZED_WINDOWS_DRIVE_LETTER = '/[\x{0041}-\x{005A}' .
+        '\x{0061}-\x{007A}]:/';
 
     const ENCODE_SET_SIMPLE = 1;
     const ENCODE_SET_DEFAULT = 2;
