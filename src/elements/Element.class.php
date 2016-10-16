@@ -363,8 +363,11 @@ class Element extends Node implements AttributeChangeObserver
         return $this->mAttributesList->count() !== 0;
     }
 
-    public function insertAdjacentHTML($aHTML) {
+    public function insertAdjacentHTML($aHTML)
+    {
         // TODO
+    }
+
     /**
      * Inserts an element adjacent to the current element.
      *
