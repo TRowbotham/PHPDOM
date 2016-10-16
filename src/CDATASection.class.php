@@ -1,4 +1,6 @@
 <?php
+namespace phpjs;
+
 class CDATASection extends Text
 {
     public function __construct($aData)
