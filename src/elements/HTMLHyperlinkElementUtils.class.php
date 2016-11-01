@@ -377,13 +377,18 @@ trait HTMLHyperlinkElementUtils
             return;
         }
 
-        URLInternal::basicURLParser(
-            $aValue,
-            null,
-            null,
-            $this->mUrl,
-            URLInternal::PORT_STATE
-        );
+        if ($aValue === '') {
+            $this->mUrl->setPort(null);
+        } else {
+            URLInternal::basicURLParser(
+                $aValue,
+                null,
+                null,
+                $this->mUrl,
+                URLInternal::PORT_STATE
+            );
+        }
+
         $this->mAttributesList->setAttrValue(
             $this,
             'href',
