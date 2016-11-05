@@ -194,7 +194,7 @@ abstract class CharacterData extends Node
                 $encoding
             );
         $newDataLen = mb_strlen($aData, $encoding);
-        $this->mLength = mb_strlen($this->mData, $encoding);
+        $this->mLength += $newDataLen - $count;
 
         $ranges = Range::_getRangeCollection();
 
