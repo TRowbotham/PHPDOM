@@ -40,6 +40,7 @@ class Document extends Node
     private $mIsIframeSrcdoc;
     private $mNodeIteratorList;
     private $mURL;
+    private $readyState;
 
     public function __construct()
     {
@@ -60,6 +61,12 @@ class Document extends Node
         $this->mNodeType = self::DOCUMENT_NODE;
         $this->mOwnerDocument = null; // Documents own themselves.
         $this->mURL = null;
+
+        // When a Document object is created, it must have its current document
+        // readiness set to the string "loading" if the document is associated
+        // with an HTML parser, an XML parser, or an XSLT processor, and to the
+        // string "complete" otherwise.
+        $this->readyState = DocumentReadyState::COMPLETE;
     }
 
     public function __destruct()
@@ -108,6 +115,9 @@ class Document extends Node
                 return $this->getLastElementChild();
             case 'origin':
                 return $this->getURL()->getOrigin()->serializeAsUnicode();
+            case 'readyState':
+                return $this->readyState;
+
             default:
                 return parent::__get($aName);
         }
@@ -610,6 +620,18 @@ class Document extends Node
     public function getFlags()
     {
         return $this->mFlags;
+    }
+
+    /**
+     * Sets the document's ready state.
+     *
+     * @internal
+     *
+     * @param string $readyState
+     */
+    public function setReadyState($readyState)
+    {
+        $this->readyState = $readyState;
     }
 
     /**
