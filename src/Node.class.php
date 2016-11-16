@@ -1228,7 +1228,7 @@ abstract class Node extends EventTarget
         $aSuppressObservers = null
     ) {
         $parent = $this;
-        $index = array_search($aNode, $parent->mChildNodes);
+        $index = array_search($aNode, $parent->mChildNodes, true);
         $ranges = Range::_getRangeCollection();
 
         foreach ($ranges as $range) {
