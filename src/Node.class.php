@@ -7,7 +7,6 @@ use phpjs\events\EventTarget;
 use phpjs\exceptions\DOMException;
 use phpjs\exceptions\HierarchyRequestError;
 use phpjs\exceptions\NotFoundError;
-use phpjs\urls\URLInternal;
 
 /**
  * @see https://dom.spec.whatwg.org/#node
