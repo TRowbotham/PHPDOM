@@ -6,9 +6,12 @@ namespace phpjs\exceptions;
  */
 class IndexSizeError extends DOMException
 {
-    public function __construct($aMessage = '')
+    public function __construct($message = '', $previous = null)
     {
-        $this->code = 1;
-        $this->message = $aMessage ?: 'The index is not in the allowed range.';
+        if ($message === '') {
+            $message = 'The index is not in the allowed range.';
+        }
+
+        parent::__construct($message, 1, $previous);
     }
 }

@@ -6,8 +6,8 @@ namespace phpjs\exceptions;
  */
 class DOMException extends \Exception
 {
-    public function __construct($aMessage = '')
+    public function __construct($message = '', $code = 0, $previous = null)
     {
-        $this->message = $aMessage;
+        parent::__construct($message, $code, $previous);
     }
 }

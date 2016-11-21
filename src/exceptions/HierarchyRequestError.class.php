@@ -6,10 +6,12 @@ namespace phpjs\exceptions;
  */
 class HierarchyRequestError extends DOMException
 {
-    public function __construct($aMessage = '')
+    public function __construct($message = '', $previous = null)
     {
-        $this->code = 3;
-        $this->message = $aMessage ?: 'The operation would yield an incorrect
-            node tree.';
+        if ($message === '') {
+            $message = 'The operation would yield an incorrect node tree.'
+        }
+
+        parent::__construct($message, 3, $previous);
     }
 }

@@ -6,9 +6,12 @@ namespace phpjs\exceptions;
  */
 class InUseAttributeError extends DOMException
 {
-    public function __construct($aMessage = '')
+    public function __construct($message = '', $previous = null)
     {
-        $this->code = 10;
-        $this->message = $aMessage ?: 'The attribute is in use.';
+        if ($message === '') {
+            $message = 'The attribute is in use.';
+        }
+
+        parent::__construct($message, 10, $previous);
     }
 }

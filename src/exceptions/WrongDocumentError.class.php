@@ -6,9 +6,12 @@ namespace phpjs\exceptions;
  */
 class WrongDocumentError extends DOMException
 {
-    public function __construct($aMessage = '')
+    public function __construct($message = '', $previous = null)
     {
-        $this->code = 4;
-        $this->message = $aMessage ?: 'The object is in the wrong document.';
+        if ($message === '') {
+            $message = 'The object is in the wrong document.';
+        }
+
+        parent::__construct($message, 4, $previous);
     }
 }

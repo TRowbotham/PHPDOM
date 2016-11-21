@@ -6,10 +6,12 @@ namespace phpjs\exceptions;
  */
 class NamespaceError extends DOMException
 {
-    public function __construct($aMessage = '')
+    public function __construct($message = '', $previous = null)
     {
-        $this->code = 14;
-        $this->message = $aMessage ?: 'The operation is not allowed by
-            Namespaces in XML.';
+        if ($message === '') {
+            $message = 'The operation is not allowed by Namespaces in XML.';
+        }
+
+        parent::__construct($message, 14, $previous);
     }
 }

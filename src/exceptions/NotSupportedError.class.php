@@ -6,9 +6,12 @@ namespace phpjs\exceptions;
  */
 class NotSupportedError extends DOMException
 {
-    public function __construct($aMessage = '')
+    public function __construct($message = '', $previous = null)
     {
-        $this->code = 9;
-        $this->message = $aMessage ?: 'The operation is not supported.';
+        if ($message === '') {
+            $message = 'The operation is not supported.';
+        }
+
+        parent::__construct($message, 9, $previous);
     }
 }

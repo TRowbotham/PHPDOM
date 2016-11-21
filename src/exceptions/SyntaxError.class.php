@@ -6,10 +6,12 @@ namespace phpjs\exceptions;
  */
 class SyntaxError extends DOMException
 {
-    public function __construct($aMessage = '')
+    public function __construct($message = '', $previous = null)
     {
-        $this->code = 12;
-        $this->message = $aMessage ?: 'The string did not match the expected
-            pattern.';
+        if ($message === '') {
+            $message = 'The string did not match the expected pattern.';
+        }
+
+        parent::__construct($message, 12, $previous);
     }
 }

@@ -6,8 +6,8 @@ namespace phpjs\exceptions;
  */
 class TypeError extends DOMException
 {
-    public function __construct($aMessage = '')
+    public function __construct($message = '', $previous = null)
     {
-        $this->message = $aMessage;
+        parent::__construct($message, 0, $previous);
     }
 }

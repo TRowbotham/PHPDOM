@@ -6,10 +6,13 @@ namespace phpjs\exceptions;
  */
 class InvalidNodeTypeError extends DOMException
 {
-    public function __construct($aMessage = '')
+    public function __construct($message = '', $previous = null)
     {
-        $this->code = 24;
-        $this->message = $aMessage ?: 'The supplied node is incorrect or has an
-            incorrect ancestor for this operation.';
+        if ($message === '') {
+            $message = 'The supplied node is incorrect or has an incorrect ' .
+                'ancestor for this operation.';
+        }
+
+        parent::__construct($message, 24, $previous);
     }
 }

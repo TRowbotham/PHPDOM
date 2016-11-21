@@ -6,9 +6,12 @@ namespace phpjs\exceptions;
  */
 class InvalidStateError extends DOMException
 {
-    public function __construct($aMessage = '')
+    public function __construct($message = '', $previous = null)
     {
-        $this->code = 11;
-        $this->message = $aMessage ?: 'This object is in an invalid state';
+        if ($message === '') {
+            $message = 'This object is in an invalid state.';
+        }
+
+        parent::__construct($message, 11, $previous);
     }
 }

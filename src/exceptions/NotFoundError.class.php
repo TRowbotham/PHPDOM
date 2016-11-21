@@ -6,9 +6,12 @@ namespace phpjs\exceptions;
  */
 class NotFoundError extends DOMException
 {
-    public function __construct($aMessage = '')
+    public function __construct($message = '', $previous = null)
     {
-        $this->code = 8;
-        $this->message = $aMessage ?: 'The object can not be found here.';
+        if ($message === '') {
+            $message = 'The object can not be found here.';
+        }
+
+        parent::__construct($message, 8, $previous);
     }
 }
