@@ -20,7 +20,7 @@ use phpjs\NonDocumentTypeChildNode;
 use phpjs\ParentNode;
 use phpjs\Text;
 use phpjs\TreeWalker;
-use phpjs\urls\URLInternal;
+use phpjs\urls\URLRecord;
 use phpjs\Utils;
 
 /**
@@ -773,7 +773,7 @@ class Element extends Node implements AttributeChangeObserver
             // object's API base URL.
         }
 
-        $urlRecord = URLInternal::URLParser(
+        $urlRecord = URLRecord::URLParser(
             $aUrl,
             $baseURL,
             $encoding

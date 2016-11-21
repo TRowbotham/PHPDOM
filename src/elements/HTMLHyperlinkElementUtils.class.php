@@ -2,7 +2,7 @@
 namespace phpjs\elements;
 
 use phpjs\urls\HostFactory;
-use phpjs\urls\URLInternal;
+use phpjs\urls\URLRecord;
 
 /**
  * @see https://html.spec.whatwg.org/multipage/semantics.html#htmlhyperlinkelementutils
@@ -117,12 +117,12 @@ trait HTMLHyperlinkElementUtils
             return;
         }
 
-        URLInternal::basicURLParser(
+        URLRecord::basicURLParser(
             $aValue . ':',
             null,
             null,
             $this->mUrl,
-            URLInternal::SCHEME_START_STATE
+            URLRecord::SCHEME_START_STATE
         );
         $this->mAttributesList->setAttrValue(
             $this,
@@ -164,7 +164,7 @@ trait HTMLHyperlinkElementUtils
         $this->reinitialiseUrl();
         $isInvalidURL = $this->mUrl === null ||
             $this->mUrl->getHost() === null ||
-            $this->mUrl->isFlagSet(URLInternal::FLAG_CANNOT_BE_A_BASE_URL);
+            $this->mUrl->isFlagSet(URLRecord::FLAG_CANNOT_BE_A_BASE_URL);
 
         if ($isInvalidURL) {
             return;
@@ -213,7 +213,7 @@ trait HTMLHyperlinkElementUtils
         $this->reinitialiseUrl();
         $isInvalidURL = $this->mUrl === null ||
             $this->mUrl->getHost() === null ||
-            $this->mUrl->isFlagSet(URLInternal::FLAG_CANNOT_BE_A_BASE_URL);
+            $this->mUrl->isFlagSet(URLRecord::FLAG_CANNOT_BE_A_BASE_URL);
 
         if ($isInvalidURL) {
             return;
@@ -265,18 +265,18 @@ trait HTMLHyperlinkElementUtils
     {
         $this->reinitialiseUrl();
         $isInvalidURL = $this->mUrl === null ||
-            $this->mUrl->isFlagSet(URLInternal::FLAG_CANNOT_BE_A_BASE_URL);
+            $this->mUrl->isFlagSet(URLRecord::FLAG_CANNOT_BE_A_BASE_URL);
 
         if ($isInvalidURL) {
             return;
         }
 
-        URLInternal::basicURLParser(
+        URLRecord::basicURLParser(
             $aValue,
             null,
             null,
             $this->mUrl,
-            URLInternal::HOST_STATE
+            URLRecord::HOST_STATE
         );
         $this->mAttributesList->setAttrValue(
             $this,
@@ -317,18 +317,18 @@ trait HTMLHyperlinkElementUtils
     {
         $this->reinitialiseUrl();
         $isInvalidURL = $this->mUrl === null ||
-            $this->mUrl->isFlagSet(URLInternal::FLAG_CANNOT_BE_A_BASE_URL);
+            $this->mUrl->isFlagSet(URLRecord::FLAG_CANNOT_BE_A_BASE_URL);
 
         if ($isInvalidURL) {
             return;
         }
 
-        URLInternal::basicURLParser(
+        URLRecord::basicURLParser(
             $aValue,
             null,
             null,
             $this->mUrl,
-            URLInternal::HOSTNAME_STATE
+            URLRecord::HOSTNAME_STATE
         );
         $this->mAttributesList->setAttrValue(
             $this,
@@ -370,7 +370,7 @@ trait HTMLHyperlinkElementUtils
         $this->reinitialiseUrl();
         $isInvalidURL = $this->mUrl === null ||
             $this->mUrl->getHost() === null ||
-            $this->mUrl->isFlagSet(URLInternal::FLAG_CANNOT_BE_A_BASE_URL) ||
+            $this->mUrl->isFlagSet(URLRecord::FLAG_CANNOT_BE_A_BASE_URL) ||
             $this->mUrl->getScheme() === 'file';
 
         if ($isInvalidURL) {
@@ -380,12 +380,12 @@ trait HTMLHyperlinkElementUtils
         if ($aValue === '') {
             $this->mUrl->setPort(null);
         } else {
-            URLInternal::basicURLParser(
+            URLRecord::basicURLParser(
                 $aValue,
                 null,
                 null,
                 $this->mUrl,
-                URLInternal::PORT_STATE
+                URLRecord::PORT_STATE
             );
         }
 
@@ -413,7 +413,7 @@ trait HTMLHyperlinkElementUtils
             return '';
         }
 
-        if ($this->mUrl->isFlagSet(URLInternal::FLAG_CANNOT_BE_A_BASE_URL)) {
+        if ($this->mUrl->isFlagSet(URLRecord::FLAG_CANNOT_BE_A_BASE_URL)) {
             return $this->mUrl->getPath()[0];
         }
 
@@ -442,19 +442,19 @@ trait HTMLHyperlinkElementUtils
     {
         $this->reinitialiseUrl();
         $isInvalidURL = $this->mUrl === null ||
-            $this->mUrl->isFlagSet(URLInternal::FLAG_CANNOT_BE_A_BASE_URL);
+            $this->mUrl->isFlagSet(URLRecord::FLAG_CANNOT_BE_A_BASE_URL);
 
         if ($isInvalidURL) {
             return;
         }
 
         $this->mUrl->setPath(new \SplDoublyLinkedList());
-        URLInternal::basicURLParser(
+        URLRecord::basicURLParser(
             $aValue,
             null,
             null,
             $this->mUrl,
-            URLInternal::PATH_START_STATE
+            URLRecord::PATH_START_STATE
         );
         $this->mAttributesList->setAttrValue(
             $this,
@@ -511,12 +511,12 @@ trait HTMLHyperlinkElementUtils
             }
 
             $this->mUrl->setQuery('');
-            URLInternal::basicURLParser(
+            URLRecord::basicURLParser(
                 $input,
                 null,
                 $this->mOwnerDocument->characterSet,
                 $this->mUrl,
-                URLInternal::QUERY_STATE
+                URLRecord::QUERY_STATE
             );
         }
 
@@ -576,12 +576,12 @@ trait HTMLHyperlinkElementUtils
             }
 
             $this->mUrl->setFragment('');
-            URLInternal::basicURLParser(
+            URLRecord::basicURLParser(
                 $input,
                 null,
                 null,
                 $this->mUrl,
-                URLInternal::FRAGMENT_STATE
+                URLRecord::FRAGMENT_STATE
             );
         }
 
@@ -602,7 +602,7 @@ trait HTMLHyperlinkElementUtils
     protected function reinitialiseUrl()
     {
         $shouldTerminate = $this->mUrl && $this->mUrl->getScheme() === 'blob' &&
-            $this->mUrl->isFlagSet(URLInternal::FLAG_CANNOT_BE_A_BASE_URL);
+            $this->mUrl->isFlagSet(URLRecord::FLAG_CANNOT_BE_A_BASE_URL);
 
         if ($shouldTerminate) {
             // Terminate these steps

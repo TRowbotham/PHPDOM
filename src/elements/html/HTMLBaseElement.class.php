@@ -2,7 +2,7 @@
 namespace phpjs\elements\html;
 
 use phpjs\elements\Element;
-use phpjs\urls\URLInternal;
+use phpjs\urls\URLRecord;
 
 /**
  * @see https://html.spec.whatwg.org/multipage/semantics.html#the-base-element
@@ -32,7 +32,7 @@ class HTMLBaseElement extends HTMLElement
                     'href',
                     null
                 );
-                $urlRecord = URLInternal::URLParser(
+                $urlRecord = URLRecord::URLParser(
                     $url,
                     $document->getFallbackBaseURL(),
                     $document->characterSet
@@ -79,7 +79,7 @@ class HTMLBaseElement extends HTMLElement
      *
      * @internal
      *
-     * @return URLInternal
+     * @return URLRecord
      */
     public function getFrozenBaseURL()
     {
@@ -144,7 +144,7 @@ class HTMLBaseElement extends HTMLElement
         // href content attribute.
         if ($href !== null) {
             // Parse the Element's href attribute.
-            $urlRecord = URLInternal::URLParser(
+            $urlRecord = URLRecord::URLParser(
                 $href,
                 $fallbackBaseURL,
                 $document->characterSet
