@@ -1,6 +1,7 @@
 <?php
 namespace phpjs;
 
+use phpjs\elements\Element;
 use phpjs\exceptions\DOMException;
 use phpjs\exceptions\NamespaceError;
 use phpjs\exceptions\InvalidCharacterError;
@@ -99,26 +100,28 @@ class Namespaces
      *
      * @see https://dom.spec.whatwg.org/#locate-a-namespace-prefix
      *
-     * @param Node $aNode Those node whose prefix is to be found.
+     * @param Element      $element   Those element whose prefix is to be found.
      *
-     * @param string|null  $aNamespace The namespace of the prefix to be found.
+     * @param string|null  $namespace The namespace of the prefix to be found.
      *
      * @return string|null
      */
-    public static function locatePrefix(Node $aNode, $aNamespace)
+    public static function locatePrefix(Element $element, $namespace)
     {
-        if ($aNode->namespaceURI === $aNamespace && !$aNode->prefix) {
-            return $aNode->prefix;
+        if ($element->namespaceURI === $aNamespace &&
+            ($prefix = $element->prefix) !== null
+        ) {
+            return $prefix;
         }
 
-        foreach ($aNode->attribtues as $attr) {
-            if ($attr->prefix === 'xmlns' && $attr->value === $aNamespace) {
+        foreach ($element->getAttributeList() as $attr) {
+            if ($attr->prefix === 'xmlns' && $attr->value === $namespace) {
                 return $attr->localName;
             }
         }
 
-        if ($aNode->parentElement) {
-            return self::locatePrefix($aNode->parentElement, $aNamespace);
+        if (($parentElement = $element->parentElement) !== null) {
+            return self::locatePrefix($parentElement, $namespace);
         }
 
         return null;
