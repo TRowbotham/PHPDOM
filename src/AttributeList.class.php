@@ -5,55 +5,23 @@ use phpjs\Attr;
 use phpjs\AttributeChangeObserver;
 use phpjs\elements\Element;
 use phpjs\exceptions\InUseAttributeError;
+use phpjs\exceptions\TypeError;
 use phpjs\HTMLDocument;
 use phpjs\Namespaces;
+use phpjs\support\OrderedSet;
+use SplObjectStorage;
 
-class AttributeList implements \ArrayAccess, \Countable, \Iterator
+class AttributeList extends OrderedSet
 {
-    protected $mList;
-    protected $mObservers;
-    protected $mPosition;
+    private $element;
+    private $observers;
 
-    public function __construct()
+    public function __construct(Element $element)
     {
-        $this->mList = [];
-        $this->mObservers = new \SplObjectStorage();
-        $this->mPosition = 0;
-    }
+        parent::__construct();
 
-    public function __destruct()
-    {
-        $this->mList = null;
-        $this->mObservers = null;
-    }
-
-    /**
-     * Appends an attribute to the list of attributes.
-     *
-     * @see https://dom.spec.whatwg.org/#concept-element-attributes-append
-     *
-     * @param Attr $aAttr The attribute to be appended.
-     *
-     * @param Element $aElement The element that owns the list.
-     */
-    public function appendAttr(Attr $aAttr, Element $aElement)
-    {
-        // TODO: Queue a mutation record of "attributes" for element with name
-        // attribute’s local name, namespace attribute’s namespace, and
-        // oldValue null.
-
-        foreach ($this->mObservers as $observer) {
-            $observer->onAttributeChanged(
-                $aElement,
-                $aAttr->localName,
-                null,
-                $aAttr->value,
-                $aAttr->namespaceURI
-            );
-        }
-
-        $this->mList[] = $aAttr;
-        $aAttr->setOwnerElement($aElement);
+        $this->element = $element;
+        $this->observers = new SplObjectStorage();
     }
 
     /**
@@ -61,61 +29,126 @@ class AttributeList implements \ArrayAccess, \Countable, \Iterator
      *
      * @see https://dom.spec.whatwg.org/#concept-element-attributes-change
      *
-     * @param Attr $aAttr The attribute whose value is to be changed.
+     * @param Attr   $attribute The attribute whose value is to be changed.
      *
-     * @param Element $aElement The element that owns the list.
-     *
-     * @param string $aValue The attribute's new value.
+     * @param string $value     The attribute's new value.
      */
-    public function changeAttr(Attr $aAttr, Element $aElement, $aValue)
+    public function change(Attr $attribute, $value)
     {
         // TODO: Queue a mutation record of "attributes" for element with name
         // attribute’s local name, namespace attribute’s namespace, and
         // oldValue attribute’s value.
 
-        foreach ($this->mObservers as $observer) {
+        foreach ($this->observers as $observer) {
             $observer->onAttributeChanged(
-                $aElement,
-                $aAttr->localName,
-                $aAttr->value,
-                $aValue,
-                $aAttr->namespaceURI
+                $this->element,
+                $attribute->localName,
+                $attribute->value,
+                $value,
+                $attribute->namespaceURI
             );
         }
 
-        $aAttr->setValue($aValue);
+        $attribute->setValue($value);
     }
 
     /**
-     * Gets the number of attributes in the list.
+     * Appends an attribute to the list of attributes.
      *
-     * @return int
+     * @see https://dom.spec.whatwg.org/#concept-element-attributes-append
+     *
+     * @param Attr $attribute The attribute to be appended.
      */
-    public function count()
+    public function append($attribute)
     {
-        return count($this->mList);
+        if (!$attribute instanceof Attr) {
+            throw new TypeError();
+            return;
+        }
+
+        // TODO: Queue a mutation record of "attributes" for element with name
+        // attribute’s local name, namespace attribute’s namespace, and
+        // oldValue null.
+
+        foreach ($this->observers as $observer) {
+            $observer->onAttributeChanged(
+                $this->element,
+                $attribute->localName,
+                null,
+                $attribute->value,
+                $attribute->namespaceURI
+            );
+        }
+
+        parent::append($attribute);
+        $attribute->setOwnerElement($this->element);
     }
 
     /**
-     * Returns the iterator's current element.
+     * Removes an attribute from the list.
      *
-     * @return string|null
+     * @see https://dom.spec.whatwg.org/#concept-element-attributes-remove
+     *
+     * @param Attr $attribute The attribute to be removed from the list.
      */
-    public function current()
+    public function remove($attribute)
     {
-        return $this->mList[$this->mPosition];
+        if (!$attribute instanceof Attr) {
+            throw new TypeError();
+            return;
+        }
+
+        // TODO: Queue a mutation record of "attributes" for element with name
+        // attribute’s local name, namespace attribute’s namespace, and
+        // oldValue attribute’s value.
+
+        foreach ($this->observers as $observer) {
+            $observer->onAttributeChanged(
+                $this->element,
+                $attribute->localName,
+                $attribute->value,
+                null,
+                $attribute->namespaceURI
+            );
+        }
+
+        parent::remove($attribute);
+        $attribute->setOwnerElement(null);
     }
 
     /**
-     * Returns true if the given attribute is in the list.
+     * Replaces and attribute with another attribute.
      *
-     * @param Attr $aAttr The attribute to find.
+     * @see https://dom.spec.whatwg.org/#concept-element-attributes-replace
      *
-     * @return bool
+     * @param Attr $oldAttr The attribute being removed from the list.
+     *
+     * @param Attr $newAttr The attribute being inserted into the list.
      */
-    public function hasAttr(Attr $aAttr)
+    public function replace($oldAttr, $newAttr)
     {
-        return array_search($aAttr, $this->mList, true) !== false;
+        if (!$oldAttr instanceof Attr || !$newAttr instanceof Attr) {
+            throw new TypeError();
+            return;
+        }
+
+        // TODO: Queue a mutation record of "attributes" for element with name
+        // oldAttr’s local name, namespace oldAttr’s namespace, and oldValue
+        // oldAttr’s value.
+
+        foreach ($this->observers as $observer) {
+            $observer->onAttributeChanged(
+                $this->element,
+                $oldAttr->localName,
+                $oldAttr->value,
+                $newAttr->value,
+                $oldAttr->namespaceURI
+            );
+        }
+
+        parent::replace($oldAttr, $newAttr);
+        $oldAttr->setOwnerElement(null);
+        $newAttr->setOwnerElement($this->element);
     }
 
     /**
@@ -123,27 +156,22 @@ class AttributeList implements \ArrayAccess, \Countable, \Iterator
      *
      * @see https://dom.spec.whatwg.org/#concept-element-attributes-get-by-name
      *
-     * @param string $aQualifiedName The fully qualified name of the attribute
+     * @param string $qualifiedName The fully qualified name of the attribute
      *     to find.
-     *
-     * @param Element $aElement The element that owns the list.
      *
      * @return Attr|null
      */
-    public function getAttrByName($aQualifiedName, Element $aElement)
+    public function getAttrByName($qualifiedName)
     {
-        if (
-            $aElement->namespaceURI === Namespaces::HTML &&
-            $aElement->ownerDocument instanceof HTMLDocument
+        if ($this->element->namespaceURI === Namespaces::HTML &&
+            $this->element->ownerDocument instanceof HTMLDocument
         ) {
-            $qualifiedName = Utils::toASCIILowercase($aQualifiedName);
-        } else {
-            $qualifiedName = $aQualifiedName;
+            $qualifiedName = Utils::toASCIILowercase($qualifiedName);
         }
 
-        foreach ($this->mList as $attr) {
-            if ($attr->name === $qualifiedName) {
-                return $attr;
+        foreach ($this as $attribute) {
+            if ($attribute->name === $qualifiedName) {
+                return $attribute;
             }
         }
 
@@ -155,31 +183,25 @@ class AttributeList implements \ArrayAccess, \Countable, \Iterator
      *
      * @see https://dom.spec.whatwg.org/#concept-element-attributes-get-by-namespace
      *
-     * @param string $aNamespace The namespace of the attribute to find.
+     * @param string  $namespace The namespace of the attribute to find.
      *
-     * @param string $aLocalName The local name of the attribute to find.
-     *
-     * @param  Element $aElement The element that owns the list.
+     * @param string  $localName The local name of the attribute to find.
      *
      * @return Attr|null
      */
     public function getAttrByNamespaceAndLocalName(
-        $aNamespace,
-        $aLocalName,
-        Element $aElement
+        $namespace,
+        $localName
     ) {
-        if (is_string($aNamespace) && empty($aNamespace)) {
+        if ($namespace === '') {
             $namespace = null;
-        } else {
-            $namespace = $aNamespace;
         }
 
-        foreach ($this->mList as $attr) {
-            if (
-                $attr->namespaceURI === $namespace &&
-                $attr->localName === $aLocalName
+        foreach ($this as $attribute) {
+            if ($attribute->namespaceURI === $namespace &&
+                $attribute->localName === $localName
             ) {
-                return $attr;
+                return $attribute;
             }
         }
 
@@ -191,118 +213,107 @@ class AttributeList implements \ArrayAccess, \Countable, \Iterator
      *
      * @see https://dom.spec.whatwg.org/#concept-element-attributes-get-value
      *
-     * @param Element $aElement The element that owns the list.
-     *
-     * @param string $aLocalName The local name of the attribute whose value is
+     * @param string  $localName The local name of the attribute whose value is
      *     to be returned.
      *
-     * @param string $aNamespace The namespace of the attribute whose value is
+     * @param string  $namespace The namespace of the attribute whose value is
      *     to be returned.
      *
      * @return string
      */
     public function getAttrValue(
-        Element $aElement,
-        $aLocalName,
-        $aNamespace = null
+        $localName,
+        $namespace = null
     ) {
         $attr = $this->getAttrByNamespaceAndLocalName(
-            $aNamespace,
-            $aLocalName,
-            $aElement
+            $namespace,
+            $localName
         );
 
-        return $attr ? $attr->value : '';
-    }
-
-    /**
-     * Returns the iterator's current pointer.
-     *
-     * @return int
-     */
-    public function key()
-    {
-        return $this->mPosition;
-    }
-
-    /**
-     * Advances the iterator's pointer by 1.
-     */
-    public function next()
-    {
-        $this->mPosition++;
-    }
-
-    /**
-     * Used with isset() to check if a specific index exists.
-     *
-     * @param int $aIndex An integer index.
-     *
-     * @return bool Returns true if an attribute exits at the specified index,
-     *     otherwise, return false.
-     */
-    public function offsetExists($aIndex)
-    {
-        return isset($this->mList[$aIndex]);
-    }
-
-    /**
-     * Returns the attribute at the specified index.
-     *
-     * @param int $aIndex An integer index.
-     *
-     * @return string The attribute at the specified index or null if the index
-     *     does not exist.
-     */
-    public function offsetGet($aIndex)
-    {
-        return isset($this->mList[$aIndex]) ? $this->mList[$aIndex] : null;
-    }
-
-    /**
-     * Setting an attribute using array notation is not permitted.
-     */
-    public function offsetSet($aIndex, $aValue)
-    {
-
-    }
-
-    /**
-     * Unsetting an attribute using array notation is not permitted.
-     */
-    public function offsetUnset($aIndex)
-    {
-
-    }
-
-    /**
-     * Removes an attribute from the list.
-     *
-     * @see https://dom.spec.whatwg.org/#concept-element-attributes-remove
-     *
-     * @param Attr $aAttr The attribute to be removed from the list.
-     *
-     * @param Element $aElement The element that owns the list.
-     */
-    public function removeAttr(Attr $aAttr, Element $aElement)
-    {
-        // TODO: Queue a mutation record of "attributes" for element with name
-        // attribute’s local name, namespace attribute’s namespace, and
-        // oldValue attribute’s value.
-
-        foreach ($this->mObservers as $observer) {
-            $observer->onAttributeChanged(
-                $aElement,
-                $aAttr->localName,
-                $aAttr->value,
-                null,
-                $aAttr->namespaceURI
-            );
+        if ($attr === null) {
+            return '';
         }
 
-        $index = array_search($aAttr, $this->mList, true);
-        array_splice($this->mList, $index, 1);
-        $aAttr->setOwnerElement(null);
+        return $attr->value;
+    }
+
+    /**
+     * Sets an attribute on an element.
+     *
+     * @see https://dom.spec.whatwg.org/#concept-element-attributes-set
+     *
+     * @param Attr $attr The attribute to be set on an element.
+     *
+     * @return Attr|null
+     *
+     * @throws InUseAttributeError If the attribute's owning element is not null
+     *     and not an element.
+     */
+    public function setAttr(Attr $attr)
+    {
+        $owner = $attr->ownerElement;
+
+        if ($owner !== null && $owner !== $this->element) {
+            throw new InUseAttributeError();
+            return;
+        }
+
+        $oldAttr = $this->getAttrByNamespaceAndLocalName(
+            $attr->namespace,
+            $attr->localName
+        );
+
+        if ($oldAttr === $attr) {
+            return $attr;
+        }
+
+        if ($oldAttr !== null) {
+            $this->replace($oldAttr, $attr);
+
+            return $oldAttr;
+        }
+
+        $this->append($attr);
+
+        return $oldAttr;
+    }
+
+    /**
+     * Sets the attributes value.
+     *
+     * @see https://dom.spec.whatwg.org/#concept-element-attributes-set-value
+     *
+     * @param string      $localName The local name of the attribute whose value
+     *     is to be set.
+     *
+     * @param string      $value     The value of the attribute whose value is
+     *     to be set.
+     *
+     * @param string|null $prefix    Optional. The namespace prefix of the
+     *     attribute whose value is to be set.
+     *
+     * @param string|null $namespace Optional. The namespace of the attribute
+     *     whose value is to be set.
+     */
+    public function setAttrValue(
+        $localName,
+        $value,
+        $prefix = null,
+        $namespace = null
+    ) {
+        $attribute = $this->getAttrByNamespaceAndLocalName(
+            $namespace,
+            $localName
+        );
+
+        if ($attribute === null) {
+            $attribute = new Attr($localName, $value, $namespace, $prefix);
+            $attribute->setOwnerDocument($this->element->ownerDocument);
+            $this->append($attribute);
+            return;
+        }
+
+        $this->change($attribute, $value);
     }
 
     /**
@@ -311,19 +322,17 @@ class AttributeList implements \ArrayAccess, \Countable, \Iterator
      *
      * @see https://dom.spec.whatwg.org/#concept-element-attributes-remove-by-name
      *
-     * @param string $aQualifiedName The fully qualified name of the attribute
+     * @param string $qualifiedName The fully qualified name of the attribute
      *     to be removed.
-     *
-     * @param Element $aElement The element that owns the list.
      *
      * @return Attr|null
      */
-    public function removeAttrByName($aQualifiedName, Element $aElement)
+    public function removeAttrByName($qualifiedName)
     {
-        $attr = $this->getAttrByName($aQualifiedName, $aElement);
+        $attr = $this->getAttrByName($qualifiedName);
 
-        if ($attr) {
-            $this->removeAttr($attr, $aElement);
+        if ($attr !== null) {
+            $this->remove($attr);
         }
 
         return $attr;
@@ -334,178 +343,34 @@ class AttributeList implements \ArrayAccess, \Countable, \Iterator
      *
      * @see https://dom.spec.whatwg.org/#concept-element-attributes-remove-by-namespace
      *
-     * @param string $aNamespace The namespace of the attribute to be removed.
+     * @param string $namespace The namespace of the attribute to be removed.
      *
-     * @param string $aLocalName The local name of the attribute to be removed.
-     *
-     * @param Element $aElement The element that owns the list.
+     * @param string $localName The local name of the attribute to be removed.
      *
      * @return Attr|null
      */
     public function removeAttrByNamespaceAndLocalName(
-        $aNamespace,
-        $aLocalName,
-        Element $aElement
+        $namespace,
+        $localName
     ) {
-        $attr = $this->getAttrByNamespaceAndLocalName(
-            $aNamespace,
-            $aLocalName,
-            $aElement
-        );
+        $attr = $this->getAttrByNamespaceAndLocalName($namespace, $localName);
 
-        if ($attr) {
-            $this->removeAttr($attr, $aElement);
+        if ($attr !== null) {
+            $this->remove($attr);
         }
 
         return $attr;
     }
 
-    /**
-     * Replaces and attribute with another attribute.
-     *
-     * @see https://dom.spec.whatwg.org/#concept-element-attributes-replace
-     *
-     * @param Attr $aOldAttr The attribute being removed from the list.
-     *
-     * @param Attr $aNewAttr The attribute being inserted into the list.
-     *
-     * @param Element $aElement The element that owns the list.
-     */
-    public function replaceAttr(
-        Attr $aOldAttr,
-        Attr $aNewAttr,
-        Element $aElement
-    ) {
-        // TODO: Queue a mutation record of "attributes" for element with name
-        // oldAttr’s local name, namespace oldAttr’s namespace, and oldValue
-        // oldAttr’s value.
-
-        foreach ($this->mObservers as $observer) {
-            $observer->onAttributeChanged(
-                $aElement,
-                $aOldAttr->localName,
-                $aOldAttr->value,
-                $aNewAttr->value,
-                $aOldAttr->namespaceURI
-            );
-        }
-
-        $index = array_search($aOldAttr, $this->mList);
-        array_splice($this->mList, $index, 1, [$aNewAttr]);
-        $aOldAttr->setOwnerElement(null);
-        $aNewAttr->setOwnerElement($aElement);
-    }
-
-    /**
-     * Rewinds the iterator's pointer back to the start.
-     */
-    public function rewind()
+    public function observe(AttributeChangeObserver $observer)
     {
-        $this->mPosition = 0;
+        if (!$this->observers->contains($observer)) {
+            $this->observers->attach($observer);
+        }
     }
 
-    /**
-     * Sets an attribute on an element.
-     *
-     * @see https://dom.spec.whatwg.org/#concept-element-attributes-set
-     *
-     * @param Attr $aAttr The attribute to be set on an element.
-     *
-     * @param Element $aElement The element that owns the list.
-     *
-     * @return Attr|null
-     *
-     * @throws InUseAttributeError If the attribute's owning element is not null
-     *     and not an element.
-     */
-    public function setAttr(Attr $aAttr, Element $aElement)
+    public function unobserve(AttributeChangeObserver $observer)
     {
-        $owner = $aAttr->ownerElement;
-
-        if ($owner && !($owner instanceof Element)) {
-            throw new InUseAttributeError();
-        }
-
-        $oldAttr = $this->getAttrByNamespaceAndLocalName(
-            $aAttr->namespaceURI,
-            $aAttr->localName,
-            $aElement
-        );
-
-        if ($oldAttr === $aAttr) {
-            return $aAttr;
-        }
-
-        if ($oldAttr) {
-            $this->replaceAttr($oldAttr, $aAttr, $aElement);
-        } else {
-            $this->appendAttr($aAttr, $aElement);
-        }
-
-        return $oldAttr;
-    }
-
-    /**
-     * Sets the attributes value.
-     *
-     * @see https://dom.spec.whatwg.org/#concept-element-attributes-set-value
-     *
-     * @param Element $aElement The element that owns the list.
-     *
-     * @param string $aLocalName The local name of the attribute whose value is
-     *     to be set.
-     *
-     * @param string $aValue The value of the attribute whose value is to be
-     *     set.
-     *
-     * @param string|null $aPrefix Optional. The namespace prefix of the
-     *     attribute whose value is to be set.
-     *
-     * @param string|null $aNamespace Optional. The namespace of the attribute
-     *     whose value is to be set.
-     */
-    public function setAttrValue(
-        Element $aElement,
-        $aLocalName,
-        $aValue,
-        $aPrefix = null,
-        $aNamespace = null
-    ) {
-        $attr = $this->getAttrByNamespaceAndLocalName(
-            $aNamespace,
-            $aLocalName,
-            $aElement
-        );
-
-        if (!$attr) {
-            $attr = new Attr($aLocalName, $aValue, $aNamespace, $aPrefix);
-            $attr->setOwnerDocument($aElement->ownerDocument);
-            $this->appendAttr($attr, $aElement);
-            return;
-        }
-
-        $this->changeAttr($attr, $aElement, $aValue);
-    }
-
-    /**
-     * Checks if the iterator's current pointer points to a valid position.
-     *
-     * @return bool
-     */
-    public function valid()
-    {
-        return isset($this->mList[$this->mPosition]);
-    }
-
-    public function observe(AttributeChangeObserver $aObserver)
-    {
-        if (!$this->mObservers->contains($aObserver)) {
-            $this->mObservers->attach($aObserver);
-        }
-    }
-
-    public function unobserve(AttributeChangeObserver $aObserver)
-    {
-        $this->mObservers->detach($aObserver);
+        $this->observers->detach($observer);
     }
 }
