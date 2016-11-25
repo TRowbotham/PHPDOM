@@ -7,10 +7,12 @@ spl_autoload_register(function ($className) {
     if ($path_parts[0] === 'phpjs') {
         array_shift($path_parts);
         $file = PHPJS_BASE_DIR . DIRECTORY_SEPARATOR .
-            implode(DIRECTORY_SEPARATOR, $path_parts) . '.class.php';
+            implode(DIRECTORY_SEPARATOR, $path_parts);
 
-        if (file_exists($file)) {
-            require $file;
+        if (file_exists($file . '.class.php')) {
+            require $file . '.class.php';
+        } elseif (file_exists($file . '.php')) {
+            require $file . '.php';
         }
     }
 });
