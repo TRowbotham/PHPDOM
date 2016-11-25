@@ -48,7 +48,7 @@ class Element extends Node implements AttributeChangeObserver
         $this->mAttributesList = new AttributeList($this);
         $this->mClassList = new DOMTokenList($this, 'class');
         $this->mLocalName = '';
-        $this->mNamedNodeMap = new NamedNodeMap($this, $this->mAttributesList);
+        $this->mNamedNodeMap = new NamedNodeMap($this);
         $this->mNamespaceURI = null;
         $this->mNodeType = self::ELEMENT_NODE;
         $this->mPrefix = null;

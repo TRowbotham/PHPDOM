@@ -18,88 +18,68 @@ use phpjs\exceptions\NotFoundError;
  */
 class NamedNodeMap implements ArrayAccess, Countable, Iterator
 {
-    private $mAttributesList;
-    private $mOwnerElement;
-    private $mPosition;
+    private $element;
 
-    public function __construct(
-        Element $aOwnerElement,
-        AttributeList $aAttributesList
-    ) {
-        $this->mAttributesList = $aAttributesList;
-        $this->mOwnerElement = $aOwnerElement;
-        $this->mPosition = 0;
+    public function __construct(Element $element)
+    {
+        $this->element = $element;
     }
 
     public function __destruct()
     {
-        $this->mAttributesList = null;
-        $this->mOwnerElement = null;
+        $this->element = null;
     }
 
-    public function __get($aName)
+    public function __get($name)
     {
-        switch ($aName) {
+        switch ($name) {
             case 'length':
-                return $this->mAttributesList->count();
+                return $this->element->getAttributeList()->count();
         }
     }
 
-    public function item($aIndex)
+    public function item($index)
     {
-        if ($aIndex >= $this->mAttributesList->count()) {
-            return null;
-        }
-
-        return $this->mAttributesList[$aIndex];
+        return $this->element->getAttribtueList()->offsetGet($index);
     }
 
-    public function getNamedItem($aName)
+    public function getNamedItem($qualifiedName)
     {
-        return $this->mAttributesList->getAttrByName(
-            Utils::DOMString($aName),
-            $this->mOwnerElement
+        return $this->element->getAttributeList()->getAttrByName(
+            Utils::DOMString($qualifiedName)
         );
     }
 
-    public function getNamedItemNS($aNamespace, $aLocalName)
+    public function getNamedItemNS($namespace, $localName)
     {
-        return $this->mAttributesList->getAttrByNamespaceAndLocalName(
-            Utils::DOMString($aNamespace, false, true),
-            Utils::DOMString($aLocalName),
-            $this->mOwnerElement
+        return $this->element->getAttributeList()->getAttrByNamespaceAndLocalName(
+            Utils::DOMString($namespace, false, true),
+            Utils::DOMString($localName)
         );
     }
 
-    public function setNamedItem(Attr $aAttr)
+    public function setNamedItem(Attr $attr)
     {
         try {
-            return $this->mAttributesList->setAttr(
-                $aAttr,
-                $this->mOwnerElement
-            );
+            return $this->element->getAttributeList()->setAttr($attr);
         } catch (DOMException $e) {
             throw $e;
         }
     }
 
-    public function setNamedItemNS(Attr $aAttr)
+    public function setNamedItemNS(Attr $attr)
     {
         try {
-            return $this->mAttributesList->setAttr(
-                $aAttr,
-                $this->mOwnerElement
-            );
+            return $this->element->getAttributeList()->setAttr($attr);
         } catch (DOMException $e) {
             throw $e;
         }
     }
 
-    public function removeNamedItem($aName)
+    public function removeNamedItem($qualifiedName)
     {
-        $attr = $this->mAttributesList->removeAttrByName(
-            Utils::DOMString($aName),
-            $this->mOwnerElement
+        $attr = $this->element->getAttributeList()->removeAttrByName(
+            Utils::DOMString($qualifiedName)
         );
 
         if (!$attr) {
@@ -109,12 +89,11 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
         return $attr;
     }
 
-    public function removeNamedItemNS($aNamespace, $aLocalName)
+    public function removeNamedItemNS($namespace, $localName)
     {
-        $attr = $this->mAttributesList->removeAttrByNamespaceAndLocalName(
-            Utils::DOMString($aNamespace, false, true),
-            Utils::DOMString($aLocalName),
-            $this->mOwnerElement
+        $attr = $this->element->getAttributeList()->removeAttrByNamespaceAndLocalName(
+            Utils::DOMString($namespace, false, true),
+            Utils::DOMString($localName)
         );
 
         if (!$attr) {
@@ -124,53 +103,53 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
         return $attr;
     }
 
-    public function offsetGet($aOffset)
+    public function offsetExists($offset)
     {
-        return $this->mAttributesList->offsetGet($aOffset);
+        return $this->element->getAttributeList()->offsetExists($offset);
     }
 
-    public function offsetExists($aOffset)
+    public function offsetGet($offset)
     {
-        return $this->mAttributesList->offsetExists($aOffset);
+        return $this->element->getAttributeList()->offsetGet($offset);
     }
 
-    public function offsetSet($aOffset, $aValue)
+    public function offsetSet($offset, $attr)
     {
         // Do nothing.
     }
 
-    public function offsetUnset($aOffset)
+    public function offsetUnset($offset)
     {
         // Do nothing.
     }
 
     public function count()
     {
-        return $this->mAttributesList->count();
+        return $this->element->getAttributeList()->count();
     }
 
     public function current()
     {
-        return $this->mAttributesList[$this->mPosition];
+        return $this->element->getAttributeList()->current();
     }
 
     public function key()
     {
-        return $this->mPosition;
+        return $this->element->getAttributeList()->key();
     }
 
     public function next()
     {
-        ++$this->mPosition;
+        $this->element->getAttributeList()->next();
     }
 
     public function rewind()
     {
-        $this->mPosition = 0;
+        $this->element->getAttributeList()->rewind();
     }
 
     public function valid()
     {
-        return isset($this->mAttributesList[$this->mPosition]);
+        return $this->element->getAttributeList()->valid();
     }
 }
