@@ -1,6 +1,9 @@
 <?php
 namespace phpjs;
 
+use ArrayAccess;
+use Countable;
+use Iterator;
 use phpjs\elements\Element;
 use phpjs\exceptions\DOMException;
 use phpjs\exceptions\NotFoundError;
@@ -13,7 +16,7 @@ use phpjs\exceptions\NotFoundError;
  *
  * @property-read int $length Returns the number of attributes in the list.
  */
-class NamedNodeMap implements \ArrayAccess, \SeekableIterator, \Countable
+class NamedNodeMap implements ArrayAccess, Countable, Iterator
 {
     private $mAttributesList;
     private $mOwnerElement;
@@ -140,11 +143,6 @@ class NamedNodeMap implements \ArrayAccess, \SeekableIterator, \Countable
     public function rewind()
     {
         $this->mPosition = 0;
-    }
-
-    public function seek($aPosition)
-    {
-        $this->mPosition = $aPosition;
     }
 
     public function setNamedItem(Attr $aAttr)
