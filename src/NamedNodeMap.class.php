@@ -45,14 +45,13 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
         }
     }
 
-    public function count()
+    public function item($aIndex)
     {
-        return $this->mAttributesList->count();
-    }
+        if ($aIndex >= $this->mAttributesList->count()) {
+            return null;
+        }
 
-    public function current()
-    {
-        return $this->mAttributesList[$this->mPosition];
+        return $this->mAttributesList[$aIndex];
     }
 
     public function getNamedItem($aName)
@@ -72,43 +71,28 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
         );
     }
 
-    public function item($aIndex)
+    public function setNamedItem(Attr $aAttr)
     {
-        if ($aIndex >= $this->mAttributesList->count()) {
-            return null;
+        try {
+            return $this->mAttributesList->setAttr(
+                $aAttr,
+                $this->mOwnerElement
+            );
+        } catch (DOMException $e) {
+            throw $e;
         }
-
-        return $this->mAttributesList[$aIndex];
     }
 
-    public function key()
+    public function setNamedItemNS(Attr $aAttr)
     {
-        return $this->mPosition;
-    }
-
-    public function next()
-    {
-        ++$this->mPosition;
-    }
-
-    public function offsetSet($aOffset, $aValue)
-    {
-        // Do nothing.
-    }
-
-    public function offsetExists($aOffset)
-    {
-        return $this->mAttributesList->offsetExists($aOffset);
-    }
-
-    public function offsetUnset($aOffset)
-    {
-        // Do nothing.
-    }
-
-    public function offsetGet($aOffset)
-    {
-        return $this->mAttributesList->offsetGet($aOffset);
+        try {
+            return $this->mAttributesList->setAttr(
+                $aAttr,
+                $this->mOwnerElement
+            );
+        } catch (DOMException $e) {
+            throw $e;
+        }
     }
 
     public function removeNamedItem($aName)
@@ -140,33 +124,49 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
         return $attr;
     }
 
+    public function offsetGet($aOffset)
+    {
+        return $this->mAttributesList->offsetGet($aOffset);
+    }
+
+    public function offsetExists($aOffset)
+    {
+        return $this->mAttributesList->offsetExists($aOffset);
+    }
+
+    public function offsetSet($aOffset, $aValue)
+    {
+        // Do nothing.
+    }
+
+    public function offsetUnset($aOffset)
+    {
+        // Do nothing.
+    }
+
+    public function count()
+    {
+        return $this->mAttributesList->count();
+    }
+
+    public function current()
+    {
+        return $this->mAttributesList[$this->mPosition];
+    }
+
+    public function key()
+    {
+        return $this->mPosition;
+    }
+
+    public function next()
+    {
+        ++$this->mPosition;
+    }
+
     public function rewind()
     {
         $this->mPosition = 0;
-    }
-
-    public function setNamedItem(Attr $aAttr)
-    {
-        try {
-            return $this->mAttributesList->setAttr(
-                $aAttr,
-                $this->mOwnerElement
-            );
-        } catch (DOMException $e) {
-            throw $e;
-        }
-    }
-
-    public function setNamedItemNS(Attr $aAttr)
-    {
-        try {
-            return $this->mAttributesList->setAttr(
-                $aAttr,
-                $this->mOwnerElement
-            );
-        } catch (DOMException $e) {
-            throw $e;
-        }
     }
 
     public function valid()
