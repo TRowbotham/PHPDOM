@@ -45,7 +45,7 @@ class Element extends Node implements AttributeChangeObserver
     {
         parent::__construct();
 
-        $this->mAttributesList = new AttributeList();
+        $this->mAttributesList = new AttributeList($this);
         $this->mClassList = new DOMTokenList($this, 'class');
         $this->mLocalName = '';
         $this->mNamedNodeMap = new NamedNodeMap($this, $this->mAttributesList);
