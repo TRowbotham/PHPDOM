@@ -129,7 +129,7 @@ final class DOMImplementation
      *
      * @return HTMLDocument
      */
-    public function createHTMLDocument($aTitle = '')
+    public function createHTMLDocument($aTitle = null)
     {
         $doc = new HTMLDocument();
         $doc->_setContentType('text/html');
@@ -140,12 +140,13 @@ final class DOMImplementation
         $html = ElementFactory::create($doc, 'html', Namespaces::HTML);
         $head = ElementFactory::create($doc, 'head', Namespaces::HTML);
         $doc->appendChild($html)->appendChild($head);
-        $titleText = Utils::DOMString($aTitle);
 
-        if (is_string($titleText)) {
+        // Only create a HTMLTitleElement if the user actually provided us with
+        // a title to use.
+        if (func_num_args() > 0) {
             $title = ElementFactory::create($doc, 'title', Namespaces::HTML);
             $head->appendChild($title);
-            $text = new Text($titleText);
+            $text = new Text(Utils::DOMString($aTitle));
             $text->setOwnerDocument($doc);
             $title->appendChild($text);
         }
