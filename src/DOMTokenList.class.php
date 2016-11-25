@@ -18,33 +18,33 @@ class DOMTokenList implements
     \Countable,
     \Iterator
 {
-    protected $mAttrLocalName;
-    protected $mElement;
-    protected $mIndex;
-    protected $mLength;
-    protected $mPosition;
-    protected $mTokens;
+    protected $attrLocalName;
+    protected $element;
+    protected $index;
+    protected $length;
+    protected $position;
+    protected $tokens;
 
-    public function __construct(Element $aElement, $aAttrLocalName)
+    public function __construct(Element $element, $attrLocalName)
     {
-        $this->mAttrLocalName = $aAttrLocalName;
-        $this->mElement = $aElement;
-        $this->mIndex = [];
-        $this->mLength = 0;
-        $this->mPosition = 0;
-        $this->mTokens = [];
-        $attrList = $this->mElement->getAttributeList();
+        $this->attrLocalName = $attrLocalName;
+        $this->element = $element;
+        $this->index = [];
+        $this->length = 0;
+        $this->position = 0;
+        $this->tokens = [];
+        $attrList = $this->element->getAttributeList();
         $attrList->observe($this);
         $attr = $attrList->getAttrByNamespaceAndLocalName(
             null,
-            $this->mAttrLocalName,
-            $this->mElement
+            $this->attrLocalName,
+            $this->element
         );
         $value = $attr ? $attr->value : null;
 
         $this->onAttributeChanged(
-            $this->mElement,
-            $this->mAttrLocalName,
+            $this->element,
+            $this->attrLocalName,
             $value,
             $value,
             null
@@ -53,32 +53,33 @@ class DOMTokenList implements
 
     public function __destruct()
     {
-        $this->mElement = null;
-        $this->mIndex = null;
-        $this->mTokens = null;
+        $this->element = null;
+        $this->index = null;
+        $this->tokens = null;
     }
 
-    public function __get($aName) {
-        switch ($aName) {
+    public function __get($name)
+    {
+        switch ($name) {
             case 'length':
-                return $this->mLength;
+                return $this->length;
 
             case 'value':
-                return $this->mElement->getAttributeList()->getAttrValue(
-                    $this->mElement,
-                    $this->mAttrLocalName
+                return $this->element->getAttributeList()->getAttrValue(
+                    $this->element,
+                    $this->attrLocalName
                 );
         }
     }
 
-    public function __set($aName, $aValue)
+    public function __set($name, $value)
     {
-        switch ($aName) {
+        switch ($name) {
             case 'value':
-                $this->mElement->getAttributeList()->setAttrValue(
-                    $this->mElement,
-                    $this->mAttrLocalName,
-                    Utils::DOMString($aValue)
+                $this->element->getAttributeList()->setAttrValue(
+                    $this->element,
+                    $this->attrLocalName,
+                    Utils::DOMString($value)
                 );
         }
     }
@@ -88,18 +89,18 @@ class DOMTokenList implements
      *
      * @see https://dom.spec.whatwg.org/#dom-domtokenlist-item
      *
-     * @param int $aIndex An integer index.
+     * @param int $index An integer index.
      *
      * @return string|null The token at the specified index or null if
      *     the index does not exist.
      */
-    public function item($aIndex)
+    public function item($index)
     {
-        if ($aIndex >= $this->mLength) {
+        if ($index >= $this->length) {
             return null;
         }
 
-        return isset($this->mIndex[$aIndex]) ? $this->mIndex[$aIndex] : null;
+        return isset($this->index[$index]) ? $this->index[$index] : null;
     }
 
     /**
@@ -108,16 +109,16 @@ class DOMTokenList implements
      *
      * @see https://dom.spec.whatwg.org/#dom-domtokenlist-add
      *
-     * @param string ...$aTokens One or more tokens to be added to the token
+     * @param string ...$tokens One or more tokens to be added to the token
      *     list.
      *
      * @throws SyntaxError If the token is an empty string.
      *
      * @throws InvalidCharacterError If the token contains ASCII whitespace.
      */
-    public function add(...$aTokens)
+    public function add(...$tokens)
     {
-        foreach ($aTokens as &$token) {
+        foreach ($tokens as &$token) {
             $token = Utils::DOMString($token);
 
             if ($token === '') {
@@ -129,17 +130,17 @@ class DOMTokenList implements
             }
         }
 
-        foreach ($aTokens as $token) {
-            if (!isset($this->mTokens[$token])) {
-                $this->mIndex[] = $token;
-                $this->mTokens[$token] = $this->mLength++;
+        foreach ($tokens as $token) {
+            if (!isset($this->tokens[$token])) {
+                $this->index[] = $token;
+                $this->tokens[$token] = $this->length++;
             }
         }
 
-        $this->mElement->getAttributeList()->setAttrValue(
-            $this->mElement,
-            $this->mAttrLocalName,
-            Utils::serializeOrderedSet($this->mIndex)
+        $this->element->getAttributeList()->setAttrValue(
+            $this->element,
+            $this->attrLocalName,
+            Utils::serializeOrderedSet($this->index)
         );
     }
 
@@ -148,7 +149,7 @@ class DOMTokenList implements
      *
      * @see https://dom.spec.whatwg.org/#dom-domtokenlist-contains
      *
-     * @param string $aToken A token to check against the token list.
+     * @param string $token A token to check against the token list.
      *
      * @return bool Returns true if the token is present, and false otherwise.
      *
@@ -156,9 +157,9 @@ class DOMTokenList implements
      *
      * @throws InvalidCharacterError If the token contains ASCII whitespace.
      */
-    public function contains($aToken)
+    public function contains($token)
     {
-        return isset($this->mTokens[Utils::DOMString($aToken)]);
+        return isset($this->tokens[Utils::DOMString($token)]);
     }
 
     /**
@@ -166,15 +167,15 @@ class DOMTokenList implements
      *
      * @see https://dom.spec.whatwg.org/#dom-domtokenlist-remove
      *
-     * @param string ...$aTokens One or more tokens to be removed.
+     * @param string ...$tokens One or more tokens to be removed.
      *
      * @throws SyntaxError If the token is an empty string.
      *
      * @throws InvalidCharacterError If the token contains ASCII whitespace.
      */
-    public function remove(...$aTokens)
+    public function remove(...$tokens)
     {
-        foreach ($aTokens as &$token) {
+        foreach ($tokens as &$token) {
             $token = Utils::DOMString($token);
 
             if ($token === '') {
@@ -186,18 +187,18 @@ class DOMTokenList implements
             }
         }
 
-        foreach ($aTokens as $token) {
-            if (isset($this->mTokens[$token])) {
-                array_splice($this->mIndex, $this->mTokens[$token], 1);
-                unset($this->mTokens[$token]);
-                $this->mLength--;
+        foreach ($tokens as $token) {
+            if (isset($this->tokens[$token])) {
+                array_splice($this->index, $this->tokens[$token], 1);
+                unset($this->tokens[$token]);
+                $this->length--;
             }
         }
 
-        $this->mElement->getAttributeList()->setAttrValue(
-            $this->mElement,
-            $this->mAttrLocalName,
-            Utils::serializeOrderedSet($this->mIndex)
+        $this->element->getAttributeList()->setAttrValue(
+            $this->element,
+            $this->attrLocalName,
+            Utils::serializeOrderedSet($this->index)
         );
     }
 
@@ -208,9 +209,9 @@ class DOMTokenList implements
      *
      * @see https://dom.spec.whatwg.org/#dom-domtokenlist-toggle
      *
-     * @param string $aToken The token to be toggled.
+     * @param string $token The token to be toggled.
      *
-     * @param bool $aForce Optional. Whether or not the token should be
+     * @param bool $force Optional. Whether or not the token should be
      *     forcefully added or removed.
      *
      * @return bool Returns true if the token is present, and false otherwise.
@@ -219,9 +220,9 @@ class DOMTokenList implements
      *
      * @throws InvalidCharacterError If either token contains ASCII whitespace.
      */
-    public function toggle($aToken, $aForce = null)
+    public function toggle($token, $force = null)
     {
-        $token = Utils::DOMString($aToken);
+        $token = Utils::DOMString($token);
 
         if ($token === '') {
             throw new SyntaxError();
@@ -231,35 +232,35 @@ class DOMTokenList implements
             throw new InvalidCharacterError();
         }
 
-        if (isset($this->mTokens[$token])) {
-            if (!$aForce) {
-                array_splice($this->mIndex, $this->mTokens[$token], 1);
-                unset($this->mTokens[$token]);
-                $this->mLength--;
-                $this->mElement->getAttributeList()->setAttrValue(
-                    $this->mElement,
-                    $this->mAttrLocalName,
-                    Utils::serializeOrderedSet($this->mIndex)
+        if (isset($this->tokens[$token])) {
+            if (!$force) {
+                array_splice($this->index, $this->tokens[$token], 1);
+                unset($this->tokens[$token]);
+                $this->length--;
+                $this->element->getAttributeList()->setAttrValue(
+                    $this->element,
+                    $this->attrLocalName,
+                    Utils::serializeOrderedSet($this->index)
                 );
 
                 return false;
-            } else {
-                return true;
             }
+
+            return true;
+        }
+
+        if ($force === false) {
+            return false;
         } else {
-            if ($aForce === false) {
-                return false;
-            } else {
-                $this->mIndex[] = $token;
-                $this->mTokens[$token] = $this->mLength++;
-                $this->mElement->getAttributeList()->setAttrValue(
-                    $this->mElement,
-                    $this->mAttrLocalName,
-                    Utils::serializeOrderedSet($this->mIndex)
-                );
+            $this->index[] = $token;
+            $this->tokens[$token] = $this->length++;
+            $this->element->getAttributeList()->setAttrValue(
+                $this->element,
+                $this->attrLocalName,
+                Utils::serializeOrderedSet($this->index)
+            );
 
-                return true;
-            }
+            return true;
         }
     }
 
@@ -268,18 +269,18 @@ class DOMTokenList implements
      *
      * @see https://dom.spec.whatwg.org/#dom-domtokenlist-replace
      *
-     * @param string $aToken The token to be replaced.
+     * @param string $token    The token to be replaced.
      *
-     * @param string $aNewToken The token to be inserted.
+     * @param string $newToken The token to be inserted.
      *
-     * @throws SyntaxError If either token is an empty string.
+     * @throws SyntaxError           If either token is an empty string.
      *
      * @throws InvalidCharacterError If either token contains ASCII whitespace.
      */
-    public function replace($aToken, $aNewToken)
+    public function replace($token, $newToken)
     {
-        $token = Utils::DOMString($aToken);
-        $newToken = Utils::DOMString($aNewToken);
+        $token = Utils::DOMString($token);
+        $newToken = Utils::DOMString($newToken);
 
         if ($token === '' || $newToken === '') {
             throw new SyntaxError();
@@ -289,19 +290,19 @@ class DOMTokenList implements
             throw new InvalidCharacterError();
         }
 
-        if (!isset($this->mTokens[$token])) {
+        if (!isset($this->tokens[$token])) {
             return;
         }
 
-        $index = $this->mTokens[$token];
-        unset($this->mTokens[$token]);
-        array_splice($this->mIndex, $index, 1, [$newToken]);
-        $this->mTokens[$newToken] = $index;
+        $index = $this->tokens[$token];
+        unset($this->tokens[$token]);
+        array_splice($this->index, $index, 1, [$newToken]);
+        $this->tokens[$newToken] = $index;
 
-        $this->mElement->getAttributeList()->setAttrValue(
-            $this->mElement,
-            $this->mAttrLocalName,
-            Utils::serializeOrderedSet($this->mIndex)
+        $this->element->getAttributeList()->setAttrValue(
+            $this->element,
+            $this->attrLocalName,
+            Utils::serializeOrderedSet($this->index)
         );
     }
 
@@ -311,14 +312,14 @@ class DOMTokenList implements
      *
      * @see https://dom.spec.whatwg.org/#dom-domtokenlist-supports
      *
-     * @param string $aToken The token to check.
+     * @param string $token The token to check.
      *
      * @return bool
      *
      * @throws TypeError If the associated attribute's local name does not
      *     define a list of supported tokens.
      */
-    public function supports($aToken)
+    public function supports($token)
     {
         // TODO: This may not be worth implementing since we cannot accurately
         //     determine which values any particular browser actually supports.
@@ -340,57 +341,55 @@ class DOMTokenList implements
      */
     public function __toString()
     {
-        return $this->mElement->getAttributeList()->getAttrValue(
-            $this->mElement,
-            $this->mAttrLocalName
+        return $this->element->getAttributeList()->getAttrValue(
+            $this->element,
+            $this->attrLocalName
         );
     }
 
     /**
      * Checks if the given index offset exists in the list of tokens.
      *
-     * @param int $aIndex The integer index to check.
+     * @param int $index The integer index to check.
      *
      * @return bool
      */
-    public function offsetExists($aIndex)
+    public function offsetExists($index)
     {
-        return $aIndex > $this->mLength;
+        return $index > $this->length;
     }
 
     /**
      * Gets the token at the given index.
      *
-     * @param int $aIndex An integer index.
+     * @param int $index An integer index.
      *
      * @return string|null The token at the specified index or null if
      *     the index does not exist.
      */
-    public function offsetGet($aIndex)
+    public function offsetGet($index)
     {
-        if ($aIndex >= $this->mLength) {
+        if ($index >= $this->length) {
             return null;
         }
 
-        return isset($this->mIndex[$aIndex]) ? $this->mIndex[$aIndex] : null;
+        return isset($this->index[$index]) ? $this->index[$index] : null;
     }
 
     /**
      * Setting a token using array notation is not permitted.  Use the add() or
      * toggle() methods instead.
      */
-    public function offsetSet($aIndex, $aValue)
+    public function offsetSet($index, $token)
     {
-
     }
 
     /**
      * Unsetting a token using array notation is not permitted.  Use the
      * remove() or toggle() methods instead.
      */
-    public function offsetUnset($aIndex)
+    public function offsetUnset($index)
     {
-
     }
 
     /**
@@ -400,7 +399,7 @@ class DOMTokenList implements
      */
     public function count()
     {
-        return $this->mLength;
+        return $this->length;
     }
 
     /**
@@ -410,7 +409,7 @@ class DOMTokenList implements
      */
     public function current()
     {
-        return $this->mIndex[$this->mPosition];
+        return $this->index[$this->position];
     }
 
     /**
@@ -420,7 +419,7 @@ class DOMTokenList implements
      */
     public function key()
     {
-        return $this->mPosition;
+        return $this->position;
     }
 
     /**
@@ -428,7 +427,7 @@ class DOMTokenList implements
      */
     public function next()
     {
-        $this->mPosition++;
+        $this->position++;
     }
 
     /**
@@ -436,7 +435,7 @@ class DOMTokenList implements
      */
     public function rewind()
     {
-        $this->mPosition = 0;
+        $this->position = 0;
     }
 
     /**
@@ -446,28 +445,28 @@ class DOMTokenList implements
      */
     public function valid()
     {
-        return isset($this->mIndex[$this->mPosition]);
+        return isset($this->index[$this->position]);
     }
 
     /**
      * @see AttributeChangeObserver
      */
     public function onAttributeChanged(
-        Element $aElement,
-        $aLocalName,
-        $aOldValue,
-        $aValue,
-        $aNamespace
+        Element $element,
+        $localName,
+        $oldValue,
+        $value,
+        $namespace
     ) {
-        if ($aLocalName === $this->mAttrLocalName && $aNamespace === null) {
-            $this->mIndex = [];
-            $this->mLength = 0;
-            $this->mTokens = [];
+        if ($localName === $this->attrLocalName && $namespace === null) {
+            $this->index = [];
+            $this->length = 0;
+            $this->tokens = [];
 
-            if ($aValue !== null) {
-                foreach (Utils::parseOrderedSet($aValue) as $token) {
-                    $this->mIndex[] = $token;
-                    $this->mTokens[$token] = $this->mLength++;
+            if ($value !== null) {
+                foreach (Utils::parseOrderedSet($value) as $token) {
+                    $this->index[] = $token;
+                    $this->tokens[$token] = $this->length++;
                 }
             }
         }
