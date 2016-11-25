@@ -123,10 +123,12 @@ class DOMTokenList implements
 
             if ($token === '') {
                 throw new SyntaxError();
+                return;
             }
 
             if (preg_match('/\s/', $token)) {
                 throw new InvalidCharacterError();
+                return;
             }
         }
 
@@ -180,10 +182,12 @@ class DOMTokenList implements
 
             if ($token === '') {
                 throw new SyntaxError();
+                return;
             }
 
             if (preg_match('/\s/', $token)) {
                 throw new InvalidCharacterError();
+                return;
             }
         }
 
@@ -284,10 +288,12 @@ class DOMTokenList implements
 
         if ($token === '' || $newToken === '') {
             throw new SyntaxError();
+            return;
         }
 
         if (preg_match('/\s/', $token) || preg_match('/\s/', $newToken)) {
             throw new InvalidCharacterError();
+            return;
         }
 
         if (!isset($this->tokens[$token])) {
