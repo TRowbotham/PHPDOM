@@ -4,6 +4,7 @@ namespace phpjs;
 use phpjs\elements\Element;
 use phpjs\exceptions\InvalidCharacterError;
 use phpjs\exceptions\SyntaxError;
+use phpjs\support\Stringifier;
 
 /**
  * @see https://dom.spec.whatwg.org/#interface-domtokenlist
@@ -16,7 +17,8 @@ class DOMTokenList implements
     \ArrayAccess,
     AttributeChangeObserver,
     \Countable,
-    \Iterator
+    \Iterator,
+    Stringifier
 {
     protected $attrLocalName;
     protected $element;
@@ -345,12 +347,17 @@ class DOMTokenList implements
      *
      * @return string
      */
-    public function __toString()
+    public function toString()
     {
         return $this->element->getAttributeList()->getAttrValue(
             $this->element,
             $this->attrLocalName
         );
+    }
+
+    public function __toString()
+    {
+        return $this->toString();
     }
 
     /**
