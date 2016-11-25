@@ -116,7 +116,9 @@ class OrderedSet implements ArrayAccess, Countable, Iterator
 
     public function offsetGet($offset)
     {
-        if (isset($this->map[$this->keys[$offset]])) {
+        if (isset($this->keys[$offset]) &&
+            isset($this->map[$this->keys[$offset]])
+        ) {
             return $this->map[$this->keys[$offset]];
         }
 

@@ -232,10 +232,12 @@ class DOMTokenList implements
 
         if ($token === '') {
             throw new SyntaxError();
+            return;
         }
 
         if (preg_match('/\s/', $token)) {
             throw new InvalidCharacterError();
+            return;
         }
 
         if (isset($this->tokens[$token])) {
