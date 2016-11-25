@@ -84,19 +84,22 @@ class DOMTokenList implements
     }
 
     /**
-     * Gets the value of the attribute of the associated element's associated
-     * attribute's local name.
+     * Gets the token at the given index.
      *
-     * @see https://dom.spec.whatwg.org/#concept-dtl-serialize
+     * @see https://dom.spec.whatwg.org/#dom-domtokenlist-item
      *
-     * @return string
+     * @param int $aIndex An integer index.
+     *
+     * @return string|null The token at the specified index or null if
+     *     the index does not exist.
      */
-    public function __toString()
+    public function item($aIndex)
     {
-        return $this->mElement->getAttributeList()->getAttrValue(
-            $this->mElement,
-            $this->mAttrLocalName
-        );
+        if ($aIndex >= $this->mLength) {
+            return null;
+        }
+
+        return isset($this->mIndex[$aIndex]) ? $this->mIndex[$aIndex] : null;
     }
 
     /**
@@ -159,134 +162,6 @@ class DOMTokenList implements
     }
 
     /**
-     * Gets the number of tokens in the list.
-     *
-     * @return int
-     */
-    public function count()
-    {
-        return $this->mLength;
-    }
-
-    /**
-     * Gets the current token that the iterator is pointing to.
-     *
-     * @return string
-     */
-    public function current()
-    {
-        return $this->mIndex[$this->mPosition];
-    }
-
-    /**
-     * @see AttributeChangeObserver
-     */
-    public function onAttributeChanged(
-        Element $aElement,
-        $aLocalName,
-        $aOldValue,
-        $aValue,
-        $aNamespace
-    ) {
-        if ($aLocalName === $this->mAttrLocalName && $aNamespace === null) {
-            $this->mIndex = [];
-            $this->mLength = 0;
-            $this->mTokens = [];
-
-            if ($aValue !== null) {
-                foreach (Utils::parseOrderedSet($aValue) as $token) {
-                    $this->mIndex[] = $token;
-                    $this->mTokens[$token] = $this->mLength++;
-                }
-            }
-        }
-    }
-
-    /**
-     * Gets the token at the given index.
-     *
-     * @see https://dom.spec.whatwg.org/#dom-domtokenlist-item
-     *
-     * @param int $aIndex An integer index.
-     *
-     * @return string|null The token at the specified index or null if
-     *     the index does not exist.
-     */
-    public function item($aIndex)
-    {
-        if ($aIndex >= $this->mLength) {
-            return null;
-        }
-
-        return isset($this->mIndex[$aIndex]) ? $this->mIndex[$aIndex] : null;
-    }
-
-    /**
-     * Gets the current position of the iterator.
-     *
-     * @return int
-     */
-    public function key()
-    {
-        return $this->mPosition;
-    }
-
-    /**
-     * Advances the iterator to the next item.
-     */
-    public function next()
-    {
-        $this->mPosition++;
-    }
-
-    /**
-     * Checks if the given index offset exists in the list of tokens.
-     *
-     * @param int $aIndex The integer index to check.
-     *
-     * @return bool
-     */
-    public function offsetExists($aIndex)
-    {
-        return $aIndex > $this->mLength;
-    }
-
-    /**
-     * Gets the token at the given index.
-     *
-     * @param int $aIndex An integer index.
-     *
-     * @return string|null The token at the specified index or null if
-     *     the index does not exist.
-     */
-    public function offsetGet($aIndex)
-    {
-        if ($aIndex >= $this->mLength) {
-            return null;
-        }
-
-        return isset($this->mIndex[$aIndex]) ? $this->mIndex[$aIndex] : null;
-    }
-
-    /**
-     * Setting a token using array notation is not permitted.  Use the add() or
-     * toggle() methods instead.
-     */
-    public function offsetSet($aIndex, $aValue)
-    {
-
-    }
-
-    /**
-     * Unsetting a token using array notation is not permitted.  Use the
-     * remove() or toggle() methods instead.
-     */
-    public function offsetUnset($aIndex)
-    {
-
-    }
-
-    /**
      * Removes all the arguments from the token list.
      *
      * @see https://dom.spec.whatwg.org/#dom-domtokenlist-remove
@@ -324,81 +199,6 @@ class DOMTokenList implements
             $this->mAttrLocalName,
             Utils::serializeOrderedSet($this->mIndex)
         );
-    }
-
-    /**
-     * Replaces a token in the token list with another token.
-     *
-     * @see https://dom.spec.whatwg.org/#dom-domtokenlist-replace
-     *
-     * @param string $aToken The token to be replaced.
-     *
-     * @param string $aNewToken The token to be inserted.
-     *
-     * @throws SyntaxError If either token is an empty string.
-     *
-     * @throws InvalidCharacterError If either token contains ASCII whitespace.
-     */
-    public function replace($aToken, $aNewToken)
-    {
-        $token = Utils::DOMString($aToken);
-        $newToken = Utils::DOMString($aNewToken);
-
-        if ($token === '' || $newToken === '') {
-            throw new SyntaxError();
-        }
-
-        if (preg_match('/\s/', $token) || preg_match('/\s/', $newToken)) {
-            throw new InvalidCharacterError();
-        }
-
-        if (!isset($this->mTokens[$token])) {
-            return;
-        }
-
-        $index = $this->mTokens[$token];
-        unset($this->mTokens[$token]);
-        array_splice($this->mIndex, $index, 1, [$newToken]);
-        $this->mTokens[$newToken] = $index;
-
-        $this->mElement->getAttributeList()->setAttrValue(
-            $this->mElement,
-            $this->mAttrLocalName,
-            Utils::serializeOrderedSet($this->mIndex)
-        );
-    }
-
-    /**
-     * Rewinds the iterator to the beginning.
-     */
-    public function rewind()
-    {
-        $this->mPosition = 0;
-    }
-
-    /**
-     * Checks if the token is a valid token for the associated attribute name,
-     * if the associated attribute local name has a list of supported tokens.
-     *
-     * @see https://dom.spec.whatwg.org/#dom-domtokenlist-supports
-     *
-     * @param string $aToken The token to check.
-     *
-     * @return bool
-     *
-     * @throws TypeError If the associated attribute's local name does not
-     *     define a list of supported tokens.
-     */
-    public function supports($aToken)
-    {
-        // TODO: This may not be worth implementing since we cannot accurately
-        //     determine which values any particular browser actually supports.
-        // If the associated attribute’s local name does not define supported
-        //     tokens, throw a TypeError.
-        // Let lowercase token be a copy of token, converted to ASCII lowercase.
-        // If lowercase token is present in supported tokens, return true.
-        // Return false.
-        return true;
     }
 
     /**
@@ -464,6 +264,182 @@ class DOMTokenList implements
     }
 
     /**
+     * Replaces a token in the token list with another token.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-domtokenlist-replace
+     *
+     * @param string $aToken The token to be replaced.
+     *
+     * @param string $aNewToken The token to be inserted.
+     *
+     * @throws SyntaxError If either token is an empty string.
+     *
+     * @throws InvalidCharacterError If either token contains ASCII whitespace.
+     */
+    public function replace($aToken, $aNewToken)
+    {
+        $token = Utils::DOMString($aToken);
+        $newToken = Utils::DOMString($aNewToken);
+
+        if ($token === '' || $newToken === '') {
+            throw new SyntaxError();
+        }
+
+        if (preg_match('/\s/', $token) || preg_match('/\s/', $newToken)) {
+            throw new InvalidCharacterError();
+        }
+
+        if (!isset($this->mTokens[$token])) {
+            return;
+        }
+
+        $index = $this->mTokens[$token];
+        unset($this->mTokens[$token]);
+        array_splice($this->mIndex, $index, 1, [$newToken]);
+        $this->mTokens[$newToken] = $index;
+
+        $this->mElement->getAttributeList()->setAttrValue(
+            $this->mElement,
+            $this->mAttrLocalName,
+            Utils::serializeOrderedSet($this->mIndex)
+        );
+    }
+
+    /**
+     * Checks if the token is a valid token for the associated attribute name,
+     * if the associated attribute local name has a list of supported tokens.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-domtokenlist-supports
+     *
+     * @param string $aToken The token to check.
+     *
+     * @return bool
+     *
+     * @throws TypeError If the associated attribute's local name does not
+     *     define a list of supported tokens.
+     */
+    public function supports($aToken)
+    {
+        // TODO: This may not be worth implementing since we cannot accurately
+        //     determine which values any particular browser actually supports.
+        // If the associated attribute’s local name does not define supported
+        //     tokens, throw a TypeError.
+        // Let lowercase token be a copy of token, converted to ASCII lowercase.
+        // If lowercase token is present in supported tokens, return true.
+        // Return false.
+        return true;
+    }
+
+    /**
+     * Gets the value of the attribute of the associated element's associated
+     * attribute's local name.
+     *
+     * @see https://dom.spec.whatwg.org/#concept-dtl-serialize
+     *
+     * @return string
+     */
+    public function __toString()
+    {
+        return $this->mElement->getAttributeList()->getAttrValue(
+            $this->mElement,
+            $this->mAttrLocalName
+        );
+    }
+
+    /**
+     * Checks if the given index offset exists in the list of tokens.
+     *
+     * @param int $aIndex The integer index to check.
+     *
+     * @return bool
+     */
+    public function offsetExists($aIndex)
+    {
+        return $aIndex > $this->mLength;
+    }
+
+    /**
+     * Gets the token at the given index.
+     *
+     * @param int $aIndex An integer index.
+     *
+     * @return string|null The token at the specified index or null if
+     *     the index does not exist.
+     */
+    public function offsetGet($aIndex)
+    {
+        if ($aIndex >= $this->mLength) {
+            return null;
+        }
+
+        return isset($this->mIndex[$aIndex]) ? $this->mIndex[$aIndex] : null;
+    }
+
+    /**
+     * Setting a token using array notation is not permitted.  Use the add() or
+     * toggle() methods instead.
+     */
+    public function offsetSet($aIndex, $aValue)
+    {
+
+    }
+
+    /**
+     * Unsetting a token using array notation is not permitted.  Use the
+     * remove() or toggle() methods instead.
+     */
+    public function offsetUnset($aIndex)
+    {
+
+    }
+
+    /**
+     * Gets the number of tokens in the list.
+     *
+     * @return int
+     */
+    public function count()
+    {
+        return $this->mLength;
+    }
+
+    /**
+     * Gets the current token that the iterator is pointing to.
+     *
+     * @return string
+     */
+    public function current()
+    {
+        return $this->mIndex[$this->mPosition];
+    }
+
+    /**
+     * Gets the current position of the iterator.
+     *
+     * @return int
+     */
+    public function key()
+    {
+        return $this->mPosition;
+    }
+
+    /**
+     * Advances the iterator to the next item.
+     */
+    public function next()
+    {
+        $this->mPosition++;
+    }
+
+    /**
+     * Rewinds the iterator to the beginning.
+     */
+    public function rewind()
+    {
+        $this->mPosition = 0;
+    }
+
+    /**
      * Checks if the iterator's position is valid.
      *
      * @return bool
@@ -471,5 +447,29 @@ class DOMTokenList implements
     public function valid()
     {
         return isset($this->mIndex[$this->mPosition]);
+    }
+
+    /**
+     * @see AttributeChangeObserver
+     */
+    public function onAttributeChanged(
+        Element $aElement,
+        $aLocalName,
+        $aOldValue,
+        $aValue,
+        $aNamespace
+    ) {
+        if ($aLocalName === $this->mAttrLocalName && $aNamespace === null) {
+            $this->mIndex = [];
+            $this->mLength = 0;
+            $this->mTokens = [];
+
+            if ($aValue !== null) {
+                foreach (Utils::parseOrderedSet($aValue) as $token) {
+                    $this->mIndex[] = $token;
+                    $this->mTokens[$token] = $this->mLength++;
+                }
+            }
+        }
     }
 }
