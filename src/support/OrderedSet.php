@@ -7,7 +7,7 @@ use Iterator;
 
 class OrderedSet implements ArrayAccess, Countable, Iterator
 {
-    protected $list;
+    protected $keys;
     protected $length;
     protected $map;
     protected $position;
