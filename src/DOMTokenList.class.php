@@ -257,17 +257,17 @@ class DOMTokenList implements
 
         if ($force === false) {
             return false;
-        } else {
-            $this->index[] = $token;
-            $this->tokens[$token] = $this->length++;
-            $this->element->getAttributeList()->setAttrValue(
-                $this->element,
-                $this->attrLocalName,
-                Utils::serializeOrderedSet($this->index)
-            );
-
-            return true;
         }
+
+        $this->index[] = $token;
+        $this->tokens[$token] = $this->length++;
+        $this->element->getAttributeList()->setAttrValue(
+            $this->element,
+            $this->attrLocalName,
+            Utils::serializeOrderedSet($this->index)
+        );
+
+        return true;
     }
 
     /**
