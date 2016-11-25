@@ -27,11 +27,7 @@ class HTMLBaseElement extends HTMLElement
         switch ($aName) {
             case 'href':
                 $document = $this->mOwnerDocument;
-                $url = $this->mAttributesList->getAttrValue(
-                    $this,
-                    'href',
-                    null
-                );
+                $url = $this->mAttributesList->getAttrValue('href', null);
                 $urlRecord = URLRecord::URLParser(
                     $url,
                     $document->getFallbackBaseURL(),
@@ -45,11 +41,7 @@ class HTMLBaseElement extends HTMLElement
                 return $urlRecord->serializeURL();
 
             case 'target':
-                return $this->mAttributesList->getAttrValue(
-                    $this,
-                    'target',
-                    null
-                );
+                return $this->mAttributesList->getAttrValue('target', null);
 
             default:
                 return parent::__get($aName);
@@ -61,11 +53,7 @@ class HTMLBaseElement extends HTMLElement
         switch ($aName) {
             case 'href':
             case 'target':
-                $this->mAttributesList->setAttrValue(
-                    $this,
-                    $aName,
-                    $aValue
-                );
+                $this->mAttributesList->setAttrValue($aName, $aValue);
 
                 break;
 
@@ -134,8 +122,7 @@ class HTMLBaseElement extends HTMLElement
         } else {
             $hrefAttr = $this->mAttributesList->getAttrByNamespaceAndLocalName(
                 null,
-                'href',
-                $this
+                'href'
             );
             $href = $hrefAttr ? $hrefAttr->value : null;
         }
