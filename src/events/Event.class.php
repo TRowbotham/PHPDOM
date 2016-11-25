@@ -160,11 +160,13 @@ class Event
         );
 
         foreach ($path as $tuple) {
-            // If currentTarget is a node and tuple’s item is an unclosed
-            // node of currentTarget, or currentTarget is not a node, then
-            // append tuple’s item to composedPath.
+            // If $currentTarget is a node and $tuple’s item is not
+            // closed-shadow-hidden from $currentTarget, or $currentTarget
+            // is not a node, then append $tuple’s item to $composedPath.
             if (($this->mCurrentTarget instanceof Node &&
-                    $tuple['item']->isUnclosedNodeOf($this->mCurrentTarget)) ||
+                !$tuple['item']->isClosedShadowHiddenFrom(
+                    $this->mCurrentTarget
+                )) ||
                 !($this->mCurrentTarget instanceof Node)
             ) {
                 $composedPath[] = $tuple['item'];

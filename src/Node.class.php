@@ -1688,21 +1688,21 @@ abstract class Node extends EventTarget
     /**
      * @internal
      *
-     * @see https://dom.spec.whatwg.org/#concept-unclosed-node
+     * @see https://dom.spec.whatwg.org/#concept-closed-shadow-hidden
      *
      * @param Node|null $aOtherNode A Node.
      *
      * @return bool
      */
-    public function isUnclosedNodeOf($aOtherNode)
+    public function isClosedShadowHiddenFrom($aOtherNode)
     {
         $root = $this->getRootNode();
 
-        if (!($root instanceof ShadowRoot) ||
-            $root->isShadowIncludingInclusiveAncestorOf($aOtherNode) ||
-            ($root instanceof ShadowRoot &&
-                $root->mode == ShadowRootMode::OPEN &&
-                $root->host->isUnclosedNodeOf($aOtherNode))
+        if ($root instanceof ShadowRoot &&
+            !$root->isShadowIncludingInclusiveAncestorOf($aOtherNode) &&
+            ($root->mode === 'closed' || $root->host->isClosedShadowHiddenFrom(
+                $aOtherNode
+            ))
         ) {
             return true;
         }
