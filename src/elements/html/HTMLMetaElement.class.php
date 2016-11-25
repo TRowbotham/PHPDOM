@@ -43,21 +43,17 @@ class HTMLMetaElement extends HTMLElement
     {
         switch ($aName) {
             case 'content':
-                $this->mAttributesList->setAttrValue($this, $aName, $aValue);
+                $this->mAttributesList->setAttrValue($aName, $aValue);
 
                 break;
 
             case 'httpEquiv':
-                $this->mAttributesList->setAttrValue(
-                    $this,
-                    'http-equiv',
-                    $aValue
-                );
+                $this->mAttributesList->setAttrValue('http-equiv', $aValue);
 
                 break;
 
             case 'name':
-                $this->mAttributesList->setAttrValue($this, $aName, $aValue);
+                $this->mAttributesList->setAttrValue($aName, $aValue);
 
                 break;
 

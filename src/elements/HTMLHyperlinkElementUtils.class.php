@@ -27,8 +27,7 @@ trait HTMLHyperlinkElementUtils
         if ($this->mUrl === null) {
             $href = $this->mAttributesList->getAttrByNamespaceAndLocalName(
                 null,
-                'href',
-                $this
+                'href'
             );
 
             if (!$href) {
@@ -52,11 +51,7 @@ trait HTMLHyperlinkElementUtils
      */
     protected function setHref($aValue)
     {
-        $this->mAttributesList->setAttrValue(
-            $this,
-            'href',
-            $aValue
-        );
+        $this->mAttributesList->setAttrValue('href', $aValue);
     }
 
     /**
@@ -125,7 +120,6 @@ trait HTMLHyperlinkElementUtils
             URLRecord::SCHEME_START_STATE
         );
         $this->mAttributesList->setAttrValue(
-            $this,
             'href',
             $this->mUrl->serializeURL()
         );
@@ -172,7 +166,6 @@ trait HTMLHyperlinkElementUtils
 
         $this->mUrl->setUsernameSteps($aValue);
         $this->mAttributesList->setAttrValue(
-            $this,
             'href',
             $this->mUrl->serializeURL()
         );
@@ -221,7 +214,6 @@ trait HTMLHyperlinkElementUtils
 
         $this->mUrl->setPasswordSteps($aValue);
         $this->mAttributesList->setAttrValue(
-            $this,
             'href',
             $this->mUrl->serializeURL()
         );
@@ -279,7 +271,6 @@ trait HTMLHyperlinkElementUtils
             URLRecord::HOST_STATE
         );
         $this->mAttributesList->setAttrValue(
-            $this,
             'href',
             $this->mUrl->serializeURL()
         );
@@ -331,7 +322,6 @@ trait HTMLHyperlinkElementUtils
             URLRecord::HOSTNAME_STATE
         );
         $this->mAttributesList->setAttrValue(
-            $this,
             'href',
             $this->mUrl->serializeURL()
         );
@@ -390,7 +380,6 @@ trait HTMLHyperlinkElementUtils
         }
 
         $this->mAttributesList->setAttrValue(
-            $this,
             'href',
             $this->mUrl->serializeURL()
         );
@@ -457,7 +446,6 @@ trait HTMLHyperlinkElementUtils
             URLRecord::PATH_START_STATE
         );
         $this->mAttributesList->setAttrValue(
-            $this,
             'href',
             $this->mUrl->serializeURL()
         );
@@ -521,7 +509,6 @@ trait HTMLHyperlinkElementUtils
         }
 
         $this->mAttributesList->setAttrValue(
-            $this,
             'href',
             $this->mUrl->serializeURL()
         );
@@ -586,7 +573,6 @@ trait HTMLHyperlinkElementUtils
         }
 
         $this->mAttributesList->setAttrValue(
-            $this,
             'href',
             $this->mUrl->serializeURL()
         );
@@ -626,8 +612,7 @@ trait HTMLHyperlinkElementUtils
     {
         $href = $this->mAttributesList->getAttrByNamespaceAndLocalName(
             null,
-            'href',
-            $this
+            'href'
         );
 
         // If this element's href content attribute is absent, set this

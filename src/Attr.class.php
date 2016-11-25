@@ -158,10 +158,8 @@ class Attr extends Node {
             return;
         }
 
-        $attrList = $this->mOwnerElement->getAttributeList();
-        $attrList->changeAttr(
+        $this->mOwnerElement->getAttributeList()->change(
             $this,
-            $this->mOwnerElement,
             $aValue
         );
     }

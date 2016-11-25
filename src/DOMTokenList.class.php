@@ -37,8 +37,7 @@ class DOMTokenList implements
         $attrList->observe($this);
         $attr = $attrList->getAttrByNamespaceAndLocalName(
             null,
-            $this->attrLocalName,
-            $this->element
+            $this->attrLocalName
         );
         $value = $attr ? $attr->value : null;
 
@@ -73,7 +72,6 @@ class DOMTokenList implements
         switch ($name) {
             case 'value':
                 $this->element->getAttributeList()->setAttrValue(
-                    $this->element,
                     $this->attrLocalName,
                     Utils::DOMString($value)
                 );
@@ -129,7 +127,6 @@ class DOMTokenList implements
         }
 
         $this->element->getAttributeList()->setAttrValue(
-            $this->element,
             $this->attrLocalName,
             Utils::serializeOrderedSet($this->tokens->values())
         );
@@ -185,7 +182,6 @@ class DOMTokenList implements
         }
 
         $this->element->getAttributeList()->setAttrValue(
-            $this->element,
             $this->attrLocalName,
             Utils::serializeOrderedSet($this->tokens->values())
         );
@@ -227,7 +223,6 @@ class DOMTokenList implements
             if (!$force) {
                 $this->tokens->remove($token);
                 $this->element->getAttributeList()->setAttrValue(
-                    $this->element,
                     $this->attrLocalName,
                     Utils::serializeOrderedSet($this->tokens->values())
                 );
@@ -244,7 +239,6 @@ class DOMTokenList implements
 
         $this->tokens->append($token);
         $this->element->getAttributeList()->setAttrValue(
-            $this->element,
             $this->attrLocalName,
             Utils::serializeOrderedSet($this->tokens->values())
         );
@@ -286,7 +280,6 @@ class DOMTokenList implements
 
         $this->tokens->replace($token, $newToken);
         $this->element->getAttributeList()->setAttrValue(
-            $this->element,
             $this->attrLocalName,
             Utils::serializeOrderedSet($this->tokens->values())
         );
@@ -328,7 +321,6 @@ class DOMTokenList implements
     public function toString()
     {
         return $this->element->getAttributeList()->getAttrValue(
-            $this->element,
             $this->attrLocalName
         );
     }

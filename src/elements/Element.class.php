@@ -79,13 +79,13 @@ class Element extends Node implements AttributeChangeObserver
                 return $this->mClassList;
 
             case 'className':
-                return $this->mAttributesList->getAttrValue($this, 'class');
+                return $this->mAttributesList->getAttrValue('class');
 
             case 'firstElementChild':
                 return $this->getFirstElementChild();
 
             case 'id':
-                return $this->mAttributesList->getAttrValue($this, $aName);
+                return $this->mAttributesList->getAttrValue($aName);
 
             case 'innerHTML':
                 $rv = '';
@@ -132,7 +132,6 @@ class Element extends Node implements AttributeChangeObserver
 
             case 'className':
                 $this->mAttributesList->setAttrValue(
-                    $this,
                     'class',
                     Utils::DOMString($aValue)
                 );
@@ -141,7 +140,6 @@ class Element extends Node implements AttributeChangeObserver
 
             case 'id':
                 $this->mAttributesList->setAttrValue(
-                    $this,
                     $aName,
                     Utils::DOMString($aValue)
                 );
@@ -215,10 +213,7 @@ class Element extends Node implements AttributeChangeObserver
      */
     public function getAttribute($aName)
     {
-        $attr = $this->mAttributesList->getAttrByName(
-            Utils::DOMString($aName),
-            $this
-        );
+        $attr = $this->mAttributesList->getAttrByName(Utils::DOMString($aName));
 
         return $attr ? $attr->value : null;
     }
@@ -285,8 +280,7 @@ class Element extends Node implements AttributeChangeObserver
     {
         return $this->mAttributesList->getAttrByNamespaceAndLocalName(
             Utils::DOMString($aNamespace, false, true),
-            Utils::DOMString($aLocalName),
-            $this
+            Utils::DOMString($aLocalName)
         );
     }
 
@@ -302,7 +296,6 @@ class Element extends Node implements AttributeChangeObserver
     public function getAttributeNS($aNamespace, $aLocalName)
     {
         return $this->mAttributesList->getAttrValue(
-            $this,
             Utils::DOMString($aLocalName),
             Utils::DOMString($aNamespace, false, true)
         );
@@ -328,7 +321,7 @@ class Element extends Node implements AttributeChangeObserver
             $qualifiedName = Utils::toASCIILowercase($aQualifiedName);
         }
 
-        return !!$this->mAttributesList->getAttrByName($aQualifiedName, $this);
+        return (bool) $this->mAttributesList->getAttrByName($aQualifiedName);
     }
 
     /**
@@ -345,10 +338,9 @@ class Element extends Node implements AttributeChangeObserver
      */
     public function hasAttributeNS($aNamespace, $aLocalName)
     {
-        return !!$this->mAttributesList->getAttrByNamespaceAndLocalName(
+        return (bool) $this->mAttributesList->getAttrByNamespaceAndLocalName(
             Utils::DOMString($aNamespace, false, true),
-            Utils::DOMString($aLocalName),
-            $this
+            Utils::DOMString($aLocalName)
         );
     }
 
@@ -360,12 +352,7 @@ class Element extends Node implements AttributeChangeObserver
      */
     public function hasAttributes()
     {
-        return $this->mAttributesList->count() !== 0;
-    }
-
-    public function insertAdjacentHTML($aHTML)
-    {
-        // TODO
+        return !$this->mAttributesList->isEmpty();
     }
 
     /**
@@ -413,8 +400,6 @@ class Element extends Node implements AttributeChangeObserver
      *         - beforeend - Inserts an element as this element's last child.
      *
      * @param string $aData The text to be inserted.
-     *
-     * @return null
      */
     public function insertAdjacentText($aWhere, $aData)
     {
@@ -447,7 +432,7 @@ class Element extends Node implements AttributeChangeObserver
      */
     public function removeAttribute($aName)
     {
-        $this->mAttributesList->removeAttrByName($aName, $this);
+        $this->mAttributesList->removeAttrByName($aName);
     }
 
     /**
@@ -463,11 +448,11 @@ class Element extends Node implements AttributeChangeObserver
      */
     public function removeAttributeNode(Attr $aAttr)
     {
-        if (!$this->mAttributesList->hasAttr($aAttr)) {
+        if (!$this->mAttributesList->contains($aAttr)) {
             throw new NotFoundError();
         }
 
-        $this->mAttributesList->removeAttr($aAttr, $this);
+        $this->mAttributesList->remove($aAttr);
 
         return $aAttr;
     }
@@ -487,8 +472,7 @@ class Element extends Node implements AttributeChangeObserver
     {
         $this->mAttributesList->removeAttrByNamespaceAndLocalName(
             $aNamespace,
-            $aLocalName,
-            $this
+            $aLocalName
         );
     }
 
@@ -531,13 +515,12 @@ class Element extends Node implements AttributeChangeObserver
         if (!$attribute) {
             $attribute = new Attr($qualifiedName, Utils::DOMString($aValue));
             $attribute->setOwnerDocument($this->mOwnerDocument);
-            $this->mAttributesList->appendAttr($attribute, $this);
+            $this->mAttributesList->append($attribute);
             return;
         }
 
-        $this->mAttributesList->changeAttr(
+        $this->mAttributesList->change(
             $attr,
-            $this,
             Utils::DOMString($aValue)
         );
     }
@@ -552,7 +535,7 @@ class Element extends Node implements AttributeChangeObserver
     public function setAttributeNode(Attr $aAttr)
     {
         try {
-            return $this->mAttributesList->setAttr($aAttr, $this);
+            return $this->mAttributesList->setAttr($aAttr);
         } catch (DOMException $e) {
             throw $e;
         }
@@ -568,7 +551,7 @@ class Element extends Node implements AttributeChangeObserver
     public function setAttributeNodeNS(Attr $aAttr)
     {
         try {
-            return $this->mAttributesList->setAttr($aAttr, $this);
+            return $this->mAttributesList->setAttr($aAttr);
         } catch (DOMException $e) {
             throw $e;
         }
@@ -600,7 +583,6 @@ class Element extends Node implements AttributeChangeObserver
         }
 
         $this->mAttributesList->setAttrValue(
-            $this,
             $localName,
             $aValue,
             $prefix,
@@ -795,8 +777,7 @@ class Element extends Node implements AttributeChangeObserver
     ) {
         $attr = $this->mAttributesList->getAttrByNamespaceAndLocalName(
             null,
-            $aName,
-            $this
+            $aName
         );
 
         if ($attr) {
@@ -827,7 +808,7 @@ class Element extends Node implements AttributeChangeObserver
      */
     protected function reflectStringAttributeValue($aName)
     {
-        return $this->mAttributesList->getAttrValue($this, $aName);
+        return $this->mAttributesList->getAttrValue($aName);
     }
 
     /**

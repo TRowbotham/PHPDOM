@@ -395,7 +395,7 @@ abstract class Node extends EventTarget
 
                 foreach ($node->mAttributesList as $attr) {
                     $copyAttribute = $attr->doCloneNode();
-                    $copy->mAttributesList->appendAttr($copyAttribute, $copy);
+                    $copy->mAttributesList->append($copyAttribute);
                 }
 
                 break;
