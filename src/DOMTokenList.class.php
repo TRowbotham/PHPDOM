@@ -1,9 +1,13 @@
 <?php
 namespace phpjs;
 
+use ArrayAccess;
+use Countable;
+use Iterator;
 use phpjs\elements\Element;
 use phpjs\exceptions\InvalidCharacterError;
 use phpjs\exceptions\SyntaxError;
+use phpjs\support\OrderedSet;
 use phpjs\support\Stringifier;
 
 /**
@@ -14,27 +18,21 @@ use phpjs\support\Stringifier;
  * @property string $value
  */
 class DOMTokenList implements
-    \ArrayAccess,
+    ArrayAccess,
     AttributeChangeObserver,
-    \Countable,
-    \Iterator,
+    Countable,
+    Iterator,
     Stringifier
 {
     protected $attrLocalName;
     protected $element;
-    protected $index;
-    protected $length;
-    protected $position;
     protected $tokens;
 
     public function __construct(Element $element, $attrLocalName)
     {
         $this->attrLocalName = $attrLocalName;
         $this->element = $element;
-        $this->index = [];
-        $this->length = 0;
-        $this->position = 0;
-        $this->tokens = [];
+        $this->tokens = new OrderedSet();
         $attrList = $this->element->getAttributeList();
         $attrList->observe($this);
         $attr = $attrList->getAttrByNamespaceAndLocalName(
@@ -56,7 +54,6 @@ class DOMTokenList implements
     public function __destruct()
     {
         $this->element = null;
-        $this->index = null;
         $this->tokens = null;
     }
 
@@ -64,13 +61,10 @@ class DOMTokenList implements
     {
         switch ($name) {
             case 'length':
-                return $this->length;
+                return $this->tokens->count();
 
             case 'value':
-                return $this->element->getAttributeList()->getAttrValue(
-                    $this->element,
-                    $this->attrLocalName
-                );
+                return $this->toString();
         }
     }
 
@@ -98,11 +92,7 @@ class DOMTokenList implements
      */
     public function item($index)
     {
-        if ($index >= $this->length) {
-            return null;
-        }
-
-        return isset($this->index[$index]) ? $this->index[$index] : null;
+        return $this->tokens->offsetGet($index);
     }
 
     /**
@@ -135,16 +125,13 @@ class DOMTokenList implements
         }
 
         foreach ($tokens as $token) {
-            if (!isset($this->tokens[$token])) {
-                $this->index[] = $token;
-                $this->tokens[$token] = $this->length++;
-            }
+            $this->tokens->append($token);
         }
 
         $this->element->getAttributeList()->setAttrValue(
             $this->element,
             $this->attrLocalName,
-            Utils::serializeOrderedSet($this->index)
+            Utils::serializeOrderedSet($this->tokens->values())
         );
     }
 
@@ -163,7 +150,7 @@ class DOMTokenList implements
      */
     public function contains($token)
     {
-        return isset($this->tokens[Utils::DOMString($token)]);
+        return $this->tokens->contains($token);
     }
 
     /**
@@ -194,17 +181,13 @@ class DOMTokenList implements
         }
 
         foreach ($tokens as $token) {
-            if (isset($this->tokens[$token])) {
-                array_splice($this->index, $this->tokens[$token], 1);
-                unset($this->tokens[$token]);
-                $this->length--;
-            }
+            $this->tokens->remove($token);
         }
 
         $this->element->getAttributeList()->setAttrValue(
             $this->element,
             $this->attrLocalName,
-            Utils::serializeOrderedSet($this->index)
+            Utils::serializeOrderedSet($this->tokens->values())
         );
     }
 
@@ -240,15 +223,13 @@ class DOMTokenList implements
             return;
         }
 
-        if (isset($this->tokens[$token])) {
+        if ($this->tokens->contains($token)) {
             if (!$force) {
-                array_splice($this->index, $this->tokens[$token], 1);
-                unset($this->tokens[$token]);
-                $this->length--;
+                $this->tokens->remove($token);
                 $this->element->getAttributeList()->setAttrValue(
                     $this->element,
                     $this->attrLocalName,
-                    Utils::serializeOrderedSet($this->index)
+                    Utils::serializeOrderedSet($this->tokens->values())
                 );
 
                 return false;
@@ -261,12 +242,11 @@ class DOMTokenList implements
             return false;
         }
 
-        $this->index[] = $token;
-        $this->tokens[$token] = $this->length++;
+        $this->tokens->append($token);
         $this->element->getAttributeList()->setAttrValue(
             $this->element,
             $this->attrLocalName,
-            Utils::serializeOrderedSet($this->index)
+            Utils::serializeOrderedSet($this->tokens->values())
         );
 
         return true;
@@ -300,19 +280,15 @@ class DOMTokenList implements
             return;
         }
 
-        if (!isset($this->tokens[$token])) {
+        if (!$this->tokens->contains($token)) {
             return;
         }
 
-        $index = $this->tokens[$token];
-        unset($this->tokens[$token]);
-        array_splice($this->index, $index, 1, [$newToken]);
-        $this->tokens[$newToken] = $index;
-
+        $this->tokens->replace($token, $newToken);
         $this->element->getAttributeList()->setAttrValue(
             $this->element,
             $this->attrLocalName,
-            Utils::serializeOrderedSet($this->index)
+            Utils::serializeOrderedSet($this->tokens->values())
         );
     }
 
@@ -371,7 +347,7 @@ class DOMTokenList implements
      */
     public function offsetExists($index)
     {
-        return $index > $this->length;
+        return $this->tokens->offsetExists($index);
     }
 
     /**
@@ -384,11 +360,7 @@ class DOMTokenList implements
      */
     public function offsetGet($index)
     {
-        if ($index >= $this->length) {
-            return null;
-        }
-
-        return isset($this->index[$index]) ? $this->index[$index] : null;
+        return $this->tokens->offsetGet($index);
     }
 
     /**
@@ -414,7 +386,7 @@ class DOMTokenList implements
      */
     public function count()
     {
-        return $this->length;
+        return $this->tokens->count();
     }
 
     /**
@@ -424,7 +396,7 @@ class DOMTokenList implements
      */
     public function current()
     {
-        return $this->index[$this->position];
+        return $this->tokens->current();
     }
 
     /**
@@ -434,7 +406,7 @@ class DOMTokenList implements
      */
     public function key()
     {
-        return $this->position;
+        return $this->tokens->key();
     }
 
     /**
@@ -442,7 +414,7 @@ class DOMTokenList implements
      */
     public function next()
     {
-        $this->position++;
+        $this->tokens->next();
     }
 
     /**
@@ -450,7 +422,7 @@ class DOMTokenList implements
      */
     public function rewind()
     {
-        $this->position = 0;
+        $this->tokens->rewind();
     }
 
     /**
@@ -460,7 +432,7 @@ class DOMTokenList implements
      */
     public function valid()
     {
-        return isset($this->index[$this->position]);
+        return $this->tokens->valid();
     }
 
     /**
@@ -474,14 +446,11 @@ class DOMTokenList implements
         $namespace
     ) {
         if ($localName === $this->attrLocalName && $namespace === null) {
-            $this->index = [];
-            $this->length = 0;
-            $this->tokens = [];
+            $this->tokens->empty();
 
             if ($value !== null) {
                 foreach (Utils::parseOrderedSet($value) as $token) {
-                    $this->index[] = $token;
-                    $this->tokens[$token] = $this->length++;
+                    $this->tokens->append($token);
                 }
             }
         }
