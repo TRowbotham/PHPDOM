@@ -64,7 +64,7 @@ class OrderedSet implements ArrayAccess, Countable, Iterator
         }
 
         $offset = $flipped[$oldHash];
-        $this->mList[$offset] = $newHash;
+        $this->keys[$offset] = $newHash;
         $this->map = array_slice($this->map, 0, $offset, true)
             + [$newHash => $newItem]
             + array_slice($this->map, $offset + 1, null, true);
