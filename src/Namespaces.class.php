@@ -24,6 +24,24 @@ class Namespaces
         '[\x{0300}-\x{036F}]|[\x{203F}-\x{2040}]';
     const NAME = '(' . self::NAME_START_CHAR . ')(' . self::NAME_CHAR . ')*';
     const NAME_PRODUCTION = '/^' . self::NAME . '$/u';
+    const NCNAME = '([A-Z]|_|[a-z]|[\xC0-\xD6]|[\xD8-\xF6]|' .
+        '[\xF8-\x{2FF}]|[\x{370}-\x{37D}]|[\x{37F}-\x{1FFF}]|' .
+        '[\x{200C}-\x{200D}]|[\x{2070}-\x{218F}]|[\x{2C00}-\x{2FEF}]|' .
+        '[\x{3001}-\x{D7FF}]|[\x{F900}-\x{FDCF}]|[\x{FDF0}-\x{FFFD}]|' .
+        '[\x{10000}-\x{EFFFF}])' .
+        '([A-Z]|_|[a-z]|[\xC0-\xD6]|[\xD8-\xF6]|' .
+        '[\xF8-\x{2FF}]|[\x{370}-\x{37D}]|[\x{37F}-\x{1FFF}]|' .
+        '[\x{200C}-\x{200D}]|[\x{2070}-\x{218F}]|[\x{2C00}-\x{2FEF}]|' .
+        '[\x{3001}-\x{D7FF}]|[\x{F900}-\x{FDCF}]|[\x{FDF0}-\x{FFFD}]|' .
+        '[\x{10000}-\x{EFFFF}]|-|\.|[0-9]|\xB7|' .
+        '[\x{0300}-\x{036F}]|[\x{203F}-\x{2040}])*';
+    const PREFIX = self::NCNAME;
+    const LOCALPART = self::NCNAME;
+    const PREFIXED_NAME = '(' . self::PREFIX . '):(' . self::LOCALPART . ')';
+    const UNPREFIXED_NAME = self::LOCALPART;
+    const QNAME = '/^(' . self::PREFIXED_NAME . '|' . self::UNPREFIXED_NAME .
+        ')$/u';
+
     /**
      * Finds the namespace associated with the given prefix on the given node.
      *
@@ -148,8 +166,11 @@ class Namespaces
             throw new InvalidCharacterError();
         }
 
-        // TODO: If qualifiedName does not match the 'QName' production, then
+        // If qualifiedName does not match the 'QName' production, then
         // throw a NamespaceError.
+        if (!preg_match(self::QNAME, $aQualifiedName)) {
+            throw new NamespaceError();
+        }
     }
 
     /**
