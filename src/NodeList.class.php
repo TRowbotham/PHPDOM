@@ -7,26 +7,26 @@ namespace phpjs;
  */
 class NodeList implements \ArrayAccess, \SeekableIterator, \Countable
 {
-	private $mLength;
-	private $mNodes;
-	private $mPosition;
+    private $mLength;
+    private $mNodes;
+    private $mPosition;
 
-	public function __construct()
+    public function __construct()
     {
-		$this->mLength = 0;
-		$this->mNodes = array();
-		$this->mPosition = 0;
-	}
+        $this->mLength = 0;
+        $this->mNodes = array();
+        $this->mPosition = 0;
+    }
 
-	public function __get($aName)
+    public function __get($aName)
     {
-		switch($aName) {
-			case 'length':
-				return $this->mLength;
-		}
-	}
+        switch ($aName) {
+            case 'length':
+                return $this->mLength;
+        }
+    }
 
-	public function count()
+    public function count()
     {
         return $this->mLength;
     }
@@ -36,7 +36,7 @@ class NodeList implements \ArrayAccess, \SeekableIterator, \Countable
         return $this->mNodes[$this->mPosition];
     }
 
-	public function item($aIndex)
+    public function item($aIndex)
     {
         if (array_key_exists($aIndex, $this->mNodes)) {
             return $this->mNodes[$aIndex];
@@ -55,7 +55,7 @@ class NodeList implements \ArrayAccess, \SeekableIterator, \Countable
         ++$this->mPosition;
     }
 
-	public function offsetSet($aOffset, $aValue)
+    public function offsetSet($aOffset, $aValue)
     {
         $this->mLength++;
 
