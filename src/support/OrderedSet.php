@@ -191,4 +191,15 @@ class OrderedSet implements ArrayAccess, Countable, Iterator
             return spl_object_hash($item);
         }
     }
+
+    public function indexOf($item)
+    {
+        $hash = $this->hash($item);
+
+        if (!isset($this->map[$hash])) {
+            return -1;
+        }
+
+        return array_flip($this->keys)[$hash];
+    }
 }
