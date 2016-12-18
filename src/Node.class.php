@@ -647,7 +647,7 @@ abstract class Node extends EventTarget
             // HierarchyRequestError if we try to append a doctype to a parent
             // that already contains an element.
             foreach ($parent->mChildNodes as $child) {
-                if ($child->mNodeType instanceof Element) {
+                if ($child instanceof Element) {
                     throw new HierarchyRequestError();
                 }
             }
