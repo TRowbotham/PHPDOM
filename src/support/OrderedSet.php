@@ -163,7 +163,7 @@ class OrderedSet implements ArrayAccess, Countable, Iterator
         return array_values($this->map);
     }
 
-    public function empty()
+    public function clear()
     {
         $this->keys = [];
         $this->map = [];

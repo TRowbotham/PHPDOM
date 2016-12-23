@@ -438,7 +438,7 @@ class DOMTokenList implements
         $namespace
     ) {
         if ($localName === $this->attrLocalName && $namespace === null) {
-            $this->tokens->empty();
+            $this->tokens->clear();
 
             if ($value !== null) {
                 foreach (Utils::parseOrderedSet($value) as $token) {
