@@ -183,14 +183,12 @@ trait HTMLHyperlinkElementUtils
     protected function getPassword()
     {
         $this->reinitialiseUrl();
-        $isInvalidURL = $this->mUrl === null ||
-            ($password = $this->mUrl->getPassword()) === null;
 
-        if ($isInvalidURL) {
+        if ($this->mUrl === null) {
             return '';
         }
 
-        return $password;
+        return $this->mUrl->getPassword();
     }
 
     /**
