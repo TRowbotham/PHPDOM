@@ -63,6 +63,7 @@ class Event
     protected $mFlags;
     protected $mIsTrusted;
     protected $mPath;
+    protected $mRelatedTarget;
     protected $mTarget;
     protected $mTimeStamp;
     protected $mType;
@@ -351,5 +352,20 @@ class Event
         $this->mType = $aType;
         $this->mBubbles = $aBubbles;
         $this->mCancelable = $aCancelable;
+    }
+
+    public function getRelatedTarget()
+    {
+        return $this->mRelatedTarget;
+    }
+
+    public function setRelatedTarget(EventTarget $aTarget = null)
+    {
+        $this->mRelatedTarget = $aTarget;
+    }
+
+    public function retarget()
+    {
+            // TODO
     }
 }

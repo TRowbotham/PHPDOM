@@ -17,7 +17,7 @@ abstract class EventTarget
         $this->mListeners = [];
     }
 
-	/**
+    /**
      * Registers a callback for a specified event on the current node.
      *
      * @param string $aType The name of the event to listen for.
@@ -80,7 +80,7 @@ abstract class EventTarget
         }
     }
 
-	/**
+    /**
      * Unregisters a callback for a specified event on the current node.
      *
      * @param string $aType The name of the event to listen for.
@@ -168,8 +168,8 @@ abstract class EventTarget
      *
      * @param EventTarget $aTarget The object that is the target of the event.
      *
-     * @param EventTarget|null $aTargetOverride An alternate target for the
-     *     event.
+     * @param bool $aLegacyTargetOverride A flag indicating that the
+     *     event's target should be overridden. Only useful for HTML.
      *
      * @return bool Returns false if the event's default action was canceled,
      *     and true otherwise.
@@ -177,44 +177,139 @@ abstract class EventTarget
     private function doDispatchEvent(
         $aEvent,
         $aTarget,
-        $aTargetOverride = null
+        $aLegacyTargetOverride = false
     ) {
         $aEvent->setFlag(EventFlags::DISPATCH);
 
-        if ($aTargetOverride === null) {
-            // Note: The targetOverride argument is only used by HTML and only
-            // under very specific circumstances.
-            $aTargetOverride = $aTarget;
+        // Let targetOverride be target, if legacy target override flag is not
+        // given, and target's associated Document otherwise.
+        $targetOverride = $aTarget;
+
+        if ($aLegacyTargetOverride === null) {
+            // Note: legacy target override flag is only used by HTML and only
+            // when target is a Window object.
+            $targetOverride = $aTarget->ownerDocument;
         }
 
+        // Let relatedTarget be the result of retargeting event’s relatedTarget
+        // against target if event’s relatedTarget is non-null, and null
+        // otherwise.
+        $relTarget = $aEvent->getRelatedTarget();
+        $relatedTarget = null;
+
+        if ($relTarget) {
+            $relatedTarget = Utils::retargetObject($relTarget, $aTarget);
+        }
+
+        // If target is relatedTarget and target is not event’s relatedTarget,
+        // then return true.
+        if ($aTarget === $relatedTarget &&
+            $aTarget !== $aEvent->getRelatedTarget()
+        ) {
+            return true;
+        }
+
+        // Append (target, targetOverride, relatedTarget) to event’s path.
         $path = $aEvent->getPath();
-        $path->push(
-            ['item' => $aTarget, 'target' => $aTargetOverride]
-        );
+        $path->push([
+            'item'          => $aTarget,
+            'target'        => $targetOverride,
+            'relatedTarget' => $relatedTarget
+        ]);
+
+        // Let isActivationEvent be true, if event is a MouseEvent object and
+        // event’s type attribute is "click", and false otherwise.
+        $isActivationEvent = false;
+
+        if ($aEvent instanceof MouseEvent && $aEvent->type === 'click') {
+            $isActivationEvent = true;
+        }
+
+        // Let activationTarget be target, if isActivationEvent is true and
+        // target has activation behavior, and null otherwise.
+        $activationTarget = null;
+
+        if ($isActivationEvent && $aTarget->hasActivationBehavior()) {
+            $activationTarget = $aTarget;
+        }
+
+        // Let parent be the result of invoking target’s get the parent with
+        // event.
         $parent = $aTarget->getTheParent($aEvent);
 
-        // While parent is non-null, if target's root is a shadow-including
-        // inclusive ancestor of parent, then append (parent, null) to event's
-        // path, otherwise, set target to parent and append (parent, target) to
-        // event's path.
         while ($parent) {
-            $root = $aTarget->getRootNode();
+            $relatedTarget = null;
 
-            if ($root->isShadowIncludingInclusiveAncestorOf($parent)) {
-                $path->push(
-                    ['item' => $parent, 'target' => null]
-                );
-            } else {
-                $aTarget = $parent;
-                $path->push(
-                    ['item' => $parent, 'target' => $aTarget]
+            // Let relatedTarget be the result of retargeting event’s
+            // relatedTarget against parent if event’s relatedTarget is
+            // non-null, and null otherwise.
+            if ($aEvent->getRelatedTarget() !== null) {
+                $relatedTarget = Utils::retargetObject(
+                    $aEvent->getRelatedTarget(),
+                    $parent
                 );
             }
 
-            $parent = $parent->getTheParent($aEvent);
+            $root = $aTarget->getRootNode();
+
+            if ($root->isShadowIncludingInclusiveAncestorOf($parent)) {
+                // If isActivationEvent is true, event’s bubbles attribute is
+                // true, activationTarget is null, and parent has activation
+                // behavior, then set activationTarget to parent.
+                if ($isActivationEvent &&
+                    $aEvent->bubbles &&
+                    $activationTarget === null &&
+                    $parent->hasActivationBehavior()
+                ) {
+                    $activationTarget = $parent;
+                }
+
+                // Append (parent, null, relatedTarget) to event’s path.
+                $path->push([
+                    'item'          => $parent,
+                    'target'        => null,
+                    'relatedTarget' => $relatedTarget
+                ]);
+            } elseif ($parent === $relatedTarget) {
+                $parent = null;
+            } else {
+                $aTarget = $parent;
+
+                // If isActivationEvent is true, activationTarget is null, and
+                // target has activation behavior, then set activationTarget to
+                // target.
+                if ($isActivationEvent &&
+                    $activationTarget === null &&
+                    $aTarget->hasActivationBehavior()
+                ) {
+                    $activationTarget = $aTarget;
+                }
+
+                // Append (parent, target, relatedTarget) to event’s path.
+                $path->push([
+                    'item'          => $parent,
+                    'target'        => $aTarget,
+                    'relatedTarget' => $relatedTarget
+                ]);
+            }
+
+            // If parent is non-null, then set parent to the result of invoking
+            // parent’s get the parent with event.
+            if ($parent !== null) {
+                $parent = $parent->getTheParent($aEvent);
+            }
         }
 
         $aEvent->setEventPhase(Event::CAPTURING_PHASE);
+
+        // If activationTarget is non-null and activationTarget has
+        // legacy-pre-activation behavior, then run activationTarget’s
+        // legacy-pre-activation behavior.
+        if ($activationTarget !== null &&
+            $activationTarget->hasLegacyPreActivationBehavior()
+        ) {
+            $activationTarget->legacyPreActivationBehavior();
+        }
 
         // Set path's iterator mode so that it iterates in the reverse
         // direction.
@@ -238,6 +333,13 @@ abstract class EventTarget
 
             $aEvent->setTarget($target);
 
+            // Set event’s relatedTarget to tuple’s relatedTarget.
+            $aEvent->setRelatedTarget($tuple['relatedTarget']);
+
+            // Run the retargeting steps with event.
+            $aEvent->retarget();
+
+            // If tuple’s target is null, then invoke tuple’s item with event.
             if ($tuple['target'] === null) {
                 $this->invokeEventListener($tuple['item'], $aEvent);
             }
@@ -264,12 +366,24 @@ abstract class EventTarget
 
             $aEvent->setTarget($target);
 
+            // Set event’s relatedTarget to tuple’s relatedTarget.
+            $aEvent->setRelatedTarget($tuple['relatedTarget']);
+
+            // Run the retargeting steps with event.
+            $aEvent->retarget();
+
+            // If tuple’s target is non-null, then set event’s eventPhase
+            // attribute to AT_TARGET. Otherwise, set event’s eventPhase
+            // attribute to BUBBLING_PHASE.
             if ($tuple['target'] !== null) {
                 $aEvent->setEventPhase(Event::AT_TARGET);
             } else {
                 $aEvent->setEventPhase(Event::BUBBLING_PHASE);
             }
 
+            // If either event’s eventPhase attribute is BUBBLING_PHASE and
+            // event’s bubbles attribute is true or event’s eventPhase attribute
+            // is AT_TARGET, then invoke tuple’s item with event.
             $phase = $aEvent->eventPhase;
             $shouldInvoke = ($phase == Event::BUBBLING_PHASE &&
                 $aEvent->bubbles) || $phase == Event::AT_TARGET;
@@ -279,15 +393,38 @@ abstract class EventTarget
             }
         }
 
+        // Unset event’s dispatch flag, stop propagation flag, and stop
+        // immediate propagation flag.
         $aEvent->unsetFlag(
             EventFlags::DISPATCH |
             EventFlags::STOP_PROPAGATION |
             EventFlags::STOP_IMMEDIATE_PROPAGATION
         );
+
+        // Set event’s eventPhase attribute to NONE.
         $aEvent->setEventPhase(Event::NONE);
+
+        // Set event’s currentTarget attribute to null.
         $aEvent->setCurrentTarget(null);
+
+        // Set event’s path to the empty list.
         $aEvent->emptyPath();
 
+        if ($activationTarget !== null) {
+            // If event’s canceled flag is unset, then run activationTarget’s
+            // activation behavior with event.
+            if (!($aEvent->getFlags() & EventFlags::CANCELED)) {
+                $activationTarget->runActivationBehavior($aEvent);
+
+                // Otherwise, if activationTarget has legacy-canceled-activation
+                // behavior, then run activationTarget’s
+                // legacy-canceled-activation behavior.
+            } elseif ($activationTarget->hasLegacyCanceledActivationBehavior()) {
+                $activationTarget->runLegacyCanceledActivationBehavior();
+            }
+        }
+
+        // Return false if event’s canceled flag is set, and true otherwise.
         return !($aEvent->getFlags() & EventFlags::CANCELED);
     }
 
@@ -370,6 +507,7 @@ abstract class EventTarget
     private function innerInvokeEventListener($aObject, $aEvent, $aListeners)
     {
         $found = false;
+        $indexOffset = 0;
 
         foreach ($aListeners as $index => $listener) {
             if ($listener->getRemoved() == false) {
@@ -404,7 +542,12 @@ abstract class EventTarget
                 // If listener’s once is true, then remove listener from
                 // object’s associated list of event listeners.
                 if ($listener->getOnce()) {
-                    array_splice($this->mListeners, $index, 1);
+                    array_splice(
+                        $aObject->mListeners,
+                        $index - $indexOffset,
+                        1
+                    );
+                    ++$indexOffset;
                 }
 
                 // If listener’s passive is true, set event’s in passive
@@ -447,7 +590,8 @@ abstract class EventTarget
      *
      * @return EventTarget|null
      */
-    protected function getTheParent($aEvent) {
+    protected function getTheParent($aEvent)
+    {
         return null;
     }
 
@@ -501,5 +645,20 @@ abstract class EventTarget
         }
 
         return [$capture, $passive, $once];
+    }
+
+    protected function hasActivationBehavior()
+    {
+        return false;
+    }
+
+    protected function hasLegacyPreActivationBehavior()
+    {
+        return false;
+    }
+
+    protected function hasLegacyCanceledActivationBehavior()
+    {
+        return false;
     }
 }

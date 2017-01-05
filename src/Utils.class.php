@@ -389,4 +389,26 @@ class Utils
 
         return implode("\x20", $aSet);
     }
+
+    /**
+     * @see https://dom.spec.whatwg.org/#retarget
+     *
+     * @param  Node $objectA
+     *
+     * @param  Node $objectB
+     */
+    public static function retargetObject($objectA, $objectB)
+    {
+        while (true) {
+            $root = $objectA->getRootNode();
+
+            if (!$root instanceof ShadowRoot ||
+                $root->isShadowIncludingInclusiveAncestorOf($objectB)
+            ) {
+                return $objectA;
+            }
+
+            $objectA = $root->getHost();
+        }
+    }
 }
