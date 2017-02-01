@@ -404,9 +404,15 @@ trait HTMLHyperlinkElementUtils
             return $this->mUrl->getPath()[0];
         }
 
+        $path = $this->mUrl->getPath();
+
+        if ($path->isEmpty()) {
+            return '';
+        }
+
         $output = '/';
 
-        foreach ($this->mUrl->getPath() as $key => $path) {
+        foreach ($path as $key => $path) {
             if ($key > 0) {
                 $output .= '/';
             }
