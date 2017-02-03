@@ -11,7 +11,7 @@ use phpjs\exceptions\DOMException;
 use phpjs\exceptions\HierarchyRequestError;
 use phpjs\exceptions\InvalidCharacterError;
 use phpjs\exceptions\NotSupportedError;
-use phpjs\urls\URLRecord;
+use phpjs\urls\URLParser;
 use phpjs\Utils;
 
 /**
@@ -821,7 +821,7 @@ class Document extends Node
             $url = ($ssl ? 'https' : 'http') . '://' . $_SERVER['SERVER_NAME'] .
                 $port . $_SERVER['REQUEST_URI'];
 
-            $this->mURL = URLRecord::basicURLParser($url);
+            $this->mURL = URLParser::parseUrl($url);
         }
 
 

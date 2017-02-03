@@ -2,7 +2,7 @@
 namespace phpjs\elements\html;
 
 use phpjs\elements\Element;
-use phpjs\urls\URLRecord;
+use phpjs\urls\URLParser;
 
 /**
  * @see https://html.spec.whatwg.org/multipage/semantics.html#the-base-element
@@ -28,7 +28,7 @@ class HTMLBaseElement extends HTMLElement
             case 'href':
                 $document = $this->mOwnerDocument;
                 $url = $this->mAttributesList->getAttrValue('href', null);
-                $urlRecord = URLRecord::URLParser(
+                $urlRecord = URLParser::parseUrl(
                     $url,
                     $document->getFallbackBaseURL(),
                     $document->characterSet
@@ -131,7 +131,7 @@ class HTMLBaseElement extends HTMLElement
         // href content attribute.
         if ($href !== null) {
             // Parse the Element's href attribute.
-            $urlRecord = URLRecord::URLParser(
+            $urlRecord = URLParser::parseUrl(
                 $href,
                 $fallbackBaseURL,
                 $document->characterSet

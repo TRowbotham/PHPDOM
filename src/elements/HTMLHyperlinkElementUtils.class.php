@@ -2,7 +2,7 @@
 namespace phpjs\elements;
 
 use phpjs\urls\HostFactory;
-use phpjs\urls\URLRecord;
+use phpjs\urls\URLParser;
 
 /**
  * @see https://html.spec.whatwg.org/multipage/semantics.html#htmlhyperlinkelementutils
@@ -91,7 +91,7 @@ trait HTMLHyperlinkElementUtils
             return ':';
         }
 
-        return $this->mUrl->getScheme() . ':';
+        return $this->mUrl->scheme . ':';
     }
 
     /**
@@ -112,12 +112,12 @@ trait HTMLHyperlinkElementUtils
             return;
         }
 
-        URLRecord::basicURLParser(
+        URLParser::parseBasicUrl(
             $aValue . ':',
             null,
             null,
             $this->mUrl,
-            URLRecord::SCHEME_START_STATE
+            URLParser::SCHEME_START_STATE
         );
         $this->mAttributesList->setAttrValue(
             'href',
@@ -142,7 +142,7 @@ trait HTMLHyperlinkElementUtils
             return '';
         }
 
-        return $this->mUrl->getUsername();
+        return $this->mUrl->username;
     }
 
     /**
@@ -156,15 +156,15 @@ trait HTMLHyperlinkElementUtils
     protected function setUsername($aValue)
     {
         $this->reinitialiseUrl();
-        $isInvalidURL = $this->mUrl === null ||
-            $this->mUrl->getHost() === null ||
-            $this->mUrl->isFlagSet(URLRecord::FLAG_CANNOT_BE_A_BASE_URL);
 
-        if ($isInvalidURL) {
+        if ($this->mUrl === null ||
+            $this->mUrl->host === null ||
+            $this->mUrl->cannotBeABaseUrl
+        ) {
             return;
         }
 
-        $this->mUrl->setUsernameSteps($aValue);
+        $this->mUrl->setUsername($aValue);
         $this->mAttributesList->setAttrValue(
             'href',
             $this->mUrl->serializeURL()
@@ -188,7 +188,7 @@ trait HTMLHyperlinkElementUtils
             return '';
         }
 
-        return $this->mUrl->getPassword();
+        return $this->mUrl->password;
     }
 
     /**
@@ -202,15 +202,15 @@ trait HTMLHyperlinkElementUtils
     protected function setPassword($aValue)
     {
         $this->reinitialiseUrl();
-        $isInvalidURL = $this->mUrl === null ||
-            $this->mUrl->getHost() === null ||
-            $this->mUrl->isFlagSet(URLRecord::FLAG_CANNOT_BE_A_BASE_URL);
 
-        if ($isInvalidURL) {
+        if ($this->mUrl === null ||
+            $this->mUrl->host === null ||
+            $this->mUrl->cannotBeABaseUrl
+        ) {
             return;
         }
 
-        $this->mUrl->setPasswordSteps($aValue);
+        $this->mUrl->setPassword($aValue);
         $this->mAttributesList->setAttrValue(
             'href',
             $this->mUrl->serializeURL()
@@ -229,18 +229,17 @@ trait HTMLHyperlinkElementUtils
     protected function getHost()
     {
         $this->reinitialiseURL();
-        $isInvalidURL = $this->mUrl === null ||
-            ($host = $this->mUrl->getHost()) === null;
 
-        if ($isInvalidURL) {
+        if ($this->mUrl === null || $this->mUrl->host === null) {
             return '';
         }
 
-        if (($port = $this->mUrl->getPort()) === null) {
-            return HostFactory::serialize($host);
+        if ($this->mUrl->port === null) {
+            return HostFactory::serialize($this->mUrl->host);
         }
 
-        return HostFactory::serialize($host) . ':' . $port;
+        return HostFactory::serialize($this->mUrl->host) . ':' .
+            $this->mUrl->port;
     }
 
     /**
@@ -254,19 +253,17 @@ trait HTMLHyperlinkElementUtils
     protected function setHost($aValue)
     {
         $this->reinitialiseUrl();
-        $isInvalidURL = $this->mUrl === null ||
-            $this->mUrl->isFlagSet(URLRecord::FLAG_CANNOT_BE_A_BASE_URL);
 
-        if ($isInvalidURL) {
+        if ($this->mUrl === null || $this->mUrl->cannotBeABaseUrl) {
             return;
         }
 
-        URLRecord::basicURLParser(
+        URLParser::parseBasicUrl(
             $aValue,
             null,
             null,
             $this->mUrl,
-            URLRecord::HOST_STATE
+            URLParser::HOST_STATE
         );
         $this->mAttributesList->setAttrValue(
             'href',
@@ -287,11 +284,11 @@ trait HTMLHyperlinkElementUtils
     {
         $this->reinitialiseURL();
 
-        if ($this->mUrl === null || ($host = $this->mUrl->getHost()) === null) {
+        if ($this->mUrl === null || $this->mUrl->host === null) {
             return '';
         }
 
-        return HostFactory::serialize($host);
+        return HostFactory::serialize($this->mUrl->host);
     }
 
     /**
@@ -305,19 +302,17 @@ trait HTMLHyperlinkElementUtils
     protected function setHostname($aValue)
     {
         $this->reinitialiseUrl();
-        $isInvalidURL = $this->mUrl === null ||
-            $this->mUrl->isFlagSet(URLRecord::FLAG_CANNOT_BE_A_BASE_URL);
 
-        if ($isInvalidURL) {
+        if ($this->mUrl === null || $this->mUrl->cannotBeABaseUrl) {
             return;
         }
 
-        URLRecord::basicURLParser(
+        URLParser::parseBasicUrl(
             $aValue,
             null,
             null,
             $this->mUrl,
-            URLRecord::HOSTNAME_STATE
+            URLParser::HOSTNAME_STATE
         );
         $this->mAttributesList->setAttrValue(
             'href',
@@ -338,11 +333,11 @@ trait HTMLHyperlinkElementUtils
     {
         $this->reinitialiseURL();
 
-        if ($this->mUrl === null || ($port = $this->mUrl->getPort()) === null) {
+        if ($this->mUrl === null || $this->mUrl->port === null) {
             return '';
         }
 
-        return $port;
+        return $this->mUrl->port;
     }
 
     /**
@@ -356,24 +351,24 @@ trait HTMLHyperlinkElementUtils
     protected function setPort($aValue)
     {
         $this->reinitialiseUrl();
-        $isInvalidURL = $this->mUrl === null ||
-            $this->mUrl->getHost() === null ||
-            $this->mUrl->isFlagSet(URLRecord::FLAG_CANNOT_BE_A_BASE_URL) ||
-            $this->mUrl->getScheme() === 'file';
 
-        if ($isInvalidURL) {
+        if ($this->mUrl === null ||
+            $this->mUrl->host === null ||
+            $this->mUrl->cannotBeABaseUrl ||
+            $this->mUrl->scheme === 'file'
+        ) {
             return;
         }
 
         if ($aValue === '') {
-            $this->mUrl->setPort(null);
+            $this->mUrl->port = null;
         } else {
-            URLRecord::basicURLParser(
+            URLParser::parseBasicUrl(
                 $aValue,
                 null,
                 null,
                 $this->mUrl,
-                URLRecord::PORT_STATE
+                URLParser::PORT_STATE
             );
         }
 
@@ -400,27 +395,15 @@ trait HTMLHyperlinkElementUtils
             return '';
         }
 
-        if ($this->mUrl->isFlagSet(URLRecord::FLAG_CANNOT_BE_A_BASE_URL)) {
-            return $this->mUrl->getPath()[0];
+        if ($this->mUrl->cannotBeABaseUrl) {
+            return $this->mUrl->path[0];
         }
 
-        $path = $this->mUrl->getPath();
-
-        if ($path->isEmpty()) {
+        if (empty($this->mUrl->path)) {
             return '';
         }
 
-        $output = '/';
-
-        foreach ($path as $key => $path) {
-            if ($key > 0) {
-                $output .= '/';
-            }
-
-            $output .= $path;
-        }
-
-        return $output;
+        return '/' . implode('/', $this->mUrl->path);
     }
 
     /**
@@ -434,20 +417,18 @@ trait HTMLHyperlinkElementUtils
     protected function setPathname($aValue)
     {
         $this->reinitialiseUrl();
-        $isInvalidURL = $this->mUrl === null ||
-            $this->mUrl->isFlagSet(URLRecord::FLAG_CANNOT_BE_A_BASE_URL);
 
-        if ($isInvalidURL) {
+        if ($this->mUrl === null || $this->mUrl->cannotBeABaseUrl) {
             return;
         }
 
-        $this->mUrl->setPath(new \SplDoublyLinkedList());
-        URLRecord::basicURLParser(
+        $this->mUrl->path = [];
+        URLParser::parseBasicUrl(
             $aValue,
             null,
             null,
             $this->mUrl,
-            URLRecord::PATH_START_STATE
+            URLParser::PATH_START_STATE
         );
         $this->mAttributesList->setAttrValue(
             'href',
@@ -467,14 +448,15 @@ trait HTMLHyperlinkElementUtils
     protected function getSearch()
     {
         $this->reinitialiseURL();
-        $isInvalidURL = $this->mUrl === null ||
-            ($query = $this->mUrl->getQuery()) === null || $query === '';
 
-        if ($isInvalidURL) {
+        if ($this->mUrl === null ||
+            $this->mUrl->query === null ||
+            $this->mUrl->query === ''
+        ) {
             return '';
         }
 
-        return '?' . $query;
+        return '?' . $this->mUrl->query;
     }
 
     /**
@@ -494,7 +476,7 @@ trait HTMLHyperlinkElementUtils
         }
 
         if ($aValue === '') {
-            $this->mUrl->setQuery(null);
+            $this->mUrl->query = null;
         } else {
             $input = $aValue;
 
@@ -502,13 +484,13 @@ trait HTMLHyperlinkElementUtils
                 $input = mb_substr($aValue, 1);
             }
 
-            $this->mUrl->setQuery('');
-            URLRecord::basicURLParser(
+            $this->mUrl->query = '';
+            URLParser::parseBasicUrl(
                 $input,
                 null,
                 $this->mOwnerDocument->characterSet,
                 $this->mUrl,
-                URLRecord::QUERY_STATE
+                URLParser::QUERY_STATE
             );
         }
 
@@ -530,15 +512,15 @@ trait HTMLHyperlinkElementUtils
     protected function getHash()
     {
         $this->reinitialiseURL();
-        $isInvalidURL = $this->mUrl === null ||
-            ($fragment = $this->mUrl->getFragment()) === null ||
-            $fragment === '';
 
-        if ($isInvalidURL) {
+        if ($this->mUrl === null ||
+            $this->mUrl->fragment === null ||
+            $this->mUrl->fragment === ''
+        ) {
             return '';
         }
 
-        return '#' . $fragment;
+        return '#' . $this->mUrl->fragment;
     }
 
     /**
@@ -553,12 +535,12 @@ trait HTMLHyperlinkElementUtils
     {
         $this->reinitialiseUrl();
 
-        if ($this->mUrl === null || $this->mUrl->getScheme() === 'javascript') {
+        if ($this->mUrl === null || $this->mUrl->scheme === 'javascript') {
             return;
         }
 
         if ($aValue === '') {
-            $this->mUrl->setFragment(null);
+            $this->mUrl->fragment = null;
         } else {
             $input = $aValue;
 
@@ -566,13 +548,13 @@ trait HTMLHyperlinkElementUtils
                 $input = mb_substr($aValue, 1);
             }
 
-            $this->mUrl->setFragment('');
-            URLRecord::basicURLParser(
+            $this->mUrl->fragment = '';
+            URLParser::parseBasicUrl(
                 $input,
                 null,
                 null,
                 $this->mUrl,
-                URLRecord::FRAGMENT_STATE
+                URLParser::FRAGMENT_STATE
             );
         }
 
@@ -591,10 +573,10 @@ trait HTMLHyperlinkElementUtils
      */
     protected function reinitialiseUrl()
     {
-        $shouldTerminate = $this->mUrl && $this->mUrl->getScheme() === 'blob' &&
-            $this->mUrl->isFlagSet(URLRecord::FLAG_CANNOT_BE_A_BASE_URL);
-
-        if ($shouldTerminate) {
+        if ($this->mUrl &&
+            $this->mUrl->scheme === 'blob' &&
+            $this->mUrl->cannotBeABaseUrl
+        ) {
             // Terminate these steps
             return;
         }
