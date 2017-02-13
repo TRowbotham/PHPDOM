@@ -41,6 +41,7 @@ class Document extends Node
     private $mNodeIteratorList;
     private $mURL;
     private $readyState;
+    private $source;
 
     public function __construct()
     {
@@ -67,6 +68,8 @@ class Document extends Node
         // with an HTML parser, an XML parser, or an XSLT processor, and to the
         // string "complete" otherwise.
         $this->readyState = DocumentReadyState::COMPLETE;
+
+        $this->source = DocumentSource::NOT_FROM_PARSER;
     }
 
     public function __destruct()
