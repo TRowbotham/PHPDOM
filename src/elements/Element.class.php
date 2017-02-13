@@ -464,6 +464,100 @@ class Element extends Node implements AttributeChangeObserver
         }
     }
 
+    /**
+     * Parses the given string text as HTML or XML and inserts the resulting
+     * nodes into the tree in the position given by the position argument, as
+     * follows:
+     *     - "beforebegin": Before the element itself.
+     *     - "afterbegin": Just inside the element, before its first child.
+     *     - "beforeend": Just inside the element, after its last child.
+     *     - "afterend": After the element itself.
+     *
+     * NOTE: No special handling for template elements is included in the below
+     * "afterbegin" and "beforeend" cases. As with other direct
+     * Node-manipulation APIs (and unlike innerHTML), insertAdjacentHTML does
+     * not include any special handling for template elements. In most cases you
+     * will wish to use template.content.insertAdjacentHTML instead of directly
+     * manipulating the child nodes of a template element.
+     *
+     * @see https://w3c.github.io/DOM-Parsing/#dom-element-insertadjacenthtml
+     *
+     * @param string $aPosition One of the types listed above.
+     *
+     * @param string $aText The markup text to parse and subsequently, insert
+     *     relative to this element.
+     *
+     * @throws SyntaxError If the arguments contain invalid values, such as an
+     *     XML string that is not well-formed, when in an XML Document.
+     *
+     * @throws NoModificationError If the given position for insertion isn't
+     *     possible, such as trying to insert elements after the document.
+     */
+    public function insertAdjacentHTML($aPosition, $aText)
+    {
+        $position = Utils::DOMString($aPosition);
+
+        if (strcasecmp($position, 'beforebegin') === 0 ||
+            strcasecmp($position, 'afterend') === 0
+        ) {
+            // Let context be the context object's parent.
+            $context = $this->mParentNode;
+
+            // If context is null or a Document, throw a
+            // "NoModificationAllowedError" DOMException.
+            if (!$context || $context instanceof Document) {
+                throw new NoModificationAllowedError();
+            }
+        } elseif (strcasecmp($position, 'afterbegin') === 0 ||
+            strcasecmp($position, 'beforeend') === 0
+        ) {
+            // Let context be the context object.
+            $context = $this;
+        } else {
+            // Throw a "SyntaxError" DOMException.
+            throw new SyntaxError();
+        }
+
+        // If the context is not an Element or the context's node document is an
+        // HTML document, context's local name is "html", and context's
+        // namespace is the HTML namespace. Let context be a new Element with
+        // "body" as its local name, the HTML namespace as its namespace, and
+        // the context object's node document as its node document.
+        if (!($context instanceof Element) ||
+            ($context->mOwnerDocument instanceof HTMLDocument &&
+                $context->mLocalName === 'html' &&
+                $context->mNamespaceURI === Namespaces::HTML)
+        ) {
+            $context = self::create(
+                $this->mOwnerDocument,
+                'body',
+                Namespaces::HTML
+            );
+        }
+
+        // Let fragment be the result of invoking the fragment parsing algorithm
+        // with text as markup, and context as the context element.
+        $fragment = ParserFactory::parseFragment(
+            Utils::DOMString($aText),
+            $context
+        );
+
+        if (strcasecmp($position, 'beforebegin') === 0) {
+            // Insert fragment into the context object's parent before the
+            // context object.
+            $this->mParentNode->insertNode($fragment, $this);
+        } elseif (strcasecmp($position, 'afterbegin') === 0) {
+            // Insert fragment into the context object before its first child.
+            $this->insertNode($fragment, $this->mFirstChild);
+        } elseif (strcasecmp($position, 'beforeend') === 0) {
+            // Append fragment to the context object.
+            $this->appendChild($fragment);
+        } elseif (strcasecmp($position, 'afterend') === 0) {
+            // Insert fragment into the context object's parent before the
+            // context object's next sibling.
+            $this->mParentNode->insertNode($fragment, $this->mNextSibling);
+        }
+    }
 
     /**
      * Inserts plain text adjacent to the current element.
