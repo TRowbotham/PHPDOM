@@ -88,13 +88,11 @@ class Element extends Node implements AttributeChangeObserver
                 return $this->mAttributesList->getAttrValue($aName);
 
             case 'innerHTML':
-                $rv = '';
-
-                foreach ($this->mChildNodes as $child) {
-                    $rv .= $child->toHTML();
-                }
-
-                return $rv;
+                // On getting, return the result of invoking the fragment
+                // serializing algorithm on the context object providing true
+                // for the require well-formed flag (this might throw an
+                // exception instead of returning a string).
+                return ParserFactory::serializeFragment($this, true);
 
             case 'lastElementChild':
                 return $this->getLastElementChild();
@@ -143,6 +141,30 @@ class Element extends Node implements AttributeChangeObserver
                     $aName,
                     Utils::DOMString($aValue)
                 );
+
+                break;
+
+            case 'innerHTML':
+                // Let fragment be the result of invoking the fragment parsing
+                // algorithm with the new value as markup, and the context
+                // object as the context element.
+                $fragment = ParserFactory::parseFragment(
+                    Utils::DOMString($aValue, true),
+                    $this
+                );
+
+                // If the context object is a template element, then let context
+                // object be the template's template contents (a
+                // DocumentFragment).
+                $context = $this instanceof HTMLTemplateElement ?
+                    $this->mContent : $this;
+
+                // NOTE: Setting innerHTML on a template element will replace
+                // all the nodes in its template contents (template.content)
+                // rather than its children.
+
+                // Replace all with fragment within the context object.
+                $this->_replaceAll($fragment);
 
                 break;
 
