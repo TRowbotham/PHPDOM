@@ -38,6 +38,7 @@ class Document extends Node
     private $mCompatMode;
     private $mImplementation;
     private $mIsIframeSrcdoc;
+    private $mIsHTMLDocument;
     private $mNodeIteratorList;
     private $mURL;
     private $readyState;
@@ -659,6 +660,11 @@ class Document extends Node
     public function setMode($aMode)
     {
         $this->mMode = $aMode;
+    }
+
+    public function isHTMLDocument()
+    {
+        return $this->mIsHTMLDocument;
     }
 
     public function isIframeSrcdoc()
