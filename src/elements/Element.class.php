@@ -9,6 +9,7 @@ use phpjs\Document;
 use phpjs\DOMTokenList;
 use phpjs\exceptions\DOMException;
 use phpjs\exceptions\InUseAttributeError;
+use phpjs\exceptions\NoModificationAllowedError;
 use phpjs\exceptions\NotFoundError;
 use phpjs\GetElementsBy;
 use phpjs\HTMLDocument;
@@ -18,6 +19,7 @@ use phpjs\Node;
 use phpjs\NodeFilter;
 use phpjs\NonDocumentTypeChildNode;
 use phpjs\ParentNode;
+use phpjs\parser\ParserFactory;
 use phpjs\Text;
 use phpjs\TreeWalker;
 use phpjs\urls\URLParser;
@@ -100,6 +102,18 @@ class Element extends Node implements AttributeChangeObserver
             case 'localName':
                 return $this->mLocalName;
 
+            case 'outerHTML':
+                // On getting, return the result of invoking the fragment
+                // serializing algorithm on a fictional node whose only child is
+                // the context object providing true for the require well-formed
+                // flag (this might throw an exception instead of returning a
+                // string).
+                $fakeNode = self::create($this, 'fake', Namespaces::HTML);
+                $fakeNode->mOwnerDocument = $this->mOwnerDocument;
+                $fakeNode->mChildNodes[] = $this;
+
+                return ParserFactory::serializeFragment($fakeNode, true);
+
             case 'namespaceURI':
                 return $this->mNamespaceURI;
 
@@ -165,6 +179,49 @@ class Element extends Node implements AttributeChangeObserver
 
                 // Replace all with fragment within the context object.
                 $this->_replaceAll($fragment);
+
+                break;
+
+            case 'outerHTML':
+                // Let parent be the context object's parent.
+                $parent = $this->mParentNode;
+
+                // If parent is null, terminate these steps. There would be no
+                // way to obtain a reference to the nodes created even if the
+                // remaining steps were run.
+                if (!$parent) {
+                    return;
+                }
+
+                // If parent is a Document, throw a
+                // "NoModificationAllowedError" DOMException.
+                if ($parent instanceof Document) {
+                    throw new NoModificationAllowedError();
+                }
+
+                // If parent is a DocumentFragment, let parent be a new Element
+                // with body as its local name, the HTML namespace as its
+                // namespace, and the context object's node document as its node
+                // document.
+                if ($parent instanceof DocumentFragment) {
+                    $parent = self::create(
+                        $this->mOwnerDocument,
+                        'body',
+                        Namespaces::HTML
+                    );
+                }
+
+                // Let fragment be the result of invoking the fragment parsing
+                // algorithm with the new value as markup, and parent as the
+                // context element.
+                $fragment = ParserFactory::parseFragment(
+                    Utils::DOMString($aValue, true),
+                    $parent
+                );
+
+                // Replace the context object with fragment within the context
+                // object's parent.
+                $this->mParentNode->replaceNode($fragment, $this);
 
                 break;
 
