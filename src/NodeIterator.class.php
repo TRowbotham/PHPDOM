@@ -80,14 +80,15 @@ final class NodeIterator
         }
 
         if ($this->mPointerBeforeReferenceNode) {
-            $root = $this->mRoot;
-            $filter = function ($aNode) use ($root, $aNodeToBeRemoved) {
-                return $root->contains($aNode) &&
-                    !$aNodeToBeRemoved->contains($aNode) ?
-                        NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_REJECT;
-            };
-            $iter = new TreeWalker($this->mRoot, NodeFilter::SHOW_ALL, $filter);
-            $iter->currentNode = $aNodeToBeRemoved;
+            $iter = new self(
+                $this->mRoot,
+                NodeFilter::SHOW_ALL,
+                function ($aNode) use ($aNodeToBeRemoved) {
+                    return !$aNode->isInclusiveDescendantOf($aNodeToBeRemoved)
+                        ? NodeFilter::FILTER_ACCEPT
+                        : NodeFilter::FILTER_REJECT;
+                }
+            );
             $next = $iter->nextNode();
 
             if ($next) {
@@ -100,15 +101,16 @@ final class NodeIterator
 
         $node = $aNodeToBeRemoved->previousSibling;
 
-        if ($node) {
-            while (($lastChild = $node->lastChild)) {
-                $node = $lastChild;
-            }
-        } else {
-            $node = $aNodeToBeRemoved->parentNode;
+        if (!$node) {
+            $this->mReferenceNode = $aNodeToBeRemoved->parentNode;
+            return;
         }
 
-        $this->mReferenceNode = $node;
+        $iter = new self($node);
+
+        while ($temp = $iter->nextNode()) {
+            $this->mReferenceNode = $temp;
+        }
     }
 
     private function traverse($aDirection)
