@@ -1,7 +1,7 @@
 <?php
 namespace phpjs\support;
 
-class CodePointStream implements Stream
+class CodePointStream
 {
     const SEEK_RELATIVE = 1;
     const SEEK_ABSOLUTE = 2;
