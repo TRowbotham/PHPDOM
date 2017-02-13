@@ -99,6 +99,35 @@ class OrderedSet implements ArrayAccess, Countable, Iterator
         return isset($this->map[$this->hash($item)]);
     }
 
+    public function insertBefore($item, $newItem)
+    {
+        $hash = $this->hash($item);
+
+        if (!isset($this->map[$hash])) {
+            return;
+        }
+
+        $newHash = $this->hash($newItem);
+
+        if (isset($this->map[$newHash])) {
+            return;
+        }
+
+        if ($this->keys[0] === $hash) {
+            array_unshift($this->keys, $newHash);
+            $this->map = [$newHash => $newItem] + $this->map;
+            $this->length++;
+            return;
+        }
+
+        $offset = array_flip($this->keys)[$hash];
+        $this->map = array_slice($this->map, 0, $offset, true)
+            + [$newHash => $newItem]
+            + array_slice($this->map, $offset - 1, null, true);
+        array_splice($this->keys, $offset, 0, $newHash);
+        $this->length++;
+    }
+
     public function count()
     {
         return $this->length;
