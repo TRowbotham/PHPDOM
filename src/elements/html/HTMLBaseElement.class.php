@@ -147,4 +147,28 @@ class HTMLBaseElement extends HTMLElement
             $this->mFrozenBaseURL = $urlRecord;
         }
     }
+
+    protected function doInsertingSteps()
+    {
+        if ($this->mParentNode instanceof HTMLHeadElement) {
+            $node = $this;
+
+            while ($node) {
+                $node = $node->mPreviousSibling;
+                $isValid = $node instanceof HTMLBaseElement &&
+                    $this->mAttributesList->getAttrByNamespaceAndLocalName(
+                        null,
+                        'href'
+                    );
+
+                if ($isValid) {
+                    break;
+                }
+            }
+
+            if (!$node) {
+                $this->setFrozenBaseURL();
+            }
+        }
+    }
 }

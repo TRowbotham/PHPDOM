@@ -46,3 +46,7 @@ Temporary Items
 index.php
 events.php
 *.sublime-*
+
+composer.lock
+tests/
+vendor/
