@@ -9,6 +9,7 @@ use phpjs\Document;
 use phpjs\DOMTokenList;
 use phpjs\exceptions\DOMException;
 use phpjs\exceptions\InUseAttributeError;
+use phpjs\exceptions\InvalidStateError;
 use phpjs\exceptions\NotFoundError;
 use phpjs\GetElementsBy;
 use phpjs\HTMLDocument;
@@ -18,6 +19,8 @@ use phpjs\Node;
 use phpjs\NodeFilter;
 use phpjs\NonDocumentTypeChildNode;
 use phpjs\ParentNode;
+use phpjs\ShadowRoot;
+use phpjs\ShadowRootMode;
 use phpjs\Text;
 use phpjs\TreeWalker;
 use phpjs\urls\URLParser;
@@ -40,6 +43,7 @@ class Element extends Node implements AttributeChangeObserver
     protected $mLocalName;
     protected $mNamespaceURI;
     protected $mPrefix;
+    protected $mShadowRoot;
 
     protected function __construct()
     {
@@ -52,6 +56,7 @@ class Element extends Node implements AttributeChangeObserver
         $this->mNamespaceURI = null;
         $this->mNodeType = self::ELEMENT_NODE;
         $this->mPrefix = null;
+        $this->mShadowRoot = null;
         $this->mAttributesList->observe($this);
     }
 
@@ -114,6 +119,15 @@ class Element extends Node implements AttributeChangeObserver
             case 'previousElementSibling':
                 return $this->getPreviousElementSibling();
 
+            case 'shadowRoot':
+                if ($this->mShadowRoot === null ||
+                    $this->mShadowRoot->mode === ShadowRootMode::CLOSED
+                ) {
+                    return null;
+                }
+
+                return $this->mShadowRoot;
+
             case 'tagName':
                 return $this->getTagName();
 
@@ -149,6 +163,55 @@ class Element extends Node implements AttributeChangeObserver
             default:
                 parent::__set($aName, $aValue);
         }
+    }
+
+    /**
+     * @see https://dom.spec.whatwg.org/#dom-element-attachshadow
+     * @param  array $aInit [description]
+     * @return [type]                [description]
+     */
+    public function attachShadow(array $aInit)
+    {
+        if ($this->mNamespaceURI !== Namespaces::HTML) {
+            throw new NotSupportedError();
+        }
+
+        $isValidMode = isset($aInit['mode']) && (
+            $aInit['mode'] === ShadowRootMode::OPEN ||
+            $aInit['mode'] === ShadowRootMode::CLOSED);
+
+        if (!$isValidMode) {
+            throw new TypeError();
+        }
+
+        // If context object’s local name is not a valid custom element name,
+        // "article", "aside", "blockquote", "body", "div", "footer", "h1",
+        // "h2", "h3", "h4", "h5", "h6", "header", "nav", "p", "section", or
+        // "span", then throw a NotSupportedError.
+        $isValidElement = preg_match(
+            '/^(article|aside|blockquote|body|div|footer|h[1-6]|header|main|' .
+            'nav|p|section|span)$/',
+            $this->mLocalName
+        );
+
+        if (!$isValidElement) {
+            throw new NotSupportedError();
+        }
+
+        // If context object is a shadow host, then throw an InvalidStateError.
+        if ($this->mShadowRoot) {
+            throw new InvalidStateError();
+        }
+
+        // Let shadow be a new shadow root whose node document is context
+        // object’s node document, host is context object, and mode is init’s
+        // mode.
+        $this->mShadowRoot = new ShadowRoot();
+        $this->mShadowRoot->setOwnerDocument($this->mOwnerDocument);
+        $this->mShadowRoot->setHost($this);
+        $this->mShadowRoot->setMode($aInit['mode']);
+
+        return $this->mShadowRoot;
     }
 
     public function closest($aSelectorRule)
