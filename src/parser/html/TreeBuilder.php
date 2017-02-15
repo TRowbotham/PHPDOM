@@ -21,7 +21,6 @@ use phpjs\elements\html\HTMLImageElement;
 use phpjs\elements\html\HTMLInputElement;
 use phpjs\elements\html\HTMLKeygenElement;
 use phpjs\elements\html\HTMLLIElement;
-use phpjs\elements\html\HTMLMenuItemElement;
 use phpjs\elements\html\HTMLObjectElement;
 use phpjs\elements\html\HTMLOptGroupElement;
 use phpjs\elements\html\HTMLOptionElement;
@@ -1079,13 +1078,13 @@ class TreeBuilder
             }
 
             // If there is a node in the stack of open elements that is not
-            // either a dd element, a dt element, an li element, a menuitem
-            // element, an optgroup element, an option element, a p element,
-            // an rb element, an rp element, an rt element, an rtc element, a
-            // tbody element, a td element, a tfoot element, a th element, a
-            // thead element, a tr element, the body element, or the html
-            // element, then this is a parse error.
-            $pattern = '/^(dd|dt|li|menuitem|optgroup|option|p|rb|rp|rt|rtc|';
+            // either a dd element, a dt element, an li element, an optgroup
+            // element, an option element, a p element, an rb element, an rp
+            // element, an rt element, an rtc element, a tbody element, a td
+            // element, a tfoot element, a th element, a thead element, a tr
+            // element, the body element, or the html element, then this is a
+            // parse error.
+            $pattern = '/^(dd|dt|li|optgroup|option|p|rb|rp|rt|rtc|';
             $pattern .= 'tbody|td|tfoot|th|thead|tr|body|html)$/';
 
             foreach ($this->mOpenElements as $el) {
@@ -1112,14 +1111,13 @@ class TreeBuilder
             }
 
             // Otherwise, if there is a node in the stack of open elements
-            // that is not either a dd element, a dt element, an li element,
-            // a menuitem element, an optgroup element, an option element,
-            // a p element, an rb element, an rp element, an rt element,
-            // an rtc element, a tbody element, a td element, a tfoot
-            // element, a th element, a thead element, a tr element, the
-            // body element, or the html element, then this is a parse
-            // error.
-            $pattern = '/^(dd|dt|li|menuitem|optgroup|option|p|rb|rp|rt|';
+            // that is not either a dd element, a dt element, an li element, an
+            // optgroup element, an option element, a p element, an rb element,
+            // an rp element, an rt element, an rtc element, a tbody element, a
+            // td element, a tfoot element, a th element, a thead element, a tr
+            // element, the body element, or the html element, then this is a
+            // parse error.
+            $pattern = '/^(dd|dt|li|optgroup|option|p|rb|rp|rt|';
             $pattern .= 'rtc|tbody|td|tfoot|th|thead|tr|body|html)$/';
 
             foreach ($this->mOpenElements as $el) {
@@ -1146,13 +1144,13 @@ class TreeBuilder
             }
 
             // Otherwise, if there is a node in the stack of open elements
-            // that is not either a dd element, a dt element, an li element,
-            // a menuitem element, an optgroup element, an option element,
-            // a p element, an rb element, an rp element, an rt element, an
-            // rtc element, a tbody element, a td element, a tfoot element,
-            // a th element, a thead element, a tr element, the body
-            // element, or the html element, then this is a parse error.
-            $pattern = '/^(dd|dt|li|menuitem|optgroup|option|p|rb|rp|rt|';
+            // that is not either a dd element, a dt element, an li element an
+            // optgroup element, an option element, a p element, an rb element,
+            // an rp element, an rt element, an rtc element, a tbody element, a
+            // td element, a tfoot element, a th element, a thead element, a tr
+            // element, the body element, or the html element, then this is a
+            // parse error.
+            $pattern = '/^(dd|dt|li|optgroup|option|p|rb|rp|rt|';
             $pattern .= 'rtc|tbody|td|tfoot|th|thead|tr|body|html)$/';
 
             foreach ($this->mOpenElements as $el) {
@@ -1173,7 +1171,7 @@ class TreeBuilder
             preg_match(
                 '/^(address|article|aside|blockquote|center|details|dialog|' .
                 'dir|div|dl|fieldset|figcaption|figure|footer|header|hgroup|' .
-                'main|nav|ol|p|section|summary|ul)$/',
+                'main|menu|nav|ol|p|section|summary|ul)$/',
                 $tagName
             )
         ) {
@@ -1184,24 +1182,6 @@ class TreeBuilder
                 Namespaces::HTML
             )) {
                 $this->closePElement();
-            }
-
-            // Insert an HTML element for the token.
-            $this->insertForeignElement($aToken, Namespaces::HTML);
-        } elseif ($tokenType == Token::START_TAG_TOKEN && $tagName === 'menu') {
-            // If the stack of open elements has a p element in button scope,
-            // then close a p element.
-            if ($this->mOpenElements->hasElementInButtonScope(
-                'p',
-                Namespaces::HTML
-            )) {
-                $this->closePElement();
-            }
-
-            // If the current node is a menuitem element, pop that node from
-            // the stack of open elements.
-            if ($this->mOpenElements->top() instanceof HTMLMenuItemElement) {
-                $this->mOpenElements->pop();
             }
 
             // Insert an HTML element for the token.
@@ -2025,12 +2005,6 @@ class TreeBuilder
                 $this->closePElement();
             }
 
-            // If the current node is a menuitem element, pop that node from
-            // the stack of open elements.
-            if ($this->mOpenElements->top() instanceof HTMLMenuItemElement) {
-                $this->mOpenElements->pop();
-            }
-
             // Insert an HTML element for the token. Immediately pop the
             // current node off the stack of open elements.
             $this->insertForeignElement($aToken, Namespaces::HTML);
@@ -2155,20 +2129,6 @@ class TreeBuilder
             // If the current node is an option element, then pop the current
             // node off the stack of open elements.
             if ($this->mOpenElements->top() instanceof HTMLOptionElement) {
-                $this->mOpenElements->pop();
-            }
-
-            // Reconstruct the active formatting elements, if any.
-            $this->reconstructActiveFormattingElements();
-
-            // Insert an HTML element for the token.
-            $this->insertForeignElement($aToken, Namespaces::HTML);
-        } elseif ($tokenType == Token::START_TAG_TOKEN &&
-            $tagName === 'menuitem'
-        ) {
-            // If the current node is a menuitem element, then pop the current
-            // node off the stack of open elements.
-            if ($this->mOpenElements->top() instanceof HTMLMenuItemElement) {
                 $this->mOpenElements->pop();
             }
 
