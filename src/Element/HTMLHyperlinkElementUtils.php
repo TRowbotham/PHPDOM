@@ -157,9 +157,8 @@ trait HTMLHyperlinkElementUtils
     {
         $this->reinitialiseUrl();
 
-        if ($this->url === null
-            || $this->url->host === null
-            || $this->url->cannotBeABaseUrl
+        if ($this->url === null ||
+            $this->url->cannotHaveUsernamePasswordPort()
         ) {
             return;
         }
@@ -203,9 +202,8 @@ trait HTMLHyperlinkElementUtils
     {
         $this->reinitialiseUrl();
 
-        if ($this->url === null
-            || $this->url->host === null
-            || $this->url->cannotBeABaseUrl
+        if ($this->url === null ||
+            $this->url->cannotHaveUsernamePasswordPort()
         ) {
             return;
         }
@@ -352,10 +350,8 @@ trait HTMLHyperlinkElementUtils
     {
         $this->reinitialiseUrl();
 
-        if ($this->url === null
-            || $this->url->host === null
-            || $this->url->cannotBeABaseUrl
-            || $this->url->scheme === 'file'
+        if ($this->url === null ||
+            $this->url->cannotHaveUsernamePasswordPort()
         ) {
             return;
         }
