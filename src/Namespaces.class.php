@@ -15,26 +15,22 @@ class Namespaces
     const MATHML = 'http://www.w3.org/1998/Math/MathML';
     const XLINK = 'http://www.w3.org/1999/xlink';
 
-    const NAME_START_CHAR = ':|[A-Z]|_|[a-z]|[\xC0-\xD6]|[\xD8-\xF6]|' .
+    // Same as NAME_START_CHAR, but without the ":".
+    const NCNAME_START_CHAR = '[A-Z]|_|[a-z]|[\xC0-\xD6]|[\xD8-\xF6]|' .
         '[\xF8-\x{2FF}]|[\x{370}-\x{37D}]|[\x{37F}-\x{1FFF}]|' .
         '[\x{200C}-\x{200D}]|[\x{2070}-\x{218F}]|[\x{2C00}-\x{2FEF}]|' .
         '[\x{3001}-\x{D7FF}]|[\x{F900}-\x{FDCF}]|[\x{FDF0}-\x{FFFD}]|' .
         '[\x{10000}-\x{EFFFF}]';
+    const NAME_START_CHAR = ':|' . self::NCNAME_START_CHAR;
     const NAME_CHAR = self::NAME_START_CHAR . '|-|\.|[0-9]|\xB7|' .
         '[\x{0300}-\x{036F}]|[\x{203F}-\x{2040}]';
     const NAME = '(' . self::NAME_START_CHAR . ')(' . self::NAME_CHAR . ')*';
     const NAME_PRODUCTION = '/^' . self::NAME . '$/u';
-    const NCNAME = '([A-Z]|_|[a-z]|[\xC0-\xD6]|[\xD8-\xF6]|' .
-        '[\xF8-\x{2FF}]|[\x{370}-\x{37D}]|[\x{37F}-\x{1FFF}]|' .
-        '[\x{200C}-\x{200D}]|[\x{2070}-\x{218F}]|[\x{2C00}-\x{2FEF}]|' .
-        '[\x{3001}-\x{D7FF}]|[\x{F900}-\x{FDCF}]|[\x{FDF0}-\x{FFFD}]|' .
-        '[\x{10000}-\x{EFFFF}])' .
-        '([A-Z]|_|[a-z]|[\xC0-\xD6]|[\xD8-\xF6]|' .
-        '[\xF8-\x{2FF}]|[\x{370}-\x{37D}]|[\x{37F}-\x{1FFF}]|' .
-        '[\x{200C}-\x{200D}]|[\x{2070}-\x{218F}]|[\x{2C00}-\x{2FEF}]|' .
-        '[\x{3001}-\x{D7FF}]|[\x{F900}-\x{FDCF}]|[\x{FDF0}-\x{FFFD}]|' .
-        '[\x{10000}-\x{EFFFF}]|-|\.|[0-9]|\xB7|' .
-        '[\x{0300}-\x{036F}]|[\x{203F}-\x{2040}])*';
+    const NCNAME_CHAR = self::NCNAME_START_CHAR . '|-|\.|[0-9]|\xB7|' .
+        '[\x{0300}-\x{036F}]|[\x{203F}-\x{2040}]';
+    const NCNAME = '(' . self::NCNAME_START_CHAR . ')(' . self::NCNAME_CHAR .
+        ')*';
+
     const PREFIX = self::NCNAME;
     const LOCALPART = self::NCNAME;
     const PREFIXED_NAME = '(' . self::PREFIX . '):(' . self::LOCALPART . ')';
