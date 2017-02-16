@@ -261,4 +261,26 @@ class OrderedSet implements ArrayAccess, Countable, Iterator
 
         return null;
     }
+
+    /**
+     * Filters items from the set using a callback. The first parameter of the
+     * callback is the indexed position of the item, and the second parameter of
+     * the callback is the item itself.
+     *
+     * @param  callable   $callback
+     *
+     * @return OrderedSet
+     */
+    public function filter(callable $callback)
+    {
+        $set = new static();
+
+        foreach ($this->keys as $index => $hash) {
+            if (call_user_func($callback, $index, $this->map[$hash])) {
+                $set->append($this->map[$hash]);
+            }
+        }
+
+        return $set;
+    }
 }
