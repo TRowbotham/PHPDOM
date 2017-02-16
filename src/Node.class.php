@@ -67,7 +67,6 @@ abstract class Node extends EventTarget
     protected $mNodeType; // int
     protected $mOwnerDocument; // Document
     protected $mParentNode; // Node
-    protected $mParentElement; // Element
     protected $nodeList;
     protected static $mRefCount = 0;
 
@@ -79,7 +78,6 @@ abstract class Node extends EventTarget
         $this->nodeList = new NodeList($this->mChildNodes);
         $this->mNodeType = '';
         $this->mOwnerDocument = Document::_getDefaultDocument();
-        $this->mParentElement = null;
         $this->mParentNode = null;
         self::$mRefCount++;
     }
@@ -88,7 +86,6 @@ abstract class Node extends EventTarget
     {
         $this->mChildNodes = null;
         $this->mOwnerDocument = null;
-        $this->mParentElement = null;
         $this->mParentNode = null;
         self::$mRefCount--;
     }
@@ -129,7 +126,7 @@ abstract class Node extends EventTarget
                 return $this->mOwnerDocument;
 
             case 'parentElement':
-                return $this->mParentElement;
+                return $this->parentElement();
 
             case 'parentNode':
                 return $this->mParentNode;
@@ -646,6 +643,18 @@ abstract class Node extends EventTarget
     }
 
     /**
+     * Returns the node's parent element.
+     *
+     * @return Element|null
+     */
+    public function parentElement()
+    {
+        return $this->mParentNode instanceof Element
+            ? $this->mParentNode
+            : null;
+    }
+
+    /**
      * Gets the bottom most common ancestor of two nodes, if any.  If null is
      * returned, the two nodes do not have a common ancestor.
      *
@@ -791,7 +800,6 @@ abstract class Node extends EventTarget
 
         foreach ($nodes as $node) {
             $node->mParentNode = $parent;
-            $node->mParentElement = $parentElement;
             array_splice($parent->mChildNodes, $index++, 0, [$node]);
 
             // TODO: For each inclusive descendant inclusiveDescendant of node,
@@ -999,11 +1007,9 @@ abstract class Node extends EventTarget
                 return null;
 
             default:
-                return $this->mParentElement ?
-                    Namespaces::locatePrefix(
-                        $this->mParentElement,
-                        $namespace
-                    ) : null;
+                return ($parentElement = $this->parentElement())
+                    ? Namespaces::locatePrefix($parentElement, $namespace)
+                    : null;
         }
     }
 
@@ -1272,7 +1278,6 @@ abstract class Node extends EventTarget
             }
         }
 
-        $aNode->mParentElement = null;
         $aNode->mParentNode = null;
 
         // TODO: For each inclusive ancestor inclusiveAncestor of parent, if
