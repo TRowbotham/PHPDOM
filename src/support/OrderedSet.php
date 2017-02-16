@@ -172,6 +172,11 @@ class OrderedSet implements ArrayAccess, Countable, Iterator
         return $this->position;
     }
 
+    public function prev()
+    {
+        $this->position--;
+    }
+
     public function next()
     {
         $this->position++;
