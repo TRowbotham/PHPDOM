@@ -174,12 +174,20 @@ class OrderedSet implements ArrayAccess, Countable, Iterator
 
     public function prev()
     {
-        $this->position--;
+        if (isset($this->keys[--$this->position])) {
+            return $this->map[$this->keys[$this->position]];
+        }
+
+        return null;
     }
 
     public function next()
     {
-        $this->position++;
+        if (isset($this->keys[++$this->position])) {
+            return $this->map[$this->keys[$this->position]];
+        }
+
+        return null;
     }
 
     public function rewind()
