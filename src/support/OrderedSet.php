@@ -231,4 +231,34 @@ class OrderedSet implements ArrayAccess, Countable, Iterator
 
         return array_flip($this->keys)[$hash];
     }
+
+    /**
+     * Gets the first item in the list, if any.
+     *
+     * @return mixed|null
+     */
+    public function first()
+    {
+        if (isset($this->keys[0])) {
+            return $this->map[$this->keys[0]];
+        }
+
+        return null;
+    }
+
+    /**
+     * Gets the last item in the list, if any.
+     *
+     * @return mixed|null
+     */
+    public function last()
+    {
+        $index = $this->length - 1;
+
+        if (isset($this->keys[$index])) {
+            return $this->map[$this->keys[$index]];
+        }
+
+        return null;
+    }
 }
