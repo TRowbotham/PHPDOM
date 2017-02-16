@@ -31,6 +31,8 @@ class OrderedSet implements ArrayAccess, Countable, Iterator
         $this->map[$hash] = $item;
         $this->keys[] = $hash;
         $this->length++;
+
+        return $this;
     }
 
     public function prepend($item)
@@ -44,6 +46,8 @@ class OrderedSet implements ArrayAccess, Countable, Iterator
         array_unshift($this->keys, $hash);
         $this->map = [$hash => $item] + $this->map;
         $this->length++;
+
+        return $this;
     }
 
     public function replace($item, $newItem)
@@ -51,7 +55,7 @@ class OrderedSet implements ArrayAccess, Countable, Iterator
         $oldHash = $this->hash($item);
 
         if (!isset($this->map[$oldHash])) {
-            return;
+            return $this;
         }
 
         $newHash = $this->hash($newItem);
@@ -72,6 +76,8 @@ class OrderedSet implements ArrayAccess, Countable, Iterator
         if ($containsNewItem) {
             array_splice($this->keys, $flipped[$newHash], 1);
         }
+
+        return $this;
     }
 
     public function remove($item)
@@ -79,7 +85,7 @@ class OrderedSet implements ArrayAccess, Countable, Iterator
         $hash = $this->hash($item);
 
         if (!isset($this->map[$hash])) {
-            return;
+            return $this;
         }
 
         $this->length--;
@@ -87,11 +93,13 @@ class OrderedSet implements ArrayAccess, Countable, Iterator
         if ($this->keys[$this->length] === $hash) {
             array_pop($this->map);
             array_pop($this->keys);
-            return;
+            return $this;
         }
 
         unset($this->map[$hash]);
         $this->keys = array_keys($this->map);
+
+        return $this;
     }
 
     public function contains($item)
@@ -104,13 +112,13 @@ class OrderedSet implements ArrayAccess, Countable, Iterator
         $hash = $this->hash($item);
 
         if (!isset($this->map[$hash])) {
-            return;
+            return $this;
         }
 
         $newHash = $this->hash($newItem);
 
         if (isset($this->map[$newHash])) {
-            return;
+            return $this;
         }
 
         if ($this->keys[0] === $hash) {
@@ -126,6 +134,8 @@ class OrderedSet implements ArrayAccess, Countable, Iterator
             + array_slice($this->map, $offset - 1, null, true);
         array_splice($this->keys, $offset, 0, $newHash);
         $this->length++;
+
+        return $this;
     }
 
     public function count()
@@ -210,6 +220,8 @@ class OrderedSet implements ArrayAccess, Countable, Iterator
         $this->keys = [];
         $this->map = [];
         $this->length = 0;
+
+        return $this;
     }
 
     public function get($item)
@@ -300,7 +312,9 @@ class OrderedSet implements ArrayAccess, Countable, Iterator
     /**
      * Seek to the numeric position occupied by the given item.
      *
-     * @param  mixed $item
+     * @param  mixed      $item
+     *
+     * @return OrderedSet
      */
     public function seekTo($item)
     {
@@ -311,5 +325,7 @@ class OrderedSet implements ArrayAccess, Countable, Iterator
         }
 
         $this->position = array_flip($this->keys)[$hash];
+
+        return $this;
     }
 }
