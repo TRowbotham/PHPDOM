@@ -151,10 +151,10 @@ class HTMLBaseElement extends HTMLElement
     protected function doInsertingSteps()
     {
         if ($this->mParentNode instanceof HTMLHeadElement) {
-            $node = $this;
+            $nodes = clone $this->mParentNode->mChildNodes->seekTo($this);
 
-            while ($node) {
-                $node = $node->mPreviousSibling;
+            while ($nodes->valid()) {
+                $node = $nodes->prev();
                 $isValid = $node instanceof HTMLBaseElement &&
                     $this->mAttributesList->getAttrByNamespaceAndLocalName(
                         null,
