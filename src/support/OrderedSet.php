@@ -283,4 +283,20 @@ class OrderedSet implements ArrayAccess, Countable, Iterator
 
         return $set;
     }
+
+    /**
+     * Seek to the numeric position occupied by the given item.
+     *
+     * @param  mixed $item
+     */
+    public function seekTo($item)
+    {
+        $hash = $this->hash($item);
+
+        if (!isset($this->map[$hash])) {
+            return;
+        }
+
+        $this->position = array_flip($this->keys)[$hash];
+    }
 }
