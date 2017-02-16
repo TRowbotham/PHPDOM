@@ -757,7 +757,7 @@ abstract class Node extends EventTarget
         $count = $nodeIsFragment ? count($aNode->mChildNodes) : 1;
 
         if ($aChild) {
-            $childIndex = $aChild->_getTreeIndex();
+            $childIndex = $aChild->mParentNode->mChildNodes->indexOf($aChild);
 
             foreach (Range::_getRangeCollection() as $range) {
                 $startContainer = $range->startContainer;
@@ -765,15 +765,13 @@ abstract class Node extends EventTarget
                 $endContainer = $range->endContainer;
                 $endOffset = $range->endOffset;
 
-                if (
-                    $startContainer === $parent &&
+                if ($startContainer === $parent &&
                     $startOffset > $childIndex
                 ) {
                     $range->setStart($startContainer, $startOffset + $count);
                 }
 
-                if (
-                    $endContainer === $parent &&
+                if ($endContainer === $parent &&
                     $endOffset > $childIndex
                 ) {
                     $range->setEnd($endContainer, $endOffset + $count);
@@ -781,10 +779,10 @@ abstract class Node extends EventTarget
             }
         }
 
-        $nodes = $nodeIsFragment ? $aNode->mChildNodes : [$aNode];
+        $nodes = $nodeIsFragment ? $aNode->mChildNodes->values() : [$aNode];
 
         if ($nodeIsFragment) {
-            foreach ($aNode->mChildNodes as $child) {
+            foreach (clone $aNode->mChildNodes as $child) {
                 $aNode->removeNode($child, true);
             }
 
@@ -792,15 +790,9 @@ abstract class Node extends EventTarget
             // removedNodes nodes.
         }
 
-        $index = $aChild ?
-            array_search($aChild, $parent->mChildNodes, true) :
-            count($parent->mChildNodes);
-        $parentElement = $parent->mNodeType === self::ELEMENT_NODE ?
-            $parent : null;
-
         foreach ($nodes as $node) {
             $node->mParentNode = $parent;
-            array_splice($parent->mChildNodes, $index++, 0, [$node]);
+            $parent->mChildNodes->insertBefore($aChild, $node);
 
             // TODO: For each inclusive descendant inclusiveDescendant of node,
             // in tree order, run the insertion steps with inclusiveDescendant
