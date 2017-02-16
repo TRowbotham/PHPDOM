@@ -1751,15 +1751,13 @@ abstract class Node extends EventTarget
                 throw new HierarchyRequestError();
         }
 
-        if (
-            $aNode->mNodeType === self::TEXT_NODE &&
+        if ($aNode->mNodeType === self::TEXT_NODE &&
             $parent->mNodeType === self::DOCUMENT_NODE
         ) {
             throw new HierarchyRequestError();
         }
 
-        if (
-            $aNode->mNodeType === self::DOCUMENT_TYPE_NODE &&
+        if ($aNode->mNodeType === self::DOCUMENT_TYPE_NODE &&
             $parent->mNodeType !== self::DOCUMENT_NODE
         ) {
             throw new HierarchyRequestError();
@@ -1788,8 +1786,7 @@ abstract class Node extends EventTarget
 
                     if ($elementChildren === 1) {
                         foreach ($parent->mChildNodes as $child) {
-                            if (
-                                $child->mNodeType === self::ELEMENT_NODE &&
+                            if ($child->mNodeType === self::ELEMENT_NODE &&
                                 $child !== $aChild
                             ) {
                                 throw new HierarchyRequestError();
@@ -1811,8 +1808,7 @@ abstract class Node extends EventTarget
 
                 case self::ELEMENT_NODE:
                     foreach ($parent->mChildNodes as $child) {
-                        if (
-                            $child->mNodeType === self::ELEMENT_NODE &&
+                        if ($child->mNodeType === self::ELEMENT_NODE &&
                             $child !== $aChild
                         ) {
                             throw new HierarchyRequestError();
@@ -1833,8 +1829,7 @@ abstract class Node extends EventTarget
 
                 case self::DOCUMENT_TYPE_NODE:
                     foreach ($parent->mChildNodes as $child) {
-                        if (
-                            $child->mNodeType === self::DOCUMENT_TYPE_NODE &&
+                        if ($child->mNodeType === self::DOCUMENT_TYPE_NODE &&
                             $child !== $aChild
                         ) {
                             throw new HierarchyRequestError();
@@ -1880,8 +1875,9 @@ abstract class Node extends EventTarget
             $aChild->mParentNode->removeNode($aChild, true);
         }
 
-        $nodes = $aNode->mNodeType === self::DOCUMENT_FRAGMENT_NODE ?
-            $aNode->mChildNodes : [$aNode];
+        $nodes = $aNode->mNodeType == self::DOCUMENT_FRAGMENT_NODE
+            ? $aNode->mChildNodes->values()
+            : [$aNode];
         $parent->insertNode($aNode, $referenceChild, true);
 
         // TODO: Queue a mutation record of "childList" for target parent with
