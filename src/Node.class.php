@@ -64,8 +64,6 @@ abstract class Node extends EventTarget
     const DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC = 0x20;
 
     protected $mChildNodes;
-    protected $mFirstChild; // Node
-    protected $mLastChild; // Node
     protected $mNextSibling; // Node
     protected $mNodeType; // int
     protected $mOwnerDocument; // Document
@@ -79,8 +77,6 @@ abstract class Node extends EventTarget
     {
         parent::__construct();
 
-        $this->mFirstChild = null;
-        $this->mLastChild = null;
         $this->mChildNodes = new OrderedSet();
         $this->nodeList = new NodeList($this->mChildNodes);
         $this->mNextSibling = null;
@@ -95,8 +91,6 @@ abstract class Node extends EventTarget
     public function __destruct()
     {
         $this->mChildNodes = null;
-        $this->mFirstChild = null;
-        $this->mLastChild = null;
         $this->mNextSibling = null;
         $this->mOwnerDocument = null;
         $this->mParentElement = null;
@@ -115,7 +109,7 @@ abstract class Node extends EventTarget
                 return $this->nodeList;
 
             case 'firstChild':
-                return $this->mFirstChild;
+                return $this->mChildNodes->first();
 
             case 'isConnected':
                 $options = ['composed' => true];
@@ -123,7 +117,7 @@ abstract class Node extends EventTarget
                 return $this->getRootNode($options) instanceof Document;
 
             case 'lastChild':
-                return $this->mLastChild;
+                return $this->mChildNodes->last();
 
             case 'nextSibling':
                 return $this->mNextSibling;
@@ -809,10 +803,6 @@ abstract class Node extends EventTarget
         $parentElement = $parent->mNodeType === self::ELEMENT_NODE ?
             $parent : null;
 
-        if ($index === 0 && !empty($nodes)) {
-            $parent->mFirstChild = $nodes[0];
-        }
-
         foreach ($nodes as $node) {
             $node->mParentNode = $parent;
             $node->mParentElement = $parentElement;
@@ -827,13 +817,12 @@ abstract class Node extends EventTarget
 
                 $aChild->mPreviousSibling = $node;
             } else {
-                $node->mPreviousSibling = $parent->mLastChild;
+                $last = $parent->mChildNodes->last();
+                $node->mPreviousSibling = $last;
 
-                if ($parent->mLastChild) {
-                    $parent->mLastChild->mNextSibling = $node;
+                if ($last) {
+                    $last->mNextSibling = $node;
                 }
-
-                $parent->mLastChild = $node;
             }
 
             array_splice($parent->mChildNodes, $index++, 0, [$node]);
@@ -1289,14 +1278,6 @@ abstract class Node extends EventTarget
             if (method_exists($descendant, 'doRemovingSteps')) {
                 $descendant->doRemovingSteps($parent);
             }
-        }
-
-        if ($parent->mFirstChild === $aNode) {
-            $parent->mFirstChild = $aNode->mNextSibling;
-        }
-
-        if ($parent->mLastChild === $aNode) {
-            $parent->mLastChild = $aNode->mPreviousSibling;
         }
 
         if ($aNode->mPreviousSibling) {

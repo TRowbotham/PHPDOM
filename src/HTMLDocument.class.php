@@ -272,12 +272,14 @@ class HTMLDocument extends Document
                     'title',
                     Namespaces::SVG
                 );
-                $docElement->insertNode($element, $docElement->mFirstChild);
+                $docElement->insertNode(
+                    $element,
+                    $docElement->mChildNodes->first()
+                );
             }
 
             $element->textContent = $aNewTitle;
-        } elseif (
-            $docElement &&
+        } elseif ($docElement &&
             $docElement->namespaceURI === Namespaces::HTML
         ) {
             $element = $this->getTitleElement();

@@ -16,7 +16,8 @@ trait ParentNode
      * @param Node|DOMString ...$aNodes One or more Nodes or strings to be
      *     appended to this Node.
      */
-    public function append() {
+    public function append()
+    {
         $owner = $this->mOwnerDocument ?: $this;
         $node = Node::convertNodesToNode(func_get_args(), $owner);
         $this->preinsertNode($node, null);
@@ -33,12 +34,7 @@ trait ParentNode
     {
         $owner = $this->mOwnerDocument ?: $this;
         $node = Node::convertNodesToNode(func_get_args(), $owner);
-        $this->preinsertNode($node, $this->mFirstChild);
-    }
-
-    protected function filterChildElements($aNode)
-    {
-        return $aNode->nodeType == Node::ELEMENT_NODE;
+        $this->preinsertNode($node, $this->mChildNodes->first());
     }
 
     protected function getChildren()
@@ -53,7 +49,7 @@ trait ParentNode
 
     protected function getFirstElementChild()
     {
-        $node = $this->mFirstChild;
+        $node = $this->mChildNodes->first();
 
         while ($node) {
             if ($node instanceof Element) {
@@ -68,7 +64,7 @@ trait ParentNode
 
     protected function getLastElementChild()
     {
-        $node = $this->mLastChild;
+        $node = $this->mChildNodes->last();
 
         while ($node) {
             if ($node instanceof Element) {
