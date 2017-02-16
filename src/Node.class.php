@@ -7,6 +7,7 @@ use phpjs\events\EventTarget;
 use phpjs\exceptions\DOMException;
 use phpjs\exceptions\HierarchyRequestError;
 use phpjs\exceptions\NotFoundError;
+use phpjs\support\OrderedSet;
 
 /**
  * @see https://dom.spec.whatwg.org/#node
@@ -62,7 +63,7 @@ abstract class Node extends EventTarget
     const DOCUMENT_POSITION_CONTAINED_BY = 0x10;
     const DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC = 0x20;
 
-    protected $mChildNodes; // NodeList
+    protected $mChildNodes;
     protected $mFirstChild; // Node
     protected $mLastChild; // Node
     protected $mNextSibling; // Node
@@ -71,15 +72,17 @@ abstract class Node extends EventTarget
     protected $mParentNode; // Node
     protected $mParentElement; // Element
     protected $mPreviousSibling; // Node
+    protected $nodeList;
     protected static $mRefCount = 0;
 
     protected function __construct()
     {
         parent::__construct();
 
-        $this->mChildNodes = array();
         $this->mFirstChild = null;
         $this->mLastChild = null;
+        $this->mChildNodes = new OrderedSet();
+        $this->nodeList = new NodeList($this->mChildNodes);
         $this->mNextSibling = null;
         $this->mNodeType = '';
         $this->mOwnerDocument = Document::_getDefaultDocument();
@@ -109,7 +112,7 @@ abstract class Node extends EventTarget
                 return $this->mOwnerDocument->getBaseURL()->serializeURL();
 
             case 'childNodes':
-                return $this->mChildNodes;
+                return $this->nodeList;
 
             case 'firstChild':
                 return $this->mFirstChild;
