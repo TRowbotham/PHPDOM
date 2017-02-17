@@ -2,14 +2,15 @@
 namespace phpjs;
 
 use ArrayAccess;
+use ArrayIterator;
 use Countable;
-use Iterator;
+use IteratorAggregate;
 
 /**
  * @see https://dom.spec.whatwg.org/#interface-nodelist
  * @see https://developer.mozilla.org/en-US/docs/Web/API/NodeList
  */
-class NodeList implements ArrayAccess, Countable, Iterator
+class NodeList implements ArrayAccess, Countable, IteratorAggregate
 {
     private $nodes;
 
@@ -56,28 +57,8 @@ class NodeList implements ArrayAccess, Countable, Iterator
         return $this->nodes->count();
     }
 
-    public function current()
+    public function getIterator()
     {
-        return $this->nodes->current();
-    }
-
-    public function key()
-    {
-        return $this->nodes->key();
-    }
-
-    public function next()
-    {
-        $this->nodes->next();
-    }
-
-    public function rewind()
-    {
-        $this->nodes->rewind();
-    }
-
-    public function valid()
-    {
-        return $this->nodes->valid();
+        return new ArrayIterator($this->nodes->values());
     }
 }
