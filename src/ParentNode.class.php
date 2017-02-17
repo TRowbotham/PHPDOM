@@ -39,12 +39,9 @@ trait ParentNode
 
     protected function getChildren()
     {
-        return array_values(
-            array_filter(
-                $this->mChildNodes,
-                array($this, 'filterChildElements')
-            )
-        );
+        return $this->mChildNodes->filter(function ($index, $node) {
+            return $node->nodeType == Node::ELEMENT_NODE;
+        })->values();
     }
 
     protected function getFirstElementChild()
