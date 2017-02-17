@@ -1202,7 +1202,7 @@ abstract class Node extends EventTarget
         $aSuppressObservers = null
     ) {
         $parent = $this;
-        $index = array_search($aNode, $parent->mChildNodes, true);
+        $index = $parent->mChildNodes->indexOf($aNode);
         $ranges = Range::_getRangeCollection();
 
         foreach ($ranges as $range) {
@@ -1257,8 +1257,7 @@ abstract class Node extends EventTarget
             ->mChildNodes
             ->seekTo($aNode)
             ->next();
-
-        array_splice($parent->mChildNodes, $index, 1);
+        $parent->mChildNodes->remove($aNode);
 
         // For each inclusive descendant inclusiveDescendant of node, run
         // the removing steps with inclusiveDescendant and parent.
