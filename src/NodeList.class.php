@@ -1,98 +1,83 @@
 <?php
 namespace phpjs;
 
+use ArrayAccess;
+use Countable;
+use Iterator;
+
 /**
  * @see https://dom.spec.whatwg.org/#interface-nodelist
  * @see https://developer.mozilla.org/en-US/docs/Web/API/NodeList
  */
-class NodeList implements \ArrayAccess, \SeekableIterator, \Countable
+class NodeList implements ArrayAccess, Countable, Iterator
 {
-    private $mLength;
-    private $mNodes;
-    private $mPosition;
+    private $nodes;
 
-    public function __construct()
+    public function __construct($aNodes)
     {
-        $this->mLength = 0;
-        $this->mNodes = array();
-        $this->mPosition = 0;
+        $this->nodes = $aNodes;
     }
 
     public function __get($aName)
     {
         switch ($aName) {
             case 'length':
-                return $this->mLength;
+                return $this->nodes->count();
         }
-    }
-
-    public function count()
-    {
-        return $this->mLength;
-    }
-
-    public function current()
-    {
-        return $this->mNodes[$this->mPosition];
     }
 
     public function item($aIndex)
     {
-        if (array_key_exists($aIndex, $this->mNodes)) {
-            return $this->mNodes[$aIndex];
-        }
-
-        return null;
-    }
-
-    public function key()
-    {
-        return $this->mPosition;
-    }
-
-    public function next()
-    {
-        ++$this->mPosition;
-    }
-
-    public function offsetSet($aOffset, $aValue)
-    {
-        $this->mLength++;
-
-        if (is_null($aOffset)) {
-            $this->mNodes[] = $aValue;
-        } else {
-            $this->mNodes[$aOffset] = $value;
-        }
+        return $this->nodes->offsetGet($aIndex);
     }
 
     public function offsetExists($aOffset)
     {
-        return isset($this->mNodes[$aOffset]);
-    }
-
-    public function offsetUnset($aOffset)
-    {
-        unset($this->mNodes[$aOffset]);
+        return $this->nodes->offsetExists($aOffset);
     }
 
     public function offsetGet($aOffset)
     {
-        return isset($this->mNodes[$aOffset]) ? $this->mNodes[$aOffset] : null;
+        return $this->nodes->offsetGet($aOffset);
     }
 
-    public function seek($aPosition)
+    public function offsetSet($aOffset, $aValue)
     {
-        $this->mPosition = $aPosition;
+        return $this->nodes->offsetSet($aOffset, $aValue);
+    }
+
+    public function offsetUnset($aOffset)
+    {
+        $this->nodes->offsetUnset($aOffset);
+    }
+
+    public function count()
+    {
+        return $this->nodes->count();
+    }
+
+    public function current()
+    {
+        return $this->nodes->current();
+    }
+
+    public function key()
+    {
+        return $this->nodes->key();
+    }
+
+    public function next()
+    {
+        $this->nodes->next();
     }
 
     public function rewind()
     {
-        $this->mPosition = 0;
+        $this->nodes->rewind();
     }
 
     public function valid()
     {
-        return isset($this->mNodes[$this->mPosition]);
+        return $this->nodes->valid();
     }
 }

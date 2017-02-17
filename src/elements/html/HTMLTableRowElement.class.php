@@ -32,15 +32,12 @@ class HTMLTableRowElement extends HTMLElement
     {
         switch ($aName) {
             case 'cells':
-                $cells = array();
-                $cell = $this->mFirstChild;
+                $cells = [];
 
-                while ($cell) {
+                foreach ($this->mChildNodes as $cell) {
                     if ($cell instanceof HTMLTableCellElement) {
                         $cells[] = $cell;
                     }
-
-                    $cell = $cell->nextElementSibling;
                 }
 
                 return $cells;
@@ -157,15 +154,12 @@ class HTMLTableRowElement extends HTMLElement
      */
     public function deleteCell($aIndex)
     {
-        $cells = array();
-        $cell = $this->mFirstChild;
+        $cells = [];
 
-        while ($cell) {
+        foreach ($this->mChildNodes as $cell) {
             if ($cell instanceof HTMLTableCellElement) {
                 $cells[] = $cell;
             }
-
-            $cell = $cell->nextElementSibling;
         }
 
         if ($aIndex < 0 || $aIndex >= count($cells)) {

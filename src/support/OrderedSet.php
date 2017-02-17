@@ -31,6 +31,8 @@ class OrderedSet implements ArrayAccess, Countable, Iterator
         $this->map[$hash] = $item;
         $this->keys[] = $hash;
         $this->length++;
+
+        return $this;
     }
 
     public function prepend($item)
@@ -44,6 +46,8 @@ class OrderedSet implements ArrayAccess, Countable, Iterator
         array_unshift($this->keys, $hash);
         $this->map = [$hash => $item] + $this->map;
         $this->length++;
+
+        return $this;
     }
 
     public function replace($item, $newItem)
@@ -51,7 +55,7 @@ class OrderedSet implements ArrayAccess, Countable, Iterator
         $oldHash = $this->hash($item);
 
         if (!isset($this->map[$oldHash])) {
-            return;
+            return $this;
         }
 
         $newHash = $this->hash($newItem);
@@ -72,6 +76,8 @@ class OrderedSet implements ArrayAccess, Countable, Iterator
         if ($containsNewItem) {
             array_splice($this->keys, $flipped[$newHash], 1);
         }
+
+        return $this;
     }
 
     public function remove($item)
@@ -79,7 +85,7 @@ class OrderedSet implements ArrayAccess, Countable, Iterator
         $hash = $this->hash($item);
 
         if (!isset($this->map[$hash])) {
-            return;
+            return $this;
         }
 
         $this->length--;
@@ -87,11 +93,13 @@ class OrderedSet implements ArrayAccess, Countable, Iterator
         if ($this->keys[$this->length] === $hash) {
             array_pop($this->map);
             array_pop($this->keys);
-            return;
+            return $this;
         }
 
         unset($this->map[$hash]);
         $this->keys = array_keys($this->map);
+
+        return $this;
     }
 
     public function contains($item)
@@ -101,16 +109,22 @@ class OrderedSet implements ArrayAccess, Countable, Iterator
 
     public function insertBefore($item, $newItem)
     {
+        // If the item to be inserted before is null, append $newItem to the
+        // list.
+        if ($item === null) {
+            return $this->append($newItem);
+        }
+
         $hash = $this->hash($item);
 
         if (!isset($this->map[$hash])) {
-            return;
+            return $this;
         }
 
         $newHash = $this->hash($newItem);
 
         if (isset($this->map[$newHash])) {
-            return;
+            return $this;
         }
 
         if ($this->keys[0] === $hash) {
@@ -126,6 +140,8 @@ class OrderedSet implements ArrayAccess, Countable, Iterator
             + array_slice($this->map, $offset - 1, null, true);
         array_splice($this->keys, $offset, 0, $newHash);
         $this->length++;
+
+        return $this;
     }
 
     public function count()
@@ -172,9 +188,22 @@ class OrderedSet implements ArrayAccess, Countable, Iterator
         return $this->position;
     }
 
+    public function prev()
+    {
+        if (isset($this->keys[--$this->position])) {
+            return $this->map[$this->keys[$this->position]];
+        }
+
+        return null;
+    }
+
     public function next()
     {
-        $this->position++;
+        if (isset($this->keys[++$this->position])) {
+            return $this->map[$this->keys[$this->position]];
+        }
+
+        return null;
     }
 
     public function rewind()
@@ -197,6 +226,8 @@ class OrderedSet implements ArrayAccess, Countable, Iterator
         $this->keys = [];
         $this->map = [];
         $this->length = 0;
+
+        return $this;
     }
 
     public function get($item)
@@ -230,5 +261,77 @@ class OrderedSet implements ArrayAccess, Countable, Iterator
         }
 
         return array_flip($this->keys)[$hash];
+    }
+
+    /**
+     * Gets the first item in the list, if any.
+     *
+     * @return mixed|null
+     */
+    public function first()
+    {
+        if (isset($this->keys[0])) {
+            return $this->map[$this->keys[0]];
+        }
+
+        return null;
+    }
+
+    /**
+     * Gets the last item in the list, if any.
+     *
+     * @return mixed|null
+     */
+    public function last()
+    {
+        $index = $this->length - 1;
+
+        if (isset($this->keys[$index])) {
+            return $this->map[$this->keys[$index]];
+        }
+
+        return null;
+    }
+
+    /**
+     * Filters items from the set using a callback. The first parameter of the
+     * callback is the indexed position of the item, and the second parameter of
+     * the callback is the item itself.
+     *
+     * @param  callable   $callback
+     *
+     * @return OrderedSet
+     */
+    public function filter(callable $callback)
+    {
+        $set = new static();
+
+        foreach ($this->keys as $index => $hash) {
+            if (call_user_func($callback, $index, $this->map[$hash])) {
+                $set->append($this->map[$hash]);
+            }
+        }
+
+        return $set;
+    }
+
+    /**
+     * Seek to the numeric position occupied by the given item.
+     *
+     * @param  mixed      $item
+     *
+     * @return OrderedSet
+     */
+    public function seekTo($item)
+    {
+        $hash = $this->hash($item);
+
+        if (!isset($this->map[$hash])) {
+            return;
+        }
+
+        $this->position = array_flip($this->keys)[$hash];
+
+        return $this;
     }
 }

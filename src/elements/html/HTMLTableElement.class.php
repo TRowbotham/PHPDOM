@@ -77,13 +77,10 @@ class HTMLTableElement extends HTMLElement
                     );
                 }
 
-                $node = $this->mFirstChild;
-
-                while ($node) {
+                foreach ($this->mChildNodes as $node) {
                     if ($node instanceof HTMLTableRowElement) {
                         $collection[] = $node;
-                    } elseif (
-                        $node instanceof HTMLTableSectionElement &&
+                    } elseif ($node instanceof HTMLTableSectionElement &&
                         strcmp($node->tagName, 'TBODY') == 0
                     ) {
                         $collection = array_merge(
@@ -91,8 +88,6 @@ class HTMLTableElement extends HTMLElement
                             $node->shallowGetElementsByTagName('tr')
                         );
                     }
-
-                    $node = $node->nextSibling;
                 }
 
                 if (count($tfoot)) {
@@ -135,11 +130,10 @@ class HTMLTableElement extends HTMLElement
                     $caption->remove();
                 }
 
-                if (
-                    $aValue !== null &&
+                if ($aValue !== null &&
                     $aValue instanceof HTMLTableCaptionElement
                 ) {
-                    $this->insertBefore($aValue, $this->mFirstChild);
+                    $this->insertBefore($aValue, $this->mChildNodes->first());
                 }
 
                 break;
@@ -160,18 +154,13 @@ class HTMLTableElement extends HTMLElement
                 }
 
                 if ($aValue !== null) {
-                    $node = $this->mFirstChild;
-
-                    while ($node) {
-                        if (
-                            !($node instanceof HTMLTableCaptionElement) &&
+                    foreach ($this->mChildNodes as $node) {
+                        if (!($node instanceof HTMLTableCaptionElement) &&
                             !($node instanceof HTMLTableColElement) &&
                             strcmp($node->tagName, 'THEAD') !== 0
                         ) {
                             break;
                         }
-
-                        $node = $node->nextSibling;
                     }
 
                     $tfoot->insertBefore($aValue, $node);
@@ -195,17 +184,12 @@ class HTMLTableElement extends HTMLElement
                 }
 
                 if ($aValue !== null) {
-                    $node = $this->mFirstChild;
-
-                    while ($node) {
-                        if (
-                            !($node instanceof HTMLTableCaptionElement) &&
+                    foreach ($this->mChildNodes as $node) {
+                        if (!($node instanceof HTMLTableCaptionElement) &&
                             !($node instanceof HTMLTableColElement)
                         ) {
                             break;
                         }
-
-                        $node = $node->nextSibling;
                     }
 
                     $thead->insertBefore($aValue, $node);
@@ -232,7 +216,10 @@ class HTMLTableElement extends HTMLElement
      */
     public function createCaption()
     {
-        return $this->createTableChildElement('caption', $this->mFirstChild);
+        return $this->createTableChildElement(
+            'caption',
+            $this->mChildNodes->first()
+        );
     }
 
     /**
@@ -253,17 +240,12 @@ class HTMLTableElement extends HTMLElement
      */
     public function createTHead()
     {
-        $node = $this->mFirstChild;
-
-        while ($node) {
-            if (
-                !($node instanceof HTMLTableCaptionElement) &&
+        foreach ($this->mChildNodes as $node) {
+            if (!($node instanceof HTMLTableCaptionElement) &&
                 !($node instanceof HTMLTableColElement)
             ) {
                 break;
             }
-
-            $node = $node->nextSibling;
         }
 
         return $this->createTableChildElement('thead', $node);
@@ -286,18 +268,13 @@ class HTMLTableElement extends HTMLElement
      */
     public function createTFoot()
     {
-        $node = $this->mFirstChild;
-
-        while ($node) {
-            if (
-                !($node instanceof HTMLTableCaptionElement) &&
+        foreach ($this->mChildNodes as $node) {
+            if (!($node instanceof HTMLTableCaptionElement) &&
                 !($node instanceof HTMLTableColElement) &&
                 strcmp($node->tagName, 'THEAD') !== 0
             ) {
                 break;
             }
-
-            $node = $node->nextSibling;
         }
 
         return $this->createTableChildElement('tfoot', $node);

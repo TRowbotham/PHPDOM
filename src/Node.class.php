@@ -7,6 +7,7 @@ use phpjs\events\EventTarget;
 use phpjs\exceptions\DOMException;
 use phpjs\exceptions\HierarchyRequestError;
 use phpjs\exceptions\NotFoundError;
+use phpjs\support\OrderedSet;
 
 /**
  * @see https://dom.spec.whatwg.org/#node
@@ -62,43 +63,30 @@ abstract class Node extends EventTarget
     const DOCUMENT_POSITION_CONTAINED_BY = 0x10;
     const DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC = 0x20;
 
-    protected $mChildNodes; // NodeList
-    protected $mFirstChild; // Node
-    protected $mLastChild; // Node
-    protected $mNextSibling; // Node
+    protected $mChildNodes;
     protected $mNodeType; // int
     protected $mOwnerDocument; // Document
     protected $mParentNode; // Node
-    protected $mParentElement; // Element
-    protected $mPreviousSibling; // Node
+    protected $nodeList;
     protected static $mRefCount = 0;
 
     protected function __construct()
     {
         parent::__construct();
 
-        $this->mChildNodes = array();
-        $this->mFirstChild = null;
-        $this->mLastChild = null;
-        $this->mNextSibling = null;
+        $this->mChildNodes = new OrderedSet();
+        $this->nodeList = new NodeList($this->mChildNodes);
         $this->mNodeType = '';
         $this->mOwnerDocument = Document::_getDefaultDocument();
-        $this->mParentElement = null;
         $this->mParentNode = null;
-        $this->mPreviousSibling = null;
         self::$mRefCount++;
     }
 
     public function __destruct()
     {
         $this->mChildNodes = null;
-        $this->mFirstChild = null;
-        $this->mLastChild = null;
-        $this->mNextSibling = null;
         $this->mOwnerDocument = null;
-        $this->mParentElement = null;
         $this->mParentNode = null;
-        $this->mPreviousSibling = null;
         self::$mRefCount--;
     }
 
@@ -109,10 +97,10 @@ abstract class Node extends EventTarget
                 return $this->mOwnerDocument->getBaseURL()->serializeURL();
 
             case 'childNodes':
-                return $this->mChildNodes;
+                return $this->nodeList;
 
             case 'firstChild':
-                return $this->mFirstChild;
+                return $this->mChildNodes->first();
 
             case 'isConnected':
                 $options = ['composed' => true];
@@ -120,10 +108,10 @@ abstract class Node extends EventTarget
                 return $this->getRootNode($options) instanceof Document;
 
             case 'lastChild':
-                return $this->mLastChild;
+                return $this->mChildNodes->last();
 
             case 'nextSibling':
-                return $this->mNextSibling;
+                return $this->mParentNode->mChildNodes->seekTo($this)->next();
 
             case 'nodeName':
                 return $this->getNodeName();
@@ -138,13 +126,13 @@ abstract class Node extends EventTarget
                 return $this->mOwnerDocument;
 
             case 'parentElement':
-                return $this->mParentElement;
+                return $this->parentElement();
 
             case 'parentNode':
                 return $this->mParentNode;
 
             case 'previousSibling':
-                return $this->mPreviousSibling;
+                return $this->mParentNode->mChildNodes->seekTo($this)->prev();
 
             case 'textContent':
                 return $this->getTextContent();
@@ -655,6 +643,18 @@ abstract class Node extends EventTarget
     }
 
     /**
+     * Returns the node's parent element.
+     *
+     * @return Element|null
+     */
+    public function parentElement()
+    {
+        return $this->mParentNode instanceof Element
+            ? $this->mParentNode
+            : null;
+    }
+
+    /**
      * Gets the bottom most common ancestor of two nodes, if any.  If null is
      * returned, the two nodes do not have a common ancestor.
      *
@@ -703,15 +703,7 @@ abstract class Node extends EventTarget
      */
     public function _getTreeIndex()
     {
-        $index = 0;
-        $sibling = $this->mPreviousSibling;
-
-        while ($sibling) {
-            $index++;
-            $sibling = $sibling->mPreviousSibling;
-        }
-
-        return $index;
+        return $this->mParentNode->mChildNodes->indexOf($this);
     }
 
     /**
@@ -723,7 +715,7 @@ abstract class Node extends EventTarget
      */
     public function hasChildNodes()
     {
-        return !empty($this->mChildNodes);
+        return !$this->mChildNodes->isEmpty();
     }
 
     /**
@@ -765,7 +757,7 @@ abstract class Node extends EventTarget
         $count = $nodeIsFragment ? count($aNode->mChildNodes) : 1;
 
         if ($aChild) {
-            $childIndex = $aChild->_getTreeIndex();
+            $childIndex = $aChild->mParentNode->mChildNodes->indexOf($aChild);
 
             foreach (Range::_getRangeCollection() as $range) {
                 $startContainer = $range->startContainer;
@@ -773,15 +765,13 @@ abstract class Node extends EventTarget
                 $endContainer = $range->endContainer;
                 $endOffset = $range->endOffset;
 
-                if (
-                    $startContainer === $parent &&
+                if ($startContainer === $parent &&
                     $startOffset > $childIndex
                 ) {
                     $range->setStart($startContainer, $startOffset + $count);
                 }
 
-                if (
-                    $endContainer === $parent &&
+                if ($endContainer === $parent &&
                     $endOffset > $childIndex
                 ) {
                     $range->setEnd($endContainer, $endOffset + $count);
@@ -789,10 +779,10 @@ abstract class Node extends EventTarget
             }
         }
 
-        $nodes = $nodeIsFragment ? $aNode->mChildNodes : [$aNode];
+        $nodes = $nodeIsFragment ? $aNode->mChildNodes->values() : [$aNode];
 
         if ($nodeIsFragment) {
-            foreach ($aNode->mChildNodes as $child) {
+            foreach (clone $aNode->mChildNodes as $child) {
                 $aNode->removeNode($child, true);
             }
 
@@ -800,40 +790,9 @@ abstract class Node extends EventTarget
             // removedNodes nodes.
         }
 
-        $index = $aChild ?
-            array_search($aChild, $parent->mChildNodes, true) :
-            count($parent->mChildNodes);
-        $parentElement = $parent->mNodeType === self::ELEMENT_NODE ?
-            $parent : null;
-
-        if ($index === 0 && !empty($nodes)) {
-            $parent->mFirstChild = $nodes[0];
-        }
-
         foreach ($nodes as $node) {
             $node->mParentNode = $parent;
-            $node->mParentElement = $parentElement;
-
-            if ($aChild) {
-                $node->mPreviousSibling = $aChild->mPreviousSibling;
-                $node->mNextSibling = $aChild;
-
-                if ($aChild->mPreviousSibling) {
-                    $aChild->mPreviousSibling->mNextSibling = $node;
-                }
-
-                $aChild->mPreviousSibling = $node;
-            } else {
-                $node->mPreviousSibling = $parent->mLastChild;
-
-                if ($parent->mLastChild) {
-                    $parent->mLastChild->mNextSibling = $node;
-                }
-
-                $parent->mLastChild = $node;
-            }
-
-            array_splice($parent->mChildNodes, $index++, 0, [$node]);
+            $parent->mChildNodes->insertBefore($aChild, $node);
 
             // TODO: For each inclusive descendant inclusiveDescendant of node,
             // in tree order, run the insertion steps with inclusiveDescendant
@@ -1040,11 +999,9 @@ abstract class Node extends EventTarget
                 return null;
 
             default:
-                return $this->mParentElement ?
-                    Namespaces::locatePrefix(
-                        $this->mParentElement,
-                        $namespace
-                    ) : null;
+                return ($parentElement = $this->parentElement())
+                    ? Namespaces::locatePrefix($parentElement, $namespace)
+                    : null;
         }
     }
 
@@ -1076,7 +1033,11 @@ abstract class Node extends EventTarget
             // exclusive Text nodes (excluding itself), in tree order.
             $data = '';
             $contingiousTextNodes = [];
-            $startNode = $node->mPreviousSibling;
+            $startNode = $node
+                ->mParentNode
+                ->mChildNodes
+                ->seekTo($node)
+                ->prev();
 
             while ($startNode) {
                 if ($startNode->mNodeType != self::TEXT_NODE) {
@@ -1085,10 +1046,17 @@ abstract class Node extends EventTarget
 
                 $data .= $startNode->data;
                 $contingiousTextNodes[] = $startNode;
-                $startNode = $startNode->mPreviousSibling;
+                $startNode = $startNode
+                    ->mParentNode
+                    ->mChildNodes
+                    ->prev();
             }
 
-            $startNode = $node->mNextSibling;
+            $startNode = $node
+                ->mParentNode
+                ->mChildNodes
+                ->seekTo($node)
+                ->next();
 
             while ($startNode) {
                 if ($startNode->mNodeType != self::TEXT_NODE) {
@@ -1097,16 +1065,22 @@ abstract class Node extends EventTarget
 
                 $data .= $startNode->data;
                 $contingiousTextNodes[] = $startNode;
-                $startNode = $startNode->mNextSibling;
+                $startNode = $startNode
+                    ->mParentNode
+                    ->mChildNodes
+                    ->next();
             }
 
             // Replace data with node node, offset length, count 0, and data
             // data.
             $node->doReplaceData($length, 0, $data);
-            $currentNode = $node->mNextSibling;
             $ranges = Range::_getRangeCollection();
 
-            while ($currentNode && $currentNode->mNodeType == self::TEXT_NODE) {
+            foreach (clone $node->mChildNodes as $currentNode) {
+                if ($currentNode->mNodeType != self::TEXT_NODE) {
+                    break;
+                }
+
                 $treeIndex = $currentNode->_getTreeIndex();
 
                 // For each range whose start node is currentNode, add length to
@@ -1149,9 +1123,6 @@ abstract class Node extends EventTarget
 
                 // Add currentNode’s length to length.
                 $length += $currentNode->getLength();
-
-                // Set currentNode to its next sibling.
-                $currentNode = $currentNode->mNextSibling;
             }
 
             // Remove node’s contiguous exclusive Text nodes (excluding itself),
@@ -1187,7 +1158,11 @@ abstract class Node extends EventTarget
         $referenceChild = $aChild;
 
         if ($referenceChild === $aNode) {
-            $referenceChild = $aNode->mNextSibling;
+            $referenceChild = $aNode
+                ->mParentNode
+                ->mChildNodes
+                ->seekTo($aNode)
+                ->next();
         }
 
         // The DOM4 spec states that nodes should be implicitly adopted
@@ -1227,14 +1202,13 @@ abstract class Node extends EventTarget
         $aSuppressObservers = null
     ) {
         $parent = $this;
-        $index = array_search($aNode, $parent->mChildNodes, true);
+        $index = $parent->mChildNodes->indexOf($aNode);
         $ranges = Range::_getRangeCollection();
 
         foreach ($ranges as $range) {
             $startContainer = $range->startContainer;
 
-            if (
-                $startContainer === $aNode ||
+            if ($startContainer === $aNode ||
                 $aNode->contains($startContainer)
             ) {
                 $range->setStart($parent, $index);
@@ -1273,10 +1247,17 @@ abstract class Node extends EventTarget
             $iter->_preremove($aNode);
         }
 
-        $oldPreviousSibling = $aNode->mPreviousSibling;
-        $oldNextSibling = $aNode->mNextSibling;
-
-        array_splice($parent->mChildNodes, $index, 1);
+        $oldPreviousSibling = $aNode
+            ->mParentNode
+            ->mChildNodes
+            ->seekTo($aNode)
+            ->prev();
+        $oldNextSibling = $aNode
+            ->mParentNode
+            ->mChildNodes
+            ->seekTo($aNode)
+            ->next();
+        $parent->mChildNodes->remove($aNode);
 
         // For each inclusive descendant inclusiveDescendant of node, run
         // the removing steps with inclusiveDescendant and parent.
@@ -1288,25 +1269,6 @@ abstract class Node extends EventTarget
             }
         }
 
-        if ($parent->mFirstChild === $aNode) {
-            $parent->mFirstChild = $aNode->mNextSibling;
-        }
-
-        if ($parent->mLastChild === $aNode) {
-            $parent->mLastChild = $aNode->mPreviousSibling;
-        }
-
-        if ($aNode->mPreviousSibling) {
-            $aNode->mPreviousSibling->mNextSibling = $aNode->mNextSibling;
-        }
-
-        if ($aNode->mNextSibling) {
-            $aNode->mNextSibling->mPreviousSibling = $aNode->mPreviousSibling;
-        }
-
-        $aNode->mPreviousSibling = null;
-        $aNode->mNextSibling = null;
-        $aNode->mParentElement = null;
         $aNode->mParentNode = null;
 
         // TODO: For each inclusive ancestor inclusiveAncestor of parent, if
@@ -1788,15 +1750,13 @@ abstract class Node extends EventTarget
                 throw new HierarchyRequestError();
         }
 
-        if (
-            $aNode->mNodeType === self::TEXT_NODE &&
+        if ($aNode->mNodeType === self::TEXT_NODE &&
             $parent->mNodeType === self::DOCUMENT_NODE
         ) {
             throw new HierarchyRequestError();
         }
 
-        if (
-            $aNode->mNodeType === self::DOCUMENT_TYPE_NODE &&
+        if ($aNode->mNodeType === self::DOCUMENT_TYPE_NODE &&
             $parent->mNodeType !== self::DOCUMENT_NODE
         ) {
             throw new HierarchyRequestError();
@@ -1825,8 +1785,7 @@ abstract class Node extends EventTarget
 
                     if ($elementChildren === 1) {
                         foreach ($parent->mChildNodes as $child) {
-                            if (
-                                $child->mNodeType === self::ELEMENT_NODE &&
+                            if ($child->mNodeType === self::ELEMENT_NODE &&
                                 $child !== $aChild
                             ) {
                                 throw new HierarchyRequestError();
@@ -1848,8 +1807,7 @@ abstract class Node extends EventTarget
 
                 case self::ELEMENT_NODE:
                     foreach ($parent->mChildNodes as $child) {
-                        if (
-                            $child->mNodeType === self::ELEMENT_NODE &&
+                        if ($child->mNodeType === self::ELEMENT_NODE &&
                             $child !== $aChild
                         ) {
                             throw new HierarchyRequestError();
@@ -1870,8 +1828,7 @@ abstract class Node extends EventTarget
 
                 case self::DOCUMENT_TYPE_NODE:
                     foreach ($parent->mChildNodes as $child) {
-                        if (
-                            $child->mNodeType === self::DOCUMENT_TYPE_NODE &&
+                        if ($child->mNodeType === self::DOCUMENT_TYPE_NODE &&
                             $child !== $aChild
                         ) {
                             throw new HierarchyRequestError();
@@ -1890,13 +1847,25 @@ abstract class Node extends EventTarget
             }
         }
 
-        $referenceChild = $aChild->mNextSibling;
+        $referenceChild = $aChild
+            ->mParentNode
+            ->mChildNodes
+            ->seekTo($aChild)
+            ->next();
 
         if ($referenceChild === $aNode) {
-            $referenceChild = $aNode->mNextSibling;
+            $referenceChild = $aNode
+                ->mParentNode
+                ->mChildNodes
+                ->seekTo($aNode)
+                ->prev();
         }
 
-        $previousSibling = $aChild->mPreviousSibling;
+        $previousSibling = $aChild
+            ->mParentNode
+            ->mChildNodes
+            ->seekTo($aChild)
+            ->prev();
         $parent->mOwnerDocument->doAdoptNode($aNode);
         $removedNodes = [];
 
@@ -1905,8 +1874,9 @@ abstract class Node extends EventTarget
             $aChild->mParentNode->removeNode($aChild, true);
         }
 
-        $nodes = $aNode->mNodeType === self::DOCUMENT_FRAGMENT_NODE ?
-            $aNode->mChildNodes : [$aNode];
+        $nodes = $aNode->mNodeType == self::DOCUMENT_FRAGMENT_NODE
+            ? $aNode->mChildNodes->values()
+            : [$aNode];
         $parent->insertNode($aNode, $referenceChild, true);
 
         // TODO: Queue a mutation record of "childList" for target parent with
