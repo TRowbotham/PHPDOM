@@ -110,7 +110,7 @@ class Utils
 
     public static function unsignedLong($aOffset)
     {
-        $normalizedOffset = $aOffset % pow(2, 32);
+        $normalizedOffset = ((int) $aOffset) % pow(2, 32);
 
         if ($normalizedOffset < 0) {
             $normalizedOffset += pow(2, 32);
