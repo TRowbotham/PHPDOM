@@ -109,6 +109,12 @@ class OrderedSet implements ArrayAccess, Countable, Iterator
 
     public function insertBefore($item, $newItem)
     {
+        // If the item to be inserted before is null, append $newItem to the
+        // list.
+        if ($item === null) {
+            return $this->append($newItem);
+        }
+
         $hash = $this->hash($item);
 
         if (!isset($this->map[$hash])) {
