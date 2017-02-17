@@ -111,7 +111,7 @@ abstract class Node extends EventTarget
                 return $this->mChildNodes->last();
 
             case 'nextSibling':
-                return $this->mParentNode->mChildNodes->seekTo($this)->next();
+                return $this->nextSibling();
 
             case 'nodeName':
                 return $this->getNodeName();
@@ -132,7 +132,7 @@ abstract class Node extends EventTarget
                 return $this->mParentNode;
 
             case 'previousSibling':
-                return $this->mParentNode->mChildNodes->seekTo($this)->prev();
+                return $this->previousSibling();
 
             case 'textContent':
                 return $this->getTextContent();
@@ -645,6 +645,8 @@ abstract class Node extends EventTarget
     /**
      * Returns the node's parent element.
      *
+     * @internal
+     *
      * @return Element|null
      */
     public function parentElement()
@@ -652,6 +654,38 @@ abstract class Node extends EventTarget
         return $this->mParentNode instanceof Element
             ? $this->mParentNode
             : null;
+    }
+
+    /**
+     * Returns the node's next sibling.
+     *
+     * @internal
+     *
+     * @return Node|null
+     */
+    public function nextSibling()
+    {
+        if (!$this->mParentNode) {
+            return null;
+        }
+
+        return $this->mParentNode->mChildNodes->seekTo($this)->next();
+    }
+
+    /**
+     * Returns the node's previous sibling.
+     *
+     * @internal
+     *
+     * @return Node|null
+     */
+    public function previousSibling()
+    {
+        if (!$this->mParentNode) {
+            return null;
+        }
+
+        return $this->mParentNode->mChildNodes->seekTo($this)->prev();
     }
 
     /**
