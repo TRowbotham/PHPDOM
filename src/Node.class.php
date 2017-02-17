@@ -715,7 +715,7 @@ abstract class Node extends EventTarget
      */
     public function hasChildNodes()
     {
-        return !empty($this->mChildNodes);
+        return !$this->mChildNodes->isEmpty();
     }
 
     /**
