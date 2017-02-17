@@ -137,7 +137,12 @@ class Range {
         $lastPartiallyContainedChild = null;
 
         if (!$originalEndNode->contains($originalStartNode)) {
-            foreach (array_reverse($commonAncestor->childNodes) as $node) {
+            $childNodes = $commonAncestor
+                ->childNodes
+                ->getIterator()
+                ->getArrayCopy();
+
+            foreach (array_reverse($childNodes) as $node) {
                 if ($this->isPartiallyContainedNode($node)) {
                     $lastPartiallyContainedChild = $node;
                     break;
@@ -1214,9 +1219,10 @@ class Range {
 
         if ($ancestor) {
             $child = $aB[0];
+            $childNodes = $aA[0]->childNodes->getIterator()->getArrayCopy();
 
             while ($child) {
-                if (in_array($child, $aA[0]->childNodes, true)) {
+                if (in_array($child, $childNodes, true)) {
                     break;
                 }
 
