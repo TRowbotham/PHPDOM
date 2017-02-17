@@ -699,7 +699,10 @@ class Element extends Node implements AttributeChangeObserver
                 break;
 
             case 'afterbegin':
-                $aElement->preinsertNode($aNode, $aElement->mFirstChild);
+                $aElement->preinsertNode(
+                    $aNode,
+                    $aElement->mChildNodes->first()
+                );
 
                 break;
 
@@ -714,9 +717,14 @@ class Element extends Node implements AttributeChangeObserver
                 }
 
                 try {
+                    $nextSibling = $aElement
+                        ->mParentNode
+                        ->mChildNodes
+                        ->seekTo($aElement)
+                        ->next();
                     $aElement->mParentNode->preinsertNode(
                         $aNode,
-                        $aElement->mNextSibling
+                        $nextSibling
                     );
                 } catch (DOMException $e) {
                     throw $e;
@@ -846,7 +854,7 @@ class Element extends Node implements AttributeChangeObserver
     protected function shallowGetElementsByTagName($aTagName)
     {
         $collection = array();
-        $node = $this->mFirstChild;
+        $node = $this->mChildNodes->first();
         $tagName = strtoupper($aTagName);
 
         while ($node) {
