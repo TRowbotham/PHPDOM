@@ -451,7 +451,7 @@ abstract class EventTarget
         $aEvent->setCurrentTarget($aObject);
         $found = $this->innerInvokeEventListener($aObject, $aEvent, $listeners);
 
-        if (!$found) {
+        if (!$found && $aEvent->isTrusted) {
             $originalEventType = $aEvent->type;
 
             // If event’s type attribute value is a match for any of the strings

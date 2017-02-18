@@ -890,14 +890,9 @@ class Element extends Node implements AttributeChangeObserver
                 }
 
                 try {
-                    $nextSibling = $aElement
-                        ->mParentNode
-                        ->mChildNodes
-                        ->seekTo($aElement)
-                        ->next();
                     $aElement->mParentNode->preinsertNode(
                         $aNode,
-                        $nextSibling
+                        $aElement->nextSibling
                     );
                 } catch (DOMException $e) {
                     throw $e;

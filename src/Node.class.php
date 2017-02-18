@@ -67,7 +67,9 @@ abstract class Node extends EventTarget
     protected $mNodeType; // int
     protected $mOwnerDocument; // Document
     protected $mParentNode; // Node
+    protected $nextSibling;
     protected $nodeList;
+    protected $previousSibling;
     protected static $mRefCount = 0;
 
     protected function __construct()
@@ -79,6 +81,8 @@ abstract class Node extends EventTarget
         $this->mNodeType = '';
         $this->mOwnerDocument = Document::_getDefaultDocument();
         $this->mParentNode = null;
+        $this->previousSibling = null;
+        $this->nextSibling = null;
         self::$mRefCount++;
     }
 
@@ -87,6 +91,8 @@ abstract class Node extends EventTarget
         $this->mChildNodes = null;
         $this->mOwnerDocument = null;
         $this->mParentNode = null;
+        $this->previousSibling = null;
+        $this->nextSibling = null;
         self::$mRefCount--;
     }
 
@@ -111,7 +117,7 @@ abstract class Node extends EventTarget
                 return $this->mChildNodes->last();
 
             case 'nextSibling':
-                return $this->nextSibling();
+                return $this->nextSibling;
 
             case 'nodeName':
                 return $this->getNodeName();
@@ -132,7 +138,7 @@ abstract class Node extends EventTarget
                 return $this->mParentNode;
 
             case 'previousSibling':
-                return $this->previousSibling();
+                return $this->previousSibling;
 
             case 'textContent':
                 return $this->getTextContent();
@@ -657,38 +663,6 @@ abstract class Node extends EventTarget
     }
 
     /**
-     * Returns the node's next sibling.
-     *
-     * @internal
-     *
-     * @return Node|null
-     */
-    public function nextSibling()
-    {
-        if (!$this->mParentNode) {
-            return null;
-        }
-
-        return $this->mParentNode->mChildNodes->seekTo($this)->next();
-    }
-
-    /**
-     * Returns the node's previous sibling.
-     *
-     * @internal
-     *
-     * @return Node|null
-     */
-    public function previousSibling()
-    {
-        if (!$this->mParentNode) {
-            return null;
-        }
-
-        return $this->mParentNode->mChildNodes->seekTo($this)->prev();
-    }
-
-    /**
      * Gets the bottom most common ancestor of two nodes, if any.  If null is
      * returned, the two nodes do not have a common ancestor.
      *
@@ -825,6 +799,10 @@ abstract class Node extends EventTarget
         }
 
         foreach ($nodes as $node) {
+            if (!$aChild) {
+                $last = $this->mChildNodes->last();
+            }
+
             $node->mParentNode = $parent;
             $parent->mChildNodes->insertBefore($aChild, $node);
 
@@ -839,6 +817,22 @@ abstract class Node extends EventTarget
                     $descendant->doInsertingSteps();
                 }
             }
+
+            if ($aChild) {
+                $oldPreviousSibling = $aChild->previousSibling;
+                $nextSibling = $aChild;
+                $aChild->previousSibling = $node;
+            } else {
+                $oldPreviousSibling = $last;
+                $nextSibling = null;
+            }
+
+            if ($oldPreviousSibling) {
+                $oldPreviousSibling->nextSibling = $node;
+            }
+
+            $node->previousSibling = $oldPreviousSibling;
+            $node->nextSibling = $nextSibling;
         }
 
         if (!$aSuppressObservers) {
@@ -1067,11 +1061,7 @@ abstract class Node extends EventTarget
             // exclusive Text nodes (excluding itself), in tree order.
             $data = '';
             $contingiousTextNodes = [];
-            $startNode = $node
-                ->mParentNode
-                ->mChildNodes
-                ->seekTo($node)
-                ->prev();
+            $startNode = $node->previousSibling;
 
             while ($startNode) {
                 if ($startNode->mNodeType != self::TEXT_NODE) {
@@ -1080,17 +1070,10 @@ abstract class Node extends EventTarget
 
                 $data .= $startNode->data;
                 $contingiousTextNodes[] = $startNode;
-                $startNode = $startNode
-                    ->mParentNode
-                    ->mChildNodes
-                    ->prev();
+                $startNode = $startNode->previousSibling;
             }
 
-            $startNode = $node
-                ->mParentNode
-                ->mChildNodes
-                ->seekTo($node)
-                ->next();
+            $startNode = $node->nextSibling;
 
             while ($startNode) {
                 if ($startNode->mNodeType != self::TEXT_NODE) {
@@ -1099,10 +1082,7 @@ abstract class Node extends EventTarget
 
                 $data .= $startNode->data;
                 $contingiousTextNodes[] = $startNode;
-                $startNode = $startNode
-                    ->mParentNode
-                    ->mChildNodes
-                    ->next();
+                $startNode = $startNode->nextSibling;
             }
 
             // Replace data with node node, offset length, count 0, and data
@@ -1192,11 +1172,7 @@ abstract class Node extends EventTarget
         $referenceChild = $aChild;
 
         if ($referenceChild === $aNode) {
-            $referenceChild = $aNode
-                ->mParentNode
-                ->mChildNodes
-                ->seekTo($aNode)
-                ->next();
+            $referenceChild = $aNode->nextSibling;
         }
 
         // The DOM4 spec states that nodes should be implicitly adopted
@@ -1281,16 +1257,8 @@ abstract class Node extends EventTarget
             $iter->_preremove($aNode);
         }
 
-        $oldPreviousSibling = $aNode
-            ->mParentNode
-            ->mChildNodes
-            ->seekTo($aNode)
-            ->prev();
-        $oldNextSibling = $aNode
-            ->mParentNode
-            ->mChildNodes
-            ->seekTo($aNode)
-            ->next();
+        $oldPreviousSibling = $aNode->previousSibling;
+        $oldNextSibling = $aNode->nextSibling;
         $parent->mChildNodes->remove($aNode);
 
         // For each inclusive descendant inclusiveDescendant of node, run
@@ -1303,6 +1271,16 @@ abstract class Node extends EventTarget
             }
         }
 
+        if ($oldPreviousSibling) {
+            $oldPreviousSibling->nextSibling = $oldNextSibling;
+        }
+
+        if ($oldNextSibling) {
+            $oldNextSibling->previousSibling = $oldPreviousSibling;
+        }
+
+        $aNode->nextSibling = null;
+        $aNode->previousSibling = null;
         $aNode->mParentNode = null;
 
         // TODO: For each inclusive ancestor inclusiveAncestor of parent, if
@@ -1881,25 +1859,13 @@ abstract class Node extends EventTarget
             }
         }
 
-        $referenceChild = $aChild
-            ->mParentNode
-            ->mChildNodes
-            ->seekTo($aChild)
-            ->next();
+        $referenceChild = $aChild->nextSibling;
 
         if ($referenceChild === $aNode) {
-            $referenceChild = $aNode
-                ->mParentNode
-                ->mChildNodes
-                ->seekTo($aNode)
-                ->prev();
+            $referenceChild = $aNode->nextSibling;
         }
 
-        $previousSibling = $aChild
-            ->mParentNode
-            ->mChildNodes
-            ->seekTo($aChild)
-            ->prev();
+        $previousSibling = $aChild->previousSibling;
         $parent->mOwnerDocument->doAdoptNode($aNode);
         $removedNodes = [];
 

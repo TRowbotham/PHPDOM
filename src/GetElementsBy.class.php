@@ -18,9 +18,10 @@ trait GetElementsBy
         $classes = Utils::parseOrderedSet(
             Utils::DOMString($aClassName)
         );
+        $collection = [];
 
-        if (empty($classes)) {
-            return $classes;
+        if ($classes === '') {
+            return $collection;
         }
 
         $nodeFilter = function ($aNode) use ($classes) {
