@@ -24,15 +24,14 @@ trait ChildNode
             return;
         }
 
-        $childNodes = $this->mParentNode->mChildNodes->seekTo($this);
-        $viableNextSibling = $childNodes->next();
+        $viableNextSibling = $$this->nextSibling;
 
         while ($viableNextSibling) {
             if (!in_array($viableNextSibling, $nodes, true)) {
                 break;
             }
 
-            $viableNextSibling = $childNodes->next();
+            $viableNextSibling = $viableNextSibling->nextSibling;
         }
 
         $node = Node::convertNodesToNode($nodes, $this->mOwnerDocument);
@@ -56,15 +55,14 @@ trait ChildNode
             return;
         }
 
-        $childNodes = $this->mParentNode->mChildNodes->seekTo($this);
-        $viablePreviousSibling = $childNodes->prev();
+        $viablePreviousSibling = $this->previousSibling;
 
         while ($viablePreviousSibling) {
             if (!in_array($viablePreviousSibling, $nodes, true)) {
                 break;
             }
 
-            $viablePreviousSibling = $childNodes->prev();
+            $viablePreviousSibling = $viablePreviousSibling->previousSibling;
         }
 
         $node = Node::convertNodesToNode(
@@ -107,15 +105,14 @@ trait ChildNode
             return;
         }
 
-        $childNodes = $this->mParentNode->mChildNodes->seekTo($this);
-        $viableNextSibling = $childNodes->next();
+        $viableNextSibling = $this->nextSibling;
 
         while ($viableNextSibling) {
             if (!in_array($viableNextSibling, $nodes, true)) {
                 break;
             }
 
-            $viableNextSibling = $childNodes->next();
+            $viableNextSibling = $viableNextSibling->nextSibling;
         }
 
         $node = Node::convertNodesToNode($nodes, $this->mOwnerDocument);

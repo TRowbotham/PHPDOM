@@ -29,22 +29,16 @@ class Text extends CharacterData
                 $startNode = $this;
 
                 while ($startNode) {
-                    $previousSibling = $startNode
-                        ->mParentNode
-                        ->mChildNodes
-                        ->seekTo($startNode)
-                        ->prev();
-
-                    if (!$previousSibling instanceof Text) {
+                    if (!$startNode->previousSibling instanceof Text) {
                         break;
                     }
 
-                    $startNode = $previousSibling;
+                    $startNode = $startNode->previousSibling;
                 }
 
                 while ($startNode instanceof Text) {
                     $wholeText .= $startNode->mData;
-                    $startNode = $startNode->mParentNode->mChildNodes->next();
+                    $startNode = $startNode->nextSibling;
                 }
 
                 return $wholeText;
@@ -74,10 +68,7 @@ class Text extends CharacterData
         $ranges = Range::_getRangeCollection();
 
         if ($this->mParentNode) {
-            $this->mParentNode->insertNode(
-                $newNode,
-                $this->mParentNode->mChildNodes->seekTo($this)->next()
-            );
+            $this->mParentNode->insertNode($newNode, $this->nextSibling);
             $treeIndex = $this->_getTreeIndex();
 
             foreach ($ranges as $index => $range) {
