@@ -24,7 +24,7 @@ trait ChildNode
             return;
         }
 
-        $viableNextSibling = $$this->nextSibling;
+        $viableNextSibling = $this->nextSibling;
 
         while ($viableNextSibling) {
             if (!in_array($viableNextSibling, $nodes, true)) {
