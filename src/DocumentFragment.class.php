@@ -141,7 +141,7 @@ class DocumentFragment extends Node
 
         if ($newValue !== '') {
             $new = new Text($newValue);
-            $node->mOwnerDocument = $this->mOwnerDocument;
+            $node->nodeDocument = $this->nodeDocument;
         }
 
         $this->_replaceAll($node);

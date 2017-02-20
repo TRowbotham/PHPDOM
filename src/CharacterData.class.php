@@ -33,7 +33,7 @@ abstract class CharacterData extends Node
         parent::__construct();
 
         $this->mData = $aData;
-        $this->mLength = mb_strlen($aData, $this->mOwnerDocument->characterSet);
+        $this->mLength = mb_strlen($aData, $this->nodeDocument->characterSet);
     }
 
     public function __get($aName)
@@ -184,7 +184,7 @@ abstract class CharacterData extends Node
         // TODO: Queue a mutation record of "characterData" for node with
         // oldValue node’s data.
 
-        $encoding = $this->mOwnerDocument->characterSet;
+        $encoding = $this->nodeDocument->characterSet;
         $this->mData = mb_substr($this->mData, 0, $aOffset, $encoding) .
             $aData .
             mb_substr(

@@ -64,7 +64,7 @@ class Text extends CharacterData
         $count = $length - $aOffset;
         $newData = $this->substringData($aOffset, $count);
         $newNode = new Text($newData);
-        $newNode->mOwnerDocument = $this->mOwnerDocument;
+        $newNode->nodeDocument = $this->nodeDocument;
         $ranges = Range::_getRangeCollection();
 
         if ($this->mParentNode) {
