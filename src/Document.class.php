@@ -59,7 +59,6 @@ class Document extends Node
         $this->mMode = DocumentMode::NO_QUIRKS;
         $this->mNodeIteratorList = array();
         $this->mNodeType = self::DOCUMENT_NODE;
-        $this->nodeDocument = null; // Documents own themselves.
         $this->mURL = null;
 
         // When a Document object is created, it must have its current document
@@ -498,6 +497,14 @@ class Document extends Node
                 }
             }
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function ownerDocument()
+    {
+        return null;
     }
 
     /**

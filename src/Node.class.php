@@ -649,6 +649,17 @@ abstract class Node extends EventTarget
     }
 
     /**
+     * Returns null if the node is a document, and the node's node document
+     * otherwise.
+     *
+     * @return Document|null
+     */
+    public function ownerDocument()
+    {
+        return $this->nodeDocument;
+    }
+
+    /**
      * Returns the node's parent element.
      *
      * @internal
