@@ -1052,8 +1052,7 @@ abstract class Node extends EventTarget
      */
     public function normalize()
     {
-        $ownerDocument = $this->nodeDocument ?: $this;
-        $iter = $ownerDocument->createNodeIterator(
+        $iter = $this->nodeDocument->createNodeIterator(
             $this,
             NodeFilter::SHOW_TEXT
         );
@@ -1187,8 +1186,7 @@ abstract class Node extends EventTarget
         }
 
         // The DOM4 spec states that nodes should be implicitly adopted
-        $ownerDocument = $parent->nodeDocument ?: $parent;
-        $ownerDocument->doAdoptNode($aNode);
+        $parent->nodeDocument->doAdoptNode($aNode);
         $parent->insertNode($aNode, $referenceChild);
 
         return $aNode;
@@ -1367,8 +1365,7 @@ abstract class Node extends EventTarget
     public function _replaceAll(Node $aNode = null)
     {
         if ($aNode) {
-            $ownerDocument = $this->nodeDocument ?: $this;
-            $ownerDocument->doAdoptNode($aNode);
+            $this->nodeDocument->doAdoptNode($aNode);
         }
 
         $removedNodes = $this->mChildNodes;
