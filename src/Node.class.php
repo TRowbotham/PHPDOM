@@ -1330,7 +1330,18 @@ abstract class Node extends EventTarget
     }
 
     /**
-     * Sets the node's owner document.
+     * Gets the node's node document.
+     *
+     * @internal
+     *
+     * @return Document
+     */
+    public function getNodeDocument()
+    {
+        return $this->nodeDocument;
+    }
+
+    /**
      * Sets the node's node document.
      *
      * @internal

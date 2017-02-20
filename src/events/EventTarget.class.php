@@ -188,7 +188,7 @@ abstract class EventTarget
         if ($aLegacyTargetOverride === null) {
             // Note: legacy target override flag is only used by HTML and only
             // when target is a Window object.
-            $targetOverride = $aTarget->ownerDocument;
+            $targetOverride = $aTarget->getNodeDocument();
         }
 
         // Let relatedTarget be the result of retargeting event’s relatedTarget
