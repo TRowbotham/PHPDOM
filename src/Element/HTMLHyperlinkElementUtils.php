@@ -531,7 +531,7 @@ trait HTMLHyperlinkElementUtils
     {
         $this->reinitialiseUrl();
 
-        if ($this->url === null || $this->url->scheme === 'javascript') {
+        if ($this->url === null) {
             return;
         }
 
