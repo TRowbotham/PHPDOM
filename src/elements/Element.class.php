@@ -514,7 +514,7 @@ class Element extends Node implements AttributeChangeObserver
 
         if (!$attribute) {
             $attribute = new Attr($qualifiedName, Utils::DOMString($aValue));
-            $attribute->setOwnerDocument($this->nodeDocument);
+            $attribute->setNodeDocument($this->nodeDocument);
             $this->mAttributesList->append($attribute);
             return;
         }

@@ -171,7 +171,7 @@ class Document extends Node
         $localName = $this instanceof HTMLDocument ?
             Utils::toASCIILowercase($localName) : $localName;
         $attribute = new Attr($localName, '');
-        $attribute->setOwnerDocument($this);
+        $attribute->setNodeDocument($this);
 
         return $attribute;
     }
@@ -208,7 +208,7 @@ class Document extends Node
         }
 
         $attribute = new Attr($localName, '', $namespace, $prefix);
-        $attribute->setOwnerDocument($this);
+        $attribute->setNodeDocument($this);
 
         return $attribute;
     }
@@ -434,7 +434,7 @@ class Document extends Node
         // Return a new CDATASection node with its data set to data and node
         // document set to the context object.
         $node = new CDATASection($data);
-        $node->setOwnerDocument($this);
+        $node->setNodeDocument($this);
 
         return $node;
     }

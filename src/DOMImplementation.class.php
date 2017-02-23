@@ -117,7 +117,7 @@ final class DOMImplementation
         }
 
         $docType = new DocumentType($aQualifiedName, $aPublicId, $aSystemId);
-        $docType->setOwnerDocument($this->mDocument);
+        $docType->setNodeDocument($this->mDocument);
 
         return $docType;
     }
@@ -134,7 +134,7 @@ final class DOMImplementation
         $doc = new HTMLDocument();
         $doc->_setContentType('text/html');
         $docType = new DocumentType('html', '', '');
-        $docType->setOwnerDocument($doc);
+        $docType->setNodeDocument($doc);
         $doc->appendChild($docType);
 
         $html = ElementFactory::create($doc, 'html', Namespaces::HTML);
@@ -147,7 +147,7 @@ final class DOMImplementation
             $title = ElementFactory::create($doc, 'title', Namespaces::HTML);
             $head->appendChild($title);
             $text = new Text(Utils::DOMString($aTitle));
-            $text->setOwnerDocument($doc);
+            $text->setNodeDocument($doc);
             $title->appendChild($text);
         }
 

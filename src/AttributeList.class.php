@@ -308,7 +308,7 @@ class AttributeList extends OrderedSet
 
         if ($attribute === null) {
             $attribute = new Attr($localName, $value, $namespace, $prefix);
-            $attribute->setOwnerDocument($this->element->getNodeDocument());
+            $attribute->setNodeDocument($this->element->getNodeDocument());
             $this->append($attribute);
             return;
         }
