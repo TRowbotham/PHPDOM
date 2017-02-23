@@ -268,7 +268,7 @@ class HTMLDocument extends Document
             // and insert it as the first child of the document element.
             if (!$element) {
                 $element = ElementFactory::create(
-                    $docElement->mOwnerDocument,
+                    $docElement->nodeDocument,
                     'title',
                     Namespaces::SVG
                 );
@@ -296,7 +296,7 @@ class HTMLDocument extends Document
             // and append it to the head element.
             if (!$element) {
                 $element = ElementFactory::create(
-                    $docElement->mOwnerDocument,
+                    $docElement->nodeDocument,
                     'title',
                     Namespaces::HTML
                 );

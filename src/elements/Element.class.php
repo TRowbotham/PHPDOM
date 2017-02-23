@@ -261,7 +261,7 @@ class Element extends Node implements AttributeChangeObserver
         $element = new static();
         $element->mLocalName = $aLocalName;
         $element->mNamespaceURI = $aNamespace;
-        $element->mOwnerDocument = $aDocument;
+        $element->nodeDocument = $aDocument;
         $element->mPrefix = $aPrefix;
 
         return $element;
@@ -395,7 +395,7 @@ class Element extends Node implements AttributeChangeObserver
         $qualifiedName = Utils::DOMString($aQualifiedName);
 
         if ($this->mNamespaceURI === Namespaces::HTML &&
-            $this->mOwnerDocument instanceof HTMLDocument
+            $this->nodeDocument instanceof HTMLDocument
         ) {
             $qualifiedName = Utils::toASCIILowercase($aQualifiedName);
         }
@@ -577,7 +577,7 @@ class Element extends Node implements AttributeChangeObserver
     public function insertAdjacentText($aWhere, $aData)
     {
         $text = new Text($aData);
-        $text->mOwnerDocument = $this->mOwnerDocument;
+        $text->nodeDocument = $this->nodeDocument;
 
         try {
             self::insertAdjacent(
@@ -671,7 +671,7 @@ class Element extends Node implements AttributeChangeObserver
         }
 
         if ($this->mNamespaceURI === Namespaces::HTML &&
-            $this->mOwnerDocument instanceof HTMLDocument
+            $this->nodeDocument instanceof HTMLDocument
         ) {
             $qualifiedName = Utils::toASCIILowercase($qualifiedName);
         }
@@ -687,7 +687,7 @@ class Element extends Node implements AttributeChangeObserver
 
         if (!$attribute) {
             $attribute = new Attr($qualifiedName, Utils::DOMString($aValue));
-            $attribute->setOwnerDocument($this->mOwnerDocument);
+            $attribute->setNodeDocument($this->nodeDocument);
             $this->mAttributesList->append($attribute);
             return;
         }
@@ -824,7 +824,7 @@ class Element extends Node implements AttributeChangeObserver
             $this->mPrefix . ':' . $this->mLocalName;
 
         return $this->mNamespaceURI === Namespaces::HTML &&
-            $this->mOwnerDocument instanceof HTMLDocument ?
+            $this->nodeDocument instanceof HTMLDocument ?
             Utils::toASCIIUppercase($qualifiedName) : $qualifiedName;
     }
 
@@ -959,7 +959,7 @@ class Element extends Node implements AttributeChangeObserver
         if ($attr) {
             $url = $this->parseURL(
                 $attr->value,
-                $this->mOwnerDocument
+                $this->nodeDocument
             );
 
             if ($url !== false) {
@@ -1005,7 +1005,7 @@ class Element extends Node implements AttributeChangeObserver
 
         if ($newValue !== '') {
             $node = new Text($newValue);
-            $node->mOwnerDocument = $this->mOwnerDocument;
+            $node->nodeDocument = $this->nodeDocument;
         }
 
         $this->_replaceAll($node);

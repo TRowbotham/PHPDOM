@@ -61,7 +61,6 @@ class Document extends Node
         $this->mMode = DocumentMode::NO_QUIRKS;
         $this->mNodeIteratorList = array();
         $this->mNodeType = self::DOCUMENT_NODE;
-        $this->mOwnerDocument = null; // Documents own themselves.
         $this->mURL = null;
 
         // When a Document object is created, it must have its current document
@@ -176,7 +175,7 @@ class Document extends Node
         $localName = $this instanceof HTMLDocument ?
             Utils::toASCIILowercase($localName) : $localName;
         $attribute = new Attr($localName, '');
-        $attribute->setOwnerDocument($this);
+        $attribute->setNodeDocument($this);
 
         return $attribute;
     }
@@ -213,7 +212,7 @@ class Document extends Node
         }
 
         $attribute = new Attr($localName, '', $namespace, $prefix);
-        $attribute->setOwnerDocument($this);
+        $attribute->setNodeDocument($this);
 
         return $attribute;
     }
@@ -221,7 +220,7 @@ class Document extends Node
     public function createComment($aData)
     {
         $node = new Comment($aData);
-        $node->mOwnerDocument = $this;
+        $node->nodeDocument = $this;
 
         return $node;
     }
@@ -229,7 +228,7 @@ class Document extends Node
     public function createDocumentFragment()
     {
         $node = new DocumentFragment();
-        $node->mOwnerDocument = $this;
+        $node->nodeDocument = $this;
 
         return $node;
     }
@@ -391,7 +390,7 @@ class Document extends Node
         }
 
         $pi = new ProcessingInstruction($target, $data);
-        $pi->mOwnerDocument = $this;
+        $pi->nodeDocument = $this;
 
         return $pi;
     }
@@ -408,7 +407,7 @@ class Document extends Node
     public function createTextNode($aData)
     {
         $node = new Text($aData);
-        $node->mOwnerDocument = $this;
+        $node->nodeDocument = $this;
 
         return $node;
     }
@@ -439,7 +438,7 @@ class Document extends Node
         // Return a new CDATASection node with its data set to data and node
         // document set to the context object.
         $node = new CDATASection($data);
-        $node->setOwnerDocument($this);
+        $node->setNodeDocument($this);
 
         return $node;
     }
@@ -478,7 +477,7 @@ class Document extends Node
      */
     public function doAdoptNode(Node $aNode)
     {
-        $oldDocument = $aNode->mOwnerDocument;
+        $oldDocument = $aNode->nodeDocument;
 
         if ($aNode->mParentNode) {
             $aNode->mParentNode->removeNode($aNode);
@@ -488,7 +487,7 @@ class Document extends Node
             $iter = new NodeIterator($aNode, NodeFilter::SHOW_ALL);
 
             while (($node = $iter->nextNode())) {
-                $node->mOwnerDocument = $this;
+                $node->nodeDocument = $this;
             }
 
             // For each descendant in node’s inclusive descendants, in
@@ -502,6 +501,14 @@ class Document extends Node
                 }
             }
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function ownerDocument()
+    {
+        return null;
     }
 
     /**

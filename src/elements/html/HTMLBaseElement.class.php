@@ -26,7 +26,7 @@ class HTMLBaseElement extends HTMLElement
     {
         switch ($aName) {
             case 'href':
-                $document = $this->mOwnerDocument;
+                $document = $this->nodeDocument;
                 $url = $this->mAttributesList->getAttrValue('href', null);
                 $urlRecord = URLParser::parseUrl(
                     $url,
@@ -113,7 +113,7 @@ class HTMLBaseElement extends HTMLElement
      */
     public function setFrozenBaseURL($aHref = null)
     {
-        $document = $this->mOwnerDocument;
+        $document = $this->nodeDocument;
         $fallbackBaseURL = $document->getFallbackBaseURL();
         $urlRecord = false;
 

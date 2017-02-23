@@ -88,12 +88,10 @@ class Range {
 
     public function cloneContents()
     {
-        $ownerDocument = $this->mStartContainer->ownerDocument ?:
-            $this->mStartContainer;
-        $fragment = $ownerDocument->createDocumentFragment();
+        $nodeDocument = $this->mStartContainer->getNodeDocument();
+        $fragment = $nodeDocument->createDocumentFragment();
 
-        if (
-            $this->mStartContainer === $this->mEndContainer &&
+        if ($this->mStartContainer === $this->mEndContainer &&
             $this->mStartOffset == $this->mEndOffset
         ) {
             return $fragment;
@@ -497,11 +495,10 @@ class Range {
      */
     public function extractContents()
     {
-        $fragment = $this->mStartContainer->ownerDocument
+        $fragment = $this->mStartContainer->getNodeDocument()
             ->createDocumentFragment();
 
-        if (
-            $this->mStartContainer === $this->mEndContainer &&
+        if ($this->mStartContainer === $this->mEndContainer &&
             $this->mStartOffset == $this->mEndOffset
         ) {
             return $fragment;
@@ -1034,12 +1031,10 @@ class Range {
     public function toString()
     {
         $s = '';
-        $owner = $this->mStartContainer->ownerDocument ?:
-            $this->mStartContainer;
+        $owner = $this->mStartContainer->getNodeDocument();
         $encoding = $owner->characterSet;
 
-        if (
-            $this->mStartContainer === $this->mEndContainer &&
+        if ($this->mStartContainer === $this->mEndContainer &&
             $this->mStartContainer instanceof Text
         ) {
             return mb_substr(
@@ -1137,12 +1132,12 @@ class Range {
         // as its local name, the HTML namespace as its namespace, and the
         // context object's node document as its node document.
         if ($element === null ||
-            ($element->ownerDocument instanceof HTMLDocument &&
+            ($element->getNodeDocument() instanceof HTMLDocument &&
                 $element->localName === 'html' &&
                 $element->namespaceURI === Namespaces::HTML)
         ) {
             $element = ElementFactory::create(
-                $this->mStartContainer->ownerDocument ?: $this->mStartContainer,
+                $this->mStartContainer->getNodeDocument(),
                 'body',
                 Namespaces::HTML
             );

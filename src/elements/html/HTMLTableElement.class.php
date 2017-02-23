@@ -300,7 +300,7 @@ class HTMLTableElement extends HTMLElement
         $tbodies = $this->shallowGetElementsByTagName('tbody');
         $len = count($tbodies);
         $lastTbody = $len ? $tbodies[$len - 1]->nextSibling : null;
-        $node = $this->mOwnerDocument->createElement('tbody');
+        $node = $this->nodeDocument->createElement('tbody');
         $this->insertBefore($node, $lastTbody);
 
         return $node;
@@ -329,14 +329,14 @@ class HTMLTableElement extends HTMLElement
             throw new IndexSizeError();
         }
 
-        $tr = $this->mOwnerDocument->createElement('tr');
+        $tr = $this->nodeDocument->createElement('tr');
 
         if (!$numRows) {
             $tbodies = $this->shallowGetElementsByTagName('tbody');
             $numTbodies = count($tbodies);
 
             if (!$tbodies) {
-                $tbody = $this->mOwnerDocument->createElement('tbody');
+                $tbody = $this->nodeDocument->createElement('tbody');
                 $tbody->appendChild($tr);
                 $this->appendChild($tbody);
             } else {
@@ -404,7 +404,7 @@ class HTMLTableElement extends HTMLElement
         $nodes = $this->shallowGetElementsByTagName($aElement);
 
         if (!isset($nodes[0])) {
-            $node = $this->mOwnerDocument->createElement($aElement);
+            $node = $this->nodeDocument->createElement($aElement);
             $this->insertBefore($node, $aInsertBefore);
         } else {
             $node = $nodes[0];
