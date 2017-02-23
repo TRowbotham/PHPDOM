@@ -79,7 +79,7 @@ abstract class Node extends EventTarget
         $this->mChildNodes = new OrderedSet();
         $this->nodeList = new NodeList($this->mChildNodes);
         $this->mNodeType = '';
-        $this->mOwnerDocument = Document::_getDefaultDocument();
+        $this->nodeDocument = Document::_getDefaultDocument();
         $this->mParentNode = null;
         $this->previousSibling = null;
         $this->nextSibling = null;
@@ -89,7 +89,7 @@ abstract class Node extends EventTarget
     public function __destruct()
     {
         $this->mChildNodes = null;
-        $this->mOwnerDocument = null;
+        $this->nodeDocument = null;
         $this->mParentNode = null;
         $this->previousSibling = null;
         $this->nextSibling = null;
@@ -100,7 +100,7 @@ abstract class Node extends EventTarget
     {
         switch ($aName) {
             case 'baseURI':
-                return $this->mOwnerDocument->getBaseURL()->serializeURL();
+                return $this->nodeDocument->getBaseURL()->serializeURL();
 
             case 'childNodes':
                 return $this->nodeList;
@@ -129,7 +129,7 @@ abstract class Node extends EventTarget
                 return $this->getNodeValue();
 
             case 'ownerDocument':
-                return $this->mOwnerDocument;
+                return static::ownerDocument();
 
             case 'parentElement':
                 return $this->parentElement();
@@ -376,7 +376,7 @@ abstract class Node extends EventTarget
         $aCloneChildren = null
     ) {
         $node = $this;
-        $document = $aDocument ?: $node->mOwnerDocument;
+        $document = $aDocument ?: $node->nodeDocument;
 
         switch ($node->mNodeType) {
             case self::ELEMENT_NODE:
@@ -441,10 +441,10 @@ abstract class Node extends EventTarget
         }
 
         if ($copy instanceof Document) {
-            $copy->mOwnerDocument = $copy;
+            $copy->nodeDocument = $copy;
             $document = $copy;
         } else {
-            $copy->mOwnerDocument = $document;
+            $copy->nodeDocument = $document;
         }
 
         // If the node being cloned defines custom cloning steps, perform them
@@ -646,6 +646,17 @@ abstract class Node extends EventTarget
                 }
             }
         }
+    }
+
+    /**
+     * Returns null if the node is a document, and the node's node document
+     * otherwise.
+     *
+     * @return Document|null
+     */
+    public function ownerDocument()
+    {
+        return $this->nodeDocument;
     }
 
     /**
@@ -1041,8 +1052,7 @@ abstract class Node extends EventTarget
      */
     public function normalize()
     {
-        $ownerDocument = $this->mOwnerDocument ?: $this;
-        $iter = $ownerDocument->createNodeIterator(
+        $iter = $this->nodeDocument->createNodeIterator(
             $this,
             NodeFilter::SHOW_TEXT
         );
@@ -1176,8 +1186,7 @@ abstract class Node extends EventTarget
         }
 
         // The DOM4 spec states that nodes should be implicitly adopted
-        $ownerDocument = $parent->mOwnerDocument ?: $parent;
-        $ownerDocument->doAdoptNode($aNode);
+        $parent->nodeDocument->doAdoptNode($aNode);
         $parent->insertNode($aNode, $referenceChild);
 
         return $aNode;
@@ -1251,7 +1260,7 @@ abstract class Node extends EventTarget
             }
         }
 
-        $iterCollection = $aNode->mOwnerDocument->_getNodeIteratorCollection();
+        $iterCollection = $aNode->nodeDocument->_getNodeIteratorCollection();
 
         foreach ($iterCollection as $iter) {
             $iter->_preremove($aNode);
@@ -1319,16 +1328,28 @@ abstract class Node extends EventTarget
     }
 
     /**
-     * Sets the node's owner document.
+     * Gets the node's node document.
+     *
+     * @internal
+     *
+     * @return Document
+     */
+    public function getNodeDocument()
+    {
+        return $this->nodeDocument;
+    }
+
+    /**
+     * Sets the node's node document.
      *
      * @internal
      *
      * @param Document $aNode The Document object that owns this Node.
      */
-    public function setOwnerDocument(Document $aDocument)
+    public function setNodeDocument(Document $aDocument)
     {
         if ($this->mNodeType !== self::DOCUMENT_NODE) {
-            $this->mOwnerDocument = $aDocument;
+            $this->nodeDocument = $aDocument;
         }
     }
 
@@ -1344,8 +1365,7 @@ abstract class Node extends EventTarget
     public function _replaceAll(Node $aNode = null)
     {
         if ($aNode) {
-            $ownerDocument = $this->mOwnerDocument ?: $this;
-            $ownerDocument->doAdoptNode($aNode);
+            $this->nodeDocument->doAdoptNode($aNode);
         }
 
         $removedNodes = $this->mChildNodes;
@@ -1394,7 +1414,7 @@ abstract class Node extends EventTarget
         foreach ($aNodes as &$potentialNode) {
             if (!($potentialNode instanceof self)) {
                 $potentialNode = new Text(Utils::DOMString($potentialNode));
-                $potentialNode->mOwnerDocument = $aDocument;
+                $potentialNode->nodeDocument = $aDocument;
             }
         }
 
@@ -1406,7 +1426,7 @@ abstract class Node extends EventTarget
             $node = $aNodes[0];
         } else {
             $node = new DocumentFragment();
-            $node->mOwnerDocument = $aDocument;
+            $node->nodeDocument = $aDocument;
 
             try {
                 foreach ($aNodes as $child) {
@@ -1866,7 +1886,7 @@ abstract class Node extends EventTarget
         }
 
         $previousSibling = $aChild->previousSibling;
-        $parent->mOwnerDocument->doAdoptNode($aNode);
+        $parent->nodeDocument->doAdoptNode($aNode);
         $removedNodes = [];
 
         if ($aChild->mParentNode) {

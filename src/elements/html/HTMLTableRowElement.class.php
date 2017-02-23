@@ -130,7 +130,7 @@ class HTMLTableRowElement extends HTMLElement
         }
 
         $td = ElementFactory::create(
-            $this->mOwnerDocument,
+            $this->nodeDocument,
             'td',
             Namespaces::HTML
         );

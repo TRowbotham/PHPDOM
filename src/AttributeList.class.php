@@ -164,7 +164,7 @@ class AttributeList extends OrderedSet
     public function getAttrByName($qualifiedName)
     {
         if ($this->element->namespaceURI === Namespaces::HTML &&
-            $this->element->ownerDocument instanceof HTMLDocument
+            $this->element->getNodeDocument() instanceof HTMLDocument
         ) {
             $qualifiedName = Utils::toASCIILowercase($qualifiedName);
         }
@@ -308,7 +308,7 @@ class AttributeList extends OrderedSet
 
         if ($attribute === null) {
             $attribute = new Attr($localName, $value, $namespace, $prefix);
-            $attribute->setOwnerDocument($this->element->ownerDocument);
+            $attribute->setOwnerDocument($this->element->getNodeDocument());
             $this->append($attribute);
             return;
         }

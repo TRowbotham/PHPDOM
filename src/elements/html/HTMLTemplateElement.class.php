@@ -14,7 +14,7 @@ class HTMLTemplateElement extends HTMLElement
     {
         parent::__construct();
 
-        $doc = $this->mOwnerDocument
+        $doc = $this->nodeDocument
             ->getAppropriateTemplateContentsOwnerDocument();
         $this->mContent = $doc->createDocumentFragment();
         $this->mContent->setHost($this);
@@ -39,7 +39,7 @@ class HTMLTemplateElement extends HTMLElement
 
     public function doAdoptingSteps(Document $aOldDocument)
     {
-        $doc = $this->mOwnerDocument
+        $doc = $this->nodeDocument
             ->getAppropriateTemplateContentsOwnerDocument();
         $doc->doAdoptNode($this->mContent);
     }
@@ -54,7 +54,7 @@ class HTMLTemplateElement extends HTMLElement
         }
 
         $copiedContents = $this->mContent->doCloneNode(
-            $aCopy->mContent->mOwnerDocument,
+            $aCopy->mContent->nodeDocument,
             true
         );
         $aCopy->mContent->appendChild($copiedContents);

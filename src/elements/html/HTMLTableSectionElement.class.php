@@ -51,7 +51,7 @@ class HTMLTableSectionElement extends HTMLElement
         }
 
         $tr = ElementFactory::create(
-            $this->mOwnerDocument,
+            $this->nodeDocument,
             'tr',
             Namespaces::HTML
         );

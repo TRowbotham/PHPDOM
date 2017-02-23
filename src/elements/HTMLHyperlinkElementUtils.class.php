@@ -488,7 +488,7 @@ trait HTMLHyperlinkElementUtils
             URLParser::parseBasicUrl(
                 $input,
                 null,
-                $this->mOwnerDocument->characterSet,
+                $this->nodeDocument->characterSet,
                 $this->mUrl,
                 URLParser::QUERY_STATE
             );
@@ -610,7 +610,7 @@ trait HTMLHyperlinkElementUtils
 
         // Otherwise, parse this element's href content attribute value relative
         // to this element's node document.
-        $url = $this->parseURL($href->value, $this->mOwnerDocument);
+        $url = $this->parseURL($href->value, $this->nodeDocument);
 
         // If parsing is successful, set this element's url to the result;
         // otherwise, set this element's url to null.
