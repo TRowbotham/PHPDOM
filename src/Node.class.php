@@ -1746,7 +1746,7 @@ abstract class Node extends EventTarget
         }
 
         if ($aChild->mParentNode !== $parent) {
-            throw new HierarchyRequestError();
+            throw new NotFoundError();
         }
 
         switch ($aNode->mNodeType) {
