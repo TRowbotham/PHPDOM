@@ -68,6 +68,7 @@ abstract class Node extends EventTarget
     protected $mOwnerDocument; // Document
     protected $mParentNode; // Node
     protected $nextSibling;
+    protected $nodeDocument;
     protected $nodeList;
     protected $previousSibling;
     protected static $mRefCount = 0;
