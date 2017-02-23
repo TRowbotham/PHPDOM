@@ -33,7 +33,7 @@ abstract class ParserFactory
      */
     public static function parseFragment($aMarkup, Element $aContextElement)
     {
-        $ownerDocument = $aContextElement->ownerDocument;
+        $ownerDocument = $aContextElement->getNodeDocument();
 
         if ($ownerDocument instanceof HTMLDocument) {
             $newChildren = HTMLParser::parseHTMLFragment(
@@ -67,7 +67,7 @@ abstract class ParserFactory
      */
     public static function serializeFragment(Node $aNode, $aRequireWellFormed)
     {
-        $contextDocument = $aNode->ownerDocument;
+        $contextDocument = $aNode->getNodeDocument();
 
         if ($contextDocument instanceof HTMLDocument) {
             return HTMLParser::serializeHTMLFragment($aNode);

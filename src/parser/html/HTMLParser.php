@@ -233,14 +233,14 @@ class HTMLParser extends Parser
     {
         // Create a new Document node, and mark it as being an HTML document.
         $doc = new HTMLDocument();
-        $mode = $aContextElement->ownerDocument->getMode();
+        $mode = $aContextElement->getNodeDocument()->getMode();
 
         // If the node document of the context element is in quirks mode, then
         // let the Document be in quirks mode. Otherwise, the node document of
         // the context element is in limited-quirks mode, then let the Document
         // be in limited-quirks mode. Otherwise, leave the Document in no-quirks
         // mode.
-        $doc->setMode($aContextElement->ownerDocument->getMode());
+        $doc->setMode($aContextElement->getNodeDocument()->getMode());
 
         // Create a new HTML parser, and associate it with the just created
         // Document node.

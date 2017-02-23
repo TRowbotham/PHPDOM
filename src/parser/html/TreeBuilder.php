@@ -4692,7 +4692,7 @@ class TreeBuilder
         $aNamespace,
         Node $aIntendedParent
     ) {
-        $document = $aIntendedParent->ownerDocument ?: $aIntendedParent;
+        $document = $aIntendedParent->getNodeDocument();
         $localName = $aToken->tagName;
         $element = ElementFactory::create($document, $localName, $aNamespace);
         $attributes = $element->getAttributeList();
@@ -4978,7 +4978,9 @@ class TreeBuilder
         }
 
         $node = new Text($data);
-        $node->setNodeDocument($adjustedInsertionLocation[0]->ownerDocument);
+        $node->setNodeDocument(
+            $adjustedInsertionLocation[0]->getNodeDocument()
+        );
         $this->insertNode($node, $adjustedInsertionLocation);
     }
 
@@ -5013,8 +5015,7 @@ class TreeBuilder
         // Create a Comment node whose data attribute is set to data and whose
         // node document is the same as that of the node in which the adjusted
         // insertion location finds itself.
-        $ownerDocument = $adjustedInsertionLocation[0]->ownerDocument ?:
-            $adjustedInsertionLocation[0];
+        $ownerDocument = $adjustedInsertionLocation[0]->getNodeDocument();
         $node = new Comment($data);
         $node->setNodeDocument($ownerDocument);
 
