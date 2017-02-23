@@ -57,6 +57,7 @@ class Document extends Node
         $this->mIsIframeSrcdoc = false;
         $this->mInertTemplateDocument = null;
         $this->mMode = DocumentMode::NO_QUIRKS;
+        $this->nodeDocument = $this; // Documents own themselves.
         $this->mNodeIteratorList = array();
         $this->mNodeType = self::DOCUMENT_NODE;
         $this->mURL = null;
