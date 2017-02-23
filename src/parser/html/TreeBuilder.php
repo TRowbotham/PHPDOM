@@ -228,7 +228,7 @@ class TreeBuilder
                 ($publicId ?: ''),
                 ($systemId ?: '')
             );
-            $doctype->setOwnerDocument($this->mDocument);
+            $doctype->setNodeDocument($this->mDocument);
             $this->mDocument->appendChild($doctype);
 
             if (!$this->mDocument->isIframeSrcdoc() &&
@@ -4705,7 +4705,7 @@ class TreeBuilder
                 $attr->namespace,
                 $attr->prefix
             );
-            $a->setOwnerDocument($document);
+            $a->setNodeDocument($document);
             $attributes->append($a);
         }
 
@@ -4978,7 +4978,7 @@ class TreeBuilder
         }
 
         $node = new Text($data);
-        $node->setOwnerDocument($adjustedInsertionLocation[0]->ownerDocument);
+        $node->setNodeDocument($adjustedInsertionLocation[0]->ownerDocument);
         $this->insertNode($node, $adjustedInsertionLocation);
     }
 
@@ -5016,7 +5016,7 @@ class TreeBuilder
         $ownerDocument = $adjustedInsertionLocation[0]->ownerDocument ?:
             $adjustedInsertionLocation[0];
         $node = new Comment($data);
-        $node->setOwnerDocument($ownerDocument);
+        $node->setNodeDocument($ownerDocument);
 
         // Insert the newly created node at the adjusted insertion location.
         $this->insertNode($node, $adjustedInsertionLocation);
