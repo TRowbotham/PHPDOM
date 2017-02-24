@@ -17,5 +17,14 @@
         "squizlabs/php_codesniffer": "^2.7",
         "symfony/var-dumper": "^3.2",
         "phpunit/phpunit": "^5.7"
+    },
+    "autoload": {
+        "files": ["src/phpjs.php"],
+        "exclude-from-classmap": ["tests/"]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "phpjs\\tests\\": "tests/"
+        }
     }
 }
