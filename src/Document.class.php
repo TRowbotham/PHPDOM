@@ -696,7 +696,7 @@ class Document extends Node
             throw new NotSupportedError();
         }
 
-        return $aNode->doCloneNode(null, $aDeep);
+        return $aNode->doCloneNode($this, $aDeep);
     }
 
     /**

@@ -297,7 +297,6 @@ abstract class ElementFactory
             case 'head':
             case 'html':
             case 'input':
-            case 'keygen':
             case 'label':
             case 'legend':
             case 'link':

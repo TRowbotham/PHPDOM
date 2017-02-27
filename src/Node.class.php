@@ -1369,12 +1369,12 @@ abstract class Node extends EventTarget
             $this->nodeDocument->doAdoptNode($aNode);
         }
 
-        $removedNodes = $this->mChildNodes;
+        $removedNodes = $this->mChildNodes->values();
 
         if (!$aNode) {
             $addedNodes = array();
         } elseif ($aNode instanceof DocumentFragment) {
-            $addedNodes = $aNode->mChildNodes;
+            $addedNodes = $aNode->mChildNodes->values();
         } else {
             $addedNodes = array($aNode);
         }

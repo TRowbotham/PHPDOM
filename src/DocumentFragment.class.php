@@ -140,7 +140,7 @@ class DocumentFragment extends Node
         $newValue = Utils::DOMString($aNewValue, true);
 
         if ($newValue !== '') {
-            $new = new Text($newValue);
+            $node = new Text($newValue);
             $node->nodeDocument = $this->nodeDocument;
         }
 
