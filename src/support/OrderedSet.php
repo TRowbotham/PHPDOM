@@ -25,7 +25,7 @@ class OrderedSet implements ArrayAccess, Countable, Iterator
         $hash = $this->hash($item);
 
         if (isset($this->map[$hash])) {
-            return;
+            return $this;
         }
 
         $this->map[$hash] = $item;
@@ -40,7 +40,7 @@ class OrderedSet implements ArrayAccess, Countable, Iterator
         $hash = $this->hash($item);
 
         if (isset($this->map[$hash])) {
-            return;
+            return $this;
         }
 
         array_unshift($this->keys, $hash);
@@ -131,7 +131,7 @@ class OrderedSet implements ArrayAccess, Countable, Iterator
             array_unshift($this->keys, $newHash);
             $this->map = [$newHash => $newItem] + $this->map;
             $this->length++;
-            return;
+            return $this;
         }
 
         $offset = array_flip($this->keys)[$hash];
@@ -327,7 +327,7 @@ class OrderedSet implements ArrayAccess, Countable, Iterator
         $hash = $this->hash($item);
 
         if (!isset($this->map[$hash])) {
-            return;
+            return $this;
         }
 
         $this->position = array_flip($this->keys)[$hash];
