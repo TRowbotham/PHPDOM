@@ -112,26 +112,6 @@ class Text extends CharacterData
 
         $this->doReplaceData($aOffset, $count, '');
 
-        if (!$this->mParentNode) {
-            foreach ($ranges as $index => $range) {
-                $startContainer = $range->startContainer;
-
-                if ($startContainer === $this &&
-                    $range->startOffset > $aOffset
-                ) {
-                    $range->setStart($startContainer, $aOffset);
-                }
-            }
-
-            foreach ($ranges as $index => $range) {
-                $endContainer = $range->endContainer;
-
-                if ($endContainer === $this && $range->endOffset > $aOffset) {
-                    $range->setEnd($endContainer, $aOffset);
-                }
-            }
-        }
-
         return $newNode;
     }
 
