@@ -266,12 +266,24 @@ class OrderedSet implements ArrayAccess, Countable, Iterator
     /**
      * Gets the first item in the list, if any.
      *
+     * @param callable|null $callback
+     *
      * @return mixed|null
      */
-    public function first()
+    public function first(callable $callback = null)
     {
-        if (isset($this->keys[0])) {
+        if (empty($this->keys)) {
+            return null;
+        }
+
+        if ($callback === null) {
             return $this->map[$this->keys[0]];
+        }
+
+        foreach ($this->keys as $key => $hash) {
+            if (call_user_func($callback, $this->map[$hash], $key)) {
+                return $this->map[$hash];
+            }
         }
 
         return null;
@@ -280,14 +292,24 @@ class OrderedSet implements ArrayAccess, Countable, Iterator
     /**
      * Gets the last item in the list, if any.
      *
+     * @param callable|null $callback
+     *
      * @return mixed|null
      */
-    public function last()
+    public function last(callable $callback = null)
     {
-        $index = $this->length - 1;
+        if (empty($this->keys)) {
+            return null;
+        }
 
-        if (isset($this->keys[$index])) {
-            return $this->map[$this->keys[$index]];
+        if ($callback === null) {
+            return $this->map[$this->keys[$this->length - 1]];
+        }
+
+        foreach (array_reverse($this->keys) as $key => $hash) {
+            if (call_user_func($callback, $this->map[$hash], $key)) {
+                return $this->map[$hash];
+            }
         }
 
         return null;
