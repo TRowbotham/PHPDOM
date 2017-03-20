@@ -329,7 +329,7 @@ class OrderedSet implements ArrayAccess, Countable, Iterator
         $set = new static();
 
         foreach ($this->keys as $index => $hash) {
-            if (call_user_func($callback, $index, $this->map[$hash])) {
+            if (call_user_func($callback, $this->map[$hash], $index)) {
                 $set->append($this->map[$hash]);
             }
         }

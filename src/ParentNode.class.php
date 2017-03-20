@@ -37,7 +37,7 @@ trait ParentNode
 
     protected function getChildren()
     {
-        return $this->mChildNodes->filter(function ($index, $node) {
+        return $this->mChildNodes->filter(function ($node) {
             return $node->nodeType == Node::ELEMENT_NODE;
         })->values();
     }
