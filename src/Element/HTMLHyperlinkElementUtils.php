@@ -228,16 +228,15 @@ trait HTMLHyperlinkElementUtils
     {
         $this->reinitialiseURL();
 
-        if ($this->url === null || $this->url->host === null) {
+        if ($this->url === null || $this->url->host->isNull()) {
             return '';
         }
 
         if ($this->url->port === null) {
-            return HostFactory::serialize($this->url->host);
+            return (string) $this->url->host;
         }
 
-        return HostFactory::serialize($this->url->host) . ':'
-            . $this->url->port;
+        return $this->url->host . ':' . $this->url->port;
     }
 
     /**
@@ -282,11 +281,11 @@ trait HTMLHyperlinkElementUtils
     {
         $this->reinitialiseURL();
 
-        if ($this->url === null || $this->url->host === null) {
+        if ($this->url === null || $this->url->host->isNull()) {
             return '';
         }
 
-        return HostFactory::serialize($this->url->host);
+        return (string) $this->url->host;
     }
 
     /**
