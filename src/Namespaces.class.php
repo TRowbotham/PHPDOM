@@ -150,22 +150,15 @@ class Namespaces
      *
      * @throws InvalidCharacterError If the qualified name does not match the
      *     XML 'Name' production.
-     *
-     * @throws NamespaceError If the qualified name does not match the XML
-     *     'QName' production.
      */
     public static function validate($aQualifiedName)
     {
-        // If qualifiedName does not match the 'Name' production, then throw an
-        // InvalidCharacterError.
-        if (!preg_match(self::NAME_PRODUCTION, $aQualifiedName)) {
+        // If qualifiedName does not match the 'Name' or 'QName' production,
+        // then throw an InvalidCharacterError.
+        if (!preg_match(self::NAME_PRODUCTION, $aQualifiedName) ||
+            !preg_match(self::QNAME, $aQualifiedName)
+        ) {
             throw new InvalidCharacterError();
-        }
-
-        // If qualifiedName does not match the 'QName' production, then
-        // throw a NamespaceError.
-        if (!preg_match(self::QNAME, $aQualifiedName)) {
-            throw new NamespaceError();
         }
     }
 
