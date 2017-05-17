@@ -75,11 +75,12 @@ abstract class TokenizerState
     const CDATA_SECTION_BRACKET                         = 70;
     const CDATA_SECTION_END                             = 71;
     const CHARACTER_REFERENCE                           = 72;
-    const NUMERIC_CHARACTER_REFERENCE                   = 73;
-    const HEXADECIMAL_CHARACTER_REFERENCE_START         = 74;
-    const DECIMAL_CHARACTER_REFERENCE_START             = 75;
-    const HEXADECIMAL_CHARACTER_REFERENCE               = 76;
-    const DECIMAL_CHARACTER_REFERENCE                   = 77;
-    const NUMERIC_CHARACTER_REFERENCE_END               = 78;
-    const CHARACTER_REFERENCE_END                       = 79;
+    const NAMED_CHARACTER_REFERENCE                     = 73;
+    const NUMERIC_CHARACTER_REFERENCE                   = 74;
+    const HEXADECIMAL_CHARACTER_REFERENCE_START         = 75;
+    const DECIMAL_CHARACTER_REFERENCE_START             = 76;
+    const HEXADECIMAL_CHARACTER_REFERENCE               = 77;
+    const DECIMAL_CHARACTER_REFERENCE                   = 78;
+    const NUMERIC_CHARACTER_REFERENCE_END               = 79;
+    const CHARACTER_REFERENCE_END                       = 80;
 }

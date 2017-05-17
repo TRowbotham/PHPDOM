@@ -46,43 +46,18 @@ class Tokenizer
         0x9F => 0x0178
     ];
 
-    // Currently there are 25 unique string lengths in entities.json
-    const UNIQUE_ENTITY_LENGTHS = [
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
-        12,
-        13,
-        14,
-        15,
-        16,
-        17,
-        18,
-        19,
-        20,
-        21,
-        22,
-        23,
-        24,
-        25,
-        26,
-        33
-    ];
-    const ENTITIY_STRING_LENGTH_COUNT = 25;
-    const ENTITY_PATH = __DIR__ . DIRECTORY_SEPARATOR . '..' .
+    // Currrently, the longest named character reference, from the named
+    // character references table, consists of 33 characters, however, because
+    // the ampersand (&) is already in the temporary buffer, subtract 1.
+    const MAX_NAMED_CHAR_REFERENCE_LENGTH = 32;
+    const NAMED_CHAR_REFERENCES_PATH = __DIR__ . DIRECTORY_SEPARATOR . '..' .
         DIRECTORY_SEPARATOR . 'entities.json';
     const REPLACEMENT_CHAR = "\xEF\xBF\xBD"; // U+FFFD
 
     private $lastEmittedStartTagToken;
     private $inputStream;
     private $parser;
-    private static $entities;
+    private static $namedCharacterReferences;
     private $treeBuilder;
 
     public function __construct($aInputStream, $aParser)
@@ -3366,118 +3341,122 @@ class Tokenizer
                             TokenizerState::NUMERIC_CHARACTER_REFERENCE
                         );
                     } else {
-                        $consumed = 0;
-                        $found = false;
-                        $i = 0;
-                        $lastConsumed = '';
+                        // Reconsume in the named character reference state.
                         $this->inputStream->seek(
                             -1,
                             CodePointStream::SEEK_RELATIVE
                         );
+                        $this->parser->setTokenizerState(
+                            TokenizerState::NAMED_CHARACTER_REFERENCE
+                        );
+                    }
 
-                        if (!self::$entities) {
-                            self::$entities = json_decode(
-                                file_get_contents(self::ENTITY_PATH),
-                                true
-                            );
+                    break;
+
+                // https://html.spec.whatwg.org/multipage/syntax.html#named-character-reference-state
+                case TokenizerState::NAMED_CHARACTER_REFERENCE:
+                    $char = '';
+                    $matchFound = false;
+
+                    // Load the JSON file for the named character references
+                    // table on demand.
+                    if (!self::$namedCharacterReferences) {
+                        self::$namedCharacterReferences = json_decode(file_get_contents(
+                            self::NAMED_CHAR_REFERENCES_PATH
+                        ), true);
+                    }
+
+                    // Consume the maximum number of characters possible, up to
+                    // MAX_NAMED_CHAR_REFERENCE_LENGTH, which defines the named
+                    // character reference with the greatest number of
+                    // characters in the named character references table.
+                    for ($i = 0; $i < self::MAX_NAMED_CHAR_REFERENCE_LENGTH; $i++) {
+                        $char = $this->inputStream->get();
+
+                        // We've reached the end of the input stream. Break out
+                        // of the loop without a match.
+                        if ($char === '') {
+                            break;
                         }
 
-                        $prevLen = 0;
+                        // Append the character from the input stream to the
+                        // temporary buffer.
+                        $buffer .= $char;
 
-                        // Consume the maximum number of characters possible,
-                        // with the consumed characters matching one of the
-                        // identifiers in the first column of the named
-                        // character references table (in a case-sensitive
-                        // manner). Append each character to the temporary
-                        // buffer when it's consumed.
-                        foreach (self::UNIQUE_ENTITY_LENGTHS as $len) {
-                            $lastConsumed = $this->inputStream->get(
-                                $len - $prevLen
-                            );
-                            $buffer .= $lastConsumed;
-
-                            if (isset(self::$entities[$buffer])) {
-                                if ($lastConsumed === ';' ||
-                                    ($lastConsumed !== ';' &&
-                                    $this->inputStream->peek() !== ';')
-                                ) {
-                                    $found = true;
-                                    break;
-                                }
-                            }
-
-                            $prevLen = $len;
-                        }
-
-                        // If no match can be made and the temporary buffer
-                        // consists of a U+0026 AMPERSAND character (&) followed
-                        // by a sequence of one or more alphanumeric ASCII
-                        // characters and a U+003B SEMICOLON character (;), then
-                        // this is a parse error.
-                        if (!$found &&
-                            preg_match('/^&[A-Za-z0-9]+;$/', $buffer)
+                        // Check if the buffer exists in the named character
+                        // references table. If the last character consumed was
+                        // a (;), then the named reference matched is standards
+                        // conforming, yay! Break out of the loop with a match.
+                        // If the buffer matches a named reference and the next
+                        // character in the input stream is an (;), let the loop
+                        // continue to consume the (;), then break with a match.
+                        // If the buffer is a match and the next character is
+                        // not a (;), break with a match, but this is only
+                        // supported for historical purposes.
+                        if (isset(self::$namedCharacterReferences[$buffer]) &&
+                            ($char === ';' ||
+                            $this->inputStream->peek() !== ';')
                         ) {
-                            // Parse error.
+                            $matchFound = true;
+                            break;
                         }
+                    }
 
-                        // If no match can be made, switch to the character
-                        // reference end state.
-                        if (!$found) {
-                            $this->parser->setTokenizerState(
-                                TokenizerState::CHARACTER_REFERENCE_END
-                            );
-                        }
-
+                    if ($matchFound) {
                         // If the character reference was consumed as part of an
-                        // attribute (return state is either attribute value
-                        // (double-quoted) state, attribute value
-                        // (single-quoted) state or attribute value (unquoted)
-                        // state), and the last character matched is not a
-                        // U+003B SEMICOLON character (;), and the next input
-                        // character is either a U+003D EQUALS SIGN character
-                        // (=) or an alphanumeric ASCII character, then, for
-                        // historical reasons, switch to the character reference
-                        // end state.
+                        // attribute, and the last character is not a semi-colon
+                        // (;), and the next character in the input stream is
+                        // either an equals sign (=) or an ASCII alphanumeric,
+                        // then, for historical reasons, switch to the character
+                        // reference end state.
                         switch ($returnState) {
                             case TokenizerState::ATTRIBUTE_VALUE_DOUBLE_QUOTED:
                             case TokenizerState::ATTRIBUTE_VALUE_SINGLE_QUOTED:
                             case TokenizerState::ATTRIBUTE_VALUE_UNQUOTED:
-                                $next = $this->inputStream->peek();
-
-                                if ($lastConsumed !== ';' &&
-                                    ($next === '=' || ctype_alnum($next))
+                                if ($char !== ';' &&
+                                    preg_match(
+                                        '/^[=A-Za-z0-9]$/',
+                                        $this->inputStream->peek()
+                                    )
                                 ) {
                                     $this->parser->setTokenizerState(
                                         TokenizerState::CHARACTER_REFERENCE_END
                                     );
+
+                                    // Leave the named character reference
+                                    // state.
+                                    break 2;
                                 }
                         }
 
-                        // If the last character matched is not a U+003B
-                        // SEMICOLON character (;), this is a parse error.
-                        if ($lastConsumed !== ';') {
+                        // If the last character consumed in a match is not a
+                        // semi-colon (;), then this is a parse error.
+                        if ($char !== ';') {
                             // Parse error.
                         }
 
-                        // Set the temporary buffer to the empty string. Append
-                        // one or two characters corresponding to the character
-                        // reference name (as given by the second column of the
-                        // named character references table) to the temporary
-                        // buffer.
-                        $codepoints = self::$entities[$buffer]['codepoints'];
+                        $namedRef = self::$namedCharacterReferences[$buffer];
+
+                        // Set the temporary buffer to the empty string.
                         $buffer = '';
 
+                        // Append each character, from the named character
+                        // references table, corresponding to the character
+                        // reference name to the temporary buffer.
+                        $buffer .= $namedRef['characters'];
 
-                        foreach ($codepoints as $codepoint) {
-                            $buffer .= pack('H*', dechex($codepoint));
-                            //$buffer .= EncodingUtils::mb_chr($codepoint);
-                        }
-
-                        // Switch to the character reference end state.
-                        $this->parser->setTokenizerState(
-                            TokenizerState::CHARACTER_REFERENCE_END
-                        );
+                        // If no match was found, but the buffer contains an
+                        // ampersand (&) followed by one or more ASCII
+                        // alphanumerics, then this is a parse error.
+                    } elseif (!$matchFound &&
+                        preg_match('/^&[A-Za-z0-9]+;$/', $buffer)
+                    ) {
+                        // Parse error.
                     }
+
+                    $this->parser->setTokenizerState(
+                        TokenizerState::CHARACTER_REFERENCE_END
+                    );
 
                     break;
 
