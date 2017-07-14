@@ -3310,38 +3310,10 @@ class Tokenizer
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#character-reference-state
                 case TokenizerState::CHARACTER_REFERENCE:
-                    // Set the temporary buffer to the empty string. Append a
-                    // U+0026 AMPERSAND (&) character to the temporary buffer.
-                    $buffer = '';
-                    $buffer .= '&';
                     $c = $this->inputStream->get();
 
-                    if ($c === "\x09" ||
-                        $c === "\x0A" ||
-                        $c === "\x0C" ||
-                        $c === "\x20" ||
-                        $c === '<' ||
-                        $c === '&' ||
-                        $this->inputStream->isEoS()
-                    ) {
-                        // Reconsume in the character reference end state.
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
-                        $this->parser->setTokenizerState(
-                            TokenizerState::CHARACTER_REFERENCE_END
-                        );
-                    } elseif ($c === '#') {
-                        // Append the current input character to the temporary
-                        // buffer. Switch to the numeric character reference
-                        // state.
-                        $buffer .= $c;
-                        $this->parser->setTokenizerState(
-                            TokenizerState::NUMERIC_CHARACTER_REFERENCE
-                        );
-                    } else {
-                        // Reconsume in the named character reference state.
+                    if (ctype_alnum($c)) {
+                        $buffer = '&';
                         $this->inputStream->seek(
                             -1,
                             CodePointStream::SEEK_RELATIVE
@@ -3349,6 +3321,17 @@ class Tokenizer
                         $this->parser->setTokenizerState(
                             TokenizerState::NAMED_CHARACTER_REFERENCE
                         );
+                    } elseif ($c === '#') {
+                        $buffer = '&' . $c;
+                        $this->parser->setTokenizerState(
+                            TokenizerState::NUMERIC_CHARACTER_REFERENCE
+                        );
+                    } else {
+                        $this->inputStream->seek(
+                            -1,
+                            CodePointStream::SEEK_RELATIVE
+                        );
+                        $this->parser->setTokenizerState($returnState);
                     }
 
                     break;
@@ -3419,8 +3402,13 @@ class Tokenizer
                                         $this->inputStream->peek()
                                     )
                                 ) {
+                                    yield from $this->flush(
+                                        $buffer,
+                                        $attributeToken,
+                                        $returnState
+                                    );
                                     $this->parser->setTokenizerState(
-                                        TokenizerState::CHARACTER_REFERENCE_END
+                                        $returnState
                                     );
 
                                     // Leave the named character reference
@@ -3445,18 +3433,60 @@ class Tokenizer
                         // reference name to the temporary buffer.
                         $buffer .= $namedRef['characters'];
 
+                        yield from $this->flush(
+                            $buffer,
+                            $attributeToken,
+                            $returnState
+                        );
+                        $this->parser->setTokenizerState($returnState);
+
                         // If no match was found, but the buffer contains an
                         // ampersand (&) followed by one or more ASCII
                         // alphanumerics, then this is a parse error.
-                    } elseif (!$matchFound &&
-                        preg_match('/^&[A-Za-z0-9]+;$/', $buffer)
-                    ) {
-                        // Parse error.
+                    } else {
+                        yield from $this->flush(
+                            $buffer,
+                            $attributeToken,
+                            $returnState
+                        );
+                        $this->parser->setTokenizerState(
+                            TokenizerState::AMBIGUOUS_AMPERSAND
+                        );
                     }
 
-                    $this->parser->setTokenizerState(
-                        TokenizerState::CHARACTER_REFERENCE_END
-                    );
+                    break;
+
+                // https://html.spec.whatwg.org/multipage/parsing.html#ambiguous-ampersand-state
+                case TokenizerState::AMBIGUOUS_AMPERSAND:
+                    $c = $this->inputStream->get();
+
+                    if (ctype_alnum($c)) {
+                        switch ($returnState) {
+                            case TokenizerState::ATTRIBUTE_VALUE_DOUBLE_QUOTED:
+                            case TokenizerState::ATTRIBUTE_VALUE_SINGLE_QUOTED:
+                            case TokenizerState::ATTRIBUTE_VALUE_UNQUOTED:
+                                $attributeToken->value .= $c;
+
+                                break;
+
+                            default:
+                                yield new CharacterToken($c);
+                        }
+                    } elseif ($c === ';') {
+                        // Reconsume in the return state.
+                        $this->inputStream->seek(
+                            -1,
+                            CodePointStream::SEEK_RELATIVE
+                        );
+                        $this->parser->setTokenizerState($returnState);
+                    } else {
+                        // Reconsume in the return state.
+                        $this->inputStream->seek(
+                            -1,
+                            CodePointStream::SEEK_RELATIVE
+                        );
+                        $this->parser->setTokenizerState($returnState);
+                    }
 
                     break;
 
@@ -3504,13 +3534,16 @@ class Tokenizer
                     } else {
                         // Parse error.
                         // Reconsume in the character reference end state.
+                        yield from $this->flush(
+                            $buffer,
+                            $attributeToken,
+                            $returnState
+                        );
                         $this->inputStream->seek(
                             -1,
                             CodePointStream::SEEK_RELATIVE
                         );
-                        $this->parser->setTokenizerState(
-                            TokenizerState::CHARACTER_REFERENCE_END
-                        );
+                        $this->parser->setTokenizerState($returnState);
                     }
 
                     break;
@@ -3531,13 +3564,16 @@ class Tokenizer
                     } else {
                         // Parse error.
                         // Reconsume in the character reference end state.
+                        yield from $this->flush(
+                            $buffer,
+                            $attributeToken,
+                            $returnState
+                        );
                         $this->inputStream->seek(
                             -1,
                             CodePointStream::SEEK_RELATIVE
                         );
-                        $this->parser->setTokenizerState(
-                            TokenizerState::CHARACTER_REFERENCE_END
-                        );
+                        $this->parser->setTokenizerState($returnState);
                     }
 
                     break;
@@ -3700,41 +3736,10 @@ class Tokenizer
                     // character reference end state.
                     $buffer = '';
                     $buffer .= EncodingUtils::mb_chr($characterReferenceCode);
-                    $this->parser->setTokenizerState(
-                        TokenizerState::CHARACTER_REFERENCE_END
-                    );
-
-                    break;
-
-                // https://html.spec.whatwg.org/multipage/syntax.html#character-reference-end-state
-                case TokenizerState::CHARACTER_REFERENCE_END:
-                    $c = $this->inputStream->get();
-
-                    switch ($returnState) {
-                        case TokenizerState::ATTRIBUTE_VALUE_DOUBLE_QUOTED:
-                        case TokenizerState::ATTRIBUTE_VALUE_SINGLE_QUOTED:
-                        case TokenizerState::ATTRIBUTE_VALUE_UNQUOTED:
-                            // Append each character in the temporary buffer
-                            // (in the order they were added to the buffer) to
-                            // the current attribute's value.
-                            $attributeToken->value .= $buffer;
-
-                            break;
-
-                        default:
-                            $bufferStream = new CodePointStream($buffer);
-
-                            // For each of the characters in the temporary
-                            // buffer (in the order they were added to the
-                            // buffer), emit the character as a character token.
-                            while (!$bufferStream->isEoS()) {
-                                yield new CharacterToken($bufferStream->get());
-                            }
-                    }
-
-                    $this->inputStream->seek(
-                        -1,
-                        CodePointStream::SEEK_RELATIVE
+                    yield from $this->flush(
+                        $buffer,
+                        $attributeToken,
+                        $returnState
                     );
                     $this->parser->setTokenizerState($returnState);
 
@@ -3788,6 +3793,32 @@ class Tokenizer
             !$aTokens[0]->wasAcknowledged()
         ) {
             // Parse error.
+        }
+    }
+
+    private function flush($codepoints, AttributeToken $token, $returnState)
+    {
+        switch ($returnState) {
+            case TokenizerState::ATTRIBUTE_VALUE_DOUBLE_QUOTED:
+            case TokenizerState::ATTRIBUTE_VALUE_SINGLE_QUOTED:
+            case TokenizerState::ATTRIBUTE_VALUE_UNQUOTED:
+                // Append each character in the temporary buffer
+                // (in the order they were added to the buffer) to
+                // the current attribute's value.
+                $token->value .= $codepoints;
+                yield;
+
+                break;
+
+            default:
+                $bufferStream = new CodePointStream($codepoints);
+
+                // For each of the characters in the temporary
+                // buffer (in the order they were added to the
+                // buffer), emit the character as a character token.
+                while (!$bufferStream->isEoS()) {
+                    yield new CharacterToken($bufferStream->get());
+                }
         }
     }
 }
