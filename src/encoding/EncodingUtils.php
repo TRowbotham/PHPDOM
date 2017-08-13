@@ -1,5 +1,5 @@
 <?php
-namespace Rowbot\DOM\encoding;
+namespace Rowbot\DOM\Encoding;
 
 abstract class EncodingUtils
 {
