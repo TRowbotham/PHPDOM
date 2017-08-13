@@ -1,8 +1,8 @@
 <?php
-namespace phpjs;
+namespace Rowbot\DOM;
 
-use phpjs\elements\ElementFactory;
-use phpjs\parser\html\HTMLParser;
+use Rowbot\DOM\Element\ElementFactory;
+use Rowbot\DOM\Parser\HTML\HTMLParser;
 
 /**
  * @see https://w3c.github.io/DOM-Parsing/#the-domparser-interface

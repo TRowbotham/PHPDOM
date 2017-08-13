@@ -1,7 +1,7 @@
 <?php
-namespace phpjs\parser;
+namespace Rowbot\DOM\Parser;
 
-use phpjs\elements\Element;
+use Rowbot\DOM\Element\Element;
 
 /**
  * @see https://html.spec.whatwg.org/multipage/syntax.html#the-list-of-active-formatting-elements

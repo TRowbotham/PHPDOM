@@ -1,13 +1,13 @@
 <?php
-namespace phpjs;
+namespace Rowbot\DOM;
 
-use phpjs\elements\Element;
-use phpjs\elements\ElementFactory;
-use phpjs\events\EventTarget;
-use phpjs\exceptions\DOMException;
-use phpjs\exceptions\HierarchyRequestError;
-use phpjs\exceptions\NotFoundError;
-use phpjs\support\OrderedSet;
+use Rowbot\DOM\Element\Element;
+use Rowbot\DOM\Element\ElementFactory;
+use Rowbot\DOM\Event\EventTarget;
+use Rowbot\DOM\Exception\DOMException;
+use Rowbot\DOM\Exception\HierarchyRequestError;
+use Rowbot\DOM\Exception\NotFoundError;
+use Rowbot\DOM\Support\OrderedSet;
 
 /**
  * @see https://dom.spec.whatwg.org/#node

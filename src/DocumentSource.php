@@ -1,5 +1,5 @@
 <?php
-namespace phpjs;
+namespace Rowbot\DOM;
 
 abstract class DocumentSource
 {

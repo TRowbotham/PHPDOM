@@ -1,20 +1,20 @@
 <?php
-namespace phpjs\parser\xml;
+namespace Rowbot\DOM\Parser\XML;
 
 use Exception;
-use phpjs\Attr;
-use phpjs\Comment;
-use phpjs\Document;
-use phpjs\DocumentFragment;
-use phpjs\DocumentType;
-use phpjs\elements\Element;
-use phpjs\exceptions\TypeError;
-use phpjs\Namespaces;
-use phpjs\Node;
-use phpjs\parser\Parser;
-use phpjs\parser\exception\ParserException;
-use phpjs\ProcessingInstruction;
-use phpjs\Text;
+use Rowbot\DOM\Attr;
+use Rowbot\DOM\Comment;
+use Rowbot\DOM\Document;
+use Rowbot\DOM\DocumentFragment;
+use Rowbot\DOM\DocumentType;
+use Rowbot\DOM\Element\Element;
+use Rowbot\DOM\Exception\TypeError;
+use Rowbot\DOM\Namespaces;
+use Rowbot\DOM\Node;
+use Rowbot\DOM\Parser\Parser;
+use Rowbot\DOM\Parser\exception\ParserException;
+use Rowbot\DOM\ProcessingInstruction;
+use Rowbot\DOM\Text;
 
 class XMLParser extends Parser
 {

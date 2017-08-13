@@ -1,36 +1,36 @@
 <?php
-namespace phpjs\parser\html;
-
-use phpjs\Attr;
-use phpjs\Document;
-use phpjs\DocumentMode;
-use phpjs\DocumentReadyState;
-use phpjs\DocumentType;
-use phpjs\elements\Element;
-use phpjs\elements\ElementFactory;
-use phpjs\elements\html\HTMLBodyElement;
-use phpjs\elements\html\HTMLFormElement;
-use phpjs\elements\html\HTMLFrameSetElement;
-use phpjs\elements\html\HTMLHeadElement;
-use phpjs\elements\html\HTMLHtmlElement;
-use phpjs\elements\html\HTMLTableCaptionElement;
-use phpjs\elements\html\HTMLTableCellElement;
-use phpjs\elements\html\HTMLTableColElement;
-use phpjs\elements\html\HTMLTableElement;
-use phpjs\elements\html\HTMLTableRowElement;
-use phpjs\elements\html\HTMLTableSectionElement;
-use phpjs\elements\html\HTMLTemplateElement;
-use phpjs\elements\html\HTMLSelectElement;
-use phpjs\exceptions\InvalidNodeTypeError;
-use phpjs\HTMLDocument;
-use phpjs\Namespaces;
-use phpjs\Node;
 use phpjs\parser\ActiveFormattingElementsStack;
 use phpjs\parser\OpenElementStack;
-use phpjs\parser\Parser;
-use phpjs\parser\tokens\AttributeToken;
-use phpjs\parser\tokens\EndTagToken;
-use phpjs\parser\tokens\StartTagToken;
+namespace Rowbot\DOM\Parser\HTML;
+
+use Rowbot\DOM\Attr;
+use Rowbot\DOM\Document;
+use Rowbot\DOM\DocumentMode;
+use Rowbot\DOM\DocumentReadyState;
+use Rowbot\DOM\DocumentType;
+use Rowbot\DOM\Element\Element;
+use Rowbot\DOM\Element\ElementFactory;
+use Rowbot\DOM\Element\HTML\HTMLBodyElement;
+use Rowbot\DOM\Element\HTML\HTMLFormElement;
+use Rowbot\DOM\Element\HTML\HTMLFrameSetElement;
+use Rowbot\DOM\Element\HTML\HTMLHeadElement;
+use Rowbot\DOM\Element\HTML\HTMLHtmlElement;
+use Rowbot\DOM\Element\HTML\HTMLTableCaptionElement;
+use Rowbot\DOM\Element\HTML\HTMLTableCellElement;
+use Rowbot\DOM\Element\HTML\HTMLTableColElement;
+use Rowbot\DOM\Element\HTML\HTMLTableElement;
+use Rowbot\DOM\Element\HTML\HTMLTableRowElement;
+use Rowbot\DOM\Element\HTML\HTMLTableSectionElement;
+use Rowbot\DOM\Element\HTML\HTMLTemplateElement;
+use Rowbot\DOM\Element\HTML\HTMLSelectElement;
+use Rowbot\DOM\Exception\InvalidNodeTypeError;
+use Rowbot\DOM\HTMLDocument;
+use Rowbot\DOM\Namespaces;
+use Rowbot\DOM\Node;
+use Rowbot\DOM\Parser\Parser;
+use Rowbot\DOM\Parser\Token\AttributeToken;
+use Rowbot\DOM\Parser\Token\EndTagToken;
+use Rowbot\DOM\Parser\Token\StartTagToken;
 
 class HTMLParser extends Parser
 {

@@ -1,12 +1,12 @@
 <?php
-namespace phpjs;
+namespace Rowbot\DOM;
 
 use ArrayAccess;
 use Countable;
 use Iterator;
-use phpjs\elements\Element;
-use phpjs\exceptions\DOMException;
-use phpjs\exceptions\NotFoundError;
+use Rowbot\DOM\Element\Element;
+use Rowbot\DOM\Exception\DOMException;
+use Rowbot\DOM\Exception\NotFoundError;
 
 /**
  * Represents a list of named attributes.

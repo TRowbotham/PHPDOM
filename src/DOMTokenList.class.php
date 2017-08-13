@@ -1,14 +1,14 @@
 <?php
-namespace phpjs;
+namespace Rowbot\DOM;
 
 use ArrayAccess;
 use Countable;
 use Iterator;
-use phpjs\elements\Element;
-use phpjs\exceptions\InvalidCharacterError;
-use phpjs\exceptions\SyntaxError;
-use phpjs\support\OrderedSet;
-use phpjs\support\Stringifier;
+use Rowbot\DOM\Element\Element;
+use Rowbot\DOM\Exception\InvalidCharacterError;
+use Rowbot\DOM\Exception\SyntaxError;
+use Rowbot\DOM\Support\OrderedSet;
+use Rowbot\DOM\Support\Stringifier;
 
 /**
  * @see https://dom.spec.whatwg.org/#interface-domtokenlist

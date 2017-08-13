@@ -1,14 +1,14 @@
 <?php
-namespace phpjs\parser;
+namespace Rowbot\DOM\Parser;
 
-use phpjs\HTMLDocument;
-use phpjs\elements\Element;
-use phpjs\exceptions\DOMException;
-use phpjs\exceptions\InvalidStateError;
-use phpjs\Namespaces;
-use phpjs\Node;
-use phpjs\parser\html\HTMLParser;
-use phpjs\parser\xml\XMLParser;
+use Rowbot\DOM\HTMLDocument;
+use Rowbot\DOM\Element\Element;
+use Rowbot\DOM\Exception\DOMException;
+use Rowbot\DOM\Exception\InvalidStateError;
+use Rowbot\DOM\Namespaces;
+use Rowbot\DOM\Node;
+use Rowbot\DOM\Parser\HTML\HTMLParser;
+use Rowbot\DOM\Parser\XML\XMLParser;
 
 abstract class ParserFactory
 {

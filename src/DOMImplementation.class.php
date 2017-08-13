@@ -1,8 +1,8 @@
 <?php
-namespace phpjs;
+namespace Rowbot\DOM;
 
-use phpjs\elements\ElementFactory;
-use phpjs\exceptions\DOMException;
+use Rowbot\DOM\Element\ElementFactory;
+use Rowbot\DOM\Exception\DOMException;
 
 /**
  * @see https://dom.spec.whatwg.org/#interface-domimplementation

@@ -1,5 +1,5 @@
 <?php
-namespace phpjs\parser\html;
+namespace Rowbot\DOM\Parser\HTML;
 
 /**
  * @see https://html.spec.whatwg.org/multipage/syntax.html#the-insertion-mode

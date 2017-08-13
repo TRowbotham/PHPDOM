@@ -1,17 +1,17 @@
 <?php
-namespace phpjs\parser\html;
+namespace Rowbot\DOM\Parser\HTML;
 
-use phpjs\encoding\EncodingUtils;
-use phpjs\Namespaces;
-use phpjs\parser\tokens\AttributeToken;
-use phpjs\parser\tokens\CharacterToken;
-use phpjs\parser\tokens\CommentToken;
-use phpjs\parser\tokens\DoctypeToken;
-use phpjs\parser\tokens\EndTagToken;
-use phpjs\parser\tokens\EOFToken;
-use phpjs\parser\tokens\StartTagToken;
-use phpjs\parser\tokens\Token;
-use phpjs\support\CodePointStream;
+use Rowbot\DOM\Encoding\EncodingUtils;
+use Rowbot\DOM\Namespaces;
+use Rowbot\DOM\Parser\Token\AttributeToken;
+use Rowbot\DOM\Parser\Token\CharacterToken;
+use Rowbot\DOM\Parser\Token\CommentToken;
+use Rowbot\DOM\Parser\Token\DoctypeToken;
+use Rowbot\DOM\Parser\Token\EndTagToken;
+use Rowbot\DOM\Parser\Token\EOFToken;
+use Rowbot\DOM\Parser\Token\StartTagToken;
+use Rowbot\DOM\Parser\Token\Token;
+use Rowbot\DOM\Support\CodePointStream;
 
 class Tokenizer
 {

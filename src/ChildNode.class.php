@@ -1,5 +1,5 @@
 <?php
-namespace phpjs;
+namespace Rowbot\DOM;
 
 /**
  * @see https://dom.spec.whatwg.org/#interface-childnode

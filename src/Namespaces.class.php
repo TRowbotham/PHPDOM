@@ -1,10 +1,10 @@
 <?php
-namespace phpjs;
+namespace Rowbot\DOM;
 
-use phpjs\elements\Element;
-use phpjs\exceptions\DOMException;
-use phpjs\exceptions\NamespaceError;
-use phpjs\exceptions\InvalidCharacterError;
+use Rowbot\DOM\Element\Element;
+use Rowbot\DOM\Exception\DOMException;
+use Rowbot\DOM\Exception\NamespaceError;
+use Rowbot\DOM\Exception\InvalidCharacterError;
 
 class Namespaces
 {

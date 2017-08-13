@@ -1,13 +1,13 @@
 <?php
-namespace phpjs;
+namespace Rowbot\DOM;
 
-use phpjs\elements\ElementFactory;
-use phpjs\exceptions\HierarchyRequestError;
-use phpjs\exceptions\IndexSizeError;
-use phpjs\exceptions\InvalidNodeTypeError;
-use phpjs\exceptions\NotSupportedError;
-use phpjs\exceptions\WrongDocumentError;
-use phpjs\parser\ParserFactory;
+use Rowbot\DOM\Element\ElementFactory;
+use Rowbot\DOM\Exception\HierarchyRequestError;
+use Rowbot\DOM\Exception\IndexSizeError;
+use Rowbot\DOM\Exception\InvalidNodeTypeError;
+use Rowbot\DOM\Exception\NotSupportedError;
+use Rowbot\DOM\Exception\WrongDocumentError;
+use Rowbot\DOM\Parser\ParserFactory;
 
 /**
  * Represents a sequence of content within a node tree.

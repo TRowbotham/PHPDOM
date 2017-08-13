@@ -1,17 +1,17 @@
 <?php
-namespace phpjs\support;
+namespace Rowbot\DOM\Support;
 
-use phpjs\Comment;
-use phpjs\Document;
-use phpjs\DocumentFragment;
-use phpjs\DocumentType;
-use phpjs\elements\Element;
-use phpjs\elements\html\HTMLTemplateElement;
-use phpjs\exceptions\InvalidNodeTypeError;
-use phpjs\Namespaces;
-use phpjs\parser\html\HTMLParser;
-use phpjs\ProcessingInstruction;
-use phpjs\Text;
+use Rowbot\DOM\Comment;
+use Rowbot\DOM\Document;
+use Rowbot\DOM\DocumentFragment;
+use Rowbot\DOM\DocumentType;
+use Rowbot\DOM\Element\Element;
+use Rowbot\DOM\Element\HTML\HTMLTemplateElement;
+use Rowbot\DOM\Exception\InvalidNodeTypeError;
+use Rowbot\DOM\Namespaces;
+use Rowbot\DOM\Parser\HTML\HTMLParser;
+use Rowbot\DOM\ProcessingInstruction;
+use Rowbot\DOM\Text;
 
 abstract class TreeVisualizer
 {

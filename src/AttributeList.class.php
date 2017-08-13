@@ -1,14 +1,14 @@
 <?php
-namespace phpjs;
+namespace Rowbot\DOM;
 
-use phpjs\Attr;
-use phpjs\AttributeChangeObserver;
-use phpjs\elements\Element;
-use phpjs\exceptions\InUseAttributeError;
-use phpjs\exceptions\TypeError;
-use phpjs\HTMLDocument;
-use phpjs\Namespaces;
-use phpjs\support\OrderedSet;
+use Rowbot\DOM\Attr;
+use Rowbot\DOM\AttributeChangeObserver;
+use Rowbot\DOM\Element\Element;
+use Rowbot\DOM\Exception\InUseAttributeError;
+use Rowbot\DOM\Exception\TypeError;
+use Rowbot\DOM\HTMLDocument;
+use Rowbot\DOM\Namespaces;
+use Rowbot\DOM\Support\OrderedSet;
 use SplObjectStorage;
 
 class AttributeList extends OrderedSet

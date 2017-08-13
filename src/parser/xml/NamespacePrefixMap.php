@@ -1,5 +1,5 @@
 <?php
-namespace phpjs\parser\xml;
+namespace Rowbot\DOM\Parser\XML;
 
 /**
  * @see https://w3c.github.io/DOM-Parsing/#the-namespace-prefix-map

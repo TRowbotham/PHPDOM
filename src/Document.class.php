@@ -1,18 +1,18 @@
 <?php
-namespace phpjs;
+namespace Rowbot\DOM;
 
-use phpjs\DocumentType;
-use phpjs\elements\html\HTMLBaseElement;
-use phpjs\elements\html\HTMLHtmlElement;
-use phpjs\elements\html\HTMLHeadElement;
-use phpjs\elements\ElementFactory;
-use phpjs\events\EventFlags;
-use phpjs\exceptions\DOMException;
-use phpjs\exceptions\HierarchyRequestError;
-use phpjs\exceptions\InvalidCharacterError;
-use phpjs\exceptions\NotSupportedError;
-use phpjs\urls\URLParser;
-use phpjs\Utils;
+use Rowbot\DOM\DocumentType;
+use Rowbot\DOM\Element\HTML\HTMLBaseElement;
+use Rowbot\DOM\Element\HTML\HTMLHtmlElement;
+use Rowbot\DOM\Element\HTML\HTMLHeadElement;
+use Rowbot\DOM\Element\ElementFactory;
+use Rowbot\DOM\Event\EventFlags;
+use Rowbot\DOM\Exception\DOMException;
+use Rowbot\DOM\Exception\HierarchyRequestError;
+use Rowbot\DOM\Exception\InvalidCharacterError;
+use Rowbot\DOM\Exception\NotSupportedError;
+use Rowbot\DOM\URL\URLParser;
+use Rowbot\DOM\Utils;
 
 /**
  * @see https://dom.spec.whatwg.org/#interface-document
@@ -328,14 +328,14 @@ class Document extends Node
 
         switch ($interface) {
             case 'customevent':
-                $constructor = '\\phpjs\\events\\CustomEvent';
+                $constructor = '\\Rowbot\\DOM\\Event\\CustomEvent';
 
                 break;
 
             case 'event':
             case 'events':
             case 'htmlevents':
-                $constructor = '\\phpjs\\events\\Event';
+                $constructor = '\\Rowbot\\DOM\\Event\\Event';
         }
 
         if (!$constructor) {

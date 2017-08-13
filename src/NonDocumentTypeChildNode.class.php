@@ -1,7 +1,7 @@
 <?php
-namespace phpjs;
+namespace Rowbot\DOM;
 
-use phpjs\elements\Element;
+use Rowbot\DOM\Element\Element;
 
 trait NonDocumentTypeChildNode
 {

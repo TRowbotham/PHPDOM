@@ -1,5 +1,5 @@
 <?php
-namespace phpjs\parser\html;
+namespace Rowbot\DOM\Parser\HTML;
 
 abstract class TokenizerState
 {

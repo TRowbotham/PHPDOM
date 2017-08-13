@@ -1,5 +1,5 @@
 <?php
-namespace phpjs;
+namespace Rowbot\DOM;
 
 /**
  * @see https://html.spec.whatwg.org/multipage/dom.html#documentreadystate

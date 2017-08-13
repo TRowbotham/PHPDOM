@@ -1,9 +1,9 @@
 <?php
-namespace phpjs;
+namespace Rowbot\DOM;
 
-use phpjs\elements\Element;
-use phpjs\NodeFilter;
-use phpjs\TreeWalker;
+use Rowbot\DOM\Element\Element;
+use Rowbot\DOM\NodeFilter;
+use Rowbot\DOM\TreeWalker;
 
 /**
  * @see https://dom.spec.whatwg.org/#interface-documentfragment

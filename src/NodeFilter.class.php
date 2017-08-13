@@ -1,5 +1,5 @@
 <?php
-namespace phpjs;
+namespace Rowbot\DOM;
 
 /**
  * An object implementing NodeFilter can be used as a filter callback that can

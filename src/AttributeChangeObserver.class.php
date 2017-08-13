@@ -1,7 +1,7 @@
 <?php
-namespace phpjs;
+namespace Rowbot\DOM;
 
-use phpjs\elements\Element;
+use Rowbot\DOM\Element\Element;
 
 /**
  * Runs a set of steps when a content attribute changes for a particular

@@ -1,7 +1,7 @@
 <?php
-namespace phpjs\parser;
+namespace Rowbot\DOM\Parser;
 
-use phpjs\support\CodePointStream;
+use Rowbot\DOM\Support\CodePointStream;
 
 abstract class Parser
 {

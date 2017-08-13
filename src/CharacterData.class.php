@@ -1,7 +1,7 @@
 <?php
-namespace phpjs;
+namespace Rowbot\DOM;
 
-use phpjs\exceptions\IndexSizeError;
+use Rowbot\DOM\Exception\IndexSizeError;
 
 /**
  * Represents a Node that contains characters.

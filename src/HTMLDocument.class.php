@@ -1,14 +1,14 @@
 <?php
-namespace phpjs;
+namespace Rowbot\DOM;
 
-use phpjs\elements\ElementFactory;
-use phpjs\elements\html\HTMLBodyElement;
-use phpjs\elements\html\HTMLFrameSetElement;
-use phpjs\elements\html\HTMLHtmlElement;
-use phpjs\elements\html\HTMLTitleElement;
-use phpjs\elements\svg\SVGSVGElement;
-use phpjs\elements\svg\SVGTitleElement;
-use phpjs\exceptions\HierarchyRequestError;
+use Rowbot\DOM\Element\ElementFactory;
+use Rowbot\DOM\Element\HTML\HTMLBodyElement;
+use Rowbot\DOM\Element\HTML\HTMLFrameSetElement;
+use Rowbot\DOM\Element\HTML\HTMLHtmlElement;
+use Rowbot\DOM\Element\HTML\HTMLTitleElement;
+use Rowbot\DOM\Element\svg\SVGSVGElement;
+use Rowbot\DOM\Element\svg\SVGTitleElement;
+use Rowbot\DOM\Exception\HierarchyRequestError;
 
 /**
  * HTMLDocument represents an HTML document.

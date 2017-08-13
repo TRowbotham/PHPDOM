@@ -1,6 +1,8 @@
 <?php
-namespace phpjs\parser\exception;
+namespace Rowbot\DOM\Parser\Exception;
 
-class ParserException extends \Exception
+use Exception;
+
+class ParserException extends Exception
 {
 }

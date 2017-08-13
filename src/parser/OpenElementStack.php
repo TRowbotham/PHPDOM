@@ -1,14 +1,14 @@
 <?php
-namespace phpjs\parser;
+namespace Rowbot\DOM\Parser;
 
 use Exception;
-use phpjs\elements\html\HTMLHtmlElement;
-use phpjs\elements\html\HTMLTableElement;
-use phpjs\elements\html\HTMLTableRowElement;
-use phpjs\elements\html\HTMLTableSectionElement;
-use phpjs\elements\html\HTMLTemplateElement;
-use phpjs\Namespaces;
-use phpjs\Node;
+use Rowbot\DOM\Element\HTML\HTMLHtmlElement;
+use Rowbot\DOM\Element\HTML\HTMLTableElement;
+use Rowbot\DOM\Element\HTML\HTMLTableRowElement;
+use Rowbot\DOM\Element\HTML\HTMLTableSectionElement;
+use Rowbot\DOM\Element\HTML\HTMLTemplateElement;
+use Rowbot\DOM\Namespaces;
+use Rowbot\DOM\Node;
 
 class OpenElementStack extends ElementStack
 {

@@ -1,5 +1,5 @@
 <?php
-namespace phpjs\parser;
+namespace Rowbot\DOM\Parser;
 
 class Marker
 {

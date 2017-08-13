@@ -1,7 +1,7 @@
 <?php
-namespace phpjs\parser;
+namespace Rowbot\DOM\Parser;
 
-use phpjs\support\Stack;
+use Rowbot\DOM\Support\Stack;
 use SeekableIterator;
 
 abstract class ElementStack extends Stack implements SeekableIterator

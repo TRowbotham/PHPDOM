@@ -1,5 +1,5 @@
 <?php
-namespace phpjs\support;
+namespace Rowbot\DOM\Support;
 
 interface Stringifier
 {

@@ -1,5 +1,5 @@
 <?php
-namespace phpjs;
+namespace Rowbot\DOM;
 
 // https://developer.mozilla.org/en-US/docs/Web/API/Comment
 // https://dom.spec.whatwg.org/#comment

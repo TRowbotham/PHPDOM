@@ -1,7 +1,7 @@
 <?php
-namespace phpjs;
+namespace Rowbot\DOM;
 
-use phpjs\parser\xml\XMLParser;
+use Rowbot\DOM\Parser\XML\XMLParser;
 
 class XMLSerializer
 {
