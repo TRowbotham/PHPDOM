@@ -8,6 +8,8 @@ use Rowbot\DOM\Exception\DOMException;
 use Rowbot\DOM\Exception\HierarchyRequestError;
 use Rowbot\DOM\Exception\NotFoundError;
 use Rowbot\DOM\Support\OrderedSet;
+use Rowbot\DOM\Support\UniquelyIdentifiable;
+use Rowbot\DOM\Support\UuidTrait;
 
 /**
  * @see https://dom.spec.whatwg.org/#node
@@ -41,8 +43,10 @@ use Rowbot\DOM\Support\OrderedSet;
  *
  * @property string|null         $textContent
  */
-abstract class Node extends EventTarget
+abstract class Node extends EventTarget implements UniquelyIdentifiable
 {
+    use UuidTrait;
+
     const ELEMENT_NODE = 1;
     const ATTRIBUTE_NODE = 2;
     const TEXT_NODE = 3;
