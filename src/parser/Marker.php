@@ -1,6 +1,10 @@
 <?php
 namespace Rowbot\DOM\Parser;
 
-class Marker
+use Rowbot\DOM\Support\UniquelyIdentifiable;
+use Rowbot\DOM\Support\UuidTrait;
+
+class Marker implements UniquelyIdentifiable
 {
+    use UuidTrait;
 }
