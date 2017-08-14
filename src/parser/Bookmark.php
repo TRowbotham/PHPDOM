@@ -1,6 +1,10 @@
 <?php
 namespace Rowbot\DOM\Parser;
 
-class Bookmark
+use Rowbot\DOM\Support\UniquelyIdentifiable;
+use Rowbot\DOM\Support\UuidTrait;
+
+class Bookmark implements UniquelyIdentifiable
 {
+    use UuidTrait;
 }
