@@ -11,7 +11,8 @@
     ],
     "require": {
         "php": ">=7.0",
-        "ext-mbstring": "*"
+        "ext-mbstring": "*",
+        "ramsey/uuid": "^3.7"
     },
     "require-dev": {
         "squizlabs/php_codesniffer": "^2.7",
