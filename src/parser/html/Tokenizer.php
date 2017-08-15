@@ -58,14 +58,12 @@ class Tokenizer
     private $inputStream;
     private $parser;
     private static $namedCharacterReferences;
-    private $treeBuilder;
 
     public function __construct($aInputStream, $aParser)
     {
         $this->lastEmittedStartTagToken = null;
         $this->inputStream = $aInputStream;
         $this->parser = $aParser;
-        $this->treeBuilder = $aParser->getTreeBuilder();
     }
 
     public function run()
@@ -3782,8 +3780,7 @@ class Tokenizer
             }
         }
 
-        // Do some epic tree building.
-        //$this->treeBuilder->run(...$aTokens);
+        // Yield the tokens
         yield $aTokens;
 
         // When a start tag token is emitted with its self-closing flag set, if
