@@ -60,7 +60,7 @@ class HTMLParser extends Parser
         parent::__construct();
 
         $this->activeFormattingElements = new ActiveFormattingElementStack();
-        $this->contextElement = $con;
+        $this->contextElement = $contextElement;
         $this->document = $document;
         $this->flags = 0;
         $this->isFragmentCase = $isFragmentCase;
