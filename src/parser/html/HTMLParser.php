@@ -48,11 +48,9 @@ class HTMLParser extends Parser
         $this->activeFormattingElements = new ActiveFormattingElementStack();
         $this->contextElement = $contextElement;
         $this->document = $document;
-        $this->flags = 0;
         $this->isFragmentCase = $isFragmentCase;
         $this->isScriptingEnabled = false;
         $this->openElements = new OpenElementStack();
-        $this->originalInsertionMode = null;
         $this->state = new ParserState();
         $this->templateInsertionModes = new SplStack();
         $this->tokenRepository = new SplObjectStorage();
