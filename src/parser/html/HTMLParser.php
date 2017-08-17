@@ -1,5 +1,4 @@
 <?php
-use phpjs\parser\ActiveFormattingElementsStack;
 use phpjs\parser\OpenElementStack;
 namespace Rowbot\DOM\Parser\HTML;
 
@@ -27,6 +26,7 @@ use Rowbot\DOM\Exception\InvalidNodeTypeError;
 use Rowbot\DOM\HTMLDocument;
 use Rowbot\DOM\Namespaces;
 use Rowbot\DOM\Node;
+use Rowbot\DOM\Parser\Collection\ActiveFormattingElementStack;
 use Rowbot\DOM\Parser\Parser;
 use Rowbot\DOM\Parser\Token\AttributeToken;
 use Rowbot\DOM\Parser\Token\EndTagToken;
@@ -56,7 +56,7 @@ class HTMLParser extends Parser
     {
         parent::__construct();
 
-        $this->activeFormattingElements = new ActiveFormattingElementsStack();
+        $this->activeFormattingElements = new ActiveFormattingElementStack();
         $this->document = $aDocument;
         $this->encodingConfidence = null;
         $this->flags = 0;

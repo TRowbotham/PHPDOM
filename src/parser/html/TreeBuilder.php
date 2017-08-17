@@ -2439,8 +2439,8 @@ class TreeBuilder
             // either side of it in the list.
             $bookmark = new Bookmark();
             $this->mActiveFormattingElements->insertAfter(
-                $formattingElement,
-                $bookmark
+                $bookmark,
+                $formattingElement
             );
 
             // Let node and last node be furthest block.
@@ -2512,7 +2512,7 @@ class TreeBuilder
                     $this->mTokenRepository[$node]
                 );
 
-                $this->mActiveFormattingElements->replace($node, $newElement);
+                $this->mActiveFormattingElements->replace($newElement, $node);
                 $this->mOpenElements->replace($node, $newElement);
                 $node = $newElement;
 
@@ -2522,8 +2522,8 @@ class TreeBuilder
                 if ($lastNode === $furthestBlock) {
                     $this->mActiveFormattingElements->remove($bookmark);
                     $this->mActiveFormattingElements->insertAfter(
-                        $newElement,
-                        $bookmark
+                        $bookmark,
+                        $newElement
                     );
                 }
 
@@ -2566,7 +2566,7 @@ class TreeBuilder
             // formatting elements at the position of the aforementioned
             // bookmark.
             $this->mActiveFormattingElements->remove($formattingElement);
-            $this->mActiveFormattingElements->replace($bookmark, $element);
+            $this->mActiveFormattingElements->replace($element, $bookmark);
 
             // Remove formatting element from the stack of open elements, and
             // insert the new element into the stack of open elements
@@ -5381,19 +5381,18 @@ class TreeBuilder
             return;
         }
 
-        $this->mActiveFormattingElements->rewind();
+        $cursor = count($this->mActiveFormattingElements) - 1;
 
         // If there are no entries before entry in the list of active formatting
         // elements, then jump to the step labeled create.
         Rewind:
-        if ($this->mActiveFormattingElements->key() === 0) {
+        if ($cursor === 0) {
             goto Create;
         }
 
         // Let entry be the entry one earlier than entry in the list of active
         // formatting elements.
-        $this->mActiveFormattingElements->next();
-        $entry = $this->mActiveFormattingElements->current();
+        $entry = $this->mActiveFormattingElements[--$cursor];
 
         // If entry is neither a marker nor an element that is also in the stack
         // of open elements, go to the step labeled rewind.
@@ -5406,8 +5405,7 @@ class TreeBuilder
         Advance:
         // Let entry be the element one later than entry in the list of active
         // formatting elements.
-        $this->mActiveFormattingElements->prev();
-        $entry = $this->mActiveFormattingElements->current();
+        $entry = $this->mActiveFormattingElements[++$cursor];
 
         Create:
         // Insert an HTML element for the token for which the element entry was
@@ -5419,7 +5417,7 @@ class TreeBuilder
 
         // Replace the entry for entry in the list with an entry for new
         // element.
-        $this->mActiveFormattingElements->replace($entry, $newElement);
+        $this->mActiveFormattingElements->replace($newElement, $entry);
 
         // If the entry for new element in the list of active formatting
         // elements is not the last entry in the list, return to the step
