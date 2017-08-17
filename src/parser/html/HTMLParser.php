@@ -3,25 +3,11 @@ namespace Rowbot\DOM\Parser\HTML;
 
 use Rowbot\DOM\Attr;
 use Rowbot\DOM\Document;
-use Rowbot\DOM\DocumentMode;
 use Rowbot\DOM\DocumentReadyState;
-use Rowbot\DOM\DocumentType;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Element\ElementFactory;
-use Rowbot\DOM\Element\HTML\HTMLBodyElement;
 use Rowbot\DOM\Element\HTML\HTMLFormElement;
-use Rowbot\DOM\Element\HTML\HTMLFrameSetElement;
-use Rowbot\DOM\Element\HTML\HTMLHeadElement;
-use Rowbot\DOM\Element\HTML\HTMLHtmlElement;
-use Rowbot\DOM\Element\HTML\HTMLTableCaptionElement;
-use Rowbot\DOM\Element\HTML\HTMLTableCellElement;
-use Rowbot\DOM\Element\HTML\HTMLTableColElement;
-use Rowbot\DOM\Element\HTML\HTMLTableElement;
-use Rowbot\DOM\Element\HTML\HTMLTableRowElement;
-use Rowbot\DOM\Element\HTML\HTMLTableSectionElement;
 use Rowbot\DOM\Element\HTML\HTMLTemplateElement;
-use Rowbot\DOM\Element\HTML\HTMLSelectElement;
-use Rowbot\DOM\Exception\InvalidNodeTypeError;
 use Rowbot\DOM\HTMLDocument;
 use Rowbot\DOM\Namespaces;
 use Rowbot\DOM\Node;
@@ -243,96 +229,6 @@ class HTMLParser extends Parser
 
         // Return the child nodes of root, in tree order.
         return $root->childNodes;
-    }
-
-    public function getTokenizer()
-    {
-        return $this->tokenizer;
-    }
-
-    public function getTreeBuilder()
-    {
-        return $this->treeBuilder;
-    }
-
-    public function getOpenElementStack()
-    {
-        return $this->openElements;
-    }
-
-    public function getActiveFormattingElementStack()
-    {
-        return $this->activeFormattingElements;
-    }
-
-    public function getTemplateInsertionModeStack()
-    {
-        return $this->templateInsertionModes;
-    }
-
-    public function getInsertionMode()
-    {
-        return $this->insertionMode;
-    }
-
-    public function setInsertionMode($aMode)
-    {
-        $this->insertionMode = $aMode;
-    }
-
-    public function getOriginalInsertionMode()
-    {
-        return $this->originalInsertionMode;
-    }
-
-    public function setOriginalInsertionMode($aMode)
-    {
-        $this->originalInsertionMode = $aMode;
-    }
-
-    public function getTokenizerState()
-    {
-        return $this->tokenizerState;
-    }
-
-    public function setTokenizerState($aState)
-    {
-        $this->tokenizerState = $aState;
-    }
-
-    public function getFormElementPointer()
-    {
-        return $this->formElementPointer;
-    }
-
-    public function setFormElementPointer(HTMLFormElement $aElement = null)
-    {
-        $this->formElementPointer = $aElement;
-    }
-
-    public function getHeadElementPointer()
-    {
-        return $this->headElementPointer;
-    }
-
-    public function setHeadElementPointer(HTMLHeadElement $aElement = null)
-    {
-        $this->headElementPointer = $aElement;
-    }
-
-    public function getEncodingConfidence()
-    {
-        return $this->encodingConfidence;
-    }
-
-    public function isScriptingEnabled()
-    {
-        return (bool) ($this->flags & self::SCRIPTING_ENABLED);
-    }
-
-    public function isPaused()
-    {
-        return (bool) ($this->flags & self::PAUSED);
     }
 
     public function run()
@@ -581,71 +477,5 @@ class HTMLParser extends Parser
         $this->inputStream->append(
             preg_replace(['/\x0D\x0A/u', '/\x0D/u'], "\x0A", $aInput)
         );
-    }
-
-    /*public function dispatcher()
-    {
-        $inForignContent = true;
-
-        if ($this->openElements->isEmpty()) {
-            $inForignContent = false;
-        }
-
-        $adjustedCurrentNode = $this->getAdjustedCurrentNode();
-
-        if ($inForignContent &&
-            $adjustedCurrentNode->namespaceURI === Namespaces::HTML
-        ) {
-            $inForignContent = false;
-        }
-
-        if ($inForignContent &&
-            $this->treeBuilder->isMathMLTextIntegrationPoint(
-                $adjustedCurrentNode
-            )
-            $token instanceof StartTagToken &&
-            $token->tagName !== 'mglyph' &&
-            $token->tagName !== 'malignmark'
-        ) {
-            $inForignContent = false;
-        }
-
-        if ($inForignContent &&
-            $this->treeBuilder->isMathMLTextIntegrationPoint(
-                $adjustedCurrentNode
-            ) &&
-            $token instanceof CharacterToken
-        ) {
-            $inForignContent = false;
-        }
-
-        if ($inForignContent &&
-            $adjustedCurrentNode->namespaceURI === Namespaces::MATHML &&
-            $adjustedCurrentNode->tagName === 'annotation-xml' &&
-            $token instanceof StartTagToken &&
-            $token->tagName === 'svg'
-        ) {
-            $inForignContent = false;
-        }
-
-        if ($inForignContent &&
-            $this->treeBuilder->isHTMLIntegrationPoint($adjustedCurrentNode) &&
-            ($token instanceof StartTagToken ||
-                $token instanceof CharacterToken)
-        ) {
-            $inForignContent = false;
-        }
-
-        if ($inForignContent && $token instanceof EOFToken) {
-            $inForignContent = false;
-        }
-
-        if ($inForignContent) {
-
-        }
-    }*/
-
-    public function sniffEncoding()
-    {
     }
 }

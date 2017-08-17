@@ -4421,11 +4421,6 @@ class TreeBuilder
         }
     }
 
-    public function getTokenRepository()
-    {
-        return $this->tokenRepository;
-    }
-
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#tree-construction-dispatcher
      * @return [type] [description]
