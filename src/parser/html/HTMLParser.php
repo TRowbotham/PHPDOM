@@ -31,165 +31,59 @@ use Rowbot\DOM\Parser\Parser;
 use Rowbot\DOM\Parser\Token\AttributeToken;
 use Rowbot\DOM\Parser\Token\EndTagToken;
 use Rowbot\DOM\Parser\Token\StartTagToken;
+use SplStack;
+use SplObjectStorage;
 
 class HTMLParser extends Parser
 {
-    // Flags
-    const SCRIPTING_ENABLED = 1;
-    const PAUSED = 2;
+    use ParserOrTreeBuilder;
 
-    private $activeFormattingElements;
-    private $document;
-    private $encodingConfidence;
-    private $flags;
-    private $formElementPointer;
-    private $headElementPointer;
-    private $fragmentCase;
-    private $insertionMode;
-    private $openElements;
-    private $originalInsertionMode;
-    private $templateInsertionModes;
-    private $tokenizerState;
+    const FLAG_PAUSED = 1;
+
+    /**
+     * The tokenizer associated with the parser.
+     *
+     * @var Tokenizer
+     */
+    private $tokenizer;
+
+    /**
+     * The treebuilder associated with the parser.
+     *
+     * @var TreeBuilder
+     */
     private $treeBuilder;
 
-    public function __construct(Document $aDocument, $aFragmentCase = false)
-    {
+    public function __construct(
+        Document $document,
+        $isFragmentCase = false,
+        $contextElement = null
+    ) {
         parent::__construct();
 
         $this->activeFormattingElements = new ActiveFormattingElementStack();
-        $this->document = $aDocument;
-        $this->encodingConfidence = null;
+        $this->contextElement = $con;
+        $this->document = $document;
         $this->flags = 0;
-        $this->formElementPointer = null;
-        $this->headElementPointer = null;
-        $this->fragmentCase = $aFragmentCase;
-        $this->insertionMode = ParserInsertionMode::INITIAL;
-        $this->tokenizerState = TokenizerState::DATA;
+        $this->isFragmentCase = $isFragmentCase;
+        $this->isScriptingEnabled = false;
         $this->openElements = new OpenElementStack();
         $this->originalInsertionMode = null;
-        $this->templateInsertionModes = new \SplDoublyLinkedList();
-        $this->treeBuilder = new TreeBuilder($aDocument, $this);
+        $this->state = new ParserState();
+        $this->templateInsertionModes = new SplStack();
+        $this->tokenRepository = new SplObjectStorage();
+        $this->treeBuilder = new TreeBuilder(
+            $document,
+            $this->activeFormattingElements,
+            $this->openElements,
+            $this->templateInsertionModes,
+            $this->tokenRepository,
+            $this->isFragmentCase,
+            $this->isScriptingEnabled,
+            $this->contextElement,
+            $this->state
+        );
         $this->tokenizer = new Tokenizer($this->inputStream, $this);
-    }
-
-    /**
-     * @see https://html.spec.whatwg.org/#adjusted-current-node
-     *
-     * @return Element
-     */
-    public function getAdjustedCurrentNode()
-    {
-        if ($this->fragmentCase && $this->openElements->count() == 1) {
-            return $this->contextElement;
-        }
-
-        return $this->openElements->bottom();
-    }
-
-    /**
-     * Returns whether of not the parser was created as part of the fragment
-     * parsing algorithm for HTML nodes.
-     *
-     * @return bool
-     */
-    public function isFragmentCase()
-    {
-        return $this->fragmentCase;
-    }
-
-    /**
-     * Resets the HTML Parser's insertion mode.
-     *
-     * @see https://html.spec.whatwg.org/multipage/syntax.html#reset-the-insertion-mode-appropriately
-     */
-    public function resetInsertionMode()
-    {
-        $last = false;
-        $iterator = $this->openElements->getIterator();
-
-        foreach ($iterator as $node) {
-            if ($this->openElements[0] === $node) {
-                $last = true;
-
-                if ($this->fragmentCase) {
-                    // Fragment case
-                    $node = $this->contextElement;
-                }
-            }
-
-            if ($node instanceof HTMLSelectElement) {
-                if (!$last) {
-                    $ancestor = $node;
-
-                    while ($iterator->valid()) {
-                        if ($ancestor === $this->openElements[0]) {
-                            break;
-                        }
-
-                        $iterator->next();
-                        $ancestor = $iterator->current();
-
-                        if ($ancestor instanceof HTMLTemplateElement) {
-                            break;
-                        }
-
-                        if ($ancestor instanceof HTMLTableElement) {
-                            $this->insertionMode =
-                                ParserInsertionMode::IN_SELECT_IN_TABLE;
-                            break 2;
-                        }
-                    }
-                }
-
-                $this->insertionMode = ParserInsertionMode::IN_SELECT;
-                break;
-            } elseif ($node instanceof HTMLTableCellElement && !$last) {
-                $this->insertionMode = ParserInsertionMode::IN_CELL;
-                break;
-            } elseif ($node instanceof HTMLTableRowElement) {
-                $this->insertionMode = ParserInsertionMode::IN_ROW;
-                break;
-            } elseif ($node instanceof HTMLTableSectionElement) {
-                $this->insertionMode = ParserInsertionMode::IN_TABLE_BODY;
-                break;
-            } elseif ($node instanceof HTMLTableCaptionElement) {
-                $this->insertionMode = ParserInsertionMode::IN_CAPTION;
-                break;
-            } elseif ($node instanceof HTMLTableColElement &&
-                $node->localName === 'colgroup'
-            ) {
-                $this->insertionMode = ParserInsertionMode::IN_COLUMN_GROUP;
-                break;
-            } elseif ($node instanceof HTMLTableElement) {
-                $this->insertionMode = ParserInsertionMode::IN_TABLE;
-                break;
-            } elseif ($node instanceof HTMLTemplateElement) {
-                $this->insertionMode = $this->templateInsertionModes->top();
-                break;
-            } elseif ($node instanceof HTMLHeadElement && !$last) {
-                $this->insertionMode = ParserInsertionMode::IN_HEAD;
-                break;
-            } elseif ($node instanceof HTMLBodyElement) {
-                $this->insertionMode = ParserInsertionMode::IN_BODY;
-                break;
-            } elseif ($node instanceof HTMLFrameSetElement) {
-                // Fragment case
-                $this->insertionMode = ParserInsertionMode::IN_FRAMESET;
-                break;
-            } elseif ($node instanceof HTMLHtmlElement) {
-                if (!$this->headElementPointer) {
-                    // Fragment case
-                    $this->insertionMode = ParserInsertionMode::BEFORE_HEAD;
-                } else {
-                    $this->insertionMode = ParserInsertionMode::AFTER_HEAD;
-                }
-
-                break;
-            } elseif ($last) {
-                // Fragment case
-                $this->insertionMode = ParserInsertionMode::IN_BODY;
-            }
-        }
     }
 
     /**
@@ -235,8 +129,7 @@ class HTMLParser extends Parser
 
         // Create a new HTML parser, and associate it with the just created
         // Document node.
-        $parser = new HTMLParser($doc, true);
-        $parser->contextElement = $aContextElement;
+        $parser = new HTMLParser($doc, true, $aContextElement);
         $localName = $aContextElement->localName;
 
         // Set the state of the HTML parser's tokenization stage as follows,
@@ -244,7 +137,7 @@ class HTMLParser extends Parser
         switch ($localName) {
             case 'title':
             case 'textarea':
-                $parser->tokenizerState = TokenizerState::RCDATA;
+                $parser->state->tokenizerState = TokenizerState::RCDATA;
 
                 break;
 
@@ -253,24 +146,24 @@ class HTMLParser extends Parser
             case 'iframe':
             case 'noembed':
             case 'noframes':
-                $parser->tokenizerState = TokenizerState::RAWTEXT;
+                $parser->state->tokenizerState = TokenizerState::RAWTEXT;
 
                 break;
 
             case 'script':
-                $parser->tokenizerState = TokenizerState::SCRIPT_DATA;
+                $parser->state->tokenizerState = TokenizerState::SCRIPT_DATA;
 
                 break;
 
             case 'noscript':
-                if ($parser->flags & self::SCRIPTING_ENABLED) {
+                if ($parser->isScriptingEnabled) {
                     $parser->tokenizerState = TokenizerState::RAWTEXT;
                 }
 
                 break;
 
             case 'plaintext':
-                $parser->tokenizerState = TokenizerState::PLAINTEXT;
+                $parser->state->tokenizerState = TokenizerState::PLAINTEXT;
         }
 
         // NOTE: For performance reasons, an implementation that does not report
@@ -313,7 +206,7 @@ class HTMLParser extends Parser
         // Let this start tag token be the start tag token of the context node,
         // e.g. for the purposes of determining if it is an HTML integration
         // point.
-        $parser->treeBuilder->getTokenRepository()->attach(
+        $parser->tokenRepository->attach(
             $aContextElement,
             $token
         );
@@ -329,7 +222,7 @@ class HTMLParser extends Parser
         // pointer keeps its initial value, null.)
         while ($node) {
             if ($node instanceof HTMLFormElement) {
-                $parser->formElementPointer = $node;
+                $parser->state->formElementPointer = $node;
                 break;
             }
 
@@ -595,21 +488,6 @@ class HTMLParser extends Parser
         }
 
         return str_replace($search, $replace, $aString);
-    }
-
-    /**
-     * @see https://html.spec.whatwg.org/multipage/syntax.html#stop-parsing
-     */
-    public function stopParsing()
-    {
-        // TODO: Set the current document readiness to "interactive" and the
-        // insertion point to undefined.
-        $this->document->setReadyState(DocumentReadyState::INTERACTIVE);
-
-        // Pop all the nodes off the stack of open elements.
-        $this->openElements->clear();
-
-        // TODO: Lots of stuff
     }
 
     /**
