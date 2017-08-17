@@ -172,7 +172,7 @@ class TreeBuilder
 
     public function __construct(Document $aDocument, HTMLParser $aParser)
     {
-        $this->mDocument = $aDocument;
+        $this->document = $document;
         $this->fosterParenting = false;
         $this->framesetOk = 'ok';
         $this->parser = $aParser;
@@ -200,7 +200,7 @@ class TreeBuilder
         ) {
             // Ignore the token.
         } elseif ($tokenType == Token::COMMENT_TOKEN) {
-            $this->insertComment($aToken, [$this->mDocument, 'beforeend']);
+            $this->insertComment($aToken, [$this->document, 'beforeend']);
         } elseif ($tokenType == Token::DOCTYPE_TOKEN) {
             $publicId = $aToken->publicIdentifier;
             $systemId = $aToken->systemIdentifier;
@@ -228,10 +228,10 @@ class TreeBuilder
                 ($publicId ?: ''),
                 ($systemId ?: '')
             );
-            $doctype->setNodeDocument($this->mDocument);
-            $this->mDocument->appendChild($doctype);
+            $doctype->setNodeDocument($this->document);
+            $this->document->appendChild($doctype);
 
-            if (!$this->mDocument->isIframeSrcdoc() &&
+            if (!$this->document->isIframeSrcdoc() &&
                 ($aToken->getQuirksMode() === 'on' ||
                 $name !== 'html' ||
                 strcasecmp($publicId, '-//W3O//DTD W3 HTML Strict 3.0//EN//') === 0 ||
@@ -296,8 +296,8 @@ class TreeBuilder
                 ($systemId === null && stripos($publicId, '-//W3C//DTD HTML 4.01 Frameset//') === 0) ||
                 ($systemId === null && stripos($publicId, '-//W3C//DTD HTML 4.01 Transitional//') === 0))
             ) {
-                $this->mDocument->setMode(DocumentMode::QUIRKS);
-            } elseif (!$this->mDocument->isIframeSrcdoc() &&
+                $this->document->setMode(DocumentMode::QUIRKS);
+            } elseif (!$this->document->isIframeSrcdoc() &&
                 (stripos(
                     $publicId,
                     '-//W3C//DTD XHTML 1.0 Frameset//'
@@ -315,7 +315,7 @@ class TreeBuilder
                     '-//W3C//DTD HTML 4.01 Transitional//'
                 ) === 0))
             ) {
-                $this->mDocument->setMode(DocumentMode::LIMITED_QUIRKS);
+                $this->document->setMode(DocumentMode::LIMITED_QUIRKS);
             }
 
             // Then, switch the insertion mode to "before html".
@@ -323,9 +323,9 @@ class TreeBuilder
         } else {
             // If the document is not an iframe srcdoc document, then this
             // is a parse error; set the Document to quirks mode.
-            if (!$this->mDocument->isIframeSrcdoc()) {
+            if (!$this->document->isIframeSrcdoc()) {
                 // Parse error.
-                $this->mDocument->setMode(DocumentMode::QUIRKS);
+                $this->document->setMode(DocumentMode::QUIRKS);
             }
 
             // In any case, switch the insertion mode to "before html", then
@@ -350,7 +350,7 @@ class TreeBuilder
             // Ignore the token.
         } elseif ($tokenType == Token::COMMENT_TOKEN) {
             // Insert a comment as the last child of the Document object.
-            $this->insertComment($aToken, [$this->mDocument, 'beforeend']);
+            $this->insertComment($aToken, [$this->document, 'beforeend']);
         } elseif ($tokenType == Token::CHARACTER_TOKEN &&
             (($data = $aToken->data) === "\x09" || $data === "\x0A" ||
                 $data === "\x0C" || $data === "\x0D" || $data === "\x20")
@@ -363,9 +363,9 @@ class TreeBuilder
             $node = $this->createElementForToken(
                 $aToken,
                 Namespaces::HTML,
-                $this->mDocument
+                $this->document
             );
-            $this->mDocument->appendChild($node);
+            $this->document->appendChild($node);
             $this->openElements->push($node);
 
             // TODO: If the Document is being loaded as part of navigation of a
@@ -382,11 +382,11 @@ class TreeBuilder
             // object. Append it to the Document object. Put this element in
             // the stack of open elements.
             $node = ElementFactory::create(
-                $this->mDocument,
+                $this->document,
                 'html',
                 Namespaces::HTML
             );
-            $this->mDocument->appendChild($node);
+            $this->document->appendChild($node);
             $this->openElements->push($node);
 
             // TODO: If the Document is being loaded as part of navigation of a
@@ -405,11 +405,11 @@ class TreeBuilder
             // object. Append it to the Document object. Put this element in
             // the stack of open elements.
             $node = ElementFactory::create(
-                $this->mDocument,
+                $this->document,
                 'html',
                 Namespaces::HTML
             );
-            $this->mDocument->appendChild($node);
+            $this->document->appendChild($node);
             $this->openElements->push($node);
 
             // TODO: If the Document is being loaded as part of navigation of a
@@ -1874,7 +1874,7 @@ class TreeBuilder
             // If the Document is not set to quirks mode, and the stack of
             // open elements has a p element in button scope, then close a p
             // element.
-            if ($this->mDocument->getMode() != DocumentMode::QUIRKS &&
+            if ($this->document->getMode() != DocumentMode::QUIRKS &&
                 $this->openElements->hasElementInButtonScope(
                     'p',
                     Namespaces::HTML
@@ -4127,7 +4127,7 @@ class TreeBuilder
 
         if ($tokenType == Token::COMMENT_TOKEN) {
             // Insert a comment as the last child of the Document object.
-            $this->insertComment($aToken, [$this->mDocument, 'beforeend']);
+            $this->insertComment($aToken, [$this->document, 'beforeend']);
         } elseif ($tokenType == Token::DOCTYPE_TOKEN ||
             ($tokenType == Token::CHARACTER_TOKEN &&
                 (($data = $aToken->data) === "\x09" || $data === "\x0A" ||
