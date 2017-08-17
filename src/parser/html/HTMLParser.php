@@ -80,7 +80,7 @@ class HTMLParser extends Parser
     public function getAdjustedCurrentNode()
     {
         if ($this->fragmentCase && $this->openElements->count() == 1) {
-            return $this->mContextElement;
+            return $this->contextElement;
         }
 
         return $this->openElements->bottom();
@@ -113,7 +113,7 @@ class HTMLParser extends Parser
 
                 if ($this->fragmentCase) {
                     // Fragment case
-                    $node = $this->mContextElement;
+                    $node = $this->contextElement;
                 }
             }
 
@@ -236,7 +236,7 @@ class HTMLParser extends Parser
         // Create a new HTML parser, and associate it with the just created
         // Document node.
         $parser = new HTMLParser($doc, true);
-        $parser->mContextElement = $aContextElement;
+        $parser->contextElement = $aContextElement;
         $localName = $aContextElement->localName;
 
         // Set the state of the HTML parser's tokenization stage as follows,
