@@ -38,8 +38,6 @@ class HTMLParser extends Parser
 {
     use ParserOrTreeBuilder;
 
-    const FLAG_PAUSED = 1;
-
     /**
      * The tokenizer associated with the parser.
      *
@@ -83,7 +81,13 @@ class HTMLParser extends Parser
             $this->contextElement,
             $this->state
         );
-        $this->tokenizer = new Tokenizer($this->inputStream, $this);
+        $this->tokenizer = new Tokenizer(
+            $this->inputStream,
+            $this->openElements,
+            $this->isFragmentCase,
+            $this->contextElement,
+            $this->state
+        );
     }
 
     /**
