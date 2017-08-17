@@ -703,7 +703,7 @@ class TreeBuilder
 
                 // If the current node is not a template element, then this is
                 // a parse error.
-                if (!($this->mOpenElements->top()
+                if (!($this->mOpenElements->bottom()
                     instanceof HTMLTemplateElement)
                 ) {
                     // Parse error
@@ -1202,7 +1202,7 @@ class TreeBuilder
             // If the current node is an HTML element whose tag name is one of
             // "h1", "h2", "h3", "h4", "h5", or "h6", then this is a parse
             // error; pop the current node off the stack of open elements.
-            if ($this->mOpenElements->top() instanceof HTMLHeadingElement) {
+            if ($this->mOpenElements->bottom() instanceof HTMLHeadingElement) {
                 // Parse error.
                 $this->mOpenElements->pop();
             }
@@ -1265,18 +1265,15 @@ class TreeBuilder
 
             // Initialise node to be the current node (the bottommost node of
             // the stack).
-            $node = $this->mOpenElements->top();
-            $this->mOpenElements->rewind();
-
             // Step "Loop".
-            while (true) {
+            foreach ($this->mOpenElements as $node) {
                 if ($node instanceof HTMLLIElement) {
                     // Generate implied end tags, except for li elements.
                     $this->generateImpliedEndTags('li');
 
                     // If the current node is not an li element, then this is a
                     // parse error.
-                    if (!($this->mOpenElements->top()
+                    if (!($this->mOpenElements->bottom()
                         instanceof HTMLLIElement)
                     ) {
                         // Parse error.
@@ -1297,18 +1294,15 @@ class TreeBuilder
                 }
 
                 // If node is in the special category, but is not an address,
-                //  div, or p element, then jump to the step labeled done below.
+                // div, or p element, then jump to the step labeled done below.
+                // Otherwise, set node to the previous entry in the stack
+                // of open elements and return to the step labeled loop.
                 if ($this->isSpecialNode($node) &&
                     !($node instanceof HTMLElement &&
                         (($name = $node->localName) === 'address' ||
                             $name === 'div' || $name === 'p'))
                 ) {
                     break;
-                } else {
-                    // Otherwise, set node to the previous entry in the stack
-                    // of open elements and return to the step labeled loop.
-                    $this->mOpenElements->next();
-                    $node = $this->mOpenElements->current();
                 }
             }
 
@@ -1332,19 +1326,16 @@ class TreeBuilder
 
             // Initialise node to be the current node (the bottommost node of
             // the stack).
-            $node = $this->mOpenElements->top();
-            $this->mOpenElements->rewind();
-
             // Step "Loop".
-            while (true) {
+            foreach ($this->mOpenElements as $node) {
+                $currentNode = $this->mOpenElements->bottom();
+
                 if ($node instanceof HTMLElement && $node->localName === 'dd') {
                     // Generate implied end tags, except for dd elements.
                     $this->generateImpliedEndTags('dd');
 
                     // If the current node is not a dd element, then this is a
                     // parse error.
-                    $currentNode = $this->mOpenElements->top();
-
                     if (!($currentNode instanceof HTMLElement &&
                         $currentNode->localName === 'dd')
                     ) {
@@ -1397,17 +1388,14 @@ class TreeBuilder
 
                 // If node is in the special category, but is not an address,
                 // div, or p element, then jump to the step labeled done below.
+                // Otherwise, set node to the previous entry in the stack of
+                // open elements and return to the step labeled loop.
                 if ($this->isSpecialNode($node) &&
                     !($node instanceof HTMLElement &&
                         (($name = $node->localName) === 'address' ||
                             $name === 'div' || $name === 'p'))
                 ) {
                     break;
-                } else {
-                    // Otherwise, set node to the previous entry in the stack of
-                    // open elements and return to the step labeled loop.
-                    $this->mOpenElements->next();
-                    $node = $this->mOpenElements->current();
                 }
             }
 
@@ -1502,7 +1490,7 @@ class TreeBuilder
             // If the current node is not an HTML element with the same tag
             // name as that of the token, then this is a parse error.
             $isValid = $this->isHTMLElementWithName(
-                $this->mOpenElements->top(),
+                $this->mOpenElements->bottom(),
                 $tagName
             );
 
@@ -1548,7 +1536,7 @@ class TreeBuilder
                 $this->generateImpliedEndTags();
 
                 // If the current node is not node, then this is a parse error.
-                if ($this->mOpenElements->top() !== $node) {
+                if ($this->mOpenElements->bottom() !== $node) {
                     // Parse error.
                 }
 
@@ -1575,7 +1563,7 @@ class TreeBuilder
 
             // If the current node is not a form element, then this is a parse
             // error.
-            if (!($this->mOpenElements->top() instanceof HTMLFormElement)) {
+            if (!($this->mOpenElements->bottom() instanceof HTMLFormElement)) {
                 // Parse error.
             }
 
@@ -1620,7 +1608,7 @@ class TreeBuilder
 
             // If the current node is not an li element, then this is a parse
             // error.
-            if (!($this->mOpenElements->top() instanceof HTMLLIElement)) {
+            if (!($this->mOpenElements->bottom() instanceof HTMLLIElement)) {
                 // Parse error.
             }
 
@@ -1653,7 +1641,7 @@ class TreeBuilder
             // If the current node is not an HTML element with the same tag
             // name as that of the token, then this is a parse error.
             $isValid = $this->isHTMLElementWithName(
-                $this->mOpenElements->top(),
+                $this->mOpenElements->bottom(),
                 $tagName
             );
 
@@ -1717,7 +1705,7 @@ class TreeBuilder
             // If the current node is not an HTML element with the same tag
             // name as that of the token, then this is a parse error.
             $isValid = $this->isHTMLElementWithName(
-                $this->mOpenElements->top(),
+                $this->mOpenElements->bottom(),
                 $tagName
             );
 
@@ -1855,7 +1843,7 @@ class TreeBuilder
             // If the current node is not an HTML element with the same tag
             // name as that of the token, then this is a parse error.
             $isValid = $this->isHTMLElementWithName(
-                $this->mOpenElements->top(),
+                $this->mOpenElements->bottom(),
                 $tagName
             );
 
@@ -2128,7 +2116,7 @@ class TreeBuilder
         ) {
             // If the current node is an option element, then pop the current
             // node off the stack of open elements.
-            if ($this->mOpenElements->top() instanceof HTMLOptionElement) {
+            if ($this->mOpenElements->bottom() instanceof HTMLOptionElement) {
                 $this->mOpenElements->pop();
             }
 
@@ -2148,7 +2136,7 @@ class TreeBuilder
                 Namespaces::HTML
             )) {
                 $this->generateImpliedEndTags();
-                $currentNode = $this->mOpenElements->top();
+                $currentNode = $this->mOpenElements->bottom();
 
                 if (!($currentNode instanceof HTMLElement &&
                     $currentNode->localName === 'ruby')
@@ -2171,7 +2159,7 @@ class TreeBuilder
                 Namespaces::HTML
             )) {
                 $this->generateImpliedEndTags('rtc');
-                $currentNode = $this->mOpenElements->top();
+                $currentNode = $this->mOpenElements->bottom();
 
                 if (!($currentNode instanceof HTMLElement &&
                     $currentNode->localName === 'rtc')
@@ -2252,18 +2240,17 @@ class TreeBuilder
     {
         // Initialise node to be the current node (the bottommost node of the
         // stack).
-        $node = $this->mOpenElements->top();
-        $this->mOpenElements->rewind();
         $tagName = $aToken->tagName;
+        $iterator = $this->mOpenElements->getIterator();
 
-        while ($this->mOpenElements->valid()) {
+        foreach ($iterator as $node) {
             if ($this->isHTMLElementWithName($node, $tagName)) {
                 // Generate implied end tags, except for HTML elements with
                 // the same tag name as the token.
                 $this->generateImpliedEndTags($tagName);
 
                 // If node is not the current node, then this is a parse error.
-                if ($node !== $this->mOpenElements->top()) {
+                if ($node !== $this->mOpenElements->bottom()) {
                     // Parse error.
                 }
 
@@ -2273,16 +2260,14 @@ class TreeBuilder
                     if ($this->mOpenElements->pop() === $node) {
                         break;
                     }
+
+                    $iterator->next();
                 }
             } elseif ($this->isSpecialNode($node)) {
                 // Parse error.
                 // Ignore the token.
                 break;
             }
-
-            // Set node to the previous entry in the stack of open elements.
-            $this->mOpenElements->next();
-            $node = $this->mOpenElements->current();
         }
     }
 
@@ -2295,7 +2280,7 @@ class TreeBuilder
     {
         $this->generateImpliedEndTags('p');
 
-        if (!($this->mOpenElements->top() instanceof HTMLParagraphElement)) {
+        if (!($this->mOpenElements->bottom() instanceof HTMLParagraphElement)) {
             // Parse error
         }
 
@@ -2314,7 +2299,7 @@ class TreeBuilder
     protected function adoptionAgency(TagToken $aToken)
     {
         $subject = $aToken->tagName;
-        $currentNode = $this->mOpenElements->top();
+        $currentNode = $this->mOpenElements->bottom();
 
         // If the current node is an HTML Element with a tag name that matches
         // subject and the current node is not in the list of active formatting
@@ -2390,7 +2375,7 @@ class TreeBuilder
 
             // If formatting element is not the current node, this is a parse
             // error. (But do not abort these steps.)
-            if ($this->mOpenElements->top() !== $formattingElement) {
+            if ($this->mOpenElements->bottom() !== $formattingElement) {
                 // Parse error.
             }
 
@@ -2398,18 +2383,18 @@ class TreeBuilder
             // elements that is lower in the stack than formatting element, and
             // is an element in the special category. There might not be one.
             $furthestBlock = null;
-            $this->mOpenElements->seek($formattingElement);
-            $this->mOpenElements->prev();
+            $formattingElementIndex = $this->mOpenElements->indexOf(
+                $formattingElement
+            );
+            $count = count($this->mOpenElements);
 
-            while ($this->mOpenElements->valid()) {
-                $current = $this->mOpenElements->current();
+            for ($i = $formattingElementIndex + 1; $i < $count; $i++) {
+                $current = $this->mOpenElements[$i];
 
                 if ($this->isSpecialNode($current)) {
                     $furthestBlock = $current;
                     break;
                 }
-
-                $this->mOpenElements->prev();
             }
 
             // If there is no furthest block, then the UA must first pop all the
@@ -2430,9 +2415,7 @@ class TreeBuilder
 
             // Let common ancestor be the element immediately above formatting
             // element in the stack of open elements.
-            $this->mOpenElements->seek($formattingElement);
-            $this->mOpenElements->next();
-            $commonAncestor = $this->mOpenElements->current();
+            $commonAncestor = $this->mOpenElements[$formattingElementIndex - 1];
 
             // Let a bookmark note the position of formatting element in the
             // list of active formatting elements relative to the elements on
@@ -2449,7 +2432,7 @@ class TreeBuilder
 
             // Let inner loop counter be zero.
             $innerLoopCounter = 0;
-            $clonedStack = clone $this->mOpenElements;
+            $iterator = $this->mOpenElements->getIterator();
 
             // Inner loop
             while (true) {
@@ -2461,15 +2444,9 @@ class TreeBuilder
                 // open elements (e.g. because it got removed by this
                 // algorithm), the element that was immediately above node in
                 // the stack of open elements before node was removed.
-                $stack = $this->mOpenElements;
-
-                if (!$stack->contains($node)) {
-                    $stack = $clonedStack;
-                }
-
-                $stack->seek($node);
-                $stack->next();
-                $node = $stack->current();
+                //if (!$this->mOpenElements->contains($node)) {
+                    $node = $this->mOpenElements[$iterator->indexOf($node) - 1];
+                //}
 
                 // If node is formatting element, then go to the next step in
                 // the overall algorithm.
@@ -2513,7 +2490,7 @@ class TreeBuilder
                 );
 
                 $this->mActiveFormattingElements->replace($newElement, $node);
-                $this->mOpenElements->replace($node, $newElement);
+                $this->mOpenElements->replace($newElement, $node);
                 $node = $newElement;
 
                 // If last node is furthest block, then move the aforementioned
@@ -2572,7 +2549,7 @@ class TreeBuilder
             // insert the new element into the stack of open elements
             // immediately below the position of furthest block in that stack.
             $this->mOpenElements->remove($formattingElement);
-            $this->mOpenElements->insertAfter($furthestBlock, $element);
+            $this->mOpenElements->insertAfter($element, $furthestBlock);
         }
     }
 
@@ -2594,7 +2571,7 @@ class TreeBuilder
             // Parse error.
             // If the current node is a script element, mark the script element
             // as "already started".
-            if ($this->mOpenElements->top() instanceof HTMLScriptElement) {
+            if ($this->mOpenElements->bottom() instanceof HTMLScriptElement) {
                 // TODO: Mark the script element as "already started".
             }
 
@@ -2614,7 +2591,7 @@ class TreeBuilder
             // a microtask checkpoint.
 
             // Let script be the current node (which will be a script element).
-            $script = $this->mOpenElements->top();
+            $script = $this->mOpenElements->bottom();
 
             // Pop the current node off the stack of open elements.
             $this->mOpenElements->pop();
@@ -2647,7 +2624,7 @@ class TreeBuilder
         $tagName = $aToken instanceof TagToken ? $aToken->tagName : '';
 
         if ($tokenType == Token::CHARACTER_TOKEN &&
-            ($currentNode = $this->mOpenElements->top()) &&
+            ($currentNode = $this->mOpenElements->bottom()) &&
             ($currentNode instanceof HTMLTableElement ||
             $currentNode instanceof HTMLTableSectionElement ||
             $currentNode instanceof HTMLTableRowElement)
@@ -2976,7 +2953,7 @@ class TreeBuilder
 
             // Now, if the current node is not a caption element, then this is
             // a parse error.
-            if (!($this->mOpenElements->top()
+            if (!($this->mOpenElements->bottom()
                 instanceof HTMLTableCaptionElement)
             ) {
                 // Parse error.
@@ -3021,7 +2998,7 @@ class TreeBuilder
 
                 // Now, if the current node is not a caption element, then this
                 // is a parse error.
-                if (!($this->mOpenElements->top()
+                if (!($this->mOpenElements->bottom()
                     instanceof HTMLTableCaptionElement)
                 ) {
                     // Parse error.
@@ -3103,7 +3080,7 @@ class TreeBuilder
         ) {
             // If the current node is not a colgroup element, then this is a
             // parse error; ignore the token.
-            $currentNode = $this->mOpenElements->top();
+            $currentNode = $this->mOpenElements->bottom();
 
             if (!($currentNode instanceof HTMLTableColElement &&
                 $currentNode->localName === 'colgroup')
@@ -3133,7 +3110,7 @@ class TreeBuilder
         } else {
             // If the current node is not a colgroup element, then this is a
             // parse error; ignore the token.
-            $currentNode = $this->mOpenElements->top();
+            $currentNode = $this->mOpenElements->bottom();
 
             if (!($currentNode instanceof HTMLTableColElement &&
                 $currentNode->localName === 'colgroup')
@@ -3403,7 +3380,7 @@ class TreeBuilder
             // Now, if the current node is not an HTML element with the same
             // tag name as the token, then this is a parse error.
             if (!$this->isHTMLElementWithName(
-                $this->mOpenElements->top(),
+                $this->mOpenElements->bottom(),
                 $tagName
             )) {
                 // Parse error
@@ -3488,7 +3465,7 @@ class TreeBuilder
 
         // If the current node is not now a td element or a th element, then
         // this is a parse error.
-        $currentNode = $this->mOpenElements->top();
+        $currentNode = $this->mOpenElements->bottom();
 
         if (!($currentNode instanceof HTMLTableDataElement) &&
             !($currentNode instanceof HTMLTableHeaderCellElement)
@@ -3552,7 +3529,7 @@ class TreeBuilder
         ) {
             // If the current node is an option element, pop that node from the
             // stack of open elements.
-            if ($this->mOpenElements->top() instanceof HTMLOptionElement) {
+            if ($this->mOpenElements->bottom() instanceof HTMLOptionElement) {
                 $this->mOpenElements->pop();
             }
 
@@ -3563,13 +3540,13 @@ class TreeBuilder
         ) {
             // If the current node is an option element, pop that node from the
             // stack of open elements.
-            if ($this->mOpenElements->top() instanceof HTMLOptionElement) {
+            if ($this->mOpenElements->bottom() instanceof HTMLOptionElement) {
                 $this->mOpenElements->pop();
             }
 
             // If the current node is an optgroup element, pop that node from
             // the stack of open elements.
-            if ($this->mOpenElements->top() instanceof HTMLOptGroupElement) {
+            if ($this->mOpenElements->bottom() instanceof HTMLOptGroupElement) {
                 $this->mOpenElements->pop();
             }
 
@@ -3582,10 +3559,10 @@ class TreeBuilder
             // immediately before it in the stack of open elements is an
             // optgroup element, then pop the current node from the stack of
             // open elements.
-            $this->mOpenElements->rewind();
-            $this->mOpenElements->next();
+            $iterator = $this->mOpenElements->getIterator();
+            $iterator->next();
 
-            if ($this->mOpenElements->top() instanceof HTMLOptionElement &&
+            if ($this->mOpenElements->bottom() instanceof HTMLOptionElement &&
                 $this->mOpenElements->current() instanceof HTMLOptGroupElement
             ) {
                 $this->mOpenElements->pop();
@@ -3594,7 +3571,7 @@ class TreeBuilder
             // If the current node is an optgroup element, then pop that node
             // from the stack of open elements. Otherwise, this is a parse
             // error; ignore the token.
-            if ($this->mOpenElements->top() instanceof HTMLOptGroupElement) {
+            if ($this->mOpenElements->bottom() instanceof HTMLOptGroupElement) {
                 $this->mOpenElements->pop();
             } else {
                 // Parse error.
@@ -3604,7 +3581,7 @@ class TreeBuilder
             // If the current node is an option element, then pop that node
             // from the stack of open elements. Otherwise, this is a parse
             // error; ignore the token.
-            if ($this->mOpenElements->top() instanceof HTMLOptionElement) {
+            if ($this->mOpenElements->bottom() instanceof HTMLOptionElement) {
                 $this->mOpenElements->pop();
             } else {
                 // Parse error.
@@ -4003,7 +3980,7 @@ class TreeBuilder
         ) {
             // If the current node is the root html element, then this is a
             // parse error; ignore the token. (fragment case)
-            if ($this->mOpenElements->top() instanceof HTMLHtmlElement) {
+            if ($this->mOpenElements->bottom() instanceof HTMLHtmlElement) {
                 // Parse error.
                 // Ignore the token.
             } else {
@@ -4017,7 +3994,7 @@ class TreeBuilder
             // is no longer a frameset element, then switch the insertion mode
             // to "after frameset".
             if (!$this->mParser->isFragmentCase() &&
-                !($this->mOpenElements->top() instanceof HTMLFrameSetElement)
+                !($this->mOpenElements->bottom() instanceof HTMLFrameSetElement)
             ) {
                 $this->mParser->setInsertionMode(
                     ParserInsertionMode::AFTER_FRAMESET
@@ -4044,7 +4021,7 @@ class TreeBuilder
         } elseif ($tokenType == Token::EOF_TOKEN) {
             // If the current node is not the root html element, then this is a
             // parse error.
-            if (!($this->mOpenElements->top() instanceof HTMLHtmlElement)) {
+            if (!($this->mOpenElements->bottom() instanceof HTMLHtmlElement)) {
                 // Parse error.
             }
 
@@ -4288,7 +4265,7 @@ class TreeBuilder
                 );
 
                 if ($aToken->isSelfClosing()) {
-                    $currentNode = $this->mOpenElements->top();
+                    $currentNode = $this->mOpenElements->bottom();
 
                     if ($tagName === 'script' &&
                         $currentNode instanceof Element &&
@@ -4315,7 +4292,7 @@ class TreeBuilder
             // integration point, or an element in the HTML namespace.
             while (!$this->mOpenElements->isEmpty()) {
                 $this->mOpenElements->pop();
-                $currentNode = $this->mOpenElements->top();
+                $currentNode = $this->mOpenElements->bottom();
 
                 if ($this->isMathMLTextIntegrationPoint($currentNode) ||
                     $this->isHTMLIntegrationPoint($currentNode) ||
@@ -4374,7 +4351,7 @@ class TreeBuilder
             );
 
             if ($aToken->isSelfClosing()) {
-                $currentNode = $this->mOpenElements->top();
+                $currentNode = $this->mOpenElements->bottom();
 
                 if ($tagName === 'script' &&
                     $currentNode instanceof Element &&
@@ -4392,7 +4369,7 @@ class TreeBuilder
                 }
             }
         } elseif ($tokenType == Token::END_TAG_TOKEN && $tagName === 'script' &&
-            ($currentNode = $this->mOpenElements->top()) instanceof Element &&
+            ($currentNode = $this->mOpenElements->bottom()) instanceof Element &&
             $currentNode->localName === 'script' &&
             $currentNode->namespaceURI === Namespaces::SVG
         ) {
@@ -4403,7 +4380,7 @@ class TreeBuilder
         } elseif ($tokenType == Token::END_TAG_TOKEN) {
             // Initialise node to be the current node (the bottommost node of
             // the stack).
-            $node = $this->mOpenElements->top();
+            $node = $this->mOpenElements->bottom();
 
             // If node's tag name, converted to ASCII lowercase, is not the
             // same as the tag name of the token, then this is a parse error.
@@ -4411,10 +4388,10 @@ class TreeBuilder
                 // Parse error.
             }
 
-            $this->mOpenElements->rewind();
+            $iterator = $this->mOpenElements->getIterator();
 
             // Step "Loop".
-            while ($this->mOpenElements->valid()) {
+            while ($iterator->valid()) {
                 // If node is the topmost element in the stack of open elements,
                 // abort these steps. (fragment case)
                 if ($node === $this->mOpenElements[0]) {
@@ -4427,6 +4404,8 @@ class TreeBuilder
                 // then abort these steps.
                 if (Utils::toASCIILowercase($node->tagName) === $tagName) {
                     while (!$this->mOpenElements->isEmpty()) {
+                        $iterator->next();
+
                         if ($this->mOpenElements->pop() === $node) {
                             return;
                         }
@@ -4434,8 +4413,8 @@ class TreeBuilder
                 }
 
                 // Set node to the previous entry in the stack of open elements.
-                $this->mOpenElements->next();
-                $node = $this->mOpenElements->current();
+                $iterator->next();
+                $node = $iterator->current();
 
                 // If node is not an element in the HTML namespace, return to
                 // the step labeled loop.
@@ -4772,14 +4751,15 @@ class TreeBuilder
     {
         $pattern = '/^(caption|colgroup|dd|dt|li|optgroup|option|p|rb|rp|rt';
         $pattern .= '|rtc|tbody|td|tfoot|th|thead|tr)$/';
-        $currentNode = $this->mOpenElements->top();
 
-        while (!$this->mOpenElements->isEmpty() &&
-            $currentNode instanceof HTMLElement &&
-            preg_match($pattern, $currentNode->localName)
-        ) {
+        foreach ($this->mOpenElements as $currentNode) {
+            if (!$currentNode instanceof HTMLElement ||
+                !preg_match($pattern, $currentNode->localName)
+            ) {
+                break;
+            }
+
             $this->mOpenElements->pop();
-            $currentNode = $this->mOpenElements->top();
         }
     }
 
@@ -4802,17 +4782,16 @@ class TreeBuilder
             'rtc'      => 0
         ];
 
-        $currentNode = $this->mOpenElements->top();
-
         if ($aExcluded) {
             unset($tags[$aExcluded]);
         }
 
-        while (!$this->mOpenElements->isEmpty() &&
-            isset($tags[$currentNode->localName])
-        ) {
+        foreach ($this->mOpenElements as $currentNode) {
+            if (!isset($tags[$currentNode->localName])) {
+                break;
+            }
+
             $this->mOpenElements->pop();
-            $currentNode = $this->mOpenElements->top();
         }
     }
 
@@ -4834,7 +4813,7 @@ class TreeBuilder
     ) {
         // If there was an override target specified, then let target be the
         // override target. Otherwise, let target be the current node.
-        $target = $aOverrideTarget ?: $this->mOpenElements->top();
+        $target = $aOverrideTarget ?: $this->mOpenElements->bottom();
 
         // NOTE: Foster parenting happens when content is misnested in tables.
         if ($this->mFosterParenting && ($target instanceof HTMLTableElement ||

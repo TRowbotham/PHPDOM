@@ -1,5 +1,4 @@
 <?php
-use phpjs\parser\OpenElementStack;
 namespace Rowbot\DOM\Parser\HTML;
 
 use Rowbot\DOM\Attr;
@@ -27,6 +26,7 @@ use Rowbot\DOM\HTMLDocument;
 use Rowbot\DOM\Namespaces;
 use Rowbot\DOM\Node;
 use Rowbot\DOM\Parser\Collection\ActiveFormattingElementStack;
+use Rowbot\DOM\Parser\Collection\OpenElementStack;
 use Rowbot\DOM\Parser\Parser;
 use Rowbot\DOM\Parser\Token\AttributeToken;
 use Rowbot\DOM\Parser\Token\EndTagToken;
@@ -83,7 +83,7 @@ class HTMLParser extends Parser
             return $this->mContextElement;
         }
 
-        return $this->openElements->top();
+        return $this->openElements->bottom();
     }
 
     /**
@@ -105,10 +105,9 @@ class HTMLParser extends Parser
     public function resetInsertionMode()
     {
         $last = false;
-        $node = $this->openElements->top();
-        $this->openElements->rewind();
+        $iterator = $this->openElements->getIterator();
 
-        while (true) {
+        foreach ($iterator as $node) {
             if ($this->openElements[0] === $node) {
                 $last = true;
 
@@ -122,13 +121,13 @@ class HTMLParser extends Parser
                 if (!$last) {
                     $ancestor = $node;
 
-                    while ($this->openElements->valid()) {
+                    while ($iterator->valid()) {
                         if ($ancestor === $this->openElements[0]) {
                             break;
                         }
 
-                        $this->openElements->next();
-                        $ancestor = $this->openElements->current();
+                        $iterator->next();
+                        $ancestor = $iterator->current();
 
                         if ($ancestor instanceof HTMLTemplateElement) {
                             break;
@@ -190,14 +189,6 @@ class HTMLParser extends Parser
                 // Fragment case
                 $this->insertionMode = ParserInsertionMode::IN_BODY;
             }
-
-            $this->openElements->next();
-
-            if (!$this->openElements->valid()) {
-                return;
-            }
-
-            $node = $this->openElements->current();
         }
     }
 
