@@ -3138,10 +3138,10 @@ class Tokenizer
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#character-reference-state
                 case TokenizerState::CHARACTER_REFERENCE:
+                    $buffer = '&';
                     $c = $this->inputStream->get();
 
                     if (ctype_alnum($c)) {
-                        $buffer = '&';
                         $this->inputStream->seek(
                             -1,
                             CodePointStream::SEEK_RELATIVE
@@ -3149,10 +3149,15 @@ class Tokenizer
                         $this->state->tokenizerState =
                             TokenizerState::NAMED_CHARACTER_REFERENCE;
                     } elseif ($c === '#') {
-                        $buffer = '&' . $c;
+                        $buffer .= $c;
                         $this->state->tokenizerState =
                             TokenizerState::NUMERIC_CHARACTER_REFERENCE;
                     } else {
+                        yield from $this->flush(
+                            $buffer,
+                            $attributeToken,
+                            $returnState
+                        );
                         $this->inputStream->seek(
                             -1,
                             CodePointStream::SEEK_RELATIVE
