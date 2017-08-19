@@ -9,6 +9,8 @@ use Rowbot\DOM\Element\Element;
  */
 trait ParentNode
 {
+    use ChildOrParentNode;
+
     /**
      * Inserts nodes after the last child of this node, while replacing strings
      * in nodes with equvilant Text nodes.
@@ -20,7 +22,7 @@ trait ParentNode
      */
     public function append(...$nodes)
     {
-        $node = Node::convertNodesToNode($nodes, $this->nodeDocument);
+        $node = $this->convertNodesToNode($nodes, $this->nodeDocument);
         $this->preinsertNode($node, null);
     }
 
@@ -35,7 +37,7 @@ trait ParentNode
      */
     public function prepend(...$nodes)
     {
-        $node = Node::convertNodesToNode($nodes, $this->nodeDocument);
+        $node = $this->convertNodesToNode($nodes, $this->nodeDocument);
         $this->preinsertNode($node, $this->mChildNodes->first());
     }
 

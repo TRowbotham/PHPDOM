@@ -7,6 +7,8 @@ namespace Rowbot\DOM;
  */
 trait ChildNode
 {
+    use ChildOrParentNode;
+
     /**
      * Inserts any number of Node objects or strings after this ChildNode.
      *
@@ -33,7 +35,7 @@ trait ChildNode
             $viableNextSibling = $viableNextSibling->nextSibling;
         }
 
-        $node = Node::convertNodesToNode($nodes, $this->nodeDocument);
+        $node = $this->convertNodesToNode($nodes, $this->nodeDocument);
         $parent->preinsertNode($node, $viableNextSibling);
     }
 
@@ -63,7 +65,7 @@ trait ChildNode
             $viablePreviousSibling = $viablePreviousSibling->previousSibling;
         }
 
-        $node = Node::convertNodesToNode($nodes, $this->nodeDocument);
+        $node = $this->convertNodesToNode($nodes, $this->nodeDocument);
         $viablePreviousSibling = $viablePreviousSibling
             ? $viablePreviousSibling->nextSibling
             : $parent->firstChild;
@@ -110,7 +112,7 @@ trait ChildNode
             $viableNextSibling = $viableNextSibling->nextSibling;
         }
 
-        $node = Node::convertNodesToNode($nodes, $this->nodeDocument);
+        $node = $this->convertNodesToNode($nodes, $this->nodeDocument);
 
         if ($this->mParentNode === $parent) {
             $parent->replaceNode($node, $this);

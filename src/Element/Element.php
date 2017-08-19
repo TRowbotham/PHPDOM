@@ -31,10 +31,11 @@ use Rowbot\DOM\Utils;
  */
 class Element extends Node implements AttributeChangeObserver
 {
-    use ChildNode;
+    use ChildNode, ParentNode {
+        ChildNode::convertNodesToNode insteadof ParentNode;
+    }
     use GetElementsBy;
     use NonDocumentTypeChildNode;
-    use ParentNode;
 
     protected $mNamedNodeMap;
     protected $mAttributesList;

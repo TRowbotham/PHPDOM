@@ -1395,57 +1395,6 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
     }
 
     /**
-     * Converts an array of Nodes and strings and creates a single node,
-     * such as a DocumentFragment.  Any strings contained in the array will be
-     * turned in to Text nodes.
-     *
-     * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#converting-nodes-into-a-node
-     *
-     * @param array $aNodes An array of Nodes and strings.
-     *
-     * @param Document $aDocument Context object's node document.
-     *
-     * @return DocumentFragment|Node If $aNodes > 1, then a DocumentFragment is
-     *     returned, otherwise a single Node is returned.
-     */
-    protected static function convertNodesToNode($aNodes, $aDocument)
-    {
-        $node = null;
-
-        // Replace each string in nodes with a new Text node whose data is the
-        // string and node document is document.
-        foreach ($aNodes as &$potentialNode) {
-            if (!($potentialNode instanceof self)) {
-                $potentialNode = new Text(Utils::DOMString($potentialNode));
-                $potentialNode->nodeDocument = $aDocument;
-            }
-        }
-
-        // If nodes contains one node, set node to that node. Otherwise, set
-        // node to a new DocumentFragment whose node document is document, and
-        // then append each node in nodes, if any, to it. Rethrow any
-        // exceptions.
-        if (count($aNodes) == 1) {
-            $node = $aNodes[0];
-        } else {
-            $node = new DocumentFragment();
-            $node->nodeDocument = $aDocument;
-
-            try {
-                foreach ($aNodes as $child) {
-                    $node->appendChild($child);
-                }
-            } catch (DOMException $e) {
-                throw $e;
-            }
-        }
-
-        return $node;
-    }
-
-    /**
      * Gets the name of the node.
      *
      * @internal
