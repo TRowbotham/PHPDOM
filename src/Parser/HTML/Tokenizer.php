@@ -3626,9 +3626,10 @@ class Tokenizer
                 // (in the order they were added to the buffer) to
                 // the current attribute's value.
                 $token->value .= $codepoints;
-                yield;
 
-                break;
+                // Return an empty array so that the yield from statement has
+                // something it can work with.
+                return [];
 
             default:
                 $bufferStream = new CodePointStream($codepoints);

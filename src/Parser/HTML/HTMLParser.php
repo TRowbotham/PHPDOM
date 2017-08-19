@@ -234,10 +234,6 @@ class HTMLParser extends Parser
         $gen = $this->tokenizer->run();
 
         foreach ($gen as $token) {
-            if ($token === null) {
-                continue;
-            }
-
             if ($token instanceof StartTagToken) {
                 $this->tokenizer->setLastEmittedStartTagToken($token);
             } elseif ($token instanceof EndTagToken) {
