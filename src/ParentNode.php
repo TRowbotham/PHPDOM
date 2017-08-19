@@ -13,12 +13,14 @@ trait ParentNode
      * Inserts nodes after the last child of this node, while replacing strings
      * in nodes with equvilant Text nodes.
      *
-     * @param Node|DOMString ...$aNodes One or more Nodes or strings to be
+     * @see https://dom.spec.whatwg.org/#dom-parentnode-append
+     *
+     * @param Node|string ...$nodes One or more Nodes or strings to be
      *     appended to this Node.
      */
-    public function append()
+    public function append(...$nodes)
     {
-        $node = Node::convertNodesToNode(func_get_args(), $this->nodeDocument);
+        $node = Node::convertNodesToNode($nodes, $this->nodeDocument);
         $this->preinsertNode($node, null);
     }
 
@@ -26,12 +28,14 @@ trait ParentNode
      * Inserts nodes before the first child of this node, while replacing
      * strings in nodes with equivalent Text nodes.
      *
-     * @param Node|DOMString ...$aNodes One or more Nodes or strings to be
+     * @see https://dom.spec.whatwg.org/#dom-parentnode-prepend
+     *
+     * @param Node|string ...$nodes One or more Nodes or strings to be
      *     prepended to this node;
      */
-    public function prepend()
+    public function prepend(...$nodes)
     {
-        $node = Node::convertNodesToNode(func_get_args(), $this->nodeDocument);
+        $node = Node::convertNodesToNode($nodes, $this->nodeDocument);
         $this->preinsertNode($node, $this->mChildNodes->first());
     }
 

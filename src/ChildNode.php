@@ -10,15 +10,14 @@ trait ChildNode
     /**
      * Inserts any number of Node objects or strings after this ChildNode.
      *
-     * @link https://dom.spec.whatwg.org/#dom-childnode-after
+     * @see https://dom.spec.whatwg.org/#dom-childnode-after
      *
-     * @param Node|string ...$aNodes A set of Node objects or strings to be
+     * @param Node|string ...$nodes A set of Node objects or strings to be
      *     inserted.
      */
-    public function after()
+    public function after(...$nodes)
     {
         $parent = $this->mParentNode;
-        $nodes = func_get_args();
 
         if (!$parent) {
             return;
@@ -41,15 +40,14 @@ trait ChildNode
     /**
      * Inserts any number of Node objects or strings before this ChildNode.
      *
-     * @link https://dom.spec.whatwg.org/#dom-childnode-before
+     * @see https://dom.spec.whatwg.org/#dom-childnode-before
      *
-     * @param  Node|string ...$aNodes A set of Node objects or strings to be
+     * @param Node|string ...$nodes A set of Node objects or strings to be
      *     inserted.
      */
-    public function before()
+    public function before(...$nodes)
     {
         $parent = $this->mParentNode;
-        $nodes = func_get_args();
 
         if (!$parent) {
             return;
@@ -65,19 +63,17 @@ trait ChildNode
             $viablePreviousSibling = $viablePreviousSibling->previousSibling;
         }
 
-        $node = Node::convertNodesToNode(
-            func_get_args(),
-            $this->nodeDocument
-        );
-        $viablePreviousSibling = $viablePreviousSibling ?
-            $viablePreviousSibling->nextSibling : $parent->firstChild;
-        $this->mParentNode->preinsertNode($node, $viablePreviousSibling);
+        $node = Node::convertNodesToNode($nodes, $this->nodeDocument);
+        $viablePreviousSibling = $viablePreviousSibling
+            ? $viablePreviousSibling->nextSibling
+            : $parent->firstChild;
+        $parent->preinsertNode($node, $viablePreviousSibling);
     }
 
     /**
      * Removes this ChildNode from its ParentNode.
      *
-     * @link https://dom.spec.whatwg.org/#dom-childnode-remove
+     * @see https://dom.spec.whatwg.org/#dom-childnode-remove
      */
     public function remove()
     {
@@ -91,15 +87,14 @@ trait ChildNode
     /**
      * Replaces this ChildNode with any number of Node objects or strings.
      *
-     * @link https://dom.spec.whatwg.org/#dom-childnode-replacewith
+     * @see https://dom.spec.whatwg.org/#dom-childnode-replacewith
      *
-     * @param Node|string ...$aNodes A set of Node objects or strings to be
+     * @param Node|string ...$nodes A set of Node objects or strings to be
      *     inserted in place of this ChildNode.
      */
-    public function replaceWith()
+    public function replaceWith(...$nodes)
     {
         $parent = $this->mParentNode;
-        $nodes = func_get_args();
 
         if (!$parent) {
             return;
