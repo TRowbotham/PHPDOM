@@ -5098,37 +5098,37 @@ class TreeBuilder
      *
      * @see https://html.spec.whatwg.org/multipage/syntax.html#html-integration-point
      *
-     * @param Node $aNode [description]
+     * @param Node $node
      *
      * @return bool
      */
-    protected function isHTMLIntegrationPoint(Node $aNode)
+    private function isHTMLIntegrationPoint(Node $node)
     {
-        if ($aNode instanceof Element) {
-            $localName = $aNode->localName;
-            $namespace = $aNode->namespaceURI;
-            $token = $this->tokenRepository[$aNode];
+        if (!$node instanceof Element) {
+            return false;
+        }
 
-            if ($localName === 'annotaion-xml' &&
-                $namespace === Namespaces::MATHML
-            ) {
-                foreach ($token->attributes as $attr) {
-                    if ($attr->name === 'encoding') {
-                        $value = $attr->value;
+        $localName = $node->localName;
+        $namespace = $node->namespaceURI;
+        $token = $this->tokenRepository[$node];
 
-                        if (strcasecmp($value, 'text/html') === 0 ||
-                            strcasecmp($value, 'application/xhtml+xml') === 0
-                        ) {
-                            return true;
-                        }
-                    }
-                }
+        if ($namespace === Namespaces::MATHML) {
+            if ($localName !== 'annotaion-xml') {
+                return false;
             }
 
-            if (($localName === 'foreignObject' &&
-                    $namespace === Namespaces::SVG) ||
-                ($localName === 'desc' && $namespace === Namespaces::SVG) ||
-                ($localName === 'title' && $namespace === Namespaces::SVG)
+            foreach ($token->attributes as $attr) {
+                if ($attr->name === 'encoding' &&
+                    (strcasecmp($attr->value, 'text/html') ||
+                    strcasecmp($attr->value, 'application/xhtml+xml'))
+                ) {
+                    return true;
+                }
+            }
+        } elseif ($namespace === Namespaces::SVG) {
+            if ($localName === 'foreignObject' ||
+                $localName === 'desc' ||
+                $localName === 'title'
             ) {
                 return true;
             }
