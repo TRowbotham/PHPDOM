@@ -5171,118 +5171,124 @@ class TreeBuilder
     }
 
     /**
+     * Returns whether or not the element has special parsing rules.
+     *
      * @see https://html.spec.whatwg.org/multipage/syntax.html#special
-     * @param  Node    $aNode [description]
-     * @return boolean        [description]
+     *
+     * @param  Node $node
+     *
+     * @return bool
      */
-    protected function isSpecialNode(Node $aNode)
+    private function isSpecialNode(Node $node)
     {
-        if ($aNode instanceof Element) {
-            $namespace = $aNode->namespaceURI;
+        if (!$node instanceof Element) {
+            return false;
+        }
 
-            if ($namespace === Namespaces::HTML) {
-                switch ($aNode->localName) {
-                    case 'address':
-                    case 'applet':
-                    case 'area':
-                    case 'article':
-                    case 'aside':
-                    case 'base':
-                    case 'basefont':
-                    case 'bgsound':
-                    case 'blockquote':
-                    case 'body':
-                    case 'br':
-                    case 'button':
-                    case 'caption':
-                    case 'center':
-                    case 'col':
-                    case 'colgroup':
-                    case 'dd':
-                    case 'details':
-                    case 'dir':
-                    case 'div':
-                    case 'dl':
-                    case 'dt':
-                    case 'embed':
-                    case 'fieldset':
-                    case 'figcaption':
-                    case 'figure':
-                    case 'footer':
-                    case 'form':
-                    case 'frame':
-                    case 'frameset':
-                    case 'h1':
-                    case 'h2':
-                    case 'h3':
-                    case 'h4':
-                    case 'h5':
-                    case 'h6':
-                    case 'head':
-                    case 'header':
-                    case 'hgroup':
-                    case 'hr':
-                    case 'html':
-                    case 'iframe':
-                    case 'img':
-                    case 'input':
-                    case 'keygen':
-                    case 'li':
-                    case 'link':
-                    case 'listing':
-                    case 'main':
-                    case 'marquee':
-                    case 'menu':
-                    case 'meta':
-                    case 'nav':
-                    case 'noembed':
-                    case 'noframes':
-                    case 'noscript':
-                    case 'object':
-                    case 'ol':
-                    case 'p':
-                    case 'param':
-                    case 'plaintext':
-                    case 'pre':
-                    case 'script':
-                    case 'section':
-                    case 'select':
-                    case 'source':
-                    case 'style':
-                    case 'summary':
-                    case 'table':
-                    case 'tbody':
-                    case 'td':
-                    case 'template':
-                    case 'textarea':
-                    case 'tfoot':
-                    case 'th':
-                    case 'thead':
-                    case 'title':
-                    case 'tr':
-                    case 'track':
-                    case 'ul':
-                    case 'wbr':
-                    case 'xmp':
-                        return true;
-                }
-            } elseif ($namespace === Namespaces::MATHML) {
-                switch ($aNode->localName) {
-                    case 'mi':
-                    case 'mo':
-                    case 'mn':
-                    case 'ms':
-                    case 'mtext':
-                    case 'annotation-xml':
-                        return true;
-                }
-            } elseif ($namespace === Namespaces::SVG) {
-                switch ($aNode->localName) {
-                    case 'foreignObject':
-                    case 'desc':
-                    case 'title':
-                        return true;
-                }
+        $namespace = $node->namespaceURI;
+
+        if ($namespace === Namespaces::HTML) {
+            switch ($node->localName) {
+                case 'address':
+                case 'applet':
+                case 'area':
+                case 'article':
+                case 'aside':
+                case 'base':
+                case 'basefont':
+                case 'bgsound':
+                case 'blockquote':
+                case 'body':
+                case 'br':
+                case 'button':
+                case 'caption':
+                case 'center':
+                case 'col':
+                case 'colgroup':
+                case 'dd':
+                case 'details':
+                case 'dir':
+                case 'div':
+                case 'dl':
+                case 'dt':
+                case 'embed':
+                case 'fieldset':
+                case 'figcaption':
+                case 'figure':
+                case 'footer':
+                case 'form':
+                case 'frame':
+                case 'frameset':
+                case 'h1':
+                case 'h2':
+                case 'h3':
+                case 'h4':
+                case 'h5':
+                case 'h6':
+                case 'head':
+                case 'header':
+                case 'hgroup':
+                case 'hr':
+                case 'html':
+                case 'iframe':
+                case 'img':
+                case 'input':
+                case 'keygen':
+                case 'li':
+                case 'link':
+                case 'listing':
+                case 'main':
+                case 'marquee':
+                case 'menu':
+                case 'meta':
+                case 'nav':
+                case 'noembed':
+                case 'noframes':
+                case 'noscript':
+                case 'object':
+                case 'ol':
+                case 'p':
+                case 'param':
+                case 'plaintext':
+                case 'pre':
+                case 'script':
+                case 'section':
+                case 'select':
+                case 'source':
+                case 'style':
+                case 'summary':
+                case 'table':
+                case 'tbody':
+                case 'td':
+                case 'template':
+                case 'textarea':
+                case 'tfoot':
+                case 'th':
+                case 'thead':
+                case 'title':
+                case 'tr':
+                case 'track':
+                case 'ul':
+                case 'wbr':
+                case 'xmp':
+                    return true;
+            }
+        } elseif ($namespace === Namespaces::MATHML) {
+            switch ($node->localName) {
+                case 'mi':
+                case 'mo':
+                case 'mn':
+                case 'ms':
+                case 'mtext':
+                case 'annotation-xml':
+                    return true;
+            }
+        } elseif ($namespace === Namespaces::SVG) {
+            switch ($node->localName) {
+                case 'foreignObject':
+                case 'desc':
+                case 'title':
+                    return true;
             }
         }
 
