@@ -4783,7 +4783,7 @@ class TreeBuilder
      *
      * @see https://html.spec.whatwg.org/multipage/syntax.html#appropriate-place-for-inserting-a-node
      *
-     * @param Node|null $aOverrideTarget Optional argument. When given, it
+     * @param Node|null $overrideTarget (optional) When given, it
      *     overrides the target insertion point for the node. Default value is
      *     null.
      *
@@ -4791,12 +4791,12 @@ class TreeBuilder
      *     be inserted. The second index contains where, relative to the node
      *     in the first index that, the node to be inserted will be inserted.
      */
-    protected function getAppropriatePlaceForInsertingNode(
-        Node $aOverrideTarget = null
+    private function getAppropriatePlaceForInsertingNode(
+        Node $overrideTarget = null
     ) {
         // If there was an override target specified, then let target be the
         // override target. Otherwise, let target be the current node.
-        $target = $aOverrideTarget ?: $this->openElements->bottom();
+        $target = $overrideTarget ?: $this->openElements->bottom();
 
         // NOTE: Foster parenting happens when content is misnested in tables.
         if ($this->fosterParenting && ($target instanceof HTMLTableElement ||
@@ -4807,7 +4807,6 @@ class TreeBuilder
             $lastTable = null;
             $lastTableIndex = 0;
             $lastTemplateIndex = 0;
-            $abortSubSteps = false;
 
             foreach ($this->openElements as $key => $element) {
                 if ($element instanceof HTMLTemplateElement &&
@@ -4831,33 +4830,34 @@ class TreeBuilder
                 }
             }
 
-            $templateLowerThanTable = ($lastTemplate !== null &&
-                $lastTable === null) || ($lastTemplate && $lastTable &&
-                $lastTemplateIndex > $lastTableIndex);
+            while (true) {
+                if ($lastTemplate &&
+                    (!$lastTable || $lastTemplateIndex > $lastTableIndex)
+                ) {
+                    $adjustedInsertionLocation = [
+                        $lastTemplate->content,
+                        'beforeend'
+                    ];
+                    break;
+                }
 
-            if ($lastTemplate &&
-                ($lastTable === null || ($lastTable && $templateLowerThanTable))
-            ) {
-                $adjustedInsertionLocation = [
-                    $lastTemplate->content,
-                    'beforeend'
-                ];
-                $abortSubSteps = true;
-            } elseif ($lastTable === null) {
-                // Fragment case
-                $adjustedInsertionLocation = [
-                    $this->openElements[0],
-                    'beforeend'
-                ];
-                $abortSubSteps = true;
-            } elseif ($lastTable->parentNode) {
-                $adjustedInsertionLocation = [$lastTable, 'beforebegin'];
-                $abortSubSteps = true;
-            }
+                if ($lastTable === null) {
+                    // Fragment case
+                    $adjustedInsertionLocation = [
+                        $this->openElements[0],
+                        'beforeend'
+                    ];
+                    break;
+                }
 
-            if (!$abortSubSteps) {
+                if ($lastTable->parentNode) {
+                    $adjustedInsertionLocation = [$lastTable, 'beforebegin'];
+                    break;
+                }
+
                 $previousElement = $this->openElements[$lastTableIndex - 1];
                 $adjustedInsertionLocation = [$previousElement, 'beforeend'];
+                break;
             }
         } else {
             $adjustedInsertionLocation = [$target, 'beforeend'];
