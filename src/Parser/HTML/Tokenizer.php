@@ -143,7 +143,7 @@ class Tokenizer
                         // Parse error.
                         // Emit a U+FFFD REPLACEMENT CHARACTER character token.
                         yield new CharacterToken(self::REPLACEMENT_CHAR);
-                    } elseif ($c === $this->inputStream->isEoS()) {
+                    } elseif ($this->inputStream->isEoS()) {
                         // Emit an end-of-file token.
                         yield new EOFToken();
                     } else {
