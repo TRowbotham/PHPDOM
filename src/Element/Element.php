@@ -111,7 +111,7 @@ class Element extends Node implements AttributeChangeObserver
                 // string).
                 $fakeNode = self::create($this, 'fake', Namespaces::HTML);
                 $fakeNode->mOwnerDocument = $this->mOwnerDocument;
-                $fakeNode->mChildNodes[] = $this;
+                $fakeNode->mChildNodes->append($this);
 
                 return ParserFactory::serializeFragment($fakeNode, true);
 
