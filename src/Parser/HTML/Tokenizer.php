@@ -234,10 +234,7 @@ class Tokenizer
                         // Create a new start tag token, set its tag name to the
                         // empty string. Reconsume in the tag name state.
                         $tagToken = new StartTagToken('');
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::TAG_NAME;
                     } elseif ($c === '?') {
@@ -245,10 +242,7 @@ class Tokenizer
                         // Create a comment token whose data is the empty
                         // string. Reconsume in the bogus comment state.
                         $commentToken = new CommentToken('');
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::BOGUS_COMMENT;
                     } else {
@@ -256,10 +250,7 @@ class Tokenizer
                         // Emit a U+003C LESS-THAN SIGN character token.
                         // Reconsume in the data state.
                         yield new CharacterToken('<');
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState = TokenizerState::DATA;
                     }
 
@@ -273,10 +264,7 @@ class Tokenizer
                         // Create a new end tag token, set its tag name to the
                         // empty string. Reconsume in the tag name state.
                         $tagToken = new EndTagToken('');
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::TAG_NAME;
                     } elseif ($c === '>') {
@@ -290,10 +278,7 @@ class Tokenizer
                         // data state.
                         yield new CharacterToken('<');
                         yield new CharacterToken('/');
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::DATA;
                     } else {
@@ -301,10 +286,7 @@ class Tokenizer
                         // Create a comment token whose data is the empty
                         // string. Reconsume in the bogus comment state.
                         $commentToken = new CommentToken('');
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::BOGUS_COMMENT;
                     }
@@ -344,10 +326,7 @@ class Tokenizer
                     } elseif ($this->inputStream->isEoS()) {
                         // Parse error.
                         // Reconsume in the data state.
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState = TokenizerState::DATA;
                     } else {
                         // Append the current input character to the current tag
@@ -371,10 +350,7 @@ class Tokenizer
                         // Emit a U+003C LESS-THAN SIGN character token.
                         // Reconsume in the RCDATA state.
                         yield new CharacterToken('<');
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::RCDATA;
                     }
@@ -390,10 +366,7 @@ class Tokenizer
                         // empty string. Reconsume in the RCDATA end tag name
                         // state.
                         $tagToken = new EndTagToken('');
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::RCDATA_END_TAG_NAME;
                     } else {
@@ -402,10 +375,7 @@ class Tokenizer
                         // RCDATA state.
                         yield new CharacterToken('<');
                         yield new CharacterToken('/');
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::RCDATA;
                     }
@@ -444,10 +414,7 @@ class Tokenizer
                                 );
                             }
 
-                            $this->inputStream->seek(
-                                -1,
-                                CodePointStream::SEEK_RELATIVE
-                            );
+                            $this->inputStream->seek(-1);
                             $this->state->tokenizerState =
                                 TokenizerState::RCDATA;
                         }
@@ -474,10 +441,7 @@ class Tokenizer
                                 );
                             }
 
-                            $this->inputStream->seek(
-                                -1,
-                                CodePointStream::SEEK_RELATIVE
-                            );
+                            $this->inputStream->seek(-1);
                             $this->state->tokenizerState =
                                 TokenizerState::RCDATA;
                         }
@@ -505,10 +469,7 @@ class Tokenizer
                                 );
                             }
 
-                            $this->inputStream->seek(
-                                -1,
-                                CodePointStream::SEEK_RELATIVE
-                            );
+                            $this->inputStream->seek(-1);
                             $this->state->tokenizerState =
                                 TokenizerState::RCDATA;
                         }
@@ -539,10 +500,7 @@ class Tokenizer
                             yield new CharacterToken($streamBuffer->get());
                         }
 
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::RCDATA;
                     }
@@ -563,10 +521,7 @@ class Tokenizer
                         // Emit a U+003C LESS-THAN SIGN character token.
                         // Reconsume in the RAWTEXT state.
                         yield new CharacterToken('<');
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::RAWTEXT;
                     }
@@ -582,10 +537,7 @@ class Tokenizer
                         // empty string. Reconsume in the RAWTEXT end tag name
                         // state.
                         $tagToken = new EndTagToken('');
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::RAWTEXT_END_TAG_NAME;
                     } else {
@@ -594,10 +546,7 @@ class Tokenizer
                         // RAWTEXT state.
                         yield new CharacterToken('<');
                         yield new CharacterToken('/');
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::RAWTEXT;
                     }
@@ -636,10 +585,7 @@ class Tokenizer
                                 );
                             }
 
-                            $this->inputStream->seek(
-                                -1,
-                                CodePointStream::SEEK_RELATIVE
-                            );
+                            $this->inputStream->seek(-1);
                             $this->state->tokenizerState =
                                 TokenizerState::RAWTEXT;
                         }
@@ -667,10 +613,7 @@ class Tokenizer
                                 );
                             }
 
-                            $this->inputStream->seek(
-                                -1,
-                                CodePointStream::SEEK_RELATIVE
-                            );
+                            $this->inputStream->seek(-1);
                             $this->state->tokenizerState =
                                 TokenizerState::RAWTEXT;
                         }
@@ -699,10 +642,7 @@ class Tokenizer
                                 );
                             }
 
-                            $this->inputStream->seek(
-                                -1,
-                                CodePointStream::SEEK_RELATIVE
-                            );
+                            $this->inputStream->seek(-1);
                             $this->state->tokenizerState =
                                 TokenizerState::RAWTEXT;
                         }
@@ -734,10 +674,7 @@ class Tokenizer
                             yield new CharacterToken($bufferStream->get());
                         }
 
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::RAWTEXT;
                     }
@@ -766,10 +703,7 @@ class Tokenizer
                         // Emit a U+003C LESS-THAN SIGN character token.
                         // Reconsume in the script data state.
                         yield new CharacterToken('<');
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::SCRIPT_DATA;
                     }
@@ -785,10 +719,7 @@ class Tokenizer
                         // empty string. Reconsume in the script data end tag
                         // name state.
                         $tagToken = new EndTagToken('');
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::SCRIPT_DATA_END_TAG_NAME;
                     } else {
@@ -797,10 +728,7 @@ class Tokenizer
                         // script data state.
                         yield new CharacterToken('<');
                         yield new CharacterToken('/');
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::SCRIPT_DATA;
                     }
@@ -839,10 +767,7 @@ class Tokenizer
                                 );
                             }
 
-                            $this->inputStream->seek(
-                                -1,
-                                CodePointStream::SEEK_RELATIVE
-                            );
+                            $this->inputStream->seek(-1);
                             $this->state->tokenizerState =
                                 TokenizerState::SCRIPT_DATA;
                         }
@@ -870,10 +795,7 @@ class Tokenizer
                                 );
                             }
 
-                            $this->inputStream->seek(
-                                -1,
-                                CodePointStream::SEEK_RELATIVE
-                            );
+                            $this->inputStream->seek(-1);
                             $this->state->tokenizerState =
                                 TokenizerState::SCRIPT_DATA;
                         }
@@ -902,10 +824,7 @@ class Tokenizer
                                 );
                             }
 
-                            $this->inputStream->seek(
-                                -1,
-                                CodePointStream::SEEK_RELATIVE
-                            );
+                            $this->inputStream->seek(-1);
                             $this->state->tokenizerState =
                                 TokenizerState::SCRIPT_DATA;
                         }
@@ -937,10 +856,7 @@ class Tokenizer
                             yield new CharacterToken($bufferStream->get());
                         }
 
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::SCRIPT_DATA;
                     }
@@ -959,10 +875,7 @@ class Tokenizer
                         yield new CharacterToken('-');
                     } else {
                         // Reconsume in the script data state.
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::SCRIPT_DATA;
                     }
@@ -981,10 +894,7 @@ class Tokenizer
                         yield new CharacterToken('-');
                     } else {
                         // Reconsume in the script data state.
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::SCRIPT_DATA;
                     }
@@ -1011,10 +921,7 @@ class Tokenizer
                     } elseif ($this->inputStream->isEoS()) {
                         // Parse error.
                         // Reconsume in the data state.
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState = TokenizerState::DATA;
                     } else {
                         // Emit the current input character as a character token.
@@ -1046,10 +953,7 @@ class Tokenizer
                     } elseif ($this->inputStream->isEoS()) {
                         // Parse error.
                         // Reconsume in the data state.
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState = TokenizerState::DATA;
                     } else {
                         // Switch to the script data escaped state. Emit the
@@ -1088,10 +992,7 @@ class Tokenizer
                     } elseif ($this->inputStream->isEoS()) {
                         // Parse error.
                         // Reconsume in the data state.
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState = TokenizerState::DATA;
                     } else {
                         // Switch to the script data escaped state. Emit the
@@ -1119,20 +1020,14 @@ class Tokenizer
                         // the script data double escape start state.
                         $buffer = '';
                         yield new CharacterToken('<');
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPE_START;
                     } else {
                         // Emit a U+003C LESS-THAN SIGN character token.
                         // Reconsume in the script data escaped state.
                         yield new CharacterToken('<');
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::SCRIPT_DATA_ESCAPED;
                     }
@@ -1149,10 +1044,7 @@ class Tokenizer
                         // token yet; further details will be filled in before
                         // it is emitted.)
                         $tagToken = new EndTagToken();
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::SCRIPT_DATA_ESCAPED_END_TAG_NAME;
                     } else {
@@ -1161,10 +1053,7 @@ class Tokenizer
                         // script data escaped state.
                         yield new CharacterToken('<');
                         yield new CharacterToken('/');
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::SCRIPT_DATA_ESCAPED;
                     }
@@ -1203,10 +1092,7 @@ class Tokenizer
                                 );
                             }
 
-                            $this->inputStream->seek(
-                                -1,
-                                CodePointStream::SEEK_RELATIVE
-                            );
+                            $this->inputStream->seek(-1);
                             $this->state->tokenizerState =
                                 TokenizerState::SCRIPT_DATA;
                         }
@@ -1234,10 +1120,7 @@ class Tokenizer
                                 );
                             }
 
-                            $this->inputStream->seek(
-                                -1,
-                                CodePointStream::SEEK_RELATIVE
-                            );
+                            $this->inputStream->seek(-1);
                             $this->state->tokenizerState =
                                 TokenizerState::SCRIPT_DATA;
                         }
@@ -1266,10 +1149,7 @@ class Tokenizer
                                 );
                             }
 
-                            $this->inputStream->seek(
-                                -1,
-                                CodePointStream::SEEK_RELATIVE
-                            );
+                            $this->inputStream->seek(-1);
                             $this->state->tokenizerState =
                                 TokenizerState::SCRIPT_DATA;
                         }
@@ -1301,10 +1181,7 @@ class Tokenizer
                             yield new CharacterToken($bufferStream->get());
                         }
 
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::SCRIPT_DATA;
                     }
@@ -1350,10 +1227,7 @@ class Tokenizer
                         yield new CharacterToken($c);
                     } else {
                         // Reconsume in the script data escaped state.
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::SCRIPT_DATA_ESCAPED;
                     }
@@ -1384,10 +1258,7 @@ class Tokenizer
                     } elseif ($this->inputStream->isEoS()) {
                         // Parse error.
                         // Reconsume in the data state.
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState = TokenizerState::DATA;
                     } else {
                         // Emit the current input character as a character
@@ -1424,10 +1295,7 @@ class Tokenizer
                     } elseif ($this->inputStream->isEoS()) {
                         // Parse error.
                         // Reconsume in the data state.
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState = TokenizerState::DATA;
                     } else {
                         // Switch to the script data double escaped state. Emit
@@ -1469,10 +1337,7 @@ class Tokenizer
                     } elseif ($this->inputStream->isEoS()) {
                         // Parse error.
                         // Reconsume in the data state.
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState = TokenizerState::DATA;
                     } else {
                         // Switch to the script data double escaped state. Emit
@@ -1498,10 +1363,7 @@ class Tokenizer
                         yield new CharacterToken('/');
                     } else {
                         // Reconsume in the script data double escaped state.
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPED;
                     }
@@ -1547,10 +1409,7 @@ class Tokenizer
                         yield new CharacterToken($c);
                     } else {
                         // Reconsume in the script data double escaped state.
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPED;
                     }
@@ -1571,10 +1430,7 @@ class Tokenizer
                         $this->inputStream->isEoS()
                     ) {
                         // Reconsume in the after attribute name state.
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::AFTER_ATTRIBUTE_NAME;
                     } elseif ($c === '=') {
@@ -1593,10 +1449,7 @@ class Tokenizer
                         // Reconsume in the attribute name state.
                         $attributeToken = new AttributeToken('', '');
                         $tagToken->attributes->push($attributeToken);
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::ATTRIBUTE_NAME;
                     }
@@ -1617,10 +1470,7 @@ class Tokenizer
                         $this->inputStream->isEoS()
                     ) {
                         // Reconsume in the after attribute name state.
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $state = TokenizerState::AFTER_ATTRIBUTE_NAME;
                         $this->state->tokenizerState = $state;
                     } elseif ($c === '=') {
@@ -1696,10 +1546,7 @@ class Tokenizer
                     } elseif ($this->inputStream->isEoS()) {
                         // Parse error.
                         // Reconsume in the data state.
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState = TokenizerState::DATA;
                     } else {
                         // Start a new attribute in the current tag token. Set
@@ -1707,10 +1554,7 @@ class Tokenizer
                         // Reconsume in the attribute name state.
                         $attributeToken = new AttributeToken('', '');
                         $tagToken->attributes->push($attributeToken);
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::ATTRIBUTE_NAME;
                     }
@@ -1738,18 +1582,12 @@ class Tokenizer
                     } elseif ($c === '>') {
                         // Parse error.
                         // Treat it as per the "anything else" entry below.
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::ATTRIBUTE_VALUE_UNQUOTED;
                     } else {
                         // Reconsume in the attribute value (unquoted) state.
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::ATTRIBUTE_VALUE_UNQUOTED;
                     }
@@ -1780,10 +1618,7 @@ class Tokenizer
                     } elseif ($this->inputStream->isEoS()) {
                         // Parse error.
                         // Reconsume in the data state.
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState = TokenizerState::DATA;
                     } else {
                         // Append the current input character to the current
@@ -1817,10 +1652,7 @@ class Tokenizer
                     } elseif ($this->inputStream->isEoS()) {
                         // Parse error.
                         // Reconsume in the data state.
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState = TokenizerState::DATA;
                     } else {
                         // Append the current input character to the current
@@ -1870,10 +1702,7 @@ class Tokenizer
                     } elseif ($this->inputStream->isEoS()) {
                         // Parse error.
                         // Reconsume in the data state.
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState = TokenizerState::DATA;
                     } else {
                         // Append the current input character to the current
@@ -1906,19 +1735,13 @@ class Tokenizer
                     } elseif ($this->inputStream->isEoS()) {
                         // Parse error.
                         // Reconsume in the data state.
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::DATA;
                     } else {
                         // Parse error.
                         // Reconsume in the before attribute name state.
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::BEFORE_ATTRIBUTE_NAME;
                     }
@@ -1938,19 +1761,13 @@ class Tokenizer
                     } elseif ($this->inputStream->isEoS()) {
                         // Parse error.
                         // Reconsume in the data state.
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::DATA;
                     } else {
                         // Parse error.
                         // Reconsume in the before attribute name state.
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::BEFORE_ATTRIBUTE_NAME;
                     }
@@ -1969,10 +1786,7 @@ class Tokenizer
                     } elseif ($this->inputStream->isEoS()) {
                         // Emit the comment. Reconsume in the data state.
                         yield $commentToken;
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState = TokenizerState::DATA;
                     } elseif ($c === "\0") {
                         // Append a U+FFFD REPLACEMENT CHARACTER character to
@@ -2050,10 +1864,7 @@ class Tokenizer
                         yield $commentToken;
                     } else {
                         // Reconsume in the comment state.
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::COMMENT;
                     }
@@ -2077,10 +1888,7 @@ class Tokenizer
                         // Parse error.
                         // Emit the comment token. Reconsume in the data state.
                         yield $commentToken;
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState = TokenizerState::DATA;
                     } else {
                         // Append a U+002D HYPHEN-MINUS character (-) to the
@@ -2116,10 +1924,7 @@ class Tokenizer
                         // Parse error.
                         // Emit the comment token. Reconsume in the data state.
                         yield $commentToken;
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState = TokenizerState::DATA;
                     } else {
                         // Append the current input character to the comment
@@ -2146,10 +1951,7 @@ class Tokenizer
                         $commentToken->data .= $c;
                     } else {
                         // Reconsume in the comment state.
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::COMMENT;
                     }
@@ -2166,10 +1968,7 @@ class Tokenizer
                             TokenizerState::COMMENT_LESS_THAN_SIGN_BANG_DASH;
                     } else {
                         //Reconsume in the comment state.
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::COMMENT;
                     }
@@ -2187,10 +1986,7 @@ class Tokenizer
                             TokenizerState::COMMENT_LESS_THAN_SIGN_BANG_DASH_DASH;
                     } else {
                         // Reconsume in the comment end dash state.
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::COMMENT_END_DASH;
                     }
@@ -2203,19 +1999,13 @@ class Tokenizer
 
                     if ($c === '>' || $this->inputStream->isEoS()) {
                         // Reconsume in the comment end state.
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::COMMENT_END;
                     } else {
                         // Parse error.
                         // Reconsume in the comment end state.
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::COMMENT_END;
                     }
@@ -2234,10 +2024,7 @@ class Tokenizer
                         // Parse error.
                         // Emit the comment token. Reconsume in the data state.
                         yield $commentToken;
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState = TokenizerState::DATA;
                     } else {
                         // Append a U+002D HYPHEN-MINUS character (-) to the
@@ -2268,20 +2055,14 @@ class Tokenizer
                     } elseif ($this->inputStream->isEoS()) {
                         // Parse error.
                         // Emit the comment token. Reconsume in the data state.
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState = TokenizerState::DATA;
                     } else {
                         // Parse error.
                         // Append two U+002D HYPHEN-MINUS characters (-) to the
                         // comment token's data. Reconsume in the comment state.
                         $commentToken->data .= '--';
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::COMMENT;
                     }
@@ -2307,10 +2088,7 @@ class Tokenizer
                         // Parse error.
                         // Emit the comment token. Reconsume in the data state.
                         yield $commentToken;
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState = TokenizerState::DATA;
                     } else {
                         // Append two U+002D HYPHEN-MINUS characters (-),
@@ -2343,18 +2121,12 @@ class Tokenizer
                         $doctypeToken = new DoctypeToken();
                         $doctypeToken->setQuirksMode('on');
                         yield $doctypeToken;
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState = TokenizerState::DATA;
                     } else {
                         // Parse error.
                         // Reconsume in the before DOCTYPE name state.
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::BEFORE_DOCTYPE_NAME;
                     }
@@ -2404,10 +2176,7 @@ class Tokenizer
                         $doctypeToken = new DoctypeToken();
                         $doctypeToken->setQuirksMode('on');
                         yield $doctypeToken;
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState = TokenizerState::DATA;
                     } else {
                         // Create a new DOCTYPE token. Set the token's name to
@@ -2454,10 +2223,7 @@ class Tokenizer
                         // that DOCTYPE token. Reconsume in the data state.
                         $doctypeToken->setQuirksMode('on');
                         yield $doctypeToken;
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState = TokenizerState::DATA;
                     } else {
                         // Append the current input character to the current
@@ -2489,10 +2255,7 @@ class Tokenizer
                         // the data state.
                         $doctypeToken->setQuirksMode('on');
                         yield $doctypeToken;
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState = TokenizerState::DATA;
                     } else {
                         $chars = $c . $this->inputStream->peek(5);
@@ -2566,10 +2329,7 @@ class Tokenizer
                         // Set the DOCTYPE token's force-quirks flag to on. Emit
                         // that DOCTYPE token. Reconsume in the data state.
                         yield $doctypeToken;
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState = TokenizerState::DATA;
                     } else {
                         // Parse error.
@@ -2619,10 +2379,7 @@ class Tokenizer
                         // that DOCTYPE token. Reconsume in the data state.
                         $doctypeToken->setQuirksMode('on');
                         yield $doctypeToken;
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState = TokenizerState::DATA;
                     } else {
                         // Parse error.
@@ -2661,10 +2418,7 @@ class Tokenizer
                         // that DOCTYPE token. Reconsume in the data state.
                         $doctypeToken->setQuirksMode('on');
                         yield $doctypeToken;
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState = TokenizerState::DATA;
                     } else {
                         // Append the current input character to the current
@@ -2700,10 +2454,7 @@ class Tokenizer
                         // that DOCTYPE token. Reconsume in the data state.
                         $doctypeToken->setQuirksMode('on');
                         yield $doctypeToken;
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState = TokenizerState::DATA;
                     } else {
                         // Append the current input character to the current
@@ -2753,10 +2504,7 @@ class Tokenizer
                         // that DOCTYPE token. Reconsume in the data state.
                         $doctypeToken->setQuirksMode('on');
                         yield $doctypeToken;
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState = TokenizerState::DATA;
                     } else {
                         // Parse error.
@@ -2804,10 +2552,7 @@ class Tokenizer
                         // that DOCTYPE token. Reconsume in the data state.
                         $doctypeToken->setQuirksMode('on');
                         yield $doctypeToken;
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState = TokenizerState::DATA;
                     } else {
                         // Parse error.
@@ -2861,10 +2606,7 @@ class Tokenizer
                         // that DOCTYPE token. Reconsume in the data state.
                         $doctypeToken->setQuirksMode('on');
                         yield $doctypeToken;
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState = TokenizerState::DATA;
                     } else {
                         // Parse error.
@@ -2914,10 +2656,7 @@ class Tokenizer
                         // that DOCTYPE token. Reconsume in the data state.
                         $doctypeToken->setQuirksMode('on');
                         yield $doctypeToken;
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState = TokenizerState::DATA;
                     } else {
                         // Parse error. Set the DOCTYPE token's force-quirks
@@ -2953,10 +2692,7 @@ class Tokenizer
                         // that DOCTYPE token. Reconsume in the data state.
                         $doctypeToken->setQuirksMode('on');
                         yield $doctypeToken;
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState = TokenizerState::DATA;
                     } else {
                         // Append the current input character to the current
@@ -2992,10 +2728,7 @@ class Tokenizer
                         // that DOCTYPE token. Reconsume in the data state.
                         $doctypeToken->setQuirksMode('on');
                         yield $doctypeToken;
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState = TokenizerState::DATA;
                     } else {
                         // Append the current input character to the current
@@ -3026,10 +2759,7 @@ class Tokenizer
                         // that DOCTYPE token. Reconsume in the data state.
                         $doctypeToken->setQuirksMode('');
                         yield $doctypeToken;
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState = TokenizerState::DATA;
                     } else {
                         // Parse error.
@@ -3052,10 +2782,7 @@ class Tokenizer
                     } elseif ($this->inputStream->isEoS()) {
                         // Emit the DOCTYPE token. Reconsume in the data state.
                         yield $doctypeToken;
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState = TokenizerState::DATA;
                     } else {
                         // Ignore the character.
@@ -3074,10 +2801,7 @@ class Tokenizer
                     } elseif ($this->inputStream->isEoS()) {
                         // Parse error.
                         // Reconsume in the data state.
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState = TokenizerState::DATA;
                     } else {
                         // Emit the current input character as a character token.
@@ -3102,10 +2826,7 @@ class Tokenizer
                         // Emit a U+005D RIGHT SQUARE BRACKET character token.
                         // Reconsume in the CDATA section state.
                         yield new CharacterToken(']');
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::CDATA_SECTION;
                     }
@@ -3126,10 +2847,7 @@ class Tokenizer
                         // Emit two U+005D RIGHT SQUARE BRACKET character
                         // tokens. Reconsume in the CDATA section state.
                         yield new CharacterToken(']');
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::CDATA_SECTION;
                     }
@@ -3142,10 +2860,7 @@ class Tokenizer
                     $c = $this->inputStream->get();
 
                     if (ctype_alnum($c)) {
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::NAMED_CHARACTER_REFERENCE;
                     } elseif ($c === '#') {
@@ -3158,10 +2873,7 @@ class Tokenizer
                             $attributeToken,
                             $returnState
                         );
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState = $returnState;
                     }
 
@@ -3303,17 +3015,11 @@ class Tokenizer
                         }
                     } elseif ($c === ';') {
                         // Reconsume in the return state.
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState = $returnState;
                     } else {
                         // Reconsume in the return state.
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState = $returnState;
                     }
 
@@ -3334,10 +3040,7 @@ class Tokenizer
                     } else {
                         // Reconsume in the decimal character reference start
                         // state.
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::DECIMAL_CHARACTER_REFERENCE_START;
                     }
@@ -3351,10 +3054,7 @@ class Tokenizer
                     if (ctype_xdigit($c)) {
                         // Reconsume in the hexademical character reference
                         // state.
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::HEXADECIMAL_CHARACTER_REFERENCE;
                     } else {
@@ -3365,10 +3065,7 @@ class Tokenizer
                             $attributeToken,
                             $returnState
                         );
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState = $returnState;
                     }
 
@@ -3380,10 +3077,7 @@ class Tokenizer
 
                     if (ctype_digit($c)) {
                         // Reconsume in the decimal character reference state.
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::DECIMAL_CHARACTER_REFERENCE;
                     } else {
@@ -3394,10 +3088,7 @@ class Tokenizer
                             $attributeToken,
                             $returnState
                         );
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState = $returnState;
                     }
 
@@ -3438,10 +3129,7 @@ class Tokenizer
                         // Parse error.
                         // Reconsume in the numeric character reference end
                         // state.
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::NUMERIC_CHARACTER_REFERENCE_END;
                     }
@@ -3467,10 +3155,7 @@ class Tokenizer
                         // Parse error.
                         // Reconsume in the numeric character reference end
                         // state.
-                        $this->inputStream->seek(
-                            -1,
-                            CodePointStream::SEEK_RELATIVE
-                        );
+                        $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::NUMERIC_CHARACTER_REFERENCE_END;
                     }
