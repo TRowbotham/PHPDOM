@@ -403,7 +403,6 @@ class Tokenizer
                             $this->state->tokenizerState =
                                 TokenizerState::BEFORE_ATTRIBUTE_NAME;
                         } else {
-
                             yield new CharacterToken('<');
                             yield new CharacterToken('/');
                             $streamBuffer = new CodePointStream($buffer);
