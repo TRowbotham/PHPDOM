@@ -117,6 +117,7 @@ class Tokenizer
                     } elseif ($this->inputStream->isEoS()) {
                         // Emit an end-of-file token.
                         yield new EOFToken();
+                        return;
                     } else {
                         // Emit the current input character as a character
                         // token.
@@ -146,6 +147,7 @@ class Tokenizer
                     } elseif ($this->inputStream->isEoS()) {
                         // Emit an end-of-file token.
                         yield new EOFToken();
+                        return;
                     } else {
                         // Emit the current input character as a character
                         // token.
@@ -169,6 +171,7 @@ class Tokenizer
                     } elseif ($this->inputStream->isEoS()) {
                         // Emit an end-of-file token.
                         yield new EOFToken();
+                        return;
                     } else {
                         // Emit the current input character as a character
                         // token.
@@ -192,6 +195,7 @@ class Tokenizer
                     } elseif ($this->inputStream->isEoS()) {
                         // Emit an end-of-file token.
                         yield new EOFToken();
+                        return;
                     } else {
                         // Emit the current input character as a character
                         // token.
@@ -211,6 +215,7 @@ class Tokenizer
                     } elseif ($this->inputStream->isEoS()) {
                         // Emit an end-of-file token.
                         yield new EOFToken();
+                        return;
                     } else {
                         // Emit the current input character as a character token.
                         yield new CharacterToken($c);
@@ -3250,7 +3255,7 @@ class Tokenizer
 
                     break;
             }
-        } while (!$this->inputStream->isEoS());
+        } while (true);
     }
 
     /**
