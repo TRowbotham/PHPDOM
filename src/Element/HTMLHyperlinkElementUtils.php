@@ -71,7 +71,7 @@ trait HTMLHyperlinkElementUtils
             return '';
         }
 
-        return $this->url->getOrigin()->serializeAsUnicode();
+        return (string) $this->url->getOrigin();
     }
 
     /**

@@ -106,7 +106,7 @@ class Document extends Node implements Stringable
             case 'lastElementChild':
                 return $this->getLastElementChild();
             case 'origin':
-                return $this->getURL()->getOrigin()->serializeAsUnicode();
+                return (string) $this->getURL()->getOrigin();
             case 'readyState':
                 return $this->readyState;
             default:
