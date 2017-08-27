@@ -47,6 +47,7 @@ use Rowbot\DOM\Parser\Marker;
 use Rowbot\DOM\Parser\Token\CharacterToken;
 use Rowbot\DOM\Parser\Token\CommentToken;
 use Rowbot\DOM\Parser\Token\EndTagToken;
+use Rowbot\DOM\Parser\Token\EOFToken;
 use Rowbot\DOM\Parser\Token\StartTagToken;
 use Rowbot\DOM\Parser\Token\TagToken;
 use Rowbot\DOM\Parser\Token\Token;
@@ -4423,149 +4424,187 @@ class TreeBuilder
 
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#tree-construction-dispatcher
-     * @return [type] [description]
+     *
+     * @param Token $token
+     *
+     * @return void
      */
-    public function run(Token ...$aTokens)
+    public function run(Token $token)
     {
-        foreach ($aTokens as $token) {
-            $tokenType = $token->getType();
+        $useCurrentInsertionMode = false;
 
-            if ($this->openElements->isEmpty() ||
-                (($adjustedCurrentNode =
-                    $this->getAdjustedCurrentNode()) instanceof Element &&
-                    $adjustedCurrentNode->namespaceURI === Namespaces::HTML) ||
-                ($this->isMathMLTextIntegrationPoint($adjustedCurrentNode) &&
-                    ($tokenType == Token::CHARACTER_TOKEN ||
-                    ($tokenType == Token::START_TAG_TOKEN &&
-                        (($tagName = $token->tagName) != 'mglyph' &&
-                            $tagName != 'malignmark')))
-                ) ||
-                ($adjustedCurrentNode instanceof Element &&
-                    $adjustedCurrentNode->namespaceURI === Namespaces::MATHML &&
-                    $adjustedCurrentNode->localName === 'annotaion-xml') ||
-                ($this->isHTMLIntegrationPoint($adjustedCurrentNode) &&
-                    ($tokenType == Token::START_TAG_TOKEN ||
-                        $tokenType == Token::CHARACTER_TOKEN)
-                ) ||
-                $tokenType == Token::EOF_TOKEN
-            ) {
-                switch ($this->state->insertionMode) {
-                    case ParserInsertionMode::INITIAL:
-                        $this->initialInsertionMode($token);
-
-                        break;
-
-                    case ParserInsertionMode::BEFORE_HTML:
-                        $this->beforeHTMLInsertionMode($token);
-
-                        break;
-
-                    case ParserInsertionMode::BEFORE_HEAD:
-                        $this->beforeHeadInsertionMode($token);
-
-                        break;
-
-                    case ParserInsertionMode::IN_HEAD:
-                        $this->inHeadInsertionMode($token);
-
-                        break;
-
-                    case ParserInsertionMode::IN_HEAD_NOSCRIPT:
-                        $this->inHeadNoScriptInsertionMode($token);
-
-                        break;
-
-                    case ParserInsertionMode::AFTER_HEAD:
-                        $this->afterHeadInsertionMode($token);
-
-                        break;
-
-                    case ParserInsertionMode::IN_BODY:
-                        $this->inBodyInsertionMode($token);
-
-                        break;
-
-                    case ParserInsertionMode::TEXT:
-                        $this->inTextInsertionMode($token);
-
-                        break;
-
-                    case ParserInsertionMode::IN_TABLE:
-                        $this->inTableInsertionMode($token);
-
-                        break;
-
-                    case ParserInsertionMode::IN_TABLE_TEXT:
-                        $this->inTableTextInsertionMode($token);
-
-                        break;
-
-                    case ParserInsertionMode::IN_CAPTION:
-                        $this->inCaptionInsertionMode($token);
-
-                        break;
-
-                    case ParserInsertionMode::IN_COLUMN_GROUP:
-                        $this->inColumnGroupInsertionMode($token);
-
-                        break;
-
-                    case ParserInsertionMode::IN_TABLE_BODY:
-                        $this->inTableBodyInsertionMode($token);
-
-                        break;
-
-                    case ParserInsertionMode::IN_ROW:
-                        $this->inRowInsertionMode($token);
-
-                        break;
-
-                    case ParserInsertionMode::IN_CELL:
-                        $this->inCellInsertionMode($token);
-
-                        break;
-
-                    case ParserInsertionMode::IN_SELECT:
-                        $this->inSelectInsertionMode($token);
-
-                        break;
-
-                    case ParserInsertionMode::IN_SELECT_IN_TABLE:
-                        $this->inSelectInTableInsertionMode($token);
-
-                        break;
-
-                    case ParserInsertionMode::IN_TEMPLATE:
-                        $this->inTemplateInsertionMode($token);
-
-                        break;
-
-                    case ParserInsertionMode::AFTER_BODY:
-                        $this->afterBodyInsertionMode($token);
-
-                        break;
-
-                    case ParserInsertionMode::IN_FRAMESET:
-                        $this->inFramesetInsertionMode($token);
-
-                        break;
-
-                    case ParserInsertionMode::AFTER_FRAMESET:
-                        $this->afterFramesetInsertionMode($token);
-
-                        break;
-
-                    case ParserInsertionMode::AFTER_AFTER_BODY:
-                        $this->afterAfterBodyInsertionMode($token);
-
-                        break;
-
-                    case ParserInsertionMode::AFTER_AFTER_FRAMESET:
-                        $this->afterAfterFramesetInsertionMode($token);
-                }
-            } else {
-                $this->inForeignContent($token);
+        while (true) {
+            if ($this->openElements->isEmpty()) {
+                $useCurrentInsertionMode = true;
+                break;
             }
+
+            $adjustedCurrentNode = $this->getAdjustedCurrentNode();
+
+            if ($adjustedCurrentNode instanceof Element &&
+                $adjustedCurrentNode->namespaceURI === Namespaces::HTML
+            ) {
+                $useCurrentInsertionMode = true;
+                break;
+            }
+
+            if ($this->isMathMLTextIntegrationPoint($adjustedCurrentNode)) {
+                if ($token instanceof StartTagToken &&
+                    $token->tagName !== 'mglyph' &&
+                    $token->tagName !== 'malignmark'
+                ) {
+                    $useCurrentInsertionMode = true;
+                    break;
+                } elseif ($token instanceof CharacterToken) {
+                    $useCurrentInsertionMode = true;
+                    break;
+                }
+            }
+
+            if ($adjustedCurrentNode instanceof Element &&
+                $adjustedCurrentNode->namespaceURI === Namespaces::MATHML &&
+                $adjustedCurrentNode->localName === 'annotaion-xml' &&
+                $token instanceof StartTagToken &&
+                $token->tagName === 'svg'
+            ) {
+                $useCurrentInsertionMode = true;
+                break;
+            }
+
+            if ($this->isHTMLIntegrationPoint($adjustedCurrentNode) &&
+                ($token instanceof StartTagToken ||
+                    $token instanceof CharacterToken)
+            ) {
+                $useCurrentInsertionMode = true;
+                break;
+            }
+
+            if ($token instanceof EOFToken) {
+                $useCurrentInsertionMode = true;
+                break;
+            }
+
+            break;
+        }
+
+        if (!$useCurrentInsertionMode) {
+            $this->inForeignContent($token);
+            return;
+        }
+
+        switch ($this->state->insertionMode) {
+            case ParserInsertionMode::INITIAL:
+                $this->initialInsertionMode($token);
+
+                break;
+
+            case ParserInsertionMode::BEFORE_HTML:
+                $this->beforeHTMLInsertionMode($token);
+
+                break;
+
+            case ParserInsertionMode::BEFORE_HEAD:
+                $this->beforeHeadInsertionMode($token);
+
+                break;
+
+            case ParserInsertionMode::IN_HEAD:
+                $this->inHeadInsertionMode($token);
+
+                break;
+
+            case ParserInsertionMode::IN_HEAD_NOSCRIPT:
+                $this->inHeadNoScriptInsertionMode($token);
+
+                break;
+
+            case ParserInsertionMode::AFTER_HEAD:
+                $this->afterHeadInsertionMode($token);
+
+                break;
+
+            case ParserInsertionMode::IN_BODY:
+                $this->inBodyInsertionMode($token);
+
+                break;
+
+            case ParserInsertionMode::TEXT:
+                $this->inTextInsertionMode($token);
+
+                break;
+
+            case ParserInsertionMode::IN_TABLE:
+                $this->inTableInsertionMode($token);
+
+                break;
+
+            case ParserInsertionMode::IN_TABLE_TEXT:
+                $this->inTableTextInsertionMode($token);
+
+                break;
+
+            case ParserInsertionMode::IN_CAPTION:
+                $this->inCaptionInsertionMode($token);
+
+                break;
+
+            case ParserInsertionMode::IN_COLUMN_GROUP:
+                $this->inColumnGroupInsertionMode($token);
+
+                break;
+
+            case ParserInsertionMode::IN_TABLE_BODY:
+                $this->inTableBodyInsertionMode($token);
+
+                break;
+
+            case ParserInsertionMode::IN_ROW:
+                $this->inRowInsertionMode($token);
+
+                break;
+
+            case ParserInsertionMode::IN_CELL:
+                $this->inCellInsertionMode($token);
+
+                break;
+
+            case ParserInsertionMode::IN_SELECT:
+                $this->inSelectInsertionMode($token);
+
+                break;
+
+            case ParserInsertionMode::IN_SELECT_IN_TABLE:
+                $this->inSelectInTableInsertionMode($token);
+
+                break;
+
+            case ParserInsertionMode::IN_TEMPLATE:
+                $this->inTemplateInsertionMode($token);
+
+                break;
+
+            case ParserInsertionMode::AFTER_BODY:
+                $this->afterBodyInsertionMode($token);
+
+                break;
+
+            case ParserInsertionMode::IN_FRAMESET:
+                $this->inFramesetInsertionMode($token);
+
+                break;
+
+            case ParserInsertionMode::AFTER_FRAMESET:
+                $this->afterFramesetInsertionMode($token);
+
+                break;
+
+            case ParserInsertionMode::AFTER_AFTER_BODY:
+                $this->afterAfterBodyInsertionMode($token);
+
+                break;
+
+            case ParserInsertionMode::AFTER_AFTER_FRAMESET:
+                $this->afterAfterFramesetInsertionMode($token);
         }
     }
 
