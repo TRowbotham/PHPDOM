@@ -10,21 +10,24 @@
         }
     ],
     "require": {
-        "php": ">=5.6",
-        "ext-mbstring": "*"
+        "php": ">=7.0",
+        "ext-mbstring": "*",
+        "ramsey/uuid": "^3.7"
     },
     "require-dev": {
-        "squizlabs/php_codesniffer": "^2.7",
+        "squizlabs/php_codesniffer": "3.*",
         "symfony/var-dumper": "^3.2",
         "phpunit/phpunit": "^5.7"
     },
     "autoload": {
-        "files": ["src/phpjs.php"],
+        "psr-4": {
+            "Rowbot\\DOM\\": "src/"
+        },
         "exclude-from-classmap": ["tests/"]
     },
     "autoload-dev": {
         "psr-4": {
-            "phpjs\\tests\\": "tests/"
+            "Rowbot\\DOM\\tests\\": "tests/"
         }
     }
 }
