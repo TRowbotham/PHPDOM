@@ -7,11 +7,13 @@ class CodePointStream
     const SEEK_ABSOLUTE = 2;
 
     private $data;
-    private $position;
+    private $currentChar;
+    private $nextChar;
 
     public function __construct($data = '')
     {
-        $this->position = 0;
+        $this->currentChar = 0;
+        $this->nextChar = 0;
 
         if ($data) {
             $this->data = preg_split('//u', $data, -1, PREG_SPLIT_NO_EMPTY);
@@ -45,22 +47,24 @@ class CodePointStream
 
     public function get($count = 1)
     {
-        if (!isset($this->data[$this->position])) {
-            $this->position++;
+        $this->currentChar = $this->nextChar;
 
+        if (!isset($this->data[$this->currentChar])) {
+            ++$this->nextChar;
             return '';
         }
 
         if ($count == 1) {
-            return $this->data[$this->position++];
+            ++$this->nextChar;
+            return $this->data[$this->currentChar];
         }
 
         $str = '';
 
         while ($count--) {
-            $str .= $this->data[$this->position++];
+            $str .= $this->data[$this->nextChar];
 
-            if (!isset($this->data[$this->position])) {
+            if (!isset($this->data[++$this->nextChar])) {
                 break;
             }
         }
@@ -70,15 +74,15 @@ class CodePointStream
 
     public function peek($count = 1)
     {
-        if (!isset($this->data[$this->position])) {
+        if (!isset($this->data[$this->nextChar])) {
             return '';
         }
 
         if ($count == 1) {
-            return $this->data[$this->position];
+            return $this->data[$this->nextChar];
         }
 
-        $position = $this->position;
+        $position = $this->nextChar;
         $str = '';
 
         while ($count--) {
@@ -94,7 +98,7 @@ class CodePointStream
 
     public function isEoS()
     {
-        return !isset($this->data[max(0, $this->position - 1)]);
+        return !isset($this->data[$this->currentChar]);
     }
 
     public function length()
@@ -109,11 +113,12 @@ class CodePointStream
 
     public function seek($count)
     {
-        $this->position += $count;
+        $this->nextChar += $count;
+        $this->currentChar = $this->nextChar;
     }
 
     public function rewind()
     {
-        $this->position = 0;
+        $this->currentChar = 0;
     }
 }
