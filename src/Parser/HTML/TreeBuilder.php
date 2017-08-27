@@ -777,8 +777,10 @@ class TreeBuilder
 
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-inheadnoscript
-     * @param  Token  $aToken [description]
-     * @return [type]         [description]
+     *
+     * @param Token $aToken
+     *
+     * @return void
      */
     protected function inHeadNoScriptInsertionMode(Token $aToken)
     {
@@ -2314,8 +2316,10 @@ class TreeBuilder
 
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#adoption-agency-algorithm
-     * @param  TagToken $aToken [description]
-     * @return [type]           [description]
+     *
+     * @param TagToken $aToken
+     *
+     * @return void
      */
     protected function adoptionAgency(TagToken $aToken)
     {
@@ -2577,7 +2581,7 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-incdata
      *
-     * @param  Token  $aToken The token currently being processed.
+     * @param Token $aToken The token currently being processed.
      */
     protected function inTextInsertionMode(Token $aToken)
     {
@@ -2631,7 +2635,7 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-intable
      *
-     * @param  Token  $aToken The token currently being processed.
+     * @param Token $aToken The token currently being processed.
      */
     protected function inTableInsertionMode(Token $aToken)
     {
@@ -2870,7 +2874,7 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-intabletext
      *
-     * @param  Token  $aToken The token currently being processed.
+     * @param Token $aToken The token currently being processed.
      */
     protected function inTableTextInsertionMode(Token $aToken)
     {
@@ -2930,7 +2934,7 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-incaption
      *
-     * @param  Token  $aToken The token currently being processed.
+     * @param Token $aToken The token currently being processed.
      */
     protected function inCaptionInsertionMode(Token $aToken)
     {
@@ -3044,7 +3048,7 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-incolgroup
      *
-     * @param  Token  $aToken The token currently being processed.
+     * @param Token $aToken The token currently being processed.
      */
     protected function inColumnGroupInsertionMode(Token $aToken)
     {
@@ -3136,7 +3140,7 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-intbody
      *
-     * @param  Token  $aToken The token currently being processed.
+     * @param Token $aToken The token currently being processed.
      */
     protected function inTableBodyInsertionMode(Token $aToken)
     {
@@ -3246,7 +3250,7 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-intr
      *
-     * @param  Token  $aToken The token currently being processed.
+     * @param Token $aToken The token currently being processed.
      */
     protected function inRowInsertionMode(Token $aToken)
     {
@@ -3353,7 +3357,7 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-intd
      *
-     * @param  Token  $aToken The token currently being processed.
+     * @param Token $aToken The token currently being processed.
      */
     protected function inCellInsertionMode(Token $aToken)
     {
@@ -3497,7 +3501,7 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-inselect
      *
-     * @param  Token  $aToken The token currently being processed.
+     * @param Token $aToken The token currently being processed.
      */
     protected function inSelectInsertionMode(Token $aToken)
     {
@@ -3680,7 +3684,7 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-inselectintable
      *
-     * @param  Token  $aToken The token currently being processed.
+     * @param Token $aToken The token currently being processed.
      */
     protected function inSelectInTableInsertionMode(Token $aToken)
     {
@@ -3747,7 +3751,7 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-intemplate
      *
-     * @param  Token  $aToken The token currently being processed.
+     * @param Token $aToken The token currently being processed.
      */
     protected function inTemplateInsertionMode(Token $aToken)
     {
@@ -3885,7 +3889,7 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-afterbody
      *
-     * @param  Token  $aToken The token currently being processed.
+     * @param Token $aToken The token currently being processed.
      */
     protected function afterBodyInsertionMode(Token $aToken)
     {
@@ -3939,7 +3943,7 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-inframeset
      *
-     * @param  Token  $aToken The token currently being processed.
+     * @param Token $aToken The token currently being processed.
      */
     protected function inFramesetInsertionMode(Token $aToken)
     {
@@ -4030,7 +4034,7 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-afterframeset
      *
-     * @param  Token  $aToken The token currently being processed.
+     * @param Token $aToken The token currently being processed.
      */
     protected function afterFramesetInsertionMode(Token $aToken)
     {
@@ -4075,7 +4079,7 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#the-after-after-body-insertion-mode
      *
-     * @param  Token  $aToken The token currently being processed.
+     * @param Token $aToken The token currently being processed.
      */
     protected function afterAfterBodyInsertionMode(Token $aToken)
     {
@@ -4108,7 +4112,7 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#the-after-after-frameset-insertion-mode
      *
-     * @param  Token  $aToken The token currently being processed.
+     * @param Token $aToken The token currently being processed.
      */
     protected function afterAfterFramesetInsertionMode(Token $aToken)
     {
@@ -4145,8 +4149,10 @@ class TreeBuilder
 
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-inforeign
-     * @param  Token  $aToken [description]
-     * @return [type]         [description]
+     *
+     * @param Token $aToken
+     *
+     * @return void
      */
     protected function inForeignContent(Token $aToken)
     {
@@ -4610,8 +4616,10 @@ class TreeBuilder
 
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#adjust-foreign-attributes
-     * @param  TagToken $aToken [description]
-     * @return [type]           [description]
+     *
+     * @param TagToken $aToken
+     *
+     * @return void
      */
     protected function adjustForeignAttributes(TagToken $aToken)
     {
@@ -4643,8 +4651,10 @@ class TreeBuilder
 
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#adjust-mathml-attributes
-     * @param  TagToken $aToken [description]
-     * @return [type]           [description]
+     *
+     * @param TagToken $aToken
+     *
+     * @return void
      */
     protected function adjustMathMLAttributes(TagToken $aToken)
     {
@@ -4658,8 +4668,10 @@ class TreeBuilder
 
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#adjust-svg-attributes
-     * @param  TagToken $aToken [description]
-     * @return [type]           [description]
+     *
+     * @param TagToken $aToken
+     *
+     * @return void
      */
     protected function adjustSVGAttributes(TagToken $aToken)
     {
@@ -4787,7 +4799,8 @@ class TreeBuilder
 
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#generate-implied-end-tags
-     * @param  string $aExcluded [description]
+     *
+     * @param string $aExcluded
      */
     protected function generateImpliedEndTags($aExcluded = '')
     {
@@ -5187,7 +5200,7 @@ class TreeBuilder
      *
      * @see https://html.spec.whatwg.org/multipage/syntax.html#mathml-text-integration-point
      *
-     * @param Node $aNode [description]
+     * @param Node $aNode
      *
      * @return bool
      */
@@ -5214,7 +5227,7 @@ class TreeBuilder
      *
      * @see https://html.spec.whatwg.org/multipage/syntax.html#special
      *
-     * @param  Node $node
+     * @param Node $node
      *
      * @return bool
      */
@@ -5337,9 +5350,11 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#generic-raw-text-element-parsing-algorithm
      * @see https://html.spec.whatwg.org/multipage/syntax.html#generic-rcdata-element-parsing-algorithm
-     * @param  [type] $aToken     [description]
-     * @param  [type] $aAlgorithm [description]
-     * @return [type]             [description]
+     *
+     * @param Token $aToken
+     * @param int   $aAlgorithm
+     *
+     * @return void
      */
     protected function parseGenericTextElement(Token $aToken, $aAlgorithm)
     {
