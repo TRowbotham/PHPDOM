@@ -13,6 +13,7 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
 {
     protected $cache;
     protected $collection;
+    protected $size;
 
     /**
      * Constructor.
@@ -21,6 +22,7 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
     {
         $this->cache = [];
         $this->collection = [];
+        $this->size = 0;
     }
 
     /**
@@ -78,7 +80,7 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
         UniquelyIdentifiable $newItem,
         UniquelyIdentifiable $oldItem = null
     ) {
-        if ($oldItem === null || empty($this->collection)) {
+        if ($oldItem === null || $this->size == 0) {
             $this->append($newItem);
             return;
         }
@@ -103,6 +105,7 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
         $index = array_search($oldItem, $this->collection, true);
         array_splice($this->collection, $index, 0, [$newItem]);
         $this->cache[$newHash] = true;
+        ++$this->size;
     }
 
     /**
@@ -120,7 +123,7 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
         UniquelyIdentifiable $newItem,
         UniquelyIdentifiable $oldItem
     ) {
-        if (end($this->collection) === $oldItem) {
+        if ($this->collection[$this->size - 1] === $oldItem) {
             $this->append($newItem);
             return;
         }
@@ -140,6 +143,7 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
         $index = array_search($oldItem, $this->collection, true);
         array_splice($this->collection, $index + 1, 0, [$newItem]);
         $this->cache[$newHash] = true;
+        ++$this->size;
     }
 
     /**
@@ -161,8 +165,9 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
         }
 
         unset($this->cache[$hash]);
+        --$this->size;
 
-        if (end($this->collection) === $item) {
+        if ($this->collection[$this->size] === $item) {
             array_pop($this->collection);
             return;
         }
@@ -180,6 +185,7 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
     {
         $this->collection = [];
         $this->cache = [];
+        $this->size = 0;
     }
 
     /**
@@ -201,7 +207,7 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
      */
     public function count(): int
     {
-        return count($this->collection);
+        return $this->size;
     }
 
     /**
@@ -211,7 +217,7 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
      */
     public function isEmpty(): bool
     {
-        return empty($this->collection);
+        return $this->size == 0;
     }
 
     /**
@@ -254,6 +260,7 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
 
         $this->collection[] = $item;
         $this->cache[$hash] = true;
+        ++$this->size;
     }
 
     /**
@@ -265,13 +272,14 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
      */
     public function pop()
     {
-        if (empty($this->collection)) {
+        if ($this->size == 0) {
             throw new EmptyStackException();
             return;
         }
 
         $item = array_pop($this->collection);
         unset($this->cache[$item->uuid()->toString()]);
+        --$this->size;
         return $item;
     }
 
@@ -284,12 +292,12 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
      */
     public function top()
     {
-        if (empty($this->collection)) {
+        if ($this->size == 0) {
             throw new EmptyStackException();
             return;
         }
 
-        return end($this->collection);
+        return $this->collection[$this->size - 1];
     }
 
     /**
@@ -301,7 +309,7 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
      */
     public function bottom()
     {
-        if (empty($this->collection)) {
+        if ($this->size == 0) {
             throw new EmptyStackException();
             return;
         }
