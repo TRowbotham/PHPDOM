@@ -196,6 +196,7 @@ class TreeBuilder
         $activeFormattingElements,
         $openElements,
         $templateInsertionModes,
+        $textBuilder,
         $tokenRepository,
         bool $isFragmentCase,
         bool $isScriptingEnabled,
@@ -213,6 +214,7 @@ class TreeBuilder
         $this->pendingTableCharacterTokens = null;
         $this->state = $state;
         $this->templateInsertionModes = $templateInsertionModes;
+        $this->textBuilder = $textBuilder;
         $this->tokenRepository = $tokenRepository;
     }
 
@@ -4987,14 +4989,17 @@ class TreeBuilder
         }
 
         if ($node instanceof Text) {
-            $node->data .= $data;
+            $this->textBuilder->append($data);
             return;
         }
 
-        $node = new Text($data);
+        $this->textBuilder->flushText();
+        $node = new Text();
         $node->setNodeDocument(
             $adjustedInsertionLocation[0]->getNodeDocument()
         );
+        $this->textBuilder->setNode($node);
+        $this->textBuilder->append($data);
         $this->insertNode($node, $adjustedInsertionLocation);
     }
 

@@ -14,6 +14,7 @@ use Rowbot\DOM\Node;
 use Rowbot\DOM\Parser\Collection\ActiveFormattingElementStack;
 use Rowbot\DOM\Parser\Collection\OpenElementStack;
 use Rowbot\DOM\Parser\Parser;
+use Rowbot\DOM\Parser\TextBuilder;
 use Rowbot\DOM\Parser\Token\AttributeToken;
 use Rowbot\DOM\Parser\Token\EndTagToken;
 use Rowbot\DOM\Parser\Token\StartTagToken;
@@ -53,12 +54,14 @@ class HTMLParser extends Parser
         $this->openElements = new OpenElementStack();
         $this->state = new ParserState();
         $this->templateInsertionModes = new SplStack();
+        $this->textBuilder = new TextBuilder();
         $this->tokenRepository = new SplObjectStorage();
         $this->treeBuilder = new TreeBuilder(
             $document,
             $this->activeFormattingElements,
             $this->openElements,
             $this->templateInsertionModes,
+            $this->textBuilder,
             $this->tokenRepository,
             $this->isFragmentCase,
             $this->isScriptingEnabled,
@@ -261,6 +264,8 @@ class HTMLParser extends Parser
                 // Parse error.
             }
         }
+
+        $this->textBuilder->flushText();
     }
 
     /**
