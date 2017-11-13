@@ -32,13 +32,6 @@ final class NodeIterator
         $this->mWhatToShow = $aWhatToShow;
     }
 
-    public function __destruct()
-    {
-        $this->mFilter = null;
-        $this->mReferenceNode = null;
-        $this->mRoot = null;
-    }
-
     public function __get($aName)
     {
         switch ($aName) {

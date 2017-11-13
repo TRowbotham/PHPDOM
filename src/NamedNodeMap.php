@@ -25,11 +25,6 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
         $this->element = $element;
     }
 
-    public function __destruct()
-    {
-        $this->element = null;
-    }
-
     public function __get($name)
     {
         switch ($name) {

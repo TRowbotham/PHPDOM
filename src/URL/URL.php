@@ -40,12 +40,6 @@ class URL
         $this->mSearchParams = URLSearchParams::create($query, $parsedURL);
     }
 
-    public function __destruct()
-    {
-        $this->mSearchParams = null;
-        $this->mUrl = null;
-    }
-
     public function __get($aName)
     {
         switch ($aName) {

@@ -16,12 +16,6 @@ class HTMLBaseElement extends HTMLElement
         parent::__construct();
     }
 
-    public function __destruct()
-    {
-        $this->mFrozenBaseURL = null;
-        parent::__destruct();
-    }
-
     public function __get($aName)
     {
         switch ($aName) {

@@ -50,12 +50,6 @@ class DOMTokenList implements
         );
     }
 
-    public function __destruct()
-    {
-        $this->element = null;
-        $this->tokens = null;
-    }
-
     public function __get($name)
     {
         switch ($name) {

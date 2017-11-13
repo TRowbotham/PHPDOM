@@ -17,11 +17,6 @@ final class DOMImplementation
         $this->mDocument = $aDocument;
     }
 
-    public function __destruct()
-    {
-        $this->mDocument = null;
-    }
-
     /**
      * @see https://dom.spec.whatwg.org/#dom-domimplementation-createdocument
      *

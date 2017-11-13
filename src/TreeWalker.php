@@ -31,13 +31,6 @@ final class TreeWalker
         $this->mWhatToShow = $aWhatToShow;
     }
 
-    public function __destruct()
-    {
-        $this->mCurrentNode = null;
-        $this->mFilter = null;
-        $this->mRoot = null;
-    }
-
     public function __get($aName)
     {
         switch ($aName) {

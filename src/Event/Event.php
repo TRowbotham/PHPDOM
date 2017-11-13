@@ -83,12 +83,6 @@ class Event
         $this->mType = $aType;
     }
 
-    public function __destruct()
-    {
-        $this->mCurrentTarget = null;
-        $this->mTarget = null;
-    }
-
     public function __get($aName)
     {
         switch ($aName) {

@@ -16,14 +16,6 @@ class DocumentFragment extends Node
 
     protected $mHost;
 
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->mHost = null;
-        $this->mNodeType = Node::DOCUMENT_FRAGMENT_NODE;
-    }
-
     public function __destruct()
     {
         $this->mHost = null;

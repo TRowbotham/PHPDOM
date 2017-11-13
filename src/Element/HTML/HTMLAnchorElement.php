@@ -81,14 +81,6 @@ class HTMLAnchorElement extends HTMLElement
         $this->setURL();
     }
 
-    public function __destruct()
-    {
-        $this->mPing = null;
-        $this->mRelList = null;
-        $this->mUrl = null;
-        parent::__destruct();
-    }
-
     public function __get($aName)
     {
         switch ($aName) {

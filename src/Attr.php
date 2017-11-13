@@ -68,11 +68,6 @@ class Attr extends Node {
         $this->mValue = $aValue;
     }
 
-    public function __destruct()
-    {
-        $this->mOwnerElement = null;
-    }
-
     public function __get($aName)
     {
         switch ($aName) {

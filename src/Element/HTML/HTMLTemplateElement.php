@@ -20,12 +20,6 @@ class HTMLTemplateElement extends HTMLElement
         $this->mContent->setHost($this);
     }
 
-    public function __destruct()
-    {
-        $this->mContent = null;
-        parent::__destruct();
-    }
-
     public function __get($aName)
     {
         switch ($aName) {

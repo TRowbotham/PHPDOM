@@ -75,7 +75,6 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
     protected $nodeDocument;
     protected $nodeList;
     protected $previousSibling;
-    protected static $mRefCount = 0;
 
     protected function __construct()
     {
@@ -88,17 +87,6 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
         $this->mParentNode = null;
         $this->previousSibling = null;
         $this->nextSibling = null;
-        self::$mRefCount++;
-    }
-
-    public function __destruct()
-    {
-        $this->mChildNodes = null;
-        $this->nodeDocument = null;
-        $this->mParentNode = null;
-        $this->previousSibling = null;
-        $this->nextSibling = null;
-        self::$mRefCount--;
     }
 
     public function __get($aName)
