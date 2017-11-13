@@ -65,22 +65,6 @@ class HTMLDocument extends Document
         }
     }
 
-    public function toHTML()
-    {
-        $html = '';
-
-        foreach($this->mChildNodes as $child) {
-            $html .= $child->toHTML();
-        }
-
-        return $html;
-    }
-
-    public function __toString()
-    {
-        return get_class($this);
-    }
-
     /**
      * Gets the document's body element. The document's body element is the
      * first child of the html element that is either a body or frameset

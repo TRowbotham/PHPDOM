@@ -37,17 +37,6 @@ class DocumentType extends Node
         }
     }
 
-    public function toHTML()
-    {
-        $html = '<!DOCTYPE';
-        $html .= ($this->mName ? ' ' . $this->mName  : '');
-        $html .= ($this->mPublicId ? ' ' . $this->mPublicId : '');
-        $html .= ($this->mSystemId ? ' ' . $this->mSystemId : '');
-        $html .= '>';
-
-        return $html;
-    }
-
     /**
      * Returns the Node's length, which is 0, as a DocumentType cannot have
      * children.

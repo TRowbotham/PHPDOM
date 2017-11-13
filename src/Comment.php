@@ -10,10 +10,6 @@ class Comment extends CharacterData {
         $this->mNodeType = Node::COMMENT_NODE;
     }
 
-    public function toHTML() {
-        return '<!-- ' . $this->mData . ' -->';
-    }
-
     /**
      * Gets the name of the node.
      *
