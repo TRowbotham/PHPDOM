@@ -238,11 +238,6 @@ class HTMLElement extends Element
         }
     }
 
-    public function __toString()
-    {
-        return get_class($this);
-    }
-
     protected function reflectBooleanAttributeValue($aName)
     {
         return (bool) $this->mAttributesList->getAttrByNamespaceAndLocalName(

@@ -48,11 +48,6 @@ class Text extends CharacterData
         }
     }
 
-    public function __toString()
-    {
-        return $this->getNodeName() . ' ' . $this->mData;
-    }
-
     public function splitText($aOffset)
     {
         $length = $this->mLength;
