@@ -26,7 +26,8 @@ use Rowbot\DOM\Element\Element;
  *
  * @property-read string $value The value of the attribute.
  */
-class Attr extends Node {
+class Attr extends Node
+{
     /**
      * @var string
      */
