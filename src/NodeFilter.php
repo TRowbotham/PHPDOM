@@ -7,7 +7,8 @@ namespace Rowbot\DOM;
  *
  * @see https://dom.spec.whatwg.org/#interface-nodefilter
  */
-interface NodeFilter {
+interface NodeFilter
+{
     const FILTER_ACCEPT = 1;
     const FILTER_REJECT = 2;
     const FILTER_SKIP = 3;
