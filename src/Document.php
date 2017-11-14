@@ -11,6 +11,8 @@ use Rowbot\DOM\Exception\DOMException;
 use Rowbot\DOM\Exception\HierarchyRequestError;
 use Rowbot\DOM\Exception\InvalidCharacterError;
 use Rowbot\DOM\Exception\NotSupportedError;
+use Rowbot\DOM\Parser\MarkupFactory;
+use Rowbot\DOM\Support\Stringable;
 use Rowbot\DOM\URL\URLParser;
 use Rowbot\DOM\Utils;
 
@@ -19,7 +21,7 @@ use Rowbot\DOM\Utils;
  * @see https://html.spec.whatwg.org/#document
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Document
  */
-class Document extends Node
+class Document extends Node implements Stringable
 {
     use GetElementsBy;
     use NonElementParentNode;
@@ -846,5 +848,15 @@ class Document extends Node
     protected function setTextContent($aNewValue)
     {
         // Do nothing.
+    }
+
+    public function toString(): string
+    {
+        return MarkupFactory::serializeFragment($this, true);
+    }
+
+    public function __toString(): string
+    {
+        return MarkupFactory::serializeFragment($this, true);
     }
 }
