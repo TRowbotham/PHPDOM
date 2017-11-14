@@ -19,6 +19,7 @@ use Rowbot\DOM\Node;
 use Rowbot\DOM\NodeFilter;
 use Rowbot\DOM\NonDocumentTypeChildNode;
 use Rowbot\DOM\ParentNode;
+use Rowbot\DOM\Parser\MarkupFactory;
 use Rowbot\DOM\Parser\ParserFactory;
 use Rowbot\DOM\Text;
 use Rowbot\DOM\TreeWalker;
@@ -87,7 +88,7 @@ class Element extends Node implements AttributeChangeObserver
                 // serializing algorithm on the context object providing true
                 // for the require well-formed flag (this might throw an
                 // exception instead of returning a string).
-                return ParserFactory::serializeFragment($this, true);
+                return MarkupFactory::serializeFragment($this, true);
 
             case 'lastElementChild':
                 return $this->getLastElementChild();
@@ -105,7 +106,7 @@ class Element extends Node implements AttributeChangeObserver
                 $fakeNode->mOwnerDocument = $this->mOwnerDocument;
                 $fakeNode->mChildNodes->append($this);
 
-                return ParserFactory::serializeFragment($fakeNode, true);
+                return MarkupFactory::serializeFragment($fakeNode, true);
 
             case 'namespaceURI':
                 return $this->mNamespaceURI;

@@ -55,24 +55,4 @@ abstract class ParserFactory
 
         return $fragment;
     }
-
-    /**
-     * @see https://w3c.github.io/DOM-Parsing/#dfn-fragment-serializing-algorithm
-     *
-     * @param Node $aNode              [description]
-     *
-     * @param bool $aRequireWellFormed [description]
-     *
-     * @return string
-     */
-    public static function serializeFragment(Node $aNode, $aRequireWellFormed)
-    {
-        $contextDocument = $aNode->getNodeDocument();
-
-        if ($contextDocument instanceof HTMLDocument) {
-            return HTMLParser::serializeHTMLFragment($aNode);
-        }
-
-        return XMLParser::serializeAsXML($aNode, $aRequireWellFormed);
-    }
 }
