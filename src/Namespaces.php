@@ -43,26 +43,26 @@ class Namespaces
      *
      * @see https://dom.spec.whatwg.org/#locate-a-namespace
      *
-     * @param Node $aNode The node whose namespace is to be found.
+     * @param Node $node The node whose namespace is to be found.
      *
-     * @param string|null $aPrefix The prefix of the namespace to be found.
+     * @param string|null $prefix The prefix of the namespace to be found.
      *
      * @return string|null
      */
-    public static function locateNamespace(Node $aNode, $aPrefix)
+    public static function locateNamespace(Node $node, $prefix)
     {
-        switch ($aNode->nodeType) {
+        switch ($node->nodeType) {
             case Node::ELEMENT_NODE:
-                if ($aNode->namespaceURI && $aNode->prefix === $aPrefix) {
-                    return $aNode->namespaceURI;
+                if ($node->namespaceURI && $node->prefix === $prefix) {
+                    return $node->namespaceURI;
                 }
 
-                foreach ($aNode->attributes as $attr) {
+                foreach ($node->attributes as $attr) {
                     if (
                         ($attr->namespaceURI === self::XMLNS &&
                             $attr->prefix === 'xmlns' &&
-                            $attr->localName === $aPrefix) ||
-                        (!$aPrefix &&
+                            $attr->localName === $prefix) ||
+                        (!$prefix &&
                             $attr->namespaceURI === self::XMLNS &&
                             !$attr->prefix &&
                             strcmp($attr->localName, 'xmlns') === 0)
@@ -71,25 +71,25 @@ class Namespaces
                     }
                 }
 
-                if (!$aNode->parentElement) {
+                if (!$node->parentElement) {
                     return null;
                 }
 
-                return self::locateNamespace($aNode->parentElement, $aPrefix);
+                return self::locateNamespace($node->parentElement, $prefix);
 
             case Node::DOCUMENT_NODE:
-                if (!$aNode->documentElement) {
+                if (!$node->documentElement) {
                     return null;
                 }
 
-                return self::locateNamespace($aNode->documentElement, $aPrefix);
+                return self::locateNamespace($node->documentElement, $prefix);
 
             case Node::DOCUMENT_TYPE_NODE:
             case Node::DOCUMENT_FRAGMENT_NODE:
                 return null;
 
             case Node::ATTRIBUTE_NODE:
-                $ownerElement = $aNode->ownerElement;
+                $ownerElement = $node->ownerElement;
 
                 // If its element is null, then return null.
                 if (!$ownerElement) {
@@ -98,14 +98,14 @@ class Namespaces
 
                 // Return the result of running locate a namespace on its
                 // element using prefix.
-                return self::locateNamespace($ownerElement, $aPrefix);
+                return self::locateNamespace($ownerElement, $prefix);
 
             default:
-                if (!$aNode->parentElement) {
+                if (!$node->parentElement) {
                     return null;
                 }
 
-                return self::locateNamespace($aNode->parentElement, $aPrefix);
+                return self::locateNamespace($node->parentElement, $prefix);
         }
     }
 
@@ -122,7 +122,7 @@ class Namespaces
      */
     public static function locatePrefix(Element $element, $namespace)
     {
-        if ($element->namespaceURI === $aNamespace &&
+        if ($element->namespaceURI === $namespace &&
             ($prefix = $element->prefix) !== null
         ) {
             return $prefix;
@@ -146,17 +146,17 @@ class Namespaces
      *
      * @see https://dom.spec.whatwg.org/#validate
      *
-     * @param string $aQualifiedName The qualified name to validate.
+     * @param string $qualifiedName The qualified name to validate.
      *
      * @throws InvalidCharacterError If the qualified name does not match the
      *     XML 'Name' production.
      */
-    public static function validate($aQualifiedName)
+    public static function validate($qualifiedName)
     {
         // If qualifiedName does not match the 'Name' or 'QName' production,
         // then throw an InvalidCharacterError.
-        if (!preg_match(self::NAME_PRODUCTION, $aQualifiedName) ||
-            !preg_match(self::QNAME, $aQualifiedName)
+        if (!preg_match(self::NAME_PRODUCTION, $qualifiedName) ||
+            !preg_match(self::QNAME, $qualifiedName)
         ) {
             throw new InvalidCharacterError();
         }
@@ -168,29 +168,31 @@ class Namespaces
      *
      * @see https://dom.spec.whatwg.org/#validate-and-extract
      *
-     * @param string $aNamespace A namespace.
+     * @param string $namespace A namespace.
      *
-     * @param string $aQualifiedName The qualified name to validate.
+     * @param string $qualifiedName The qualified name to validate.
      *
      * @return string[] Returns the namespace, namespace prefix, and localName.
      *
      * @throws NamespaceError
      */
-    public static function validateAndExtract($aNamespace, $aQualifiedName)
+    public static function validateAndExtract($namespace, $qualifiedName)
     {
-        $namespace = $aNamespace === '' ? null : $aNamespace;
+        if ($namespace === '') {
+            $namespace = null;
+        }
 
         try {
-            self::validate($aQualifiedName);
+            self::validate($qualifiedName);
         } catch (DOMException $e) {
             throw $e;
         }
 
         $prefix = null;
-        $localName = $aQualifiedName;
+        $localName = $qualifiedName;
 
-        if (mb_strpos($aQualifiedName, ':') !== false) {
-            list($prefix, $localName) = explode(':', $aQualifiedName, 2);
+        if (mb_strpos($qualifiedName, ':') !== false) {
+            list($prefix, $localName) = explode(':', $qualifiedName, 2);
         }
 
         if ($prefix !== null && $namespace === null) {
@@ -201,12 +203,12 @@ class Namespaces
             throw new NamespaceError();
         }
 
-        if (($aQualifiedName === 'xmlns' || $prefix === 'xmlns') &&
+        if (($qualifiedName === 'xmlns' || $prefix === 'xmlns') &&
             $namespace !== self::XMLNS) {
             throw new NamespaceError();
         }
 
-        if ($namespace === self::XMLNS && $aQualifiedName !== 'xmlns' &&
+        if ($namespace === self::XMLNS && $qualifiedName !== 'xmlns' &&
             $prefix !== 'xmlns'
         ) {
             throw new NamespaceError();

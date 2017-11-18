@@ -10,13 +10,13 @@ class HTMLTitleElement extends HTMLElement
         parent::__construct();
     }
 
-    public function __get($aName)
+    public function __get($name)
     {
-        switch ($aName) {
+        switch ($name) {
             case 'text':
                 $value = '';
 
-                foreach ($this->mChildNodes as $node) {
+                foreach ($this->childNodes as $node) {
                     if ($node instanceof Text) {
                         $value .= $node->data;
                     }
@@ -25,20 +25,20 @@ class HTMLTitleElement extends HTMLElement
                 return $value;
 
             default:
-                return parent::__get($aName);
+                return parent::__get($name);
         }
     }
 
-    public function __set($aName, $aValue)
+    public function __set($name, $value)
     {
-        switch ($aName) {
+        switch ($name) {
             case 'text':
-                parent::__set('textContent', $aValue);
+                parent::__set('textContent', $value);
 
                 break;
 
             default:
-                parent::__set($aName, $aValue);
+                parent::__set($name, $value);
         }
     }
 }

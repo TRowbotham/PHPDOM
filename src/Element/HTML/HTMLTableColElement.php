@@ -7,37 +7,37 @@ namespace Rowbot\DOM\Element\HTML;
  */
 class HTMLTableColElement extends HTMLElement
 {
-    private $mSpan;
+    private $span;
 
     protected function __construct()
     {
         parent::__construct();
 
-        $this->mSpan = 0;
+        $this->span = 0;
     }
 
-    public function __get($aName)
+    public function __get($name)
     {
-        switch ($aName) {
+        switch ($name) {
             case 'span':
-                return $this->mSpan;
+                return $this->span;
 
             default:
-                return parent::__get($aName);
+                return parent::__get($name);
         }
     }
 
-    public function __set($aName, $aValue)
+    public function __set($name, $value)
     {
-        switch ($aName) {
+        switch ($name) {
             case 'span':
-                $this->mSpan = $aValue;
-                $this->_updateAttributeOnPropertyChange($aName, $aValue);
+                $this->span = $value;
+                $this->_updateAttributeOnPropertyChange($name, $value);
 
                 break;
 
             default:
-                parent::__set($aName, $aValue);
+                parent::__set($name, $value);
         }
     }
 }

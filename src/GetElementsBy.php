@@ -8,15 +8,15 @@ trait GetElementsBy
      *
      * @see https://dom.spec.whatwg.org/#dom-element-getelementsbyclassname
      *
-     * @param string $aClassName A space delimited string containing the
+     * @param string $className A space delimited string containing the
      *     classNames to search for.
      *
      * @return Element[]
      */
-    public function getElementsByClassName($aClassName)
+    public function getElementsByClassName($className)
     {
         $classes = Utils::parseOrderedSet(
-            Utils::DOMString($aClassName)
+            Utils::DOMString($className)
         );
         $collection = [];
 
@@ -24,11 +24,11 @@ trait GetElementsBy
             return $collection;
         }
 
-        $nodeFilter = function ($aNode) use ($classes) {
+        $nodeFilter = function ($node) use ($classes) {
             $hasClasses = false;
 
             foreach ($classes as $className) {
-                if (!($hasClasses = $aNode->classList->contains($className))) {
+                if (!($hasClasses = $node->classList->contains($className))) {
                     break;
                 }
             }
@@ -50,25 +50,25 @@ trait GetElementsBy
      *
      * @see https://dom.spec.whatwg.org/#dom-document-getelementsbytagname
      *
-     * @param string $aLocalName The element's local name to search for. If
+     * @param string $localName The element's local name to search for. If
      *     given '*', all element decendants will be returned.
      *
      * @return Element[] A list of Elements with the specified local name.
      */
-    public function getElementsByTagName($aLocalName)
+    public function getElementsByTagName($localName)
     {
         $collection = array();
-        $localName = Utils::DOMString($aLocalName);
+        $localName = Utils::DOMString($localName);
 
         if (strcmp($localName, '*') === 0) {
             $nodeFilter = null;
         } elseif ($this instanceof Document) {
-            $nodeFilter = function ($aNode) use ($localName) {
-                $shouldAccept = ($aNode->namespaceURI === Namespaces::HTML &&
-                    $aNode->localName === Utils::toASCIILowercase($localName)
+            $nodeFilter = function ($node) use ($localName) {
+                $shouldAccept = ($node->namespaceURI === Namespaces::HTML &&
+                    $node->localName === Utils::toASCIILowercase($localName)
                     ) ||
-                    ($aNode->namespaceURI === Namespaces::HTML &&
-                    $aNode->localName === $localName);
+                    ($node->namespaceURI === Namespaces::HTML &&
+                    $node->localName === $localName);
 
                 if ($shouldAccept) {
                     return NodeFilter::FILTER_ACCEPT;
@@ -77,8 +77,8 @@ trait GetElementsBy
                 return NodeFilter::FILTER_SKIP;
             };
         } else {
-            $nodeFilter = function ($aNode) use ($localName) {
-                return strcmp($aNode->localName, $localName) === 0 ?
+            $nodeFilter = function ($node) use ($localName) {
+                return strcmp($node->localName, $localName) === 0 ?
                     NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
             };
         }
@@ -98,35 +98,35 @@ trait GetElementsBy
      *
      * @see https://dom.spec.whatwg.org/#dom-document-getelementsbytagnamens
      *
-     * @param string $aNamespace The namespaceURI to search for.  If both
+     * @param string $namespace The namespaceURI to search for.  If both
      *     namespace and local name are given '*', all element decendants will
      *     be returned.  If only namespace is given '*' all element decendants
      *     matching only local name will be returned.
      *
-     * @param string $aLocalName The Element's local name to search for.  If
+     * @param string $localName The Element's local name to search for.  If
      *     both namespace and local name are given '*', all element decendants
      *     will be returned.  If only local name is given '*' all element
      *     decendants matching only namespace will be returned.
      *
      * @return Element[]
      */
-    public function getElementsByTagNameNS($aNamespace, $aLocalName)
+    public function getElementsByTagNameNS($namespace, $localName)
     {
-        $namespace = Utils::DOMString($aNamespace, false, true);
+        $namespace = Utils::DOMString($namespace, false, true);
         $namespace = $namespace === '' ? null : $namespace;
-        $localName = Utils::DOMString($aLocalName);
+        $localName = Utils::DOMString($localName);
         $collection = array();
 
         if (strcmp($namespace, '*') === 0 && strcmp($localName, '*') === 0) {
             $nodeFilter = null;
         } elseif (strcmp($namespace, '*') === 0) {
-            $nodeFilter = function ($aNode) use ($localName) {
-                return strcmp($aNode->localName, $localName) === 0 ?
+            $nodeFilter = function ($node) use ($localName) {
+                return strcmp($node->localName, $localName) === 0 ?
                     NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
             };
         } elseif (strcmp($localName, '*') === 0) {
-            $nodeFilter =  function ($aNode) use ($namespace) {
-                return strcmp($aNode->namespaceURI, $namespace) === 0 ?
+            $nodeFilter =  function ($node) use ($namespace) {
+                return strcmp($node->namespaceURI, $namespace) === 0 ?
                     NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
             };
         }

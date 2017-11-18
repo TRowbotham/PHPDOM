@@ -38,32 +38,32 @@ class Element extends Node implements AttributeChangeObserver
     use GetElementsBy;
     use NonDocumentTypeChildNode;
 
-    protected $mNamedNodeMap;
-    protected $mAttributesList;
-    protected $mClassList; // ClassList
-    protected $mLocalName;
-    protected $mNamespaceURI;
-    protected $mPrefix;
+    protected $namedNodeMap;
+    protected $attributeList;
+    protected $classList; // ClassList
+    protected $localName;
+    protected $namespaceURI;
+    protected $prefix;
 
     protected function __construct()
     {
         parent::__construct();
 
-        $this->mAttributesList = new AttributeList($this);
-        $this->mClassList = new DOMTokenList($this, 'class');
-        $this->mLocalName = '';
-        $this->mNamedNodeMap = new NamedNodeMap($this);
-        $this->mNamespaceURI = null;
-        $this->mNodeType = self::ELEMENT_NODE;
-        $this->mPrefix = null;
-        $this->mAttributesList->observe($this);
+        $this->attributeList = new AttributeList($this);
+        $this->classList = new DOMTokenList($this, 'class');
+        $this->localName = '';
+        $this->namedNodeMap = new NamedNodeMap($this);
+        $this->namespaceURI = null;
+        $this->nodeType = self::ELEMENT_NODE;
+        $this->prefix = null;
+        $this->attributeList->observe($this);
     }
 
-    public function __get($aName)
+    public function __get($name)
     {
-        switch ($aName) {
+        switch ($name) {
             case 'attributes':
-                return $this->mNamedNodeMap;
+                return $this->namedNodeMap;
 
             case 'childElementCount':
                 return $this->getChildElementCount();
@@ -72,16 +72,16 @@ class Element extends Node implements AttributeChangeObserver
                 return $this->getChildren();
 
             case 'classList':
-                return $this->mClassList;
+                return $this->classList;
 
             case 'className':
-                return $this->mAttributesList->getAttrValue('class');
+                return $this->attributeList->getAttrValue('class');
 
             case 'firstElementChild':
                 return $this->getFirstElementChild();
 
             case 'id':
-                return $this->mAttributesList->getAttrValue($aName);
+                return $this->attributeList->getAttrValue($name);
 
             case 'innerHTML':
                 // On getting, return the result of invoking the fragment
@@ -94,7 +94,7 @@ class Element extends Node implements AttributeChangeObserver
                 return $this->getLastElementChild();
 
             case 'localName':
-                return $this->mLocalName;
+                return $this->localName;
 
             case 'outerHTML':
                 // On getting, return the result of invoking the fragment
@@ -103,19 +103,19 @@ class Element extends Node implements AttributeChangeObserver
                 // flag (this might throw an exception instead of returning a
                 // string).
                 $fakeNode = self::create($this, 'fake', Namespaces::HTML);
-                $fakeNode->mOwnerDocument = $this->mOwnerDocument;
-                $fakeNode->mChildNodes->append($this);
+                $fakeNode->ownerDocument = $this->ownerDocument;
+                $fakeNode->childNodes->append($this);
 
                 return MarkupFactory::serializeFragment($fakeNode, true);
 
             case 'namespaceURI':
-                return $this->mNamespaceURI;
+                return $this->namespaceURI;
 
             case 'nextElementSibling':
                 return $this->getNextElementSibling();
 
             case 'prefix':
-                return $this->mPrefix;
+                return $this->prefix;
 
             case 'previousElementSibling':
                 return $this->getPreviousElementSibling();
@@ -124,20 +124,20 @@ class Element extends Node implements AttributeChangeObserver
                 return $this->getTagName();
 
             default:
-                return parent::__get($aName);
+                return parent::__get($name);
         }
     }
 
-    public function __set($aName, $aValue)
+    public function __set($name, $aValue)
     {
-        switch ($aName) {
+        switch ($name) {
             case 'classList':
-                $this->mClassList->value = $aValue;
+                $this->classList->value = $aValue;
 
                 break;
 
             case 'className':
-                $this->mAttributesList->setAttrValue(
+                $this->attributeList->setAttrValue(
                     'class',
                     Utils::DOMString($aValue)
                 );
@@ -145,8 +145,8 @@ class Element extends Node implements AttributeChangeObserver
                 break;
 
             case 'id':
-                $this->mAttributesList->setAttrValue(
-                    $aName,
+                $this->attributeList->setAttrValue(
+                    $name,
                     Utils::DOMString($aValue)
                 );
 
@@ -178,7 +178,7 @@ class Element extends Node implements AttributeChangeObserver
 
             case 'outerHTML':
                 // Let parent be the context object's parent.
-                $parent = $this->mParentNode;
+                $parent = $this->parentNode;
 
                 // If parent is null, terminate these steps. There would be no
                 // way to obtain a reference to the nodes created even if the
@@ -199,7 +199,7 @@ class Element extends Node implements AttributeChangeObserver
                 // document.
                 if ($parent instanceof DocumentFragment) {
                     $parent = self::create(
-                        $this->mOwnerDocument,
+                        $this->ownerDocument,
                         'body',
                         Namespaces::HTML
                     );
@@ -215,16 +215,16 @@ class Element extends Node implements AttributeChangeObserver
 
                 // Replace the context object with fragment within the context
                 // object's parent.
-                $this->mParentNode->replaceNode($fragment, $this);
+                $this->parentNode->replaceNode($fragment, $this);
 
                 break;
 
             default:
-                parent::__set($aName, $aValue);
+                parent::__set($name, $aValue);
         }
     }
 
-    public function closest($aSelectorRule)
+    public function closest($selectorRule)
     {
         // TODO
     }
@@ -235,28 +235,28 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @internal
      *
-     * @param Document|null $aDocument The element's owner document.
+     * @param Document|null $document The element's owner document.
      *
-     * @param string $aLocalName The element's local name that you are creating.
+     * @param string $localName The element's local name that you are creating.
      *
-     * @param string $aNamespace The namespace that the element belongs to.
+     * @param string $namespace The namespace that the element belongs to.
      *
-     * @param string|null $aPrefix Optional. The namespace prefix of the
+     * @param string|null $prefix Optional. The namespace prefix of the
      *     element.
      *
      * @return Element
      */
     public static function create(
-        $aDocument,
-        $aLocalName,
-        $aNamespace,
-        $aPrefix = null
+        $document,
+        $localName,
+        $namespace,
+        $prefix = null
     ) {
         $element = new static();
-        $element->mLocalName = $aLocalName;
-        $element->mNamespaceURI = $aNamespace;
-        $element->nodeDocument = $aDocument;
-        $element->mPrefix = $aPrefix;
+        $element->localName = $localName;
+        $element->namespaceURI = $namespace;
+        $element->nodeDocument = $document;
+        $element->prefix = $prefix;
 
         return $element;
     }
@@ -265,11 +265,11 @@ class Element extends Node implements AttributeChangeObserver
      * @see AttributeChangeObserver
      */
     public function onAttributeChanged(
-        Element $aElement,
-        $aLocalName,
-        $aOldValue,
-        $aValue,
-        $aNamespace
+        Element $element,
+        $localName,
+        $oldValue,
+        $value,
+        $namespace
     ) {
         // Do nothing.
     }
@@ -279,14 +279,14 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @link https://dom.spec.whatwg.org/#dom-element-getattribute
      *
-     * @param string $aName The name of the attribute whose value is to be
+     * @param string $name The name of the attribute whose value is to be
      *     retrieved.
      *
      * @return string|null
      */
-    public function getAttribute($aName)
+    public function getAttribute($name)
     {
-        $attr = $this->mAttributesList->getAttrByName(Utils::DOMString($aName));
+        $attr = $this->attributeList->getAttrByName(Utils::DOMString($name));
 
         return $attr ? $attr->value : null;
     }
@@ -300,7 +300,7 @@ class Element extends Node implements AttributeChangeObserver
      */
     public function getAttributeList()
     {
-        return $this->mAttributesList;
+        return $this->attributeList;
     }
 
     /**
@@ -314,7 +314,7 @@ class Element extends Node implements AttributeChangeObserver
     {
         $list = [];
 
-        foreach ($this->mAttributesList as $attr) {
+        foreach ($this->attributeList as $attr) {
             $list[] = $attr->name;
         }
 
@@ -326,13 +326,13 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @link https://dom.spec.whatwg.org/#dom-element-getattributenode
      *
-     * @param string $aName The name of the attribute that is to be retrieved.
+     * @param string $name The name of the attribute that is to be retrieved.
      *
      * @return Attr|null
      */
-    public function getAttributeNode($aName)
+    public function getAttributeNode($name)
     {
-        return $this->mAttributesList->getAttrByName(Utils::DOMString($aName));
+        return $this->attributeList->getAttrByName(Utils::DOMString($name));
     }
 
     /**
@@ -341,19 +341,19 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @link https://dom.spec.whatwg.org/#dom-element-getattributenodens
      *
-     * @param string $aNamespace The namespaceURI of the attribute node to be
+     * @param string $namespace The namespaceURI of the attribute node to be
      *     retrieved.
      *
-     * @param string $aLocalName The localName of the attribute node to be
+     * @param string $localName The localName of the attribute node to be
      *     retrieved.
      *
      * @return Attr|null
      */
-    public function getAttributeNodeNS($aNamespace, $aLocalName)
+    public function getAttributeNodeNS($namespace, $localName)
     {
-        return $this->mAttributesList->getAttrByNamespaceAndLocalName(
-            Utils::DOMString($aNamespace, false, true),
-            Utils::DOMString($aLocalName)
+        return $this->attributeList->getAttrByNamespaceAndLocalName(
+            Utils::DOMString($namespace, false, true),
+            Utils::DOMString($localName)
         );
     }
 
@@ -362,15 +362,15 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @link https://dom.spec.whatwg.org/#dom-element-getattributens
      *
-     * @param  string       $aNamespace The namespaceURI of the attribute whose value is to be retrieved.
-     * @param  string       $aLocalName The localName of the attribute whose value is to be retrieved.
+     * @param  string       $namespace The namespaceURI of the attribute whose value is to be retrieved.
+     * @param  string       $localName The localName of the attribute whose value is to be retrieved.
      * @return string|null
      */
-    public function getAttributeNS($aNamespace, $aLocalName)
+    public function getAttributeNS($namespace, $localName)
     {
-        return $this->mAttributesList->getAttrValue(
-            Utils::DOMString($aLocalName),
-            Utils::DOMString($aNamespace, false, true)
+        return $this->attributeList->getAttrValue(
+            Utils::DOMString($localName),
+            Utils::DOMString($namespace, false, true)
         );
     }
 
@@ -380,21 +380,21 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @link https://dom.spec.whatwg.org/#dom-element-hasattribute
      *
-     * @param string $aQualifiedName The name of the attribute to find.
+     * @param string $qualifiedName The name of the attribute to find.
      *
      * @return bool
      */
-    public function hasAttribute($aQualifiedName)
+    public function hasAttribute($qualifiedName)
     {
-        $qualifiedName = Utils::DOMString($aQualifiedName);
+        $qualifiedName = Utils::DOMString($qualifiedName);
 
-        if ($this->mNamespaceURI === Namespaces::HTML &&
+        if ($this->namespaceURI === Namespaces::HTML &&
             $this->nodeDocument instanceof HTMLDocument
         ) {
-            $qualifiedName = Utils::toASCIILowercase($aQualifiedName);
+            $qualifiedName = Utils::toASCIILowercase($qualifiedName);
         }
 
-        return (bool) $this->mAttributesList->getAttrByName($aQualifiedName);
+        return (bool) $this->attributeList->getAttrByName($qualifiedName);
     }
 
     /**
@@ -403,17 +403,17 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @link https://dom.spec.whatwg.org/#dom-element-hasattributens
      *
-     * @param string $aNamespace The namespace of the attribute to find.
+     * @param string $namespace The namespace of the attribute to find.
      *
-     * @param string $aLocalName The localName of the attribute to find.
+     * @param string $localName The localName of the attribute to find.
      *
      * @return bool
      */
-    public function hasAttributeNS($aNamespace, $aLocalName)
+    public function hasAttributeNS($namespace, $localName)
     {
-        return (bool) $this->mAttributesList->getAttrByNamespaceAndLocalName(
-            Utils::DOMString($aNamespace, false, true),
-            Utils::DOMString($aLocalName)
+        return (bool) $this->attributeList->getAttrByNamespaceAndLocalName(
+            Utils::DOMString($namespace, false, true),
+            Utils::DOMString($localName)
         );
     }
 
@@ -425,7 +425,7 @@ class Element extends Node implements AttributeChangeObserver
      */
     public function hasAttributes()
     {
-        return !$this->mAttributesList->isEmpty();
+        return !$this->attributeList->isEmpty();
     }
 
     /**
@@ -433,7 +433,7 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @see https://dom.spec.whatwg.org/#dom-element-insertadjacentelement
      *
-     * @param string $aWhere The position relative to this node. Possible
+     * @param string $where The position relative to this node. Possible
      *     values are:
      *         - beforebegin - Inserts an element as this element's previous
      *             sibling.
@@ -441,17 +441,17 @@ class Element extends Node implements AttributeChangeObserver
      *         - afterbegin - Inserts an element as this element's first child.
      *         - beforeend - Inserts an element as this element's last child.
      *
-     * @param Element $aElement The element to be inserted.
+     * @param Element $element The element to be inserted.
      *
      * @return null
      */
-    public function insertAdjacentElement($aWhere, Element $aElement)
+    public function insertAdjacentElement($where, Element $element)
     {
         try {
             return self::insertAdjacent(
                 $this,
-                Utils::DOMString($aWhere),
-                $aElement
+                Utils::DOMString($where),
+                $element
             );
         } catch (DOMException $e) {
             throw $e;
@@ -476,9 +476,9 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @see https://w3c.github.io/DOM-Parsing/#dom-element-insertadjacenthtml
      *
-     * @param string $aPosition One of the types listed above.
+     * @param string $position One of the types listed above.
      *
-     * @param string $aText The markup text to parse and subsequently, insert
+     * @param string $text The markup text to parse and subsequently, insert
      *     relative to this element.
      *
      * @throws SyntaxError If the arguments contain invalid values, such as an
@@ -487,15 +487,15 @@ class Element extends Node implements AttributeChangeObserver
      * @throws NoModificationError If the given position for insertion isn't
      *     possible, such as trying to insert elements after the document.
      */
-    public function insertAdjacentHTML($aPosition, $aText)
+    public function insertAdjacentHTML($position, $text)
     {
-        $position = Utils::DOMString($aPosition);
+        $position = Utils::DOMString($position);
 
         if (strcasecmp($position, 'beforebegin') === 0 ||
             strcasecmp($position, 'afterend') === 0
         ) {
             // Let context be the context object's parent.
-            $context = $this->mParentNode;
+            $context = $this->parentNode;
 
             // If context is null or a Document, throw a
             // "NoModificationAllowedError" DOMException.
@@ -518,12 +518,12 @@ class Element extends Node implements AttributeChangeObserver
         // "body" as its local name, the HTML namespace as its namespace, and
         // the context object's node document as its node document.
         if (!($context instanceof Element) ||
-            ($context->mOwnerDocument instanceof HTMLDocument &&
-                $context->mLocalName === 'html' &&
-                $context->mNamespaceURI === Namespaces::HTML)
+            ($context->ownerDocument instanceof HTMLDocument &&
+                $context->localName === 'html' &&
+                $context->namespaceURI === Namespaces::HTML)
         ) {
             $context = self::create(
-                $this->mOwnerDocument,
+                $this->ownerDocument,
                 'body',
                 Namespaces::HTML
             );
@@ -532,14 +532,14 @@ class Element extends Node implements AttributeChangeObserver
         // Let fragment be the result of invoking the fragment parsing algorithm
         // with text as markup, and context as the context element.
         $fragment = ParserFactory::parseFragment(
-            Utils::DOMString($aText),
+            Utils::DOMString($text),
             $context
         );
 
         if (strcasecmp($position, 'beforebegin') === 0) {
             // Insert fragment into the context object's parent before the
             // context object.
-            $this->mParentNode->insertNode($fragment, $this);
+            $this->parentNode->insertNode($fragment, $this);
         } elseif (strcasecmp($position, 'afterbegin') === 0) {
             // Insert fragment into the context object before its first child.
             $this->insertNode($fragment, $this->mFirstChild);
@@ -549,7 +549,7 @@ class Element extends Node implements AttributeChangeObserver
         } elseif (strcasecmp($position, 'afterend') === 0) {
             // Insert fragment into the context object's parent before the
             // context object's next sibling.
-            $this->mParentNode->insertNode($fragment, $this->mNextSibling);
+            $this->parentNode->insertNode($fragment, $this->mNextSibling);
         }
     }
 
@@ -558,7 +558,7 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @see https://dom.spec.whatwg.org/#dom-element-insertadjacenttext
      *
-     * @param string $aWhere The position relative to this node. Possible
+     * @param string $where The position relative to this node. Possible
      *     values are:
      *         - beforebegin - Inserts an element as this element's previous
      *             sibling.
@@ -566,17 +566,17 @@ class Element extends Node implements AttributeChangeObserver
      *         - afterbegin - Inserts an element as this element's first child.
      *         - beforeend - Inserts an element as this element's last child.
      *
-     * @param string $aData The text to be inserted.
+     * @param string $data The text to be inserted.
      */
-    public function insertAdjacentText($aWhere, $aData)
+    public function insertAdjacentText($where, $data)
     {
-        $text = new Text($aData);
+        $text = new Text($data);
         $text->nodeDocument = $this->nodeDocument;
 
         try {
             self::insertAdjacent(
                 $this,
-                Utils::DOMString($aWhere),
+                Utils::DOMString($where),
                 $text
             );
         } catch (DOMException $e) {
@@ -584,7 +584,7 @@ class Element extends Node implements AttributeChangeObserver
         }
     }
 
-    public function matches($aSelectorRule)
+    public function matches($selectorRule)
     {
         // TODO
     }
@@ -595,11 +595,11 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @link https://dom.spec.whatwg.org/#dom-element-removeattribute
      *
-     * @param string $aName The attributes name.
+     * @param string $name The attributes name.
      */
-    public function removeAttribute($aName)
+    public function removeAttribute($name)
     {
-        $this->mAttributesList->removeAttrByName($aName);
+        $this->attributeList->removeAttrByName($name);
     }
 
     /**
@@ -607,21 +607,21 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @link https://dom.spec.whatwg.org/#dom-element-removeattributenode
      *
-     * @param Attr $aAttr The attribute to be removed.
+     * @param Attr $attr The attribute to be removed.
      *
      * @return Attr The Attr node that was removed.
      *
      * @throws NotFoundError
      */
-    public function removeAttributeNode(Attr $aAttr)
+    public function removeAttributeNode(Attr $attr)
     {
-        if (!$this->mAttributesList->contains($aAttr)) {
+        if (!$this->attributeList->contains($attr)) {
             throw new NotFoundError();
         }
 
-        $this->mAttributesList->remove($aAttr);
+        $this->attributeList->remove($attr);
 
-        return $aAttr;
+        return $attr;
     }
 
     /**
@@ -630,16 +630,16 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @link https://dom.spec.whatwg.org/#dom-element-hasattributens
      *
-     * @param string $aNamespace The namespaceURI of the attribute to be
+     * @param string $namespace The namespaceURI of the attribute to be
      *     removed.
      *
-     * @param string $aLocalName The localName of the attribute to be removed.
+     * @param string $localName The localName of the attribute to be removed.
      */
-    public function removeAttributeNS($aNamespace, $aLocalName)
+    public function removeAttributeNS($namespace, $localName)
     {
-        $this->mAttributesList->removeAttrByNamespaceAndLocalName(
-            $aNamespace,
-            $aLocalName
+        $this->attributeList->removeAttrByNamespaceAndLocalName(
+            $namespace,
+            $localName
         );
     }
 
@@ -650,13 +650,13 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @link https://dom.spec.whatwg.org/#dom-element-setattribute
      *
-     * @param string $aQualifiedName  The name of the attribute.
+     * @param string $qualifiedName  The name of the attribute.
      *
-     * @param string $aValue The value of the attribute.
+     * @param string $value The value of the attribute.
      */
-    public function setAttribute($aQualifiedName, $aValue)
+    public function setAttribute($qualifiedName, $value)
     {
-        $qualifiedName = Utils::DOMString($aQualifiedName);
+        $qualifiedName = Utils::DOMString($qualifiedName);
 
         // If qualifiedName does not match the Name production in XML,
         // throw an InvalidCharacterError exception.
@@ -664,7 +664,7 @@ class Element extends Node implements AttributeChangeObserver
             throw new InvalidCharacterError();
         }
 
-        if ($this->mNamespaceURI === Namespaces::HTML &&
+        if ($this->namespaceURI === Namespaces::HTML &&
             $this->nodeDocument instanceof HTMLDocument
         ) {
             $qualifiedName = Utils::toASCIILowercase($qualifiedName);
@@ -672,7 +672,7 @@ class Element extends Node implements AttributeChangeObserver
 
         $attribute = null;
 
-        foreach ($this->mAttributesList as $attr) {
+        foreach ($this->attributeList as $attr) {
             if ($attr->name === $qualifiedName) {
                 $attribute = $attr;
                 break;
@@ -680,15 +680,15 @@ class Element extends Node implements AttributeChangeObserver
         }
 
         if (!$attribute) {
-            $attribute = new Attr($qualifiedName, Utils::DOMString($aValue));
+            $attribute = new Attr($qualifiedName, Utils::DOMString($value));
             $attribute->setNodeDocument($this->nodeDocument);
-            $this->mAttributesList->append($attribute);
+            $this->attributeList->append($attribute);
             return;
         }
 
-        $this->mAttributesList->change(
+        $this->attributeList->change(
             $attr,
-            Utils::DOMString($aValue)
+            Utils::DOMString($value)
         );
     }
 
@@ -697,12 +697,12 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @link https://dom.spec.whatwg.org/#dom-element-setattributenode
      *
-     * @param Attr $aAttr The attribute to be appended.
+     * @param Attr $attr The attribute to be appended.
      */
-    public function setAttributeNode(Attr $aAttr)
+    public function setAttributeNode(Attr $attr)
     {
         try {
-            return $this->mAttributesList->setAttr($aAttr);
+            return $this->attributeList->setAttr($attr);
         } catch (DOMException $e) {
             throw $e;
         }
@@ -713,12 +713,12 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @link https://dom.spec.whatwg.org/#dom-element-setattributenodens
      *
-     * @param Attr $aAttr The namespaced attribute to be appended.
+     * @param Attr $attr The namespaced attribute to be appended.
      */
-    public function setAttributeNodeNS(Attr $aAttr)
+    public function setAttributeNodeNS(Attr $attr)
     {
         try {
-            return $this->mAttributesList->setAttr($aAttr);
+            return $this->attributeList->setAttr($attr);
         } catch (DOMException $e) {
             throw $e;
         }
@@ -728,13 +728,13 @@ class Element extends Node implements AttributeChangeObserver
      * Either appends a new attribute or modifies the value of an existing
      * attribute with the given namespace and name.
      *
-     * @param string $aNamespace The namespaceURI of the attribute.
+     * @param string $namespace The namespaceURI of the attribute.
      *
-     * @param string $aName The name of the attribute.
+     * @param string $name The name of the attribute.
      *
-     * @param string $aValue The value of the attribute.
+     * @param string $value The value of the attribute.
      */
-    public function setAttributeNS($aNamespace, $aName, $aValue)
+    public function setAttributeNS($namespace, $name, $value)
     {
         try {
             list(
@@ -742,16 +742,16 @@ class Element extends Node implements AttributeChangeObserver
                 $prefix,
                 $localName
             ) = Namespaces::validateAndExtract(
-                Utils::DOMString($aNamespace, false, true),
-                Utils::DOMString($aName)
+                Utils::DOMString($namespace, false, true),
+                Utils::DOMString($name)
             );
         } catch (DOMException $e) {
             throw $e;
         }
 
-        $this->mAttributesList->setAttrValue(
+        $this->attributeList->setAttrValue(
             $localName,
-            $aValue,
+            $value,
             $prefix,
             $namespace
         );
@@ -769,7 +769,7 @@ class Element extends Node implements AttributeChangeObserver
      */
     public function getLength()
     {
-        return count($this->mChildNodes);
+        return count($this->childNodes);
     }
 
     /**
@@ -814,10 +814,10 @@ class Element extends Node implements AttributeChangeObserver
      */
     protected function getTagName()
     {
-        $qualifiedName = $this->mPrefix === null ? $this->mLocalName :
-            $this->mPrefix . ':' . $this->mLocalName;
+        $qualifiedName = $this->prefix === null ? $this->localName :
+            $this->prefix . ':' . $this->localName;
 
-        return $this->mNamespaceURI === Namespaces::HTML &&
+        return $this->namespaceURI === Namespaces::HTML &&
             $this->nodeDocument instanceof HTMLDocument ?
             Utils::toASCIIUppercase($qualifiedName) : $qualifiedName;
     }
@@ -844,20 +844,20 @@ class Element extends Node implements AttributeChangeObserver
      * @throws SyntaxError If an invalid value for "where" is given.
      */
     protected static function insertAdjacent(
-        Element $aElement,
-        $aWhere,
-        Node $aNode
+        Element $element,
+        $where,
+        Node $node
     ) {
-        switch (strtolower($aWhere)) {
+        switch (strtolower($where)) {
             case 'beforebegin':
-                if (!$aElement->mParentNode) {
+                if (!$element->parentNode) {
                     return null;
                 }
 
                 try {
-                    $aElement->mParentNode->preinsertNode(
-                        $aNode,
-                        $aElement
+                    $element->parentNode->preinsertNode(
+                        $node,
+                        $element
                     );
                 } catch (DOMException $e) {
                     throw $e;
@@ -866,27 +866,27 @@ class Element extends Node implements AttributeChangeObserver
                 break;
 
             case 'afterbegin':
-                $aElement->preinsertNode(
-                    $aNode,
-                    $aElement->mChildNodes->first()
+                $element->preinsertNode(
+                    $node,
+                    $element->childNodes->first()
                 );
 
                 break;
 
             case 'beforeend':
-                $aElement->preinsertNode($aNode, null);
+                $element->preinsertNode($node, null);
 
                 break;
 
             case 'afterend':
-                if (!$aElement->mParentNode) {
+                if (!$element->parentNode) {
                     return null;
                 }
 
                 try {
-                    $aElement->mParentNode->preinsertNode(
-                        $aNode,
-                        $aElement->nextSibling
+                    $element->parentNode->preinsertNode(
+                        $node,
+                        $element->nextSibling
                     );
                 } catch (DOMException $e) {
                     throw $e;
@@ -906,19 +906,19 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @internal
      *
-     * @param string $aUrl A URL string to be resolved.
+     * @param string $url A URL string to be resolved.
      *
-     * @param string $aDocumentOrEnvironmentSetting Either a document or
+     * @param string $documentOrEnvironmentSetting Either a document or
      *     environment settings object that contain a base URL.
      *
      * @return mixed[]|bool An array containing the serialized absolute URL as
      *     well as the parsed URL or false on failure.
      */
-    protected function parseURL($aUrl, $aDocumentOrEnvironmentSetting)
+    protected function parseURL($url, $documentOrEnvironmentSetting)
     {
-        if ($aDocumentOrEnvironmentSetting instanceof Document) {
-            $encoding = $aDocumentOrEnvironmentSetting->characterSet;
-            $baseURL = $aDocumentOrEnvironmentSetting->getBaseURL();
+        if ($documentOrEnvironmentSetting instanceof Document) {
+            $encoding = $documentOrEnvironmentSetting->characterSet;
+            $baseURL = $documentOrEnvironmentSetting->getBaseURL();
         } else {
             // TODO: Let encoding be the environment settings object'a API URL
             // character encoding.  Let baseURL be the environment settings
@@ -926,7 +926,7 @@ class Element extends Node implements AttributeChangeObserver
         }
 
         $urlRecord = URLParser::parseUrl(
-            $aUrl,
+            $url,
             $baseURL,
             $encoding
         );
@@ -942,12 +942,12 @@ class Element extends Node implements AttributeChangeObserver
     }
 
     protected function reflectURLAttributeValue(
-        $aName,
-        $aMissingValueDefault = null
+        $name,
+        $missingValueDefault = null
     ) {
-        $attr = $this->mAttributesList->getAttrByNamespaceAndLocalName(
+        $attr = $this->attributeList->getAttrByNamespaceAndLocalName(
             null,
-            $aName
+            $name
         );
 
         if ($attr) {
@@ -959,8 +959,8 @@ class Element extends Node implements AttributeChangeObserver
             if ($url !== false) {
                 return $url['urlString'];
             }
-        } elseif ($aMissingValueDefault !== null) {
-            return $aMissingValueDefault;
+        } elseif ($missingValueDefault !== null) {
+            return $missingValueDefault;
         }
 
         return '';
@@ -972,19 +972,19 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @link https://dom.spec.whatwg.org/#concept-reflect
      *
-     * @param string $aName The name of the attribute that is to be reflected.
+     * @param string $name The name of the attribute that is to be reflected.
      *
      * @return string
      */
-    protected function reflectStringAttributeValue($aName)
+    protected function reflectStringAttributeValue($name)
     {
-        return $this->mAttributesList->getAttrValue($aName);
+        return $this->attributeList->getAttrValue($name);
     }
 
     /**
      * @see Node::setNodeValue
      */
-    protected function setNodeValue($aNewValue)
+    protected function setNodeValue($newValue)
     {
         // Do nothing.
     }
@@ -992,10 +992,10 @@ class Element extends Node implements AttributeChangeObserver
     /**
      * @see Node::setTextContent
      */
-    protected function setTextContent($aNewValue)
+    protected function setTextContent($newValue)
     {
         $node = null;
-        $newValue = Utils::DOMString($aNewValue, true);
+        $newValue = Utils::DOMString($newValue, true);
 
         if ($newValue !== '') {
             $node = new Text($newValue);
@@ -1009,15 +1009,15 @@ class Element extends Node implements AttributeChangeObserver
      * Returns an array of Elements with the specified tagName that are
      * immediate children of the parent.
      *
-     * @param string $aTagName The tagName to search for.
+     * @param string $tagName The tagName to search for.
      *
      * @return Element[] A list of Elements with the specified tagName.
      */
-    protected function shallowGetElementsByTagName($aTagName)
+    protected function shallowGetElementsByTagName($tagName)
     {
         $collection = array();
-        $node = $this->mChildNodes->first();
-        $tagName = strtoupper($aTagName);
+        $node = $this->childNodes->first();
+        $tagName = strtoupper($tagName);
 
         while ($node) {
             if (strcmp($node->tagName, $tagName) == 0) {

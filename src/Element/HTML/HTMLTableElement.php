@@ -48,18 +48,16 @@ use Rowbot\DOM\Exception\IndexSizeError;
  */
 class HTMLTableElement extends HTMLElement
 {
-    private $mSortable;
+    private $sortable;
 
     protected function __construct()
     {
         parent::__construct();
-
-        $this->mSortable = false;
     }
 
-    public function __get($aName)
+    public function __get($name)
     {
-        switch ($aName) {
+        switch ($name) {
             case 'caption':
                 $caption = $this->shallowGetElementsByTagName('caption');
 
@@ -77,7 +75,7 @@ class HTMLTableElement extends HTMLElement
                     );
                 }
 
-                foreach ($this->mChildNodes as $node) {
+                foreach ($this->childNodes as $node) {
                     if ($node instanceof HTMLTableRowElement) {
                         $collection[] = $node;
                     } elseif ($node instanceof HTMLTableSectionElement &&
@@ -113,16 +111,16 @@ class HTMLTableElement extends HTMLElement
                 return count($thead) ? $thead[0] : null;
 
             case 'sortable':
-                return $this->mSortable;
+                return $this->sortable;
 
             default:
-                return parent::__get($aName);
+                return parent::__get($name);
         }
     }
 
-    public function __set($aName, $aValue)
+    public function __set($name, $value)
     {
-        switch ($aName) {
+        switch ($name) {
             case 'caption':
                 $caption = $this->shallowGetElementsByTagName('caption');
 
@@ -130,18 +128,18 @@ class HTMLTableElement extends HTMLElement
                     $caption->remove();
                 }
 
-                if ($aValue !== null &&
-                    $aValue instanceof HTMLTableCaptionElement
+                if ($value !== null &&
+                    $value instanceof HTMLTableCaptionElement
                 ) {
-                    $this->insertBefore($aValue, $this->mChildNodes->first());
+                    $this->insertBefore($value, $this->childNodes->first());
                 }
 
                 break;
 
             case 'tFoot':
-                $isValid = $aValue === null ||
-                    ($aValue instanceof HTMLTableSectionElement &&
-                    strcmp($aValue->tagName, 'TFOOT') == 0);
+                $isValid = $value === null ||
+                    ($value instanceof HTMLTableSectionElement &&
+                    strcmp($value->tagName, 'TFOOT') == 0);
 
                 if (!$isValid) {
                     throw new HierarchyRequestError();
@@ -153,8 +151,8 @@ class HTMLTableElement extends HTMLElement
                     $tFoot[0]->remove();
                 }
 
-                if ($aValue !== null) {
-                    foreach ($this->mChildNodes as $node) {
+                if ($value !== null) {
+                    foreach ($this->childNodes as $node) {
                         if (!($node instanceof HTMLTableCaptionElement) &&
                             !($node instanceof HTMLTableColElement) &&
                             strcmp($node->tagName, 'THEAD') !== 0
@@ -163,15 +161,15 @@ class HTMLTableElement extends HTMLElement
                         }
                     }
 
-                    $tfoot->insertBefore($aValue, $node);
+                    $tfoot->insertBefore($value, $node);
                 }
 
                 break;
 
             case 'tHead':
-                $isValid = $aValue === null ||
-                    ($aValue instanceof HTMLTableSectionElement &&
-                    strcmp($aValue->tagName, 'THEAD') == 0);
+                $isValid = $value === null ||
+                    ($value instanceof HTMLTableSectionElement &&
+                    strcmp($value->tagName, 'THEAD') == 0);
 
                 if (!$isValid) {
                     throw new HierarchyRequestError();
@@ -183,8 +181,8 @@ class HTMLTableElement extends HTMLElement
                     $thead[0]->remove();
                 }
 
-                if ($aValue !== null) {
-                    foreach ($this->mChildNodes as $node) {
+                if ($value !== null) {
+                    foreach ($this->childNodes as $node) {
                         if (!($node instanceof HTMLTableCaptionElement) &&
                             !($node instanceof HTMLTableColElement)
                         ) {
@@ -192,18 +190,18 @@ class HTMLTableElement extends HTMLElement
                         }
                     }
 
-                    $thead->insertBefore($aValue, $node);
+                    $thead->insertBefore($value, $node);
                 }
 
                 break;
 
             case 'sortable':
-                $this->mSortable = (bool)$aValue;
+                $this->sortable = (bool)$value;
 
                 break;
 
             default:
-                parent::__set($aName, $aValue);
+                parent::__set($name, $value);
         }
     }
 
@@ -218,7 +216,7 @@ class HTMLTableElement extends HTMLElement
     {
         return $this->createTableChildElement(
             'caption',
-            $this->mChildNodes->first()
+            $this->childNodes->first()
         );
     }
 
@@ -240,7 +238,7 @@ class HTMLTableElement extends HTMLElement
      */
     public function createTHead()
     {
-        foreach ($this->mChildNodes as $node) {
+        foreach ($this->childNodes as $node) {
             if (!($node instanceof HTMLTableCaptionElement) &&
                 !($node instanceof HTMLTableColElement)
             ) {
@@ -268,7 +266,7 @@ class HTMLTableElement extends HTMLElement
      */
     public function createTFoot()
     {
-        foreach ($this->mChildNodes as $node) {
+        foreach ($this->childNodes as $node) {
             if (!($node instanceof HTMLTableCaptionElement) &&
                 !($node instanceof HTMLTableColElement) &&
                 strcmp($node->tagName, 'THEAD') !== 0

@@ -37,20 +37,20 @@ use Rowbot\DOM\DOMTokenList;
  */
 class HTMLLinkElement extends HTMLElement
 {
-    private $mRelList;
-    private $mSizes;
+    private $relList;
+    private $sizes;
 
     protected function __construct()
     {
         parent::__construct();
 
-        $this->mRelList = new DOMTokenList($this, 'rel');
-        $this->mSizes = new DOMTokenList($this, 'sizes');
+        $this->relList = new DOMTokenList($this, 'rel');
+        $this->sizes = new DOMTokenList($this, 'sizes');
     }
 
-    public function __get($aName)
+    public function __get($name)
     {
-        switch ($aName) {
+        switch ($name) {
             case 'crossOrigin':
                 return $this->getAttributeStateEnumeratedString(
                     'crossorigin',
@@ -60,71 +60,71 @@ class HTMLLinkElement extends HTMLElement
                 );
 
             case 'href':
-                return $this->reflectStringAttributeValue($aName);
+                return $this->reflectStringAttributeValue($name);
 
             case 'hrefLang':
                 return $this->reflectStringAttributeValue('hreflang');
 
             case 'media':
-                return $this->reflectStringAttributeValue($aName);
+                return $this->reflectStringAttributeValue($name);
 
             case 'rel':
-                return $this->reflectStringAttributeValue($aName);
+                return $this->reflectStringAttributeValue($name);
 
             case 'relList':
-                return $this->mRelList;
+                return $this->relList;
 
             case 'sizes':
-                return $this->reflectStringAttributeValue($aName);
+                return $this->reflectStringAttributeValue($name);
 
             case 'type':
-                return $reflectStringAttributeValue($aName);
+                return $reflectStringAttributeValue($name);
 
             default:
-                return parent::__get($aName);
+                return parent::__get($name);
         }
     }
 
-    public function __set($aName, $aValue)
+    public function __set($name, $value)
     {
-        switch ($aName) {
+        switch ($name) {
             case 'crossOrigin':
-                $this->mAttributesList->setAttrValue('crossorigin', $aValue);
+                $this->attributeList->setAttrValue('crossorigin', $value);
 
                 break;
 
             case 'href':
-                $this->mAttributesList->setAttrValue($aName, $aValue);
+                $this->attributeList->setAttrValue($name, $value);
 
                 break;
 
             case 'hrefLang':
-                $this->mAttributesList->setAttrValue('hreflang', $aValue);
+                $this->attributeList->setAttrValue('hreflang', $value);
 
                 break;
 
             case 'media':
-                $this->mAttributesList->setAttrValue($aName, $aValue);
+                $this->attributeList->setAttrValue($name, $value);
 
                 break;
 
             case 'rel':
-                $this->mAttributesList->setAttrValue($aName, $aValue);
+                $this->attributeList->setAttrValue($name, $value);
 
                 break;
 
             case 'sizes':
-                $this->mAttributesList->setAttrValue($aName, $aValue);
+                $this->attributeList->setAttrValue($name, $value);
 
                 break;
 
             case 'type':
-                $this->mAttributesList->setAttrValue($aName, $aValue);
+                $this->attributeList->setAttrValue($name, $value);
 
                 break;
 
             default:
-                parent::__set($aName, $aValue);
+                parent::__set($name, $value);
         }
     }
 }

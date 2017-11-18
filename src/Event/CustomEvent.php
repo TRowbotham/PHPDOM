@@ -15,27 +15,27 @@ use Rowbot\DOM\Utils;
  */
 class CustomEvent extends Event
 {
-    private $mDetail;
+    private $detail;
 
     public function __construct(
-        $aType,
-        CustomEventInit $aEventInitDict = null
+        $type,
+        CustomEventInit $eventInitDict = null
     ) {
-        parent::__construct($aType);
+        parent::__construct($type);
 
-        $initDict = $aEventInitDict ? $aEventInitDict : new CustomEventInit();
-        $this->mBubbles = $initDict->bubbles;
-        $this->mCancelable = $initDict->cancelable;
-        $this->mDetail =& $initDict->detail;
+        $initDict = $eventInitDict ? $eventInitDict : new CustomEventInit();
+        $this->bubbles = $initDict->bubbles;
+        $this->cancelable = $initDict->cancelable;
+        $this->detail =& $initDict->detail;
     }
 
-    public function __get($aName)
+    public function __get($name)
     {
-        switch ($aName) {
+        switch ($name) {
             case 'detail':
-                return $this->mDetail;
+                return $this->detail;
             default:
-                return parent::__get($aName);
+                return parent::__get($name);
         }
     }
 
@@ -44,29 +44,29 @@ class CustomEvent extends Event
      *
      * @see https://dom.spec.whatwg.org/#dom-customevent-initcustomevent
      *
-     * @param string $aType The type of event to be created.
+     * @param string $type The type of event to be created.
      *
-     * @param boolean $aBubbles Optional.  Whether or not the event will bubble
+     * @param boolean $bubbles Optional.  Whether or not the event will bubble
      *     up the tree, if the event is dispatched on an object that
      *     participates in a tree.  Defaults to false.
      *
-     * @param boolean $aCancelable Optional.  Whether or not the event's default
+     * @param boolean $cancelable Optional.  Whether or not the event's default
      *     action can be prevented.  Defaults to false.
      *
-     * @param mixed &$aDetail Optional.  Additional data to be sent along with
+     * @param mixed &$detail Optional.  Additional data to be sent along with
      *     the event.
      */
     public function initCustomEvent(
-        $aType,
-        $aBubbles = false,
-        $aCancelable = false,
-        &$aDetail = null
+        $type,
+        $bubbles = false,
+        $cancelable = false,
+        &$detail = null
     ) {
-        if ($this->mFlags & EventFlags::DISPATCH) {
+        if ($this->flags & EventFlags::DISPATCH) {
             return;
         }
 
-        $this->init(Utils::DOMString($aType), $aBubbles, $aCancelable);
-        $this->mDetail =& $aDetail;
+        $this->init(Utils::DOMString($type), $bubbles, $cancelable);
+        $this->detail =& $detail;
     }
 }

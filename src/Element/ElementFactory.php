@@ -9,26 +9,26 @@ abstract class ElementFactory
     /**
      * @see https://dom.spec.whatwg.org/#concept-create-element
      *
-     * @param Document $aDocument The element's owner document.
+     * @param Document $document The element's owner document.
      *
-     * @param string $aLocalName The element's local name that you are creating.
+     * @param string $localName The element's local name that you are creating.
      *
-     * @param string $aNamespace The namespace that the element belongs to.
+     * @param string $namespace The namespace that the element belongs to.
      *
-     * @param string|null $aPrefix Optional. The namespace prefix of the
+     * @param string|null $prefix Optional. The namespace prefix of the
      *     element.
      *
      * @return Element
      */
     public static function create(
-        $aDocument,
-        $aLocalName,
-        $aNamespace,
-        $aPrefix = null
+        $document,
+        $localName,
+        $namespace,
+        $prefix = null
     ) {
-        switch ($aNamespace) {
+        switch ($namespace) {
             case Namespaces::HTML:
-                $interface = self::getHTMLInterfaceFor($aLocalName);
+                $interface = self::getHTMLInterfaceFor($localName);
 
                 break;
 
@@ -37,25 +37,25 @@ abstract class ElementFactory
         }
 
         return $interface::create(
-            $aDocument,
-            $aLocalName,
-            $aNamespace,
-            $aPrefix
+            $document,
+            $localName,
+            $namespace,
+            $prefix
         );
     }
 
     /**
      * @see https://dom.spec.whatwg.org/#internal-createelementns-steps
      *
-     * @param Document $aDocument The Element's owner document.
+     * @param Document $document The Element's owner document.
      *
-     * @param string $aNamespace The Element's namespace.
+     * @param string $namespace The Element's namespace.
      *
-     * @param string $aQualifiedName The Element's fully qualified name.
+     * @param string $qualifiedName The Element's fully qualified name.
      *
      * @return Element
      */
-    public static function createNS($aDocument, $aNamespace, $aQualifiedName)
+    public static function createNS($document, $namespace, $qualifiedName)
     {
         try {
             list(
@@ -63,8 +63,8 @@ abstract class ElementFactory
                 $prefix,
                 $localName
             ) = Namespaces::validateAndExtract(
-                $aNamespace,
-                $aQualifiedName
+                $namespace,
+                $qualifiedName
             );
         } catch (DOMException $e) {
             throw $e;
@@ -72,7 +72,7 @@ abstract class ElementFactory
 
         try {
             $element = self::create(
-                $aDocument,
+                $document,
                 $localName,
                 $namespace,
                 $prefix
@@ -84,9 +84,9 @@ abstract class ElementFactory
         return $element;
     }
 
-    public static function getHTMLInterfaceFor($aLocalName)
+    public static function getHTMLInterfaceFor($localName)
     {
-        switch ($aLocalName) {
+        switch ($localName) {
             /**
              * These are elements whose tag name differs
              * from its DOM interface name, so map the tag
@@ -322,7 +322,7 @@ abstract class ElementFactory
             case 'title':
             case 'track':
             case 'video':
-                $interfaceName = ucfirst($aLocalName);
+                $interfaceName = ucfirst($localName);
 
                 break;
 

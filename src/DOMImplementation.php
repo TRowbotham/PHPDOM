@@ -10,17 +10,17 @@ use Rowbot\DOM\Exception\DOMException;
  */
 final class DOMImplementation
 {
-    protected $mDocument;
+    protected $document;
 
-    public function __construct(Document $aDocument)
+    public function __construct(Document $document)
     {
-        $this->mDocument = $aDocument;
+        $this->document = $document;
     }
 
     /**
      * @see https://dom.spec.whatwg.org/#dom-domimplementation-createdocument
      *
-     * @param string $aNamespace The namespace of the element to be created,
+     * @param string $namespace The namespace of the element to be created,
      *     which becomes the document's document element.
      *
      * @param string|null $aQualifiedName The local name of the element that is
@@ -32,12 +32,12 @@ final class DOMImplementation
      * @return XMLDocument
      */
     public function createDocument(
-        $aNamespace,
-        $aQualifiedName,
-        DocumentType $aDoctype = null
+        $namespace,
+        $qualifiedName,
+        DocumentType $doctype = null
     ) {
-        $namespace = Utils::DOMString($aNamespace, false, true);
-        $qualifiedName = Utils::DOMString($aQualifiedName, true);
+        $namespace = Utils::DOMString($namespace, false, true);
+        $qualifiedName = Utils::DOMString($qualifiedName, true);
         $doc = new XMLDocument();
         $element = null;
 
@@ -53,8 +53,8 @@ final class DOMImplementation
             }
         }
 
-        if ($aDoctype) {
-            $doc->appendChild($aDoctype);
+        if ($doctype) {
+            $doc->appendChild($doctype);
         }
 
         if ($element) {
@@ -85,11 +85,11 @@ final class DOMImplementation
     /**
      * @see https://dom.spec.whatwg.org/#dom-domimplementation-createdocumenttype
      *
-     * @param string $aQualifiedName The document type's name.
+     * @param string $qualifiedName The document type's name.
      *
-     * @param string $aPublicId The document type's public identifier.
+     * @param string $publicId The document type's public identifier.
      *
-     * @param string $aSystemId The document type's system identifier.
+     * @param string $systemId The document type's system identifier.
      *
      * @return DocumentType
      *
@@ -99,20 +99,20 @@ final class DOMImplementation
      * @throws NamespaceError If the qualified name does not match the QName
      *     production.
      */
-    public function createDocumentType($aQualifiedName, $aPublicId, $aSystemId)
+    public function createDocumentType($qualifiedName, $publicId, $systemId)
     {
-        $qualifiedName = Utils::DOMString($aQualifiedName);
-        $publicId = Utils::DOMString($aPublicId);
-        $systemId = Utils::DOMString($aSystemId);
+        $qualifiedName = Utils::DOMString($qualifiedName);
+        $publicId = Utils::DOMString($publicId);
+        $systemId = Utils::DOMString($systemId);
 
         try {
-            Namespaces::validate($aQualifiedName);
+            Namespaces::validate($qualifiedName);
         } catch (DOMException $e) {
             throw $e;
         }
 
-        $docType = new DocumentType($aQualifiedName, $aPublicId, $aSystemId);
-        $docType->setNodeDocument($this->mDocument);
+        $docType = new DocumentType($qualifiedName, $publicId, $systemId);
+        $docType->setNodeDocument($this->document);
 
         return $docType;
     }
@@ -120,11 +120,11 @@ final class DOMImplementation
     /**
      * @see https://dom.spec.whatwg.org/#dom-domimplementation-createhtmldocument
      *
-     * @param string $aTitle Optional. The title of the document.
+     * @param string $title Optional. The title of the document.
      *
      * @return HTMLDocument
      */
-    public function createHTMLDocument($aTitle = null)
+    public function createHTMLDocument($title = null)
     {
         $doc = new HTMLDocument();
         $doc->_setContentType('text/html');
@@ -139,11 +139,15 @@ final class DOMImplementation
         // Only create a HTMLTitleElement if the user actually provided us with
         // a title to use.
         if (func_num_args() > 0) {
-            $title = ElementFactory::create($doc, 'title', Namespaces::HTML);
-            $head->appendChild($title);
-            $text = new Text(Utils::DOMString($aTitle));
+            $titleNode = ElementFactory::create(
+                $doc,
+                'title',
+                Namespaces::HTML
+            );
+            $head->appendChild($titleNode);
+            $text = new Text(Utils::DOMString($title));
             $text->setNodeDocument($doc);
-            $title->appendChild($text);
+            $titleNode->appendChild($text);
         }
 
         $html->appendChild(ElementFactory::create(

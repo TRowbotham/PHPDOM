@@ -22,48 +22,50 @@ class HTMLStyleElement extends HTMLElement
 {
     private $mMedia;
     private $mScoped;
-    private $mType;
+    private $type;
 
     protected function __construct()
     {
         parent::__construct();
     }
 
-    public function __get($aName) {
-        switch ($aName) {
+    public function __get($name)
+    {
+        switch ($name) {
             case 'media':
-                return $this->reflectStringAttributeValue($aName);
+                return $this->reflectStringAttributeValue($name);
 
             case 'scoped':
-                return $this->reflectBooleanAttributeValue($aName);
+                return $this->reflectBooleanAttributeValue($name);
 
             case 'type':
-                return $this->reflectStringAttributeValue($aName);
+                return $this->reflectStringAttributeValue($name);
 
             default:
-                return parent::__get($aName);
+                return parent::__get($name);
         }
     }
 
-    public function __set($aName, $aValue) {
-        switch ($aName) {
+    public function __set($name, $value)
+    {
+        switch ($name) {
             case 'media':
-                $this->mAttributesList->setAttrValue($aName, $aValue);
+                $this->attributeList->setAttrValue($name, $value);
 
                 break;
 
             case 'scoped':
-                $this->mAttributesList->setAttrValue($aName, $aValue);
+                $this->attributeList->setAttrValue($name, $value);
 
                 break;
 
             case 'type':
-                $this->mAttributesList->setAttrValue($aName, $aValue);
+                $this->attributeList->setAttrValue($name, $value);
 
                 break;
 
             default:
-                parent::__set($aName, $aValue);
+                parent::__set($name, $value);
         }
     }
 }

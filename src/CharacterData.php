@@ -25,24 +25,24 @@ abstract class CharacterData extends Node
     use ChildNode;
     use NonDocumentTypeChildNode;
 
-    protected $mData;
-    protected $mLength;
+    protected $data;
+    protected $length;
 
-    public function __construct($aData)
+    public function __construct($data)
     {
         parent::__construct();
 
-        $this->mData = $aData;
-        $this->mLength = mb_strlen($aData, $this->nodeDocument->characterSet);
+        $this->data = $data;
+        $this->length = mb_strlen($data, $this->nodeDocument->characterSet);
     }
 
     public function __get($aName)
     {
         switch ($aName) {
             case 'data':
-                return $this->mData;
+                return $this->data;
             case 'length':
-                return $this->mLength;
+                return $this->length;
             case 'nextElementSibling':
                 return $this->getNextElementSibling();
             case 'previousElementSibling':
@@ -58,7 +58,7 @@ abstract class CharacterData extends Node
             case 'data':
                 $this->doReplaceData(
                     0,
-                    $this->mLength,
+                    $this->length,
                     Utils::DOMString($aValue, true)
                 );
 
@@ -72,30 +72,30 @@ abstract class CharacterData extends Node
     /**
      * Appends the given string to the Node's existing string data.
      *
-     * @param  string $aData The string data to be appended to the Node.
+     * @param  string $data The string data to be appended to the Node.
      */
-    public function appendData($aData)
+    public function appendData($data)
     {
-        $this->doReplaceData($this->mLength, 0, Utils::DOMString($aData));
+        $this->doReplaceData($this->length, 0, Utils::DOMString($data));
     }
 
     /**
      * Removes the specified number of characters starting from the given
      * offset.
      *
-     * @param int $aOffset The offset where data deletion should begin.
+     * @param int $offset The offset where data deletion should begin.
      *
-     * @param int $aCount How many characters to delete starting from the
+     * @param int $count How many characters to delete starting from the
      *     given offset.
      *
      * @throws IndexSizeError If the given offset is greater than the length
      *     of the data.
      */
-    public function deleteData($aOffset, $aCount)
+    public function deleteData($offset, $count)
     {
         $this->doReplaceData(
-            Utils::unsignedLong($aOffset),
-            Utils::unsignedLong($aCount),
+            Utils::unsignedLong($offset),
+            Utils::unsignedLong($count),
             ''
         );
     }
@@ -103,19 +103,19 @@ abstract class CharacterData extends Node
     /**
      * Inserts the given string data at the specified offset.
      *
-     * @param  int      $aOffset The offset where insertion should begin.
+     * @param  int      $offset The offset where insertion should begin.
      *
-     * @param  string   $aData   The string data to be inserted.
+     * @param  string   $data   The string data to be inserted.
      *
      * @throws IndexSizeError If the given offset is greater than the length
      *     of the data.
      */
-    public function insertData($aOffset, $aData)
+    public function insertData($offset, $data)
     {
         $this->doReplaceData(
-            Utils::unsignedLong($aOffset),
+            Utils::unsignedLong($offset),
             0,
-            Utils::DOMString($aData)
+            Utils::DOMString($data)
         );
     }
 
@@ -125,23 +125,23 @@ abstract class CharacterData extends Node
      *
      * @see https://dom.spec.whatwg.org/#dom-characterdata-replacedata
      *
-     * @param int $aOffset The position within the string where the
+     * @param int $offset The position within the string where the
      *     replacement should begin.
      *
-     * @param int $aCount The number of characters from the given offset that
+     * @param int $count The number of characters from the given offset that
      *     the replacement should extend to.
      *
-     * @param string $aData The data to be inserted in to the string.
+     * @param string $data The data to be inserted in to the string.
      *
      * @throws IndexSizeError If the given offset is greater than the length
      *     of the data.
      */
-    public function replaceData($aOffset, $aCount, $aData)
+    public function replaceData($offset, $count, $data)
     {
         $this->doReplaceData(
-            Utils::unsignedLong($aOffset),
-            Utils::unsignedLong($aCount),
-            Utils::DOMString($aData)
+            Utils::unsignedLong($offset),
+            Utils::unsignedLong($count),
+            Utils::DOMString($data)
         );
     }
 
@@ -150,51 +150,50 @@ abstract class CharacterData extends Node
      *
      * @see https://dom.spec.whatwg.org/#concept-cd-replace
      *
-     * @param int $aOffset The position within the string where the
+     * @param int $offset The position within the string where the
      *     replacement should begin.
      *
-     * @param int $aCount The number of characters from the given offset that
+     * @param int $count The number of characters from the given offset that
      *     the replacement should extend to.
      *
-     * @param string $aData The data to be inserted in to the string.
+     * @param string $data The data to be inserted in to the string.
      *
      * @throws IndexSizeError If the given offset is greater than the length
      *     of the data.
      */
-    public function doReplaceData($aOffset, $aCount, $aData)
+    public function doReplaceData($offset, $count, $data)
     {
-        $length = $this->mLength;
-        $count = $aCount;
+        $length = $this->length;
 
-        if ($aOffset < 0 || $aOffset > $length) {
+        if ($offset < 0 || $offset > $length) {
             throw new IndexSizeError(
                 sprintf(
                     'The offset should be less than the length of the data. The
                     offset given is %d and the length of the data is %d.',
-                    $aOffset,
+                    $offset,
                     $length
                 )
             );
         }
 
-        if ($aOffset + $count > $length) {
-            $count = $length - $aOffset;
+        if ($offset + $count > $length) {
+            $count = $length - $offset;
         }
 
         // TODO: Queue a mutation record of "characterData" for node with
         // oldValue node’s data.
 
         $encoding = $this->nodeDocument->characterSet;
-        $this->mData = mb_substr($this->mData, 0, $aOffset, $encoding) .
-            $aData .
+        $this->data = mb_substr($this->data, 0, $offset, $encoding) .
+            $data .
             mb_substr(
-                $this->mData,
-                $aOffset + $count,
-                $length - $aOffset,
+                $this->data,
+                $offset + $count,
+                $length - $offset,
                 $encoding
             );
-        $newDataLen = mb_strlen($aData, $encoding);
-        $this->mLength += $newDataLen - $count;
+        $newDataLen = mb_strlen($data, $encoding);
+        $this->length += $newDataLen - $count;
 
         $ranges = Range::_getRangeCollection();
 
@@ -203,10 +202,10 @@ abstract class CharacterData extends Node
             $startOffset = $range->startOffset;
 
             if ($startContainer === $this &&
-                $startOffset > $aOffset &&
-                $startOffset <= $aOffset + $count
+                $startOffset > $offset &&
+                $startOffset <= $offset + $count
             ) {
-                $range->setStart($startContainer, $aOffset);
+                $range->setStart($startContainer, $offset);
             }
         }
 
@@ -215,10 +214,10 @@ abstract class CharacterData extends Node
             $endOffset = $range->endOffset;
 
             if ($endContainer === $this &&
-                $endOffset > $aOffset &&
-                $endOffset <= $aOffset + $count
+                $endOffset > $offset &&
+                $endOffset <= $offset + $count
             ) {
-                $range->setEnd($endContainer, $aOffset);
+                $range->setEnd($endContainer, $offset);
             }
         }
 
@@ -226,7 +225,7 @@ abstract class CharacterData extends Node
             $startContainer = $range->startContainer;
             $startOffset = $range->startOffset;
 
-            if ($startContainer === $this && $startOffset > $aOffset + $count) {
+            if ($startContainer === $this && $startOffset > $offset + $count) {
                 $range->setStart(
                     $startContainer,
                     $startOffset + $newDataLen - $count
@@ -238,7 +237,7 @@ abstract class CharacterData extends Node
             $endContainer = $range->endContainer;
             $endOffset = $range->endOffset;
 
-            if ($endContainer === $this && $endOffset > $aOffset + $count) {
+            if ($endContainer === $this && $endOffset > $offset + $count) {
                 $range->setEnd(
                     $endContainer,
                     $endOffset + $newDataLen - $count
@@ -253,10 +252,10 @@ abstract class CharacterData extends Node
      *
      * @see https://dom.spec.whatwg.org/#concept-CD-substring
      *
-     * @param  int  $aOffset  The position in the string where the substring
+     * @param  int  $offset  The position in the string where the substring
      *     should begin.
      *
-     * @param  int  $aCount  The number of characters the substring should
+     * @param  int  $count  The number of characters the substring should
      *     include starting from the given offset.
      *
      * @return string
@@ -264,28 +263,28 @@ abstract class CharacterData extends Node
      * @throws IndexSizeError If the given offset is greater than the length
      *     of the data.
      */
-    public function substringData($aOffset, $aCount)
+    public function substringData($offset, $count)
     {
-        $length = $this->mLength;
-        $aOffset = Utils::unsignedLong($aOffset);
-        $count = Utils::unsignedLong($aCount);
+        $length = $this->length;
+        $offset = Utils::unsignedLong($offset);
+        $count = Utils::unsignedLong($count);
 
-        if ($aOffset < 0 || $aOffset > $length) {
+        if ($offset < 0 || $offset > $length) {
             throw new IndexSizeError(
                 sprintf(
                     'The offset should be less than the length of the data. The
                     offset given is %d and the length of the data is %d.',
-                    $aOffset,
+                    $offset,
                     $length
                 )
             );
         }
 
-        if ($aOffset + $count > $length) {
-            return mb_substr($this->mData, $aOffset);
+        if ($offset + $count > $length) {
+            return mb_substr($this->data, $offset);
         }
 
-        return mb_substr($this->mData, $aOffset, $count);
+        return mb_substr($this->data, $offset, $count);
     }
 
     /**
@@ -301,7 +300,7 @@ abstract class CharacterData extends Node
      */
     public function getLength()
     {
-        return $this->mLength;
+        return $this->length;
     }
 
     /**
@@ -316,7 +315,7 @@ abstract class CharacterData extends Node
      */
     protected function getNodeValue()
     {
-        return $this->mData;
+        return $this->data;
     }
 
     /**
@@ -327,14 +326,14 @@ abstract class CharacterData extends Node
      * @see https://dom.spec.whatwg.org/#dom-node-nodevalue
      * @see Node::setNodeValue()
      *
-     * @param string|null $aNewValue The node's new value.
+     * @param string|null $newValue The node's new value.
      */
-    protected function setNodeValue($aNewValue)
+    protected function setNodeValue($newValue)
     {
         $this->doReplaceData(
             0,
-            $this->mLength,
-            Utils::DOMString($aNewValue, true)
+            $this->length,
+            Utils::DOMString($newValue, true)
         );
     }
 
@@ -350,7 +349,7 @@ abstract class CharacterData extends Node
      */
     protected function getTextContent()
     {
-        return $this->mData;
+        return $this->data;
     }
 
     /**
@@ -361,14 +360,14 @@ abstract class CharacterData extends Node
      * @see https://dom.spec.whatwg.org/#dom-node-textcontent
      * @see Node::setTextContent()
      *
-     * @param string|null $aNewValue The new text to be inserted into the node.
+     * @param string|null $newValue The new text to be inserted into the node.
      */
-    protected function setTextContent($aNewValue)
+    protected function setTextContent($newValue)
     {
         $this->doReplaceData(
             0,
-            $this->mLength,
-            Utils::DOMString($aNewValue, true)
+            $this->length,
+            Utils::DOMString($newValue, true)
         );
     }
 }

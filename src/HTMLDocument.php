@@ -27,12 +27,12 @@ class HTMLDocument extends Document
     {
         parent::__construct();
 
-        $this->mContentType = 'text/html';
+        $this->contentType = 'text/html';
     }
 
-    public function __get($aName)
+    public function __get($name)
     {
-        switch ($aName) {
+        switch ($name) {
             case 'body':
                 return $this->getBodyElement();
 
@@ -43,25 +43,25 @@ class HTMLDocument extends Document
                 return $this->getTitle();
 
             default:
-                return parent::__get($aName);
+                return parent::__get($name);
         }
     }
 
-    public function __set($aName, $aValue)
+    public function __set($name, $value)
     {
-        switch ($aName) {
+        switch ($name) {
             case 'body':
-                $this->setBodyElement($aValue);
+                $this->setBodyElement($value);
 
                 break;
 
             case 'title':
-                $this->setTitle(Utils::DOMString($aValue));
+                $this->setTitle(Utils::DOMString($value));
 
                 break;
 
             default:
-                parent::__set($aName, $aValue);
+                parent::__set($name, $value);
         }
     }
 
@@ -83,7 +83,7 @@ class HTMLDocument extends Document
         if ($docElement && $docElement instanceof HTMLHtmlElement) {
             // Get the first element in the document element that is a body or
             // frameset element.
-            foreach ($docElement->mChildNodes as $child) {
+            foreach ($docElement->childNodes as $child) {
                 $isValidBody = $child instanceof HTMLBodyElement ||
                     $child instanceof HTMLFrameSetElement;
 
@@ -113,7 +113,7 @@ class HTMLDocument extends Document
         if ($element) {
             // Concatenate the text data of all the text node children of the
             // title element.
-            foreach ($element->mChildNodes as $child) {
+            foreach ($element->childNodes as $child) {
                 if ($child instanceof Text) {
                     $value .= $child->data;
                 }
@@ -151,7 +151,7 @@ class HTMLDocument extends Document
         if ($docElement && $docElement instanceof SVGSVGElement) {
             // Find the first child of the document element that is a svg title
             // element.
-            foreach ($docElement->mChildNodes as $child) {
+            foreach ($docElement->childNodes as $child) {
                 if ($child instanceof SVGTitleElement) {
                     return $child;
                 }
@@ -161,8 +161,8 @@ class HTMLDocument extends Document
             $tw = new TreeWalker(
                 $this,
                 NodeFilter::SHOW_ELEMENT,
-                function ($aNode) {
-                    return $aNode instanceof HTMLTitleElement ?
+                function ($node) {
+                    return $node instanceof HTMLTitleElement ?
                         NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
                 }
             );
@@ -180,15 +180,15 @@ class HTMLDocument extends Document
      *
      * @see https://html.spec.whatwg.org/multipage/dom.html#dom-document-body
      *
-     * @param HTMLElement $aNewBody The new body element.
+     * @param HTMLElement $newBody The new body element.
      */
-    protected function setBodyElement($aNewBody)
+    protected function setBodyElement($newBody)
     {
         // The document's body can only be a body or frameset element. If the
         // new value being passed is not one of these, then throw an exception
         // and abort the algorithm.
-        $isValidBody = $aNewBody instanceof HTMLBodyElement ||
-            $aNewBody instanceof HTMLFrameSetElement;
+        $isValidBody = $newBody instanceof HTMLBodyElement ||
+            $newBody instanceof HTMLFrameSetElement;
 
         if (!$isValidBody) {
             throw new HierarchyRequestError();
@@ -198,14 +198,14 @@ class HTMLDocument extends Document
         $oldBody = $this->getBodyElement();
 
         // Don't try setting the document's body to the same node.
-        if ($aNewBody === $oldBody) {
+        if ($newBody === $oldBody) {
             return;
         }
 
         // If there is a pre-existing body element, then replace it with the
         // new body element.
         if ($oldBody) {
-            $oldBody->mParentNode->replaceNode($aNewBody, $oldBody);
+            $oldBody->parentNode->replaceNode($newBody, $oldBody);
             return;
         }
 
@@ -220,7 +220,7 @@ class HTMLDocument extends Document
         }
 
         if (!$oldBody) {
-            $docElement->appendChild($aNewBody);
+            $docElement->appendChild($newBody);
         }
     }
 
@@ -231,9 +231,9 @@ class HTMLDocument extends Document
      *
      * @see https://html.spec.whatwg.org/multipage/dom.html#document.title
      *
-     * @param string $aNewTitle The new title.
+     * @param string $newTitle The new title.
      */
-    protected function setTitle($aNewTitle)
+    protected function setTitle($newTitle)
     {
         $docElement = $this->getFirstElementChild();
         $element = null;
@@ -241,7 +241,7 @@ class HTMLDocument extends Document
         if ($docElement && $docElement instanceof SVGSVGElement) {
             // Find the first child of the document element that is an
             // svg title element.
-            foreach ($docElement->mChildNodes as $child) {
+            foreach ($docElement->childNodes as $child) {
                 if ($child instanceof SVGTitleElement) {
                     $element = $child;
                     break;
@@ -258,11 +258,11 @@ class HTMLDocument extends Document
                 );
                 $docElement->insertNode(
                     $element,
-                    $docElement->mChildNodes->first()
+                    $docElement->childNodes->first()
                 );
             }
 
-            $element->textContent = $aNewTitle;
+            $element->textContent = $newTitle;
         } elseif ($docElement &&
             $docElement->namespaceURI === Namespaces::HTML
         ) {
@@ -287,7 +287,7 @@ class HTMLDocument extends Document
                 $head->appendChild($element);
             }
 
-            $element->textContent = $aNewTitle;
+            $element->textContent = $newTitle;
         }
     }
 }

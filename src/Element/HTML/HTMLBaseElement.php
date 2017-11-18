@@ -9,7 +9,7 @@ use Rowbot\DOM\URL\URLParser;
  */
 class HTMLBaseElement extends HTMLElement
 {
-    private $mFrozenBaseURL;
+    private $frozenBaseUrl;
 
     protected function __construct()
     {
@@ -21,7 +21,7 @@ class HTMLBaseElement extends HTMLElement
         switch ($aName) {
             case 'href':
                 $document = $this->nodeDocument;
-                $url = $this->mAttributesList->getAttrValue('href', null);
+                $url = $this->attributeList->getAttrValue('href', null);
                 $urlRecord = URLParser::parseUrl(
                     $url,
                     $document->getFallbackBaseURL(),
@@ -35,7 +35,7 @@ class HTMLBaseElement extends HTMLElement
                 return $urlRecord->serializeURL();
 
             case 'target':
-                return $this->mAttributesList->getAttrValue('target', null);
+                return $this->attributeList->getAttrValue('target', null);
 
             default:
                 return parent::__get($aName);
@@ -47,7 +47,7 @@ class HTMLBaseElement extends HTMLElement
         switch ($aName) {
             case 'href':
             case 'target':
-                $this->mAttributesList->setAttrValue($aName, $aValue);
+                $this->attributeList->setAttrValue($aName, $aValue);
 
                 break;
 
@@ -65,7 +65,7 @@ class HTMLBaseElement extends HTMLElement
      */
     public function getFrozenBaseURL()
     {
-        return $this->mFrozenBaseURL;
+        return $this->frozenBaseUrl;
     }
 
     /**
@@ -114,7 +114,7 @@ class HTMLBaseElement extends HTMLElement
         if ($aHref) {
             $href = $aHref;
         } else {
-            $hrefAttr = $this->mAttributesList->getAttrByNamespaceAndLocalName(
+            $hrefAttr = $this->attributeList->getAttrByNamespaceAndLocalName(
                 null,
                 'href'
             );
@@ -136,21 +136,21 @@ class HTMLBaseElement extends HTMLElement
         // if urlRecord is failure or running Is base allowed for Document? on
         // the resulting URL record and document returns "Blocked"
         if ($urlRecord === false) {
-            $this->mFrozenBaseURL = $fallbackBaseURL;
+            $this->frozenBaseUrl = $fallbackBaseURL;
         } else {
-            $this->mFrozenBaseURL = $urlRecord;
+            $this->frozenBaseUrl = $urlRecord;
         }
     }
 
     protected function doInsertingSteps()
     {
-        if ($this->mParentNode instanceof HTMLHeadElement) {
+        if ($this->parentNode instanceof HTMLHeadElement) {
             $node = $this;
 
             while ($node) {
                 $node = $node->previousSibling;
                 $isValid = $node instanceof HTMLBaseElement &&
-                    $this->mAttributesList->getAttrByNamespaceAndLocalName(
+                    $this->attributeList->getAttrByNamespaceAndLocalName(
                         null,
                         'href'
                     );

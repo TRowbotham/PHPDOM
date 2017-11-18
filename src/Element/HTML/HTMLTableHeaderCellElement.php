@@ -19,71 +19,71 @@ namespace Rowbot\DOM\Element\HTML;
  */
 class HTMLTableHeaderCellElement extends HTMLTableCellElement
 {
-    private $mAbbr;
-    private $mScope;
-    private $mSorted;
+    private $abbr;
+    private $scope;
+    private $sorted;
 
     protected function __construct()
     {
         parent::__construct();
 
-        $this->mAbbr = '';
-        $this->mScope = '';
-        $this->mSorted = '';
+        $this->abbr = '';
+        $this->scope = '';
+        $this->sorted = '';
     }
 
-    public function __get($aName)
+    public function __get($name)
     {
-        switch ($aName) {
+        switch ($name) {
             case 'abbr':
-                return $this->mAbbr;
+                return $this->abbr;
 
             case 'scope':
-                return $this->mScope;
+                return $this->scope;
 
             case 'sorted':
-                return $this->mSorted;
+                return $this->sorted;
 
             default:
-                return parent::__get($aName);
+                return parent::__get($name);
         }
     }
 
-    public function __set($aName, $aValue)
+    public function __set($name, $value)
     {
-        switch ($aName) {
+        switch ($name) {
             case 'abbr':
-                if (!is_string($aValue)) {
+                if (!is_string($value)) {
                     break;
                 }
 
-                $this->mAbbr = $aValue;
-                $this->_updateAttributeOnPropertyChange($aName, $aValue);
+                $this->abbr = $value;
+                $this->_updateAttributeOnPropertyChange($name, $value);
 
                 break;
 
             case 'scope':
-                if (!is_string($aValue)) {
+                if (!is_string($value)) {
                     break;
                 }
 
-                $this->mScope = $aValue;
-                $this->_updateAttributeOnPropertyChange($aName, $aValue);
+                $this->scope = $value;
+                $this->_updateAttributeOnPropertyChange($name, $value);
 
                 break;
 
             case 'sorted':
-                if (!is_string($aValue)) {
+                if (!is_string($value)) {
                     break;
                 }
 
-                $this->mScope = $aValue;
-                $this->_updateAttributeOnPropertyChange($aName, $aValue);
+                $this->scope = $value;
+                $this->_updateAttributeOnPropertyChange($name, $value);
 
                 break;
 
             default:
-                parent::__set($aName, $aValue);
+                parent::__set($name, $value);
         }
     }
 

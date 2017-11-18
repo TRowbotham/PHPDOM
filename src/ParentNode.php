@@ -38,19 +38,19 @@ trait ParentNode
     public function prepend(...$nodes)
     {
         $node = $this->convertNodesToNode($nodes, $this->nodeDocument);
-        $this->preinsertNode($node, $this->mChildNodes->first());
+        $this->preinsertNode($node, $this->childNodes->first());
     }
 
     protected function getChildren()
     {
-        return $this->mChildNodes->filter(function ($node) {
+        return $this->childNodes->filter(function ($node) {
             return $node->nodeType == Node::ELEMENT_NODE;
         })->values();
     }
 
     protected function getFirstElementChild()
     {
-        $node = $this->mChildNodes->first();
+        $node = $this->childNodes->first();
 
         while ($node) {
             if ($node instanceof Element) {
@@ -65,7 +65,7 @@ trait ParentNode
 
     protected function getLastElementChild()
     {
-        $node = $this->mChildNodes->last();
+        $node = $this->childNodes->last();
 
         while ($node) {
             if ($node instanceof Element) {

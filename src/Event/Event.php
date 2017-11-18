@@ -56,56 +56,56 @@ class Event
     const AT_TARGET = 2;
     const BUBBLING_PHASE = 3;
 
-    protected $mBubbles;
-    protected $mCancelable;
-    protected $mCurrentTarget;
-    protected $mEventPhase;
-    protected $mFlags;
-    protected $mIsTrusted;
-    protected $mPath;
-    protected $mRelatedTarget;
-    protected $mTarget;
-    protected $mTimeStamp;
-    protected $mType;
+    protected $bubbles;
+    protected $cancelable;
+    protected $currentTarget;
+    protected $eventPhase;
+    protected $flags;
+    protected $isTrusted;
+    protected $path;
+    protected $relatedTarget;
+    protected $target;
+    protected $timeStamp;
+    protected $type;
 
-    public function __construct($aType, EventInit $aEventInitDict = null)
+    public function __construct($type, EventInit $eventInitDict = null)
     {
-        $initDict = $aEventInitDict ?: new EventInit();
-        $this->mBubbles = $initDict->bubbles;
-        $this->mCancelable =  $initDict->cancelable;
-        $this->mCurrentTarget = null;
-        $this->mEventPhase = self::NONE;
-        $this->mFlags |= EventFlags::INITIALIZED;
-        $this->mIsTrusted = false;
-        $this->mPath = new \SplDoublyLinkedList();
-        $this->mTarget = null;
-        $this->mTimeStamp = microtime();
-        $this->mType = $aType;
+        $initDict = $eventInitDict ?: new EventInit();
+        $this->bubbles = $initDict->bubbles;
+        $this->cancelable =  $initDict->cancelable;
+        $this->currentTarget = null;
+        $this->eventPhase = self::NONE;
+        $this->flags |= EventFlags::INITIALIZED;
+        $this->isTrusted = false;
+        $this->path = new \SplDoublyLinkedList();
+        $this->target = null;
+        $this->timeStamp = microtime();
+        $this->type = $type;
     }
 
-    public function __get($aName)
+    public function __get($name)
     {
-        switch ($aName) {
+        switch ($name) {
             case 'bubbles':
-                return $this->mBubbles;
+                return $this->bubbles;
             case 'cancelable':
-                return $this->mCancelable;
+                return $this->cancelable;
             case 'composed':
-                return (bool) ($this->mFlags & EventFlags::COMPOSED);
+                return (bool) ($this->flags & EventFlags::COMPOSED);
             case 'currentTarget':
-                return $this->mCurrentTarget;
+                return $this->currentTarget;
             case 'defaultPrevented':
-                return (bool) ($this->mFlags & EventFlags::CANCELED);
+                return (bool) ($this->flags & EventFlags::CANCELED);
             case 'eventPhase':
-                return $this->mEventPhase;
+                return $this->eventPhase;
             case 'isTrusted':
-                return $this->mIsTrusted;
+                return $this->isTrusted;
             case 'target':
-                return $this->mTarget;
+                return $this->target;
             case 'timeStamp':
-                return $this->mTimeStamp;
+                return $this->timeStamp;
             case 'type':
-                return $this->mType;
+                return $this->type;
         }
     }
 
@@ -114,22 +114,22 @@ class Event
      *
      * @see https://dom.spec.whatwg.org/#dom-event-initevent
      *
-     * @param string $aType The type of event to be created.
+     * @param string $type The type of event to be created.
      *
-     * @param boolean $aBubbles Optional. Whether or not the event will bubble
+     * @param boolean $bubbles Optional. Whether or not the event will bubble
      *     up the tree, if the event is dispatched on an object that
      *     participates in a tree.  Defaults to false.
      *
-     * @param boolean $aCancelable Optional. Whether or not the event's default
+     * @param boolean $cancelable Optional. Whether or not the event's default
      *     action can be prevented.  Defaults to false.
      */
-    public function initEvent($aType, $aBubbles = false, $aCancelable = false)
+    public function initEvent($type, $bubbles = false, $cancelable = false)
     {
-        if ($this->mFlags & EventFlags::DISPATCH) {
+        if ($this->flags & EventFlags::DISPATCH) {
             return;
         }
 
-        $this->init(Utils::DOMString($aType), $aBubbles, $aCancelable);
+        $this->init(Utils::DOMString($type), $bubbles, $cancelable);
     }
 
     /**
@@ -143,12 +143,12 @@ class Event
     public function composedPath()
     {
         $composedPath = [];
-        $currentTarget = $this->mCurrentTarget;
+        $currentTarget = $this->currentTarget;
 
         // Clone event's path and set its iterator mode to the default as
         // the Event's path could have its iterator set in reverse if the Event
         // is currently in the capturing phase.
-        $path = clone $this->mPath;
+        $path = clone $this->path;
         $path->setIteratorMode(
             \SplDoublyLinkedList::IT_MODE_FIFO |
             \SplDoublyLinkedList::IT_MODE_KEEP
@@ -158,11 +158,11 @@ class Event
             // If $currentTarget is a node and $tuple’s item is not
             // closed-shadow-hidden from $currentTarget, or $currentTarget
             // is not a node, then append $tuple’s item to $composedPath.
-            if (($this->mCurrentTarget instanceof Node &&
+            if (($this->currentTarget instanceof Node &&
                 !$tuple['item']->isClosedShadowHiddenFrom(
-                    $this->mCurrentTarget
+                    $this->currentTarget
                 )) ||
-                !($this->mCurrentTarget instanceof Node)
+                !($this->currentTarget instanceof Node)
             ) {
                 $composedPath[] = $tuple['item'];
             }
@@ -179,10 +179,10 @@ class Event
      */
     public function preventDefault()
     {
-        if ($this->mCancelable &&
-            !($this->mFlags & EventFlags::IN_PASSIVE_LISTENER)
+        if ($this->cancelable &&
+            !($this->flags & EventFlags::IN_PASSIVE_LISTENER)
         ) {
-            $this->mFlags |= EventFlags::CANCELED;
+            $this->flags |= EventFlags::CANCELED;
         }
     }
 
@@ -192,7 +192,7 @@ class Event
      */
     public function stopPropagation()
     {
-        $this->mFlags |= EventFlags::STOP_PROPAGATION;
+        $this->flags |= EventFlags::STOP_PROPAGATION;
     }
 
     /**
@@ -202,7 +202,7 @@ class Event
      */
     public function stopImmediatePropagation()
     {
-        $this->mFlags |= EventFlags::STOP_PROPAGATION |
+        $this->flags |= EventFlags::STOP_PROPAGATION |
             EventFlags::STOP_IMMEDIATE_PROPAGATION;
     }
 
@@ -215,7 +215,7 @@ class Event
      */
     public function getFlags()
     {
-        return $this->mFlags;
+        return $this->flags;
     }
 
     /**
@@ -223,11 +223,11 @@ class Event
      *
      * @internal
      *
-     * @param mixed $aTarget The current event target.
+     * @param mixed $target The current event target.
      */
-    public function setCurrentTarget($aTarget)
+    public function setCurrentTarget($target)
     {
-        $this->mCurrentTarget = $aTarget;
+        $this->currentTarget = $target;
     }
 
     /**
@@ -235,11 +235,11 @@ class Event
      *
      * @internal
      *
-     * @param int $aPhase An integer representing the current event phase.
+     * @param int $phase An integer representing the current event phase.
      */
-    public function setEventPhase($aPhase)
+    public function setEventPhase($phase)
     {
-        $this->mEventPhase = $aPhase;
+        $this->eventPhase = $phase;
     }
 
     /**
@@ -247,11 +247,11 @@ class Event
      *
      * @internal
      *
-     * @param int $aFlag A bitwise flag.
+     * @param int $flag A bitwise flag.
      */
-    public function setFlag($aFlag)
+    public function setFlag($flag)
     {
-        $this->mFlags |= $aFlag;
+        $this->flags |= $flag;
     }
 
     /**
@@ -263,7 +263,7 @@ class Event
      */
     public function getPath()
     {
-        return $this->mPath;
+        return $this->path;
     }
 
     /**
@@ -273,7 +273,7 @@ class Event
      */
     public function emptyPath()
     {
-        $this->mPath = new \SplDoublyLinkedList();
+        $this->path = new \SplDoublyLinkedList();
     }
 
     /**
@@ -281,11 +281,11 @@ class Event
      *
      * @internal
      *
-     * @param bool $aIsTrusted The trusted state of the event.
+     * @param bool $isTrusted The trusted state of the event.
      */
-    public function setIsTrusted($aIsTrusted)
+    public function setIsTrusted($isTrusted)
     {
-        $this->mIsTrusted = $aIsTrusted;
+        $this->isTrusted = $isTrusted;
     }
 
     /**
@@ -293,11 +293,11 @@ class Event
      *
      * @internal
      *
-     * @param mixed $aTarget The event's target.
+     * @param mixed $target The event's target.
      */
-    public function setTarget($aTarget)
+    public function setTarget($target)
     {
-        $this->mTarget = $aTarget;
+        $this->target = $target;
     }
 
     /**
@@ -305,11 +305,11 @@ class Event
      *
      * @internal
      *
-     * @param string $aType The event's type.
+     * @param string $type The event's type.
      */
-    public function setType($aType)
+    public function setType($type)
     {
-        $this->mType = $aType;
+        $this->type = $type;
     }
 
     /**
@@ -317,11 +317,11 @@ class Event
      *
      * @internal
      *
-     * @param int $aFlag A bitwise flag.
+     * @param int $flag A bitwise flag.
      */
-    public function unsetFlag($aFlag)
+    public function unsetFlag($flag)
     {
-        $this->mFlags &= ~$aFlag;
+        $this->flags &= ~$flag;
     }
 
     /**
@@ -329,37 +329,37 @@ class Event
      *
      * @see https://dom.spec.whatwg.org/#concept-event-initialize
      *
-     * @param string $aType The event type.
+     * @param string $type The event type.
      *
-     * @param bool $aBubbles Whether the event bubbles or not.
+     * @param bool $bubbles Whether the event bubbles or not.
      *
-     * @param bool $aCancelable Whether the event is cancelable or not.
+     * @param bool $cancelable Whether the event is cancelable or not.
      */
-    protected function init($aType, $aBubbles, $aCancelable)
+    protected function init($type, $bubbles, $cancelable)
     {
-        $this->mFlags |= EventFlags::INITIALIZED;
-        $this->mFlags &= ~(EventFlags::STOP_PROPAGATION |
+        $this->flags |= EventFlags::INITIALIZED;
+        $this->flags &= ~(EventFlags::STOP_PROPAGATION |
             EventFlags::STOP_IMMEDIATE_PROPAGATION |
             EventFlags::CANCELED);
-        $this->mIsTrusted = false;
-        $this->mTarget = null;
-        $this->mType = $aType;
-        $this->mBubbles = $aBubbles;
-        $this->mCancelable = $aCancelable;
+        $this->isTrusted = false;
+        $this->target = null;
+        $this->type = $type;
+        $this->bubbles = $bubbles;
+        $this->cancelable = $cancelable;
     }
 
     public function getRelatedTarget()
     {
-        return $this->mRelatedTarget;
+        return $this->relatedTarget;
     }
 
-    public function setRelatedTarget(EventTarget $aTarget = null)
+    public function setRelatedTarget(EventTarget $target = null)
     {
-        $this->mRelatedTarget = $aTarget;
+        $this->relatedTarget = $target;
     }
 
     public function retarget()
     {
-            // TODO
+        // TODO
     }
 }

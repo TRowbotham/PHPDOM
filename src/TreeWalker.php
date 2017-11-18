@@ -9,51 +9,51 @@ final class TreeWalker
 {
     use NodeFilterUtils;
 
-    private $mCurrentNode;
-    private $mFilter;
-    private $mRoot;
-    private $mWhatToShow;
+    private $currentNode;
+    private $filter;
+    private $root;
+    private $whatToShow;
 
     public function __construct(
-        Node $aRoot,
-        $aWhatToShow = NodeFilter::SHOW_ALL,
-        $aFilter = null
+        Node $root,
+        $whatToShow = NodeFilter::SHOW_ALL,
+        $filter = null
     ) {
-        $this->mCurrentNode = $aRoot;
-        $this->mFilter = null;
+        $this->currentNode = $root;
+        $this->filter = null;
 
-        if ($aFilter instanceof NodeFilter || is_callable($aFilter)) {
-            $this->mFilter = $aFilter;
+        if ($filter instanceof NodeFilter || is_callable($filter)) {
+            $this->filter = $filter;
         }
 
-        $this->mFilter = $aFilter;
-        $this->mRoot = $aRoot;
-        $this->mWhatToShow = $aWhatToShow;
+        $this->filter = $filter;
+        $this->root = $root;
+        $this->whatToShow = $whatToShow;
     }
 
-    public function __get($aName)
+    public function __get($name)
     {
-        switch ($aName) {
+        switch ($name) {
             case 'currentNode':
-                return $this->mCurrentNode;
+                return $this->currentNode;
 
             case 'filter':
-                return $this->mFilter;
+                return $this->filter;
 
             case 'root':
-                return $this->mRoot;
+                return $this->root;
 
             case 'whatToShow':
-                return $this->mWhatToShow;
+                return $this->whatToShow;
         }
     }
 
-    public function __set($aName, $aValue)
+    public function __set($name, $value)
     {
-        switch ($aName) {
+        switch ($name) {
             case 'currentNode':
-                if ($aValue instanceof Node) {
-                    $this->mCurrentNode = $aValue;
+                if ($value instanceof Node) {
+                    $this->currentNode = $value;
                 }
         }
     }
@@ -70,7 +70,7 @@ final class TreeWalker
 
     public function nextNode()
     {
-        $node = $this->mCurrentNode;
+        $node = $this->currentNode;
         $result = NodeFilter::FILTER_ACCEPT;
 
         while (true) {
@@ -82,7 +82,7 @@ final class TreeWalker
                 $result = $this->filterNode($node);
 
                 if ($result == NodeFilter::FILTER_ACCEPT) {
-                    $this->mCurrentNode = $node;
+                    $this->currentNode = $node;
 
                     return $node;
                 }
@@ -92,7 +92,7 @@ final class TreeWalker
             $temp = $node;
 
             do {
-                if ($temp === $this->mRoot) {
+                if ($temp === $this->root) {
                     break;
                 }
 
@@ -113,7 +113,7 @@ final class TreeWalker
             $result = $this->filterNode($node);
 
             if ($result == NodeFilter::FILTER_ACCEPT) {
-                $this->mCurrentNode = $node;
+                $this->currentNode = $node;
 
                 return $node;
             }
@@ -129,16 +129,16 @@ final class TreeWalker
 
     public function parentNode()
     {
-        $node = $this->mCurrentNode;
+        $node = $this->currentNode;
 
-        while ($node && $node !== $this->mRoot) {
+        while ($node && $node !== $this->root) {
             $node = $node->parentNode;
 
             if (
                 $node &&
                 $this->filterNode($node) == NodeFilter::FILTER_ACCEPT
             ) {
-                $this->mCurrentNode = $node;
+                $this->currentNode = $node;
 
                 return $node;
             }
@@ -149,9 +149,9 @@ final class TreeWalker
 
     public function previousNode()
     {
-        $node = $this->mCurrentNode;
+        $node = $this->currentNode;
 
-        while ($node !== $this->mRoot) {
+        while ($node !== $this->root) {
             $sibling = $node->previousSibling;
 
             while ($sibling) {
@@ -167,7 +167,7 @@ final class TreeWalker
                 }
 
                 if ($result == NodeFilter::FILTER_ACCEPT) {
-                    $this->mCurrentNode = $node;
+                    $this->currentNode = $node;
 
                     return $node;
                 }
@@ -175,14 +175,14 @@ final class TreeWalker
                 $sibling = $node->previousSibling;
             }
 
-            if ($node === $this->mRoot || !($node = $node->parentNode)) {
+            if ($node === $this->root || !($node = $node->parentNode)) {
                 return null;
             }
 
             $nodeFilter = $this->filterNode($node);
 
             if ($nodeFilter == NodeFilter::FILTER_ACCEPT) {
-                $this->mCurrentNode = $node;
+                $this->currentNode = $node;
 
                 return $node;
             }
@@ -196,10 +196,10 @@ final class TreeWalker
         return $this->traverseSiblings('previous');
     }
 
-    private function traverseChildren($aType)
+    private function traverseChildren($type)
     {
-        $node = $this->mCurrentNode;
-        $node = $aType == 'first' ? $node->firstChild : $node->lastChild;
+        $node = $this->currentNode;
+        $node = $type == 'first' ? $node->firstChild : $node->lastChild;
 
         if (!$node) {
             return null;
@@ -210,12 +210,12 @@ final class TreeWalker
 
             switch ($result) {
                 case NodeFilter::FILTER_ACCEPT:
-                    $this->mCurrentNode = $node;
+                    $this->currentNode = $node;
 
                     return $node;
 
                 case NodeFilter::FILTER_SKIP:
-                    $child = $aType == 'first' ?
+                    $child = $type == 'first' ?
                         $node->firstChild : $node->lastChild;
 
                     if ($child) {
@@ -225,7 +225,7 @@ final class TreeWalker
             }
 
             while (true) {
-                $sibling = $aType == 'first' ?
+                $sibling = $type == 'first' ?
                     $node->nextSibling : $node->previousSibling;
 
                 if ($sibling) {
@@ -237,8 +237,8 @@ final class TreeWalker
 
                 if (
                     !$parent ||
-                    $parent === $this->mRoot ||
-                    $parent === $this->mCurrentNode
+                    $parent === $this->root ||
+                    $parent === $this->currentNode
                 ) {
                     return null;
                 }
@@ -248,16 +248,16 @@ final class TreeWalker
         }
     }
 
-    private function traverseSiblings($aType)
+    private function traverseSiblings($type)
     {
-        $node = $this->mCurrentNode;
+        $node = $this->currentNode;
 
-        if ($node === $this->mRoot) {
+        if ($node === $this->root) {
             return null;
         }
 
         while (true) {
-            $sibling = $aType == 'next' ?
+            $sibling = $type == 'next' ?
                 $node->nextSibling : $node->previousSibling;
 
             while ($sibling) {
@@ -265,23 +265,23 @@ final class TreeWalker
                 $result = $this->filterNode($node);
 
                 if ($result == NodeFilter::FILTER_ACCEPT) {
-                    $this->mCurrentNode = $node;
+                    $this->currentNode = $node;
 
                     return $node;
                 }
 
-                $sibling = $aType == 'next' ?
+                $sibling = $type == 'next' ?
                     $node->firstChild : $node->lastChild;
 
                 if ($result == NodeFilter::FILTER_REJECT || !$sibling) {
-                    $sibling = $aType == 'next' ?
+                    $sibling = $type == 'next' ?
                         $node->nextSibling : $node->previousSibling;
                 }
             }
 
             $node = $node->parentNode;
 
-            if (!$node || $node === $this->mRoot) {
+            if (!$node || $node === $this->root) {
                 return null;
             }
 

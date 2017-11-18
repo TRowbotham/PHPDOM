@@ -6,41 +6,41 @@ namespace Rowbot\DOM\Element\HTML;
  */
 class HTMLTimeElement extends HTMLElement
 {
-    private $mDateTime;
+    private $dateTime;
 
     protected function __construct()
     {
         parent::__construct();
 
-        $this->mDateTime = '';
+        $this->dateTime = '';
     }
 
-    public function __get($aName)
+    public function __get($name)
     {
-        switch ($aName) {
+        switch ($name) {
             case 'dateTime':
-                return $this->mDateTime;
+                return $this->dateTime;
 
             default:
-                return parent::__get($aName);
+                return parent::__get($name);
         }
     }
 
-    public function __set($aName, $aValue)
+    public function __set($name, $value)
     {
-        switch ($aName) {
+        switch ($name) {
             case 'dateTime':
-                if (!is_string($aValue)) {
+                if (!is_string($value)) {
                     break;
                 }
 
-                $this->mDateTime = $aValue;
-                $this->_updateAttributeOnPropertyChange($aName, $aValue);
+                $this->dateTime = $value;
+                $this->_updateAttributeOnPropertyChange($name, $value);
 
                 break;
 
             default:
-                parent::__set($aName, $aValue);
+                parent::__set($name, $value);
         }
     }
 }
