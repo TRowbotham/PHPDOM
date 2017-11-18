@@ -3305,7 +3305,7 @@ class Tokenizer
         }
     }
 
-    private function flush($codepoints, AttributeToken $token, $returnState)
+    private function flush($codepoints, ?AttributeToken $token, $returnState)
     {
         switch ($returnState) {
             case TokenizerState::ATTRIBUTE_VALUE_DOUBLE_QUOTED:
