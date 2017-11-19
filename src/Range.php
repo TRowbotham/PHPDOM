@@ -47,9 +47,9 @@ class Range {
     public function __construct()
     {
         self::$collection[] = $this;
-        $this->endContainer = Document::_getDefaultDocument();
+        $this->endContainer = Document::getDefaultDocument();
         $this->endOffset = 0;
-        $this->startContainer = Document::_getDefaultDocument();
+        $this->startContainer = Document::getDefaultDocument();
         $this->startOffset = 0;
     }
 

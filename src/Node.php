@@ -83,7 +83,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
         $this->childNodes = new OrderedSet();
         $this->nodeList = new NodeList($this->childNodes);
         $this->nodeType = '';
-        $this->nodeDocument = Document::_getDefaultDocument();
+        $this->nodeDocument = Document::getDefaultDocument();
         $this->parentNode = null;
         $this->previousSibling = null;
         $this->nextSibling = null;

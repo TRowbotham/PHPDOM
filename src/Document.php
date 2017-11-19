@@ -593,7 +593,7 @@ class Document extends Node implements Stringable
      *     then no document existed before the user attempted to instantiate an
      *     object that has an owning document.
      */
-    public static function _getDefaultDocument()
+    public static function getDefaultDocument()
     {
         return static::$defaultDocument;
     }
