@@ -52,7 +52,7 @@ class DOMParser
                 $parser = new HTMLParser($document);
                 $parser->preprocessInputStream($str);
                 $parser->run();
-                $document->_setContentType($type);
+                $document->setContentType($type);
 
                 return $document;
 
@@ -62,7 +62,7 @@ class DOMParser
             case 'image/svg+xml':
                 $parserError = false;
                 $document = new Document();
-                $document->_setContentType($type);
+                $document->setContentType($type);
 
                 try {
                     // Parse str with a namespace-enabled XML parser.
@@ -86,7 +86,7 @@ class DOMParser
                 // NOTE: The document will use the Document interface rather
                 // than the XMLDocument interface.
                 $document = new Document();
-                $document->_setContentType($type);
+                $document->setContentType($type);
 
                 // Let root be a new Element, with its local name set to
                 // "parsererror" and its namespace set to

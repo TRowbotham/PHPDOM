@@ -66,17 +66,17 @@ final class DOMImplementation
 
         switch ($namespace) {
             case Namespaces::HTML:
-                $doc->_setContentType('application/xhtml+xml');
+                $doc->setContentType('application/xhtml+xml');
 
                 break;
 
             case Namespaces::SVG:
-                $doc->_setContentType('image/svg+xml');
+                $doc->setContentType('image/svg+xml');
 
                 break;
 
             default:
-                $doc->_setContentType('application/xml');
+                $doc->setContentType('application/xml');
         }
 
         return $doc;
@@ -127,7 +127,7 @@ final class DOMImplementation
     public function createHTMLDocument($title = null)
     {
         $doc = new HTMLDocument();
-        $doc->_setContentType('text/html');
+        $doc->setContentType('text/html');
         $docType = new DocumentType('html', '', '');
         $docType->setNodeDocument($doc);
         $doc->appendChild($docType);

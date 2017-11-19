@@ -711,7 +711,7 @@ class Document extends Node implements Stringable
      *
      * @param string $type The MIME content type of the document.
      */
-    public function _setContentType($type)
+    public function setContentType($type)
     {
         $this->contentType = $type;
     }
