@@ -193,7 +193,7 @@ abstract class CharacterData extends Node
         $newDataLen = mb_strlen($data, $encoding);
         $this->length += $newDataLen - $count;
 
-        $ranges = Range::_getRangeCollection();
+        $ranges = Range::getRangeCollection();
 
         foreach ($ranges as $index => $range) {
             $startContainer = $range->startContainer;

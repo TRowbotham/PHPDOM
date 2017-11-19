@@ -1073,7 +1073,7 @@ class Range
      *
      * @return Range[]
      */
-    public static function _getRangeCollection()
+    public static function getRangeCollection()
     {
         return self::$collection;
     }

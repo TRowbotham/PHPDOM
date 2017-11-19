@@ -770,7 +770,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
         if ($child) {
             $childIndex = $child->parentNode->childNodes->indexOf($child);
 
-            foreach (Range::_getRangeCollection() as $range) {
+            foreach (Range::getRangeCollection() as $range) {
                 $startContainer = $range->startContainer;
                 $startOffset = $range->startOffset;
                 $endContainer = $range->endContainer;
@@ -1187,7 +1187,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             // Replace data with node node, offset length, count 0, and data
             // data.
             $node->doReplaceData($length, 0, $data);
-            $ranges = Range::_getRangeCollection();
+            $ranges = Range::getRangeCollection();
 
             foreach (clone $node->childNodes as $currentNode) {
                 if ($currentNode->nodeType != self::TEXT_NODE) {
@@ -1309,7 +1309,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
     ) {
         $parent = $this;
         $index = $parent->childNodes->indexOf($node);
-        $ranges = Range::_getRangeCollection();
+        $ranges = Range::getRangeCollection();
 
         foreach ($ranges as $range) {
             $startContainer = $range->startContainer;
