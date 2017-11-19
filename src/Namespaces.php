@@ -1,7 +1,6 @@
 <?php
 namespace Rowbot\DOM;
 
-use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Exception\DOMException;
 use Rowbot\DOM\Exception\NamespaceError;
 use Rowbot\DOM\Exception\InvalidCharacterError;
