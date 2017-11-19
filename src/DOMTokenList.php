@@ -116,6 +116,8 @@ class DOMTokenList implements
             }
         }
 
+        unset($token);
+
         foreach ($tokens as $token) {
             $this->tokens->append($token);
         }
@@ -170,6 +172,8 @@ class DOMTokenList implements
                 return;
             }
         }
+
+        unset($token);
 
         foreach ($tokens as $token) {
             $this->tokens->remove($token);

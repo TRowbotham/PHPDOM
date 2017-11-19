@@ -164,8 +164,9 @@ class Element extends Node implements AttributeChangeObserver
                 // If the context object is a template element, then let context
                 // object be the template's template contents (a
                 // DocumentFragment).
-                $context = $this instanceof HTMLTemplateElement ?
-                    $this->mContent : $this;
+                $context = $this instanceof HTMLTemplateElement
+                    ? $this->mContent
+                    : $this;
 
                 // NOTE: Setting innerHTML on a template element will replace
                 // all the nodes in its template contents (template.content)
@@ -388,8 +389,8 @@ class Element extends Node implements AttributeChangeObserver
     {
         $qualifiedName = Utils::DOMString($qualifiedName);
 
-        if ($this->namespaceURI === Namespaces::HTML &&
-            $this->nodeDocument instanceof HTMLDocument
+        if ($this->namespaceURI === Namespaces::HTML
+            && $this->nodeDocument instanceof HTMLDocument
         ) {
             $qualifiedName = Utils::toASCIILowercase($qualifiedName);
         }
@@ -489,11 +490,9 @@ class Element extends Node implements AttributeChangeObserver
      */
     public function insertAdjacentHTML($position, $text)
     {
-        $position = Utils::DOMString($position);
+        $position = mb_strtolower(Utils::DOMString($position));
 
-        if (strcasecmp($position, 'beforebegin') === 0 ||
-            strcasecmp($position, 'afterend') === 0
-        ) {
+        if ($position === 'beforebegin' || $position === 'afterend') {
             // Let context be the context object's parent.
             $context = $this->parentNode;
 
@@ -502,9 +501,7 @@ class Element extends Node implements AttributeChangeObserver
             if (!$context || $context instanceof Document) {
                 throw new NoModificationAllowedError();
             }
-        } elseif (strcasecmp($position, 'afterbegin') === 0 ||
-            strcasecmp($position, 'beforeend') === 0
-        ) {
+        } elseif ($position === 'afterbegin' || $position === 'beforeend') {
             // Let context be the context object.
             $context = $this;
         } else {
@@ -518,9 +515,9 @@ class Element extends Node implements AttributeChangeObserver
         // "body" as its local name, the HTML namespace as its namespace, and
         // the context object's node document as its node document.
         if (!($context instanceof Element) ||
-            ($context->ownerDocument instanceof HTMLDocument &&
-                $context->localName === 'html' &&
-                $context->namespaceURI === Namespaces::HTML)
+            || ($context->ownerDocument instanceof HTMLDocument
+                && $context->localName === 'html'
+                && $context->namespaceURI === Namespaces::HTML)
         ) {
             $context = self::create(
                 $this->ownerDocument,
@@ -536,17 +533,17 @@ class Element extends Node implements AttributeChangeObserver
             $context
         );
 
-        if (strcasecmp($position, 'beforebegin') === 0) {
+        if ($position === 'beforebegin') {
             // Insert fragment into the context object's parent before the
             // context object.
             $this->parentNode->insertNode($fragment, $this);
-        } elseif (strcasecmp($position, 'afterbegin') === 0) {
+        } elseif ($position === 'afterbegin') {
             // Insert fragment into the context object before its first child.
             $this->insertNode($fragment, $this->mFirstChild);
-        } elseif (strcasecmp($position, 'beforeend') === 0) {
+        } elseif ($position === 'beforeend') {
             // Append fragment to the context object.
             $this->appendChild($fragment);
-        } elseif (strcasecmp($position, 'afterend') === 0) {
+        } elseif ($position === 'afterend') {
             // Insert fragment into the context object's parent before the
             // context object's next sibling.
             $this->parentNode->insertNode($fragment, $this->mNextSibling);
@@ -664,8 +661,8 @@ class Element extends Node implements AttributeChangeObserver
             throw new InvalidCharacterError();
         }
 
-        if ($this->namespaceURI === Namespaces::HTML &&
-            $this->nodeDocument instanceof HTMLDocument
+        if ($this->namespaceURI === Namespaces::HTML
+            && $this->nodeDocument instanceof HTMLDocument
         ) {
             $qualifiedName = Utils::toASCIILowercase($qualifiedName);
         }
@@ -814,12 +811,17 @@ class Element extends Node implements AttributeChangeObserver
      */
     protected function getTagName()
     {
-        $qualifiedName = $this->prefix === null ? $this->localName :
-            $this->prefix . ':' . $this->localName;
+        $qualifiedName = $this->prefix === null
+            ? $this->localName
+            : $this->prefix . ':' . $this->localName;
 
-        return $this->namespaceURI === Namespaces::HTML &&
-            $this->nodeDocument instanceof HTMLDocument ?
-            Utils::toASCIIUppercase($qualifiedName) : $qualifiedName;
+        if ($this->namespaceURI === Namespaces::HTML
+            && $this->nodeDocument instanceof HTMLDocument
+        ) {
+            return Utils::toASCIIUppercase($qualifiedName);
+        }
+
+        return $qualifiedName;
     }
 
     /**
@@ -1020,7 +1022,7 @@ class Element extends Node implements AttributeChangeObserver
         $tagName = strtoupper($tagName);
 
         while ($node) {
-            if (strcmp($node->tagName, $tagName) == 0) {
+            if ($node->tagName === $tagName) {
                 $collection[] = $node;
             }
 

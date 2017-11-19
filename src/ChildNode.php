@@ -116,8 +116,9 @@ trait ChildNode
 
         if ($this->parentNode === $parent) {
             $parent->replaceNode($node, $this);
-        } else {
-            $parent->preinsertNode($node, $viableNextSibling);
+            return;
         }
+
+        $parent->preinsertNode($node, $viableNextSibling);
     }
 }

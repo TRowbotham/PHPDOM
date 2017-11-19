@@ -33,8 +33,11 @@ trait GetElementsBy
                 }
             }
 
-            return $hasClasses ?
-                NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
+            if ($hasClasses) {
+                return NodeFilter::FILTER_ACCEPT;
+            }
+
+            return NodeFilter::FILTER_SKIP;
         };
         $tw = new TreeWalker($this, NodeFilter::SHOW_ELEMENT, $nodeFilter);
 
@@ -57,18 +60,17 @@ trait GetElementsBy
      */
     public function getElementsByTagName($localName)
     {
-        $collection = array();
+        $collection = [];
         $localName = Utils::DOMString($localName);
 
-        if (strcmp($localName, '*') === 0) {
+        if ($localName === '*') {
             $nodeFilter = null;
         } elseif ($this instanceof Document) {
             $nodeFilter = function ($node) use ($localName) {
-                $shouldAccept = ($node->namespaceURI === Namespaces::HTML &&
-                    $node->localName === Utils::toASCIILowercase($localName)
-                    ) ||
-                    ($node->namespaceURI === Namespaces::HTML &&
-                    $node->localName === $localName);
+                $shouldAccept = ($node->namespaceURI === Namespaces::HTML
+                    && $node->localName === Utils::toASCIILowercase($localName))
+                    || ($node->namespaceURI === Namespaces::HTML
+                    && $node->localName === $localName);
 
                 if ($shouldAccept) {
                     return NodeFilter::FILTER_ACCEPT;
@@ -78,8 +80,11 @@ trait GetElementsBy
             };
         } else {
             $nodeFilter = function ($node) use ($localName) {
-                return strcmp($node->localName, $localName) === 0 ?
-                    NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
+                if ($node->localName === $localName) {
+                    return NodeFilter::FILTER_ACCEPT;
+                }
+
+                return NodeFilter::FILTER_SKIP;
             };
         }
 
@@ -115,19 +120,25 @@ trait GetElementsBy
         $namespace = Utils::DOMString($namespace, false, true);
         $namespace = $namespace === '' ? null : $namespace;
         $localName = Utils::DOMString($localName);
-        $collection = array();
+        $collection = [];
 
-        if (strcmp($namespace, '*') === 0 && strcmp($localName, '*') === 0) {
+        if ($namespace === '*' && $localName === '*') {
             $nodeFilter = null;
-        } elseif (strcmp($namespace, '*') === 0) {
+        } elseif ($namespace === '*') {
             $nodeFilter = function ($node) use ($localName) {
-                return strcmp($node->localName, $localName) === 0 ?
-                    NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
+                if ($node->localName === $localName) {
+                    return NodeFilter::FILTER_ACCEPT;
+                }
+
+                return NodeFilter::FILTER_SKIP;
             };
-        } elseif (strcmp($localName, '*') === 0) {
+        } elseif ($localName === '*') {
             $nodeFilter =  function ($node) use ($namespace) {
-                return strcmp($node->namespaceURI, $namespace) === 0 ?
-                    NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
+                if ($node->namespaceURI === $namespace) {
+                    return NodeFilter::FILTER_ACCEPT;
+                }
+
+                return NodeFilter::FILTER_SKIP;
             };
         }
 

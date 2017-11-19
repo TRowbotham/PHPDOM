@@ -51,10 +51,10 @@ use Rowbot\DOM\Utils;
  */
 class Event
 {
-    const NONE = 0;
+    const NONE            = 0;
     const CAPTURING_PHASE = 1;
-    const AT_TARGET = 2;
-    const BUBBLING_PHASE = 3;
+    const AT_TARGET       = 2;
+    const BUBBLING_PHASE  = 3;
 
     protected $bubbles;
     protected $cancelable;
@@ -158,11 +158,11 @@ class Event
             // If $currentTarget is a node and $tuple’s item is not
             // closed-shadow-hidden from $currentTarget, or $currentTarget
             // is not a node, then append $tuple’s item to $composedPath.
-            if (($this->currentTarget instanceof Node &&
-                !$tuple['item']->isClosedShadowHiddenFrom(
+            if (($this->currentTarget instanceof Node
+                && !$tuple['item']->isClosedShadowHiddenFrom(
                     $this->currentTarget
-                )) ||
-                !($this->currentTarget instanceof Node)
+                ))
+                || !($this->currentTarget instanceof Node)
             ) {
                 $composedPath[] = $tuple['item'];
             }
@@ -179,8 +179,8 @@ class Event
      */
     public function preventDefault()
     {
-        if ($this->cancelable &&
-            !($this->flags & EventFlags::IN_PASSIVE_LISTENER)
+        if ($this->cancelable
+            && !($this->flags & EventFlags::IN_PASSIVE_LISTENER)
         ) {
             $this->flags |= EventFlags::CANCELED;
         }
@@ -338,9 +338,9 @@ class Event
     protected function init($type, $bubbles, $cancelable)
     {
         $this->flags |= EventFlags::INITIALIZED;
-        $this->flags &= ~(EventFlags::STOP_PROPAGATION |
-            EventFlags::STOP_IMMEDIATE_PROPAGATION |
-            EventFlags::CANCELED);
+        $this->flags &= ~(EventFlags::STOP_PROPAGATION
+            | EventFlags::STOP_IMMEDIATE_PROPAGATION
+            | EventFlags::CANCELED);
         $this->isTrusted = false;
         $this->target = null;
         $this->type = $type;

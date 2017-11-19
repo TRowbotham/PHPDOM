@@ -159,16 +159,15 @@ class HTMLElement extends Element
                 break;
 
             case 'contentEditable':
-                if (strcasecmp($value, 'inherit') === 0) {
+                $value = mb_strtolower($value);
+
+                if ($value === 'inherit') {
                     $this->removeAttrByNamespaceAndLocalName(
                         null,
                         $name,
                         $this
                     );
-                } elseif (
-                    strcasecmp($value, 'true') === 0 ||
-                    strcasecmp($value, 'false') === 0
-                ) {
+                } elseif ($value === 'true' || $value === 'false') {
                     $this->attributeList->setAttrValue($name, $value);
                 } else {
                     throw new SyntaxError(

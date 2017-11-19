@@ -69,8 +69,8 @@ class Text extends CharacterData
             foreach ($ranges as $index => $range) {
                 $startOffset = $range->startOffset;
 
-                if ($range->startContainer === $this &&
-                    $startOffset > $offset
+                if ($range->startContainer === $this
+                    && $startOffset > $offset
                 ) {
                     $range->setStart($newNode, $startOffset - $offset);
                 }
@@ -88,8 +88,8 @@ class Text extends CharacterData
                 $startContainer = $range->startContainer;
                 $startOffset = $range->startOffset;
 
-                if ($startContainer === $this &&
-                    $startOffset == $treeIndex + 1
+                if ($startContainer === $this
+                    && $startOffset == $treeIndex + 1
                 ) {
                     $range->setStart($startContainer, $startOffset + 1);
                 }

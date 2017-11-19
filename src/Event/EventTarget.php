@@ -140,8 +140,8 @@ abstract class EventTarget
     {
         $flags = $event->getFlags();
 
-        if ($flags & EventFlags::DISPATCH ||
-            !($flags & EventFlags::INITIALIZED)
+        if ($flags & EventFlags::DISPATCH
+            || !($flags & EventFlags::INITIALIZED)
         ) {
             throw new InvalidStateError();
         }
@@ -195,8 +195,8 @@ abstract class EventTarget
 
         // If target is relatedTarget and target is not event’s relatedTarget,
         // then return true.
-        if ($target === $relatedTarget &&
-            $target !== $event->getRelatedTarget()
+        if ($target === $relatedTarget
+            && $target !== $event->getRelatedTarget()
         ) {
             return true;
         }
@@ -248,10 +248,10 @@ abstract class EventTarget
                 // If isActivationEvent is true, event’s bubbles attribute is
                 // true, activationTarget is null, and parent has activation
                 // behavior, then set activationTarget to parent.
-                if ($isActivationEvent &&
-                    $event->bubbles &&
-                    $activationTarget === null &&
-                    $parent->hasActivationBehavior()
+                if ($isActivationEvent
+                    && $event->bubbles
+                    && $activationTarget === null
+                    && $parent->hasActivationBehavior()
                 ) {
                     $activationTarget = $parent;
                 }
@@ -270,9 +270,9 @@ abstract class EventTarget
                 // If isActivationEvent is true, activationTarget is null, and
                 // target has activation behavior, then set activationTarget to
                 // target.
-                if ($isActivationEvent &&
-                    $activationTarget === null &&
-                    $target->hasActivationBehavior()
+                if ($isActivationEvent
+                    && $activationTarget === null
+                    && $target->hasActivationBehavior()
                 ) {
                     $activationTarget = $target;
                 }
@@ -297,8 +297,8 @@ abstract class EventTarget
         // If activationTarget is non-null and activationTarget has
         // legacy-pre-activation behavior, then run activationTarget’s
         // legacy-pre-activation behavior.
-        if ($activationTarget !== null &&
-            $activationTarget->hasLegacyPreActivationBehavior()
+        if ($activationTarget !== null
+            && $activationTarget->hasLegacyPreActivationBehavior()
         ) {
             $activationTarget->legacyPreActivationBehavior();
         }
@@ -377,8 +377,8 @@ abstract class EventTarget
             // event’s bubbles attribute is true or event’s eventPhase attribute
             // is AT_TARGET, then invoke tuple’s item with event.
             $phase = $event->eventPhase;
-            $shouldInvoke = ($phase == Event::BUBBLING_PHASE &&
-                $event->bubbles) || $phase == Event::AT_TARGET;
+            $shouldInvoke = ($phase == Event::BUBBLING_PHASE
+                && $event->bubbles) || $phase == Event::AT_TARGET;
 
             if ($shouldInvoke) {
                 $this->invokeEventListener($tuple['item'], $event);
@@ -388,9 +388,9 @@ abstract class EventTarget
         // Unset event’s dispatch flag, stop propagation flag, and stop
         // immediate propagation flag.
         $event->unsetFlag(
-            EventFlags::DISPATCH |
-            EventFlags::STOP_PROPAGATION |
-            EventFlags::STOP_IMMEDIATE_PROPAGATION
+            EventFlags::DISPATCH
+            | EventFlags::STOP_PROPAGATION
+            | EventFlags::STOP_IMMEDIATE_PROPAGATION
         );
 
         // Set event’s eventPhase attribute to NONE.
@@ -516,8 +516,8 @@ abstract class EventTarget
                 // If event’s eventPhase attribute value is CAPTURING_PHASE and
                 // listener’s capture is false, terminate these substeps (and
                 // run them for the next event listener).
-                if ($phase == Event::CAPTURING_PHASE &&
-                    !$listener->getCapture()
+                if ($phase == Event::CAPTURING_PHASE
+                    && !$listener->getCapture()
                 ) {
                     continue;
                 }
@@ -525,8 +525,8 @@ abstract class EventTarget
                 // If event’s eventPhase attribute value is BUBBLING_PHASE and
                 // listener’s capture is true, terminate these substeps (and
                 // run them for the next event listener).
-                if ($phase == Event::BUBBLING_PHASE &&
-                    $listener->getCapture()
+                if ($phase == Event::BUBBLING_PHASE
+                    && $listener->getCapture()
                 ) {
                     continue;
                 }
@@ -559,8 +559,8 @@ abstract class EventTarget
 
                 // If event’s stop immediate propagation flag is set, return
                 // found.
-                if ($event->getFlags() &
-                    EventFlags::STOP_IMMEDIATE_PROPAGATION
+                if ($event->getFlags()
+                    & EventFlags::STOP_IMMEDIATE_PROPAGATION
                 ) {
                     return $found;
                 }

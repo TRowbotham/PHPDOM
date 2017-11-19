@@ -78,8 +78,8 @@ class HTMLTableElement extends HTMLElement
                 foreach ($this->childNodes as $node) {
                     if ($node instanceof HTMLTableRowElement) {
                         $collection[] = $node;
-                    } elseif ($node instanceof HTMLTableSectionElement &&
-                        strcmp($node->tagName, 'TBODY') == 0
+                    } elseif ($node instanceof HTMLTableSectionElement
+                        && $node->tagName === 'TBODY')
                     ) {
                         $collection = array_merge(
                             $collection,
@@ -128,8 +128,8 @@ class HTMLTableElement extends HTMLElement
                     $caption->remove();
                 }
 
-                if ($value !== null &&
-                    $value instanceof HTMLTableCaptionElement
+                if ($value !== null
+                    && $value instanceof HTMLTableCaptionElement
                 ) {
                     $this->insertBefore($value, $this->childNodes->first());
                 }
@@ -138,8 +138,8 @@ class HTMLTableElement extends HTMLElement
 
             case 'tFoot':
                 $isValid = $value === null ||
-                    ($value instanceof HTMLTableSectionElement &&
-                    strcmp($value->tagName, 'TFOOT') == 0);
+                    || ($value instanceof HTMLTableSectionElement
+                        && $value->tagName === 'TFOOT');
 
                 if (!$isValid) {
                     throw new HierarchyRequestError();
@@ -153,9 +153,9 @@ class HTMLTableElement extends HTMLElement
 
                 if ($value !== null) {
                     foreach ($this->childNodes as $node) {
-                        if (!($node instanceof HTMLTableCaptionElement) &&
-                            !($node instanceof HTMLTableColElement) &&
-                            strcmp($node->tagName, 'THEAD') !== 0
+                        if (!($node instanceof HTMLTableCaptionElement)
+                            && !($node instanceof HTMLTableColElement)
+                            && $node->tagName === 'THEAD'
                         ) {
                             break;
                         }
@@ -168,8 +168,8 @@ class HTMLTableElement extends HTMLElement
 
             case 'tHead':
                 $isValid = $value === null ||
-                    ($value instanceof HTMLTableSectionElement &&
-                    strcmp($value->tagName, 'THEAD') == 0);
+                    || ($value instanceof HTMLTableSectionElement
+                        && $value->tagName === 'THEAD');
 
                 if (!$isValid) {
                     throw new HierarchyRequestError();
@@ -183,8 +183,8 @@ class HTMLTableElement extends HTMLElement
 
                 if ($value !== null) {
                     foreach ($this->childNodes as $node) {
-                        if (!($node instanceof HTMLTableCaptionElement) &&
-                            !($node instanceof HTMLTableColElement)
+                        if (!($node instanceof HTMLTableCaptionElement)
+                            && !($node instanceof HTMLTableColElement)
                         ) {
                             break;
                         }
@@ -239,8 +239,8 @@ class HTMLTableElement extends HTMLElement
     public function createTHead()
     {
         foreach ($this->childNodes as $node) {
-            if (!($node instanceof HTMLTableCaptionElement) &&
-                !($node instanceof HTMLTableColElement)
+            if (!($node instanceof HTMLTableCaptionElement)
+                && !($node instanceof HTMLTableColElement)
             ) {
                 break;
             }
@@ -258,18 +258,19 @@ class HTMLTableElement extends HTMLElement
     }
 
     /**
-     * Returns the first tfoot element in the table, if one exists.  Otherwise, it creates a new HTMLTableSectionElement
-     * and inserts it before the first element that is not a caption, colgroup, or thead element in the table and returns
-     * the newly created tfoot element.
+     * Returns the first tfoot element in the table, if one exists.  Otherwise,
+     * it creates a new HTMLTableSectionElement and inserts it before the first
+     * element that is not a caption, colgroup, or thead element in the table
+     * and returns the newly created tfoot element.
      *
      * @return HTMLTableSectionElement
      */
     public function createTFoot()
     {
         foreach ($this->childNodes as $node) {
-            if (!($node instanceof HTMLTableCaptionElement) &&
-                !($node instanceof HTMLTableColElement) &&
-                strcmp($node->tagName, 'THEAD') !== 0
+            if (!($node instanceof HTMLTableCaptionElement)
+                && !($node instanceof HTMLTableColElement)
+                && $node->tagName !== 'THEAD'
             ) {
                 break;
             }

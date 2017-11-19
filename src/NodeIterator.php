@@ -137,7 +137,7 @@ final class NodeIterator
                             }
 
                             $temp = $temp->parentNode;
-                        } while($temp);
+                        } while ($temp);
 
                         $node = $sibling;
 
@@ -162,9 +162,8 @@ final class NodeIterator
                             }
                         }
 
-                        if (
-                            $this->referenceNode === $this->root ||
-                            !($node = $node->parentNode)
+                        if ($this->referenceNode === $this->root
+                            || !($node = $node->parentNode)
                         ) {
                             return null;
                         }

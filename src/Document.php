@@ -50,8 +50,8 @@ class Document extends Node implements Stringable
     {
         parent::__construct();
 
-        if (!static::$defaultDocument) {
-            static::$defaultDocument = $this;
+        if (!self::$defaultDocument) {
+            self::$defaultDocument = $this;
         }
 
         $this->characterSet = 'UTF-8';
@@ -62,7 +62,7 @@ class Document extends Node implements Stringable
         $this->inertTemplateDocument = null;
         $this->mode = DocumentMode::NO_QUIRKS;
         $this->nodeDocument = $this; // Documents own themselves.
-        $this->nodeIteratorList = array();
+        $this->nodeIteratorList = [];
         $this->nodeType = self::DOCUMENT_NODE;
         $this->url = null;
 
@@ -94,7 +94,6 @@ class Document extends Node implements Stringable
                 }
 
                 return null;
-
             case 'documentElement':
                 return $this->getFirstElementChild();
             case 'documentURI':
@@ -110,7 +109,6 @@ class Document extends Node implements Stringable
                 return $this->getURL()->getOrigin()->serializeAsUnicode();
             case 'readyState':
                 return $this->readyState;
-
             default:
                 return parent::__get($name);
         }
@@ -162,8 +160,10 @@ class Document extends Node implements Stringable
             throw new InvalidCharacterError();
         }
 
-        $localName = $this instanceof HTMLDocument ?
-            Utils::toASCIILowercase($localName) : $localName;
+        if ($this instanceof HTMLDocument) {
+            $localName = Utils::toASCIILowercase($localName);
+        }
+
         $attribute = new Attr($localName, '');
         $attribute->setNodeDocument($this);
 
@@ -562,8 +562,8 @@ class Document extends Node implements Stringable
             // A base element is only valid if it is the first base element
             // within the head element.
             foreach ($head->childNodes as $child) {
-                $isValidBase = $child instanceof HTMLBaseElement &&
-                    $child->hasAttribute('href');
+                $isValidBase = $child instanceof HTMLBaseElement
+                    && $child->hasAttribute('href');
 
                 if ($isValidBase) {
                     $base = $child;
@@ -595,7 +595,7 @@ class Document extends Node implements Stringable
      */
     public static function getDefaultDocument()
     {
-        return static::$defaultDocument;
+        return self::$defaultDocument;
     }
 
     public function getFallbackBaseURL()

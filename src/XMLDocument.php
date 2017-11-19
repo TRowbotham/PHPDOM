@@ -8,8 +8,4 @@ namespace Rowbot\DOM;
  */
 class XMLDocument extends Document
 {
-    public function __construct()
-    {
-        parent::__construct();
-    }
 }

@@ -47,30 +47,30 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
 {
     use UuidTrait;
 
-    const ELEMENT_NODE = 1;
-    const ATTRIBUTE_NODE = 2;
-    const TEXT_NODE = 3;
-    const CDATA_SECTION_NODE = 4;
-    const ENTITY_REFERENCE_NODE = 5;
-    const ENTITY_NODE = 6;
+    const ELEMENT_NODE                = 1;
+    const ATTRIBUTE_NODE              = 2;
+    const TEXT_NODE                   = 3;
+    const CDATA_SECTION_NODE          = 4;
+    const ENTITY_REFERENCE_NODE       = 5;
+    const ENTITY_NODE                 = 6;
     const PROCESSING_INSTRUCTION_NODE = 7;
-    const COMMENT_NODE = 8;
-    const DOCUMENT_NODE = 9;
-    const DOCUMENT_TYPE_NODE = 10;
-    const DOCUMENT_FRAGMENT_NODE = 11;
-    const NOTATION_NODE = 12;
+    const COMMENT_NODE                = 8;
+    const DOCUMENT_NODE               = 9;
+    const DOCUMENT_TYPE_NODE          = 10;
+    const DOCUMENT_FRAGMENT_NODE      = 11;
+    const NOTATION_NODE               = 12;
 
-    const DOCUMENT_POSITION_DISCONNECTED = 0x01;
-    const DOCUMENT_POSITION_PRECEDING = 0x02;
-    const DOCUMENT_POSITION_FOLLOWING = 0x04;
-    const DOCUMENT_POSITION_CONTAINS = 0x08;
-    const DOCUMENT_POSITION_CONTAINED_BY = 0x10;
+    const DOCUMENT_POSITION_DISCONNECTED            = 0x01;
+    const DOCUMENT_POSITION_PRECEDING               = 0x02;
+    const DOCUMENT_POSITION_FOLLOWING               = 0x04;
+    const DOCUMENT_POSITION_CONTAINS                = 0x08;
+    const DOCUMENT_POSITION_CONTAINED_BY            = 0x10;
     const DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC = 0x20;
 
     protected $childNodes;
-    protected $nodeType; // int
-    protected $ownerDocument; // Document
-    protected $parentNode; // Node
+    protected $nodeType;
+    protected $ownerDocument;
+    protected $parentNode;
     protected $nextSibling;
     protected $nodeDocument;
     protected $nodeList;
@@ -255,11 +255,11 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
         // DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC, and either
         // DOCUMENT_POSITION_PRECEDING or DOCUMENT_POSITION_FOLLOWING, with the
         // constraint that this is to be consistent, together.
-        if ($node1 === null || $node2 === null ||
-            $node1->getRootNode() !== $node2Root
+        if ($node1 === null || $node2 === null
+            || $node1->getRootNode() !== $node2Root
         ) {
-            $ret = self::DOCUMENT_POSITION_DISCONNECTED |
-                self::DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC;
+            $ret = self::DOCUMENT_POSITION_DISCONNECTED
+                | self::DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC;
             $position = strcmp(
                 spl_object_hash($node2),
                 spl_object_hash($node1)
@@ -283,8 +283,8 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
         // If node1 is an ancestor of node2 and attr1 is null, or node1 is node2
         // and attr2 is non-null, then return the result of adding
         // DOCUMENT_POSITION_CONTAINS to DOCUMENT_POSITION_PRECEDING.
-        if (($node1->isAncestorOf($node2) && $attr1 === null) ||
-            ($node1 === $node2 && $attr1)
+        if (($node1->isAncestorOf($node2) && $attr1 === null)
+            || ($node1 === $node2 && $attr1)
         ) {
             return self::DOCUMENT_POSITION_CONTAINS |
                 self::DOCUMENT_POSITION_PRECEDING;
@@ -293,8 +293,8 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
         // If node1 is a descendant of node2 and attr2 is null, or node1 is
         // node2 and attr1 is non-null, then return the result of adding
         // DOCUMENT_POSITION_CONTAINED_BY to DOCUMENT_POSITION_FOLLOWING.
-        if (($node1->isDescendantOf($node2) && $attr2 === null) ||
-            ($node1 === $node2 && $attr1)
+        if (($node1->isDescendantOf($node2) && $attr2 === null)
+            || ($node1 === $node2 && $attr1)
         ) {
             return self::DOCUMENT_POSITION_CONTAINED_BY |
                 self::DOCUMENT_POSITION_FOLLOWING;
@@ -303,9 +303,12 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
         $tw = new TreeWalker(
             $node2Root,
             NodeFilter::SHOW_ALL,
-            function ($aNode) use ($node1) {
-                return $aNode === $node1 ? NodeFilter::FILTER_ACCEPT :
-                    NodeFilter::FILTER_SKIP;
+            function ($node) use ($node1) {
+                if ($node === $node1) {
+                    return NodeFilter::FILTER_ACCEPT;
+                }
+
+                return NodeFilter::FILTER_SKIP;
             }
         );
         $tw->currentNode = $node2;
@@ -477,9 +480,9 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
 
         // Only Documents, DocumentFragments, and Elements can be parent nodes.
         // Throw a HierarchyRequestError if parent is not one of these types.
-        if (!($parent instanceof Document) &&
-            !($parent instanceof DocumentFragment) &&
-            !($parent instanceof Element)
+        if (!($parent instanceof Document)
+            && !($parent instanceof DocumentFragment)
+            && !($parent instanceof Element)
         ) {
             throw new HierarchyRequestError();
         }
@@ -499,20 +502,20 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
         // If node is not a DocumentFragment, DocumentType, Element, Text,
         // ProcessingInstruction, or Comment node, throw a
         // HierarchyRequestError.
-        if (!($node instanceof DocumentFragment) &&
-            !($node instanceof DocumentType) &&
-            !($node instanceof Element) &&
-            !($node instanceof Text) &&
-            !($node instanceof ProcessingInstruction) &&
-            !($node instanceof Comment)
+        if (!($node instanceof DocumentFragment)
+            && !($node instanceof DocumentType)
+            && !($node instanceof Element)
+            && !($node instanceof Text)
+            && !($node instanceof ProcessingInstruction)
+            && !($node instanceof Comment)
         ) {
             throw new HierarchyRequestError();
         }
 
         // If either node is a Text node and parent is a document, or node is a
         // doctype and parent is not a document, throw a HierarchyRequestError.
-        if (($node instanceof Text && $parent instanceof Document) ||
-            ($node instanceof DocumentType && !($parent instanceof Document))
+        if (($node instanceof Text && $parent instanceof Document)
+            || ($node instanceof DocumentType && !($parent instanceof Document))
         ) {
             throw new HierarchyRequestError();
         }
@@ -773,15 +776,11 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                 $endContainer = $range->endContainer;
                 $endOffset = $range->endOffset;
 
-                if ($startContainer === $parent &&
-                    $startOffset > $childIndex
-                ) {
+                if ($startContainer === $parent && $startOffset > $childIndex) {
                     $range->setStart($startContainer, $startOffset + $count);
                 }
 
-                if ($endContainer === $parent &&
-                    $endOffset > $childIndex
-                ) {
+                if ($endContainer === $parent && $endOffset > $childIndex) {
                     $range->setEnd($endContainer, $endOffset + $count);
                 }
             }
@@ -884,37 +883,36 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
         }
 
         if ($this instanceof DocumentType) {
-            if (
-                strcmp($this->name, $otherNode->name) !== 0 ||
-                strcmp($this->publicId, $otherNode->publicId) !== 0 ||
-                strcmp($this->systemId, $otherNode->systemId) !== 0
+            if ($this->name !== $otherNode->name
+                || $this->publicId !== $otherNode->publicId
+                || $this->systemId !== $otherNode->systemId
             ) {
                 return false;
             }
         } elseif ($this instanceof Element) {
-            if (
-                strcmp($this->namespaceURI, $otherNode->namespaceURI) !== 0 ||
-                strcmp($this->prefix, $otherNode->prefix) !== 0 ||
-                strcmp($this->localName, $otherNode->localName) !== 0 ||
-                $this->attributeList->count() !==
+            if ($this->namespaceURI !== $otherNode->namespaceURI
+                || $this->prefix !== $otherNode->prefix
+                || $this->localName !== $otherNode->localName
+                || $this->attributeList->count() !==
                 $otherNode->attributes->length
             ) {
                 return false;
             }
         } elseif ($this instanceof Attr) {
-            if ($this->namespaceURI !== $otherNode->namespaceURI ||
-                $this->localName !== $otherNode->localName ||
-                $this->value !== $otherNode->value
+            if ($this->namespaceURI !== $otherNode->namespaceURI
+                || $this->localName !== $otherNode->localName
+                || $this->value !== $otherNode->value
             ) {
                 return false;
             }
         } elseif ($this instanceof ProcessingInstruction) {
-            if (strcmp($this->target, $otherNode->target) !== 0 ||
-                strcmp($this->data, $otherNode->data) !== 0) {
+            if ($this->target !== $otherNode->target
+                || $this->data !== $otherNode->data
+            ) {
                 return false;
             }
         } elseif ($this instanceof Text || $this instanceof Comment) {
-            if (strcmp($this->data, $otherNode->data) !== 0) {
+            if ($this->data !== $otherNode->data) {
                 return false;
             }
         }
@@ -939,8 +937,8 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
 
         for ($i = 0; $i < $childNodeCount; $i++) {
             if (!$this->childNodes[$i]->isEqualNode(
-                    $otherNode->childNodes[$i]
-                )) {
+                $otherNode->childNodes[$i]
+            )) {
                 return false;
             }
         }
@@ -1218,8 +1216,8 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                 // start offset is currentNode’s index, set its start node to
                 // node and its start offset to length.
                 foreach ($ranges as $range) {
-                    if ($range->startContainer === $currentNode->parentNode &&
-                        $range->startOffset == $treeIndex
+                    if ($range->startContainer === $currentNode->parentNode
+                        && $range->startOffset == $treeIndex
                     ) {
                         $range->setStart($node, $length);
                     }
@@ -1229,8 +1227,8 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                 // offset is currentNode’s index, set its end node to node and
                 // its end offset to length.
                 foreach ($ranges as $range) {
-                    if ($range->endContainer === $currentNode->parentNode &&
-                        $range->endOffset == $treeIndex
+                    if ($range->endContainer === $currentNode->parentNode
+                        && $range->endOffset == $treeIndex
                     ) {
                         $range->setEnd($node, $length);
                     }
@@ -1316,9 +1314,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
         foreach ($ranges as $range) {
             $startContainer = $range->startContainer;
 
-            if ($startContainer === $node ||
-                $node->contains($startContainer)
-            ) {
+            if ($startContainer === $node || $node->contains($startContainer)) {
                 $range->setStart($parent, $index);
             }
         }
@@ -1460,11 +1456,11 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
         $removedNodes = $this->childNodes->values();
 
         if (!$node) {
-            $addedNodes = array();
+            $addedNodes = [];
         } elseif ($node instanceof DocumentFragment) {
             $addedNodes = $node->childNodes->values();
         } else {
-            $addedNodes = array($node);
+            $addedNodes = [$node];
         }
 
         foreach ($removedNodes as $index => $removableNode) {
@@ -1647,8 +1643,8 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             }
         }
 
-        return $isInclusiveAncestor || ($root && $host &&
-            $this->isHostIncludingInclusiveAncestorOf($host));
+        return $isInclusiveAncestor || ($root && $host
+            && $this->isHostIncludingInclusiveAncestorOf($host));
     }
 
     /**
@@ -1669,8 +1665,8 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             $root = $this->getRootNode();
         }
 
-        return $isDescendant || ($root && $root instanceof ShadowRoot &&
-            $root->host->isShadowIncludingInclusiveDescendantOf($otherNode));
+        return $isDescendant || ($root && $root instanceof ShadowRoot
+            && $root->host->isShadowIncludingInclusiveDescendantOf($otherNode));
     }
 
     /**
@@ -1684,8 +1680,8 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      */
     public function isShadowIncludingInclusiveDescendantOf($otherNode)
     {
-        return $this === $otherNode ||
-            $this->isShadowIncludingDescendantOf($otherNode);
+        return $this === $otherNode
+            || $this->isShadowIncludingDescendantOf($otherNode);
     }
 
     /**
@@ -1713,8 +1709,8 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      */
     public function isShadowIncludingInclusiveAncestorOf($otherNode)
     {
-        return $this === $otherNode ||
-            $this->isShadowIncludingAncestorOf($otherNode);
+        return $this === $otherNode
+            || $this->isShadowIncludingAncestorOf($otherNode);
     }
 
     /**
@@ -1730,9 +1726,10 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
     {
         $root = $this->getRootNode();
 
-        if ($root instanceof ShadowRoot &&
-            !$root->isShadowIncludingInclusiveAncestorOf($otherNode) &&
-            ($root->mode === 'closed' || $root->host->isClosedShadowHiddenFrom(
+        if ($root instanceof ShadowRoot
+            && !$root->isShadowIncludingInclusiveAncestorOf($otherNode)
+            && ($root->mode === 'closed'
+            || $root->host->isClosedShadowHiddenFrom(
                 $otherNode
             ))
         ) {
@@ -1820,14 +1817,14 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                 throw new HierarchyRequestError();
         }
 
-        if ($node->nodeType === self::TEXT_NODE &&
-            $parent->nodeType === self::DOCUMENT_NODE
+        if ($node->nodeType === self::TEXT_NODE
+            && $parent->nodeType === self::DOCUMENT_NODE
         ) {
             throw new HierarchyRequestError();
         }
 
-        if ($node->nodeType === self::DOCUMENT_TYPE_NODE &&
-            $parent->nodeType !== self::DOCUMENT_NODE
+        if ($node->nodeType === self::DOCUMENT_TYPE_NODE
+            && $parent->nodeType !== self::DOCUMENT_NODE
         ) {
             throw new HierarchyRequestError();
         }
@@ -1855,8 +1852,8 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
 
                     if ($elementChildren === 1) {
                         foreach ($parent->childNodes as $childNode) {
-                            if ($childNode->nodeType === self::ELEMENT_NODE &&
-                                $childNode !== $child
+                            if ($childNode->nodeType === self::ELEMENT_NODE
+                                && $childNode !== $child
                             ) {
                                 throw new HierarchyRequestError();
                             }
@@ -1877,8 +1874,8 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
 
                 case self::ELEMENT_NODE:
                     foreach ($parent->childNodes as $childNode) {
-                        if ($childNode->nodeType === self::ELEMENT_NODE &&
-                            $childNode !== $child
+                        if ($childNode->nodeType === self::ELEMENT_NODE
+                            && $childNode !== $child
                         ) {
                             throw new HierarchyRequestError();
                         }
@@ -1898,8 +1895,8 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
 
                 case self::DOCUMENT_TYPE_NODE:
                     foreach ($parent->childNodes as $childNode) {
-                        if ($childNode->nodeType === self::DOCUMENT_TYPE_NODE &&
-                            $childNode !== $child
+                        if ($childNode->nodeType === self::DOCUMENT_TYPE_NODE
+                            && $childNode !== $child
                         ) {
                             throw new HierarchyRequestError();
                         }

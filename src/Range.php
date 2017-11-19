@@ -31,13 +31,14 @@ use Rowbot\DOM\Parser\ParserFactory;
  * @property-read int $startOffset Returns a number representing where within
  *     the startContainer the range begins.
  */
-class Range {
+class Range
+{
     const START_TO_START = 0;
     const START_TO_END = 1;
     const END_TO_END = 2;
     const END_TO_START = 3;
 
-    private static $collection = array();
+    private static $collection = [];
 
     private $endContainer;
     private $endOffset;
@@ -57,8 +58,8 @@ class Range {
     {
         switch ($name) {
             case 'collapsed':
-                return $this->startContainer === $this->endContainer &&
-                        $this->startOffset == $this->endOffset;
+                return $this->startContainer === $this->endContainer
+                        && $this->startOffset == $this->endOffset;
 
             case 'commonAncestorContainer':
                 return Node::getCommonAncestor(
@@ -85,8 +86,8 @@ class Range {
         $nodeDocument = $this->startContainer->getNodeDocument();
         $fragment = $nodeDocument->createDocumentFragment();
 
-        if ($this->startContainer === $this->endContainer &&
-            $this->startOffset == $this->endOffset
+        if ($this->startContainer === $this->endContainer
+            && $this->startOffset == $this->endOffset
         ) {
             return $fragment;
         }
@@ -96,10 +97,10 @@ class Range {
         $originalEndNode = $this->endContainer;
         $originalEndOffset = $this->endOffset;
 
-        if ($originalStartNode === $originalEndNode &&
-            ($originalStartNode instanceof Text ||
-                $originalStartNode instanceof ProcessingInstruction ||
-                $originalStartNode instanceof Comment)
+        if ($originalStartNode === $originalEndNode
+            && ($originalStartNode instanceof Text
+                || $originalStartNode instanceof ProcessingInstruction
+                || $originalStartNode instanceof Comment)
         ) {
             $clone = $originalStartNode->doCloneNode();
             $clone->data = $originalStartNode->substringData(
@@ -154,10 +155,9 @@ class Range {
             }
         }
 
-        if (
-            $firstPartiallyContainedChild instanceof Text ||
-            $firstPartiallyContainedChild instanceof ProcessingInstruction ||
-            $firstPartiallyContainedChild instanceof Comment
+        if ($firstPartiallyContainedChild instanceof Text
+            || $firstPartiallyContainedChild instanceof ProcessingInstruction
+            || $firstPartiallyContainedChild instanceof Comment
         ) {
             $clone = $originalStartNode->doCloneNode();
             $clone->data = $originalStartNode->substringData(
@@ -183,10 +183,9 @@ class Range {
             $fragment->appendChild($clone);
         }
 
-        if (
-            $lastPartiallyContainedChild instanceof Text ||
-            $lastPartiallyContainedChild instanceof ProcessingInstruction ||
-            $lastPartiallyContainedChild instanceof Comment
+        if ($lastPartiallyContainedChild instanceof Text
+            || $lastPartiallyContainedChild instanceof ProcessingInstruction
+            || $lastPartiallyContainedChild instanceof Comment
         ) {
             $clone = $originalEndNode->doCloneNode();
             $clone->data = $originalEndNode->substringData(
@@ -284,38 +283,38 @@ class Range {
 
         switch ($how) {
             case self::START_TO_START:
-                $thisPoint = array($this->startContainer, $this->startOffset);
-                $otherPoint = array(
+                $thisPoint = [$this->startContainer, $this->startOffset];
+                $otherPoint = [
                     $sourceRange->startContainer,
                     $sourceRange->startOffset
-                );
+                ];
 
                 break;
 
             case self::START_TO_END:
-                $thisPoint = array($this->endContainer, $this->endOffset);
-                $otherPoint = array(
+                $thisPoint = [$this->endContainer, $this->endOffset];
+                $otherPoint = [
                     $sourceRange->startContainer,
                     $sourceRange->startOffset
-                );
+                ];
 
                 break;
 
             case self::END_TO_END:
-                $thisPoint = array($this->endContainer, $this->endOffset);
-                $otherPoint = array(
+                $thisPoint = [$this->endContainer, $this->endOffset];
+                $otherPoint = [
                     $sourceRange->endContainer,
                     $sourceRange->endOffset
-                );
+                ];
 
                 break;
 
             case self::END_TO_START:
-                $thisPoint = array($this->startContainer, $this->startOffset);
-                $otherPoint = array(
+                $thisPoint = [$this->startContainer, $this->startOffset];
+                $otherPoint = [
                     $sourceRange->endContainer,
                     $sourceRange->endOffset
-                );
+                ];
 
                 break;
         }
@@ -366,22 +365,19 @@ class Range {
             throw new IndexSizeError();
         }
 
-        $bp = array($node, $offset);
+        $bp = [$node, $offset];
 
-        if ($this->computePosition($bp, array(
-                $this->startContainer,
-                $this->startOffset
-            )) == 'before'
-        ) {
+        if ($this->computePosition($bp, [
+            $this->startContainer,
+            $this->startOffset
+        ]) === 'before') {
             return -1;
         }
 
-        if (
-            $this->computePosition($bp, array(
-                $this->endContainer,
-                $this->endOffset
-            )) == 'after'
-        ) {
+        if ($this->computePosition($bp, [
+            $this->endContainer,
+            $this->endOffset
+        ]) === 'after') {
             return 1;
         }
 
@@ -405,11 +401,10 @@ class Range {
         $originalEndNode = $this->endContainer;
         $originalEndOffset = $this->endOffset;
 
-        if (
-            $originalStartNode === $originalEndNode &&
-            ($originalStartNode instanceof Text ||
-                $originalStartNode instanceof ProcessingInstruction ||
-                $originalStartNode instanceof Comment)
+        if ($originalStartNode === $originalEndNode
+            && ($originalStartNode instanceof Text
+                || $originalStartNode instanceof ProcessingInstruction
+                || $originalStartNode instanceof Comment)
         ) {
             $originalStartNode->doReplaceData(
                 $originalStartOffset,
@@ -423,9 +418,13 @@ class Range {
             $originalStartNode,
             NodeFilter::SHOW_ALL,
             function ($node) {
-                return $this->isFullyContainedNode($node) &&
-                    !$this->isFullyContainedNode($node->parentNode) ?
-                        NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
+                if ($this->isFullyContainedNode($node)
+                    && !$this->isFullyContainedNode($node->parentNode)
+                ) {
+                    return NodeFilter::FILTER_ACCEPT;
+                }
+
+                return NodeFilter::FILTER_SKIP;
             }
         );
 
@@ -451,10 +450,9 @@ class Range {
             $newOffset = $referenceNode->getTreeIndex() + 1;
         }
 
-        if (
-            $originalStartNode instanceof Text ||
-            $originalStartNode instanceof ProcessingInstruction ||
-            $originalStartNode instanceof Comment
+        if ($originalStartNode instanceof Text
+            || $originalStartNode instanceof ProcessingInstruction
+            || $originalStartNode instanceof Comment
         ) {
             $originalStartNode->doReplaceData(
                 $originalStartOffset,
@@ -467,10 +465,9 @@ class Range {
             $node->parentNode->removeNode($node);
         }
 
-        if (
-            $originalEndNode instanceof Text ||
-            $originalEndNode instanceof ProcessingInstruction ||
-            $originalEndNode instanceof Comment
+        if ($originalEndNode instanceof Text
+            || $originalEndNode instanceof ProcessingInstruction
+            || $originalEndNode instanceof Comment
         ) {
             $originalEndNode->doReplaceData(0, $originalEndOffset, '');
         }
@@ -492,8 +489,8 @@ class Range {
         $fragment = $this->startContainer->getNodeDocument()
             ->createDocumentFragment();
 
-        if ($this->startContainer === $this->endContainer &&
-            $this->startOffset == $this->endOffset
+        if ($this->startContainer === $this->endContainer
+            && $this->startOffset == $this->endOffset
         ) {
             return $fragment;
         }
@@ -503,11 +500,10 @@ class Range {
         $originalEndNode = $this->endContainer;
         $originalEndOffset = $this->endOffset;
 
-        if (
-            $originalStartNode === $originalEndNode &&
-            ($originalStartNode instanceof Text ||
-                $originalStartNode instanceof ProcessingInstruction ||
-                $originalStartNode instanceof Comment)
+        if ($originalStartNode === $originalEndNode
+            && ($originalStartNode instanceof Text
+                || $originalStartNode instanceof ProcessingInstruction
+                || $originalStartNode instanceof Comment)
         ) {
             $clone = $originalStartNode->doCloneNode();
             $clone->data = $originalStartNode->substringData(
@@ -554,8 +550,11 @@ class Range {
             $commonAncestor,
             NodeFilter::SHOW_ALL,
             function ($aNode) {
-                return $this->isFullyContainedNode($aNode) ?
-                        NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
+                if ($this->isFullyContainedNode($aNode)) {
+                    return NodeFilter::FILTER_ACCEPT;
+                }
+
+                return NodeFilter::FILTER_SKIP;
             }
         );
         $containsDocType = false;
@@ -596,10 +595,9 @@ class Range {
             }
         }
 
-        if (
-            $firstPartiallyContainedChild instanceof Text ||
-            $firstPartiallyContainedChild instanceof ProcessingInstruction ||
-            $firstPartiallyContainedChild instanceof Comment
+        if ($firstPartiallyContainedChild instanceof Text
+            || $firstPartiallyContainedChild instanceof ProcessingInstruction
+            || $firstPartiallyContainedChild instanceof Comment
         ) {
             $clone = $originalStartNode->doCloneNode();
             $clone->data = $originalStartNode->substringData(
@@ -619,8 +617,7 @@ class Range {
             $subrange->startContainer = $originalStartNode;
             $subrange->startOffset = $originalStartOffset;
             $subrange->endContainer = $firstPartiallyContainedChild;
-            $subrange->endOffset =
-                $firstPartiallyContainedChild->getLength();
+            $subrange->endOffset = $firstPartiallyContainedChild->getLength();
             $subfragment = $subrange->extractContents();
             $clone->appendChild($subfragment);
         }
@@ -629,10 +626,9 @@ class Range {
             $fragment->appendChild($child);
         }
 
-        if (
-            $lastPartiallyContainedChild instanceof Text ||
-            $lastPartiallyContainedChild instanceof ProcessingInstruction ||
-            $lastPartiallyContainedChild instanceof Comment
+        if ($lastPartiallyContainedChild instanceof Text
+            || $lastPartiallyContainedChild instanceof ProcessingInstruction
+            || $lastPartiallyContainedChild instanceof Comment
         ) {
             // In this case, last partially contained child is original end node
             $clone = $originalEndNode->doCloneNode();
@@ -677,11 +673,10 @@ class Range {
      */
     public function insertNode(Node $node)
     {
-        if (
-            ($this->startContainer instanceof ProcessingInstruction ||
-                $this->startContainer instanceof Comment) ||
-            ($this->startContainer instanceof Text &&
-                $this->startContainer->parentNode === null)
+        if (($this->startContainer instanceof ProcessingInstruction
+                || $this->startContainer instanceof Comment)
+            || ($this->startContainer instanceof Text
+                && $this->startContainer->parentNode === null)
         ) {
             throw new HierarchyRequestError();
         }
@@ -691,19 +686,18 @@ class Range {
         if ($this->startContainer instanceof Text) {
             $referenceNode = $this->startContainer;
         } else {
-            if (isset(
-                    $this->startContainer->childNodes[$this->startOffset]
-                )
-            ) {
-                $referenceNode = $this->startContainer
+            if (isset($this->startContainer->childNodes[$this->startOffset])) {
+                $referenceNode = $this
+                    ->startContainer
                     ->childNodes[$this->startOffset];
             } else {
                 $referenceNode = null;
             }
         }
 
-        $parent = !$referenceNode ?
-            $this->startContainer : $referenceNode->parentNode;
+        $parent = !$referenceNode
+            ? $this->startContainer
+            : $referenceNode->parentNode;
         $parent->ensurePreinsertionValidity($node, $referenceNode);
 
         if ($this->startContainer instanceof Text) {
@@ -718,16 +712,17 @@ class Range {
             $node->parentNode->removeNode($node);
         }
 
-        $newOffset = !$referenceNode ?
-            $parent->getLength() : $referenceNode->getTreeIndex();
-        $newOffset += $node instanceof DocumentFragment ?
-            $node->getLength() : 1;
+        $newOffset = !$referenceNode
+            ? $parent->getLength()
+            : $referenceNode->getTreeIndex();
+        $newOffset += $node instanceof DocumentFragment
+            ? $node->getLength()
+            : 1;
 
         $parent->preinsertNode($node, $referenceNode);
 
-        if (
-            $this->startContainer === $this->endContainer &&
-            $this->startOffset == $this->endOffset
+        if ($this->startContainer === $this->endContainer
+            && $this->startOffset == $this->endOffset
         ) {
             $this->endContainer = $parent;
             $this->endOffset = $newOffset;
@@ -759,15 +754,13 @@ class Range {
         }
 
         $offset = $node->getTreeIndex();
-        $bp = array($parent, $offset);
+        $bp = [$parent, $offset];
 
-        if (
-            $this->computePosition($bp, array(
+        if ($this->computePosition($bp, [
                 $this->endContainer, $this->endOffset
-            )) == 'before' &&
-            $this->computePosition($bp, array(
+            ]) === 'before' && $this->computePosition($bp, [
                 $this->startContainer, $this->startOffset + 1
-            )) == 'after'
+            ]) === 'after'
         ) {
             return true;
         }
@@ -808,13 +801,11 @@ class Range {
 
         $bp = array($node, $offset);
 
-        if (
-            $this->computePosition($bp, array(
+        if ($this->computePosition($bp, [
                 $this->startContainer, $this->startOffset
-            )) == 'before' ||
-            $this->computePosition($bp, array(
+            ]) === 'before' || $this->computePosition($bp, [
                 $this->endContainer, $this->endOffset
-            )) == 'after'
+            ]) === 'after'
         ) {
             return false;
         }
@@ -987,19 +978,17 @@ class Range {
      */
     public function surroundCountents(Node $newParent)
     {
-        if (
-            (!($this->startContainer instanceof Text) &&
-                $this->isPartiallyContainedNode($this->startContainer)) ||
-            (!($this->endContainer instanceof Text) &&
-                $this->isPartiallyContainedNode($this->endContainer))
+        if ((!($this->startContainer instanceof Text)
+                && $this->isPartiallyContainedNode($this->startContainer))
+            || (!($this->endContainer instanceof Text)
+                && $this->isPartiallyContainedNode($this->endContainer))
         ) {
             throw new InvalidStateError();
         }
 
-        if (
-            $newParent instanceof Document ||
-            $newParent instanceof DocumentType ||
-            $newParent instanceof DocumentFragment
+        if ($newParent instanceof Document
+            || $newParent instanceof DocumentType
+            || $newParent instanceof DocumentFragment
         ) {
             throw new InvalidNodeTypeError();
         }
@@ -1044,15 +1033,19 @@ class Range {
                 $this->startContainer->data,
                 $this->startOffset,
                 null,
-                $encoding);
+                $encoding
+            );
         }
 
         $tw = new TreeWalker(
             $this->startContainer->getRootNode(),
             NodeFilter::SHOW_TEXT,
             function ($aNode) {
-                return $this->isFullyContainedNode($aNode) ?
-                    NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_REJECT;
+                if ($this->isFullyContainedNode($aNode)) {
+                    return NodeFilter::FILTER_ACCEPT;
+                }
+
+                return NodeFilter::FILTER_REJECT;
             }
         );
         $tw->currentNode = $this->startContainer;
@@ -1125,10 +1118,10 @@ class Range {
         // is the HTML namespace, then let element be a new Element with "body"
         // as its local name, the HTML namespace as its namespace, and the
         // context object's node document as its node document.
-        if ($element === null ||
-            ($element->getNodeDocument() instanceof HTMLDocument &&
-                $element->localName === 'html' &&
-                $element->namespaceURI === Namespaces::HTML)
+        if ($element === null
+            || ($element->getNodeDocument() instanceof HTMLDocument
+                && $element->localName === 'html'
+                && $element->namespaceURI === Namespaces::HTML)
         ) {
             $element = ElementFactory::create(
                 $this->startContainer->getNodeDocument(),
@@ -1179,8 +1172,11 @@ class Range {
             $boundaryPointB[0]->getRootNode(),
             NodeFilter::SHOW_ALL,
             function ($aNode) use ($boundaryPointA) {
-                return $aNode === $boundaryPointA[0] ?
-                    NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
+                if ($aNode === $boundaryPointA[0]) {
+                    return NodeFilter::FILTER_ACCEPT;
+                }
+
+                return NodeFilter::FILTER_SKIP;
             }
         );
         $tw->currentNode = $boundaryPointB[0];
@@ -1208,7 +1204,10 @@ class Range {
 
         if ($ancestor) {
             $child = $boundaryPointB[0];
-            $childNodes = $boundaryPointA[0]->childNodes->getIterator()->getArrayCopy();
+            $childNodes = $boundaryPointA[0]
+                ->childNodes
+                ->getIterator()
+                ->getArrayCopy();
 
             while ($child) {
                 if (in_array($child, $childNodes, true)) {
@@ -1241,12 +1240,12 @@ class Range {
         $endBP = array($this->endContainer, $this->endOffset);
         $root = $this->startContainer->getRootNode();
 
-        return $node->getRootNode() === $root &&
-                $this->computePosition(array($node, 0), $startBP) == 'after' &&
-                $this->computePosition(array(
-                    $node,
-                    $node->getLength()
-                ), $endBP) == 'before';
+        return $node->getRootNode() === $root
+            && $this->computePosition([$node, 0], $startBP) === 'after'
+            && $this->computePosition(
+                [$node, $node->getLength()],
+                $endBP
+            ) === 'before';
     }
 
     /**
@@ -1258,12 +1257,13 @@ class Range {
      *
      * @return bool
      */
-    private function isPartiallyContainedNode(Node $node) {
+    private function isPartiallyContainedNode(Node $node)
+    {
         $isAncestorOfStart = $node->contains($this->startContainer);
         $isAncestorOfEnd = $node->contains($this->endContainer);
 
-        return ($isAncestorOfStart && !$isAncestorOfEnd) ||
-            (!$isAncestorOfStart && $isAncestorOfEnd);
+        return ($isAncestorOfStart && !$isAncestorOfEnd)
+            || (!$isAncestorOfStart && $isAncestorOfEnd);
     }
 
     /**
@@ -1295,14 +1295,14 @@ class Range {
             throw new IndexSizeError();
         }
 
-        $bp = array($node, $offset);
+        $bp = [$node, $offset];
 
         switch ($type) {
             case 'start':
-                if ($this->computePosition($bp, array(
+                if ($this->computePosition($bp, [
                         $this->endContainer, $this->endOffset
-                    )) == 'after' ||
-                    $this->startContainer->getRootNode() !==
+                    ]) === 'after'
+                    || $this->startContainer->getRootNode() !==
                     $node->getRootNode()
                 ) {
                     $this->endContainer = $node;
@@ -1315,10 +1315,10 @@ class Range {
                 break;
 
             case 'end':
-                if ($this->computePosition($bp, array(
+                if ($this->computePosition($bp, [
                         $this->startContainer, $this->startOffset
-                    )) == 'before' ||
-                    $this->startContainer->getRootNode() !==
+                    ]) === 'before'
+                    || $this->startContainer->getRootNode() !==
                     $node->getRootNode()
                 ) {
                     $this->startContainer = $node;

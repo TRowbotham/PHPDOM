@@ -21,8 +21,11 @@ trait NonElementParentNode
             $this,
             NodeFilter::SHOW_ELEMENT,
             function ($node) use ($elementId) {
-                return strcasecmp($node->id, $elementId) == 0 ?
-                    NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
+                if (mb_strtolower($node->id) === mb_strtolower($elementId)) {
+                    return NodeFilter::FILTER_ACCEPT;
+                }
+
+                return NodeFilter::FILTER_SKIP;
             }
         );
 

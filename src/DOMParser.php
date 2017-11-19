@@ -9,10 +9,6 @@ use Rowbot\DOM\Parser\HTML\HTMLParser;
  */
 class DOMParser
 {
-    public function __construct()
-    {
-    }
-
     /**
      * This takes a string of markup text and parses it, returning a Document
      * object containing DOM tree that was created from the provided markup

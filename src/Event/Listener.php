@@ -62,9 +62,9 @@ class Listener
 
     public function isEqual($other)
     {
-        if ($other->type === $this->type &&
-            $other->callback === $this->callback &&
-            $other->capture === $this->capture
+        if ($other->type === $this->type
+            && $other->callback === $this->callback
+            && $other->capture === $this->capture
         ) {
             return true;
         }

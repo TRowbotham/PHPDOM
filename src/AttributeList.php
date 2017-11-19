@@ -163,8 +163,8 @@ class AttributeList extends OrderedSet
      */
     public function getAttrByName($qualifiedName)
     {
-        if ($this->element->namespaceURI === Namespaces::HTML &&
-            $this->element->getNodeDocument() instanceof HTMLDocument
+        if ($this->element->namespaceURI === Namespaces::HTML
+            && $this->element->getNodeDocument() instanceof HTMLDocument
         ) {
             $qualifiedName = Utils::toASCIILowercase($qualifiedName);
         }
@@ -198,8 +198,8 @@ class AttributeList extends OrderedSet
         }
 
         foreach ($this as $attribute) {
-            if ($attribute->namespaceURI === $namespace &&
-                $attribute->localName === $localName
+            if ($attribute->namespaceURI === $namespace
+                && $attribute->localName === $localName
             ) {
                 return $attribute;
             }
@@ -221,10 +221,8 @@ class AttributeList extends OrderedSet
      *
      * @return string
      */
-    public function getAttrValue(
-        $localName,
-        $namespace = null
-    ) {
+    public function getAttrValue($localName, $namespace = null)
+    {
         $attr = $this->getAttrByNamespaceAndLocalName(
             $namespace,
             $localName

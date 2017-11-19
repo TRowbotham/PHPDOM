@@ -157,9 +157,9 @@ trait HTMLHyperlinkElementUtils
     {
         $this->reinitialiseUrl();
 
-        if ($this->url === null ||
-            $this->url->host === null ||
-            $this->url->cannotBeABaseUrl
+        if ($this->url === null
+            || $this->url->host === null
+            || $this->url->cannotBeABaseUrl
         ) {
             return;
         }
@@ -203,9 +203,9 @@ trait HTMLHyperlinkElementUtils
     {
         $this->reinitialiseUrl();
 
-        if ($this->url === null ||
-            $this->url->host === null ||
-            $this->url->cannotBeABaseUrl
+        if ($this->url === null
+            || $this->url->host === null
+            || $this->url->cannotBeABaseUrl
         ) {
             return;
         }
@@ -238,8 +238,8 @@ trait HTMLHyperlinkElementUtils
             return HostFactory::serialize($this->url->host);
         }
 
-        return HostFactory::serialize($this->url->host) . ':' .
-            $this->url->port;
+        return HostFactory::serialize($this->url->host) . ':'
+            . $this->url->port;
     }
 
     /**
@@ -352,10 +352,10 @@ trait HTMLHyperlinkElementUtils
     {
         $this->reinitialiseUrl();
 
-        if ($this->url === null ||
-            $this->url->host === null ||
-            $this->url->cannotBeABaseUrl ||
-            $this->url->scheme === 'file'
+        if ($this->url === null
+            || $this->url->host === null
+            || $this->url->cannotBeABaseUrl
+            || $this->url->scheme === 'file'
         ) {
             return;
         }
@@ -449,9 +449,9 @@ trait HTMLHyperlinkElementUtils
     {
         $this->reinitialiseURL();
 
-        if ($this->url === null ||
-            $this->url->query === null ||
-            $this->url->query === ''
+        if ($this->url === null
+            || $this->url->query === null
+            || $this->url->query === ''
         ) {
             return '';
         }
@@ -513,9 +513,9 @@ trait HTMLHyperlinkElementUtils
     {
         $this->reinitialiseURL();
 
-        if ($this->url === null ||
-            $this->url->fragment === null ||
-            $this->url->fragment === ''
+        if ($this->url === null
+            || $this->url->fragment === null
+            || $this->url->fragment === ''
         ) {
             return '';
         }
@@ -573,9 +573,9 @@ trait HTMLHyperlinkElementUtils
      */
     protected function reinitialiseUrl()
     {
-        if ($this->url &&
-            $this->url->scheme === 'blob' &&
-            $this->url->cannotBeABaseUrl
+        if ($this->url
+            && $this->url->scheme === 'blob'
+            && $this->url->cannotBeABaseUrl
         ) {
             // Terminate these steps
             return;

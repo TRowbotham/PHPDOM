@@ -62,8 +62,11 @@ class HTMLTableRowElement extends HTMLElement
                     $parentTable,
                     NodeFilter::SHOW_ELEMENT,
                     function ($node) {
-                        return $node instanceof HTMLTableRowElement ?
-                            NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
+                        if ($node instanceof HTMLTableRowElement) {
+                            return NodeFilter::FILTER_ACCEPT;
+                        }
+
+                        return NodeFilter::FILTER_SKIP;
                     }
                 );
 
@@ -89,8 +92,11 @@ class HTMLTableRowElement extends HTMLElement
                     $parent,
                     NodeFilter::SHOW_ELEMENT,
                     function ($node) {
-                        return $node instanceof HTMLTableRowElement ?
-                            NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
+                        if ($node instanceof HTMLTableRowElement) {
+                            return NodeFilter::FILTER_ACCEPT;
+                        }
+
+                        return NodeFilter::FILTER_SKIP;
                     }
                 );
 

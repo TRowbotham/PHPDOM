@@ -47,7 +47,8 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
 
     public function getNamedItemNS($namespace, $localName)
     {
-        return $this->element->getAttributeList()->getAttrByNamespaceAndLocalName(
+        return $this->element->getAttributeList()
+            ->getAttrByNamespaceAndLocalName(
             Utils::DOMString($namespace, false, true),
             Utils::DOMString($localName)
         );
@@ -86,7 +87,8 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
 
     public function removeNamedItemNS($namespace, $localName)
     {
-        $attr = $this->element->getAttributeList()->removeAttrByNamespaceAndLocalName(
+        $attr = $this->element->getAttributeList()
+            ->removeAttrByNamespaceAndLocalName(
             Utils::DOMString($namespace, false, true),
             Utils::DOMString($localName)
         );

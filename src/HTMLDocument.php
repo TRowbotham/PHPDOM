@@ -84,8 +84,8 @@ class HTMLDocument extends Document
             // Get the first element in the document element that is a body or
             // frameset element.
             foreach ($docElement->childNodes as $child) {
-                $isValidBody = $child instanceof HTMLBodyElement ||
-                    $child instanceof HTMLFrameSetElement;
+                $isValidBody = $child instanceof HTMLBodyElement
+                    || $child instanceof HTMLFrameSetElement;
 
                 if ($isValidBody) {
                     return $child;
@@ -162,8 +162,11 @@ class HTMLDocument extends Document
                 $this,
                 NodeFilter::SHOW_ELEMENT,
                 function ($node) {
-                    return $node instanceof HTMLTitleElement ?
-                        NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
+                    if ($node instanceof HTMLTitleElement) {
+                        return NodeFilter::FILTER_ACCEPT;
+                    }
+
+                    return NodeFilter::FILTER_SKIP;
                 }
             );
 
@@ -187,8 +190,8 @@ class HTMLDocument extends Document
         // The document's body can only be a body or frameset element. If the
         // new value being passed is not one of these, then throw an exception
         // and abort the algorithm.
-        $isValidBody = $newBody instanceof HTMLBodyElement ||
-            $newBody instanceof HTMLFrameSetElement;
+        $isValidBody = $newBody instanceof HTMLBodyElement
+            || $newBody instanceof HTMLFrameSetElement;
 
         if (!$isValidBody) {
             throw new HierarchyRequestError();
@@ -263,8 +266,8 @@ class HTMLDocument extends Document
             }
 
             $element->textContent = $newTitle;
-        } elseif ($docElement &&
-            $docElement->namespaceURI === Namespaces::HTML
+        } elseif ($docElement
+            && $docElement->namespaceURI === Namespaces::HTML
         ) {
             $element = $this->getTitleElement();
             $head = $this->getHeadElement();

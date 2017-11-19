@@ -402,8 +402,8 @@ class Utils
         while (true) {
             $root = $objectA->getRootNode();
 
-            if (!$root instanceof ShadowRoot ||
-                $root->isShadowIncludingInclusiveAncestorOf($objectB)
+            if (!$root instanceof ShadowRoot
+                || $root->isShadowIncludingInclusiveAncestorOf($objectB)
             ) {
                 return $objectA;
             }

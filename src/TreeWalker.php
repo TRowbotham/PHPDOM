@@ -74,9 +74,8 @@ final class TreeWalker
         $result = NodeFilter::FILTER_ACCEPT;
 
         while (true) {
-            while (
-                $result != NodeFilter::FILTER_REJECT &&
-                $node->hasChildNodes()
+            while ($result != NodeFilter::FILTER_REJECT
+                && $node->hasChildNodes()
             ) {
                 $node = $node->firstChild;
                 $result = $this->filterNode($node);
@@ -103,7 +102,7 @@ final class TreeWalker
                 }
 
                 $temp = $temp->parentNode;
-            } while($temp);
+            } while ($temp);
 
             if (!$sibling) {
                 break;
@@ -134,8 +133,7 @@ final class TreeWalker
         while ($node && $node !== $this->root) {
             $node = $node->parentNode;
 
-            if (
-                $node &&
+            if ($node &&
                 $this->filterNode($node) == NodeFilter::FILTER_ACCEPT
             ) {
                 $this->currentNode = $node;
@@ -158,9 +156,8 @@ final class TreeWalker
                 $node = $sibling;
                 $result = $this->filterNode($node);
 
-                while (
-                    $result != NodeFilter::FILTER_REJECT &&
-                    ($lastChild = $node->lastChild)
+                while ($result != NodeFilter::FILTER_REJECT
+                    && ($lastChild = $node->lastChild)
                 ) {
                     $node = $lastChild;
                     $result = $this->filterNode($node);
@@ -215,8 +212,9 @@ final class TreeWalker
                     return $node;
 
                 case NodeFilter::FILTER_SKIP:
-                    $child = $type == 'first' ?
-                        $node->firstChild : $node->lastChild;
+                    $child = $type == 'first'
+                        ? $node->firstChild
+                        : $node->lastChild;
 
                     if ($child) {
                         $node = $child;
@@ -225,8 +223,9 @@ final class TreeWalker
             }
 
             while (true) {
-                $sibling = $type == 'first' ?
-                    $node->nextSibling : $node->previousSibling;
+                $sibling = $type == 'first'
+                    ? $node->nextSibling
+                    : $node->previousSibling;
 
                 if ($sibling) {
                     $node = $sibling;
@@ -257,8 +256,9 @@ final class TreeWalker
         }
 
         while (true) {
-            $sibling = $type == 'next' ?
-                $node->nextSibling : $node->previousSibling;
+            $sibling = $type == 'next'
+                ? $node->nextSibling
+                : $node->previousSibling;
 
             while ($sibling) {
                 $node = $sibling;
@@ -274,8 +274,9 @@ final class TreeWalker
                     $node->firstChild : $node->lastChild;
 
                 if ($result == NodeFilter::FILTER_REJECT || !$sibling) {
-                    $sibling = $type == 'next' ?
-                        $node->nextSibling : $node->previousSibling;
+                    $sibling = $type == 'next'
+                        ? $node->nextSibling
+                        : $node->previousSibling;
                 }
             }
 

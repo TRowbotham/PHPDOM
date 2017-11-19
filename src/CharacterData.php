@@ -166,14 +166,12 @@ abstract class CharacterData extends Node
         $length = $this->length;
 
         if ($offset < 0 || $offset > $length) {
-            throw new IndexSizeError(
-                sprintf(
-                    'The offset should be less than the length of the data. The
-                    offset given is %d and the length of the data is %d.',
-                    $offset,
-                    $length
-                )
-            );
+            throw new IndexSizeError(sprintf(
+                'The offset should be less than the length of the data. The'
+                . 'offset given is %d and the length of the data is %d.',
+                $offset,
+                $length
+            ));
         }
 
         if ($offset + $count > $length) {
@@ -184,9 +182,9 @@ abstract class CharacterData extends Node
         // oldValue node’s data.
 
         $encoding = $this->nodeDocument->characterSet;
-        $this->data = mb_substr($this->data, 0, $offset, $encoding) .
-            $data .
-            mb_substr(
+        $this->data = mb_substr($this->data, 0, $offset, $encoding)
+            . $data
+            . mb_substr(
                 $this->data,
                 $offset + $count,
                 $length - $offset,
@@ -201,9 +199,9 @@ abstract class CharacterData extends Node
             $startContainer = $range->startContainer;
             $startOffset = $range->startOffset;
 
-            if ($startContainer === $this &&
-                $startOffset > $offset &&
-                $startOffset <= $offset + $count
+            if ($startContainer === $this
+                && $startOffset > $offset
+                && $startOffset <= $offset + $count
             ) {
                 $range->setStart($startContainer, $offset);
             }
@@ -213,9 +211,9 @@ abstract class CharacterData extends Node
             $endContainer = $range->endContainer;
             $endOffset = $range->endOffset;
 
-            if ($endContainer === $this &&
-                $endOffset > $offset &&
-                $endOffset <= $offset + $count
+            if ($endContainer === $this
+                && $endOffset > $offset
+                && $endOffset <= $offset + $count
             ) {
                 $range->setEnd($endContainer, $offset);
             }
@@ -270,14 +268,12 @@ abstract class CharacterData extends Node
         $count = Utils::unsignedLong($count);
 
         if ($offset < 0 || $offset > $length) {
-            throw new IndexSizeError(
-                sprintf(
-                    'The offset should be less than the length of the data. The
-                    offset given is %d and the length of the data is %d.',
-                    $offset,
-                    $length
-                )
-            );
+            throw new IndexSizeError(sprintf(
+                'The offset should be less than the length of the data. The'
+                . 'offset given is %d and the length of the data is %d.',
+                $offset,
+                $length
+            ));
         }
 
         if ($offset + $count > $length) {
