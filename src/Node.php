@@ -1349,7 +1349,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             }
         }
 
-        $iterCollection = $node->nodeDocument->_getNodeIteratorCollection();
+        $iterCollection = $node->nodeDocument->getNodeIteratorCollection();
 
         foreach ($iterCollection as $iter) {
             $iter->_preremove($node);

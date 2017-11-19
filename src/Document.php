@@ -674,7 +674,7 @@ class Document extends Node implements Stringable
         $this->isIframeSrcDoc = true;
     }
 
-    public function _getNodeIteratorCollection()
+    public function getNodeIteratorCollection()
     {
         return $this->nodeIteratorList;
     }
