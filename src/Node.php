@@ -861,7 +861,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             $namespace = null;
         }
 
-        $defaultNamespace = Namespaces::locateNamespace($this, null);
+        $defaultNamespace = $this->locateNamespace($this, null);
 
         return $defaultNamespace === $namespace;
     }
@@ -981,7 +981,77 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             $prefix = null;
         }
 
-        return Namespaces::locateNamespace($this, $prefix);
+        return $this->locateNamespace($this, $prefix);
+    }
+
+    /**
+     * Finds the namespace associated with the given prefix on the given node.
+     *
+     * @see https://dom.spec.whatwg.org/#locate-a-namespace
+     *
+     * @param \Rowbot\DOM\Node $node
+     * @param ?string          $prefix
+     *
+     * @return ?string
+     */
+    private function locateNamespace(self $node, ?string $prefix): ?string
+    {
+        if ($node instanceof Element) {
+            if ($node->namespaceURI !== null && $node->prefix === $prefix) {
+                return $node->namespaceURI;
+            }
+
+            foreach ($node->getAttributeList() as $attr) {
+                if ($attr->namespaceURI === Namespaces::XMLNS) {
+                    $attrPrefix = $attr->prefix;
+                    $localName = $attr->localName;
+
+                    if (($attrPrefix === 'xmlns' && $localName === $prefix)
+                        || ($attrPrefix === null && $localName === 'xmlns')
+                    ) {
+                        if ($attr->value !== '') {
+                            return $attr->value;
+                        }
+
+                        return null;
+                    }
+                }
+            }
+
+            if ($node->parentElement === null) {
+                return null;
+            }
+
+            return $this->locateNamespace($node->parentElement, $prefix);
+        }
+
+        if ($node instanceof Document) {
+            if ($node->documentElement === null) {
+                return null;
+            }
+
+            return $this->locateNamespace($node->documentElement, $prefix);
+        }
+
+        if ($node instanceof DocumentType
+            || $node instanceof DocumentFragment
+        ) {
+            return null;
+        }
+
+        if ($node instanceof Attr) {
+            if ($node->ownerElement === null) {
+                return null;
+            }
+
+            return $this->locateNamespace($node->ownerElement, $prefix);
+        }
+
+        if ($node->parentElement === null) {
+            return null;
+        }
+
+        return $this->locateNamespace($node->parentElement, $prefix);
     }
 
     /**
