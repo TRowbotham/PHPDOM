@@ -670,7 +670,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @internal
      */
-    public static function _getCommonAncestor(Node $nodeA, Node $nodeB)
+    public static function getCommonAncestor(Node $nodeA, Node $nodeB)
     {
         while ($nodeA) {
             $node = $nodeB;

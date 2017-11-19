@@ -61,7 +61,7 @@ class Range {
                         $this->startOffset == $this->endOffset;
 
             case 'commonAncestorContainer':
-                return Node::_getCommonAncestor(
+                return Node::getCommonAncestor(
                     $this->startContainer,
                     $this->endContainer
                 );
@@ -111,7 +111,7 @@ class Range {
             return $fragment;
         }
 
-        $commonAncestor = Node::_getCommonAncestor(
+        $commonAncestor = Node::getCommonAncestor(
             $originalStartNode,
             $originalEndNode
         );
@@ -524,7 +524,7 @@ class Range {
             return $fragment;
         }
 
-        $commonAncestor = Node::_getCommonAncestor(
+        $commonAncestor = Node::getCommonAncestor(
             $originalStartNode,
             $originalEndNode
         );
