@@ -709,7 +709,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @return int
      */
-    public function _getTreeIndex()
+    public function getTreeIndex()
     {
         return $this->parentNode->childNodes->indexOf($this);
     }
@@ -1196,7 +1196,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                     break;
                 }
 
-                $treeIndex = $currentNode->_getTreeIndex();
+                $treeIndex = $currentNode->getTreeIndex();
 
                 // For each range whose start node is currentNode, add length to
                 // its start offset and set its start node to node.

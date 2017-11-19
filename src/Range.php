@@ -448,7 +448,7 @@ class Range {
             }
 
             $newNode = $referenceNode->parentNode;
-            $newOffset = $referenceNode->_getTreeIndex() + 1;
+            $newOffset = $referenceNode->getTreeIndex() + 1;
         }
 
         if (
@@ -592,7 +592,7 @@ class Range {
                 // range, so would be an inclusive ancestor of original end
                 // node, and we could not reach this point.
                 $newNode = $referenceNode->parentNode;
-                $newOffset = $referenceNode->_getTreeIndex();
+                $newOffset = $referenceNode->getTreeIndex();
             }
         }
 
@@ -719,7 +719,7 @@ class Range {
         }
 
         $newOffset = !$referenceNode ?
-            $parent->getLength() : $referenceNode->_getTreeIndex();
+            $parent->getLength() : $referenceNode->getTreeIndex();
         $newOffset += $node instanceof DocumentFragment ?
             $node->getLength() : 1;
 
@@ -758,7 +758,7 @@ class Range {
             return true;
         }
 
-        $offset = $node->_getTreeIndex();
+        $offset = $node->getTreeIndex();
         $bp = array($parent, $offset);
 
         if (
@@ -839,7 +839,7 @@ class Range {
             throw new InvalidNodeTypeError();
         }
 
-        $index = $node->_getTreeIndex();
+        $index = $node->getTreeIndex();
 
         $this->startContainer = $parent;
         $this->startOffset = $index;
@@ -900,7 +900,7 @@ class Range {
             throw new InvalidNodeTypeError();
         }
 
-        $this->setStartOrEnd('end', $parent, $node->_getTreeIndex() + 1);
+        $this->setStartOrEnd('end', $parent, $node->getTreeIndex() + 1);
     }
 
     /**
@@ -920,7 +920,7 @@ class Range {
             throw new InvalidNodeTypeError();
         }
 
-        $this->setStartOrEnd('end', $parent, $node->_getTreeIndex());
+        $this->setStartOrEnd('end', $parent, $node->getTreeIndex());
     }
 
     /**
@@ -955,7 +955,7 @@ class Range {
             throw new InvalidNodeTypeError();
         }
 
-        $this->setStartOrEnd('start', $parent, $node->_getTreeIndex() + 1);
+        $this->setStartOrEnd('start', $parent, $node->getTreeIndex() + 1);
     }
 
     /**
@@ -975,7 +975,7 @@ class Range {
             throw new InvalidNodeTypeError();
         }
 
-        $this->setStartOrEnd('start', $parent, $node->_getTreeIndex());
+        $this->setStartOrEnd('start', $parent, $node->getTreeIndex());
     }
 
     /**
@@ -1218,7 +1218,7 @@ class Range {
                 $child = $child->parentNode;
             }
 
-            if ($child->_getTreeIndex() < $boundaryPointA[1]) {
+            if ($child->getTreeIndex() < $boundaryPointA[1]) {
                 return 'after';
             }
         }

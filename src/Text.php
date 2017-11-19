@@ -64,7 +64,7 @@ class Text extends CharacterData
 
         if ($this->parentNode) {
             $this->parentNode->insertNode($newNode, $this->nextSibling);
-            $treeIndex = $this->_getTreeIndex();
+            $treeIndex = $this->getTreeIndex();
 
             foreach ($ranges as $index => $range) {
                 $startOffset = $range->startOffset;
