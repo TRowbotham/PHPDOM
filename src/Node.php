@@ -1073,10 +1073,10 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
 
         switch ($this->nodeType) {
             case self::ELEMENT_NODE:
-                return Namespaces::locatePrefix($this, $namespace);
+                return $this->locatePrefix($this, $namespace);
 
             case self::DOCUMENT_NODE:
-                return Namespaces::locatePrefix(
+                return $this->locatePrefix(
                     $this->getFirstElementChild(),
                     $namespace
                 );
@@ -1091,16 +1091,48 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                 // Return the result of locating a namespace prefix for its
                 // element, if its element is non-null, and null otherwise.
                 if ($ownerElement) {
-                    return Namespaces::locatePrefix($ownerElement, $namespace);
+                    return $this->locatePrefix($ownerElement, $namespace);
                 }
 
                 return null;
 
             default:
                 return ($parentElement = $this->parentElement())
-                    ? Namespaces::locatePrefix($parentElement, $namespace)
+                    ? $this->locatePrefix($parentElement, $namespace)
                     : null;
         }
+    }
+
+    /**
+     * Locates the prefix associated with the given namespace on the given
+     * element.
+     *
+     * @see https://dom.spec.whatwg.org/#locate-a-namespace-prefix
+     *
+     * @param \Rowbot\DOM\Element\Element $element
+     * @param ?string                     $namespace
+     *
+     * @return ?string
+     */
+    private function locatePrefix(Element $element, ?string $namespace): ?string
+    {
+        if ($element->namespaceURI === $namespace
+            && $element->prefix !== null
+        ) {
+            return $element->prefix;
+        }
+
+        foreach ($element->getAttributeList() as $attr) {
+            if ($attr->prefix === 'xmlns' && $attr->value === $namespace) {
+                return $attr->localName;
+            }
+        }
+
+        if ($element->parentElement !== null) {
+            return $this->locatePrefix($element, $namespace);
+        }
+
+        return null;
     }
 
     /**

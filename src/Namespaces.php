@@ -39,38 +39,6 @@ class Namespaces
         ')$/u';
 
     /**
-     * Finds the prefix associated with the given namespace on the given node.
-     *
-     * @see https://dom.spec.whatwg.org/#locate-a-namespace-prefix
-     *
-     * @param Element      $element   Those element whose prefix is to be found.
-     *
-     * @param string|null  $namespace The namespace of the prefix to be found.
-     *
-     * @return string|null
-     */
-    public static function locatePrefix(Element $element, $namespace)
-    {
-        if ($element->namespaceURI === $namespace &&
-            ($prefix = $element->prefix) !== null
-        ) {
-            return $prefix;
-        }
-
-        foreach ($element->getAttributeList() as $attr) {
-            if ($attr->prefix === 'xmlns' && $attr->value === $namespace) {
-                return $attr->localName;
-            }
-        }
-
-        if (($parentElement = $element->parentElement) !== null) {
-            return self::locatePrefix($parentElement, $namespace);
-        }
-
-        return null;
-    }
-
-    /**
      * Ensures that a qualified name is a valid one.
      *
      * @see https://dom.spec.whatwg.org/#validate
