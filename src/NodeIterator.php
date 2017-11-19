@@ -66,7 +66,7 @@ final class NodeIterator
     {
     }
 
-    public function _preremove($aNodeToBeRemoved)
+    public function preremoveNode($aNodeToBeRemoved)
     {
         if (!$aNodeToBeRemoved->contains($this->referenceNode)) {
             return;

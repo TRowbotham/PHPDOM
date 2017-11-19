@@ -1348,7 +1348,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
         $iterCollection = $node->nodeDocument->getNodeIteratorCollection();
 
         foreach ($iterCollection as $iter) {
-            $iter->_preremove($node);
+            $iter->preremoveNode($node);
         }
 
         $oldPreviousSibling = $node->previousSibling;
