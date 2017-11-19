@@ -1007,7 +1007,7 @@ class Range {
         $fragment = $this->extractContents();
 
         if ($newParent->hasChildNodes()) {
-            $newParent->_replaceAll(null);
+            $newParent->replaceAllNodes(null);
         }
 
         $this->insertNode($newParent);

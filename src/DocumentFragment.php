@@ -138,6 +138,6 @@ class DocumentFragment extends Node
             $node->nodeDocument = $this->nodeDocument;
         }
 
-        $this->_replaceAll($node);
+        $this->replaceAllNodes($node);
     }
 }

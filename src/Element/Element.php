@@ -172,7 +172,7 @@ class Element extends Node implements AttributeChangeObserver
                 // rather than its children.
 
                 // Replace all with fragment within the context object.
-                $this->_replaceAll($fragment);
+                $this->replaceAllNodes($fragment);
 
                 break;
 
@@ -1002,7 +1002,7 @@ class Element extends Node implements AttributeChangeObserver
             $node->nodeDocument = $this->nodeDocument;
         }
 
-        $this->_replaceAll($node);
+        $this->replaceAllNodes($node);
     }
 
     /**

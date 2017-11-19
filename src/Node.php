@@ -1451,7 +1451,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @param Node|null $node The node that is to be inserted.
      */
-    public function _replaceAll(Node $node = null)
+    public function replaceAllNodes(Node $node = null)
     {
         if ($node) {
             $this->nodeDocument->doAdoptNode($node);
