@@ -695,7 +695,7 @@ class Document extends Node implements Stringable
      *
      * @param string $characterSet The document's character set
      */
-    public function _setCharacterSet($characterSet)
+    public function setCharacterSet($characterSet)
     {
         if (!is_string($characterSet)) {
             return;
