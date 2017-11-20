@@ -514,7 +514,7 @@ class Element extends Node implements AttributeChangeObserver
         // namespace is the HTML namespace. Let context be a new Element with
         // "body" as its local name, the HTML namespace as its namespace, and
         // the context object's node document as its node document.
-        if (!($context instanceof Element) ||
+        if (!($context instanceof Element)
             || ($context->ownerDocument instanceof HTMLDocument
                 && $context->localName === 'html'
                 && $context->namespaceURI === Namespaces::HTML)

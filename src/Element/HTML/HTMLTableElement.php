@@ -79,7 +79,7 @@ class HTMLTableElement extends HTMLElement
                     if ($node instanceof HTMLTableRowElement) {
                         $collection[] = $node;
                     } elseif ($node instanceof HTMLTableSectionElement
-                        && $node->tagName === 'TBODY')
+                        && $node->tagName === 'TBODY'
                     ) {
                         $collection = array_merge(
                             $collection,
@@ -137,7 +137,7 @@ class HTMLTableElement extends HTMLElement
                 break;
 
             case 'tFoot':
-                $isValid = $value === null ||
+                $isValid = $value === null
                     || ($value instanceof HTMLTableSectionElement
                         && $value->tagName === 'TFOOT');
 
@@ -167,7 +167,7 @@ class HTMLTableElement extends HTMLElement
                 break;
 
             case 'tHead':
-                $isValid = $value === null ||
+                $isValid = $value === null
                     || ($value instanceof HTMLTableSectionElement
                         && $value->tagName === 'THEAD');
 
