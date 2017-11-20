@@ -375,7 +375,7 @@ class Document extends Node implements Stringable
 
         $data = Utils::DOMString($data);
 
-        if (strpos($data, '?>') !== false) {
+        if (mb_strpos($data, '?>') !== false) {
             throw new InvalidCharacterError();
         }
 
