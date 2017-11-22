@@ -38,6 +38,7 @@ use Rowbot\DOM\Element\HTML\HTMLTableRowElement;
 use Rowbot\DOM\Element\HTML\HTMLTableSectionElement;
 use Rowbot\DOM\Element\HTML\HTMLTemplateElement;
 use Rowbot\DOM\Element\HTML\HTMLTextAreaElement;
+use Rowbot\DOM\Element\HTML\Support\FormAssociable;
 use Rowbot\DOM\Element\HTML\Support\Resettable;
 use Rowbot\DOM\Encoding\EncodingUtils;
 use Rowbot\DOM\Exception\DOMException;
@@ -4758,16 +4759,7 @@ class TreeBuilder
         // with the form element pointed to by the form element pointer, and
         // suppress the running of the reset the form owner algorithm when the
         // parser subsequently attempts to insert the element.
-        if ($element instanceof HTMLButtonElement ||
-            $element instanceof HTMLFieldSetElement ||
-            $element instanceof HTMLInputElement ||
-            $element instanceof HTMLKeygenElement ||
-            $element instanceof HTMLObjectElement ||
-            $element instanceof HTMLOutputElement ||
-            $element instanceof HTMLSelectElement ||
-            $element instanceof HTMLTextAreaElement ||
-            $element instanceof HTMLImageElement
-        ) {
+        if ($element instanceof FormAssociable) {
             // TODO
         }
 
