@@ -166,7 +166,7 @@ abstract class ElementFactory
             }
         }
 
-        return '\\Rowbot\\DOM\\Element\\' . $interface::create(
+        return ('\\Rowbot\\DOM\\Element\\' . $interface)::create(
             $document,
             $localName,
             $namespace,
