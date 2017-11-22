@@ -1,6 +1,6 @@
 <?php
 namespace Rowbot\DOM\Element\HTML\Support;
 
-interface Resettable
+interface Resettable extends FormAssociable
 {
 }
