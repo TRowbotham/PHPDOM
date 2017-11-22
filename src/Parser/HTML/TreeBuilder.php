@@ -38,6 +38,7 @@ use Rowbot\DOM\Element\HTML\HTMLTableRowElement;
 use Rowbot\DOM\Element\HTML\HTMLTableSectionElement;
 use Rowbot\DOM\Element\HTML\HTMLTemplateElement;
 use Rowbot\DOM\Element\HTML\HTMLTextAreaElement;
+use Rowbot\DOM\Element\HTML\Support\Resettable;
 use Rowbot\DOM\Encoding\EncodingUtils;
 use Rowbot\DOM\Exception\DOMException;
 use Rowbot\DOM\Namespaces;
@@ -4745,12 +4746,7 @@ class TreeBuilder
         // If element is a resettable element, invoke its reset algorithm.
         // (This initialises the element's value and checkedness based on the
         // element's attributes.)
-        if ($element instanceof HTMLInputElement ||
-            $element instanceof HTMLKeygenElement ||
-            $element instanceof HTMLOutputElement ||
-            $element instanceof HTMLSelectElement ||
-            $element instanceof HTMLTextAreaElement
-        ) {
+        if ($element instanceof Resettable) {
             //TODO: $element->reset();
         }
 
