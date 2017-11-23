@@ -24,19 +24,19 @@ trait NodeFilterUtils
 
         // If the nth bit (where 0 is the least significant bit) of whatToShow
         // is not set, return FILTER_SKIP.
-        if (!((1 << $n) & $this->mWhatToShow)) {
+        if (!((1 << $n) & $this->whatToShow)) {
             return NodeFilter::FILTER_SKIP;
         }
 
         // If filter is null, return FILTER_ACCEPT.
-        if (!$this->mFilter) {
+        if (!$this->filter) {
             return NodeFilter::FILTER_ACCEPT;
         }
 
-        if ($this->mFilter instanceof NodeFilter) {
-            return $this->mFilter->acceptNode($node);
+        if ($this->filter instanceof NodeFilter) {
+            return $this->filter->acceptNode($node);
         }
 
-        return call_user_func($this->mFilter, $node);
+        return call_user_func($this->filter, $node);
     }
 }

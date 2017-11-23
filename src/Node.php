@@ -410,7 +410,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                 // value, to those of node.
                 $copy = new static(
                     $this->localName,
-                    $this->mValue,
+                    $this->value,
                     $this->namespaceURI,
                     $this->prefix
                 );

@@ -165,7 +165,7 @@ class Element extends Node implements AttributeChangeObserver
                 // object be the template's template contents (a
                 // DocumentFragment).
                 $context = $this instanceof HTMLTemplateElement
-                    ? $this->mContent
+                    ? $this->content
                     : $this;
 
                 // NOTE: Setting innerHTML on a template element will replace
@@ -539,14 +539,14 @@ class Element extends Node implements AttributeChangeObserver
             $this->parentNode->insertNode($fragment, $this);
         } elseif ($position === 'afterbegin') {
             // Insert fragment into the context object before its first child.
-            $this->insertNode($fragment, $this->mFirstChild);
+            $this->insertNode($fragment, $this->firstChild);
         } elseif ($position === 'beforeend') {
             // Append fragment to the context object.
             $this->appendChild($fragment);
         } elseif ($position === 'afterend') {
             // Insert fragment into the context object's parent before the
             // context object's next sibling.
-            $this->parentNode->insertNode($fragment, $this->mNextSibling);
+            $this->parentNode->insertNode($fragment, $this->nextSibling);
         }
     }
 
