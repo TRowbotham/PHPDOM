@@ -66,9 +66,9 @@ final class NodeIterator
     {
     }
 
-    public function preremoveNode($aNodeToBeRemoved)
+    public function preremoveNode($nodeToBeRemoved)
     {
-        if (!$aNodeToBeRemoved->contains($this->referenceNode)) {
+        if (!$nodeToBeRemoved->contains($this->referenceNode)) {
             return;
         }
 
@@ -76,8 +76,8 @@ final class NodeIterator
             $iter = new self(
                 $this->root,
                 NodeFilter::SHOW_ALL,
-                function ($aNode) use ($aNodeToBeRemoved) {
-                    return !$aNode->isInclusiveDescendantOf($aNodeToBeRemoved)
+                function ($aNode) use ($nodeToBeRemoved) {
+                    return !$aNode->isInclusiveDescendantOf($nodeToBeRemoved)
                         ? NodeFilter::FILTER_ACCEPT
                         : NodeFilter::FILTER_REJECT;
                 }
@@ -92,10 +92,10 @@ final class NodeIterator
             $this->pointerBeforeReferenceNode = false;
         }
 
-        $node = $aNodeToBeRemoved->previousSibling;
+        $node = $nodeToBeRemoved->previousSibling;
 
         if (!$node) {
-            $this->referenceNode = $aNodeToBeRemoved->parentNode;
+            $this->referenceNode = $nodeToBeRemoved->parentNode;
             return;
         }
 
@@ -106,13 +106,13 @@ final class NodeIterator
         }
     }
 
-    private function traverse($aDirection)
+    private function traverse($direction)
     {
         $node = $this->referenceNode;
         $beforeNode = $this->pointerBeforeReferenceNode;
 
         while (true) {
-            switch ($aDirection) {
+            switch ($direction) {
                 case 'next':
                     if (!$beforeNode) {
                         $firstChild = $node->firstChild;

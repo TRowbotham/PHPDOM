@@ -69,9 +69,9 @@ class Attr extends Node
         $this->value = $value;
     }
 
-    public function __get($aName)
+    public function __get($name)
     {
-        switch ($aName) {
+        switch ($name) {
             case 'localName':
                 return $this->localName;
 
@@ -95,20 +95,20 @@ class Attr extends Node
                 return $this->value;
 
             default:
-                return parent::__get($aName);
+                return parent::__get($name);
         }
     }
 
-    public function __set($aName, $value)
+    public function __set($name, $value)
     {
-        switch ($aName) {
+        switch ($name) {
             case 'value':
                 $this->setExistingAttributeValue(Utils::DOMString($value));
 
                 break;
 
             default:
-                parent::__set($aName, $value);
+                parent::__set($name, $value);
         }
     }
 
@@ -117,12 +117,12 @@ class Attr extends Node
      *
      * @internal
      *
-     * @param Element|null $aElement The Element that this attribute belongs
+     * @param Element|null $element The Element that this attribute belongs
      *     to.
      */
-    public function setOwnerElement(Element $aElement = null)
+    public function setOwnerElement(Element $element = null)
     {
-        $this->ownerElement = $aElement;
+        $this->ownerElement = $element;
     }
 
     /**

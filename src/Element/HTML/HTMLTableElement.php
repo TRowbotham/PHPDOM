@@ -311,20 +311,20 @@ class HTMLTableElement extends HTMLElement
      * tr element at the specified location.  It returns the newly created tr
      * element.
      *
-     * @param integer $aIndex Optional.  A value of -1, which is the default, is
+     * @param integer $index Optional.  A value of -1, which is the default, is
      *     equvilant to appending the new row to the end of the table.
      *
      * @return HTMLTableRowElement
      *
-     * @throws IndexSizeError   If $aIndex is < -1 or > the number of rows in
+     * @throws IndexSizeError   If $index is < -1 or > the number of rows in
      *     the table.
      */
-    public function insertRow($aIndex = -1)
+    public function insertRow($index = -1)
     {
         $rows = $this->rows;
         $numRows = count($rows);
 
-        if ($aIndex < -1 || $aIndex > $numRows) {
+        if ($index < -1 || $index > $numRows) {
             throw new IndexSizeError();
         }
 
@@ -341,10 +341,10 @@ class HTMLTableElement extends HTMLElement
             } else {
                 $tbodies[$numTbodies - 1]->appendChild($tr);
             }
-        } elseif ($aIndex == -1 || $aIndex == $numRows) {
+        } elseif ($index == -1 || $index == $numRows) {
             $rows[$numRows - 1]->parentNode->appendChild($tr);
         } else {
-            $rows[$aIndex]->before($tr);
+            $rows[$index]->before($tr);
         }
 
         return $tr;
@@ -353,17 +353,16 @@ class HTMLTableElement extends HTMLElement
     /**
      * Removes the tr element at the given position.
      *
-     * @param int $aIndex The indexed position of the tr element to remove.  A
+     * @param int $index The indexed position of the tr element to remove.  A
      *    value of -1 will remove the last tr element in the table.
      *
-     * @throws IndexSizeError If $aIndex < -1 or >= the number of tr elements in
+     * @throws IndexSizeError If $index < -1 or >= the number of tr elements in
      *     the table.
      */
-    public function deleteRow($aIndex)
+    public function deleteRow($index)
     {
         $rows = $this->rows;
         $numRows = count($rows);
-        $index = $aIndex;
 
         if ($index == -1) {
             $index = $numRows - 1;
@@ -374,7 +373,7 @@ class HTMLTableElement extends HTMLElement
             return;
         }
 
-        $rows[$aIndex]->remove();
+        $rows[$index]->remove();
     }
 
     /**
@@ -391,20 +390,20 @@ class HTMLTableElement extends HTMLElement
      * exist, create a new element of the specified type, and insert it before
      * the specified element.  Then return the newely created element.
      *
-     * @param string $aElement The tag name of the element to check against.
+     * @param string $element The tag name of the element to check against.
      *
-     * @param HTMLElement $aInsertBefore The element to insert against.  Null
+     * @param HTMLElement $insertBefore The element to insert against.  Null
      *     will append the element to the end of the table.
      *
      * @return HTMLElement
      */
-    private function createTableChildElement($aElement, $aInsertBefore)
+    private function createTableChildElement($element, $insertBefore)
     {
-        $nodes = $this->shallowGetElementsByTagName($aElement);
+        $nodes = $this->shallowGetElementsByTagName($element);
 
         if (!isset($nodes[0])) {
-            $node = $this->nodeDocument->createElement($aElement);
-            $this->insertBefore($node, $aInsertBefore);
+            $node = $this->nodeDocument->createElement($element);
+            $this->insertBefore($node, $insertBefore);
         } else {
             $node = $nodes[0];
         }
@@ -415,11 +414,11 @@ class HTMLTableElement extends HTMLElement
     /**
      * Removes the first specified element found, if any.
      *
-     * @param  string $aElement The tag name of the element to remove.
+     * @param  string $element The tag name of the element to remove.
      */
-    private function deleteTableChildElement($aElement)
+    private function deleteTableChildElement($element)
     {
-        $node = $this->shallowGetElementsByTagName($aElement);
+        $node = $this->shallowGetElementsByTagName($element);
 
         if (isset($node[0])) {
             $node->remove();

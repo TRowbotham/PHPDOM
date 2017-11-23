@@ -80,7 +80,7 @@ class DocumentType extends Node
     /**
      * @see Node::setNodeValue
      */
-    protected function setNodeValue($aNewValue)
+    protected function setNodeValue($newValue)
     {
         // Do nothing.
     }
@@ -88,7 +88,7 @@ class DocumentType extends Node
     /**
      * @see Node::setTextContent
      */
-    protected function setTextContent($aNewValue)
+    protected function setTextContent($newValue)
     {
         // Do nothing.
     }

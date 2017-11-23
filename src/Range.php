@@ -549,8 +549,8 @@ class Range
         $tw = new TreeWalker(
             $commonAncestor,
             NodeFilter::SHOW_ALL,
-            function ($aNode) {
-                if ($this->isFullyContainedNode($aNode)) {
+            function ($node) {
+                if ($this->isFullyContainedNode($node)) {
                     return NodeFilter::FILTER_ACCEPT;
                 }
 
@@ -921,12 +921,12 @@ class Range
      *
      * @param Node $node The Node where the Range will start.
      *
-     * @param int  $aOffset The offset within the given node where the Range
+     * @param int  $offset The offset within the given node where the Range
      *     starts.
      */
-    public function setStart(Node $node, $aOffset)
+    public function setStart(Node $node, $offset)
     {
-        $this->setStartOrEnd('start', $node, $aOffset);
+        $this->setStartOrEnd('start', $node, $offset);
     }
 
     /**
@@ -1040,8 +1040,8 @@ class Range
         $tw = new TreeWalker(
             $this->startContainer->getRootNode(),
             NodeFilter::SHOW_TEXT,
-            function ($aNode) {
-                if ($this->isFullyContainedNode($aNode)) {
+            function ($node) {
+                if ($this->isFullyContainedNode($node)) {
                     return NodeFilter::FILTER_ACCEPT;
                 }
 
@@ -1171,8 +1171,8 @@ class Range
         $tw = new TreeWalker(
             $boundaryPointB[0]->getRootNode(),
             NodeFilter::SHOW_ALL,
-            function ($aNode) use ($boundaryPointA) {
-                if ($aNode === $boundaryPointA[0]) {
+            function ($node) use ($boundaryPointA) {
+                if ($node === $boundaryPointA[0]) {
                     return NodeFilter::FILTER_ACCEPT;
                 }
 

@@ -36,9 +36,9 @@ abstract class CharacterData extends Node
         $this->length = mb_strlen($data, $this->nodeDocument->characterSet);
     }
 
-    public function __get($aName)
+    public function __get($name)
     {
-        switch ($aName) {
+        switch ($name) {
             case 'data':
                 return $this->data;
             case 'length':
@@ -48,24 +48,24 @@ abstract class CharacterData extends Node
             case 'previousElementSibling':
                 return $this->getPreviousElementSibling();
             default:
-                return parent::__get($aName);
+                return parent::__get($name);
         }
     }
 
-    public function __set($aName, $aValue)
+    public function __set($name, $value)
     {
-        switch ($aName) {
+        switch ($name) {
             case 'data':
                 $this->doReplaceData(
                     0,
                     $this->length,
-                    Utils::DOMString($aValue, true)
+                    Utils::DOMString($value, true)
                 );
 
                 break;
 
             default:
-                parent::__set($aName, $aValue);
+                parent::__set($name, $value);
         }
     }
 

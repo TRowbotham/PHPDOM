@@ -16,9 +16,9 @@ class HTMLBaseElement extends HTMLElement
         parent::__construct();
     }
 
-    public function __get($aName)
+    public function __get($name)
     {
-        switch ($aName) {
+        switch ($name) {
             case 'href':
                 $document = $this->nodeDocument;
                 $url = $this->attributeList->getAttrValue('href', null);
@@ -38,21 +38,21 @@ class HTMLBaseElement extends HTMLElement
                 return $this->attributeList->getAttrValue('target', null);
 
             default:
-                return parent::__get($aName);
+                return parent::__get($name);
         }
     }
 
-    public function __set($aName, $aValue)
+    public function __set($name, $value)
     {
-        switch ($aName) {
+        switch ($name) {
             case 'href':
             case 'target':
-                $this->attributeList->setAttrValue($aName, $aValue);
+                $this->attributeList->setAttrValue($name, $value);
 
                 break;
 
             default:
-                parent::__set($aName, $aValue);
+                parent::__set($name, $value);
         }
     }
 
@@ -72,23 +72,23 @@ class HTMLBaseElement extends HTMLElement
      * @see AttributeChangeObserver
      */
     public function onAttributeChanged(
-        Element $aElement,
-        $aLocalName,
-        $aOldValue,
-        $aValue,
-        $aNamespace
+        Element $element,
+        $localName,
+        $oldValue,
+        $value,
+        $namespace
     ) {
-        if ($aLocalName === 'href' &&
-            $aNamespace === null
+        if ($localName === 'href' &&
+            $namespace === null
         ) {
-            $this->setFrozenBaseURL($aValue);
+            $this->setFrozenBaseURL($value);
         } else {
             parent::onAttributeChanged(
-                $aElement,
-                $aLocalName,
-                $aOldValue,
-                $aValue,
-                $aNamespace
+                $element,
+                $localName,
+                $oldValue,
+                $value,
+                $namespace
             );
         }
     }
@@ -100,36 +100,31 @@ class HTMLBaseElement extends HTMLElement
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#set-the-frozen-base-url
      *
-     * @param string|null $aHref This value can only be non-null if the method
+     * @param string|null $href This value can only be non-null if the method
      *     is called from the onAttributeChanged method since, in the case of
      *     a content attribute being added to the element, the content attribute
      *     has not yet been placed in the element's content attribute list.
      */
-    public function setFrozenBaseURL($aHref = null)
+    public function setFrozenBaseURL($href = null)
     {
         $document = $this->nodeDocument;
         $fallbackBaseURL = $document->getFallbackBaseURL();
         $urlRecord = false;
 
-        if ($aHref) {
-            $href = $aHref;
-        } else {
+        if ($href !== null) {
             $hrefAttr = $this->attributeList->getAttrByNamespaceAndLocalName(
                 null,
                 'href'
             );
-            $href = $hrefAttr ? $hrefAttr->value : null;
-        }
 
-        // Don't bother trying to parse a URL if the element does not have an
-        // href content attribute.
-        if ($href !== null) {
-            // Parse the Element's href attribute.
-            $urlRecord = URLParser::parseUrl(
-                $href,
-                $fallbackBaseURL,
-                $document->characterSet
-            );
+            if ($hrefAttr !== null) {
+                // Parse the Element's href attribute.
+                $urlRecord = URLParser::parseUrl(
+                    $hrefAttr->value,
+                    $fallbackBaseURL,
+                    $document->characterSet
+                );
+            }
         }
 
         // TODO: Set element's frozen base URL to document's fallback base URL

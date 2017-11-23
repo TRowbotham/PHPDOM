@@ -128,18 +128,18 @@ class Element extends Node implements AttributeChangeObserver
         }
     }
 
-    public function __set($name, $aValue)
+    public function __set($name, $value)
     {
         switch ($name) {
             case 'classList':
-                $this->classList->value = $aValue;
+                $this->classList->value = $value;
 
                 break;
 
             case 'className':
                 $this->attributeList->setAttrValue(
                     'class',
-                    Utils::DOMString($aValue)
+                    Utils::DOMString($value)
                 );
 
                 break;
@@ -147,7 +147,7 @@ class Element extends Node implements AttributeChangeObserver
             case 'id':
                 $this->attributeList->setAttrValue(
                     $name,
-                    Utils::DOMString($aValue)
+                    Utils::DOMString($value)
                 );
 
                 break;
@@ -157,7 +157,7 @@ class Element extends Node implements AttributeChangeObserver
                 // algorithm with the new value as markup, and the context
                 // object as the context element.
                 $fragment = ParserFactory::parseFragment(
-                    Utils::DOMString($aValue, true),
+                    Utils::DOMString($value, true),
                     $this
                 );
 
@@ -210,7 +210,7 @@ class Element extends Node implements AttributeChangeObserver
                 // algorithm with the new value as markup, and parent as the
                 // context element.
                 $fragment = ParserFactory::parseFragment(
-                    Utils::DOMString($aValue, true),
+                    Utils::DOMString($value, true),
                     $parent
                 );
 
@@ -221,7 +221,7 @@ class Element extends Node implements AttributeChangeObserver
                 break;
 
             default:
-                parent::__set($name, $aValue);
+                parent::__set($name, $value);
         }
     }
 
