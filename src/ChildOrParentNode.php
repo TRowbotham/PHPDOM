@@ -27,7 +27,7 @@ trait ChildOrParentNode
         // Replace each string in nodes with a new Text node whose data is the
         // string and node document is document.
         foreach ($nodes as &$potentialNode) {
-            if (!$potentialNode instanceof self) {
+            if (!$potentialNode instanceof Node) {
                 $potentialNode = new Text(Utils::DOMString($potentialNode));
                 $potentialNode->setNodeDocument($document);
             }
