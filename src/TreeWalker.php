@@ -20,13 +20,11 @@ final class TreeWalker
         $filter = null
     ) {
         $this->currentNode = $root;
-        $this->filter = null;
 
         if ($filter instanceof NodeFilter || is_callable($filter)) {
             $this->filter = $filter;
         }
 
-        $this->filter = $filter;
         $this->root = $root;
         $this->whatToShow = $whatToShow;
     }
