@@ -13,19 +13,19 @@ abstract class EncodingUtils
 
     /**
      * @see https://encoding.spec.whatwg.org/#decode
-     * @param  ByteStream $aStream   [description]
-     * @param  [type]     $aEncoding [description]
+     * @param  ByteStream $stream   [description]
+     * @param  [type]     $encoding [description]
      * @return [type]                [description]
      */
-    public static function decode(ByteStream $aStream, $aEncoding)
+    public static function decode(ByteStream $stream, $encoding)
     {
-        $encoding = $aEncoding;
+        $encoding = $encoding;
         $buffer = '';
         $BOMSeen = false;
         $byteCount = 0;
 
-        while (!$aStream->isEOS()) {
-            $buffer .= $aStream->get();
+        while (!$stream->isEOS()) {
+            $buffer .= $stream->get();
 
             if (++$byteCount == 3) {
                 break;
@@ -44,9 +44,9 @@ abstract class EncodingUtils
         }
 
         if (!$BOMSeen) {
-            $aStream->prependData($buffer);
+            $stream->prependData($buffer);
         } else {
-            $aStream->prependData($buffer[strlen($buffer) - 1]);
+            $stream->prependData($buffer[strlen($buffer) - 1]);
         }
 
         $output = new CodePointStream();
@@ -56,15 +56,15 @@ abstract class EncodingUtils
     }
     /**
      * @see https://encoding.spec.whatwg.org/#encode
-     * @param  CodePointStream $aStream   [description]
-     * @param  string          $aEncoding [description]
+     * @param  CodePointStream $stream   [description]
+     * @param  string          $encoding [description]
      * @return [type]                     [description]
      */
-    public static function encode(CodePointStream $aStream, $aEncoding)
+    public static function encode(CodePointStream $stream, $encoding)
     {
         $output = new ByteStream();
         $encoder = new encoders\UTF8Encoder();
-        $encoder->run($aStream, $output, EncodingErrorMode::HTML);
+        $encoder->run($stream, $output, EncodingErrorMode::HTML);
 
         return $output;
     }
@@ -75,14 +75,14 @@ abstract class EncodingUtils
      *
      * @see https://encoding.spec.whatwg.org/#concept-encoding-get
      *
-     * @param string $aLabel A string representing an encoding to use.
+     * @param string $label A string representing an encoding to use.
      *
      * @return string|bool Returns the encoding name on succes or false on
      *     failure.
      */
-    public static function getEncoding($aLabel)
+    public static function getEncoding($label)
     {
-        switch (trim(mb_strtolower($aLabel, 'utf-8'))) {
+        switch (trim(mb_strtolower($label, 'utf-8'))) {
             case 'unicode-1-1-utf-8':
             case 'utf-8':
             case 'utf8':
@@ -478,19 +478,19 @@ abstract class EncodingUtils
     /**
      * @see https://encoding.spec.whatwg.org/#get-an-output-encoding
      *
-     * @param string $aEncoding An encoding name.
+     * @param string $encoding An encoding name.
      *
      * @return string
      */
-    public static function getOutputEncoding($aEncoding)
+    public static function getOutputEncoding($encoding)
     {
-        if ($aEncoding === 'replacement' || $aEncoding === 'UTF-16BE' ||
-            $aEncoding === 'UTF-16LE'
+        if ($encoding === 'replacement' || $encoding === 'UTF-16BE' ||
+            $encoding === 'UTF-16LE'
         ) {
             return 'UTF-8';
         }
 
-        return $aEncoding;
+        return $encoding;
     }
 
     public static function mb_html_entity_decode($string)
@@ -559,16 +559,16 @@ abstract class EncodingUtils
 
     /**
      * @see https://encoding.spec.whatwg.org/#utf-8-decode
-     * @param  ByteStream $aStream [description]
+     * @param  ByteStream $stream [description]
      * @return [type]              [description]
      */
-    public static function utf8decode(ByteStream $aStream)
+    public static function utf8decode(ByteStream $stream)
     {
         $buffer = '';
         $byteCount = 0;
 
-        while (!$aStream->isEOS()) {
-            $buffer .= $aStream->get();
+        while (!$stream->isEOS()) {
+            $buffer .= $stream->get();
 
             if (++$byteCount == 3) {
                 break;
@@ -576,39 +576,39 @@ abstract class EncodingUtils
         }
 
         if ($buffer === "\xEF\xBB\xBF") {
-            $aStream->prependData($buffer);
+            $stream->prependData($buffer);
         }
 
         $output = new CodePointStream();
-        (new decoders\UTF8Decoder())->run($aStream, $output);
+        (new decoders\UTF8Decoder())->run($stream, $output);
 
         return $output;
     }
 
     /**
      * @see https://encoding.spec.whatwg.org/#utf-8-decode-without-bom
-     * @param  ByteStream $aStream [description]
+     * @param  ByteStream $stream [description]
      * @return [type]              [description]
      */
-    public static function utf8decodeWithoutBOM(ByteStream $aStream)
+    public static function utf8decodeWithoutBOM(ByteStream $stream)
     {
         $output = new CodePointStream();
-        (new decoders\UTF8Decoder())->run($aStream, $output);
+        (new decoders\UTF8Decoder())->run($stream, $output);
 
         return $output;
     }
 
     /**
      * @see https://encoding.spec.whatwg.org/#utf-8-decode-without-bom-or-fail
-     * @param  ByteStream $aStream [description]
+     * @param  ByteStream $stream [description]
      * @return [type]              [description]
      */
-    public static function utf8decodeWithoutBOMorFail(ByteStream $aStream)
+    public static function utf8decodeWithoutBOMorFail(ByteStream $stream)
     {
         $output = new CodePointStream();
         $decoder = new decoders\UTF8Decoder();
         $potentialError = $decoder->run(
-            $aStream,
+            $stream,
             $output,
             new ErrorMode(ErrorMode::FATAL)
         );
@@ -622,12 +622,12 @@ abstract class EncodingUtils
 
     /**
      * @see https://encoding.spec.whatwg.org/#utf-8-encode
-     * @param  CodePointStream $aStream [description]
+     * @param  CodePointStream $stream [description]
      * @return [type]                   [description]
      */
-    public static function utf8encode(CodePointStream $aStream)
+    public static function utf8encode(CodePointStream $stream)
     {
-        return self::encode($aStream, 'UTF-8');
+        return self::encode($stream, 'UTF-8');
     }
 
     /**

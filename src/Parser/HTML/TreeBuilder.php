@@ -1,58 +1,59 @@
 <?php
 namespace Rowbot\DOM\Parser\HTML;
 
-use Rowbot\DOM\Attr;
-use Rowbot\DOM\Comment;
-use Rowbot\DOM\Document;
-use Rowbot\DOM\DocumentMode;
-use Rowbot\DOM\DocumentType;
-use Rowbot\DOM\Element\Element;
-use Rowbot\DOM\Element\ElementFactory;
-use Rowbot\DOM\Element\HTML\HTMLBodyElement;
-use Rowbot\DOM\Element\HTML\HTMLButtonElement;
-use Rowbot\DOM\Element\HTML\HTMLElement;
-use Rowbot\DOM\Element\HTML\HTMLFieldSetElement;
-use Rowbot\DOM\Element\HTML\HTMLFormElement;
-use Rowbot\DOM\Element\HTML\HTMLFrameSetElement;
-use Rowbot\DOM\Element\HTML\HTMLHeadElement;
-use Rowbot\DOM\Element\HTML\HTMLHeadingElement;
-use Rowbot\DOM\Element\HTML\HTMLHtmlElement;
-use Rowbot\DOM\Element\HTML\HTMLImageElement;
-use Rowbot\DOM\Element\HTML\HTMLInputElement;
-use Rowbot\DOM\Element\HTML\HTMLKeygenElement;
-use Rowbot\DOM\Element\HTML\HTMLLIElement;
-use Rowbot\DOM\Element\HTML\HTMLObjectElement;
-use Rowbot\DOM\Element\HTML\HTMLOptGroupElement;
-use Rowbot\DOM\Element\HTML\HTMLOptionElement;
-use Rowbot\DOM\Element\HTML\HTMLOutputElement;
-use Rowbot\DOM\Element\HTML\HTMLParagraphElement;
-use Rowbot\DOM\Element\HTML\HTMLScriptElement;
-use Rowbot\DOM\Element\HTML\HTMLSelectElement;
-use Rowbot\DOM\Element\HTML\HTMLTableCaptionElement;
-use Rowbot\DOM\Element\HTML\HTMLTableCellElement;
-use Rowbot\DOM\Element\HTML\HTMLTableColElement;
-use Rowbot\DOM\Element\HTML\HTMLTableDataElement;
-use Rowbot\DOM\Element\HTML\HTMLTableElement;
-use Rowbot\DOM\Element\HTML\HTMLTableHeaderCellElement;
-use Rowbot\DOM\Element\HTML\HTMLTableRowElement;
-use Rowbot\DOM\Element\HTML\HTMLTableSectionElement;
-use Rowbot\DOM\Element\HTML\HTMLTemplateElement;
-use Rowbot\DOM\Element\HTML\HTMLTextAreaElement;
-use Rowbot\DOM\Encoding\EncodingUtils;
-use Rowbot\DOM\Exception\DOMException;
-use Rowbot\DOM\Namespaces;
-use Rowbot\DOM\Node;
-use Rowbot\DOM\Parser\Bookmark;
-use Rowbot\DOM\Parser\Marker;
-use Rowbot\DOM\Parser\Token\CharacterToken;
-use Rowbot\DOM\Parser\Token\CommentToken;
-use Rowbot\DOM\Parser\Token\EndTagToken;
-use Rowbot\DOM\Parser\Token\EOFToken;
-use Rowbot\DOM\Parser\Token\StartTagToken;
-use Rowbot\DOM\Parser\Token\TagToken;
-use Rowbot\DOM\Parser\Token\Token;
-use Rowbot\DOM\Text;
-use Rowbot\DOM\Utils;
+use Rowbot\DOM\{
+    Attr,
+    Comment,
+    Document,
+    DocumentMode,
+    DocumentType,
+    Element\Element,
+    Element\ElementFactory,
+    Encoding\EncodingUtils,
+    Exception\DOMException,
+    Namespaces,
+    Node,
+    Text,
+    Utils
+};
+use Rowbot\DOM\Element\HTML\{
+    HTMLBodyElement,
+    HTMLButtonElement,
+    HTMLElement,
+    HTMLFormElement,
+    HTMLFrameSetElement,
+    HTMLHeadElement,
+    HTMLHeadingElement,
+    HTMLHtmlElement,
+    HTMLLIElement,
+    HTMLOptGroupElement,
+    HTMLOptionElement,
+    HTMLParagraphElement,
+    HTMLScriptElement,
+    HTMLSelectElement,
+    HTMLTableCaptionElement,
+    HTMLTableCellElement,
+    HTMLTableColElement,
+    HTMLTableDataElement,
+    HTMLTableElement,
+    HTMLTableHeaderCellElement,
+    HTMLTableRowElement,
+    HTMLTableSectionElement,
+    HTMLTemplateElement,
+    Support\FormAssociable,
+    Support\Resettable
+};
+use Rowbot\DOM\Parser\{
+    Bookmark,
+    Marker,
+    Token\CharacterToken,
+    Token\CommentToken,
+    Token\EndTagToken,
+    Token\EOFToken,
+    Token\StartTagToken,
+    Token\TagToken,
+    Token\Token
+};
 
 class TreeBuilder
 {
@@ -196,6 +197,7 @@ class TreeBuilder
         $activeFormattingElements,
         $openElements,
         $templateInsertionModes,
+        $textBuilder,
         $tokenRepository,
         bool $isFragmentCase,
         bool $isScriptingEnabled,
@@ -213,6 +215,7 @@ class TreeBuilder
         $this->pendingTableCharacterTokens = null;
         $this->state = $state;
         $this->templateInsertionModes = $templateInsertionModes;
+        $this->textBuilder = $textBuilder;
         $this->tokenRepository = $tokenRepository;
     }
 
@@ -4743,12 +4746,7 @@ class TreeBuilder
         // If element is a resettable element, invoke its reset algorithm.
         // (This initialises the element's value and checkedness based on the
         // element's attributes.)
-        if ($element instanceof HTMLInputElement ||
-            $element instanceof HTMLKeygenElement ||
-            $element instanceof HTMLOutputElement ||
-            $element instanceof HTMLSelectElement ||
-            $element instanceof HTMLTextAreaElement
-        ) {
+        if ($element instanceof Resettable) {
             //TODO: $element->reset();
         }
 
@@ -4760,16 +4758,7 @@ class TreeBuilder
         // with the form element pointed to by the form element pointer, and
         // suppress the running of the reset the form owner algorithm when the
         // parser subsequently attempts to insert the element.
-        if ($element instanceof HTMLButtonElement ||
-            $element instanceof HTMLFieldSetElement ||
-            $element instanceof HTMLInputElement ||
-            $element instanceof HTMLKeygenElement ||
-            $element instanceof HTMLObjectElement ||
-            $element instanceof HTMLOutputElement ||
-            $element instanceof HTMLSelectElement ||
-            $element instanceof HTMLTextAreaElement ||
-            $element instanceof HTMLImageElement
-        ) {
+        if ($element instanceof FormAssociable) {
             // TODO
         }
 
@@ -4987,14 +4976,17 @@ class TreeBuilder
         }
 
         if ($node instanceof Text) {
-            $node->data .= $data;
+            $this->textBuilder->append($data);
             return;
         }
 
-        $node = new Text($data);
+        $this->textBuilder->flushText();
+        $node = new Text();
         $node->setNodeDocument(
             $adjustedInsertionLocation[0]->getNodeDocument()
         );
+        $this->textBuilder->setNode($node);
+        $this->textBuilder->append($data);
         $this->insertNode($node, $adjustedInsertionLocation);
     }
 

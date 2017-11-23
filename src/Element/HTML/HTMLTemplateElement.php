@@ -8,7 +8,7 @@ use Rowbot\DOM\Document;
  */
 class HTMLTemplateElement extends HTMLElement
 {
-    protected $mContent;
+    protected $content;
 
     protected function __construct()
     {
@@ -16,47 +16,41 @@ class HTMLTemplateElement extends HTMLElement
 
         $doc = $this->nodeDocument
             ->getAppropriateTemplateContentsOwnerDocument();
-        $this->mContent = $doc->createDocumentFragment();
-        $this->mContent->setHost($this);
+        $this->content = $doc->createDocumentFragment();
+        $this->content->setHost($this);
     }
 
-    public function __destruct()
+    public function __get($name)
     {
-        $this->mContent = null;
-        parent::__destruct();
-    }
-
-    public function __get($aName)
-    {
-        switch ($aName) {
+        switch ($name) {
             case 'content':
-                return $this->mContent;
+                return $this->content;
 
             default:
-                return parent::__get($aName);
+                return parent::__get($name);
         }
     }
 
-    public function doAdoptingSteps(Document $aOldDocument)
+    public function doAdoptingSteps(Document $oldDocument)
     {
         $doc = $this->nodeDocument
             ->getAppropriateTemplateContentsOwnerDocument();
-        $doc->doAdoptNode($this->mContent);
+        $doc->doAdoptNode($this->content);
     }
 
     public function doCloningSteps(
-        HTMLTemplateElement $aCopy,
-        Document $aDocument,
-        $aCloneChildren
+        HTMLTemplateElement $copy,
+        Document $document,
+        $cloneChildren
     ) {
-        if (!$aCloneChildren) {
+        if (!$cloneChildren) {
             return;
         }
 
-        $copiedContents = $this->mContent->doCloneNode(
-            $aCopy->mContent->nodeDocument,
+        $copiedContents = $this->content->doCloneNode(
+            $copy->content->nodeDocument,
             true
         );
-        $aCopy->mContent->appendChild($copiedContents);
+        $copy->content->appendChild($copiedContents);
     }
 }

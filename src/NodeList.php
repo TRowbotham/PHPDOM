@@ -14,42 +14,42 @@ class NodeList implements ArrayAccess, Countable, IteratorAggregate
 {
     private $nodes;
 
-    public function __construct($aNodes)
+    public function __construct($nodes)
     {
-        $this->nodes = $aNodes;
+        $this->nodes = $nodes;
     }
 
-    public function __get($aName)
+    public function __get($name)
     {
-        switch ($aName) {
+        switch ($name) {
             case 'length':
                 return $this->nodes->count();
         }
     }
 
-    public function item($aIndex)
+    public function item($index)
     {
-        return $this->nodes->offsetGet($aIndex);
+        return $this->nodes->offsetGet($index);
     }
 
-    public function offsetExists($aOffset)
+    public function offsetExists($offset)
     {
-        return $this->nodes->offsetExists($aOffset);
+        return $this->nodes->offsetExists($offset);
     }
 
-    public function offsetGet($aOffset)
+    public function offsetGet($offset)
     {
-        return $this->nodes->offsetGet($aOffset);
+        return $this->nodes->offsetGet($offset);
     }
 
-    public function offsetSet($aOffset, $aValue)
+    public function offsetSet($offset, $value)
     {
-        return $this->nodes->offsetSet($aOffset, $aValue);
+        return $this->nodes->offsetSet($offset, $value);
     }
 
-    public function offsetUnset($aOffset)
+    public function offsetUnset($offset)
     {
-        $this->nodes->offsetUnset($aOffset);
+        $this->nodes->offsetUnset($offset);
     }
 
     public function count()

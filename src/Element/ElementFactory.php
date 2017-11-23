@@ -6,56 +6,186 @@ use Rowbot\DOM\Exception\DOMException;
 
 abstract class ElementFactory
 {
+    private const HTML_ELEMENTS = [
+        'a'          => 'HTMLAnchorElement',
+        'abbr'       => 'HTMLElement',
+        'acronym'    => 'HTMLElement', // Obsolete
+        'address'    => 'HTMLElement',
+        'area'       => 'HTMLAreaElement',
+        'article'    => 'HTMLElement',
+        'aside'      => 'HTMLElement',
+        'audio'      => 'HTMLAudioElement',
+        'b'          => 'HTMLElement',
+        'base'       => 'HTMLBaseElement',
+        'basefont'   => 'HTMLElement', // Obsolete
+        'bdi'        => 'HTMLElement',
+        'bdo'        => 'HTMLElement',
+        'big'        => 'HTMLElement', // Obsolete
+        'blockquote' => 'HTMLQuoteElement',
+        'body'       => 'HTMLBodyElement',
+        'br'         => 'HTMLBRElement',
+        'button'     => 'HTMLButtonElement',
+        'canvas'     => 'HTMLCanvasElement',
+        'caption'    => 'HTMLTableCaptionElement',
+        'center'     => 'HTMLElement', // Obsolete
+        'cite'       => 'HTMLElement',
+        'code'       => 'HTMLElement',
+        'col'        => 'HTMLTableColElement',
+        'colgroup'   => 'HTMLTableColElement',
+        'data'       => 'HTMLDataElement',
+        'datalist'   => 'HTMLDataListElement',
+        'dd'         => 'HTMLElement',
+        'del'        => 'HTMLModElement',
+        'details'    => 'HTMLDetailsElement',
+        'dfn'        => 'HTMLElement',
+        'dialog'     => 'HTMLDialogElement',
+        'dir'        => 'HTMLDirectoryElement', // Obsolete
+        'div'        => 'HTMLDivElement',
+        'dl'         => 'HTMLDListElement',
+        'dt'         => 'HTMLElement',
+        'em'         => 'HTMLElement',
+        'embed'      => 'HTMLEmbedElement',
+        'fieldset'   => 'HTMLFieldSetElement',
+        'figcaption' => 'HTMLElement',
+        'figure'     => 'HTMLElement',
+        'font'       => 'HTMLFontElement', // Obsolete
+        'footer'     => 'HTMLElement',
+        'form'       => 'HTMLFormElement',
+        'frame'      => 'HTMLFrameElement', // Deprecated
+        'frameset'   => 'HTMLFrameSetElement', // Deprecated
+        'h1'         => 'HTMLHeadingElement',
+        'h2'         => 'HTMLHeadingElement',
+        'h3'         => 'HTMLHeadingElement',
+        'h4'         => 'HTMLHeadingElement',
+        'h5'         => 'HTMLHeadingElement',
+        'h6'         => 'HTMLHeadingElement',
+        'head'       => 'HTMLHeadElement',
+        'header'     => 'HTMLElement',
+        'hgroup'     => 'HTMLElement', // Obsolete
+        'hr'         => 'HTMLHRElement',
+        'html'       => 'HTMLHtmlElement',
+        'i'          => 'HTMLElement',
+        'iframe'     => 'HTMLIFrameElement',
+        'img'        => 'HTMLImageElement',
+        'input'      => 'HTMLInputElement',
+        'ins'        => 'HTMLModElement',
+        'kbd'        => 'HTMLElement',
+        'label'      => 'HTMLLabelElement',
+        'legend'     => 'HTMLLegendElement',
+        'li'         => 'HTMLLIElement',
+        'link'       => 'HTMLLinkElement',
+        'main'       => 'HTMLElement',
+        'map'        => 'HTMLMapElement',
+        'mark'       => 'HTMLElement',
+        'marquee'    => 'HTMLMarqueeElement', // Obsolete
+        'menu'       => 'HTMLMenuElement',
+        'menuitem'   => 'HTMLMenuItemElement',
+        'meta'       => 'HTMLMetaElement',
+        'meter'      => 'HTMLMeterElement',
+        'nav'        => 'HTMLElement',
+        'noembed'    => 'HTMLElement', // Deprecated and non-standard
+        'noframes'   => 'HTMLElement',
+        'noscript'   => 'HTMLElement',
+        'object'     => 'HTMLObjectElement',
+        'ol'         => 'HTMLOListElement',
+        'optgroup'   => 'HTMLOptGroupElement',
+        'option'     => 'HTMLOptionElement',
+        'output'     => 'HTMLOutputElement',
+        'p'          => 'HTMLParagraphElement',
+        'param'      => 'HTMLParamElement',
+        'picture'    => 'HTMLPictureElement',
+        'pre'        => 'HTMLPreElement',
+        'progress'   => 'HTMLProgressElement',
+        'q'          => 'HTMLQuoteElement',
+        'rp'         => 'HTMLElement',
+        'rt'         => 'HTMLElement',
+        'rtc'        => 'HTMLElement',
+        'ruby'       => 'HTMLElement',
+        's'          => 'HTMLElement',
+        'samp'       => 'HTMLElement',
+        'script'     => 'HTMLScriptElement',
+        'section'    => 'HTMLElement',
+        'select'     => 'HTMLSelectElement',
+        'small'      => 'HTMLElement',
+        'source'     => 'HTMLSourceElement',
+        'span'       => 'HTMLSpanElement',
+        'strike'     => 'HTMLElement', // Obsolete
+        'strong'     => 'HTMLElement',
+        'style'      => 'HTMLStyleElement',
+        'sub'        => 'HTMLElement',
+        'summary'    => 'HTMLElement',
+        'sup'        => 'HTMLElement',
+        'table'      => 'HTMLTableElement',
+        'tbody'      => 'HTMLTableSectionElement',
+        'td'         => 'HTMLTableDataCellElement',
+        'template'   => 'HTMLTemplateElement',
+        'textarea'   => 'HTMLTextAreaElement',
+        'tfoot'      => 'HTMLTableSectionElement',
+        'th'         => 'HTMLTableHeaderCellElement',
+        'thead'      => 'HTMLTableSectionElement',
+        'time'       => 'HTMLTimeElement',
+        'title'      => 'HTMLTitleElement',
+        'tr'         => 'HTMLTableRowElement',
+        'track'      => 'HTMLTrackElement',
+        'tt'         => 'HTMLElement', // Obsolete
+        'u'          => 'HTMLElement',
+        'ul'         => 'HTMLUListElement',
+        'var'        => 'HTMLElement',
+        'video'      => 'HTMLVideoElement',
+        'wbr'        => 'HTMLElement',
+        'xmp'        => 'HTMLElement' // Obsolete
+    ];
+
     /**
      * @see https://dom.spec.whatwg.org/#concept-create-element
      *
-     * @param Document $aDocument The element's owner document.
+     * @param Document $document The element's owner document.
      *
-     * @param string $aLocalName The element's local name that you are creating.
+     * @param string $localName The element's local name that you are creating.
      *
-     * @param string $aNamespace The namespace that the element belongs to.
+     * @param string $namespace The namespace that the element belongs to.
      *
-     * @param string|null $aPrefix Optional. The namespace prefix of the
+     * @param string|null $prefix Optional. The namespace prefix of the
      *     element.
      *
      * @return Element
      */
     public static function create(
-        $aDocument,
-        $aLocalName,
-        $aNamespace,
-        $aPrefix = null
+        $document,
+        $localName,
+        $namespace,
+        $prefix = null
     ) {
-        switch ($aNamespace) {
-            case Namespaces::HTML:
-                $interface = self::getHTMLInterfaceFor($aLocalName);
+        $interface = 'Element';
 
-                break;
+        if ($namespace === Namespaces::HTML) {
+            $interface = 'HTML\\HTMLUnknownElement';
 
-            default:
-                $interface = 'Rowbot\\DOM\\Element\\Element';
+            if (isset(self::HTML_ELEMENTS[$localName])) {
+                $interface = 'HTML\\' . self::HTML_ELEMENTS[$localName];
+            }
         }
 
-        return $interface::create(
-            $aDocument,
-            $aLocalName,
-            $aNamespace,
-            $aPrefix
+        return ('\\Rowbot\\DOM\\Element\\' . $interface)::create(
+            $document,
+            $localName,
+            $namespace,
+            $prefix
         );
     }
 
     /**
      * @see https://dom.spec.whatwg.org/#internal-createelementns-steps
      *
-     * @param Document $aDocument The Element's owner document.
+     * @param Document $document The Element's owner document.
      *
-     * @param string $aNamespace The Element's namespace.
+     * @param string $namespace The Element's namespace.
      *
-     * @param string $aQualifiedName The Element's fully qualified name.
+     * @param string $qualifiedName The Element's fully qualified name.
      *
      * @return Element
      */
-    public static function createNS($aDocument, $aNamespace, $aQualifiedName)
+    public static function createNS($document, $namespace, $qualifiedName)
     {
         try {
             list(
@@ -63,8 +193,8 @@ abstract class ElementFactory
                 $prefix,
                 $localName
             ) = Namespaces::validateAndExtract(
-                $aNamespace,
-                $aQualifiedName
+                $namespace,
+                $qualifiedName
             );
         } catch (DOMException $e) {
             throw $e;
@@ -72,7 +202,7 @@ abstract class ElementFactory
 
         try {
             $element = self::create(
-                $aDocument,
+                $document,
                 $localName,
                 $namespace,
                 $prefix
@@ -82,254 +212,5 @@ abstract class ElementFactory
         }
 
         return $element;
-    }
-
-    public static function getHTMLInterfaceFor($aLocalName)
-    {
-        switch ($aLocalName) {
-            /**
-             * These are elements whose tag name differs
-             * from its DOM interface name, so map the tag
-             * name to the interface name.
-             */
-            case 'a':
-                $interfaceName = 'Anchor';
-
-                break;
-
-            case 'br':
-                $interfaceName = 'BR';
-
-                break;
-
-            case 'datalist':
-                $interfaceName = 'DataList';
-
-                break;
-
-            case 'dl':
-                $interfaceName = 'DList';
-
-                break;
-
-            case 'fieldset':
-                $interfaceName = 'FieldSet';
-
-                break;
-
-            case 'frameset':
-                $interfaceName = 'FrameSet';
-
-                break;
-
-            case 'hr':
-                $interfaceName = 'HR';
-
-                break;
-
-            case 'h1':
-            case 'h2':
-            case 'h3':
-            case 'h4':
-            case 'h5':
-            case 'h6':
-                $interfaceName = 'Heading';
-
-                break;
-
-            case 'iframe':
-                $interfaceName = 'IFrame';
-
-                break;
-
-            case 'img':
-                $interfaceName = 'Image';
-
-                break;
-
-            case 'ins':
-            case 'del':
-                $interfaceName = 'Mod';
-
-                break;
-
-            case 'li':
-                $interfaceName = 'LI';
-
-                break;
-
-            case 'menuitem':
-                $interfaceName = 'MenuItem';
-
-                break;
-
-            case 'ol':
-                $interfaceName = 'OList';
-
-                break;
-
-            case 'optgroup':
-                $interfaceName = 'OptGroup';
-
-                break;
-
-            case 'p':
-                $interfaceName = 'Paragraph';
-
-                break;
-
-            case 'blockquote':
-            case 'cite':
-            case 'q':
-                $interfaceName = 'Quote';
-
-                break;
-
-            case 'caption':
-                $interfaceName = 'TableCaption';
-
-                break;
-
-            case 'td':
-                $interfaceName = 'TableDataCell';
-
-                break;
-
-            case 'th':
-                $interfaceName = 'TableHeaderCell';
-
-                break;
-
-            case 'col':
-            case 'colgroup':
-                $interfaceName = 'TableCol';
-
-                break;
-
-            case 'tr':
-                $interfaceName = 'TableRow';
-
-                break;
-
-            case 'tbody':
-            case 'thead':
-            case 'tfoot':
-                $interfaceName = 'TableSection';
-
-                break;
-
-            case 'textarea':
-                $interfaceName = 'TextArea';
-
-                break;
-
-            case 'ul':
-                $interfaceName = 'UList';
-
-                break;
-
-            /**
-             * These are known HTML elements that don't have their
-             * own DOM interface, but should not be classified as
-             * HTMLUnknownElements.
-             */
-            case 'abbr':
-            case 'address':
-            case 'article':
-            case 'aside':
-            case 'b':
-            case 'bdi':
-            case 'bdo':
-            case 'cite':
-            case 'code':
-            case 'dd':
-            case 'dfn':
-            case 'dt':
-            case 'em':
-            case 'figcaption':
-            case 'figure':
-            case 'footer':
-            case 'header':
-            case 'hgroup':
-            case 'i':
-            case 'kbd':
-            case 'main':
-            case 'mark':
-            case 'nav':
-            case 'noscript':
-            case 'rp':
-            case 'rt':
-            case 'rtc':
-            case 'ruby':
-            case 's':
-            case 'samp':
-            case 'section':
-            case 'small':
-            case 'strong':
-            case 'sub':
-            case 'summary':
-            case 'sup':
-            case 'u':
-            case 'var':
-            case 'wbr':
-                $interfaceName = '';
-
-                break;
-
-            /**
-             * These are known HTML elements that have their own
-             * DOM interface and their names do not differ from
-             * their interface names.
-             */
-            case 'area':
-            case 'audio':
-            case 'base':
-            case 'body':
-            case 'button':
-            case 'canvas':
-            case 'content':
-            case 'data':
-            case 'details':
-            case 'dialog':
-            case 'div':
-            case 'embed':
-            case 'form':
-            case 'head':
-            case 'html':
-            case 'input':
-            case 'label':
-            case 'legend':
-            case 'link':
-            case 'map':
-            case 'menu':
-            case 'meta':
-            case 'meter':
-            case 'object':
-            case 'option':
-            case 'output':
-            case 'param':
-            case 'picture':
-            case 'pre':
-            case 'progress':
-            case 'script':
-            case 'select':
-            case 'source':
-            case 'span':
-            case 'style':
-            case 'table':
-            case 'template':
-            case 'time':
-            case 'title':
-            case 'track':
-            case 'video':
-                $interfaceName = ucfirst($aLocalName);
-
-                break;
-
-            default:
-                $interfaceName = 'Unknown';
-        }
-
-        return 'Rowbot\\DOM\\Element\\HTML\\HTML' . $interfaceName . 'Element';
     }
 }

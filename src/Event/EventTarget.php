@@ -10,24 +10,24 @@ use Rowbot\DOM\Utils;
  */
 abstract class EventTarget
 {
-    private $mListeners;
+    private $listeners;
 
     protected function __construct()
     {
-        $this->mListeners = [];
+        $this->listeners = [];
     }
 
     /**
      * Registers a callback for a specified event on the current node.
      *
-     * @param string $aType The name of the event to listen for.
+     * @param string $type The name of the event to listen for.
      *
-     * @param callable|EventListener $aCallback A callback that will be executed
+     * @param callable|EventListener $callback A callback that will be executed
      *     when the event occurs.  If an object that inherits from the
      *     EventListener interface is given, it will use the handleEvent method
      *     on the object as the callback.
      *
-     * @param bool|bool[] $aOptions Optional. If a boolean is give, it specifies
+     * @param bool|bool[] $options Optional. If a boolean is give, it specifies
      *     whether or not the event should be handled during the capturing or
      *     bubbling phase. If an array is given, the following keys and values
      *     are accepted:
@@ -39,28 +39,24 @@ abstract class EventTarget
      *         ]
      *
      */
-    public function addEventListener(
-        $aType,
-        $aCallback,
-        $aOptions = false
-    ) {
+    public function addEventListener($type, $callback, $options = false) {
         // If callback is null, terminate these steps.
-        if ($aCallback === null) {
+        if ($callback === null) {
             return;
         }
 
-        list($capture, $passive, $once) = $this->flattenMoreOptions($aOptions);
+        list($capture, $passive, $once) = $this->flattenMoreOptions($options);
 
-        if (is_object($aCallback) && $aCallback instanceof EventListener) {
-            $callback = [$aCallback, 'handleEvent'];
-        } elseif (is_callable($aCallback)) {
-            $callback = $aCallback;
+        if (is_object($callback) && $callback instanceof EventListener) {
+            $callback = [$callback, 'handleEvent'];
+        } elseif (is_callable($callback)) {
+            $callback = $callback;
         } else {
             return;
         }
 
         $listener = new Listener(
-            Utils::DOMString($aType),
+            Utils::DOMString($type),
             $callback,
             $capture,
             $once,
@@ -68,7 +64,7 @@ abstract class EventTarget
         );
         $found = false;
 
-        foreach ($this->mListeners as $l) {
+        foreach ($this->listeners as $l) {
             if ($l->isEqual($listener)) {
                 $found = true;
                 break;
@@ -76,21 +72,21 @@ abstract class EventTarget
         }
 
         if (!$found) {
-            $this->mListeners[] = $listener;
+            $this->listeners[] = $listener;
         }
     }
 
     /**
      * Unregisters a callback for a specified event on the current node.
      *
-     * @param string $aType The name of the event to listen for.
+     * @param string $type The name of the event to listen for.
      *
-     * @param callable|EventListener $aCallback A callback that will be executed
+     * @param callable|EventListener $callback A callback that will be executed
      *     when the event occurs.  If an object that inherits from the
      *     EventListener interface is given, it will use the handleEvent method
      *     on the object as the callback.
      *
-     * @param bool|bool[] $aOptions Optional. If a boolean is give, it specifies
+     * @param bool|bool[] $options Optional. If a boolean is give, it specifies
      *     whether or not the event should be handled during the capturing or
      *     bubbling phase. If an array is given, the following keys and values
      *     are accepted:
@@ -99,36 +95,32 @@ abstract class EventTarget
      *              capture => boolean
      *          ]
      */
-    public function removeEventListener(
-        $aType,
-        $aCallback,
-        $aOptions = false
-    ) {
+    public function removeEventListener($type, $callback, $options = false) {
         // If callback is null, terminate these steps.
-        if ($aCallback === null) {
+        if ($callback === null) {
             return;
         }
 
-        $capture = $this->flattenOptions($aOptions);
+        $capture = $this->flattenOptions($options);
 
-        if (is_object($aCallback) && $aCallback instanceof EventListener) {
-            $callback = [$aCallback, 'handleEvent'];
-        } elseif (is_callable($aCallback)) {
-            $callback = $aCallback;
+        if (is_object($callback) && $callback instanceof EventListener) {
+            $callback = [$callback, 'handleEvent'];
+        } elseif (is_callable($callback)) {
+            $callback = $callback;
         } else {
             return;
         }
 
         $listener = new Listener(
-            Utils::DOMString($aType),
+            Utils::DOMString($type),
             $callback,
             $capture
         );
 
-        foreach ($this->mListeners as $index => $eventListener) {
+        foreach ($this->listeners as $index => $eventListener) {
             if ($eventListener->isEqual($listener)) {
                 $eventListener->setRemoved(true);
-                array_splice($this->mListeners, $index, 1);
+                array_splice($this->listeners, $index, 1);
                 break;
             }
         }
@@ -138,25 +130,25 @@ abstract class EventTarget
      * Dispatches an event at the current EventTarget, which will then invoke
      * any event listeners on the node and its ancestors.
      *
-     * @param Event $aEvent An object representing the specific event dispatched
+     * @param Event $event An object representing the specific event dispatched
      *     with information regarding that event.
      *
      * @return boolean Returns true if the event is not cancelable or if the
      *     preventDefault() method is not invoked, otherwise it returns false.
      */
-    public function dispatchEvent(Event $aEvent)
+    public function dispatchEvent(Event $event)
     {
-        $flags = $aEvent->getFlags();
+        $flags = $event->getFlags();
 
-        if ($flags & EventFlags::DISPATCH ||
-            !($flags & EventFlags::INITIALIZED)
+        if ($flags & EventFlags::DISPATCH
+            || !($flags & EventFlags::INITIALIZED)
         ) {
             throw new InvalidStateError();
         }
 
-        $aEvent->setIsTrusted(false);
+        $event->setIsTrusted(false);
 
-        return $this->doDispatchEvent($aEvent, $this);
+        return $this->doDispatchEvent($event, $this);
     }
 
     /**
@@ -164,55 +156,55 @@ abstract class EventTarget
      *
      * @see https://dom.spec.whatwg.org/#concept-event-dispatch
      *
-     * @param Event $aEvent The event object for the event.
+     * @param Event $event The event object for the event.
      *
-     * @param EventTarget $aTarget The object that is the target of the event.
+     * @param EventTarget $target The object that is the target of the event.
      *
-     * @param bool $aLegacyTargetOverride A flag indicating that the
+     * @param bool $legacyTargetOverride A flag indicating that the
      *     event's target should be overridden. Only useful for HTML.
      *
      * @return bool Returns false if the event's default action was canceled,
      *     and true otherwise.
      */
     private function doDispatchEvent(
-        $aEvent,
-        $aTarget,
-        $aLegacyTargetOverride = false
+        $event,
+        $target,
+        $legacyTargetOverride = false
     ) {
-        $aEvent->setFlag(EventFlags::DISPATCH);
+        $event->setFlag(EventFlags::DISPATCH);
 
         // Let targetOverride be target, if legacy target override flag is not
         // given, and target's associated Document otherwise.
-        $targetOverride = $aTarget;
+        $targetOverride = $target;
 
-        if ($aLegacyTargetOverride === null) {
+        if ($legacyTargetOverride === null) {
             // Note: legacy target override flag is only used by HTML and only
             // when target is a Window object.
-            $targetOverride = $aTarget->getNodeDocument();
+            $targetOverride = $target->getNodeDocument();
         }
 
         // Let relatedTarget be the result of retargeting event’s relatedTarget
         // against target if event’s relatedTarget is non-null, and null
         // otherwise.
-        $relTarget = $aEvent->getRelatedTarget();
+        $relTarget = $event->getRelatedTarget();
         $relatedTarget = null;
 
         if ($relTarget) {
-            $relatedTarget = Utils::retargetObject($relTarget, $aTarget);
+            $relatedTarget = Utils::retargetObject($relTarget, $target);
         }
 
         // If target is relatedTarget and target is not event’s relatedTarget,
         // then return true.
-        if ($aTarget === $relatedTarget &&
-            $aTarget !== $aEvent->getRelatedTarget()
+        if ($target === $relatedTarget
+            && $target !== $event->getRelatedTarget()
         ) {
             return true;
         }
 
         // Append (target, targetOverride, relatedTarget) to event’s path.
-        $path = $aEvent->getPath();
+        $path = $event->getPath();
         $path->push([
-            'item'          => $aTarget,
+            'item'          => $target,
             'target'        => $targetOverride,
             'relatedTarget' => $relatedTarget
         ]);
@@ -221,7 +213,7 @@ abstract class EventTarget
         // event’s type attribute is "click", and false otherwise.
         $isActivationEvent = false;
 
-        if ($aEvent instanceof MouseEvent && $aEvent->type === 'click') {
+        if ($event instanceof MouseEvent && $event->type === 'click') {
             $isActivationEvent = true;
         }
 
@@ -229,13 +221,13 @@ abstract class EventTarget
         // target has activation behavior, and null otherwise.
         $activationTarget = null;
 
-        if ($isActivationEvent && $aTarget->hasActivationBehavior()) {
-            $activationTarget = $aTarget;
+        if ($isActivationEvent && $target->hasActivationBehavior()) {
+            $activationTarget = $target;
         }
 
         // Let parent be the result of invoking target’s get the parent with
         // event.
-        $parent = $aTarget->getTheParent($aEvent);
+        $parent = $target->getTheParent($event);
 
         while ($parent) {
             $relatedTarget = null;
@@ -243,23 +235,23 @@ abstract class EventTarget
             // Let relatedTarget be the result of retargeting event’s
             // relatedTarget against parent if event’s relatedTarget is
             // non-null, and null otherwise.
-            if ($aEvent->getRelatedTarget() !== null) {
+            if ($event->getRelatedTarget() !== null) {
                 $relatedTarget = Utils::retargetObject(
-                    $aEvent->getRelatedTarget(),
+                    $event->getRelatedTarget(),
                     $parent
                 );
             }
 
-            $root = $aTarget->getRootNode();
+            $root = $target->getRootNode();
 
             if ($root->isShadowIncludingInclusiveAncestorOf($parent)) {
                 // If isActivationEvent is true, event’s bubbles attribute is
                 // true, activationTarget is null, and parent has activation
                 // behavior, then set activationTarget to parent.
-                if ($isActivationEvent &&
-                    $aEvent->bubbles &&
-                    $activationTarget === null &&
-                    $parent->hasActivationBehavior()
+                if ($isActivationEvent
+                    && $event->bubbles
+                    && $activationTarget === null
+                    && $parent->hasActivationBehavior()
                 ) {
                     $activationTarget = $parent;
                 }
@@ -273,22 +265,22 @@ abstract class EventTarget
             } elseif ($parent === $relatedTarget) {
                 $parent = null;
             } else {
-                $aTarget = $parent;
+                $target = $parent;
 
                 // If isActivationEvent is true, activationTarget is null, and
                 // target has activation behavior, then set activationTarget to
                 // target.
-                if ($isActivationEvent &&
-                    $activationTarget === null &&
-                    $aTarget->hasActivationBehavior()
+                if ($isActivationEvent
+                    && $activationTarget === null
+                    && $target->hasActivationBehavior()
                 ) {
-                    $activationTarget = $aTarget;
+                    $activationTarget = $target;
                 }
 
                 // Append (parent, target, relatedTarget) to event’s path.
                 $path->push([
                     'item'          => $parent,
-                    'target'        => $aTarget,
+                    'target'        => $target,
                     'relatedTarget' => $relatedTarget
                 ]);
             }
@@ -296,17 +288,17 @@ abstract class EventTarget
             // If parent is non-null, then set parent to the result of invoking
             // parent’s get the parent with event.
             if ($parent !== null) {
-                $parent = $parent->getTheParent($aEvent);
+                $parent = $parent->getTheParent($event);
             }
         }
 
-        $aEvent->setEventPhase(Event::CAPTURING_PHASE);
+        $event->setEventPhase(Event::CAPTURING_PHASE);
 
         // If activationTarget is non-null and activationTarget has
         // legacy-pre-activation behavior, then run activationTarget’s
         // legacy-pre-activation behavior.
-        if ($activationTarget !== null &&
-            $activationTarget->hasLegacyPreActivationBehavior()
+        if ($activationTarget !== null
+            && $activationTarget->hasLegacyPreActivationBehavior()
         ) {
             $activationTarget->legacyPreActivationBehavior();
         }
@@ -331,17 +323,17 @@ abstract class EventTarget
                 }
             }
 
-            $aEvent->setTarget($target);
+            $event->setTarget($target);
 
             // Set event’s relatedTarget to tuple’s relatedTarget.
-            $aEvent->setRelatedTarget($tuple['relatedTarget']);
+            $event->setRelatedTarget($tuple['relatedTarget']);
 
             // Run the retargeting steps with event.
-            $aEvent->retarget();
+            $event->retarget();
 
             // If tuple’s target is null, then invoke tuple’s item with event.
             if ($tuple['target'] === null) {
-                $this->invokeEventListener($tuple['item'], $aEvent);
+                $this->invokeEventListener($tuple['item'], $event);
             }
         }
 
@@ -364,57 +356,57 @@ abstract class EventTarget
                 }
             }
 
-            $aEvent->setTarget($target);
+            $event->setTarget($target);
 
             // Set event’s relatedTarget to tuple’s relatedTarget.
-            $aEvent->setRelatedTarget($tuple['relatedTarget']);
+            $event->setRelatedTarget($tuple['relatedTarget']);
 
             // Run the retargeting steps with event.
-            $aEvent->retarget();
+            $event->retarget();
 
             // If tuple’s target is non-null, then set event’s eventPhase
             // attribute to AT_TARGET. Otherwise, set event’s eventPhase
             // attribute to BUBBLING_PHASE.
             if ($tuple['target'] !== null) {
-                $aEvent->setEventPhase(Event::AT_TARGET);
+                $event->setEventPhase(Event::AT_TARGET);
             } else {
-                $aEvent->setEventPhase(Event::BUBBLING_PHASE);
+                $event->setEventPhase(Event::BUBBLING_PHASE);
             }
 
             // If either event’s eventPhase attribute is BUBBLING_PHASE and
             // event’s bubbles attribute is true or event’s eventPhase attribute
             // is AT_TARGET, then invoke tuple’s item with event.
-            $phase = $aEvent->eventPhase;
-            $shouldInvoke = ($phase == Event::BUBBLING_PHASE &&
-                $aEvent->bubbles) || $phase == Event::AT_TARGET;
+            $phase = $event->eventPhase;
+            $shouldInvoke = ($phase == Event::BUBBLING_PHASE
+                && $event->bubbles) || $phase == Event::AT_TARGET;
 
             if ($shouldInvoke) {
-                $this->invokeEventListener($tuple['item'], $aEvent);
+                $this->invokeEventListener($tuple['item'], $event);
             }
         }
 
         // Unset event’s dispatch flag, stop propagation flag, and stop
         // immediate propagation flag.
-        $aEvent->unsetFlag(
-            EventFlags::DISPATCH |
-            EventFlags::STOP_PROPAGATION |
-            EventFlags::STOP_IMMEDIATE_PROPAGATION
+        $event->unsetFlag(
+            EventFlags::DISPATCH
+            | EventFlags::STOP_PROPAGATION
+            | EventFlags::STOP_IMMEDIATE_PROPAGATION
         );
 
         // Set event’s eventPhase attribute to NONE.
-        $aEvent->setEventPhase(Event::NONE);
+        $event->setEventPhase(Event::NONE);
 
         // Set event’s currentTarget attribute to null.
-        $aEvent->setCurrentTarget(null);
+        $event->setCurrentTarget(null);
 
         // Set event’s path to the empty list.
-        $aEvent->emptyPath();
+        $event->emptyPath();
 
         if ($activationTarget !== null) {
             // If event’s canceled flag is unset, then run activationTarget’s
             // activation behavior with event.
-            if (!($aEvent->getFlags() & EventFlags::CANCELED)) {
-                $activationTarget->runActivationBehavior($aEvent);
+            if (!($event->getFlags() & EventFlags::CANCELED)) {
+                $activationTarget->runActivationBehavior($event);
 
                 // Otherwise, if activationTarget has legacy-canceled-activation
                 // behavior, then run activationTarget’s
@@ -425,7 +417,7 @@ abstract class EventTarget
         }
 
         // Return false if event’s canceled flag is set, and true otherwise.
-        return !($aEvent->getFlags() & EventFlags::CANCELED);
+        return !($event->getFlags() & EventFlags::CANCELED);
     }
 
     /**
@@ -435,24 +427,24 @@ abstract class EventTarget
      *
      * @see https://dom.spec.whatwg.org/#concept-event-listener-invoke
      *
-     * @param EventTarget $aObject The target of the event being dispatched.
+     * @param EventTarget $object The target of the event being dispatched.
      *
-     * @param Event $aEvent The event currently being dispatched.
+     * @param Event $event The event currently being dispatched.
      */
-    private function invokeEventListener($aObject, $aEvent)
+    private function invokeEventListener($object, $event)
     {
-        if ($aEvent->getFlags() & EventFlags::STOP_PROPAGATION) {
+        if ($event->getFlags() & EventFlags::STOP_PROPAGATION) {
             return;
         }
 
         // This avoids event listeners added after this point from being run.
         // Note that removal still has an effect due to the removed field.
-        $listeners = $aObject->mListeners;
-        $aEvent->setCurrentTarget($aObject);
-        $found = $this->innerInvokeEventListener($aObject, $aEvent, $listeners);
+        $listeners = $object->listeners;
+        $event->setCurrentTarget($object);
+        $found = $this->innerInvokeEventListener($object, $event, $listeners);
 
-        if (!$found && $aEvent->isTrusted) {
-            $originalEventType = $aEvent->type;
+        if (!$found && $event->isTrusted) {
+            $originalEventType = $event->type;
 
             // If event’s type attribute value is a match for any of the strings
             // in the first column in the following table, set event’s type
@@ -461,22 +453,22 @@ abstract class EventTarget
             // otherwise.
             switch ($originalEventType) {
                 case 'animationend':
-                    $aEvent->setType('webkitAnimationEnd');
+                    $event->setType('webkitAnimationEnd');
 
                     break;
 
                 case 'animationiteration':
-                    $aEvent->setType('webkitAnimationIteration');
+                    $event->setType('webkitAnimationIteration');
 
                     break;
 
                 case 'animationstart':
-                    $aEvent->setType('webkitAnimationStart');
+                    $event->setType('webkitAnimationStart');
 
                     break;
 
                 case 'transitionend':
-                    $aEvent->setType('webkitTransitionEnd');
+                    $event->setType('webkitTransitionEnd');
 
                     break;
 
@@ -484,8 +476,8 @@ abstract class EventTarget
                     return;
             }
 
-            $this->innerInvokeEventListener($aObject, $aEvent, $listeners);
-            $aEvent->setType($originalEventType);
+            $this->innerInvokeEventListener($object, $event, $listeners);
+            $event->setType($originalEventType);
         }
     }
 
@@ -496,36 +488,36 @@ abstract class EventTarget
      *
      * @see https://dom.spec.whatwg.org/#concept-event-listener-inner-invoke
      *
-     * @param EventTarget $aObject The event target.
+     * @param EventTarget $object The event target.
      *
-     * @param Event $aEvent The event object.
+     * @param Event $event The event object.
      *
-     * @param callable[] $aListeners A copy of the object's event listeners.
+     * @param callable[] $listeners A copy of the object's event listeners.
      *
      * @return bool
      */
-    private function innerInvokeEventListener($aObject, $aEvent, $aListeners)
+    private function innerInvokeEventListener($object, $event, $listeners)
     {
         $found = false;
         $indexOffset = 0;
 
-        foreach ($aListeners as $index => $listener) {
+        foreach ($listeners as $index => $listener) {
             if ($listener->getRemoved() == false) {
                 // If event’s type attribute value is not listener’s type,
                 // terminate these substeps (and run them for the next event
                 // listener).
-                if ($aEvent->type !== $listener->getType()) {
+                if ($event->type !== $listener->getType()) {
                     continue;
                 }
 
                 $found = true;
-                $phase = $aEvent->eventPhase;
+                $phase = $event->eventPhase;
 
                 // If event’s eventPhase attribute value is CAPTURING_PHASE and
                 // listener’s capture is false, terminate these substeps (and
                 // run them for the next event listener).
-                if ($phase == Event::CAPTURING_PHASE &&
-                    !$listener->getCapture()
+                if ($phase == Event::CAPTURING_PHASE
+                    && !$listener->getCapture()
                 ) {
                     continue;
                 }
@@ -533,8 +525,8 @@ abstract class EventTarget
                 // If event’s eventPhase attribute value is BUBBLING_PHASE and
                 // listener’s capture is true, terminate these substeps (and
                 // run them for the next event listener).
-                if ($phase == Event::BUBBLING_PHASE &&
-                    $listener->getCapture()
+                if ($phase == Event::BUBBLING_PHASE
+                    && $listener->getCapture()
                 ) {
                     continue;
                 }
@@ -543,7 +535,7 @@ abstract class EventTarget
                 // object’s associated list of event listeners.
                 if ($listener->getOnce()) {
                     array_splice(
-                        $aObject->mListeners,
+                        $object->listeners,
                         $index - $indexOffset,
                         1
                     );
@@ -553,22 +545,22 @@ abstract class EventTarget
                 // If listener’s passive is true, set event’s in passive
                 // listener flag.
                 if ($listener->getPassive()) {
-                    $aEvent->setFlag(EventFlags::IN_PASSIVE_LISTENER);
+                    $event->setFlag(EventFlags::IN_PASSIVE_LISTENER);
                 }
 
                 // Call listener’s callback’s handleEvent(), with event as
                 // argument and event’s currentTarget attribute value as
                 // callback this value. If this throws an exception, report the
                 // exception.
-                call_user_func($listener->getCallback(), $aEvent);
+                call_user_func($listener->getCallback(), $event);
 
                 // Unset event’s in passive listener flag.
-                $aEvent->unsetFlag(EventFlags::IN_PASSIVE_LISTENER);
+                $event->unsetFlag(EventFlags::IN_PASSIVE_LISTENER);
 
                 // If event’s stop immediate propagation flag is set, return
                 // found.
-                if ($aEvent->getFlags() &
-                    EventFlags::STOP_IMMEDIATE_PROPAGATION
+                if ($event->getFlags()
+                    & EventFlags::STOP_IMMEDIATE_PROPAGATION
                 ) {
                     return $found;
                 }
@@ -586,11 +578,11 @@ abstract class EventTarget
      *
      * @see https://dom.spec.whatwg.org/#get-the-parent
      *
-     * @param Event $aEvent The Event object
+     * @param Event $event The Event object
      *
      * @return EventTarget|null
      */
-    protected function getTheParent($aEvent)
+    protected function getTheParent($event)
     {
         return null;
     }
@@ -600,19 +592,19 @@ abstract class EventTarget
      *
      * @see https://dom.spec.whatwg.org/#concept-flatten-options
      *
-     * @param bool|bool[] $aOptions A boolean or array of booleans.
+     * @param bool|bool[] $options A boolean or array of booleans.
      *
      * @return bool
      */
-    private function flattenOptions($aOptions)
+    private function flattenOptions($options)
     {
         $capture = false;
 
-        if (is_bool($aOptions)) {
-            $capture = $aOptions;
-        } elseif (is_array($aOptions)) {
-            if (isset($aOptions['capture'])) {
-                $capture = (bool) $aOptions['capture'];
+        if (is_bool($options)) {
+            $capture = $options;
+        } elseif (is_array($options)) {
+            if (isset($options['capture'])) {
+                $capture = (bool) $options['capture'];
             }
         }
 
@@ -624,23 +616,23 @@ abstract class EventTarget
      *
      * @see https://dom.spec.whatwg.org/#event-flatten-more
      *
-     * @param bool|bool[] $aOptions A boolean or array of booleans.
+     * @param bool|bool[] $options A boolean or array of booleans.
      *
      * @return bool[]
      */
-    private function flattenMoreOptions($aOptions)
+    private function flattenMoreOptions($options)
     {
-        $capture = $this->flattenOptions($aOptions);
+        $capture = $this->flattenOptions($options);
         $once = false;
         $passive = false;
 
-        if (is_array($aOptions)) {
-            if (isset($aOptions['passive'])) {
-                $passive = (bool) $aOptions['passive'];
+        if (is_array($options)) {
+            if (isset($options['passive'])) {
+                $passive = (bool) $options['passive'];
             }
 
-            if (isset($aOptions['once'])) {
-                $passive = (bool) $aOptions['once'];
+            if (isset($options['once'])) {
+                $passive = (bool) $options['once'];
             }
         }
 

@@ -11,6 +11,8 @@ use Rowbot\DOM\Exception\DOMException;
 use Rowbot\DOM\Exception\HierarchyRequestError;
 use Rowbot\DOM\Exception\InvalidCharacterError;
 use Rowbot\DOM\Exception\NotSupportedError;
+use Rowbot\DOM\Parser\MarkupFactory;
+use Rowbot\DOM\Support\Stringable;
 use Rowbot\DOM\URL\URLParser;
 use Rowbot\DOM\Utils;
 
@@ -19,7 +21,7 @@ use Rowbot\DOM\Utils;
  * @see https://html.spec.whatwg.org/#document
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Document
  */
-class Document extends Node
+class Document extends Node implements Stringable
 {
     use GetElementsBy;
     use NonElementParentNode;
@@ -27,20 +29,20 @@ class Document extends Node
 
     const INERT_TEMPLATE_DOCUMENT = 0x1;
 
-    protected static $mDefaultDocument = null;
+    protected static $defaultDocument = null;
 
-    protected $mCharacterSet;
-    protected $mContentType;
-    protected $mFlags;
-    protected $mInertTemplateDocument;
-    protected $mMode;
+    protected $characterSet;
+    protected $contentType;
+    protected $flags;
+    protected $inertTemplateDocument;
+    protected $mode;
 
-    private $mCompatMode;
-    private $mImplementation;
-    private $mIsIframeSrcdoc;
-    private $mIsHTMLDocument;
-    private $mNodeIteratorList;
-    private $mURL;
+    private $compatMode;
+    private $implementation;
+    private $isIframeSrcDoc;
+    private $isHTMLDocument;
+    private $nodeIteratorList;
+    private $url;
     private $readyState;
     private $source;
 
@@ -48,21 +50,21 @@ class Document extends Node
     {
         parent::__construct();
 
-        if (!static::$mDefaultDocument) {
-            static::$mDefaultDocument = $this;
+        if (!self::$defaultDocument) {
+            self::$defaultDocument = $this;
         }
 
-        $this->mCharacterSet = 'UTF-8';
-        $this->mContentType = 'application/xml';
-        $this->mFlags = 0;
-        $this->mImplementation = new DOMImplementation($this);
-        $this->mIsIframeSrcdoc = false;
-        $this->mInertTemplateDocument = null;
-        $this->mMode = DocumentMode::NO_QUIRKS;
+        $this->characterSet = 'UTF-8';
+        $this->contentType = 'application/xml';
+        $this->flags = 0;
+        $this->implementation = new DOMImplementation($this);
+        $this->isIframeSrcDoc = false;
+        $this->inertTemplateDocument = null;
+        $this->mode = DocumentMode::NO_QUIRKS;
         $this->nodeDocument = $this; // Documents own themselves.
-        $this->mNodeIteratorList = array();
-        $this->mNodeType = self::DOCUMENT_NODE;
-        $this->mURL = null;
+        $this->nodeIteratorList = [];
+        $this->nodeType = self::DOCUMENT_NODE;
+        $this->url = null;
 
         // When a Document object is created, it must have its current document
         // readiness set to the string "loading" if the document is associated
@@ -73,39 +75,25 @@ class Document extends Node
         $this->source = DocumentSource::NOT_FROM_PARSER;
     }
 
-    public function __destruct()
+    public function __get($name)
     {
-        $this->mImplementation = null;
-        $this->mNodeIteratorList = null;
-        $this->mURL = null;
-
-        if (self::$mRefCount == 1) {
-            self::$mDefaultDocument = null;
-        }
-
-        parent::__destruct();
-    }
-
-    public function __get($aName)
-    {
-        switch ($aName) {
+        switch ($name) {
             case 'characterSet':
-                return $this->mCharacterSet;
+                return $this->characterSet;
             case 'childElementCount':
                 return $this->getChildElementCount();
             case 'children':
                 return $this->getChildren();
             case 'contentType':
-                return $this->mContentType;
+                return $this->contentType;
             case 'doctype':
-                foreach ($this->mChildNodes as $child) {
+                foreach ($this->childNodes as $child) {
                     if ($child instanceof DocumentType) {
                         return $child;
                     }
                 }
 
                 return null;
-
             case 'documentElement':
                 return $this->getFirstElementChild();
             case 'documentURI':
@@ -114,16 +102,15 @@ class Document extends Node
             case 'firstElementChild':
                 return $this->getFirstElementChild();
             case 'implementation':
-                return $this->mImplementation;
+                return $this->implementation;
             case 'lastElementChild':
                 return $this->getLastElementChild();
             case 'origin':
                 return $this->getURL()->getOrigin()->serializeAsUnicode();
             case 'readyState':
                 return $this->readyState;
-
             default:
-                return parent::__get($aName);
+                return parent::__get($name);
         }
     }
 
@@ -133,23 +120,23 @@ class Document extends Node
      *
      * @link https://dom.spec.whatwg.org/#dom-document-adoptnode
      *
-     * @param  Node  $aNode The Node to be adopted.
+     * @param  Node  $node The Node to be adopted.
      *
      * @return Node         The newly adopted Node.
      */
-    public function adoptNode(Node $aNode)
+    public function adoptNode(Node $node)
     {
-        if ($aNode instanceof Document) {
+        if ($node instanceof Document) {
             throw new NotSupportedError;
         }
 
-        if ($aNode instanceof ShadowRoot) {
+        if ($node instanceof ShadowRoot) {
             throw new HierarchyRequestError;
         }
 
-        $this->doAdoptNode($aNode);
+        $this->doAdoptNode($node);
 
-        return $aNode;
+        return $node;
     }
 
     /**
@@ -157,15 +144,15 @@ class Document extends Node
      *
      * @see https://dom.spec.whatwg.org/#dom-document-createattribute
      *
-     * @param string $aLocalName The name of the attribute.
+     * @param string $localName The name of the attribute.
      *
      * @return Attr
      *
      * @throws InvalidCharacterError
      */
-    public function createAttribute($aLocalName)
+    public function createAttribute($localName)
     {
-        $localName = Utils::DOMString($aLocalName);
+        $localName = Utils::DOMString($localName);
 
         // If localName does not match the Name production in XML, then
         // throw an InvalidCharacterError.
@@ -173,8 +160,10 @@ class Document extends Node
             throw new InvalidCharacterError();
         }
 
-        $localName = $this instanceof HTMLDocument ?
-            Utils::toASCIILowercase($localName) : $localName;
+        if ($this instanceof HTMLDocument) {
+            $localName = Utils::toASCIILowercase($localName);
+        }
+
         $attribute = new Attr($localName, '');
         $attribute->setNodeDocument($this);
 
@@ -187,9 +176,9 @@ class Document extends Node
      *
      * @see https://dom.spec.whatwg.org/#dom-document-createattributens
      *
-     * @param string $aNamespace The attribute's namespace.
+     * @param string $namespace The attribute's namespace.
      *
-     * @param string $aQualifiedName The attribute's qualified name.
+     * @param string $qualifiedName The attribute's qualified name.
      *
      * @return Attr
      *
@@ -197,7 +186,7 @@ class Document extends Node
      *
      * @throws InvalidCharacterError
      */
-    public function createAttributeNS($aNamespace, $aQualifiedName)
+    public function createAttributeNS($namespace, $qualifiedName)
     {
         try {
             list(
@@ -205,8 +194,8 @@ class Document extends Node
                 $prefix,
                 $localName
             ) = Namespaces::validateAndExtract(
-                Utils::DOMString($aNamespace, false, true),
-                Utils::DOMString($aQualifiedName)
+                Utils::DOMString($namespace, false, true),
+                Utils::DOMString($qualifiedName)
             );
         } catch (DOMException $e) {
             throw $e;
@@ -218,9 +207,9 @@ class Document extends Node
         return $attribute;
     }
 
-    public function createComment($aData)
+    public function createComment($data)
     {
-        $node = new Comment($aData);
+        $node = new Comment($data);
         $node->nodeDocument = $this;
 
         return $node;
@@ -239,13 +228,13 @@ class Document extends Node
      *
      * @link https://dom.spec.whatwg.org/#dom-document-createelement
      *
-     * @param string $aLocalName The name of the element to create.
+     * @param string $localName The name of the element to create.
      *
      * @return HTMLElement A known HTMLElement or HTMLUnknownElement.
      */
-    public function createElement($aLocalName)
+    public function createElement($localName)
     {
-        $localName = Utils::DOMString($aLocalName);
+        $localName = Utils::DOMString($localName);
 
         // If localName does not match the Name production, then throw an
         // InvalidCharacterError.
@@ -261,7 +250,7 @@ class Document extends Node
 
         // Let namespace be the HTML namespace, if the context object’s content
         // type is "text/html" or "application/xhtml+xml", and null otherwise.
-        switch ($this->mContentType) {
+        switch ($this->contentType) {
             case 'text/html':
             case 'application/xhtml+xml':
                 $namespace = Namespaces::HTML;
@@ -291,9 +280,9 @@ class Document extends Node
      *
      * @see https://dom.spec.whatwg.org/#dom-document-createelementns
      *
-     * @param string|null $aNamespace The element's namespace.
+     * @param string|null $namespace The element's namespace.
      *
-     * @param string $aQualifiedName The element's qualified name.
+     * @param string $qualifiedName The element's qualified name.
      *
      * @return Element
      *
@@ -301,12 +290,12 @@ class Document extends Node
      *
      * @throws NamespaceError
      */
-    public function createElementNS($aNamespace, $aQualifiedName)
+    public function createElementNS($namespace, $qualifiedName)
     {
         return ElementFactory::createNS(
             $this,
-            Utils::DOMString($aNamespace, false, true),
-            Utils::DOMString($aQualifiedName)
+            Utils::DOMString($namespace, false, true),
+            Utils::DOMString($qualifiedName)
         );
     }
 
@@ -315,16 +304,16 @@ class Document extends Node
      *
      * @link https://dom.spec.whatwg.org/#dom-document-createevent
      *
-     * @param string $aInterface The type of event interface to be created.
+     * @param string $interface The type of event interface to be created.
      *
      * @return Event
      *
      * @throws NotSupportedError
      */
-    public function createEvent($aInterface)
+    public function createEvent($interface)
     {
         $constructor = null;
-        $interface = strtolower(Utils::DOMString($aInterface));
+        $interface = strtolower(Utils::DOMString($interface));
 
         switch ($interface) {
             case 'customevent':
@@ -352,31 +341,31 @@ class Document extends Node
      * Returns a new NodeIterator object, which represents an iterator over the
      * members of a list of the nodes in a subtree of the DOM.
      *
-     * @param Node $aRoot The root node of the iterator object.
+     * @param Node $root The root node of the iterator object.
      *
-     * @param int $aWhatToShow Optional. A bitmask of NodeFilter constants
+     * @param int $whatToShow Optional. A bitmask of NodeFilter constants
      *     allowing the user to filter for specific node types.
      *
-     * @param NodeFilter|callable|null $aFilter A user defined function to
+     * @param NodeFilter|callable|null $filter A user defined function to
      *     determine whether or not to accept a node that has passed the
      *     whatToShow check.
      *
      * @return NodeIterator
      */
     public function createNodeIterator(
-        Node $aRoot,
-        $aWhatToShow = NodeFilter::SHOW_ALL,
-        $aFilter = null
+        Node $root,
+        $whatToShow = NodeFilter::SHOW_ALL,
+        $filter = null
     ) {
-        $iter = new NodeIterator($aRoot, $aWhatToShow, $aFilter);
-        $this->mNodeIteratorList[] = $iter;
+        $iter = new NodeIterator($root, $whatToShow, $filter);
+        $this->nodeIteratorList[] = $iter;
 
         return $iter;
     }
 
-    public function createProcessingInstruction($aTarget, $aData)
+    public function createProcessingInstruction($target, $data)
     {
-        $target = Utils::DOMString($aTarget);
+        $target = Utils::DOMString($target);
 
         // If target does not match the Name production, then throw an
         // InvalidCharacterError.
@@ -384,9 +373,9 @@ class Document extends Node
             throw new InvalidCharacterError();
         }
 
-        $data = Utils::DOMString($aData);
+        $data = Utils::DOMString($data);
 
-        if (strpos($data, '?>') !== false) {
+        if (mb_strpos($data, '?>') !== false) {
             throw new InvalidCharacterError();
         }
 
@@ -405,9 +394,9 @@ class Document extends Node
         return $range;
     }
 
-    public function createTextNode($aData)
+    public function createTextNode($data)
     {
-        $node = new Text($aData);
+        $node = new Text($data);
         $node->nodeDocument = $this;
 
         return $node;
@@ -416,11 +405,11 @@ class Document extends Node
     /**
      * Creates a new CDATA Section node, with data as its data.
      *
-     * @param  string $aData The node's content.
+     * @param  string $data The node's content.
      *
      * @return CDATASection A CDATASection node.
      */
-    public function createCDATASection($aData)
+    public function createCDATASection($data)
     {
         // If context object is an HTML document, then throw a
         // NotSupportedError.
@@ -428,7 +417,7 @@ class Document extends Node
             throw new NotSupportedError();
         }
 
-        $data = Utils::DOMString($aData);
+        $data = Utils::DOMString($data);
 
         // If data contains the string "]]>", then throw an
         // InvalidCharacterError.
@@ -448,23 +437,23 @@ class Document extends Node
      * Returns a new TreeWalker object, which represents the nodes of a document
      * subtree and a position within them.
      *
-     * @param Node $aRoot The root node of the DOM subtree being traversed.
+     * @param Node $root The root node of the DOM subtree being traversed.
      *
-     * @param int $aWhatToShow Optional.  A bitmask of NodeFilter constants
+     * @param int $whatToShow Optional.  A bitmask of NodeFilter constants
      *     allowing the user to filter for specific node types.
      *
-     * @param NodeFilter|callable|null $aFilter A user defined function to
+     * @param NodeFilter|callable|null $filter A user defined function to
      *     determine whether or not to accept a node that has passed the
      *     whatToShow check.
      *
      * @return TreeWalker
      */
     public function createTreeWalker(
-        Node $aRoot,
-        $aWhatToShow = NodeFilter::SHOW_ALL,
-        $aFilter = null
+        Node $root,
+        $whatToShow = NodeFilter::SHOW_ALL,
+        $filter = null
     ) {
-        return new TreeWalker($aRoot, $aWhatToShow, $aFilter);
+        return new TreeWalker($root, $whatToShow, $filter);
     }
 
     /**
@@ -474,27 +463,27 @@ class Document extends Node
      *
      * @see https://dom.spec.whatwg.org/#concept-node-adopt
      *
-     * @param Node $aNode The node being adopted.
+     * @param Node $node The node being adopted.
      */
-    public function doAdoptNode(Node $aNode)
+    public function doAdoptNode(Node $node)
     {
-        $oldDocument = $aNode->nodeDocument;
+        $oldDocument = $node->nodeDocument;
 
-        if ($aNode->mParentNode) {
-            $aNode->mParentNode->removeNode($aNode);
+        if ($node->parentNode) {
+            $node->parentNode->removeNode($node);
         }
 
         if ($this !== $oldDocument) {
-            $iter = new NodeIterator($aNode, NodeFilter::SHOW_ALL);
+            $iter = new NodeIterator($node, NodeFilter::SHOW_ALL);
 
-            while (($node = $iter->nextNode())) {
-                $node->nodeDocument = $this;
+            while (($nextNode = $iter->nextNode())) {
+                $nextNode->nodeDocument = $this;
             }
 
             // For each descendant in node’s inclusive descendants, in
             // tree order, run the adopting steps with descendant and
             // oldDocument.
-            $iter = new NodeIterator($aNode);
+            $iter = new NodeIterator($node);
 
             while (($descendant = $iter->nextNode())) {
                 if (method_exists($descendant, 'doAdoptingSteps')) {
@@ -524,7 +513,7 @@ class Document extends Node
      */
     public function getLength()
     {
-        return count($this->mChildNodes);
+        return count($this->childNodes);
     }
 
     /**
@@ -541,14 +530,14 @@ class Document extends Node
     {
         $doc = $this;
 
-        if (!($this->mFlags & self::INERT_TEMPLATE_DOCUMENT)) {
-            if (!$this->mInertTemplateDocument) {
+        if (!($this->flags & self::INERT_TEMPLATE_DOCUMENT)) {
+            if (!$this->inertTemplateDocument) {
                 $newDoc = new static();
-                $newDoc->mFlags |= self::INERT_TEMPLATE_DOCUMENT;
-                $this->mInertTemplateDocument = $newDoc;
+                $newDoc->flags |= self::INERT_TEMPLATE_DOCUMENT;
+                $this->inertTemplateDocument = $newDoc;
             }
 
-            $doc = $this->mInertTemplateDocument;
+            $doc = $this->inertTemplateDocument;
         }
 
         return $doc;
@@ -572,9 +561,9 @@ class Document extends Node
         if ($head) {
             // A base element is only valid if it is the first base element
             // within the head element.
-            foreach ($head->mChildNodes as $child) {
-                $isValidBase = $child instanceof HTMLBaseElement &&
-                    $child->hasAttribute('href');
+            foreach ($head->childNodes as $child) {
+                $isValidBase = $child instanceof HTMLBaseElement
+                    && $child->hasAttribute('href');
 
                 if ($isValidBase) {
                     $base = $child;
@@ -604,9 +593,9 @@ class Document extends Node
      *     then no document existed before the user attempted to instantiate an
      *     object that has an owning document.
      */
-    public static function _getDefaultDocument()
+    public static function getDefaultDocument()
     {
-        return static::$mDefaultDocument;
+        return self::$defaultDocument;
     }
 
     public function getFallbackBaseURL()
@@ -631,7 +620,7 @@ class Document extends Node
      */
     public function getFlags()
     {
-        return $this->mFlags;
+        return $this->flags;
     }
 
     /**
@@ -655,7 +644,7 @@ class Document extends Node
      */
     public function getMode()
     {
-        return $this->mMode;
+        return $this->mode;
     }
 
     /**
@@ -663,40 +652,40 @@ class Document extends Node
      *
      * @internal
      *
-     * @param int $aMode An integer representing the current mode.
+     * @param int $mode An integer representing the current mode.
      */
-    public function setMode($aMode)
+    public function setMode($mode)
     {
-        $this->mMode = $aMode;
+        $this->mode = $mode;
     }
 
     public function isHTMLDocument()
     {
-        return $this->mIsHTMLDocument;
+        return $this->isHTMLDocument;
     }
 
     public function isIframeSrcdoc()
     {
-        return $this->mIsIframeSrcdoc;
+        return $this->isIframeSrcDoc;
     }
 
     public function markAsIframeSrcdoc()
     {
-        $this->mIsIframeSrcdoc = true;
+        $this->isIframeSrcDoc = true;
     }
 
-    public function _getNodeIteratorCollection()
+    public function getNodeIteratorCollection()
     {
-        return $this->mNodeIteratorList;
+        return $this->nodeIteratorList;
     }
 
-    public function importNode(Node $aNode, $aDeep = false)
+    public function importNode(Node $node, $deep = false)
     {
-        if ($aNode instanceof Document || $aNode instanceof ShadowRoot) {
+        if ($node instanceof Document || $node instanceof ShadowRoot) {
             throw new NotSupportedError();
         }
 
-        return $aNode->doCloneNode($this, $aDeep);
+        return $node->doCloneNode($this, $deep);
     }
 
     /**
@@ -704,15 +693,15 @@ class Document extends Node
      *
      * Sets the document's character set.
      *
-     * @param string $aCharacterSet The document's character set
+     * @param string $characterSet The document's character set
      */
-    public function _setCharacterSet($aCharacterSet)
+    public function setCharacterSet($characterSet)
     {
-        if (!is_string($aCharacterSet)) {
+        if (!is_string($characterSet)) {
             return;
         }
 
-        $this->mCharacterSet = $aCharacterSet;
+        $this->characterSet = $characterSet;
     }
 
     /**
@@ -720,11 +709,11 @@ class Document extends Node
      *
      * @internal
      *
-     * @param string $aType The MIME content type of the document.
+     * @param string $type The MIME content type of the document.
      */
-    public function _setContentType($aType)
+    public function setContentType($type)
     {
-        $this->mContentType = $aType;
+        $this->contentType = $type;
     }
 
     /**
@@ -732,11 +721,11 @@ class Document extends Node
      *
      * @internal
      *
-     * @param int $aFlag Bitwise flags.
+     * @param int $flag Bitwise flags.
      */
-    public function setFlags($aFlag)
+    public function setFlags($flag)
     {
-        $this->mFlags |= $aFlag;
+        $this->flags |= $flag;
     }
 
     /**
@@ -744,11 +733,11 @@ class Document extends Node
      *
      * @internal
      *
-     * @param int $aFlag Bitwise flags.
+     * @param int $flag Bitwise flags.
      */
-    public function unsetFlags($aFlag)
+    public function unsetFlags($flag)
     {
-        $this->mFlags &= ~$aFlag;
+        $this->flags &= ~$flag;
     }
 
     /**
@@ -768,7 +757,7 @@ class Document extends Node
         if ($docElement && $docElement instanceof HTMLHtmlElement) {
             // Get the first child in the document element that is a head
             // element.
-            foreach ($docElement->mChildNodes as $child) {
+            foreach ($docElement->childNodes as $child) {
                 if ($child instanceof HTMLHeadElement) {
                     return $child;
                 }
@@ -809,11 +798,11 @@ class Document extends Node
      *
      * @see EventTarget::getTheParent
      *
-     * @param Event $aEvent An Event object
+     * @param Event $event An Event object
      *
      * @return Document|null
      */
-    protected function getTheParent($aEvent)
+    protected function getTheParent($event)
     {
         // We don't currently support browsing contexts or the concept of a
         // Window object, so return null as this is the end of the chain.
@@ -831,24 +820,24 @@ class Document extends Node
      */
     protected function getURL()
     {
-        if (!isset($this->mURL)) {
+        if (!isset($this->url)) {
             $ssl = isset($_SERVER['HTTPS']) && $_SERVER["HTTPS"] == 'on';
             $port = in_array($_SERVER['SERVER_PORT'], array(80, 443)) ?
                 '' : ':' . $_SERVER['SERVER_PORT'];
             $url = ($ssl ? 'https' : 'http') . '://' . $_SERVER['SERVER_NAME'] .
                 $port . $_SERVER['REQUEST_URI'];
 
-            $this->mURL = URLParser::parseUrl($url);
+            $this->url = URLParser::parseUrl($url);
         }
 
 
-        return $this->mURL;
+        return $this->url;
     }
 
     /**
      * @see Node::setNodeValue
      */
-    protected function setNodeValue($aNewValue)
+    protected function setNodeValue($newValue)
     {
         // Do nothing.
     }
@@ -856,8 +845,18 @@ class Document extends Node
     /**
      * @see Node::setTextContent
      */
-    protected function setTextContent($aNewValue)
+    protected function setTextContent($newValue)
     {
         // Do nothing.
+    }
+
+    public function toString(): string
+    {
+        return MarkupFactory::serializeFragment($this, true);
+    }
+
+    public function __toString(): string
+    {
+        return MarkupFactory::serializeFragment($this, true);
     }
 }

@@ -181,7 +181,7 @@ class OpenElementStack extends ObjectStack
      */
     public function top()
     {
-        if (empty($this->collection)) {
+        if ($this->size == 0) {
             throw new EmptyStackException();
             return;
         }
@@ -194,12 +194,12 @@ class OpenElementStack extends ObjectStack
      */
     public function bottom()
     {
-        if (empty($this->collection)) {
+        if ($this->size == 0) {
             throw new EmptyStackException();
             return;
         }
 
-        return end($this->collection);
+        return $this->collection[$this->size - 1];
     }
 
     /**
@@ -222,8 +222,10 @@ class OpenElementStack extends ObjectStack
      */
     public function clearBackToTableBodyContext()
     {
-        while (true) {
-            $currentNode = $this->bottom();
+        $size = $this->size;
+
+        while ($size--) {
+            $currentNode = $this->collection[$size];
 
             if ($currentNode instanceof HTMLTableSectionElement ||
                 $currentNode instanceof HTMLTemplateElement ||
@@ -246,7 +248,11 @@ class OpenElementStack extends ObjectStack
      */
     public function clearBackToTableContext()
     {
-        foreach ($this as $currentNode) {
+        $size = $this->size;
+
+        while ($size--) {
+            $currentNode = $this->collection[$size];
+
             if ($currentNode instanceof HTMLTableElement ||
                 $currentNode instanceof HTMLTemplateElement ||
                 $currentNode instanceof HTMLHtmlElement
@@ -268,7 +274,11 @@ class OpenElementStack extends ObjectStack
      */
     public function clearBackToTableRowContext()
     {
-        foreach ($this as $currentNode) {
+        $size = $this->size;
+
+        while ($size--) {
+            $currentNode = $this->collection[$size];
+
             if ($currentNode instanceof HTMLTableRowElement ||
                 $currentNode instanceof HTMLTemplateElement ||
                 $currentNode instanceof HTMLHtmlElement
@@ -295,8 +305,11 @@ class OpenElementStack extends ObjectStack
         ...$list
     ): bool {
         $list = array_merge_recursive(...$list);
+        $size = $this->size;
 
-        foreach ($this as $node) {
+        while ($size--) {
+            $node = $this->collection[$size];
+
             $ns = $node->namespaceURI;
             $localName = $node->localName;
 
@@ -396,7 +409,10 @@ class OpenElementStack extends ObjectStack
      */
     public function hasElementInSelectScope($tagName, $namespace): bool
     {
-        foreach ($this as $node) {
+        $size = $this->size;
+
+        while ($size--) {
+            $node = $this->collection[$size];
             $ns = $node->namespaceURI;
             $localName = $node->localName;
 

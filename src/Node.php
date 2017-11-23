@@ -47,63 +47,51 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
 {
     use UuidTrait;
 
-    const ELEMENT_NODE = 1;
-    const ATTRIBUTE_NODE = 2;
-    const TEXT_NODE = 3;
-    const CDATA_SECTION_NODE = 4;
-    const ENTITY_REFERENCE_NODE = 5;
-    const ENTITY_NODE = 6;
+    const ELEMENT_NODE                = 1;
+    const ATTRIBUTE_NODE              = 2;
+    const TEXT_NODE                   = 3;
+    const CDATA_SECTION_NODE          = 4;
+    const ENTITY_REFERENCE_NODE       = 5;
+    const ENTITY_NODE                 = 6;
     const PROCESSING_INSTRUCTION_NODE = 7;
-    const COMMENT_NODE = 8;
-    const DOCUMENT_NODE = 9;
-    const DOCUMENT_TYPE_NODE = 10;
-    const DOCUMENT_FRAGMENT_NODE = 11;
-    const NOTATION_NODE = 12;
+    const COMMENT_NODE                = 8;
+    const DOCUMENT_NODE               = 9;
+    const DOCUMENT_TYPE_NODE          = 10;
+    const DOCUMENT_FRAGMENT_NODE      = 11;
+    const NOTATION_NODE               = 12;
 
-    const DOCUMENT_POSITION_DISCONNECTED = 0x01;
-    const DOCUMENT_POSITION_PRECEDING = 0x02;
-    const DOCUMENT_POSITION_FOLLOWING = 0x04;
-    const DOCUMENT_POSITION_CONTAINS = 0x08;
-    const DOCUMENT_POSITION_CONTAINED_BY = 0x10;
+    const DOCUMENT_POSITION_DISCONNECTED            = 0x01;
+    const DOCUMENT_POSITION_PRECEDING               = 0x02;
+    const DOCUMENT_POSITION_FOLLOWING               = 0x04;
+    const DOCUMENT_POSITION_CONTAINS                = 0x08;
+    const DOCUMENT_POSITION_CONTAINED_BY            = 0x10;
     const DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC = 0x20;
 
-    protected $mChildNodes;
-    protected $mNodeType; // int
-    protected $mOwnerDocument; // Document
-    protected $mParentNode; // Node
+    protected $childNodes;
+    protected $nodeType;
+    protected $ownerDocument;
+    protected $parentNode;
     protected $nextSibling;
     protected $nodeDocument;
     protected $nodeList;
     protected $previousSibling;
-    protected static $mRefCount = 0;
 
     protected function __construct()
     {
         parent::__construct();
 
-        $this->mChildNodes = new OrderedSet();
-        $this->nodeList = new NodeList($this->mChildNodes);
-        $this->mNodeType = '';
-        $this->nodeDocument = Document::_getDefaultDocument();
-        $this->mParentNode = null;
+        $this->childNodes = new OrderedSet();
+        $this->nodeList = new NodeList($this->childNodes);
+        $this->nodeType = '';
+        $this->nodeDocument = Document::getDefaultDocument();
+        $this->parentNode = null;
         $this->previousSibling = null;
         $this->nextSibling = null;
-        self::$mRefCount++;
     }
 
-    public function __destruct()
+    public function __get($name)
     {
-        $this->mChildNodes = null;
-        $this->nodeDocument = null;
-        $this->mParentNode = null;
-        $this->previousSibling = null;
-        $this->nextSibling = null;
-        self::$mRefCount--;
-    }
-
-    public function __get($aName)
-    {
-        switch ($aName) {
+        switch ($name) {
             case 'baseURI':
                 return $this->nodeDocument->getBaseURL()->serializeURL();
 
@@ -111,7 +99,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                 return $this->nodeList;
 
             case 'firstChild':
-                return $this->mChildNodes->first();
+                return $this->childNodes->first();
 
             case 'isConnected':
                 $options = ['composed' => true];
@@ -119,7 +107,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                 return $this->getRootNode($options) instanceof Document;
 
             case 'lastChild':
-                return $this->mChildNodes->last();
+                return $this->childNodes->last();
 
             case 'nextSibling':
                 return $this->nextSibling;
@@ -128,7 +116,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                 return $this->getNodeName();
 
             case 'nodeType':
-                return $this->mNodeType;
+                return $this->nodeType;
 
             case 'nodeValue':
                 return $this->getNodeValue();
@@ -140,7 +128,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                 return $this->parentElement();
 
             case 'parentNode':
-                return $this->mParentNode;
+                return $this->parentNode;
 
             case 'previousSibling':
                 return $this->previousSibling;
@@ -150,16 +138,16 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
         }
     }
 
-    public function __set($aName, $aValue)
+    public function __set($name, $value)
     {
-        switch ($aName) {
+        switch ($name) {
             case 'nodeValue':
-                $this->setNodeValue($aValue);
+                $this->setNodeValue($value);
 
                 break;
 
             case 'textContent':
-                $this->setTextContent($aValue);
+                $this->setTextContent($value);
         }
     }
 
@@ -168,13 +156,13 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      * associated with another parent node, it will be removed from that parent
      * node before being appended to the current parent node.
      *
-     * @param Node $aNode A node representing an element on the page.
+     * @param Node $node A node representing an element on the page.
      *
      * @return Node The node that was just appended to the parent node.
      */
-    public function appendChild(Node $aNode)
+    public function appendChild(Node $node)
     {
-        return $this->preinsertNode($aNode, null);
+        return $this->preinsertNode($node, null);
     }
 
     /**
@@ -182,20 +170,20 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @see https://dom.spec.whatwg.org/#dom-node-clonenode
      *
-     * @param boolean $aDeep If true, all child nodes and event listeners should
+     * @param boolean $deep If true, all child nodes and event listeners should
      *     be cloned as well.
      *
      * @return Node The copy of the node.
      *
      * @throws NotSupportedError If the node being cloned is a ShadowRoot.
      */
-    public function cloneNode($aDeep = false)
+    public function cloneNode($deep = false)
     {
         if ($this instanceof ShadowRoot) {
             throw new NotSupportedError();
         }
 
-        return $this->doCloneNode(null, $aDeep);
+        return $this->doCloneNode(null, $deep);
     }
 
     /**
@@ -203,7 +191,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @link https://dom.spec.whatwg.org/#dom-node-comparedocumentpositionother
      *
-     * @param Node $aNode Node to compare position against.
+     * @param Node $otherNode Node to compare position against.
      *
      * @return int A bitmask representing the nodes position.  Possible values
      *     are as follows:
@@ -214,14 +202,14 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *         Node::DOCUMENT_POSITION_CONTAINED_BY
      *         Node::DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC
      */
-    public function compareDocumentPosition(Node $aOtherNode)
+    public function compareDocumentPosition(Node $otherNode)
     {
         // If context object is other, then return zero.
-        if ($this === $aOtherNode) {
+        if ($this === $otherNode) {
             return 0;
         }
 
-        $node1 = $aOtherNode;
+        $node1 = $otherNode;
         $node2 = $this;
         $attr1 = null;
         $attr2 = null;
@@ -267,11 +255,11 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
         // DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC, and either
         // DOCUMENT_POSITION_PRECEDING or DOCUMENT_POSITION_FOLLOWING, with the
         // constraint that this is to be consistent, together.
-        if ($node1 === null || $node2 === null ||
-            $node1->getRootNode() !== $node2Root
+        if ($node1 === null || $node2 === null
+            || $node1->getRootNode() !== $node2Root
         ) {
-            $ret = self::DOCUMENT_POSITION_DISCONNECTED |
-                self::DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC;
+            $ret = self::DOCUMENT_POSITION_DISCONNECTED
+                | self::DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC;
             $position = strcmp(
                 spl_object_hash($node2),
                 spl_object_hash($node1)
@@ -295,8 +283,8 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
         // If node1 is an ancestor of node2 and attr1 is null, or node1 is node2
         // and attr2 is non-null, then return the result of adding
         // DOCUMENT_POSITION_CONTAINS to DOCUMENT_POSITION_PRECEDING.
-        if (($node1->isAncestorOf($node2) && $attr1 === null) ||
-            ($node1 === $node2 && $attr1)
+        if (($node1->isAncestorOf($node2) && $attr1 === null)
+            || ($node1 === $node2 && $attr1)
         ) {
             return self::DOCUMENT_POSITION_CONTAINS |
                 self::DOCUMENT_POSITION_PRECEDING;
@@ -305,8 +293,8 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
         // If node1 is a descendant of node2 and attr2 is null, or node1 is
         // node2 and attr1 is non-null, then return the result of adding
         // DOCUMENT_POSITION_CONTAINED_BY to DOCUMENT_POSITION_FOLLOWING.
-        if (($node1->isDescendantOf($node2) && $attr2 === null) ||
-            ($node1 === $node2 && $attr1)
+        if (($node1->isDescendantOf($node2) && $attr2 === null)
+            || ($node1 === $node2 && $attr1)
         ) {
             return self::DOCUMENT_POSITION_CONTAINED_BY |
                 self::DOCUMENT_POSITION_FOLLOWING;
@@ -315,9 +303,12 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
         $tw = new TreeWalker(
             $node2Root,
             NodeFilter::SHOW_ALL,
-            function ($aNode) use ($node1) {
-                return $aNode === $node1 ? NodeFilter::FILTER_ACCEPT :
-                    NodeFilter::FILTER_SKIP;
+            function ($node) use ($node1) {
+                if ($node === $node1) {
+                    return NodeFilter::FILTER_ACCEPT;
+                }
+
+                return NodeFilter::FILTER_SKIP;
             }
         );
         $tw->currentNode = $node2;
@@ -338,21 +329,19 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
     /**
      * Returns whether or not a node is an inclusive descendant of another node.
      *
-     * @param Node $aNode A node that you wanted to compare its position of.
+     * @param Node $node A node that you wanted to compare its position of.
      *
-     * @return boolean Returns true if $aNode is an inclusive descendant of a
+     * @return boolean Returns true if $node is an inclusive descendant of a
      *     node.
      */
-    public function contains(Node $aNode = null)
+    public function contains(Node $node = null)
     {
-        $node = $aNode;
-
         while ($node) {
             if ($node === $this) {
                 return true;
             }
 
-            $node = $node->mParentNode;
+            $node = $node->parentNode;
         }
 
         return false;
@@ -368,50 +357,50 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @param Node $aNode The node being cloned.
      *
-     * @param Document|null $aDocument The document that will own the cloned
+     * @param Document|null $document The document that will own the cloned
      *     node.
      *
-     * @param bool $aCloneChildren Optional. If set, all children of the cloned
+     * @param bool $cloneChildren Optional. If set, all children of the cloned
      *     node will also be cloned.
      *
      * @return Node The newly created node.
      */
     public function doCloneNode(
-        Document $aDocument = null,
-        $aCloneChildren = null
+        Document $document = null,
+        $cloneChildren = null
     ) {
         $node = $this;
-        $document = $aDocument ?: $node->nodeDocument;
+        $document = $document ?: $node->nodeDocument;
 
-        switch ($node->mNodeType) {
+        switch ($node->nodeType) {
             case self::ELEMENT_NODE:
                 $copy = ElementFactory::create(
                     $document,
-                    $node->mLocalName,
-                    $node->mNamespaceURI,
-                    $node->mPrefix
+                    $node->localName,
+                    $node->namespaceURI,
+                    $node->prefix
                 );
 
-                foreach ($node->mAttributesList as $attr) {
+                foreach ($node->attributeList as $attr) {
                     $copyAttribute = $attr->doCloneNode();
-                    $copy->mAttributesList->append($copyAttribute);
+                    $copy->attributeList->append($copyAttribute);
                 }
 
                 break;
 
             case self::DOCUMENT_NODE:
                 $copy = new static();
-                $copy->mCharacterSet = $node->mCharacterSet;
-                $copy->mContentType = $node->mContentType;
-                $copy->mMode = $node->mMode;
+                $copy->characterSet = $node->characterSet;
+                $copy->contentType = $node->contentType;
+                $copy->mode = $node->mode;
 
                 break;
 
             case self::DOCUMENT_TYPE_NODE:
                 $copy = new static(
-                    $this->mName,
-                    $this->mPublicId,
-                    $this->mSystemId
+                    $this->name,
+                    $this->publicId,
+                    $this->systemId
                 );
 
                 break;
@@ -420,22 +409,22 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                 // Set copy's namespace, namespace prefix, local name, and
                 // value, to those of node.
                 $copy = new static(
-                    $this->mLocalName,
-                    $this->mValue,
-                    $this->mNamespaceURI,
-                    $this->mPrefix
+                    $this->localName,
+                    $this->value,
+                    $this->namespaceURI,
+                    $this->prefix
                 );
 
                 break;
 
             case self::TEXT_NODE:
             case self::COMMENT_NODE:
-                $copy = new static($node->mData);
+                $copy = new static($node->data);
 
                 break;
 
             case self::PROCESSING_INSTRUCTION_NODE:
-                $copy = new static($node->mTarget, $node->mData);
+                $copy = new static($node->target, $node->data);
 
                 break;
 
@@ -455,11 +444,11 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
         // If the node being cloned defines custom cloning steps, perform them
         // now.
         if (method_exists($node, 'doCloningSteps')) {
-            $this->doCloningSteps($copy, $document, $aCloneChildren);
+            $this->doCloningSteps($copy, $document, $cloneChildren);
         }
 
-        if ($aCloneChildren) {
-            foreach ($node->mChildNodes as $child) {
+        if ($cloneChildren) {
+            foreach ($node->childNodes as $child) {
                 $copyChild = $child->doCloneNode($document, true);
                 $copy->appendChild($copyChild);
             }
@@ -475,58 +464,58 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @link https://dom.spec.whatwg.org/#concept-node-ensure-pre-insertion-validity
      *
-     * @param DocumentFragment|Node $aNode The nodes being inserted into the
+     * @param DocumentFragment|Node $node The nodes being inserted into the
      *     document tree.
      *
-     * @param Node $aChild The reference node for where the new nodes should be
+     * @param Node $child The reference node for where the new nodes should be
      *     inserted.
      *
      * @throws HierarchyRequestError
      *
      * @throws NotFoundError
      */
-    public function ensurePreinsertionValidity($aNode, $aChild)
+    public function ensurePreinsertionValidity($node, $child)
     {
         $parent = $this;
 
         // Only Documents, DocumentFragments, and Elements can be parent nodes.
         // Throw a HierarchyRequestError if parent is not one of these types.
-        if (!($parent instanceof Document) &&
-            !($parent instanceof DocumentFragment) &&
-            !($parent instanceof Element)
+        if (!($parent instanceof Document)
+            && !($parent instanceof DocumentFragment)
+            && !($parent instanceof Element)
         ) {
             throw new HierarchyRequestError();
         }
 
         // If node is a host-including inclusive ancestor of parent, throw a
         // HierarchyRequestError.
-        if ($aNode->isHostIncludingInclusiveAncestorOf($parent)) {
+        if ($node->isHostIncludingInclusiveAncestorOf($parent)) {
             throw new HierarchyRequestError();
         }
 
         // If child is not null and its parent is not parent, then throw a
         // NotFoundError.
-        if ($aChild !== null && $aChild->mParentNode !== $parent) {
+        if ($child !== null && $child->parentNode !== $parent) {
             throw new NotFoundError();
         }
 
         // If node is not a DocumentFragment, DocumentType, Element, Text,
         // ProcessingInstruction, or Comment node, throw a
         // HierarchyRequestError.
-        if (!($aNode instanceof DocumentFragment) &&
-            !($aNode instanceof DocumentType) &&
-            !($aNode instanceof Element) &&
-            !($aNode instanceof Text) &&
-            !($aNode instanceof ProcessingInstruction) &&
-            !($aNode instanceof Comment)
+        if (!($node instanceof DocumentFragment)
+            && !($node instanceof DocumentType)
+            && !($node instanceof Element)
+            && !($node instanceof Text)
+            && !($node instanceof ProcessingInstruction)
+            && !($node instanceof Comment)
         ) {
             throw new HierarchyRequestError();
         }
 
         // If either node is a Text node and parent is a document, or node is a
         // doctype and parent is not a document, throw a HierarchyRequestError.
-        if (($aNode instanceof Text && $parent instanceof Document) ||
-            ($aNode instanceof DocumentType && !($parent instanceof Document))
+        if (($node instanceof Text && $parent instanceof Document)
+            || ($node instanceof DocumentType && !($parent instanceof Document))
         ) {
             throw new HierarchyRequestError();
         }
@@ -535,14 +524,14 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             return;
         }
 
-        if ($aNode instanceof DocumentFragment) {
+        if ($node instanceof DocumentFragment) {
             $elementChildren = 0;
 
             // Documents cannot contain more than one element child or text
             // nodes. Throw a HierarchyRequestError if the document fragment
             // has more than 1 element child or a text node.
-            foreach ($aNode->mChildNodes as $child) {
-                if ($child instanceof Element) {
+            foreach ($node->childNodes as $childNode) {
+                if ($childNode instanceof Element) {
                     $elementChildren++;
 
                     if ($elementChildren > 1) {
@@ -550,7 +539,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                     }
                 }
 
-                if ($elementChildren > 1 || $child instanceof Text) {
+                if ($elementChildren > 1 || $childNode instanceof Text) {
                     throw new HierarchyRequestError();
                 }
             }
@@ -562,8 +551,8 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             // Documents cannot contain more than one element child. Throw a
             // HierarchyRequestError if both the document fragment and
             // document contain an element child.
-            foreach ($parent->mChildNodes as $child) {
-                if ($child->mNodeType === self::ELEMENT_NODE) {
+            foreach ($parent->childNodes as $childNode) {
+                if ($child->nodeType === self::ELEMENT_NODE) {
                     throw new HierarchyRequestError();
                 }
             }
@@ -571,11 +560,11 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             // An element cannot preceed a doctype in the tree. Throw a
             // HierarchyRequestError if we try to insert an element before
             // the doctype.
-            if ($aChild instanceof DocumentType) {
+            if ($child instanceof DocumentType) {
                 throw new HierarchyRequestError();
             }
 
-            if ($aChild === null) {
+            if ($child === null) {
                 return;
             }
 
@@ -583,17 +572,17 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             // Throw a HierarchyRequestError if we try to insert an element
             // before a node that preceedes the doctype.
             $tw = new TreeWalker($parent, NodeFilter::SHOW_DOCUMENT_TYPE);
-            $tw->currentNode = $aChild;
+            $tw->currentNode = $child;
 
             if ($tw->nextNode()) {
                 throw new HierarchyRequestError();
             }
-        } elseif ($aNode instanceof Element) {
+        } elseif ($node instanceof Element) {
             // A Document cannot contain more than 1 element child. Throw a
             // HierarchyRequestError if the parent already contains an element
             // child.
-            foreach ($parent->mChildNodes as $child) {
-                if ($child instanceof Element) {
+            foreach ($parent->childNodes as $childNode) {
+                if ($childNode instanceof Element) {
                     throw new HierarchyRequestError();
                 }
             }
@@ -601,11 +590,11 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             // The document element must follow the doctype in the tree. Throw
             // a HierarchyRequestError if we try to insert an element before the
             // doctype.
-            if ($aChild instanceof DocumentType) {
+            if ($child instanceof DocumentType) {
                 throw new HierarchyRequestError();
             }
 
-            if ($aChild === null) {
+            if ($child === null) {
                 return;
             }
 
@@ -613,17 +602,17 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             // Throw a HierarchyRequestError if we try to insert an element
             // before a node that preceedes the doctype.
             $tw = new TreeWalker($parent, NodeFilter::SHOW_DOCUMENT_TYPE);
-            $tw->currentNode = $aChild;
+            $tw->currentNode = $child;
 
             if ($tw->nextNode()) {
                 throw new HierarchyRequestError();
             }
-        } elseif ($aNode instanceof DocumentType) {
+        } elseif ($node instanceof DocumentType) {
             // A document can only contain 1 doctype definition. Throw a
             // HierarchyRequestError if we try to insert a doctype into a
             // document that already contains a doctype.
-            foreach ($parent->mChildNodes as $child) {
-                if ($child instanceof DocumentType) {
+            foreach ($parent->childNodes as $childNode) {
+                if ($childNode instanceof DocumentType) {
                     throw new HierarchyRequestError();
                 }
             }
@@ -631,9 +620,9 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             // The doctype must preceed any elements. Throw a
             // HierarchyRequestError if we try to insert a doctype before a
             // node that follows an element.
-            if ($aChild !== null) {
+            if ($child !== null) {
                 $tw = new TreeWalker($parent, NodeFilter::SHOW_ELEMENT);
-                $tw->currentNode = $aChild;
+                $tw->currentNode = $child;
 
                 if ($tw->previousNode()) {
                     throw new HierarchyRequestError();
@@ -645,8 +634,8 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             // The doctype must preceed any elements. Throw a
             // HierarchyRequestError if we try to append a doctype to a parent
             // that already contains an element.
-            foreach ($parent->mChildNodes as $child) {
-                if ($child instanceof Element) {
+            foreach ($parent->childNodes as $childNode) {
+                if ($childNode instanceof Element) {
                     throw new HierarchyRequestError();
                 }
             }
@@ -673,8 +662,8 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      */
     public function parentElement()
     {
-        return $this->mParentNode instanceof Element
-            ? $this->mParentNode
+        return $this->parentNode instanceof Element
+            ? $this->parentNode
             : null;
     }
 
@@ -684,22 +673,20 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @internal
      */
-    public static function _getCommonAncestor(Node $aNodeA, Node $aNodeB)
+    public static function getCommonAncestor(Node $nodeA, Node $nodeB)
     {
-        $nodeA = $aNodeA;
-
         while ($nodeA) {
-            $nodeB = $aNodeB;
+            $node = $nodeB;
 
-            while ($nodeB) {
-                if ($nodeB === $nodeA) {
+            while ($node) {
+                if ($node === $nodeA) {
                     break 2;
                 }
 
-                $nodeB = $nodeB->mParentNode;
+                $node = $node->parentNode;
             }
 
-            $nodeA = $nodeA->mParentNode;
+            $nodeA = $nodeA->parentNode;
         }
 
         return $nodeA;
@@ -725,9 +712,9 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @return int
      */
-    public function _getTreeIndex()
+    public function getTreeIndex()
     {
-        return $this->mParentNode->mChildNodes->indexOf($this);
+        return $this->parentNode->childNodes->indexOf($this);
     }
 
     /**
@@ -739,21 +726,21 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      */
     public function hasChildNodes()
     {
-        return !$this->mChildNodes->isEmpty();
+        return !$this->childNodes->isEmpty();
     }
 
     /**
      * Inserts a node before another node in a common parent node.
      *
-     * @param Node $aNewNode The node to be inserted into the document.
+     * @param Node $node The node to be inserted into the document.
      *
-     * @param Node $aRefNode The node that the new node will be inserted before.
+     * @param Node $child The node that the new node will be inserted before.
      *
      * @return Node The node that was inserted into the document.
      */
-    public function insertBefore(Node $aNewNode, Node $aRefNode = null)
+    public function insertBefore(Node $node, Node $child = null)
     {
-        return $this->preinsertNode($aNewNode, $aRefNode);
+        return $this->preinsertNode($node, $child);
     }
 
     /**
@@ -763,51 +750,47 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @see https://dom.spec.whatwg.org/#concept-node-insert
      *
-     * @param Node $aNode The nodes to be inserted into the document tree.
+     * @param Node $node The nodes to be inserted into the document tree.
      *
-     * @param Node|null $aChild Optional. A child node used as a reference to
+     * @param Node|null $child Optional. A child node used as a reference to
      *     where the new node should be inserted.
      *
-     * @param bool|null $aSuppressObservers Optional. If true, mutation events
+     * @param bool|null $suppressObservers Optional. If true, mutation events
      *     are ignored for this operation.
      */
     public function insertNode(
-        Node $aNode,
-        Node $aChild = null,
-        $aSuppressObservers = null
+        Node $node,
+        Node $child = null,
+        $suppressObservers = null
     ) {
         $parent = $this;
-        $nodeIsFragment = $aNode->mNodeType === self::DOCUMENT_FRAGMENT_NODE;
-        $count = $nodeIsFragment ? count($aNode->mChildNodes) : 1;
+        $nodeIsFragment = $node->nodeType === self::DOCUMENT_FRAGMENT_NODE;
+        $count = $nodeIsFragment ? count($node->childNodes) : 1;
 
-        if ($aChild) {
-            $childIndex = $aChild->mParentNode->mChildNodes->indexOf($aChild);
+        if ($child) {
+            $childIndex = $child->parentNode->childNodes->indexOf($child);
 
-            foreach (Range::_getRangeCollection() as $range) {
+            foreach (Range::getRangeCollection() as $range) {
                 $startContainer = $range->startContainer;
                 $startOffset = $range->startOffset;
                 $endContainer = $range->endContainer;
                 $endOffset = $range->endOffset;
 
-                if ($startContainer === $parent &&
-                    $startOffset > $childIndex
-                ) {
+                if ($startContainer === $parent && $startOffset > $childIndex) {
                     $range->setStart($startContainer, $startOffset + $count);
                 }
 
-                if ($endContainer === $parent &&
-                    $endOffset > $childIndex
-                ) {
+                if ($endContainer === $parent && $endOffset > $childIndex) {
                     $range->setEnd($endContainer, $endOffset + $count);
                 }
             }
         }
 
-        $nodes = $nodeIsFragment ? $aNode->mChildNodes->values() : [$aNode];
+        $nodes = $nodeIsFragment ? $node->childNodes->values() : [$node];
 
         if ($nodeIsFragment) {
-            foreach (clone $aNode->mChildNodes as $child) {
-                $aNode->removeNode($child, true);
+            foreach (clone $node->childNodes as $childNode) {
+                $node->removeNode($childNode, true);
             }
 
             // TODO: queue a mutation record of "childList" for node with
@@ -815,12 +798,12 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
         }
 
         foreach ($nodes as $node) {
-            if (!$aChild) {
-                $last = $this->mChildNodes->last();
+            if (!$child) {
+                $last = $this->childNodes->last();
             }
 
-            $node->mParentNode = $parent;
-            $parent->mChildNodes->insertBefore($aChild, $node);
+            $node->parentNode = $parent;
+            $parent->childNodes->insertBefore($child, $node);
 
             // TODO: For each inclusive descendant inclusiveDescendant of node,
             // in tree order, run the insertion steps with inclusiveDescendant
@@ -834,10 +817,10 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                 }
             }
 
-            if ($aChild) {
-                $oldPreviousSibling = $aChild->previousSibling;
-                $nextSibling = $aChild;
-                $aChild->previousSibling = $node;
+            if ($child) {
+                $oldPreviousSibling = $child->previousSibling;
+                $nextSibling = $child;
+                $child->previousSibling = $node;
             } else {
                 $oldPreviousSibling = $last;
                 $nextSibling = null;
@@ -851,7 +834,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             $node->nextSibling = $nextSibling;
         }
 
-        if (!$aSuppressObservers) {
+        if (!$suppressObservers) {
             // TODO: If suppress observers flag is unset, queue a mutation
             // record of "childList" for parent with addedNodes nodes,
             // nextSibling child, and previousSibling child’s previous
@@ -865,19 +848,19 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @link https://dom.spec.whatwg.org/#dom-node-isdefaultnamespace
      *
-     * @param string|null $aNamespace A namespaceURI to check against.
+     * @param string|null $namespace A namespaceURI to check against.
      *
      * @return bool
      */
-    public function isDefaultNamespace($aNamespace)
+    public function isDefaultNamespace($namespace)
     {
-        $namespace = Utils::DOMString($aNamespace, false, true);
+        $namespace = Utils::DOMString($namespace, false, true);
 
         if ($namespace === '') {
             $namespace = null;
         }
 
-        $defaultNamespace = Namespaces::locateNamespace($this, null);
+        $defaultNamespace = $this->locateNamespace($this, null);
 
         return $defaultNamespace === $namespace;
     }
@@ -888,57 +871,56 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      * @link https://dom.spec.whatwg.org/#dom-node-isequalnode
      * @link https://dom.spec.whatwg.org/#concept-node-equals
      *
-     * @param Node $aNode The node you want to compare the current node to.
+     * @param Node $otherNode The node you want to compare the current node to.
      *
      * @return boolean Returns true if the two nodes are the same, otherwise
      *     false.
      */
-    public function isEqualNode(Node $aOtherNode = null)
+    public function isEqualNode(Node $otherNode = null)
     {
-        if (!$aOtherNode || $this->mNodeType != $aOtherNode->mNodeType) {
+        if (!$otherNode || $this->nodeType != $otherNode->nodeType) {
             return false;
         }
 
         if ($this instanceof DocumentType) {
-            if (
-                strcmp($this->name, $aOtherNode->name) !== 0 ||
-                strcmp($this->publicId, $aOtherNode->publicId) !== 0 ||
-                strcmp($this->systemId, $aOtherNode->systemId) !== 0
+            if ($this->name !== $otherNode->name
+                || $this->publicId !== $otherNode->publicId
+                || $this->systemId !== $otherNode->systemId
             ) {
                 return false;
             }
         } elseif ($this instanceof Element) {
-            if (
-                strcmp($this->namespaceURI, $aOtherNode->namespaceURI) !== 0 ||
-                strcmp($this->prefix, $aOtherNode->prefix) !== 0 ||
-                strcmp($this->localName, $aOtherNode->localName) !== 0 ||
-                $this->mAttributesList->count() !==
-                $aOtherNode->attributes->length
+            if ($this->namespaceURI !== $otherNode->namespaceURI
+                || $this->prefix !== $otherNode->prefix
+                || $this->localName !== $otherNode->localName
+                || $this->attributeList->count() !==
+                $otherNode->attributes->length
             ) {
                 return false;
             }
         } elseif ($this instanceof Attr) {
-            if ($this->namespaceURI !== $aOtherNode->namespaceURI ||
-                $this->localName !== $aOtherNode->localName ||
-                $this->value !== $aOtherNode->value
+            if ($this->namespaceURI !== $otherNode->namespaceURI
+                || $this->localName !== $otherNode->localName
+                || $this->value !== $otherNode->value
             ) {
                 return false;
             }
         } elseif ($this instanceof ProcessingInstruction) {
-            if (strcmp($this->target, $aOtherNode->target) !== 0 ||
-                strcmp($this->data, $aOtherNode->data) !== 0) {
+            if ($this->target !== $otherNode->target
+                || $this->data !== $otherNode->data
+            ) {
                 return false;
             }
         } elseif ($this instanceof Text || $this instanceof Comment) {
-            if (strcmp($this->data, $aOtherNode->data) !== 0) {
+            if ($this->data !== $otherNode->data) {
                 return false;
             }
         }
 
         if ($this instanceof Element) {
-            foreach ($this->mAttributesList as $i => $attribute) {
+            foreach ($this->attributeList as $i => $attribute) {
                 $isEqual = $attribute->isEqualNode(
-                    $aOtherNode->mAttributesList[$i]
+                    $otherNode->attributeList[$i]
                 );
 
                 if (!$isEqual) {
@@ -947,16 +929,16 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             }
         }
 
-        $childNodeCount = count($this->mChildNodes);
+        $childNodeCount = count($this->childNodes);
 
-        if ($childNodeCount !== count($aOtherNode->childNodes)) {
+        if ($childNodeCount !== count($otherNode->childNodes)) {
             return false;
         }
 
         for ($i = 0; $i < $childNodeCount; $i++) {
-            if (!$this->mChildNodes[$i]->isEqualNode(
-                    $aOtherNode->childNodes[$i]
-                )) {
+            if (!$this->childNodes[$i]->isEqualNode(
+                $otherNode->childNodes[$i]
+            )) {
                 return false;
             }
         }
@@ -970,14 +952,14 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @see https://dom.spec.whatwg.org/#dom-node-issamenode
      *
-     * @param Node|null $aOtherNode Optional. The node whose equality is to be
+     * @param Node|null $otherNode Optional. The node whose equality is to be
      *     checked.
      *
      * @return bool
      */
-    public function isSameNode(Node $aOtherNode = null)
+    public function isSameNode(Node $otherNode = null)
     {
-        return $this === $aOtherNode;
+        return $this === $otherNode;
     }
 
     /**
@@ -985,19 +967,89 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @link https://dom.spec.whatwg.org/#dom-node-lookupnamespaceuri
      *
-     * @param string|null $aPrefix The prefix of the namespace to be found.
+     * @param string|null $prefix The prefix of the namespace to be found.
      *
      * @return string|null
      */
-    public function lookupNamespaceURI($aPrefix)
+    public function lookupNamespaceURI($prefix)
     {
-        $prefix = Utils::DOMString($aPrefix, false, true);
+        $prefix = Utils::DOMString($prefix, false, true);
 
         if ($prefix === '') {
             $prefix = null;
         }
 
-        return Namespaces::locateNamespace($this, $prefix);
+        return $this->locateNamespace($this, $prefix);
+    }
+
+    /**
+     * Finds the namespace associated with the given prefix on the given node.
+     *
+     * @see https://dom.spec.whatwg.org/#locate-a-namespace
+     *
+     * @param \Rowbot\DOM\Node $node
+     * @param ?string          $prefix
+     *
+     * @return ?string
+     */
+    private function locateNamespace(self $node, ?string $prefix): ?string
+    {
+        if ($node instanceof Element) {
+            if ($node->namespaceURI !== null && $node->prefix === $prefix) {
+                return $node->namespaceURI;
+            }
+
+            foreach ($node->getAttributeList() as $attr) {
+                if ($attr->namespaceURI === Namespaces::XMLNS) {
+                    $attrPrefix = $attr->prefix;
+                    $localName = $attr->localName;
+
+                    if (($attrPrefix === 'xmlns' && $localName === $prefix)
+                        || ($attrPrefix === null && $localName === 'xmlns')
+                    ) {
+                        if ($attr->value !== '') {
+                            return $attr->value;
+                        }
+
+                        return null;
+                    }
+                }
+            }
+
+            if ($node->parentElement === null) {
+                return null;
+            }
+
+            return $this->locateNamespace($node->parentElement, $prefix);
+        }
+
+        if ($node instanceof Document) {
+            if ($node->documentElement === null) {
+                return null;
+            }
+
+            return $this->locateNamespace($node->documentElement, $prefix);
+        }
+
+        if ($node instanceof DocumentType
+            || $node instanceof DocumentFragment
+        ) {
+            return null;
+        }
+
+        if ($node instanceof Attr) {
+            if ($node->ownerElement === null) {
+                return null;
+            }
+
+            return $this->locateNamespace($node->ownerElement, $prefix);
+        }
+
+        if ($node->parentElement === null) {
+            return null;
+        }
+
+        return $this->locateNamespace($node->parentElement, $prefix);
     }
 
     /**
@@ -1005,24 +1057,24 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @link https://dom.spec.whatwg.org/#dom-node-lookupprefix
      *
-     * @param string|null $aNamespace The namespace of the prefix to be found.
+     * @param string|null $namespace The namespace of the prefix to be found.
      *
      * @return string|null
      */
-    public function lookupPrefix($aNamespace)
+    public function lookupPrefix($namespace)
     {
-        $namespace = Utils::DOMString($aNamespace, false, true);
+        $namespace = Utils::DOMString($namespace, false, true);
 
         if ($namespace === null || $namespace === '') {
             return null;
         }
 
-        switch ($this->mNodeType) {
+        switch ($this->nodeType) {
             case self::ELEMENT_NODE:
-                return Namespaces::locatePrefix($this, $namespace);
+                return $this->locatePrefix($this, $namespace);
 
             case self::DOCUMENT_NODE:
-                return Namespaces::locatePrefix(
+                return $this->locatePrefix(
                     $this->getFirstElementChild(),
                     $namespace
                 );
@@ -1037,16 +1089,48 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                 // Return the result of locating a namespace prefix for its
                 // element, if its element is non-null, and null otherwise.
                 if ($ownerElement) {
-                    return Namespaces::locatePrefix($ownerElement, $namespace);
+                    return $this->locatePrefix($ownerElement, $namespace);
                 }
 
                 return null;
 
             default:
                 return ($parentElement = $this->parentElement())
-                    ? Namespaces::locatePrefix($parentElement, $namespace)
+                    ? $this->locatePrefix($parentElement, $namespace)
                     : null;
         }
+    }
+
+    /**
+     * Locates the prefix associated with the given namespace on the given
+     * element.
+     *
+     * @see https://dom.spec.whatwg.org/#locate-a-namespace-prefix
+     *
+     * @param \Rowbot\DOM\Element\Element $element
+     * @param ?string                     $namespace
+     *
+     * @return ?string
+     */
+    private function locatePrefix(Element $element, ?string $namespace): ?string
+    {
+        if ($element->namespaceURI === $namespace
+            && $element->prefix !== null
+        ) {
+            return $element->prefix;
+        }
+
+        foreach ($element->getAttributeList() as $attr) {
+            if ($attr->prefix === 'xmlns' && $attr->value === $namespace) {
+                return $attr->localName;
+            }
+        }
+
+        if ($element->parentElement !== null) {
+            return $this->locatePrefix($element, $namespace);
+        }
+
+        return null;
     }
 
     /**
@@ -1068,7 +1152,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             // If length is zero, then remove node and continue with the next
             // exclusive Text node, if any.
             if ($length == 0) {
-                $node->mParentNode->removeNode($node);
+                $node->parentNode->removeNode($node);
                 continue;
             }
 
@@ -1079,7 +1163,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             $startNode = $node->previousSibling;
 
             while ($startNode) {
-                if ($startNode->mNodeType != self::TEXT_NODE) {
+                if ($startNode->nodeType != self::TEXT_NODE) {
                     break;
                 }
 
@@ -1091,7 +1175,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             $startNode = $node->nextSibling;
 
             while ($startNode) {
-                if ($startNode->mNodeType != self::TEXT_NODE) {
+                if ($startNode->nodeType != self::TEXT_NODE) {
                     break;
                 }
 
@@ -1103,14 +1187,14 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             // Replace data with node node, offset length, count 0, and data
             // data.
             $node->doReplaceData($length, 0, $data);
-            $ranges = Range::_getRangeCollection();
+            $ranges = Range::getRangeCollection();
 
-            foreach (clone $node->mChildNodes as $currentNode) {
-                if ($currentNode->mNodeType != self::TEXT_NODE) {
+            foreach (clone $node->childNodes as $currentNode) {
+                if ($currentNode->nodeType != self::TEXT_NODE) {
                     break;
                 }
 
-                $treeIndex = $currentNode->_getTreeIndex();
+                $treeIndex = $currentNode->getTreeIndex();
 
                 // For each range whose start node is currentNode, add length to
                 // its start offset and set its start node to node.
@@ -1132,8 +1216,8 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                 // start offset is currentNode’s index, set its start node to
                 // node and its start offset to length.
                 foreach ($ranges as $range) {
-                    if ($range->startContainer === $currentNode->mParentNode &&
-                        $range->startOffset == $treeIndex
+                    if ($range->startContainer === $currentNode->parentNode
+                        && $range->startOffset == $treeIndex
                     ) {
                         $range->setStart($node, $length);
                     }
@@ -1143,8 +1227,8 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                 // offset is currentNode’s index, set its end node to node and
                 // its end offset to length.
                 foreach ($ranges as $range) {
-                    if ($range->endContainer === $currentNode->mParentNode &&
-                        $range->endOffset == $treeIndex
+                    if ($range->endContainer === $currentNode->parentNode
+                        && $range->endOffset == $treeIndex
                     ) {
                         $range->setEnd($node, $length);
                     }
@@ -1157,7 +1241,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             // Remove node’s contiguous exclusive Text nodes (excluding itself),
             // in tree order.
             foreach ($contingiousTextNodes as $textNode) {
-                $textNode->mParentNode->removeNode($textNode);
+                $textNode->parentNode->removeNode($textNode);
             }
         }
     }
@@ -1171,42 +1255,40 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @see https://dom.spec.whatwg.org/#concept-node-pre-insert
      *
-     * @param Node $aNode The node being inserted.
+     * @param Node $node The node being inserted.
      *
-     * @param Node|null $aChild Optional.  A child node used as a reference to
+     * @param Node|null $child Optional.  A child node used as a reference to
      *     where the new node should be inserted.
      *
      * @return Node The node that was inserted.
      */
-    public function preinsertNode(
-        Node $aNode,
-        Node $aChild = null
-    ) {
+    public function preinsertNode(Node $node, Node $child = null)
+    {
         $parent = $this;
-        $parent->ensurePreinsertionValidity($aNode, $aChild);
-        $referenceChild = $aChild;
+        $parent->ensurePreinsertionValidity($node, $child);
+        $referenceChild = $child;
 
-        if ($referenceChild === $aNode) {
-            $referenceChild = $aNode->nextSibling;
+        if ($referenceChild === $node) {
+            $referenceChild = $node->nextSibling;
         }
 
         // The DOM4 spec states that nodes should be implicitly adopted
-        $parent->nodeDocument->doAdoptNode($aNode);
-        $parent->insertNode($aNode, $referenceChild);
+        $parent->nodeDocument->doAdoptNode($node);
+        $parent->insertNode($node, $referenceChild);
 
-        return $aNode;
+        return $node;
     }
 
     /**
      * Removes the specified node from the current node.
      *
-     * @param Node $aNode The node to be removed from the DOM.
+     * @param Node $child The node to be removed from the DOM.
      *
      * @return Node The node that was removed from the DOM.
      */
-    public function removeChild(Node $aNode)
+    public function removeChild(Node $child)
     {
-        return $this->preremoveNode($aNode);
+        return $this->preremoveNode($child);
     }
 
     /**
@@ -1216,25 +1298,23 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @see https://dom.spec.whatwg.org/#concept-node-remove
      *
-     * @param Node $aNode The Node to be removed from the document tree.
+     * @param Node $node The Node to be removed from the document tree.
      *
-     * @param bool $aSuppressObservers Optional. If true, mutation events are
+     * @param bool $suppressObservers Optional. If true, mutation events are
      *     ignored for this operation.
      */
     public function removeNode(
-        Node $aNode,
-        $aSuppressObservers = null
+        Node $node,
+        $suppressObservers = null
     ) {
         $parent = $this;
-        $index = $parent->mChildNodes->indexOf($aNode);
-        $ranges = Range::_getRangeCollection();
+        $index = $parent->childNodes->indexOf($node);
+        $ranges = Range::getRangeCollection();
 
         foreach ($ranges as $range) {
             $startContainer = $range->startContainer;
 
-            if ($startContainer === $aNode ||
-                $aNode->contains($startContainer)
-            ) {
+            if ($startContainer === $node || $node->contains($startContainer)) {
                 $range->setStart($parent, $index);
             }
         }
@@ -1242,7 +1322,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
         foreach ($ranges as $range) {
             $endContainer = $range->endContainer;
 
-            if ($endContainer === $aNode || $aNode->contains($endContainer)) {
+            if ($endContainer === $node || $node->contains($endContainer)) {
                 $range->setEnd($parent, $index);
             }
         }
@@ -1265,19 +1345,19 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             }
         }
 
-        $iterCollection = $aNode->nodeDocument->_getNodeIteratorCollection();
+        $iterCollection = $node->nodeDocument->getNodeIteratorCollection();
 
         foreach ($iterCollection as $iter) {
-            $iter->_preremove($aNode);
+            $iter->preremoveNode($node);
         }
 
-        $oldPreviousSibling = $aNode->previousSibling;
-        $oldNextSibling = $aNode->nextSibling;
-        $parent->mChildNodes->remove($aNode);
+        $oldPreviousSibling = $node->previousSibling;
+        $oldNextSibling = $node->nextSibling;
+        $parent->childNodes->remove($node);
 
         // For each inclusive descendant inclusiveDescendant of node, run
         // the removing steps with inclusiveDescendant and parent.
-        $iter = new NodeIterator($aNode);
+        $iter = new NodeIterator($node);
 
         while (($descendant = $iter->nextNode())) {
             if (method_exists($descendant, 'doRemovingSteps')) {
@@ -1293,9 +1373,9 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             $oldNextSibling->previousSibling = $oldPreviousSibling;
         }
 
-        $aNode->nextSibling = null;
-        $aNode->previousSibling = null;
-        $aNode->mParentNode = null;
+        $node->nextSibling = null;
+        $node->previousSibling = null;
+        $node->parentNode = null;
 
         // TODO: For each inclusive ancestor inclusiveAncestor of parent, if
         // inclusiveAncestor has any registered observers whose options' subtree
@@ -1304,7 +1384,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
         // identical to those of registered and source which is registered to
         // node’s list of registered observers.
 
-        if (!$aSuppressObservers) {
+        if (!$suppressObservers) {
             // TODO: If suppress observers flag is unset, queue a mutation
             // record of "childList" for parent with removedNodes a list solely
             // containing node, nextSibling oldNextSibling, and previousSibling
@@ -1317,9 +1397,9 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @see https://dom.spec.whatwg.org/#dom-node-replacechild
      *
-     * @param Node $aNewNode The node to be inserted into the DOM.
+     * @param Node $node The node to be inserted into the DOM.
      *
-     * @param Node $aOldNode The node that is being replaced by the new node.
+     * @param Node $child The node that is being replaced by the new node.
      *
      * @return Node The node that was replaced in the DOM.
      *
@@ -1327,9 +1407,9 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @throws NotFoundError
      */
-    public function replaceChild(Node $aNewNode, Node $aOldNode)
+    public function replaceChild(Node $node, Node $child)
     {
-        return $this->replaceNode($aNewNode, $aOldNode);
+        return $this->replaceNode($node, $child);
     }
 
     /**
@@ -1349,12 +1429,12 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @internal
      *
-     * @param Document $aNode The Document object that owns this Node.
+     * @param Document $document The Document object that owns this Node.
      */
-    public function setNodeDocument(Document $aDocument)
+    public function setNodeDocument(Document $document)
     {
-        if ($this->mNodeType !== self::DOCUMENT_NODE) {
-            $this->nodeDocument = $aDocument;
+        if ($this->nodeType !== self::DOCUMENT_NODE) {
+            $this->nodeDocument = $document;
         }
     }
 
@@ -1365,30 +1445,30 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @link https://dom.spec.whatwg.org/#concept-node-replace-all
      *
-     * @param Node|null $aNode The node that is to be inserted.
+     * @param Node|null $node The node that is to be inserted.
      */
-    public function _replaceAll(Node $aNode = null)
+    public function replaceAllNodes(Node $node = null)
     {
-        if ($aNode) {
-            $this->nodeDocument->doAdoptNode($aNode);
+        if ($node) {
+            $this->nodeDocument->doAdoptNode($node);
         }
 
-        $removedNodes = $this->mChildNodes->values();
+        $removedNodes = $this->childNodes->values();
 
-        if (!$aNode) {
-            $addedNodes = array();
-        } elseif ($aNode instanceof DocumentFragment) {
-            $addedNodes = $aNode->mChildNodes->values();
+        if (!$node) {
+            $addedNodes = [];
+        } elseif ($node instanceof DocumentFragment) {
+            $addedNodes = $node->childNodes->values();
         } else {
-            $addedNodes = array($aNode);
+            $addedNodes = [$node];
         }
 
-        foreach ($removedNodes as $index => $node) {
-            $this->removeNode($node, true);
+        foreach ($removedNodes as $index => $removableNode) {
+            $this->removeNode($removableNode, true);
         }
 
-        if ($aNode) {
-            $this->insertNode($aNode, null, true);
+        if ($node) {
+            $this->insertNode($node, null, true);
         }
 
         // TODO: Queue a mutation record for "childList"
@@ -1421,25 +1501,25 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @see https://dom.spec.whatwg.org/#concept-tree-root
      *
-     * @param array $aOptions The only valid argument is a key named "composed"
+     * @param array $options The only valid argument is a key named "composed"
      *     with a boolean value.
      *
      * @return Node If the value of the "composed" key is true, then the
      *     shadow-including root will be returned, otherwise, the root will be
      *     returned.
      */
-    public function getRootNode($aOptions = [])
+    public function getRootNode($options = [])
     {
         $root = $this;
 
-        while ($root->mParentNode) {
-            $root = $root->mParentNode;
+        while ($root->parentNode) {
+            $root = $root->parentNode;
         }
 
-        if (isset($aOptions['composed']) && $aOptions['composed'] === true &&
+        if (isset($options['composed']) && $options['composed'] === true &&
             $root instanceof ShadowRoot
         ) {
-            $root = $root->host->getRootNode($aOptions);
+            $root = $root->host->getRootNode($options);
         }
 
         return $root;
@@ -1451,15 +1531,15 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @see EventTarget::getTheParent
      *
-     * @param Event $aEvent An Event object.
+     * @param Event $event An Event object.
      *
      * @return HTMLSlotElement|null
      */
-    protected function getTheParent($aEvent)
+    protected function getTheParent($event)
     {
         // We currently don't support the HTMLSlotElement, so this will always
         // return the node's parent.
-        return $this->mParentNode;
+        return $this->parentNode;
     }
 
     /**
@@ -1478,21 +1558,21 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @see https://dom.spec.whatwg.org/#concept-tree-ancestor
      *
-     * @param Node|null $aOtherNode A Node.
+     * @param Node|null $otherNode A Node.
      *
      * @return bool
      */
-    public function isAncestorOf($aOtherNode)
+    public function isAncestorOf($otherNode)
     {
-        while ($aOtherNode) {
-            if ($aOtherNode->mParentNode === $this) {
+        while ($otherNode) {
+            if ($otherNode->parentNode === $this) {
                 break;
             }
 
-            $aOtherNode = $aOtherNode->mParentNode;
+            $otherNode = $otherNode->parentNode;
         }
 
-        return $aOtherNode !== null;
+        return $otherNode !== null;
     }
 
     /**
@@ -1500,13 +1580,13 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @see https://dom.spec.whatwg.org/#concept-tree-inclusive-ancestor
      *
-     * @param Node|null $aOtherNode A Node.
+     * @param Node|null $otherNode A Node.
      *
      * @return bool
      */
-    public function isInclusiveAncestorOf($aOtherNode)
+    public function isInclusiveAncestorOf($otherNode)
     {
-        return $aOtherNode === $this || $this->isAncestorOf($aOtherNode);
+        return $otherNode === $this || $this->isAncestorOf($otherNode);
     }
 
     /**
@@ -1514,13 +1594,13 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @see https://dom.spec.whatwg.org/#concept-tree-descendant
      *
-     * @param Node|null $aOtherNode A Node.
+     * @param Node|null $otherNode A Node.
      *
      * @return bool
      */
-    public function isDescendantOf($aOtherNode)
+    public function isDescendantOf($otherNode)
     {
-        return $aOtherNode->isAncestorOf($this);
+        return $otherNode->isAncestorOf($this);
     }
 
     /**
@@ -1528,13 +1608,13 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @see https://dom.spec.whatwg.org/#concept-tree-inclusive-descendant
      *
-     * @param Node|null $aOtherNode A Node.
+     * @param Node|null $otherNode A Node.
      *
      * @return bool
      */
-    public function isInclusiveDescendantOf($aOtherNode)
+    public function isInclusiveDescendantOf($otherNode)
     {
-        return $aOtherNode === $this || $this->isDescendantOf($aOtherNode);
+        return $otherNode === $this || $this->isDescendantOf($otherNode);
     }
 
     /**
@@ -1545,26 +1625,26 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @see https://dom.spec.whatwg.org/#concept-tree-host-including-inclusive-ancestor
      *
-     * @param Node $aNode The potential descendant node.
+     * @param Node $node The potential descendant node.
      *
      * @return bool Whether the node is an inclusive ancestor or not.
      */
-    protected function isHostIncludingInclusiveAncestorOf(Node $aNode = null)
+    protected function isHostIncludingInclusiveAncestorOf(Node $node = null)
     {
-        $isInclusiveAncestor = $this->isInclusiveAncestorOf($aNode);
+        $isInclusiveAncestor = $this->isInclusiveAncestorOf($node);
         $root = null;
         $host = null;
 
-        if (!$isInclusiveAncestor && $aNode) {
-            $root = $aNode->getRootNode();
+        if (!$isInclusiveAncestor && $node) {
+            $root = $node->getRootNode();
 
             if ($root instanceof DocumentFragment) {
                 $host = $root->getHost();
             }
         }
 
-        return $isInclusiveAncestor || ($root && $host &&
-            $this->isHostIncludingInclusiveAncestorOf($host));
+        return $isInclusiveAncestor || ($root && $host
+            && $this->isHostIncludingInclusiveAncestorOf($host));
     }
 
     /**
@@ -1572,21 +1652,21 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @see https://dom.spec.whatwg.org/#concept-shadow-including-descendant
      *
-     * @param Node|null $aOtherNode A Node.
+     * @param Node|null $otherNode A Node.
      *
      * @return bool
      */
-    public function isShadowIncludingDescendantOf($aOtherNode)
+    public function isShadowIncludingDescendantOf($otherNode)
     {
-        $isDescendant = $this->isDescendantOf($aOtherNode);
+        $isDescendant = $this->isDescendantOf($otherNode);
         $root = null;
 
         if (!$isDescendant) {
             $root = $this->getRootNode();
         }
 
-        return $isDescendant || ($root && $root instanceof ShadowRoot &&
-            $root->host->isShadowIncludingInclusiveDescendantOf($aOtherNode));
+        return $isDescendant || ($root && $root instanceof ShadowRoot
+            && $root->host->isShadowIncludingInclusiveDescendantOf($otherNode));
     }
 
     /**
@@ -1594,14 +1674,14 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @see https://dom.spec.whatwg.org/#concept-shadow-including-inclusive-descendant
      *
-     * @param Node|null $aOtherNode A Node.
+     * @param Node|null $otherNode A Node.
      *
      * @return bool
      */
-    public function isShadowIncludingInclusiveDescendantOf($aOtherNode)
+    public function isShadowIncludingInclusiveDescendantOf($otherNode)
     {
-        return $this === $aOtherNode ||
-            $this->isShadowIncludingDescendantOf($aOtherNode);
+        return $this === $otherNode
+            || $this->isShadowIncludingDescendantOf($otherNode);
     }
 
     /**
@@ -1609,13 +1689,13 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @see https://dom.spec.whatwg.org/#concept-shadow-including-ancestor
      *
-     * @param Node|null $aOtherNode A Node.
+     * @param Node|null $otherNode A Node.
      *
      * @return bool
      */
-    public function isShadowIncludingAncestorOf($aOtherNode)
+    public function isShadowIncludingAncestorOf($otherNode)
     {
-        return $aOtherNode->isShadowIncludingDescendantOf($this);
+        return $otherNode->isShadowIncludingDescendantOf($this);
     }
 
     /**
@@ -1623,14 +1703,14 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @see https://dom.spec.whatwg.org/#concept-shadow-including-inclusive-ancestor
      *
-     * @param Node|null $aOtherNode A Node.
+     * @param Node|null $otherNode A Node.
      *
      * @return bool
      */
-    public function isShadowIncludingInclusiveAncestorOf($aOtherNode)
+    public function isShadowIncludingInclusiveAncestorOf($otherNode)
     {
-        return $this === $aOtherNode ||
-            $this->isShadowIncludingAncestorOf($aOtherNode);
+        return $this === $otherNode
+            || $this->isShadowIncludingAncestorOf($otherNode);
     }
 
     /**
@@ -1638,18 +1718,19 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @see https://dom.spec.whatwg.org/#concept-closed-shadow-hidden
      *
-     * @param Node|null $aOtherNode A Node.
+     * @param Node|null $otherNode A Node.
      *
      * @return bool
      */
-    public function isClosedShadowHiddenFrom($aOtherNode)
+    public function isClosedShadowHiddenFrom($otherNode)
     {
         $root = $this->getRootNode();
 
-        if ($root instanceof ShadowRoot &&
-            !$root->isShadowIncludingInclusiveAncestorOf($aOtherNode) &&
-            ($root->mode === 'closed' || $root->host->isClosedShadowHiddenFrom(
-                $aOtherNode
+        if ($root instanceof ShadowRoot
+            && !$root->isShadowIncludingInclusiveAncestorOf($otherNode)
+            && ($root->mode === 'closed'
+            || $root->host->isClosedShadowHiddenFrom(
+                $otherNode
             ))
         ) {
             return true;
@@ -1666,24 +1747,24 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @see https://dom.spec.whatwg.org/#concept-node-pre-remove
      *
-     * @param Node $aChild The node being removed.
+     * @param Node $child The node being removed.
      *
      * @return Node The node that was removed.
      *
      * @throws NotFoundError If the parent of the node being removed does not
      *     match the given parent node.
      */
-    protected function preremoveNode(Node $aChild)
+    protected function preremoveNode(Node $child)
     {
         $parent = $this;
 
-        if ($aChild->mParentNode !== $parent) {
+        if ($child->parentNode !== $parent) {
             throw new NotFoundError();
         }
 
-        $parent->removeNode($aChild);
+        $parent->removeNode($child);
 
-        return $aChild;
+        return $child;
     }
 
     /**
@@ -1693,19 +1774,19 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @see https://dom.spec.whatwg.org/#concept-node-replace
      *
-     * @param Node $aNode The node being inserted.
+     * @param Node $node The node being inserted.
      *
-     * @param Node $aChild The node being replaced.
+     * @param Node $child The node being replaced.
      *
      * @return Node The node that was replaced.
      */
     protected function replaceNode(
-        Node $aNode,
-        Node $aChild
+        Node $node,
+        Node $child
     ) {
         $parent = $this;
 
-        switch ($parent->mNodeType) {
+        switch ($parent->nodeType) {
             case self::DOCUMENT_NODE:
             case self::DOCUMENT_FRAGMENT_NODE:
             case self::ELEMENT_NODE:
@@ -1715,15 +1796,15 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                 throw new HierarchyRequestError();
         }
 
-        if ($aNode->isHostIncludingInclusiveAncestorOf($parent)) {
+        if ($node->isHostIncludingInclusiveAncestorOf($parent)) {
             throw new HierarchyRequestError();
         }
 
-        if ($aChild->mParentNode !== $parent) {
+        if ($child->parentNode !== $parent) {
             throw new NotFoundError();
         }
 
-        switch ($aNode->mNodeType) {
+        switch ($node->nodeType) {
             case self::DOCUMENT_FRAGMENT_NODE:
             case self::DOCUMENT_TYPE_NODE:
             case self::ELEMENT_NODE:
@@ -1736,25 +1817,25 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                 throw new HierarchyRequestError();
         }
 
-        if ($aNode->mNodeType === self::TEXT_NODE &&
-            $parent->mNodeType === self::DOCUMENT_NODE
+        if ($node->nodeType === self::TEXT_NODE
+            && $parent->nodeType === self::DOCUMENT_NODE
         ) {
             throw new HierarchyRequestError();
         }
 
-        if ($aNode->mNodeType === self::DOCUMENT_TYPE_NODE &&
-            $parent->mNodeType !== self::DOCUMENT_NODE
+        if ($node->nodeType === self::DOCUMENT_TYPE_NODE
+            && $parent->nodeType !== self::DOCUMENT_NODE
         ) {
             throw new HierarchyRequestError();
         }
 
-        if ($parent->mNodeType === self::DOCUMENT_NODE) {
-            switch ($aNode->mNodeType) {
+        if ($parent->nodeType === self::DOCUMENT_NODE) {
+            switch ($node->nodeType) {
                 case self::DOCUMENT_FRAGMENT_NODE:
                     $elementChildren = 0;
 
-                    foreach ($aNode->mChildNodes as $child) {
-                        switch ($child->mNodeType) {
+                    foreach ($node->childNodes as $childNode) {
+                        switch ($childNode->nodeType) {
                             case self::ELEMENT_NODE:
                                 $elementChildren++;
 
@@ -1770,9 +1851,9 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                     }
 
                     if ($elementChildren === 1) {
-                        foreach ($parent->mChildNodes as $child) {
-                            if ($child->mNodeType === self::ELEMENT_NODE &&
-                                $child !== $aChild
+                        foreach ($parent->childNodes as $childNode) {
+                            if ($childNode->nodeType === self::ELEMENT_NODE
+                                && $childNode !== $child
                             ) {
                                 throw new HierarchyRequestError();
                             }
@@ -1782,7 +1863,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                             $parent,
                             NodeFilter::SHOW_DOCUMENT_TYPE
                         );
-                        $tw->currentNode = $aChild;
+                        $tw->currentNode = $child;
 
                         if ($tw->nextNode()) {
                             throw new HierarchyRequestError();
@@ -1792,9 +1873,9 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                     break;
 
                 case self::ELEMENT_NODE:
-                    foreach ($parent->mChildNodes as $child) {
-                        if ($child->mNodeType === self::ELEMENT_NODE &&
-                            $child !== $aChild
+                    foreach ($parent->childNodes as $childNode) {
+                        if ($childNode->nodeType === self::ELEMENT_NODE
+                            && $childNode !== $child
                         ) {
                             throw new HierarchyRequestError();
                         }
@@ -1804,7 +1885,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                         $parent,
                         NodeFilter::SHOW_DOCUMENT_TYPE
                     );
-                    $tw->currentNode = $aChild;
+                    $tw->currentNode = $child;
 
                     if ($tw->nextNode()) {
                         throw new HierarchyRequestError();
@@ -1813,9 +1894,9 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                     break;
 
                 case self::DOCUMENT_TYPE_NODE:
-                    foreach ($parent->mChildNodes as $child) {
-                        if ($child->mNodeType === self::DOCUMENT_TYPE_NODE &&
-                            $child !== $aChild
+                    foreach ($parent->childNodes as $childNode) {
+                        if ($childNode->nodeType === self::DOCUMENT_TYPE_NODE
+                            && $childNode !== $child
                         ) {
                             throw new HierarchyRequestError();
                         }
@@ -1825,7 +1906,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                         $parent,
                         NodeFilter::SHOW_ELEMENT
                     );
-                    $tw->currentNode = $aChild;
+                    $tw->currentNode = $child;
 
                     if ($tw->previousNode()) {
                         throw new HierarchyRequestError();
@@ -1833,31 +1914,31 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             }
         }
 
-        $referenceChild = $aChild->nextSibling;
+        $referenceChild = $child->nextSibling;
 
-        if ($referenceChild === $aNode) {
-            $referenceChild = $aNode->nextSibling;
+        if ($referenceChild === $node) {
+            $referenceChild = $node->nextSibling;
         }
 
-        $previousSibling = $aChild->previousSibling;
-        $parent->nodeDocument->doAdoptNode($aNode);
+        $previousSibling = $child->previousSibling;
+        $parent->nodeDocument->doAdoptNode($node);
         $removedNodes = [];
 
-        if ($aChild->mParentNode) {
-            $removedNodes[] = $aChild;
-            $aChild->mParentNode->removeNode($aChild, true);
+        if ($child->parentNode) {
+            $removedNodes[] = $child;
+            $child->parentNode->removeNode($child, true);
         }
 
-        $nodes = $aNode->mNodeType == self::DOCUMENT_FRAGMENT_NODE
-            ? $aNode->mChildNodes->values()
-            : [$aNode];
-        $parent->insertNode($aNode, $referenceChild, true);
+        $nodes = $node->nodeType == self::DOCUMENT_FRAGMENT_NODE
+            ? $node->childNodes->values()
+            : [$node];
+        $parent->insertNode($node, $referenceChild, true);
 
         // TODO: Queue a mutation record of "childList" for target parent with
         // addedNodes nodes, removedNodes removedNodes, nextSibling reference
         // child, and previousSibling previousSibling.
 
-        return $aChild;
+        return $child;
     }
 
     /**
@@ -1867,9 +1948,9 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @see https://dom.spec.whatwg.org/#dom-node-nodevalue
      *
-     * @param string $aNewValue The node's new value.
+     * @param string $newValue The node's new value.
      */
-    abstract protected function setNodeValue($aNewValue);
+    abstract protected function setNodeValue($newValue);
 
     /**
      * Sets the nodes text content.
@@ -1878,7 +1959,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @see https://dom.spec.whatwg.org/#dom-node-textcontent
      *
-     * @param string|null $aNewValue The new text to be inserted into the node.
+     * @param string|null $newValue The new text to be inserted into the node.
      */
-    abstract protected function setTextContent($aNewValue);
+    abstract protected function setTextContent($newValue);
 }

@@ -3,11 +3,11 @@ namespace Rowbot\DOM;
 
 class CDATASection extends Text
 {
-    public function __construct($aData)
+    public function __construct($data)
     {
-        parent::__construct($aData);
+        parent::__construct($data);
 
-        $this->mNodeType = self::CDATA_SECTION_NODE;
+        $this->nodeType = self::CDATA_SECTION_NODE;
     }
 
     /**

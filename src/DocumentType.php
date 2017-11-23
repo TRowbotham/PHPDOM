@@ -9,43 +9,32 @@ class DocumentType extends Node
 {
     use ChildNode;
 
-    private $mName;
-    private $mPublicId;
-    private $mSystemId;
+    private $name;
+    private $publicId;
+    private $systemId;
 
-    public function __construct($aName, $aPublicId = '', $aSystemId = '')
+    public function __construct($name, $publicId = '', $systemId = '')
     {
         parent::__construct();
 
-        $this->mName = $aName;
-        $this->mNodeType = self::DOCUMENT_TYPE_NODE;
-        $this->mPublicId = $aPublicId;
-        $this->mSystemId = $aSystemId;
+        $this->name = $name;
+        $this->nodeType = self::DOCUMENT_TYPE_NODE;
+        $this->publicId = $publicId;
+        $this->systemId = $systemId;
     }
 
-    public function __get($aName)
+    public function __get($name)
     {
-        switch ($aName) {
+        switch ($name) {
             case 'name':
-                return $this->mName;
+                return $this->name;
             case 'publicId':
-                return $this->mPublicId;
+                return $this->publicId;
             case 'systemId':
-                return $this->mSystemId;
+                return $this->systemId;
             default:
-                return parent::__get($aName);
+                return parent::__get($name);
         }
-    }
-
-    public function toHTML()
-    {
-        $html = '<!DOCTYPE';
-        $html .= ($this->mName ? ' ' . $this->mName  : '');
-        $html .= ($this->mPublicId ? ' ' . $this->mPublicId : '');
-        $html .= ($this->mSystemId ? ' ' . $this->mSystemId : '');
-        $html .= '>';
-
-        return $html;
     }
 
     /**
@@ -69,7 +58,7 @@ class DocumentType extends Node
      */
     protected function getNodeName()
     {
-        return $this->mName;
+        return $this->name;
     }
 
     /**
@@ -91,7 +80,7 @@ class DocumentType extends Node
     /**
      * @see Node::setNodeValue
      */
-    protected function setNodeValue($aNewValue)
+    protected function setNodeValue($newValue)
     {
         // Do nothing.
     }
@@ -99,7 +88,7 @@ class DocumentType extends Node
     /**
      * @see Node::setTextContent
      */
-    protected function setTextContent($aNewValue)
+    protected function setTextContent($newValue)
     {
         // Do nothing.
     }

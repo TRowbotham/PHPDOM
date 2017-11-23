@@ -3,68 +3,68 @@ namespace Rowbot\DOM\Event;
 
 class Listener
 {
-    private $mType;
-    private $mCallback;
-    private $mCapture;
-    private $mPassive;
-    private $mOnce;
-    private $mRemoved;
+    private $type;
+    private $callback;
+    private $capture;
+    private $passive;
+    private $once;
+    private $removed;
 
     public function __construct(
-        $aType,
-        $aCallback,
-        $aCapture,
-        $aOnce = false,
-        $aPassive = false
+        $type,
+        $callback,
+        $capture,
+        $once = false,
+        $passive = false
     ) {
-        $this->mType = $aType;
-        $this->mCallback = $aCallback;
-        $this->mCapture = $aCapture;
-        $this->mOnce = $aOnce;
-        $this->mPassive = $aPassive;
-        $this->mRemoved = false;
+        $this->type = $type;
+        $this->callback = $callback;
+        $this->capture = $capture;
+        $this->once = $once;
+        $this->passive = $passive;
+        $this->removed = false;
     }
 
     public function getType()
     {
-        return $this->mType;
+        return $this->type;
     }
 
     public function getCallback()
     {
-        return $this->mCallback;
+        return $this->callback;
     }
 
     public function getCapture()
     {
-        return $this->mCapture;
+        return $this->capture;
     }
 
     public function getPassive()
     {
-        return $this->mPassive;
+        return $this->passive;
     }
 
     public function getOnce()
     {
-        return $this->mOnce;
+        return $this->once;
     }
 
     public function getRemoved()
     {
-        return $this->mRemoved;
+        return $this->removed;
     }
 
-    public function setRemoved($aRemoved)
+    public function setRemoved($removed)
     {
-        $this->mRemoved = $aRemoved;
+        $this->removed = $removed;
     }
 
-    public function isEqual($aOther)
+    public function isEqual($other)
     {
-        if ($aOther->mType === $this->mType &&
-            $aOther->mCallback === $this->mCallback &&
-            $aOther->mCapture === $this->mCapture
+        if ($other->type === $this->type
+            && $other->callback === $this->callback
+            && $other->capture === $this->capture
         ) {
             return true;
         }

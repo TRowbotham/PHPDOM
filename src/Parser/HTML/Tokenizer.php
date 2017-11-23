@@ -3274,38 +3274,7 @@ class Tokenizer
         $this->lastEmittedStartTagToken = $aToken;
     }
 
-    protected function emit(...$aTokens)
-    {
-        if ($aTokens[0] instanceof StartTagToken) {
-            $this->lastEmittedStartTagToken = $aTokens[0];
-        } elseif ($aTokens[0] instanceof EndTagToken) {
-            // When an end tag token is emitted with attributes, that is a
-            // parse error.
-            if (!$aTokens[0]->attributes->isEmpty()) {
-                // Parse error.
-            }
-
-            // When an end tag token is emitted with its self-closing flag
-            // set, that is a parse error.
-            if ($aTokens[0]->isSelfClosing()) {
-                // Parse error.
-            }
-        }
-
-        // Yield the tokens
-        yield $aTokens;
-
-        // When a start tag token is emitted with its self-closing flag set, if
-        // the flag is not acknowledged when it is processed by the tree
-        // construction stage, that is a parse error.
-        if ($aTokens[0] instanceof StartTagToken &&
-            !$aTokens[0]->wasAcknowledged()
-        ) {
-            // Parse error.
-        }
-    }
-
-    private function flush($codepoints, AttributeToken $token, $returnState)
+    private function flush($codepoints, ?AttributeToken $token, $returnState)
     {
         switch ($returnState) {
             case TokenizerState::ATTRIBUTE_VALUE_DOUBLE_QUOTED:

@@ -1,7 +1,7 @@
 <?php
 namespace Rowbot\DOM\Support;
 
-interface Stringifier
+interface Stringable
 {
     public function toString();
     public function __toString();

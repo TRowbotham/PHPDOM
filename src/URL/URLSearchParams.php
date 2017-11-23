@@ -46,11 +46,6 @@ class URLSearchParams implements IteratorAggregate
         }
     }
 
-    public function __destruct()
-    {
-        $this->mUrl = null;
-    }
-
     /**
      * Returns all name-value pairs stringified in the correct order.
      *

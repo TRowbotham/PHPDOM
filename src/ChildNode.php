@@ -19,7 +19,7 @@ trait ChildNode
      */
     public function after(...$nodes)
     {
-        $parent = $this->mParentNode;
+        $parent = $this->parentNode;
 
         if (!$parent) {
             return;
@@ -49,7 +49,7 @@ trait ChildNode
      */
     public function before(...$nodes)
     {
-        $parent = $this->mParentNode;
+        $parent = $this->parentNode;
 
         if (!$parent) {
             return;
@@ -79,11 +79,11 @@ trait ChildNode
      */
     public function remove()
     {
-        if (!$this->mParentNode) {
+        if (!$this->parentNode) {
             return;
         }
 
-        $this->mParentNode->removeNode($this);
+        $this->parentNode->removeNode($this);
     }
 
     /**
@@ -96,7 +96,7 @@ trait ChildNode
      */
     public function replaceWith(...$nodes)
     {
-        $parent = $this->mParentNode;
+        $parent = $this->parentNode;
 
         if (!$parent) {
             return;
@@ -114,10 +114,11 @@ trait ChildNode
 
         $node = $this->convertNodesToNode($nodes, $this->nodeDocument);
 
-        if ($this->mParentNode === $parent) {
+        if ($this->parentNode === $parent) {
             $parent->replaceNode($node, $this);
-        } else {
-            $parent->preinsertNode($node, $viableNextSibling);
+            return;
         }
+
+        $parent->preinsertNode($node, $viableNextSibling);
     }
 }

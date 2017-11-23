@@ -3,15 +3,13 @@ namespace Rowbot\DOM;
 
 // https://developer.mozilla.org/en-US/docs/Web/API/Comment
 // https://dom.spec.whatwg.org/#comment
-class Comment extends CharacterData {
-    public function __construct($aData = '') {
-        parent::__construct(Utils::DOMString($aData));
+class Comment extends CharacterData
+{
+    public function __construct($data = '')
+    {
+        parent::__construct(Utils::DOMString($data));
 
-        $this->mNodeType = Node::COMMENT_NODE;
-    }
-
-    public function toHTML() {
-        return '<!-- ' . $this->mData . ' -->';
+        $this->nodeType = Node::COMMENT_NODE;
     }
 
     /**

@@ -14,25 +14,19 @@ class DocumentFragment extends Node
     use NonElementParentNode;
     use ParentNode;
 
-    protected $mHost;
+    protected $host;
 
     public function __construct()
     {
         parent::__construct();
 
-        $this->mHost = null;
-        $this->mNodeType = Node::DOCUMENT_FRAGMENT_NODE;
+        $this->host = null;
+        $this->nodeType = Node::DOCUMENT_FRAGMENT_NODE;
     }
 
-    public function __destruct()
+    public function __get($name)
     {
-        $this->mHost = null;
-        parent::__destruct();
-    }
-
-    public function __get($aName)
-    {
-        switch ($aName) {
+        switch ($name) {
             case 'childElementCount':
                 return $this->getChildElementCount();
 
@@ -46,7 +40,7 @@ class DocumentFragment extends Node
                 return $this->getLastElementChild();
 
             default:
-                return parent::__get($aName);
+                return parent::__get($name);
         }
     }
 
@@ -59,7 +53,7 @@ class DocumentFragment extends Node
      */
     public function getHost()
     {
-        return $this->mHost;
+        return $this->host;
     }
 
     /**
@@ -69,12 +63,12 @@ class DocumentFragment extends Node
      *
      * @see https://dom.spec.whatwg.org/#concept-documentfragment-host
      *
-     * @param Element|null $aHost The element that is hosting the
+     * @param Element|null $host The element that is hosting the
      *     DocumentFragment such as a template element or shadow root.
      */
-    public function setHost(Element $aHost = null)
+    public function setHost(Element $host = null)
     {
-        $this->mHost = $aHost;
+        $this->host = $host;
     }
 
     /**
@@ -89,7 +83,7 @@ class DocumentFragment extends Node
      */
     public function getLength()
     {
-        return count($this->mChildNodes);
+        return count($this->childNodes);
     }
 
     /**
@@ -126,7 +120,7 @@ class DocumentFragment extends Node
     /**
      * @see Node::setNodeValue
      */
-    protected function setNodeValue($aNewValue)
+    protected function setNodeValue($newValue)
     {
         // Do nothing.
     }
@@ -134,16 +128,16 @@ class DocumentFragment extends Node
     /**
      * @see Node::setTextContent
      */
-    protected function setTextContent($aNewValue)
+    protected function setTextContent($newValue)
     {
         $node = null;
-        $newValue = Utils::DOMString($aNewValue, true);
+        $newValue = Utils::DOMString($newValue, true);
 
         if ($newValue !== '') {
             $node = new Text($newValue);
             $node->nodeDocument = $this->nodeDocument;
         }
 
-        $this->_replaceAll($node);
+        $this->replaceAllNodes($node);
     }
 }

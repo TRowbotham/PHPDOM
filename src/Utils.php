@@ -10,42 +10,42 @@ class Utils
      * should be a UTF-16 encoded string, however, we intentionally skip this at
      * the present time.
      *
-     * @param mixed $aValue A variable to be converted to a string.
+     * @param mixed $value A variable to be converted to a string.
      *
-     * @param bool $aTreatNullAsEmptyString Whether or not a null value should
+     * @param bool $treatNullAsEmptyString Whether or not a null value should
      *    be represented as an empty string or represented as the literal string
      *    "null".
      *
-     * @param bool $aNullable If true, null is an accepted value and it will
+     * @param bool $nullable If true, null is an accepted value and it will
      *     return null instead of a string and it will take precedence
-     *     over the $aTreatNullAsEmptyString argument.
+     *     over the $treatNullAsEmptyString argument.
      *
      * @return mixed
      */
     public static function DOMString(
-        $aValue,
-        $aTreatNullAsEmptyString = false,
-        $aNullable = false
+        $value,
+        $treatNullAsEmptyString = false,
+        $nullable = false
     ) {
-        if (is_string($aValue)) {
-            return $aValue;
-        } elseif (is_bool($aValue)) {
-            return $aValue ? 'true' : 'false';
-        } elseif ($aValue === null) {
-            if ($aNullable) {
+        if (is_string($value)) {
+            return $value;
+        } elseif (is_bool($value)) {
+            return $value ? 'true' : 'false';
+        } elseif ($value === null) {
+            if ($nullable) {
                 return null;
-            } elseif ($aTreatNullAsEmptyString) {
+            } elseif ($treatNullAsEmptyString) {
                 return '';
             } else {
                 return 'null';
             }
-        } elseif (is_scalar($aValue)) {
-            return (string) $aValue;
-        } elseif (is_object($aValue)) {
-            if (method_exists($aValue, '__toString')) {
-                return (string) $aValue;
+        } elseif (is_scalar($value)) {
+            return (string) $value;
+        } elseif (is_object($value)) {
+            if (method_exists($value, '__toString')) {
+                return (string) $value;
             } else {
-                return '[object ' . get_class($aValue) . ']';
+                return '[object ' . get_class($value) . ']';
             }
         }
 
@@ -58,17 +58,17 @@ class Utils
      *
      * @see https://dom.spec.whatwg.org/#converted-to-ascii-uppercase
      *
-     * @param string $aValue A string.
+     * @param string $value A string.
      *
      * @return string
      */
-    public static function toASCIILowercase($aValue)
+    public static function toASCIILowercase($value)
     {
-        $len = mb_strlen($aValue);
+        $len = mb_strlen($value);
         $output = '';
 
         for ($i = 0; $i < $len; $i++) {
-            $codePoint = mb_substr($aValue, $i, 1);
+            $codePoint = mb_substr($value, $i, 1);
 
             if ($codePoint >= "\x41" && $codePoint <= "\x5A") {
                 $output .= mb_strtolower($codePoint);
@@ -86,17 +86,17 @@ class Utils
      *
      * @see https://dom.spec.whatwg.org/#converted-to-ascii-lowercase
      *
-     * @param string $aValue A string.
+     * @param string $value A string.
      *
      * @return string
      */
-    public static function toASCIIUppercase($aValue)
+    public static function toASCIIUppercase($value)
     {
-        $len = mb_strlen($aValue);
+        $len = mb_strlen($value);
         $output = '';
 
         for ($i = 0; $i < $len; $i++) {
-            $codePoint = mb_substr($aValue, $i, 1);
+            $codePoint = mb_substr($value, $i, 1);
 
             if ($codePoint >= "\x61" && $codePoint <= "\x7A") {
                 $output .= mb_strtoupper($codePoint);
@@ -108,9 +108,9 @@ class Utils
         return $output;
     }
 
-    public static function unsignedLong($aOffset)
+    public static function unsignedLong($offset)
     {
-        $normalizedOffset = ((int) $aOffset) % pow(2, 32);
+        $normalizedOffset = ((int) $offset) % pow(2, 32);
 
         if ($normalizedOffset < 0) {
             $normalizedOffset += pow(2, 32);
@@ -119,68 +119,68 @@ class Utils
         return $normalizedOffset;
     }
 
-    public static function intAsString($aValue)
+    public static function intAsString($value)
     {
-        if (is_string($aValue) && is_int(intval($aValue))) {
-            return $aValue;
-        } elseif (is_int($aValue)) {
-            return (string)$aValue;
+        if (is_string($value) && is_int(intval($value))) {
+            return $value;
+        } elseif (is_int($value)) {
+            return (string)$value;
         } else {
             return false;
         }
     }
 
-    public static function toInt($aValue)
+    public static function toInt($value)
     {
-        if (is_string($aValue) && is_int($temp = intval($aValue))) {
+        if (is_string($value) && is_int($temp = intval($value))) {
             return $temp;
-        } elseif (is_int($aValue)) {
-            return $aValue;
+        } elseif (is_int($value)) {
+            return $value;
         } else {
             return false;
         }
     }
 
-    public static function parseFloatingPointNumber($aInput)
+    public static function parseFloatingPointNumber($input)
     {
         $position = 0;
         $value = 1;
         $divisor = 1;
         $exponent = 1;
-        $length = strlen($aInput);
+        $length = strlen($input);
 
-        self::collectCodePointSequence($aInput, $position, '/\s/');
+        self::collectCodePointSequence($input, $position, '/\s/');
 
         if ($position >= $length) {
             return false;
         }
 
-        if ($aInput[$position] == '-') {
+        if ($input[$position] == '-') {
             $value = -1;
             $divisor = -1;
 
             if (++$position >= $length) {
                 return false;
             }
-        } elseif ($aInput[$position] == '+') {
+        } elseif ($input[$position] == '+') {
             if (++$position >= $length) {
                 return false;
             }
         }
 
-        if ($aInput[$position] == '.' && ($position + 1) < ($length - 1) &&
-            preg_match('/\d/', $aInput[$position + 1])) {
+        if ($input[$position] == '.' && ($position + 1) < ($length - 1) &&
+            preg_match('/\d/', $input[$position + 1])) {
             $value = 0;
             goto Fraction;
         }
 
-        if (!preg_match('/\d/', $aInput[$position])) {
+        if (!preg_match('/\d/', $input[$position])) {
             return false;
         }
 
         $value *= intval(
             self::collectCodePointSequence(
-                $aInput,
+                $input,
                 $position,
                 '/\d/'
             )
@@ -191,7 +191,7 @@ class Utils
         }
 
         Fraction:
-        if ($aInput[$position] == '.') {
+        if ($input[$position] == '.') {
             // TODO: Finish
         }
 
@@ -201,40 +201,40 @@ class Utils
     /**
      * @see https://html.spec.whatwg.org/#rules-for-parsing-integers
      *
-     * @param  [type] $aInput [description]
+     * @param  [type] $input [description]
      * @return [type]         [description]
      */
-    public static function parseSignedInt($aInput)
+    public static function parseSignedInt($input)
     {
         $position = 0;
         $sign = 'positive';
-        $length = strlen($aInput);
+        $length = strlen($input);
 
-        self::collectCodePointSequence($aInput, $position, '/\s/');
+        self::collectCodePointSequence($input, $position, '/\s/');
 
         if ($position >= $length) {
             return false;
         }
 
-        if ($aInput[$position] == '-') {
+        if ($input[$position] == '-') {
             $sign = 'negative';
 
             if (++$position >= $length) {
                 return false;
             }
-        } elseif ($aInput[$position] == '+') {
+        } elseif ($input[$position] == '+') {
             if (++$position >= $length) {
                 return false;
             }
         }
 
-        if (!preg_match('/\d/', $aInput[$position])) {
+        if (!preg_match('/\d/', $input[$position])) {
             return false;
         }
 
         $value = intval(
             self::collectCodePointSequence(
-                $aInput,
+                $input,
                 $position,
                 '/\d/'
             ),
@@ -246,12 +246,12 @@ class Utils
 
     /**
      * @see https://html.spec.whatwg.org/#rules-for-parsing-non-negative-integers
-     * @param  [type] $aInput [description]
+     * @param  [type] $input [description]
      * @return [type]         [description]
      */
-    public static function parseNonNegativeInt($aInput)
+    public static function parseNonNegativeInt($input)
     {
-        $value = self::parseSignedInt($aInput);
+        $value = self::parseSignedInt($input);
 
         if ($value === false) {
             return false;
@@ -270,26 +270,26 @@ class Utils
      *
      * @see https://dom.spec.whatwg.org/#concept-ordered-set-parser
      *
-     * @param string $aInput A space delimited string of tokens to be parsed.
+     * @param string $input A space delimited string of tokens to be parsed.
      *
      * @return string[] Array containing the parsed tokens.
      */
-    public static function parseOrderedSet($aInput)
+    public static function parseOrderedSet($input)
     {
         $position = 0;
         $tokens = [];
-        $length = mb_strlen($aInput);
+        $length = mb_strlen($input);
 
-        self::collectCodePointSequence($aInput, $position, '/\s/');
+        self::collectCodePointSequence($input, $position, '/\s/');
 
         while ($position < $length) {
-            $token = self::collectCodePointSequence($aInput, $position, '/\S/');
+            $token = self::collectCodePointSequence($input, $position, '/\S/');
 
             if (!isset($tokens[$token])) {
                 $tokens[$token] = 1;
             }
 
-            self::collectCodePointSequence($aInput, $position, '/\s/');
+            self::collectCodePointSequence($input, $position, '/\s/');
         }
 
         return array_keys($tokens);
@@ -300,32 +300,32 @@ class Utils
      *
      * @see https://dom.spec.whatwg.org/#collect-a-code-point-sequence
      *
-     * @param string $aInput String of tokens to be parsed.
+     * @param string $input String of tokens to be parsed.
      *
-     * @param int &$aPosition Current position in the token string.
+     * @param int &$position Current position in the token string.
      *
-     * @param string $aPattern A regular expresion representing a set of
+     * @param string $pattern A regular expresion representing a set of
      *     characers that should be collected.
      *
      * @return string Concatenated list of characters.
      */
     public static function collectCodePointSequence(
-        $aInput,
-        &$aPosition,
-        $aPattern
+        $input,
+        &$position,
+        $pattern
     ) {
         $result = '';
-        $length = mb_strlen($aInput);
+        $length = mb_strlen($input);
 
-        while ($aPosition < $length) {
-            $c = mb_substr($aInput, $aPosition, 1);
+        while ($position < $length) {
+            $c = mb_substr($input, $position, 1);
 
-            if (!preg_match($aPattern, $c)) {
+            if (!preg_match($pattern, $c)) {
                 break;
             }
 
             $result .= $c;
-            $aPosition++;
+            $position++;
         }
 
         return $result;
@@ -333,19 +333,19 @@ class Utils
 
     /**
      * @see https://html.spec.whatwg.org/multipage/infrastructure.html#strictly-split-a-string
-     * @param  string   $aInput     [description]
-     * @param  string   $aDelimiter [description]
+     * @param  string   $input     [description]
+     * @param  string   $delimiter [description]
      * @return string[]             [description]
      */
-    public function strictlySplitString($aInput, $aDelimiter)
+    public function strictlySplitString($input, $delimiter)
     {
         $position = 0;
         $tokens = [];
-        $length = mb_strlen($aInput);
+        $length = mb_strlen($input);
 
         while ($position < $length) {
             $token = self::collectCodePointSequence(
-                $aInput,
+                $input,
                 $position,
                 '/[^\x20]/'
             );
@@ -366,17 +366,17 @@ class Utils
      *
      * @see https://dom.spec.whatwg.org/#concept-ordered-set-serializer
      *
-     * @param string[] $aSet An ordered set of tokens.
+     * @param string[] $set An ordered set of tokens.
      *
      * @return string Concatenated string of tokens.
      */
-    public static function serializeOrderedSet($aSet, $aIsAssoc = false)
+    public static function serializeOrderedSet($set, $isAssoc = false)
     {
-        if ($aIsAssoc) {
+        if ($isAssoc) {
             $count = 0;
             $set = '';
 
-            foreach ($aSet as $key => $value) {
+            foreach ($set as $key => $value) {
                 if ($count++ != 0) {
                     $set .= "\x20";
                 }
@@ -387,7 +387,7 @@ class Utils
             return $set;
         }
 
-        return implode("\x20", $aSet);
+        return implode("\x20", $set);
     }
 
     /**
@@ -402,8 +402,8 @@ class Utils
         while (true) {
             $root = $objectA->getRootNode();
 
-            if (!$root instanceof ShadowRoot ||
-                $root->isShadowIncludingInclusiveAncestorOf($objectB)
+            if (!$root instanceof ShadowRoot
+                || $root->isShadowIncludingInclusiveAncestorOf($objectB)
             ) {
                 return $objectA;
             }

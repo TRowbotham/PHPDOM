@@ -17,7 +17,7 @@ class ActiveFormattingElementStack extends ObjectStack
     {
         $count = 0;
 
-        for ($i = count($this->collection) - 1; $i >= 0; $i--) {
+        for ($i = $this->size - 1; $i >= 0; $i--) {
             if ($this->collection[$i] instanceof Marker) {
                 break;
             }
@@ -85,9 +85,9 @@ class ActiveFormattingElementStack extends ObjectStack
      */
     public function clearUpToLastMarker()
     {
-        $count = $this->count();
+        $size = $this->size;
 
-        while ($count--) {
+        while ($size--) {
             if (parent::pop() instanceof Marker) {
                 break;
             }

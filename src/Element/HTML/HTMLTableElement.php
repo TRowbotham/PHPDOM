@@ -35,11 +35,6 @@ use Rowbot\DOM\Exception\IndexSizeError;
  *     HierarchyRequestError if the given value is not null or
  *     HTMLTableSectionElement with a tagName of TFOOT.
  *
- * @property bool $sortable Upon getting, returns true if the table can be
- *     sorted and false otherwise. Upon setting, if the value is true, it
- *     indicates that the table can be sorted, and false (the default value)
- *     indicates that it cannot be sorted.
- *
  * @property-read HTMLTableRowElement[] $rows Returns a list of all the <tr>
  *     elements, in order, that are in the table.
  *
@@ -48,18 +43,16 @@ use Rowbot\DOM\Exception\IndexSizeError;
  */
 class HTMLTableElement extends HTMLElement
 {
-    private $mSortable;
+    private $sortable;
 
     protected function __construct()
     {
         parent::__construct();
-
-        $this->mSortable = false;
     }
 
-    public function __get($aName)
+    public function __get($name)
     {
-        switch ($aName) {
+        switch ($name) {
             case 'caption':
                 $caption = $this->shallowGetElementsByTagName('caption');
 
@@ -77,11 +70,11 @@ class HTMLTableElement extends HTMLElement
                     );
                 }
 
-                foreach ($this->mChildNodes as $node) {
+                foreach ($this->childNodes as $node) {
                     if ($node instanceof HTMLTableRowElement) {
                         $collection[] = $node;
-                    } elseif ($node instanceof HTMLTableSectionElement &&
-                        strcmp($node->tagName, 'TBODY') == 0
+                    } elseif ($node instanceof HTMLTableSectionElement
+                        && $node->tagName === 'TBODY'
                     ) {
                         $collection = array_merge(
                             $collection,
@@ -112,17 +105,14 @@ class HTMLTableElement extends HTMLElement
 
                 return count($thead) ? $thead[0] : null;
 
-            case 'sortable':
-                return $this->mSortable;
-
             default:
-                return parent::__get($aName);
+                return parent::__get($name);
         }
     }
 
-    public function __set($aName, $aValue)
+    public function __set($name, $value)
     {
-        switch ($aName) {
+        switch ($name) {
             case 'caption':
                 $caption = $this->shallowGetElementsByTagName('caption');
 
@@ -130,18 +120,18 @@ class HTMLTableElement extends HTMLElement
                     $caption->remove();
                 }
 
-                if ($aValue !== null &&
-                    $aValue instanceof HTMLTableCaptionElement
+                if ($value !== null
+                    && $value instanceof HTMLTableCaptionElement
                 ) {
-                    $this->insertBefore($aValue, $this->mChildNodes->first());
+                    $this->insertBefore($value, $this->childNodes->first());
                 }
 
                 break;
 
             case 'tFoot':
-                $isValid = $aValue === null ||
-                    ($aValue instanceof HTMLTableSectionElement &&
-                    strcmp($aValue->tagName, 'TFOOT') == 0);
+                $isValid = $value === null
+                    || ($value instanceof HTMLTableSectionElement
+                        && $value->tagName === 'TFOOT');
 
                 if (!$isValid) {
                     throw new HierarchyRequestError();
@@ -153,25 +143,25 @@ class HTMLTableElement extends HTMLElement
                     $tFoot[0]->remove();
                 }
 
-                if ($aValue !== null) {
-                    foreach ($this->mChildNodes as $node) {
-                        if (!($node instanceof HTMLTableCaptionElement) &&
-                            !($node instanceof HTMLTableColElement) &&
-                            strcmp($node->tagName, 'THEAD') !== 0
+                if ($value !== null) {
+                    foreach ($this->childNodes as $node) {
+                        if (!($node instanceof HTMLTableCaptionElement)
+                            && !($node instanceof HTMLTableColElement)
+                            && $node->tagName === 'THEAD'
                         ) {
                             break;
                         }
                     }
 
-                    $tfoot->insertBefore($aValue, $node);
+                    $tfoot->insertBefore($value, $node);
                 }
 
                 break;
 
             case 'tHead':
-                $isValid = $aValue === null ||
-                    ($aValue instanceof HTMLTableSectionElement &&
-                    strcmp($aValue->tagName, 'THEAD') == 0);
+                $isValid = $value === null
+                    || ($value instanceof HTMLTableSectionElement
+                        && $value->tagName === 'THEAD');
 
                 if (!$isValid) {
                     throw new HierarchyRequestError();
@@ -183,27 +173,22 @@ class HTMLTableElement extends HTMLElement
                     $thead[0]->remove();
                 }
 
-                if ($aValue !== null) {
-                    foreach ($this->mChildNodes as $node) {
-                        if (!($node instanceof HTMLTableCaptionElement) &&
-                            !($node instanceof HTMLTableColElement)
+                if ($value !== null) {
+                    foreach ($this->childNodes as $node) {
+                        if (!($node instanceof HTMLTableCaptionElement)
+                            && !($node instanceof HTMLTableColElement)
                         ) {
                             break;
                         }
                     }
 
-                    $thead->insertBefore($aValue, $node);
+                    $thead->insertBefore($value, $node);
                 }
 
                 break;
 
-            case 'sortable':
-                $this->mSortable = (bool)$aValue;
-
-                break;
-
             default:
-                parent::__set($aName, $aValue);
+                parent::__set($name, $value);
         }
     }
 
@@ -218,7 +203,7 @@ class HTMLTableElement extends HTMLElement
     {
         return $this->createTableChildElement(
             'caption',
-            $this->mChildNodes->first()
+            $this->childNodes->first()
         );
     }
 
@@ -240,9 +225,9 @@ class HTMLTableElement extends HTMLElement
      */
     public function createTHead()
     {
-        foreach ($this->mChildNodes as $node) {
-            if (!($node instanceof HTMLTableCaptionElement) &&
-                !($node instanceof HTMLTableColElement)
+        foreach ($this->childNodes as $node) {
+            if (!($node instanceof HTMLTableCaptionElement)
+                && !($node instanceof HTMLTableColElement)
             ) {
                 break;
             }
@@ -260,18 +245,19 @@ class HTMLTableElement extends HTMLElement
     }
 
     /**
-     * Returns the first tfoot element in the table, if one exists.  Otherwise, it creates a new HTMLTableSectionElement
-     * and inserts it before the first element that is not a caption, colgroup, or thead element in the table and returns
-     * the newly created tfoot element.
+     * Returns the first tfoot element in the table, if one exists.  Otherwise,
+     * it creates a new HTMLTableSectionElement and inserts it before the first
+     * element that is not a caption, colgroup, or thead element in the table
+     * and returns the newly created tfoot element.
      *
      * @return HTMLTableSectionElement
      */
     public function createTFoot()
     {
-        foreach ($this->mChildNodes as $node) {
-            if (!($node instanceof HTMLTableCaptionElement) &&
-                !($node instanceof HTMLTableColElement) &&
-                strcmp($node->tagName, 'THEAD') !== 0
+        foreach ($this->childNodes as $node) {
+            if (!($node instanceof HTMLTableCaptionElement)
+                && !($node instanceof HTMLTableColElement)
+                && $node->tagName !== 'THEAD'
             ) {
                 break;
             }
@@ -312,20 +298,20 @@ class HTMLTableElement extends HTMLElement
      * tr element at the specified location.  It returns the newly created tr
      * element.
      *
-     * @param integer $aIndex Optional.  A value of -1, which is the default, is
+     * @param integer $index Optional.  A value of -1, which is the default, is
      *     equvilant to appending the new row to the end of the table.
      *
      * @return HTMLTableRowElement
      *
-     * @throws IndexSizeError   If $aIndex is < -1 or > the number of rows in
+     * @throws IndexSizeError   If $index is < -1 or > the number of rows in
      *     the table.
      */
-    public function insertRow($aIndex = -1)
+    public function insertRow($index = -1)
     {
         $rows = $this->rows;
         $numRows = count($rows);
 
-        if ($aIndex < -1 || $aIndex > $numRows) {
+        if ($index < -1 || $index > $numRows) {
             throw new IndexSizeError();
         }
 
@@ -342,10 +328,10 @@ class HTMLTableElement extends HTMLElement
             } else {
                 $tbodies[$numTbodies - 1]->appendChild($tr);
             }
-        } elseif ($aIndex == -1 || $aIndex == $numRows) {
+        } elseif ($index == -1 || $index == $numRows) {
             $rows[$numRows - 1]->parentNode->appendChild($tr);
         } else {
-            $rows[$aIndex]->before($tr);
+            $rows[$index]->before($tr);
         }
 
         return $tr;
@@ -354,17 +340,16 @@ class HTMLTableElement extends HTMLElement
     /**
      * Removes the tr element at the given position.
      *
-     * @param int $aIndex The indexed position of the tr element to remove.  A
+     * @param int $index The indexed position of the tr element to remove.  A
      *    value of -1 will remove the last tr element in the table.
      *
-     * @throws IndexSizeError If $aIndex < -1 or >= the number of tr elements in
+     * @throws IndexSizeError If $index < -1 or >= the number of tr elements in
      *     the table.
      */
-    public function deleteRow($aIndex)
+    public function deleteRow($index)
     {
         $rows = $this->rows;
         $numRows = count($rows);
-        $index = $aIndex;
 
         if ($index == -1) {
             $index = $numRows - 1;
@@ -375,16 +360,7 @@ class HTMLTableElement extends HTMLElement
             return;
         }
 
-        $rows[$aIndex]->remove();
-    }
-
-    /**
-     * Removes the sorted attribute that are causing the table to automatically
-     * sort its contents.
-     */
-    public function stopSorting()
-    {
-        // TODO
+        $rows[$index]->remove();
     }
 
     /**
@@ -392,20 +368,20 @@ class HTMLTableElement extends HTMLElement
      * exist, create a new element of the specified type, and insert it before
      * the specified element.  Then return the newely created element.
      *
-     * @param string $aElement The tag name of the element to check against.
+     * @param string $element The tag name of the element to check against.
      *
-     * @param HTMLElement $aInsertBefore The element to insert against.  Null
+     * @param HTMLElement $insertBefore The element to insert against.  Null
      *     will append the element to the end of the table.
      *
      * @return HTMLElement
      */
-    private function createTableChildElement($aElement, $aInsertBefore)
+    private function createTableChildElement($element, $insertBefore)
     {
-        $nodes = $this->shallowGetElementsByTagName($aElement);
+        $nodes = $this->shallowGetElementsByTagName($element);
 
         if (!isset($nodes[0])) {
-            $node = $this->nodeDocument->createElement($aElement);
-            $this->insertBefore($node, $aInsertBefore);
+            $node = $this->nodeDocument->createElement($element);
+            $this->insertBefore($node, $insertBefore);
         } else {
             $node = $nodes[0];
         }
@@ -416,11 +392,11 @@ class HTMLTableElement extends HTMLElement
     /**
      * Removes the first specified element found, if any.
      *
-     * @param  string $aElement The tag name of the element to remove.
+     * @param  string $element The tag name of the element to remove.
      */
-    private function deleteTableChildElement($aElement)
+    private function deleteTableChildElement($element)
     {
-        $node = $this->shallowGetElementsByTagName($aElement);
+        $node = $this->shallowGetElementsByTagName($element);
 
         if (isset($node[0])) {
             $node->remove();

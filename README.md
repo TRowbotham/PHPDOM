@@ -29,5 +29,5 @@ $a->href = "http://www.example.com/";
 $doc->body->appendChild($a);
 
 // Convert the DOM tree into a HTML string
-echo $doc->toHTML();
+echo $doc->toString();
 ```

@@ -8,7 +8,7 @@ use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Exception\InvalidCharacterError;
 use Rowbot\DOM\Exception\SyntaxError;
 use Rowbot\DOM\Support\OrderedSet;
-use Rowbot\DOM\Support\Stringifier;
+use Rowbot\DOM\Support\Stringable;
 
 /**
  * @see https://dom.spec.whatwg.org/#interface-domtokenlist
@@ -22,7 +22,7 @@ class DOMTokenList implements
     AttributeChangeObserver,
     Countable,
     Iterator,
-    Stringifier
+    Stringable
 {
     protected $attrLocalName;
     protected $element;
@@ -48,12 +48,6 @@ class DOMTokenList implements
             $value,
             null
         );
-    }
-
-    public function __destruct()
-    {
-        $this->element = null;
-        $this->tokens = null;
     }
 
     public function __get($name)
@@ -122,6 +116,8 @@ class DOMTokenList implements
             }
         }
 
+        unset($token);
+
         foreach ($tokens as $token) {
             $this->tokens->append($token);
         }
@@ -176,6 +172,8 @@ class DOMTokenList implements
                 return;
             }
         }
+
+        unset($token);
 
         foreach ($tokens as $token) {
             $this->tokens->remove($token);

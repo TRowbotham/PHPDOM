@@ -5,12 +5,8 @@ use Rowbot\DOM\Parser\XML\XMLParser;
 
 class XMLSerializer
 {
-    public function __construct()
+    public function serializeToString(Node $root)
     {
-    }
-
-    public function serializeToString(Node $aRoot)
-    {
-        return XMLParser::serializeAsXML($aRoot, false);
+        return XMLParser::serializeAsXML($root, false);
     }
 }

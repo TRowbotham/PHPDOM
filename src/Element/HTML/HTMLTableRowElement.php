@@ -28,13 +28,13 @@ class HTMLTableRowElement extends HTMLElement
         parent::__construct();
     }
 
-    public function __get($aName)
+    public function __get($name)
     {
-        switch ($aName) {
+        switch ($name) {
             case 'cells':
                 $cells = [];
 
-                foreach ($this->mChildNodes as $cell) {
+                foreach ($this->childNodes as $cell) {
                     if ($cell instanceof HTMLTableCellElement) {
                         $cells[] = $cell;
                     }
@@ -61,9 +61,12 @@ class HTMLTableRowElement extends HTMLElement
                 $tw = new TreeWalker(
                     $parentTable,
                     NodeFilter::SHOW_ELEMENT,
-                    function ($aNode) {
-                        return $aNode instanceof HTMLTableRowElement ?
-                            NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
+                    function ($node) {
+                        if ($node instanceof HTMLTableRowElement) {
+                            return NodeFilter::FILTER_ACCEPT;
+                        }
+
+                        return NodeFilter::FILTER_SKIP;
                     }
                 );
 
@@ -88,9 +91,12 @@ class HTMLTableRowElement extends HTMLElement
                 $tw = new TreeWalker(
                     $parent,
                     NodeFilter::SHOW_ELEMENT,
-                    function ($aNode) {
-                        return $aNode instanceof HTMLTableRowElement ?
-                            NodeFilter::FILTER_ACCEPT : NodeFilter::FILTER_SKIP;
+                    function ($node) {
+                        if ($node instanceof HTMLTableRowElement) {
+                            return NodeFilter::FILTER_ACCEPT;
+                        }
+
+                        return NodeFilter::FILTER_SKIP;
                     }
                 );
 
@@ -105,27 +111,27 @@ class HTMLTableRowElement extends HTMLElement
                 return $count;
 
             default:
-                return parent::__get($aName);
+                return parent::__get($name);
         }
     }
 
     /**
      * Inserts a new cell at the given index.
      *
-     * @param int $aIndex A positive integer of the index position where the
+     * @param int $index A positive integer of the index position where the
      *     cell should be inserted.
      *
      * @return HTMLTableCellElement
      *
-     * @throws IndexSizeError If $aIndex < -1 or >= the number of cells in the
+     * @throws IndexSizeError If $index < -1 or >= the number of cells in the
      *     collection.
      */
-    public function insertCell($aIndex = -1)
+    public function insertCell($index = -1)
     {
         $cells = $this->cells;
         $numCells = count($cells);
 
-        if ($aIndex < -1 || $aIndex > $numCells) {
+        if ($index < -1 || $index > $numCells) {
             throw new IndexSizeError();
         }
 
@@ -135,10 +141,10 @@ class HTMLTableRowElement extends HTMLElement
             Namespaces::HTML
         );
 
-        if ($aIndex == -1 || $aIndex == $numCells) {
+        if ($index == -1 || $index == $numCells) {
             $this->appendChild($td);
         } else {
-            $cells[$aIndex]->before($td);
+            $cells[$index]->before($td);
         }
 
         return $td;
@@ -147,25 +153,25 @@ class HTMLTableRowElement extends HTMLElement
     /**
      * Removes the cell at the given index from its parent.
      *
-     * @param int $aIndex The index of the cell to be removed.
+     * @param int $index The index of the cell to be removed.
      *
-     * @throws IndexSizeError If $aIndex < 0 or >= the number of cells in the
+     * @throws IndexSizeError If $index < 0 or >= the number of cells in the
      *     collection.
      */
-    public function deleteCell($aIndex)
+    public function deleteCell($index)
     {
         $cells = [];
 
-        foreach ($this->mChildNodes as $cell) {
+        foreach ($this->childNodes as $cell) {
             if ($cell instanceof HTMLTableCellElement) {
                 $cells[] = $cell;
             }
         }
 
-        if ($aIndex < 0 || $aIndex >= count($cells)) {
+        if ($index < 0 || $index >= count($cells)) {
             throw new IndexSizeError();
         }
 
-        $cells[$aIndex]->remove();
+        $cells[$index]->remove();
     }
 }

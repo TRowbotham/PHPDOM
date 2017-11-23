@@ -9,53 +9,46 @@ final class NodeIterator
 {
     use NodeFilterUtils;
 
-    private $mFilter;
-    private $mPointerBeforeReferenceNode;
-    private $mReferenceNode;
-    private $mRoot;
-    private $mWhatToShow;
+    private $filter;
+    private $pointerBeforeReferenceNode;
+    private $referenceNode;
+    private $root;
+    private $whatToShow;
 
     public function __construct(
-        Node $aRoot,
-        $aWhatToShow = NodeFilter::SHOW_ALL,
-        $aFilter = null
+        Node $root,
+        $whatToShow = NodeFilter::SHOW_ALL,
+        $filter = null
     ) {
-        $this->mFilter = null;
+        $this->filter = null;
 
-        if ($aFilter instanceof NodeFilter || is_callable($aFilter)) {
-            $this->mFilter = $aFilter;
+        if ($filter instanceof NodeFilter || is_callable($filter)) {
+            $this->filter = $filter;
         }
 
-        $this->mPointerBeforeReferenceNode = true;
-        $this->mReferenceNode = $aRoot;
-        $this->mRoot = $aRoot;
-        $this->mWhatToShow = $aWhatToShow;
+        $this->pointerBeforeReferenceNode = true;
+        $this->referenceNode = $root;
+        $this->root = $root;
+        $this->whatToShow = $whatToShow;
     }
 
-    public function __destruct()
+    public function __get($name)
     {
-        $this->mFilter = null;
-        $this->mReferenceNode = null;
-        $this->mRoot = null;
-    }
-
-    public function __get($aName)
-    {
-        switch ($aName) {
+        switch ($name) {
             case 'filter':
-                return $this->mFilter;
+                return $this->filter;
 
             case 'pointerBeforeReferenceNode':
-                return $this->mPointerBeforeReferenceNode;
+                return $this->pointerBeforeReferenceNode;
 
             case 'referenceNode':
-                return $this->mReferenceNode;
+                return $this->referenceNode;
 
             case 'root':
-                return $this->mRoot;
+                return $this->root;
 
             case 'whatToShow':
-                return $this->mWhatToShow;
+                return $this->whatToShow;
         }
     }
 
@@ -73,18 +66,18 @@ final class NodeIterator
     {
     }
 
-    public function _preremove($aNodeToBeRemoved)
+    public function preremoveNode($nodeToBeRemoved)
     {
-        if (!$aNodeToBeRemoved->contains($this->mReferenceNode)) {
+        if (!$nodeToBeRemoved->contains($this->referenceNode)) {
             return;
         }
 
-        if ($this->mPointerBeforeReferenceNode) {
+        if ($this->pointerBeforeReferenceNode) {
             $iter = new self(
-                $this->mRoot,
+                $this->root,
                 NodeFilter::SHOW_ALL,
-                function ($aNode) use ($aNodeToBeRemoved) {
-                    return !$aNode->isInclusiveDescendantOf($aNodeToBeRemoved)
+                function ($aNode) use ($nodeToBeRemoved) {
+                    return !$aNode->isInclusiveDescendantOf($nodeToBeRemoved)
                         ? NodeFilter::FILTER_ACCEPT
                         : NodeFilter::FILTER_REJECT;
                 }
@@ -92,34 +85,34 @@ final class NodeIterator
             $next = $iter->nextNode();
 
             if ($next) {
-                $this->mReferenceNode = $next;
+                $this->referenceNode = $next;
                 return;
             }
 
-            $this->mPointerBeforeReferenceNode = false;
+            $this->pointerBeforeReferenceNode = false;
         }
 
-        $node = $aNodeToBeRemoved->previousSibling;
+        $node = $nodeToBeRemoved->previousSibling;
 
         if (!$node) {
-            $this->mReferenceNode = $aNodeToBeRemoved->parentNode;
+            $this->referenceNode = $nodeToBeRemoved->parentNode;
             return;
         }
 
         $iter = new self($node);
 
         while ($temp = $iter->nextNode()) {
-            $this->mReferenceNode = $temp;
+            $this->referenceNode = $temp;
         }
     }
 
-    private function traverse($aDirection)
+    private function traverse($direction)
     {
-        $node = $this->mReferenceNode;
-        $beforeNode = $this->mPointerBeforeReferenceNode;
+        $node = $this->referenceNode;
+        $beforeNode = $this->pointerBeforeReferenceNode;
 
         while (true) {
-            switch ($aDirection) {
+            switch ($direction) {
                 case 'next':
                     if (!$beforeNode) {
                         $firstChild = $node->firstChild;
@@ -133,7 +126,7 @@ final class NodeIterator
                         $temp = $node;
 
                         do {
-                            if ($temp === $this->mRoot) {
+                            if ($temp === $this->root) {
                                 break;
                             }
 
@@ -144,7 +137,7 @@ final class NodeIterator
                             }
 
                             $temp = $temp->parentNode;
-                        } while($temp);
+                        } while ($temp);
 
                         $node = $sibling;
 
@@ -169,9 +162,8 @@ final class NodeIterator
                             }
                         }
 
-                        if (
-                            $this->mReferenceNode === $this->mRoot ||
-                            !($node = $node->parentNode)
+                        if ($this->referenceNode === $this->root
+                            || !($node = $node->parentNode)
                         ) {
                             return null;
                         }
@@ -187,8 +179,8 @@ final class NodeIterator
             }
         }
 
-        $this->mReferenceNode = $node;
-        $this->mPointerBeforeReferenceNode = $beforeNode;
+        $this->referenceNode = $node;
+        $this->pointerBeforeReferenceNode = $beforeNode;
 
         return $node;
     }

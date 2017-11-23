@@ -11,9 +11,4 @@ class CustomEventInit extends EventInit
 
         $this->detail = null;
     }
-
-    public function __destruct()
-    {
-        $this->detail = null;
-    }
 }

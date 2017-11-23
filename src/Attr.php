@@ -26,93 +26,89 @@ use Rowbot\DOM\Element\Element;
  *
  * @property-read string $value The value of the attribute.
  */
-class Attr extends Node {
+class Attr extends Node
+{
     /**
      * @var string
      */
-    protected $mLocalName;
+    protected $localName;
 
     /**
      * @var string|null
      */
-    protected $mNamespaceURI;
+    protected $namespaceURI;
 
     /**
      * @var Element|null
      */
-    protected $mOwnerElement;
+    protected $ownerElement;
 
     /**
      * @var string|null
      */
-    protected $mPrefix;
+    protected $prefix;
 
     /**
      * @var string
      */
-    protected $mValue;
+    protected $value;
 
     public function __construct(
-        $aLocalName,
-        $aValue,
-        $aNamespace = null,
-        $aPrefix = null
+        $localName,
+        $value,
+        $namespace = null,
+        $prefix = null
     ) {
         parent::__construct();
 
-        $this->mLocalName = $aLocalName;
-        $this->mNodeType = self::ATTRIBUTE_NODE;
-        $this->mNamespaceURI = $aNamespace;
-        $this->mOwnerElement = null;
-        $this->mPrefix = $aPrefix;
-        $this->mValue = $aValue;
+        $this->localName = $localName;
+        $this->nodeType = self::ATTRIBUTE_NODE;
+        $this->namespaceURI = $namespace;
+        $this->ownerElement = null;
+        $this->prefix = $prefix;
+        $this->value = $value;
     }
 
-    public function __destruct()
+    public function __get($name)
     {
-        $this->mOwnerElement = null;
-    }
-
-    public function __get($aName)
-    {
-        switch ($aName) {
+        switch ($name) {
             case 'localName':
-                return $this->mLocalName;
+                return $this->localName;
 
             case 'name':
-                if ($this->mPrefix) {
-                    return $this->mPrefix . ':' . $this->mLocalName;
+                if ($this->prefix) {
+                    return $this->prefix . ':' . $this->localName;
                 }
 
-                return $this->mLocalName;
+                return $this->localName;
 
             case 'namespaceURI':
-                return $this->mNamespaceURI;
+                return $this->namespaceURI;
 
             case 'ownerElement':
-                return $this->mOwnerElement;
+                return $this->ownerElement;
 
             case 'prefix':
-                return $this->mPrefix;
+                return $this->prefix;
 
             case 'value':
-                return $this->mValue;
+                return $this->value;
 
             default:
-                return parent::__get($aName);
+                return parent::__get($name);
         }
     }
 
-    public function __set($aName, $aValue)
+    public function __set($name, $value)
     {
-        switch ($aName) {
+        switch ($name) {
             case 'value':
-                $this->setExistingAttributeValue(Utils::DOMString($aValue));
+                $this->setExistingAttributeValue(Utils::DOMString($value));
 
                 break;
 
             default:
-                parent::__set($aName, $aValue);
+                parent::__set($name, $value);
         }
     }
 
@@ -121,12 +117,12 @@ class Attr extends Node {
      *
      * @internal
      *
-     * @param Element|null $aElement The Element that this attribute belongs
+     * @param Element|null $element The Element that this attribute belongs
      *     to.
      */
-    public function setOwnerElement(Element $aElement = null)
+    public function setOwnerElement(Element $element = null)
     {
-        $this->mOwnerElement = $aElement;
+        $this->ownerElement = $element;
     }
 
     /**
@@ -135,11 +131,11 @@ class Attr extends Node {
      *
      * @internal
      *
-     * @param string $aValue The attribute's value.
+     * @param string $value The attribute's value.
      */
-    public function setValue($aValue)
+    public function setValue($value)
     {
-        $this->mValue = $aValue;
+        $this->value = $value;
     }
 
     /**
@@ -149,19 +145,16 @@ class Attr extends Node {
      *
      * @see https://dom.spec.whatwg.org/#set-an-existing-attribute-value
      *
-     * @param string $aValue The attribute's value.
+     * @param string $value The attribute's value.
      */
-    protected function setExistingAttributeValue($aValue)
+    protected function setExistingAttributeValue($value)
     {
-        if (!$this->mOwnerElement) {
-            $this->mValue = $aValue;
+        if (!$this->ownerElement) {
+            $this->value = $value;
             return;
         }
 
-        $this->mOwnerElement->getAttributeList()->change(
-            $this,
-            $aValue
-        );
+        $this->ownerElement->getAttributeList()->change($this, $value);
     }
 
     /**
@@ -176,11 +169,11 @@ class Attr extends Node {
      */
     protected function getNodeName()
     {
-        if ($this->mPrefix) {
-            return $this->mPrefix . ':' . $this->mLocalName;
+        if ($this->prefix) {
+            return $this->prefix . ':' . $this->localName;
         }
 
-        return $this->mLocalName;
+        return $this->localName;
     }
 
     /**
@@ -211,7 +204,7 @@ class Attr extends Node {
      */
     protected function getNodeValue()
     {
-        return $this->mValue;
+        return $this->value;
     }
 
     /**
@@ -222,11 +215,11 @@ class Attr extends Node {
      * @see https://dom.spec.whatwg.org/#dom-node-nodevalue
      * @see Node::setNodeValue()
      *
-     * @param string|null $aNewValue The node's new value.
+     * @param string|null $newValue The node's new value.
      */
-    protected function setNodeValue($aNewValue)
+    protected function setNodeValue($newValue)
     {
-        $this->setExistingAttributeValue($aNewValue);
+        $this->setExistingAttributeValue($newValue);
     }
 
     /**
@@ -241,7 +234,7 @@ class Attr extends Node {
      */
     protected function getTextContent()
     {
-        return $this->mValue;
+        return $this->value;
     }
 
     /**
@@ -252,10 +245,10 @@ class Attr extends Node {
      * @see https://dom.spec.whatwg.org/#dom-node-textcontent
      * @see Node::setTextContent()
      *
-     * @param string|null $aNewValue The new attribute value.
+     * @param string|null $newValue The new attribute value.
      */
-    protected function setTextContent($aNewValue)
+    protected function setTextContent($newValue)
     {
-        $this->setExistingAttributeValue($aNewValue);
+        $this->setExistingAttributeValue($newValue);
     }
 }

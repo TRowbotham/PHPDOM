@@ -3,24 +3,24 @@ namespace Rowbot\DOM;
 
 class ProcessingInstruction extends CharacterData
 {
-    protected $mTarget;
+    protected $target;
 
-    public function __construct($aTarget, $aData)
+    public function __construct($target, $data)
     {
-        parent::__construct($aData);
+        parent::__construct($data);
 
-        $this->mNodeType = Node::PROCESSING_INSTRUCTION_NODE;
-        $this->mTarget = $aTarget;
+        $this->nodeType = Node::PROCESSING_INSTRUCTION_NODE;
+        $this->target = $target;
     }
 
-    public function __get($aName)
+    public function __get($name)
     {
-        switch ($aName) {
+        switch ($name) {
             case 'target':
-                return $this->mTarget;
+                return $this->target;
 
             default:
-                return parent::__get($aName);
+                return parent::__get($name);
         }
     }
 
@@ -36,6 +36,6 @@ class ProcessingInstruction extends CharacterData
      */
     protected function getNodeName()
     {
-        return $this->mTarget;
+        return $this->target;
     }
 }

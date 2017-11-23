@@ -14,16 +14,16 @@ use Rowbot\DOM\Exception\IndexSizeError;
  */
 class Text extends CharacterData
 {
-    public function __construct($aData = '')
+    public function __construct($data = '')
     {
-        parent::__construct(Utils::DOMString($aData));
+        parent::__construct(Utils::DOMString($data));
 
-        $this->mNodeType = Node::TEXT_NODE;
+        $this->nodeType = Node::TEXT_NODE;
     }
 
-    public function __get($aName)
+    public function __get($name)
     {
-        switch ($aName) {
+        switch ($name) {
             case 'wholeText':
                 $wholeText = '';
                 $startNode = $this;
@@ -37,55 +37,50 @@ class Text extends CharacterData
                 }
 
                 while ($startNode instanceof Text) {
-                    $wholeText .= $startNode->mData;
+                    $wholeText .= $startNode->data;
                     $startNode = $startNode->nextSibling;
                 }
 
                 return $wholeText;
 
             default:
-                return parent::__get($aName);
+                return parent::__get($name);
         }
     }
 
-    public function __toString()
+    public function splitText($offset)
     {
-        return $this->getNodeName() . ' ' . $this->mData;
-    }
+        $length = $this->length;
 
-    public function splitText($aOffset)
-    {
-        $length = $this->mLength;
-
-        if ($aOffset > $length) {
+        if ($offset > $length) {
             throw new IndexSizeError();
         }
 
-        $count = $length - $aOffset;
-        $newData = $this->substringData($aOffset, $count);
+        $count = $length - $offset;
+        $newData = $this->substringData($offset, $count);
         $newNode = new Text($newData);
         $newNode->nodeDocument = $this->nodeDocument;
-        $ranges = Range::_getRangeCollection();
+        $ranges = Range::getRangeCollection();
 
-        if ($this->mParentNode) {
-            $this->mParentNode->insertNode($newNode, $this->nextSibling);
-            $treeIndex = $this->_getTreeIndex();
+        if ($this->parentNode) {
+            $this->parentNode->insertNode($newNode, $this->nextSibling);
+            $treeIndex = $this->getTreeIndex();
 
             foreach ($ranges as $index => $range) {
                 $startOffset = $range->startOffset;
 
-                if ($range->startContainer === $this &&
-                    $startOffset > $aOffset
+                if ($range->startContainer === $this
+                    && $startOffset > $offset
                 ) {
-                    $range->setStart($newNode, $startOffset - $aOffset);
+                    $range->setStart($newNode, $startOffset - $offset);
                 }
             }
 
             foreach ($ranges as $index => $range) {
                 $endOffset = $range->endOffset;
 
-                if ($range->endContainer === $this && $endOffset > $aOffset) {
-                    $range->setEnd($newNode, $endOffset - $aOffset);
+                if ($range->endContainer === $this && $endOffset > $offset) {
+                    $range->setEnd($newNode, $endOffset - $offset);
                 }
             }
 
@@ -93,8 +88,8 @@ class Text extends CharacterData
                 $startContainer = $range->startContainer;
                 $startOffset = $range->startOffset;
 
-                if ($startContainer === $this &&
-                    $startOffset == $treeIndex + 1
+                if ($startContainer === $this
+                    && $startOffset == $treeIndex + 1
                 ) {
                     $range->setStart($startContainer, $startOffset + 1);
                 }
@@ -110,7 +105,7 @@ class Text extends CharacterData
             }
         }
 
-        $this->doReplaceData($aOffset, $count, '');
+        $this->doReplaceData($offset, $count, '');
 
         return $newNode;
     }

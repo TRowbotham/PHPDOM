@@ -22,43 +22,43 @@ class HTMLMetaElement extends HTMLElement
         parent::__construct();
     }
 
-    public function __get($aName)
+    public function __get($name)
     {
-        switch ($aName) {
+        switch ($name) {
             case 'content':
-                return $this->reflectStringAttributeValue($aName);
+                return $this->reflectStringAttributeValue($name);
 
             case 'httpEquiv':
                 return $this->reflectStringAttributeValue('http-equiv');
 
             case 'name':
-                return $this->reflectStringAttributeValue($aName);
+                return $this->reflectStringAttributeValue($name);
 
             default:
-                return parent::__get($aName);
+                return parent::__get($name);
         }
     }
 
-    public function __set($aName, $aValue)
+    public function __set($name, $value)
     {
-        switch ($aName) {
+        switch ($name) {
             case 'content':
-                $this->mAttributesList->setAttrValue($aName, $aValue);
+                $this->attributeList->setAttrValue($name, $value);
 
                 break;
 
             case 'httpEquiv':
-                $this->mAttributesList->setAttrValue('http-equiv', $aValue);
+                $this->attributeList->setAttrValue('http-equiv', $value);
 
                 break;
 
             case 'name':
-                $this->mAttributesList->setAttrValue($aName, $aValue);
+                $this->attributeList->setAttrValue($name, $value);
 
                 break;
 
             default:
-                parent::__set($aName, $aValue);
+                parent::__set($name, $value);
         }
     }
 }

@@ -55,6 +55,8 @@ trait ParserOrTreeBuilder
      */
     private $tokenRepository;
 
+    private $textBuilder;
+
     /**
      * Resets the HTML Parser's insertion mode.
      *

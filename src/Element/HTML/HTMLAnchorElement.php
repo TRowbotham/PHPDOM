@@ -68,32 +68,24 @@ class HTMLAnchorElement extends HTMLElement
 {
     use HTMLHyperlinkElementUtils;
 
-    private $mPing;
-    private $mRelList;
+    private $ping;
+    private $relList;
 
     protected function __construct()
     {
         parent::__construct();
 
-        $this->mPing = new DOMTokenList($this, 'ping');
-        $this->mRelList = new DOMTokenList($this, 'rel');
-        $this->mAttributesList->observe($this);
+        $this->ping = new DOMTokenList($this, 'ping');
+        $this->relList = new DOMTokenList($this, 'rel');
+        $this->attributeList->observe($this);
         $this->setURL();
     }
 
-    public function __destruct()
+    public function __get($name)
     {
-        $this->mPing = null;
-        $this->mRelList = null;
-        $this->mUrl = null;
-        parent::__destruct();
-    }
-
-    public function __get($aName)
-    {
-        switch ($aName) {
+        switch ($name) {
             case 'download':
-                return $this->reflectStringAttributeValue($aName);
+                return $this->reflectStringAttributeValue($name);
 
             case 'hash':
                 return $this->getHash();
@@ -120,7 +112,7 @@ class HTMLAnchorElement extends HTMLElement
                 return $this->getPathname();
 
             case 'ping':
-                return $this->mPing;
+                return $this->ping;
 
             case 'port':
                 return $this->getPort();
@@ -129,121 +121,121 @@ class HTMLAnchorElement extends HTMLElement
                 return $this->getProtocol();
 
             case 'rel':
-                return $this->reflectStringAttributeValue($aName);
+                return $this->reflectStringAttributeValue($name);
 
             case 'relList':
-                return $this->mRelList;
+                return $this->relList;
 
             case 'search':
                 return $this->getSearch();
 
             case 'target':
-                return $this->reflectStringAttributeValue($aName);
+                return $this->reflectStringAttributeValue($name);
 
             case 'text':
                 return $this->getTextContent();
 
             case 'type':
-                return $this->reflectStringAttributeValue($aName);
+                return $this->reflectStringAttributeValue($name);
 
             case 'username':
                 return $this->getUsername();
 
             default:
-                return parent::__get($aName);
+                return parent::__get($name);
         }
     }
 
-    public function __set($aName, $aValue)
+    public function __set($name, $value)
     {
-        switch ($aName) {
+        switch ($name) {
             case 'download':
-                $this->mAttributesList->setAttrValue($aName, $aValue);
+                $this->attributeList->setAttrValue($name, $value);
 
                 break;
 
             case 'hash':
-                $this->setHash($aValue);
+                $this->setHash($value);
 
                 break;
 
             case 'host':
-                $this->setHost($aValue);
+                $this->setHost($value);
 
                 break;
 
             case 'hostname':
-                $this->setHostname($aValue);
+                $this->setHostname($value);
 
                 break;
 
             case 'href':
-                $this->setHref($aValue);
+                $this->setHref($value);
 
                 break;
 
             case 'hrefLang':
-                $this->mAttributesList->setAttrValue($aName, $aValue);
+                $this->attributeList->setAttrValue($name, $value);
 
                 break;
 
             case 'password':
-                $this->setPassword($aValue);
+                $this->setPassword($value);
 
                 break;
 
             case 'pathname':
-                $this->setPathname($aValue);
+                $this->setPathname($value);
 
                 break;
 
             case 'ping':
-                $this->mPing->value = $aValue;
+                $this->ping->value = $value;
 
                 break;
 
             case 'port':
-                $this->setPort($aValue);
+                $this->setPort($value);
 
                 break;
 
             case 'protocol':
-                $this->setProtocol($aValue);
+                $this->setProtocol($value);
 
                 break;
 
             case 'rel':
-                $this->mAttributesList->setAttrValue($aName, $aValue);
+                $this->attributeList->setAttrValue($name, $value);
 
                 break;
 
             case 'search':
-                $this->setSearch($aValue);
+                $this->setSearch($value);
 
                 break;
 
             case 'target':
-                $this->mAttributesList->setAttrValue($aName, $aValue);
+                $this->attributeList->setAttrValue($name, $value);
 
                 break;
 
             case 'text':
-                $this->setTextContent($aValue);
+                $this->setTextContent($value);
 
                 break;
 
             case 'type':
-                $this->mAttributesList->setAttrValue($aName, $aValue);
+                $this->attributeList->setAttrValue($name, $value);
 
                 break;
 
             case 'username':
-                $this->setUsername($aValue);
+                $this->setUsername($value);
 
                 break;
 
             default:
-                parent::__set($aName, $aValue);
+                parent::__set($name, $value);
         }
     }
 
@@ -251,21 +243,21 @@ class HTMLAnchorElement extends HTMLElement
      * @see AttributeChangeObserver
      */
     public function onAttributeChanged(
-        Element $aElement,
-        $aLocalName,
-        $aOldValue,
-        $aValue,
-        $aNamespace
+        Element $element,
+        $localName,
+        $oldValue,
+        $value,
+        $namespace
     ) {
-        if ($aLocalName === 'href' && $aNamespace === null) {
+        if ($localName === 'href' && $namespace === null) {
             $this->setURL();
         } else {
             parent::onAttributeChanged(
-                $aElement,
-                $aLocalName,
-                $aOldValue,
-                $aValue,
-                $aNamespace
+                $element,
+                $localName,
+                $oldValue,
+                $value,
+                $namespace
             );
         }
     }

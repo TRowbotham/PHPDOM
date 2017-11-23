@@ -25,30 +25,24 @@ use Rowbot\DOM\DOMTokenList;
  */
 class HTMLTableCellElement extends HTMLElement
 {
-    private $mColSpan;
-    private $mHeaders;
-    private $mRowSpan;
+    private $colSpan;
+    private $headers;
+    private $rowSpan;
 
     protected function __construct()
     {
         parent::__construct();
 
-        $this->mColSpan = 1;
-        $this->mHeaders = new DOMTokenList($this, 'headers');
-        $this->mRowSpan = 1;
+        $this->colSpan = 1;
+        $this->headers = new DOMTokenList($this, 'headers');
+        $this->rowSpan = 1;
     }
 
-    public function __destruct()
+    public function __get($name)
     {
-        $this->mHeaders = null;
-        parent::__destruct();
-    }
-
-    public function __get($aName)
-    {
-        switch ($aName) {
+        switch ($name) {
             case 'cellIndex':
-                if ($this->mParentNode instanceof HTMLTableRowElement) {
+                if ($this->parentNode instanceof HTMLTableRowElement) {
                     $node = $this;
                     $index = 0;
 
@@ -63,44 +57,44 @@ class HTMLTableCellElement extends HTMLElement
                 return -1;
 
             case 'colSpan':
-                return $this->mColSpan;
+                return $this->colSpan;
 
             case 'headers':
-                return $this->mHeaders->value;
+                return $this->headers->value;
 
             case 'rowSpan':
-                return $this->mRowSpan;
+                return $this->rowSpan;
 
             default:
-                return parent::__get($aName);
+                return parent::__get($name);
         }
     }
 
-    public function __set($aName, $aValue)
+    public function __set($name, $value)
     {
-        switch ($aName) {
+        switch ($name) {
             case 'colspan':
-                if (!is_int((int)$aValue)) {
+                if (!is_int((int)$value)) {
                     break;
                 }
 
-                $this->mColSpan = (int)$aValue;
-                $this->updateAttributeOnPropertyChange($aName, $aValue);
+                $this->colSpan = (int)$value;
+                $this->updateAttributeOnPropertyChange($name, $value);
 
                 break;
 
             case 'rowspan':
-                if (!is_int((int)$aValue)) {
+                if (!is_int((int)$value)) {
                     break;
                 }
 
-                $this->mRowSpan = (int)$aValue;
-                $this->updateAttributeOnPropertyChange($aName, $aValue);
+                $this->rowSpan = (int)$value;
+                $this->updateAttributeOnPropertyChange($name, $value);
 
                 break;
 
             default:
-                parent::__set($aName, $aValue);
+                parent::__set($name, $value);
         }
     }
 }

@@ -22,14 +22,14 @@ class HTMLTableSectionElement extends HTMLElement
         parent::__construct();
     }
 
-    public function __get($aName)
+    public function __get($name)
     {
-        switch ($aName) {
+        switch ($name) {
             case 'rows':
                 return $this->shallowGetElementsByTagName('tr');
 
             default:
-                return parent::__get($aName);
+                return parent::__get($name);
         }
     }
 
@@ -37,16 +37,16 @@ class HTMLTableSectionElement extends HTMLElement
      * Creates a new tr element and inserts it into the table section at
      * the specified location.  The newely created tr element is then returned.
      *
-     * @param int $aIndex The index position to insert the row at.
+     * @param int $index The index position to insert the row at.
      *
      * @return HTMLTableRowElement
      */
-    public function insertRow($aIndex = -1)
+    public function insertRow($index = -1)
     {
         $rows = $this->shallowGetElementsByTagName('tr');
         $numRows = count($rows);
 
-        if ($aIndex < -1 || $aIndex > $numRows) {
+        if ($index < -1 || $index > $numRows) {
             throw new IndexSizeError();
         }
 
@@ -56,10 +56,10 @@ class HTMLTableSectionElement extends HTMLElement
             Namespaces::HTML
         );
 
-        if ($aIndex == -1 || $aIndex == $numRows) {
+        if ($index == -1 || $index == $numRows) {
             $this->appendChild($tr);
         } else {
-            $rows[$aIndex]->before($tr);
+            $rows[$index]->before($tr);
         }
 
         return $tr;
@@ -68,18 +68,18 @@ class HTMLTableSectionElement extends HTMLElement
     /**
      * Deletes the table row at the specified location.
      *
-     * @param int $aIndex The location of the table row to be removed.
+     * @param int $index The location of the table row to be removed.
      *
-     * @throws IndexSizeError If $aIndex < 0 or $aIndex >= number of table rows.
+     * @throws IndexSizeError If $index < 0 or $index >= number of table rows.
      */
-    public function deleteRow($aIndex)
+    public function deleteRow($index)
     {
         $rows = $this->shallowGetElementsByTagName('tr');
 
-        if ($aIndex < 0 || $aIndex >= count($rows)) {
+        if ($index < 0 || $index >= count($rows)) {
             throw new IndexSizeError();
         }
 
-        $rows[$aIndex]->remove();
+        $rows[$index]->remove();
     }
 }

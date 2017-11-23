@@ -9,10 +9,6 @@ use Rowbot\DOM\Parser\HTML\HTMLParser;
  */
 class DOMParser
 {
-    public function __construct()
-    {
-    }
-
     /**
      * This takes a string of markup text and parses it, returning a Document
      * object containing DOM tree that was created from the provided markup
@@ -24,9 +20,9 @@ class DOMParser
      *
      * @see https://w3c.github.io/DOM-Parsing/#dom-domparser-parsefromstring
      *
-     * @param string $aStr A string of markup consiting of unicode characters.
+     * @param string $str A string of markup consiting of unicode characters.
      *
-     * @param string $aType The MIME type of the markup string. Valid types are:
+     * @param string $type The MIME type of the markup string. Valid types are:
      *     - "text/html"
      *     - "text/xml"
      *     - "application/xml"
@@ -35,9 +31,9 @@ class DOMParser
      *
      * @return Document
      */
-    public function parseFromString($aStr, $aType)
+    public function parseFromString($str, $type)
     {
-        switch ($aType) {
+        switch ($type) {
             case 'text/html':
                 // Parse str with an HTML parser, and return the newly
                 // created Document. The scripting flag must be set to
@@ -50,9 +46,9 @@ class DOMParser
                 // contents of noscript get parsed as markup.
                 $document = new HTMLDocument();
                 $parser = new HTMLParser($document);
-                $parser->preprocessInputStream($aStr);
+                $parser->preprocessInputStream($str);
                 $parser->run();
-                $document->_setContentType($aType);
+                $document->setContentType($type);
 
                 return $document;
 
@@ -62,7 +58,7 @@ class DOMParser
             case 'image/svg+xml':
                 $parserError = false;
                 $document = new Document();
-                $document->_setContentType($aType);
+                $document->setContentType($type);
 
                 try {
                     // Parse str with a namespace-enabled XML parser.
@@ -70,7 +66,7 @@ class DOMParser
                     // parser, the equivalent of the scripting flag must be set
                     // to "disabled".
                     $parser = new XMLParser($document);
-                    $parser->preprocessInputStream($aStr);
+                    $parser->preprocessInputStream($str);
                     $parser->run();
                 } catch (Exception $e) {
                     $parserError = true;
@@ -86,7 +82,7 @@ class DOMParser
                 // NOTE: The document will use the Document interface rather
                 // than the XMLDocument interface.
                 $document = new Document();
-                $document->_setContentType($aType);
+                $document->setContentType($type);
 
                 // Let root be a new Element, with its local name set to
                 // "parsererror" and its namespace set to
