@@ -35,11 +35,6 @@ use Rowbot\DOM\Exception\IndexSizeError;
  *     HierarchyRequestError if the given value is not null or
  *     HTMLTableSectionElement with a tagName of TFOOT.
  *
- * @property bool $sortable Upon getting, returns true if the table can be
- *     sorted and false otherwise. Upon setting, if the value is true, it
- *     indicates that the table can be sorted, and false (the default value)
- *     indicates that it cannot be sorted.
- *
  * @property-read HTMLTableRowElement[] $rows Returns a list of all the <tr>
  *     elements, in order, that are in the table.
  *
@@ -109,9 +104,6 @@ class HTMLTableElement extends HTMLElement
                 $thead = $this->shallowGetElementsByTagName('thead');
 
                 return count($thead) ? $thead[0] : null;
-
-            case 'sortable':
-                return $this->sortable;
 
             default:
                 return parent::__get($name);
@@ -192,11 +184,6 @@ class HTMLTableElement extends HTMLElement
 
                     $thead->insertBefore($value, $node);
                 }
-
-                break;
-
-            case 'sortable':
-                $this->sortable = (bool)$value;
 
                 break;
 
@@ -374,15 +361,6 @@ class HTMLTableElement extends HTMLElement
         }
 
         $rows[$index]->remove();
-    }
-
-    /**
-     * Removes the sorted attribute that are causing the table to automatically
-     * sort its contents.
-     */
-    public function stopSorting()
-    {
-        // TODO
     }
 
     /**

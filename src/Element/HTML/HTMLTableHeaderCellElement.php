@@ -86,9 +86,4 @@ class HTMLTableHeaderCellElement extends HTMLTableCellElement
                 parent::__set($name, $value);
         }
     }
-
-    public function sort()
-    {
-        // TODO
-    }
 }
