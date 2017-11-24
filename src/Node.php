@@ -552,7 +552,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             // HierarchyRequestError if both the document fragment and
             // document contain an element child.
             foreach ($parent->childNodes as $childNode) {
-                if ($child->nodeType === self::ELEMENT_NODE) {
+                if ($childNode->nodeType === self::ELEMENT_NODE) {
                     throw new HierarchyRequestError();
                 }
             }
