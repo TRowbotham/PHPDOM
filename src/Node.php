@@ -1052,52 +1052,59 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
     }
 
     /**
-     * Finds the prefix associated with the given namespace on the given node.
+     * Locates the prefix associated with the given namespace on the given node.
      *
-     * @link https://dom.spec.whatwg.org/#dom-node-lookupprefix
+     * @see https://dom.spec.whatwg.org/#dom-node-lookupprefix
      *
-     * @param string|null $namespace The namespace of the prefix to be found.
+     * @param ?string $namespace The namespace of the prefix to be found.
      *
-     * @return string|null
+     * @return ?string
      */
-    public function lookupPrefix($namespace)
+    public function lookupPrefix(?string $namespace): ?string
     {
-        $namespace = Utils::DOMString($namespace, false, true);
-
         if ($namespace === null || $namespace === '') {
             return null;
         }
 
-        switch ($this->nodeType) {
-            case self::ELEMENT_NODE:
-                return $this->locatePrefix($this, $namespace);
+        $namespace = Utils::DOMString($namespace);
 
-            case self::DOCUMENT_NODE:
-                return $this->locatePrefix(
-                    $this->getFirstElementChild(),
-                    $namespace
-                );
-
-            case self::DOCUMENT_TYPE_NODE:
-            case self::DOCUMENT_FRAGMENT_NODE:
-                return null;
-
-            case self::ATTRIBUTE_NODE:
-                $ownerElement = $this->ownerElement;
-
-                // Return the result of locating a namespace prefix for its
-                // element, if its element is non-null, and null otherwise.
-                if ($ownerElement) {
-                    return $this->locatePrefix($ownerElement, $namespace);
-                }
-
-                return null;
-
-            default:
-                return ($parentElement = $this->parentElement())
-                    ? $this->locatePrefix($parentElement, $namespace)
-                    : null;
+        if ($this instanceof Element) {
+            return $this->locatePrefix($this, $namespace);
         }
+
+        if ($this instanceof Document) {
+            $documentElement = $this->documentElement;
+
+            if ($documentElement !== null) {
+                return $this->locatePrefix($documentElement, $namespace);
+            }
+
+            return null;
+        }
+
+        if ($this instanceof DocumentType
+            || $this instanceof DocumentFragment
+        ) {
+            return null;
+        }
+
+        if ($this instanceof Attr) {
+            $ownerElement = $this->ownerElement;
+
+            if ($ownerElement !== null) {
+                return $this->locatePrefix($ownerElement, $namespace);
+            }
+
+            return null;
+        }
+
+        $parentElement = $this->parentElement;
+
+        if ($parentElement !== null) {
+            return $this->locatePrefix($parentElement, $namespace);
+        }
+
+        return null;
     }
 
     /**
