@@ -1001,10 +1001,9 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
 
             foreach ($node->getAttributeList() as $attr) {
                 if ($attr->namespaceURI === Namespaces::XMLNS) {
-                    $attrPrefix = $attr->prefix;
                     $localName = $attr->localName;
 
-                    if (($attrPrefix === 'xmlns' && $localName === $prefix)
+                    if (($$attr->prefix === 'xmlns' && $localName === $prefix)
                         || ($prefix === null && $localName === 'xmlns')
                     ) {
                         if ($attr->value !== '') {
