@@ -4,6 +4,7 @@ namespace Rowbot\DOM\Parser;
 use Rowbot\DOM\HTMLDocument;
 use Rowbot\DOM\Node;
 use Rowbot\DOM\Parser\HTML\FragmentSerializer as HTMLFragmentSerializer;
+use Rowbot\DOM\Parser\XML\FragmentSerializer as XMLFragmentSerializer;
 
 class MarkupFactory
 {
@@ -25,6 +26,8 @@ class MarkupFactory
             return $serializer->serializeFragment($node);
         }
 
-        // TODO
+        $serializer = new XMLFragmentSerializer();
+
+        return $serializer->serializeFragment($node, $requireWellFormed);
     }
 }
