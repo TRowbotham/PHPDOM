@@ -2,6 +2,7 @@
 namespace Rowbot\DOM;
 
 use Rowbot\DOM\Element\ElementFactory;
+use Rowbot\DOM\Exception\DOMException;
 use Rowbot\DOM\Exception\HierarchyRequestError;
 use Rowbot\DOM\Exception\IndexSizeError;
 use Rowbot\DOM\Exception\InvalidNodeTypeError;
@@ -698,7 +699,13 @@ class Range
         $parent = !$referenceNode
             ? $this->startContainer
             : $referenceNode->parentNode;
-        $parent->ensurePreinsertionValidity($node, $referenceNode);
+
+        try {
+            $parent->ensurePreinsertionValidity($node, $referenceNode);
+        } catch (DOMException $e) {
+            throw $e;
+            return;
+        }
 
         if ($this->startContainer instanceof Text) {
             $this->startContainer->splitText($this->startOffset);

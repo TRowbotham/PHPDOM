@@ -1271,7 +1271,14 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
     public function preinsertNode(Node $node, Node $child = null)
     {
         $parent = $this;
-        $parent->ensurePreinsertionValidity($node, $child);
+
+        try {
+            $parent->ensurePreinsertionValidity($node, $child);
+        } catch (DOMException $e) {
+            throw $e;
+            return;
+        }
+
         $referenceChild = $child;
 
         if ($referenceChild === $node) {
