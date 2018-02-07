@@ -28,7 +28,7 @@ trait ChildNode
         $viableNextSibling = $this->nextSibling;
 
         while ($viableNextSibling) {
-            if (!in_array($viableNextSibling, $nodes, true)) {
+            if (!\in_array($viableNextSibling, $nodes, true)) {
                 break;
             }
 
@@ -58,7 +58,7 @@ trait ChildNode
         $viablePreviousSibling = $this->previousSibling;
 
         while ($viablePreviousSibling) {
-            if (!in_array($viablePreviousSibling, $nodes, true)) {
+            if (!\in_array($viablePreviousSibling, $nodes, true)) {
                 break;
             }
 
@@ -105,7 +105,7 @@ trait ChildNode
         $viableNextSibling = $this->nextSibling;
 
         while ($viableNextSibling) {
-            if (!in_array($viableNextSibling, $nodes, true)) {
+            if (!\in_array($viableNextSibling, $nodes, true)) {
                 break;
             }
 

@@ -149,8 +149,8 @@ class FragmentSerializer implements FragmentSerializerInterface
         $localName = $aNode->localName;
 
         if ($aRequireWellFormed &&
-            (mb_strpos($localName, ':') !== false ||
-            !preg_match(Namespaces::NAME_PRODUCTION, $localName))
+            (\mb_strpos($localName, ':') !== false ||
+            !\preg_match(Namespaces::NAME_PRODUCTION, $localName))
         ) {
             throw new ParserException();
         }
@@ -262,7 +262,7 @@ class FragmentSerializer implements FragmentSerializerInterface
         );
 
         if ($ns === Namespaces::HTML && !$aNode->hasChildNodes() &&
-            preg_match(self::VOID_TAGS, $localName)
+            \preg_match(self::VOID_TAGS, $localName)
         ) {
             $markup .= ' /';
             $skipEndTag = true;
@@ -362,7 +362,7 @@ class FragmentSerializer implements FragmentSerializerInterface
         $aRequireWellFormed
     ) {
         if ($aRequireWellFormed &&
-            preg_match('/^((?!' . Namespaces::CHAR . ').)*/u')
+            \preg_match('/^((?!' . Namespaces::CHAR . ').)*/u')
         ) {
             throw new ParserException();
         }
@@ -371,7 +371,7 @@ class FragmentSerializer implements FragmentSerializerInterface
             return '';
         }
 
-        return htmlspecialchars($aValue, 0);
+        return \htmlspecialchars($aValue, 0);
     }
 
     /**
@@ -398,7 +398,7 @@ class FragmentSerializer implements FragmentSerializerInterface
         foreach ($aElement->getAttributesList() as $attr) {
             $attributeNamespace = $attr->namespaceURI;
             $localName = $attr->localName;
-            $hash = md5((string) $attributeNamespace . $localName);
+            $hash = \md5((string) $attributeNamespace . $localName);
 
             if ($aRequireWellFormed && isset($localNameSet[$hash])) {
                 throw new ParserException();
@@ -470,7 +470,7 @@ class FragmentSerializer implements FragmentSerializerInterface
             }
 
             if ($aRequireWellFormed &&
-                (mb_strpos($localName, ':') !== false ||
+                (\mb_strpos($localName, ':') !== false ||
                 $localName !== Namespaces::XMLNS ||
                 ($localName === 'xmlns' && $attributeNamespace === null))
             ) {
@@ -566,9 +566,9 @@ class FragmentSerializer implements FragmentSerializerInterface
         $data = $aNode->data;
 
         if ($aRequireWellFormed &&
-            (preg_match('/^((?!' . Namespaces::CHAR . ').)*/u') ||
-                mb_strpos($data, '--') !== false) ||
-                mb_substr($data, -1, 1) === '-'
+            (\preg_match('/^((?!' . Namespaces::CHAR . ').)*/u') ||
+                \mb_strpos($data, '--') !== false) ||
+                \mb_substr($data, -1, 1) === '-'
         ) {
             throw new ParserException();
         }
@@ -595,13 +595,13 @@ class FragmentSerializer implements FragmentSerializerInterface
         $data = $aNode->data;
 
         if ($aRequireWellFormed &&
-            preg_match('/^((?!' . Namespaces::CHAR . ').)*/u', $data)
+            \preg_match('/^((?!' . Namespaces::CHAR . ').)*/u', $data)
         ) {
             throw new ParserException();
         }
 
         $markup = $data;
-        $markup = str_replace(
+        $markup = \str_replace(
             ['&', '<', '>'],
             ['&amp;', '&lt;', '&gt;'],
             $markup
@@ -661,18 +661,18 @@ class FragmentSerializer implements FragmentSerializerInterface
         $systemId = $aNode->systemId;
 
         if ($aRequireWellFormed) {
-            if (preg_match(
+            if (\preg_match(
                 '/^((?!\x20|\x0D|\x0A|[a-zA-Z0-9]|[-\'()+,.\/:=?!*#@$_%]).)*/',
                 $publicId
             )) {
                 throw new ParserException();
             }
 
-            if ((preg_match(
+            if ((\preg_match(
                 '/^((?!' . Namespaces::CHAR . ').)*/u',
                 $systemId
             )) ||
-                mb_strpos('"') !== false && mb_strpos('\'') !== false
+                \mb_strpos('"') !== false && \mb_strpos('\'') !== false
             ) {
                 throw new ParserException();
             }
@@ -729,14 +729,14 @@ class FragmentSerializer implements FragmentSerializerInterface
         $data = $aNode->data;
 
         if ($aRequireWellFormed) {
-            if (mb_strpos($target, ':') !== false ||
-                strcasecmp($target, 'xml') === 0
+            if (\mb_strpos($target, ':') !== false ||
+                \strcasecmp($target, 'xml') === 0
             ) {
                 throw new ParserException();
             }
 
-            if (preg_match('/^((?!' . Namespaces::CHAR . ').)*/u', $data) ||
-                mb_strpos($data, '?>')
+            if (\preg_match('/^((?!' . Namespaces::CHAR . ').)*/u', $data) ||
+                \mb_strpos($data, '?>')
             ) {
                 throw new ParserException();
             }

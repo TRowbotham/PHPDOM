@@ -56,7 +56,7 @@ class FragmentSerializer implements FragmentSerializerInterface
 
                     // If the current node's local name is a known void element,
                     // then move on to current node's next sibling, if any.
-                    if (preg_match(self::VOID_TAGS, $localName)) {
+                    if (\preg_match(self::VOID_TAGS, $localName)) {
                         continue 2;
                     }
 
@@ -129,7 +129,7 @@ class FragmentSerializer implements FragmentSerializerInterface
             $replace += ['&lt;', '&gt;'];
         }
 
-        return str_replace($search, $replace, $string);
+        return \str_replace($search, $replace, $string);
     }
 
     /**

@@ -30,7 +30,7 @@ class HTMLTimeElement extends HTMLElement
     {
         switch ($name) {
             case 'dateTime':
-                if (!is_string($value)) {
+                if (!\is_string($value)) {
                     break;
                 }
 

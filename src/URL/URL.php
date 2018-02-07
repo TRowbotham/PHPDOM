@@ -89,7 +89,7 @@ class URL
                     return '';
                 }
 
-                return '/' . implode('/', $this->mUrl->path);
+                return '/' . \implode('/', $this->mUrl->path);
 
             case 'port':
                 if ($this->mUrl->port === null) {
@@ -136,7 +136,7 @@ class URL
                     return;
                 }
 
-                $input = $value[0] == '#' ? substr($value, 1) : $value;
+                $input = $value[0] == '#' ? \substr($value, 1) : $value;
                 $this->mUrl->fragment = '';
                 URLParser::parseBasicUrl(
                     $input,
@@ -270,7 +270,7 @@ class URL
                     return;
                 }
 
-                $input = $value[0] == '?' ? substr($value, 1) : $value;
+                $input = $value[0] == '?' ? \substr($value, 1) : $value;
                 $this->mUrl->query = '';
                 URLParser::parseBasicUrl(
                     $input,

@@ -82,7 +82,7 @@ abstract class URLParser
             $url = new URLRecord();
 
             // Remove any leading or trailing C0 control and space characters.
-            $input = preg_replace(
+            $input = \preg_replace(
                 '/^[\x00-\x1F\x20]+|[\x00-\x1F\x20]+$/u',
                 '',
                 $input,
@@ -98,7 +98,7 @@ abstract class URLParser
         }
 
         // A URL should not contain any tab or newline characters.
-        $input = preg_replace('/[\x09\x0A\x0D]+/u', '', $input, -1, $count);
+        $input = \preg_replace('/[\x09\x0A\x0D]+/u', '', $input, -1, $count);
 
         if ($count > 0) {
             // Syntax violation
@@ -118,15 +118,15 @@ abstract class URLParser
         $bracketFlag = false;
         $passwordTokenSeenFlag = false;
         $pointer = 0;
-        $len = mb_strlen($input, $encoding);
+        $len = \mb_strlen($input, $encoding);
 
         while (true) {
-            $c = mb_substr($input, $pointer++, 1, $encoding);
+            $c = \mb_substr($input, $pointer++, 1, $encoding);
 
             switch ($state) {
                 case self::SCHEME_START_STATE:
-                    if (preg_match(URLUtils::REGEX_ASCII_ALPHA, $c)) {
-                        $buffer .= strtolower($c);
+                    if (\preg_match(URLUtils::REGEX_ASCII_ALPHA, $c)) {
+                        $buffer .= \strtolower($c);
                         $state = self::SCHEME_STATE;
                     } elseif (!$stateOverride) {
                         $state = self::NO_SCHEME_STATE;
@@ -141,10 +141,10 @@ abstract class URLParser
                     break;
 
                 case self::SCHEME_STATE:
-                    if (preg_match(URLUtils::REGEX_ASCII_ALPHANUMERIC, $c) ||
-                        preg_match('/[+\-.]/u', $c)
+                    if (\preg_match(URLUtils::REGEX_ASCII_ALPHANUMERIC, $c) ||
+                        \preg_match('/[+\-.]/u', $c)
                     ) {
-                        $buffer .= strtolower($c);
+                        $buffer .= \strtolower($c);
                     } elseif ($c === ':') {
                         if ($stateOverride) {
                             $bufferIsSpecialScheme = isset(
@@ -171,7 +171,7 @@ abstract class URLParser
                         $urlIsSpecial = $url->isSpecial();
 
                         if ($url->scheme === 'file') {
-                            if (mb_strpos(
+                            if (\mb_strpos(
                                 $input,
                                 '//',
                                 $pointer,
@@ -190,7 +190,7 @@ abstract class URLParser
                             $state = self::SPECIAL_RELATIVE_OR_AUTHORITY_STATE;
                         } elseif ($urlIsSpecial) {
                             $state = self::SPECIAL_AUTHORITY_SLASHES_STATE;
-                        } elseif (mb_strpos(
+                        } elseif (\mb_strpos(
                             $input,
                             '/',
                             $pointer,
@@ -244,7 +244,7 @@ abstract class URLParser
 
                 case self::SPECIAL_RELATIVE_OR_AUTHORITY_STATE:
                     if ($c === '/' &&
-                        mb_strpos($input, '/', $pointer, $encoding) === $pointer
+                        \mb_strpos($input, '/', $pointer, $encoding) === $pointer
                     ) {
                         $state = self::SPECIAL_AUTHORITY_IGNORE_SLASHES_STATE;
                         $pointer++;
@@ -307,7 +307,7 @@ abstract class URLParser
                             $url->path = $base->path;
 
                             if (!empty($url->path)) {
-                                array_pop($url->path);
+                                \array_pop($url->path);
                             }
 
                             $state = self::PATH_STATE;
@@ -339,7 +339,7 @@ abstract class URLParser
 
                 case self::SPECIAL_AUTHORITY_SLASHES_STATE:
                     if ($c === '/' &&
-                        mb_strpos($input, '/', $pointer, $encoding) === $pointer
+                        \mb_strpos($input, '/', $pointer, $encoding) === $pointer
                     ) {
                         $state = self::SPECIAL_AUTHORITY_IGNORE_SLASHES_STATE;
                         $pointer++;
@@ -370,10 +370,10 @@ abstract class URLParser
                         }
 
                         $atFlag = true;
-                        $length = mb_strlen($buffer, $encoding);
+                        $length = \mb_strlen($buffer, $encoding);
 
                         for ($i = 0; $i < $length; $i++) {
-                            $codePoint = mb_substr($buffer, $i, 1, $encoding);
+                            $codePoint = \mb_substr($buffer, $i, 1, $encoding);
 
                             if ($codePoint === ':' && !$passwordTokenSeenFlag) {
                                 $passwordTokenSeenFlag = true;
@@ -404,7 +404,7 @@ abstract class URLParser
                             return false;
                         }
 
-                        $pointer -= mb_strlen($buffer, $encoding) + 1;
+                        $pointer -= \mb_strlen($buffer, $encoding) + 1;
                         $buffer = '';
                         $state = self::HOST_STATE;
                     } else {
@@ -483,7 +483,7 @@ abstract class URLParser
                     break;
 
                 case self::PORT_STATE:
-                    if (ctype_digit($c)) {
+                    if (\ctype_digit($c)) {
                         $buffer .= $c;
                     } elseif (($c === ''/* EOF */ ||
                         $c === '/' ||
@@ -493,9 +493,9 @@ abstract class URLParser
                         $stateOverride
                     ) {
                         if ($buffer !== '') {
-                            $port = intval($buffer, 10);
+                            $port = \intval($buffer, 10);
 
-                            if ($port > pow(2, 16) - 1) {
+                            if ($port > \pow(2, 16) - 1) {
                                 // Syntax violation. Return failure.
                                 return false;
                             }
@@ -567,13 +567,13 @@ abstract class URLParser
                             $base->scheme === 'file' &&
                             // If c and the first code point of remaining are
                             // not a Windows drive letter
-                            (!preg_match(
+                            (!\preg_match(
                                 URLUtils::REGEX_WINDOWS_DRIVE_LETTER,
-                                $c . mb_substr($input, $pointer, 1, $encoding)
+                                $c . \mb_substr($input, $pointer, 1, $encoding)
                             ) ||
                             // If remaining consists of 1 code point
-                            mb_strlen(
-                                mb_substr(
+                            \mb_strlen(
+                                \mb_substr(
                                     $input,
                                     $pointer,
                                     null,
@@ -583,9 +583,9 @@ abstract class URLParser
                             ) == 1 ||
                             // If remaining's second code point is not /, \, ?,
                             // or #.
-                            !preg_match(
+                            !\preg_match(
                                 '/[\/\\\\?#]/',
-                                mb_substr(
+                                \mb_substr(
                                     $input,
                                     $pointer + 1,
                                     1,
@@ -618,7 +618,7 @@ abstract class URLParser
                     } else {
                         if ($base &&
                             $base->scheme === 'file' &&
-                            preg_match(
+                            \preg_match(
                                 URLUtils::REGEX_NORMALIZED_WINDOWS_DRIVE_LETTER,
                                 $base->path[0]
                             )
@@ -644,7 +644,7 @@ abstract class URLParser
                     ) {
                         $pointer--;
 
-                        if (preg_match(
+                        if (\preg_match(
                             URLUtils::REGEX_WINDOWS_DRIVE_LETTER,
                             $buffer
                         )) {
@@ -731,7 +731,7 @@ abstract class URLParser
                         )) {
                             if ($url->scheme === 'file' &&
                                 empty($url->path) &&
-                                preg_match(
+                                \preg_match(
                                     URLUtils::REGEX_WINDOWS_DRIVE_LETTER,
                                     $buffer
                                 )
@@ -743,9 +743,9 @@ abstract class URLParser
                                 $url->host = null;
                                 // This is a (platform-independent) Windows
                                 // drive letter quirk.
-                                $buffer = mb_substr($buffer, 0, 1, $encoding) .
+                                $buffer = \mb_substr($buffer, 0, 1, $encoding) .
                                     ':' .
-                                    mb_substr($buffer, 2, null, $encoding);
+                                    \mb_substr($buffer, 2, null, $encoding);
                             }
 
                             $url->path[] = $buffer;
@@ -761,20 +761,20 @@ abstract class URLParser
                             $state = self::FRAGMENT_STATE;
                         }
                     } else {
-                        if (!preg_match(URLUtils::REGEX_URL_CODE_POINTS, $c) &&
+                        if (!\preg_match(URLUtils::REGEX_URL_CODE_POINTS, $c) &&
                             $c !== '%'
                         ) {
                             // Syntax violation
                         }
 
-                        $remaining = mb_substr(
+                        $remaining = \mb_substr(
                             $input,
                             $pointer,
                             2,
                             $encoding
                         );
 
-                        if ($c === '%' && !ctype_xdigit($remaining)) {
+                        if ($c === '%' && !\ctype_xdigit($remaining)) {
                             // Syntax violation
                         }
 
@@ -795,15 +795,15 @@ abstract class URLParser
                         $state = self::FRAGMENT_STATE;
                     } else {
                         if ($c !== ''/* EOF */ &&
-                            !preg_match(URLUtils::REGEX_URL_CODE_POINTS, $c) &&
+                            !\preg_match(URLUtils::REGEX_URL_CODE_POINTS, $c) &&
                             $c !== '%'
                         ) {
                             // Syntax violation
                         }
 
                         if ($c === '%' &&
-                            !ctype_xdigit(
-                                mb_substr($input, $pointer, 2, $encoding)
+                            !\ctype_xdigit(
+                                \mb_substr($input, $pointer, 2, $encoding)
                             )
                         ) {
                             // Syntax violation
@@ -834,14 +834,14 @@ abstract class URLParser
                         }
 
                         if ($encoding !== $oldEncoding) {
-                            $buffer = mb_convert_encoding(
+                            $buffer = \mb_convert_encoding(
                                 $buffer,
                                 $encoding,
                                 $oldEncoding
                             );
                         }
 
-                        $length = strlen($buffer);
+                        $length = \strlen($buffer);
 
                         for ($i = 0; $i < $length; $i++) {
                             if ($buffer[$i] < "\x21" ||
@@ -851,7 +851,7 @@ abstract class URLParser
                                 $buffer[$i] === "\x3C" ||
                                 $buffer[$i] === "\x3E"
                             ) {
-                                $url->query .= rawurlencode($buffer[$i]);
+                                $url->query .= \rawurlencode($buffer[$i]);
                             } else {
                                 $url->query .= $buffer[$i];
                             }
@@ -864,15 +864,15 @@ abstract class URLParser
                             $state = self::FRAGMENT_STATE;
                         }
                     } else {
-                        if (!preg_match(URLUtils::REGEX_URL_CODE_POINTS, $c) &&
+                        if (!\preg_match(URLUtils::REGEX_URL_CODE_POINTS, $c) &&
                             $c !== '%'
                         ) {
                             // Syntax violation
                         }
 
                         if ($c === '%' &&
-                            !ctype_xdigit(
-                                mb_substr($input, $pointer, 2, $encoding)
+                            !\ctype_xdigit(
+                                \mb_substr($input, $pointer, 2, $encoding)
                             )
                         ) {
                             // Syntax violation
@@ -889,15 +889,15 @@ abstract class URLParser
                     } elseif ($c === "\0") {
                         // Syntax violation
                     } else {
-                        if (!preg_match(URLUtils::REGEX_URL_CODE_POINTS, $c) &&
+                        if (!\preg_match(URLUtils::REGEX_URL_CODE_POINTS, $c) &&
                             $c !== '%'
                         ) {
                             // Syntax violation
                         }
 
                         if ($c === '%' &&
-                            !ctype_xdigit(
-                                mb_substr($input, $pointer, 2, $encoding)
+                            !\ctype_xdigit(
+                                \mb_substr($input, $pointer, 2, $encoding)
                             )
                         ) {
                             // Syntax violation

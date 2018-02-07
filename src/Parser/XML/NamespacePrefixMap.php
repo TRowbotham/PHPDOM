@@ -31,7 +31,7 @@ class NamespacePrefixMap
             }
         }
 
-        return $this->map[$namespace][count($this->map) - 1];
+        return $this->map[$namespace][\count($this->map) - 1];
     }
 
     /**

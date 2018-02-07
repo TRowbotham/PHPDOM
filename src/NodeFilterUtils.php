@@ -37,6 +37,6 @@ trait NodeFilterUtils
             return $this->filter->acceptNode($node);
         }
 
-        return call_user_func($this->filter, $node);
+        return \call_user_func($this->filter, $node);
     }
 }

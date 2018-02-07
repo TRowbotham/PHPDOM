@@ -87,12 +87,12 @@ class URLRecord
     {
         $this->username = '';
 
-        while (($codePoint = mb_substr($username, 0, 1)) !== '') {
+        while (($codePoint = \mb_substr($username, 0, 1)) !== '') {
             $this->username .= URLUtils::utf8PercentEncode(
                 $codePoint,
                 URLUtils::ENCODE_SET_USERINFO
             );
-            $username = mb_substr($username, 1);
+            $username = \mb_substr($username, 1);
         }
     }
 
@@ -107,12 +107,12 @@ class URLRecord
     {
         $this->password = '';
 
-        while (($codePoint = mb_substr($password, 0, 1)) !== '') {
+        while (($codePoint = \mb_substr($password, 0, 1)) !== '') {
             $this->password .= URLUtils::utf8PercentEncode(
                 $codePoint,
                 URLUtils::ENCODE_SET_USERINFO
             );
-            $password = mb_substr($password, 1);
+            $password = \mb_substr($password, 1);
         }
     }
 
@@ -136,7 +136,7 @@ class URLRecord
      */
     public function shortenPath()
     {
-        $size = count($this->path);
+        $size = \count($this->path);
 
         if ($size == 0) {
             return;
@@ -144,7 +144,7 @@ class URLRecord
 
         if ($this->scheme === 'file' &&
             $size == 1 &&
-            preg_match(
+            \preg_match(
                 URLUtils::REGEX_NORMALIZED_WINDOWS_DRIVE_LETTER,
                 $this->path[0]
             )
@@ -152,7 +152,7 @@ class URLRecord
             return;
         }
 
-        array_pop($this->path);
+        \array_pop($this->path);
     }
 
     /**
@@ -280,7 +280,7 @@ class URLRecord
                 $output .= '/';
             }
 
-            $output .= implode('/', $this->path);
+            $output .= \implode('/', $this->path);
         }
 
         if ($this->query !== null) {

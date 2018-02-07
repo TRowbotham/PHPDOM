@@ -110,7 +110,7 @@ class DOMTokenList implements
                 return;
             }
 
-            if (preg_match('/\s/', $token)) {
+            if (\preg_match('/\s/', $token)) {
                 throw new InvalidCharacterError();
                 return;
             }
@@ -167,7 +167,7 @@ class DOMTokenList implements
                 return;
             }
 
-            if (preg_match('/\s/', $token)) {
+            if (\preg_match('/\s/', $token)) {
                 throw new InvalidCharacterError();
                 return;
             }
@@ -212,7 +212,7 @@ class DOMTokenList implements
             return;
         }
 
-        if (preg_match('/\s/', $token)) {
+        if (\preg_match('/\s/', $token)) {
             throw new InvalidCharacterError();
             return;
         }
@@ -267,7 +267,7 @@ class DOMTokenList implements
             return;
         }
 
-        if (preg_match('/\s/', $token) || preg_match('/\s/', $newToken)) {
+        if (\preg_match('/\s/', $token) || \preg_match('/\s/', $newToken)) {
             throw new InvalidCharacterError();
             return;
         }

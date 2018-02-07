@@ -47,9 +47,9 @@ abstract class EventTarget
 
         list($capture, $passive, $once) = $this->flattenMoreOptions($options);
 
-        if (is_object($callback) && $callback instanceof EventListener) {
+        if (\is_object($callback) && $callback instanceof EventListener) {
             $callback = [$callback, 'handleEvent'];
-        } elseif (is_callable($callback)) {
+        } elseif (\is_callable($callback)) {
             $callback = $callback;
         } else {
             return;
@@ -103,9 +103,9 @@ abstract class EventTarget
 
         $capture = $this->flattenOptions($options);
 
-        if (is_object($callback) && $callback instanceof EventListener) {
+        if (\is_object($callback) && $callback instanceof EventListener) {
             $callback = [$callback, 'handleEvent'];
-        } elseif (is_callable($callback)) {
+        } elseif (\is_callable($callback)) {
             $callback = $callback;
         } else {
             return;
@@ -120,7 +120,7 @@ abstract class EventTarget
         foreach ($this->listeners as $index => $eventListener) {
             if ($eventListener->isEqual($listener)) {
                 $eventListener->setRemoved(true);
-                array_splice($this->listeners, $index, 1);
+                \array_splice($this->listeners, $index, 1);
                 break;
             }
         }
@@ -534,7 +534,7 @@ abstract class EventTarget
                 // If listener’s once is true, then remove listener from
                 // object’s associated list of event listeners.
                 if ($listener->getOnce()) {
-                    array_splice(
+                    \array_splice(
                         $object->listeners,
                         $index - $indexOffset,
                         1
@@ -552,7 +552,7 @@ abstract class EventTarget
                 // argument and event’s currentTarget attribute value as
                 // callback this value. If this throws an exception, report the
                 // exception.
-                call_user_func($listener->getCallback(), $event);
+                \call_user_func($listener->getCallback(), $event);
 
                 // Unset event’s in passive listener flag.
                 $event->unsetFlag(EventFlags::IN_PASSIVE_LISTENER);
@@ -600,9 +600,9 @@ abstract class EventTarget
     {
         $capture = false;
 
-        if (is_bool($options)) {
+        if (\is_bool($options)) {
             $capture = $options;
-        } elseif (is_array($options)) {
+        } elseif (\is_array($options)) {
             if (isset($options['capture'])) {
                 $capture = (bool) $options['capture'];
             }
@@ -626,7 +626,7 @@ abstract class EventTarget
         $once = false;
         $passive = false;
 
-        if (is_array($options)) {
+        if (\is_array($options)) {
             if (isset($options['passive'])) {
                 $passive = (bool) $options['passive'];
             }

@@ -51,8 +51,8 @@ class Namespaces
     {
         // If qualifiedName does not match the 'Name' or 'QName' production,
         // then throw an InvalidCharacterError.
-        if (!preg_match(self::NAME_PRODUCTION, $qualifiedName)
-            || !preg_match(self::QNAME, $qualifiedName)
+        if (!\preg_match(self::NAME_PRODUCTION, $qualifiedName)
+            || !\preg_match(self::QNAME, $qualifiedName)
         ) {
             throw new InvalidCharacterError();
         }
@@ -87,8 +87,8 @@ class Namespaces
         $prefix = null;
         $localName = $qualifiedName;
 
-        if (mb_strpos($qualifiedName, ':') !== false) {
-            list($prefix, $localName) = explode(':', $qualifiedName, 2);
+        if (\mb_strpos($qualifiedName, ':') !== false) {
+            list($prefix, $localName) = \explode(':', $qualifiedName, 2);
         }
 
         if ($prefix !== null && $namespace === null) {

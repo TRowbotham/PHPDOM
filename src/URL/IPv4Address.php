@@ -23,8 +23,8 @@ class IPv4Address extends Host
     public static function parse($aInput)
     {
         $syntaxViolation = false;
-        $parts = explode('.', $aInput);
-        $len = count($parts);
+        $parts = \explode('.', $aInput);
+        $len = \count($parts);
 
         // If the last item in parts is an empty string, that is a syntax
         // violation, remove it from parts.
@@ -32,7 +32,7 @@ class IPv4Address extends Host
             $syntaxViolation = true;
 
             if ($len > 1) {
-                array_pop($parts);
+                \array_pop($parts);
                 $len--;
             }
         }
@@ -74,7 +74,7 @@ class IPv4Address extends Host
             }
         }
 
-        $len = count($numbers);
+        $len = \count($numbers);
 
         for ($i = 0; $i < $len - 1; $i++) {
             if ($numbers[$i] > 255) {
@@ -82,16 +82,16 @@ class IPv4Address extends Host
             }
         }
 
-        if ($numbers[$len - 1] >= pow(256, (5 - $len))) {
+        if ($numbers[$len - 1] >= \pow(256, (5 - $len))) {
             // Syntax violation
             return false;
         }
 
-        $ipv4 = gmp_init(array_pop($numbers), 10);
+        $ipv4 = \gmp_init(\array_pop($numbers), 10);
         $counter = 0;
 
         foreach ($numbers as $n) {
-            $ipv4 += $n * gmp_pow(gmp_init(256, 10), (3 - $counter));
+            $ipv4 += $n * \gmp_pow(\gmp_init(256, 10), (3 - $counter));
             $counter++;
         }
 
@@ -111,13 +111,13 @@ class IPv4Address extends Host
         $n = $this->mHost;
 
         for ($i = 0; $i < 4; $i++) {
-            $output = intval($n % 256, 10) . $output;
+            $output = \intval($n % 256, 10) . $output;
 
             if ($i < 3) {
                 $output = '.' . $output;
             }
 
-            $n = floor($n / 256);
+            $n = \floor($n / 256);
         }
 
         return $output;
@@ -139,18 +139,18 @@ class IPv4Address extends Host
     {
         $input = $aInput;
         $R = 10;
-        $len = strlen($input);
+        $len = \strlen($input);
 
         if ($len > 1 &&
-            (substr($input, 0, 2) === '0x' || substr($input, 0, 2) === '0X')
+            (\substr($input, 0, 2) === '0x' || \substr($input, 0, 2) === '0X')
         ) {
             $aSyntaxViolationFlag = true;
-            $input = substr($input, 2);
+            $input = \substr($input, 2);
             $R = 16;
             $len -= 2;
         } elseif ($len > 1 && $input[0] === '0') {
             $syntaxViolationFlag = true;
-            $input = substr($input, 1);
+            $input = \substr($input, 1);
             $R = 8;
         }
 
@@ -158,15 +158,15 @@ class IPv4Address extends Host
             return 0;
         }
 
-        if (($R == 10 && !ctype_digit($input)) ||
-            ($R == 16 && !ctype_xdigit($input)) ||
-            ($R == 8 && decoct(octdec($input)) != $input)) {
+        if (($R == 10 && !\ctype_digit($input)) ||
+            ($R == 16 && !\ctype_xdigit($input)) ||
+            ($R == 8 && \decoct(\octdec($input)) != $input)) {
             return false;
         }
 
         // TODO: Return the mathematical integer value that is represented by
         // input in radix-R notation, using ASCII hex digits for digits with
         // values 0 through 15.
-        return intval($input, $R);
+        return \intval($input, $R);
     }
 }

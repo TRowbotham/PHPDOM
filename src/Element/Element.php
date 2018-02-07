@@ -490,7 +490,7 @@ class Element extends Node implements AttributeChangeObserver
      */
     public function insertAdjacentHTML($position, $text)
     {
-        $position = mb_strtolower(Utils::DOMString($position));
+        $position = \mb_strtolower(Utils::DOMString($position));
 
         if ($position === 'beforebegin' || $position === 'afterend') {
             // Let context be the context object's parent.
@@ -657,7 +657,7 @@ class Element extends Node implements AttributeChangeObserver
 
         // If qualifiedName does not match the Name production in XML,
         // throw an InvalidCharacterError exception.
-        if (!preg_match(Namespaces::NAME_PRODUCTION, $qualifiedName)) {
+        if (!\preg_match(Namespaces::NAME_PRODUCTION, $qualifiedName)) {
             throw new InvalidCharacterError();
         }
 
@@ -766,7 +766,7 @@ class Element extends Node implements AttributeChangeObserver
      */
     public function getLength()
     {
-        return count($this->childNodes);
+        return \count($this->childNodes);
     }
 
     /**
@@ -850,7 +850,7 @@ class Element extends Node implements AttributeChangeObserver
         $where,
         Node $node
     ) {
-        switch (strtolower($where)) {
+        switch (\strtolower($where)) {
             case 'beforebegin':
                 if (!$element->parentNode) {
                     return null;
@@ -1019,7 +1019,7 @@ class Element extends Node implements AttributeChangeObserver
     {
         $collection = array();
         $node = $this->childNodes->first();
-        $tagName = strtoupper($tagName);
+        $tagName = \strtoupper($tagName);
 
         while ($node) {
             if ($node->tagName === $tagName) {

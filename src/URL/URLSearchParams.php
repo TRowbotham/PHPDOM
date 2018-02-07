@@ -37,9 +37,9 @@ class URLSearchParams implements IteratorAggregate
 
         // If $init is given, is a string, and starts with "?", remove the
         // first code point from $init.
-        if (func_num_args() > 0) {
-            if (is_string($init) && mb_substr($init, 0, 1) === '?') {
-                $init = mb_substr($init, 1);
+        if (\func_num_args() > 0) {
+            if (\is_string($init) && \mb_substr($init, 0, 1) === '?') {
+                $init = \mb_substr($init, 1);
             }
 
             $this->init($init);
@@ -98,9 +98,9 @@ class URLSearchParams implements IteratorAggregate
      */
     private function init($init)
     {
-        if (is_array($init) || $init instanceof Traversable) {
+        if (\is_array($init) || $init instanceof Traversable) {
             foreach ($init as $pair) {
-                if (count($pair) != 2) {
+                if (\count($pair) != 2) {
                     throw new TypeError();
                     return;
                 }
@@ -117,7 +117,7 @@ class URLSearchParams implements IteratorAggregate
             return;
         }
 
-        if (is_object($init)) {
+        if (\is_object($init)) {
             foreach ($init as $name => $value) {
                 $this->mList[$this->mSequenceId] = [$name, $value];
                 $this->mParams[$name][$this->mSequenceId++] = Utils::DOMString(
@@ -128,7 +128,7 @@ class URLSearchParams implements IteratorAggregate
             return;
         }
 
-        if (is_string($init)) {
+        if (\is_string($init)) {
             $pairs = URLUtils::urlencodedStringParser($init);
 
             foreach ($pairs as $pair) {
@@ -154,7 +154,7 @@ class URLSearchParams implements IteratorAggregate
         $name = Utils::DOMString($aName);
         $value = Utils::DOMString($aValue);
 
-        if (!is_string($name) || !is_string($value)) {
+        if (!\is_string($name) || !\is_string($value)) {
             return;
         }
 
@@ -174,7 +174,7 @@ class URLSearchParams implements IteratorAggregate
     {
         $name = Utils::DOMString($aName);
 
-        if (!is_string($name) || !isset($this->mParams[$name])) {
+        if (!\is_string($name) || !isset($this->mParams[$name])) {
             return;
         }
 
@@ -199,8 +199,8 @@ class URLSearchParams implements IteratorAggregate
     {
         $name = Utils::DOMString($aName);
 
-        return is_string($name) && isset($this->mParams[$name]) ?
-            reset($this->mParams[$name]) : null;
+        return \is_string($name) && isset($this->mParams[$name]) ?
+            \reset($this->mParams[$name]) : null;
     }
 
     /**
@@ -216,8 +216,8 @@ class URLSearchParams implements IteratorAggregate
     {
         $name = Utils::DOMString($aName);
 
-        return is_string($name) && isset($this->mParams[$name]) ?
-            array_values($this->mParams[$name]) : [];
+        return \is_string($name) && isset($this->mParams[$name]) ?
+            \array_values($this->mParams[$name]) : [];
     }
 
     /**
@@ -234,7 +234,7 @@ class URLSearchParams implements IteratorAggregate
     {
         $name = Utils::DOMString($aName);
 
-        return is_string($name) && isset($this->mParams[$name]);
+        return \is_string($name) && isset($this->mParams[$name]);
     }
 
     /**
@@ -255,19 +255,19 @@ class URLSearchParams implements IteratorAggregate
         $name = Utils::DOMString($aName);
         $value = Utils::DOMString($aValue);
 
-        if (!is_string($name) || !is_string($value)) {
+        if (!\is_string($name) || !\is_string($value)) {
             return;
         }
 
         if (isset($this->mParams[$name])) {
-            for ($i = count($this->mParams[$name]) - 1; $i > 0; $i--) {
-                end($this->mParams[$name]);
-                unset($this->mList[key($this->mParams[$name])]);
-                array_pop($this->mParams[$name]);
+            for ($i = \count($this->mParams[$name]) - 1; $i > 0; $i--) {
+                \end($this->mParams[$name]);
+                unset($this->mList[\key($this->mParams[$name])]);
+                \array_pop($this->mParams[$name]);
             }
 
-            reset($this->mParams[$name]);
-            $id = key($this->mParams[$name]);
+            \reset($this->mParams[$name]);
+            $id = \key($this->mParams[$name]);
             $this->mList[$id][1] = $value;
             $this->mParams[$name][$id] = $value;
         } else {
@@ -316,12 +316,12 @@ class URLSearchParams implements IteratorAggregate
             } else {
                 $i = $sequenceIdx - 1;
                 $params[$name] = [];
-                $len1 = strlen(mb_convert_encoding(
+                $len1 = \strlen(\mb_convert_encoding(
                     $name,
                     'UTF-16LE',
                     'UTF-8'
                 )) / 2;
-                $len2 = strlen(mb_convert_encoding(
+                $len2 = \strlen(\mb_convert_encoding(
                     $list[$i][0],
                     'UTF-16LE',
                     'UTF-8'
@@ -329,7 +329,7 @@ class URLSearchParams implements IteratorAggregate
 
                 while ($i && $len1 > $len2) {
                     $i--;
-                    $len2 = strlen(mb_convert_encoding(
+                    $len2 = \strlen(\mb_convert_encoding(
                         $list[$i][0],
                         'UTF-16LE',
                         'UTF-8'
@@ -337,7 +337,7 @@ class URLSearchParams implements IteratorAggregate
                 }
             }
 
-            array_splice($list, $i, 0, [[$name, $value]]);
+            \array_splice($list, $i, 0, [[$name, $value]]);
             $sequenceIdx++;
         }
 
@@ -356,7 +356,7 @@ class URLSearchParams implements IteratorAggregate
      */
     public function getIterator()
     {
-        return new ArrayIterator(array_values($this->mList));
+        return new ArrayIterator(\array_values($this->mList));
     }
 
     /**

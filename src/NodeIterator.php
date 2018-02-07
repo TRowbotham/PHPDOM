@@ -22,7 +22,7 @@ final class NodeIterator
     ) {
         $this->filter = null;
 
-        if ($filter instanceof NodeFilter || is_callable($filter)) {
+        if ($filter instanceof NodeFilter || \is_callable($filter)) {
             $this->filter = $filter;
         }
 

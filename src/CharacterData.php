@@ -33,7 +33,7 @@ abstract class CharacterData extends Node
         parent::__construct();
 
         $this->data = $data;
-        $this->length = mb_strlen($data, $this->nodeDocument->characterSet);
+        $this->length = \mb_strlen($data, $this->nodeDocument->characterSet);
     }
 
     public function __get($name)
@@ -166,7 +166,7 @@ abstract class CharacterData extends Node
         $length = $this->length;
 
         if ($offset < 0 || $offset > $length) {
-            throw new IndexSizeError(sprintf(
+            throw new IndexSizeError(\sprintf(
                 'The offset should be less than the length of the data. The'
                 . 'offset given is %d and the length of the data is %d.',
                 $offset,
@@ -182,15 +182,15 @@ abstract class CharacterData extends Node
         // oldValue node’s data.
 
         $encoding = $this->nodeDocument->characterSet;
-        $this->data = mb_substr($this->data, 0, $offset, $encoding)
+        $this->data = \mb_substr($this->data, 0, $offset, $encoding)
             . $data
-            . mb_substr(
+            . \mb_substr(
                 $this->data,
                 $offset + $count,
                 $length - $offset,
                 $encoding
             );
-        $newDataLen = mb_strlen($data, $encoding);
+        $newDataLen = \mb_strlen($data, $encoding);
         $this->length += $newDataLen - $count;
 
         $ranges = Range::getRangeCollection();
@@ -268,7 +268,7 @@ abstract class CharacterData extends Node
         $count = Utils::unsignedLong($count);
 
         if ($offset < 0 || $offset > $length) {
-            throw new IndexSizeError(sprintf(
+            throw new IndexSizeError(\sprintf(
                 'The offset should be less than the length of the data. The'
                 . 'offset given is %d and the length of the data is %d.',
                 $offset,
@@ -277,10 +277,10 @@ abstract class CharacterData extends Node
         }
 
         if ($offset + $count > $length) {
-            return mb_substr($this->data, $offset);
+            return \mb_substr($this->data, $offset);
         }
 
-        return mb_substr($this->data, $offset, $count);
+        return \mb_substr($this->data, $offset, $count);
     }
 
     /**

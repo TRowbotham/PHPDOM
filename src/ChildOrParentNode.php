@@ -39,7 +39,7 @@ trait ChildOrParentNode
         // node to a new DocumentFragment whose node document is document, and
         // then append each node in nodes, if any, to it. Rethrow any
         // exceptions.
-        if (count($nodes) == 1) {
+        if (\count($nodes) == 1) {
             return $nodes[0];
         }
 

@@ -39,7 +39,7 @@ class ActiveFormattingElementStack extends ObjectStack
             $elementAttributes = $element->getAttributeList();
             $itemAttributes = $item->getAttributeList();
 
-            if (count($elementAttributes) != count($itemAttributes)) {
+            if (\count($elementAttributes) != \count($itemAttributes)) {
                 continue;
             }
 

@@ -21,7 +21,7 @@ final class TreeWalker
     ) {
         $this->currentNode = $root;
 
-        if ($filter instanceof NodeFilter || is_callable($filter)) {
+        if ($filter instanceof NodeFilter || \is_callable($filter)) {
             $this->filter = $filter;
         }
 

@@ -156,7 +156,7 @@ class Document extends Node implements Stringable
 
         // If localName does not match the Name production in XML, then
         // throw an InvalidCharacterError.
-        if (!preg_match(Namespaces::NAME_PRODUCTION, $localName)) {
+        if (!\preg_match(Namespaces::NAME_PRODUCTION, $localName)) {
             throw new InvalidCharacterError();
         }
 
@@ -238,7 +238,7 @@ class Document extends Node implements Stringable
 
         // If localName does not match the Name production, then throw an
         // InvalidCharacterError.
-        if (!preg_match(Namespaces::NAME_PRODUCTION, $localName)) {
+        if (!\preg_match(Namespaces::NAME_PRODUCTION, $localName)) {
             throw new InvalidCharacterError();
         }
 
@@ -313,7 +313,7 @@ class Document extends Node implements Stringable
     public function createEvent($interface)
     {
         $constructor = null;
-        $interface = strtolower(Utils::DOMString($interface));
+        $interface = \strtolower(Utils::DOMString($interface));
 
         switch ($interface) {
             case 'customevent':
@@ -369,13 +369,13 @@ class Document extends Node implements Stringable
 
         // If target does not match the Name production, then throw an
         // InvalidCharacterError.
-        if (!preg_match(Namespaces::NAME_PRODUCTION, $target)) {
+        if (!\preg_match(Namespaces::NAME_PRODUCTION, $target)) {
             throw new InvalidCharacterError();
         }
 
         $data = Utils::DOMString($data);
 
-        if (mb_strpos($data, '?>') !== false) {
+        if (\mb_strpos($data, '?>') !== false) {
             throw new InvalidCharacterError();
         }
 
@@ -421,7 +421,7 @@ class Document extends Node implements Stringable
 
         // If data contains the string "]]>", then throw an
         // InvalidCharacterError.
-        if (mb_strpos($data, ']]>') !== false) {
+        if (\mb_strpos($data, ']]>') !== false) {
             throw new InvalidCharacterError();
         }
 
@@ -486,7 +486,7 @@ class Document extends Node implements Stringable
             $iter = new NodeIterator($node);
 
             while (($descendant = $iter->nextNode())) {
-                if (method_exists($descendant, 'doAdoptingSteps')) {
+                if (\method_exists($descendant, 'doAdoptingSteps')) {
                     $descendant->doAdoptingSteps($oldDocument);
                 }
             }
@@ -513,7 +513,7 @@ class Document extends Node implements Stringable
      */
     public function getLength()
     {
-        return count($this->childNodes);
+        return \count($this->childNodes);
     }
 
     /**
@@ -697,7 +697,7 @@ class Document extends Node implements Stringable
      */
     public function setCharacterSet($characterSet)
     {
-        if (!is_string($characterSet)) {
+        if (!\is_string($characterSet)) {
             return;
         }
 
@@ -822,7 +822,7 @@ class Document extends Node implements Stringable
     {
         if (!isset($this->url)) {
             $ssl = isset($_SERVER['HTTPS']) && $_SERVER["HTTPS"] == 'on';
-            $port = in_array($_SERVER['SERVER_PORT'], array(80, 443)) ?
+            $port = \in_array($_SERVER['SERVER_PORT'], array(80, 443)) ?
                 '' : ':' . $_SERVER['SERVER_PORT'];
             $url = ($ssl ? 'https' : 'http') . '://' . $_SERVER['SERVER_NAME'] .
                 $port . $_SERVER['REQUEST_URI'];

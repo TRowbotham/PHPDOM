@@ -13,7 +13,7 @@ trait NonElementParentNode
      */
     public function getElementById($elementId)
     {
-        if (!is_string($elementId)) {
+        if (!\is_string($elementId)) {
             return null;
         }
 
@@ -21,7 +21,7 @@ trait NonElementParentNode
             $this,
             NodeFilter::SHOW_ELEMENT,
             function ($node) use ($elementId) {
-                if (mb_strtolower($node->id) === mb_strtolower($elementId)) {
+                if (\mb_strtolower($node->id) === \mb_strtolower($elementId)) {
                     return NodeFilter::FILTER_ACCEPT;
                 }
 

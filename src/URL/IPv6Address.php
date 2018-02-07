@@ -25,10 +25,10 @@ class IPv6Address extends Host
         $piecePointer = 0;
         $compressPointer = null;
         $pointer = 0;
-        $c = mb_substr($aInput, $pointer, 1);
+        $c = \mb_substr($aInput, $pointer, 1);
 
         if ($c === ':') {
-            if (mb_substr($aInput, $pointer + 1, 1) !== ':') {
+            if (\mb_substr($aInput, $pointer + 1, 1) !== ':') {
                 // Syntax violation
                 return false;
             }
@@ -36,7 +36,7 @@ class IPv6Address extends Host
             $pointer += 2;
             $piecePointer++;
             $compressPointer = $piecePointer;
-            $c = mb_substr($aInput, $pointer, 1);
+            $c = \mb_substr($aInput, $pointer, 1);
         }
 
         // Main
@@ -53,7 +53,7 @@ class IPv6Address extends Host
                 }
 
                 $pointer++;
-                $c = mb_substr($aInput, $pointer, 1);
+                $c = \mb_substr($aInput, $pointer, 1);
                 $piecePointer++;
                 $compressPointer = $piecePointer;
                 // Jump to main
@@ -63,11 +63,11 @@ class IPv6Address extends Host
             $value = 0;
             $length = 0;
 
-            while ($length < 4 && ctype_xdigit($c)) {
-                $value = $value * 0x10 + intval($c, 16);
+            while ($length < 4 && \ctype_xdigit($c)) {
+                $value = $value * 0x10 + \intval($c, 16);
                 $pointer++;
                 $length++;
-                $c = mb_substr($aInput, $pointer, 1);
+                $c = \mb_substr($aInput, $pointer, 1);
             }
 
             if ($c === '.') {
@@ -77,12 +77,12 @@ class IPv6Address extends Host
                 }
 
                 $pointer -= $length;
-                $c = mb_substr($aInput, $pointer, 1);
+                $c = \mb_substr($aInput, $pointer, 1);
 
                 goto IPv4;
             } elseif ($c === ':') {
                 $pointer++;
-                $c = mb_substr($aInput, $pointer, 1);
+                $c = \mb_substr($aInput, $pointer, 1);
 
                 if ($c === '') {
                     // Syntax violation
@@ -117,20 +117,20 @@ class IPv6Address extends Host
 
             if ($numbersSeen > 0) {
                 if ($c === '.' && $numbersSeen < 4) {
-                    $c = mb_substr($aInput, ++$pointer, 1);
+                    $c = \mb_substr($aInput, ++$pointer, 1);
                 } else {
                     // Syntax violation
                     return false;
                 }
             }
 
-            if (!ctype_digit($c)) {
+            if (!\ctype_digit($c)) {
                 // Syntax violation
                 return false;
             }
 
-            while (ctype_digit($c)) {
-                $number = base_convert(intval($c, 16), 16, 10);
+            while (\ctype_digit($c)) {
+                $number = \base_convert(\intval($c, 16), 16, 10);
 
                 if ($value === null) {
                     $value = $number;
@@ -141,7 +141,7 @@ class IPv6Address extends Host
                 }
 
                 $pointer++;
-                $c = mb_substr($aInput, $pointer, 1);
+                $c = \mb_substr($aInput, $pointer, 1);
 
                 if ($value > 255) {
                     // Syntax violation
@@ -232,7 +232,7 @@ class IPv6Address extends Host
                 continue;
             }
 
-            $output .= mb_strtolower(base_convert($piece, 10, 16));
+            $output .= \mb_strtolower(\base_convert($piece, 10, 16));
 
             if ($index < 7) {
                 $output .= ':';

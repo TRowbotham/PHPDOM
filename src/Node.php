@@ -260,9 +260,9 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
         ) {
             $ret = self::DOCUMENT_POSITION_DISCONNECTED
                 | self::DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC;
-            $position = strcmp(
-                spl_object_hash($node2),
-                spl_object_hash($node1)
+            $position = \strcmp(
+                \spl_object_hash($node2),
+                \spl_object_hash($node1)
             );
 
             // Pointer comparison is supposed to be used to determine whether
@@ -443,7 +443,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
 
         // If the node being cloned defines custom cloning steps, perform them
         // now.
-        if (method_exists($node, 'doCloningSteps')) {
+        if (\method_exists($node, 'doCloningSteps')) {
             $this->doCloningSteps($copy, $document, $cloneChildren);
         }
 
@@ -778,7 +778,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
     ) {
         $parent = $this;
         $nodeIsFragment = $node->nodeType === self::DOCUMENT_FRAGMENT_NODE;
-        $count = $nodeIsFragment ? count($node->childNodes) : 1;
+        $count = $nodeIsFragment ? \count($node->childNodes) : 1;
 
         if ($child) {
             $childIndex = $child->parentNode->childNodes->indexOf($child);
@@ -825,7 +825,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             $iter = new NodeIterator($node);
 
             while (($descendant = $iter->nextNode())) {
-                if (method_exists($descendant, 'doInsertingSteps')) {
+                if (\method_exists($descendant, 'doInsertingSteps')) {
                     $descendant->doInsertingSteps();
                 }
             }
@@ -942,9 +942,9 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             }
         }
 
-        $childNodeCount = count($this->childNodes);
+        $childNodeCount = \count($this->childNodes);
 
-        if ($childNodeCount !== count($otherNode->childNodes)) {
+        if ($childNodeCount !== \count($otherNode->childNodes)) {
             return false;
         }
 
@@ -1386,7 +1386,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
         $iter = new NodeIterator($node);
 
         while (($descendant = $iter->nextNode())) {
-            if (method_exists($descendant, 'doRemovingSteps')) {
+            if (\method_exists($descendant, 'doRemovingSteps')) {
                 $descendant->doRemovingSteps($parent);
             }
         }

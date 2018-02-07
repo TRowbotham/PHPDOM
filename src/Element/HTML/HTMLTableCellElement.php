@@ -74,7 +74,7 @@ class HTMLTableCellElement extends HTMLElement
     {
         switch ($name) {
             case 'colspan':
-                if (!is_int((int)$value)) {
+                if (!\is_int((int)$value)) {
                     break;
                 }
 
@@ -84,7 +84,7 @@ class HTMLTableCellElement extends HTMLElement
                 break;
 
             case 'rowspan':
-                if (!is_int((int)$value)) {
+                if (!\is_int((int)$value)) {
                     break;
                 }
 

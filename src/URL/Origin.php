@@ -133,7 +133,7 @@ class Origin
         $result .= HostFactory::serialize($this->mHost);
 
         if ($this->mPort !== null) {
-            $result .= ':' . intval($this->mPort, 10);
+            $result .= ':' . \intval($this->mPort, 10);
         }
 
         return $result;

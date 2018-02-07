@@ -116,9 +116,9 @@ abstract class URLUtils
 
     public static function encode($aStream, $aEncoding = 'UTF-8')
     {
-        $inputEncoding = mb_detect_encoding($aStream);
+        $inputEncoding = \mb_detect_encoding($aStream);
 
-        return mb_convert_encoding($aStream, $aEncoding, $inputEncoding);
+        return \mb_convert_encoding($aStream, $aEncoding, $inputEncoding);
     }
 
     /**
@@ -134,17 +134,17 @@ abstract class URLUtils
     {
         $output = '';
 
-        for ($i = 0, $len = strlen($aByteSequence); $i < $len; $i++) {
+        for ($i = 0, $len = \strlen($aByteSequence); $i < $len; $i++) {
             if ($aByteSequence[$i] !== '%') {
                 $output .= $aByteSequence[$i];
-            } elseif (!preg_match(
+            } elseif (!\preg_match(
                 '/%[A-Fa-f0-9]{2}/',
-                substr($aByteSequence, $i, 3)
+                \substr($aByteSequence, $i, 3)
             )) {
                 $output .= $aByteSequence[$i];
             } else {
                 // TODO: utf-8 decode without BOM
-                $bytePoint = pack('H*', substr($aByteSequence, $i + 1, 2));
+                $bytePoint = \pack('H*', \substr($aByteSequence, $i + 1, 2));
                 $output .= $bytePoint;
                 $i += 2;
             }
@@ -167,7 +167,7 @@ abstract class URLUtils
     {
         $output = '';
 
-        for ($i = 0, $len = strlen($aInput); $i < $len; $i++) {
+        for ($i = 0, $len = \strlen($aInput); $i < $len; $i++) {
             if ($aInput[$i] == "\x20") {
                 $output .= "\x2B";
             } elseif ($aInput[$i] === "\x2A" ||
@@ -180,7 +180,7 @@ abstract class URLUtils
             ) {
                 $output .= $aInput[$i];
             } else {
-                $output .= rawurlencode($aInput[$i]);
+                $output .= \rawurlencode($aInput[$i]);
             }
         }
 
@@ -199,7 +199,7 @@ abstract class URLUtils
      */
     public static function urlencodedParser($aInput)
     {
-        $sequences = explode('&', $aInput);
+        $sequences = \explode('&', $aInput);
         $tuples = [];
 
         foreach ($sequences as $bytes) {
@@ -207,18 +207,18 @@ abstract class URLUtils
                 continue;
             }
 
-            $pos = strpos($bytes, '=');
+            $pos = \strpos($bytes, '=');
 
             if ($pos !== false) {
-                $name = substr($bytes, 0, $pos);
-                $value = substr($bytes, $pos + 1);
+                $name = \substr($bytes, 0, $pos);
+                $value = \substr($bytes, $pos + 1);
             } else {
                 $name = $bytes;
                 $value = '';
             }
 
-            $name = str_replace('+', "\x20", $name);
-            $value = str_replace('+', "\x20", $value);
+            $name = \str_replace('+', "\x20", $name);
+            $value = \str_replace('+', "\x20", $value);
 
             $tuples[] = [
                 'name' => $name,
@@ -270,7 +270,7 @@ abstract class URLUtils
 
         foreach ($aTuples as $key => $tuple) {
             $name = self::urlencodedByteSerializer(
-                mb_convert_encoding($tuple['name'], $encoding)
+                \mb_convert_encoding($tuple['name'], $encoding)
             );
             $value = $tuple['value'];
 
@@ -283,7 +283,7 @@ abstract class URLUtils
             }
 
             $value = self::urlencodedByteSerializer(
-                mb_convert_encoding($value, $encoding)
+                \mb_convert_encoding($value, $encoding)
             );
 
             if ($key > 0) {
@@ -318,11 +318,11 @@ abstract class URLUtils
         $aCodePoint,
         $aEncodeSet = self::ENCODE_SET_SIMPLE
     ) {
-        if (!preg_match('/[' . $aEncodeSet . ']/u', $aCodePoint)) {
+        if (!\preg_match('/[' . $aEncodeSet . ']/u', $aCodePoint)) {
             return $aCodePoint;
         }
 
-        return rawurlencode($aCodePoint);
+        return \rawurlencode($aCodePoint);
     }
 
     /**
@@ -338,16 +338,16 @@ abstract class URLUtils
             return HostFactory::parse($aInput);
         }
 
-        if (preg_match(self::FORBIDDEN_HOST_CODEPOINT, $aInput)) {
+        if (\preg_match(self::FORBIDDEN_HOST_CODEPOINT, $aInput)) {
             // Syntax violation
             return false;
         }
 
         $output = '';
 
-        while (($char = mb_substr($aInput, 0, 1, 'UTF-8')) !== '') {
+        while (($char = \mb_substr($aInput, 0, 1, 'UTF-8')) !== '') {
             $output .= self::utf8PercentEncode($char);
-            $aInput = mb_substr($aInput, 1, null, 'UTF-8');
+            $aInput = \mb_substr($aInput, 1, null, 'UTF-8');
         }
 
         return $output;

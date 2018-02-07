@@ -27,10 +27,10 @@ class Stack extends OrderedSet
             return;
         }
 
-        array_pop($this->keys);
+        \array_pop($this->keys);
         $this->length--;
 
-        return array_pop($this->map);
+        return \array_pop($this->map);
     }
 
     public function top()

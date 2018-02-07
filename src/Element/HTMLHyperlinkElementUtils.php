@@ -403,7 +403,7 @@ trait HTMLHyperlinkElementUtils
             return '';
         }
 
-        return '/' . implode('/', $this->url->path);
+        return '/' . \implode('/', $this->url->path);
     }
 
     /**
@@ -480,8 +480,8 @@ trait HTMLHyperlinkElementUtils
         } else {
             $input = $value;
 
-            if (mb_substr($value, 0, 1) === '?') {
-                $input = mb_substr($value, 1);
+            if (\mb_substr($value, 0, 1) === '?') {
+                $input = \mb_substr($value, 1);
             }
 
             $this->url->query = '';
@@ -544,8 +544,8 @@ trait HTMLHyperlinkElementUtils
         } else {
             $input = $value;
 
-            if (mb_substr($value, 0, 1) === '#') {
-                $input = mb_substr($value, 1);
+            if (\mb_substr($value, 0, 1) === '#') {
+                $input = \mb_substr($value, 1);
             }
 
             $this->url->fragment = '';

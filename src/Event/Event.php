@@ -79,7 +79,7 @@ class Event
         $this->isTrusted = false;
         $this->path = new \SplDoublyLinkedList();
         $this->target = null;
-        $this->timeStamp = microtime();
+        $this->timeStamp = \microtime();
         $this->type = $type;
     }
 

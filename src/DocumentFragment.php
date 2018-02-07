@@ -83,7 +83,7 @@ class DocumentFragment extends Node
      */
     public function getLength()
     {
-        return count($this->childNodes);
+        return \count($this->childNodes);
     }
 
     /**

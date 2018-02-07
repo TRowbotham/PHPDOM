@@ -12,7 +12,7 @@ trait TokenizerOrTreeBuilder
      */
     public function getAdjustedCurrentNode()
     {
-        if ($this->isFragmentCase && count($this->openElements) == 1) {
+        if ($this->isFragmentCase && \count($this->openElements) == 1) {
             return $this->contextElement;
         }
 

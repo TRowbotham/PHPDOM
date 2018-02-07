@@ -126,7 +126,7 @@ class HTMLElement extends Element
 
                 return $value;
             case 'tabIndex':
-                $index = filter_var(
+                $index = \filter_var(
                     $this->reflectStringAttributeValue('tabindex'),
                     FILTER_VALIDATE_INT,
                     ['default' => 0]
@@ -159,7 +159,7 @@ class HTMLElement extends Element
                 break;
 
             case 'contentEditable':
-                $value = mb_strtolower($value);
+                $value = \mb_strtolower($value);
 
                 if ($value === 'inherit') {
                     $this->removeAttrByNamespaceAndLocalName(
@@ -276,7 +276,7 @@ class HTMLElement extends Element
         if ($attr) {
             foreach ($stateMap as $attributeState => $keywords) {
                 foreach ($keywords as $keyword) {
-                    if (strcasecmp($attr->value, $keyword) === 0) {
+                    if (\strcasecmp($attr->value, $keyword) === 0) {
                         $state = $attributeState;
                         break 2;
                     }

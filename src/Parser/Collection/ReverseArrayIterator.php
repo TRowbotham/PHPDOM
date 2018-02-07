@@ -34,40 +34,40 @@ class ReverseArrayIterator implements ArrayAccess, Countable, SeekableIterator
 
     public function count()
     {
-        return count($this->array);
+        return \count($this->array);
     }
 
     public function current()
     {
-        return current($this->array);
+        return \current($this->array);
     }
 
     public function key()
     {
-        return key($this->array);
+        return \key($this->array);
     }
 
     public function next()
     {
-        prev($this->array);
+        \prev($this->array);
     }
 
     public function rewind()
     {
-        end($this->array);
+        \end($this->array);
     }
 
     public function valid()
     {
-        return key($this->array) !== null;
+        return \key($this->array) !== null;
     }
 
     public function seek($index)
     {
-        end($this->array);
+        \end($this->array);
 
-        while (($key = key($this->array)) !== $index && $key !== null) {
-            prev($this->array);
+        while (($key = \key($this->array)) !== $index && $key !== null) {
+            \prev($this->array);
         }
     }
 }

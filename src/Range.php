@@ -136,7 +136,7 @@ class Range
                 ->getIterator()
                 ->getArrayCopy();
 
-            foreach (array_reverse($childNodes) as $node) {
+            foreach (\array_reverse($childNodes) as $node) {
                 if ($this->isPartiallyContainedNode($node)) {
                     $lastPartiallyContainedChild = $node;
                     break;
@@ -539,7 +539,7 @@ class Range
         $lastPartiallyContainedChild = null;
 
         if (!$originalEndNode->contains($originalStartNode)) {
-            foreach (array_reverse($commonAncestor->childNodes) as $node) {
+            foreach (\array_reverse($commonAncestor->childNodes) as $node) {
                 if ($this->isPartiallyContainedNode($node)) {
                     $lastPartiallyContainedChild = $node;
                     break;
@@ -1027,7 +1027,7 @@ class Range
         if ($this->startContainer === $this->endContainer &&
             $this->startContainer instanceof Text
         ) {
-            return mb_substr(
+            return \mb_substr(
                 $this->startContainer->data,
                 $this->startOffset,
                 $this->endOffset - $this->startOffset,
@@ -1036,7 +1036,7 @@ class Range
         }
 
         if ($this->startContainer instanceof Text) {
-            $s .= mb_substr(
+            $s .= \mb_substr(
                 $this->startContainer->data,
                 $this->startOffset,
                 null,
@@ -1062,7 +1062,7 @@ class Range
         }
 
         if ($this->endContainer instanceof Text) {
-            $s .= mb_substr(
+            $s .= \mb_substr(
                 $this->endContainer->data,
                 0,
                 $this->endOffset,
@@ -1217,7 +1217,7 @@ class Range
                 ->getArrayCopy();
 
             while ($child) {
-                if (in_array($child, $childNodes, true)) {
+                if (\in_array($child, $childNodes, true)) {
                     break;
                 }
 

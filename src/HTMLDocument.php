@@ -123,7 +123,7 @@ class HTMLDocument extends Document
         // Trim whitespace and replace consecutive whitespace with a single
         // space.
         if (!empty($value)) {
-            return preg_replace(
+            return \preg_replace(
                 ['/^\s+/', '/\s+$/', '/\s+/'],
                 ['', '', ' '],
                 $value

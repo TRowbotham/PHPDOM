@@ -16,7 +16,7 @@ class CodePointStream
         $this->nextChar = 0;
 
         if ($data) {
-            $this->data = preg_split('//u', $data, -1, PREG_SPLIT_NO_EMPTY);
+            $this->data = \preg_split('//u', $data, -1, PREG_SPLIT_NO_EMPTY);
             return;
         }
 
@@ -25,24 +25,24 @@ class CodePointStream
 
     public function append($data)
     {
-        $data = preg_split('//u', $data, -1, PREG_SPLIT_NO_EMPTY);
+        $data = \preg_split('//u', $data, -1, PREG_SPLIT_NO_EMPTY);
 
         if (empty($data)) {
             return;
         }
 
-        array_push($this->data, ...$data);
+        \array_push($this->data, ...$data);
     }
 
     public function prepend($data)
     {
-        $data = preg_split('//u', $data, -1, PREG_SPLIT_NO_EMPTY);
+        $data = \preg_split('//u', $data, -1, PREG_SPLIT_NO_EMPTY);
 
         if (empty($data)) {
             return;
         }
 
-        array_unshift($this->data, ...$data);
+        \array_unshift($this->data, ...$data);
     }
 
     public function get($count = 1)
@@ -103,7 +103,7 @@ class CodePointStream
 
     public function length()
     {
-        return count($this->data);
+        return \count($this->data);
     }
 
     public function discard()

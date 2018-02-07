@@ -80,6 +80,6 @@ trait ParentNode
 
     protected function getChildElementCount()
     {
-        return count($this->getChildren());
+        return \count($this->getChildren());
     }
 }

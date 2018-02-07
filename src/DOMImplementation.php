@@ -138,7 +138,7 @@ final class DOMImplementation
 
         // Only create a HTMLTitleElement if the user actually provided us with
         // a title to use.
-        if (func_num_args() > 0) {
+        if (\func_num_args() > 0) {
             $titleNode = ElementFactory::create(
                 $doc,
                 'title',

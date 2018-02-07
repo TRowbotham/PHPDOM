@@ -270,9 +270,9 @@ class HTMLParser extends Parser
 
     public function preprocessInputStream($aInput)
     {
-        $aInput = mb_convert_encoding($aInput, 'UTF-8');
+        $aInput = \mb_convert_encoding($aInput, 'UTF-8');
 
-        if (preg_match(
+        if (\preg_match(
             '/[\x01-\x08\x0E-\x1F\x7F-\x9F\x{FDD0}-\x{FDEF}\x0B' .
             '\x{FFFE}\x{FFFF}' .
             '\x{1FFFE}\x{1FFFF}' .
@@ -299,7 +299,7 @@ class HTMLParser extends Parser
         // Any character that is a not a Unicode character, i.e. any isolated
         // surrogate, is a parse error. (These can only find their way into the
         // input stream via script APIs such as document.write().)
-        if (!mb_check_encoding($aInput, 'UTF-8')) {
+        if (!\mb_check_encoding($aInput, 'UTF-8')) {
             // Parse error
         }
 
@@ -310,7 +310,7 @@ class HTMLParser extends Parser
         // represented by LF characters, and there are never any CR characters
         // in the input to the tokenization stage.
         $this->inputStream->append(
-            preg_replace(['/\x0D\x0A/u', '/\x0D/u'], "\x0A", $aInput)
+            \preg_replace(['/\x0D\x0A/u', '/\x0D/u'], "\x0A", $aInput)
         );
     }
 }

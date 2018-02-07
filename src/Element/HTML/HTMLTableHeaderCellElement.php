@@ -53,7 +53,7 @@ class HTMLTableHeaderCellElement extends HTMLTableCellElement
     {
         switch ($name) {
             case 'abbr':
-                if (!is_string($value)) {
+                if (!\is_string($value)) {
                     break;
                 }
 
@@ -63,7 +63,7 @@ class HTMLTableHeaderCellElement extends HTMLTableCellElement
                 break;
 
             case 'scope':
-                if (!is_string($value)) {
+                if (!\is_string($value)) {
                     break;
                 }
 
@@ -73,7 +73,7 @@ class HTMLTableHeaderCellElement extends HTMLTableCellElement
                 break;
 
             case 'sorted':
-                if (!is_string($value)) {
+                if (!\is_string($value)) {
                     break;
                 }
 

@@ -304,7 +304,7 @@ class OpenElementStack extends ObjectStack
         $aNamespace,
         ...$list
     ): bool {
-        $list = array_merge_recursive(...$list);
+        $list = \array_merge_recursive(...$list);
         $size = $this->size;
 
         while ($size--) {

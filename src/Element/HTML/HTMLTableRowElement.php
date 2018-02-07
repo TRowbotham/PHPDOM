@@ -129,7 +129,7 @@ class HTMLTableRowElement extends HTMLElement
     public function insertCell($index = -1)
     {
         $cells = $this->cells;
-        $numCells = count($cells);
+        $numCells = \count($cells);
 
         if ($index < -1 || $index > $numCells) {
             throw new IndexSizeError();
@@ -168,7 +168,7 @@ class HTMLTableRowElement extends HTMLElement
             }
         }
 
-        if ($index < 0 || $index >= count($cells)) {
+        if ($index < 0 || $index >= \count($cells)) {
             throw new IndexSizeError();
         }
 

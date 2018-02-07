@@ -27,9 +27,9 @@ class Utils
         $treatNullAsEmptyString = false,
         $nullable = false
     ) {
-        if (is_string($value)) {
+        if (\is_string($value)) {
             return $value;
-        } elseif (is_bool($value)) {
+        } elseif (\is_bool($value)) {
             return $value ? 'true' : 'false';
         } elseif ($value === null) {
             if ($nullable) {
@@ -39,13 +39,13 @@ class Utils
             } else {
                 return 'null';
             }
-        } elseif (is_scalar($value)) {
+        } elseif (\is_scalar($value)) {
             return (string) $value;
-        } elseif (is_object($value)) {
-            if (method_exists($value, '__toString')) {
+        } elseif (\is_object($value)) {
+            if (\method_exists($value, '__toString')) {
                 return (string) $value;
             } else {
-                return '[object ' . get_class($value) . ']';
+                return '[object ' . \get_class($value) . ']';
             }
         }
 
@@ -64,14 +64,14 @@ class Utils
      */
     public static function toASCIILowercase($value)
     {
-        $len = mb_strlen($value);
+        $len = \mb_strlen($value);
         $output = '';
 
         for ($i = 0; $i < $len; $i++) {
-            $codePoint = mb_substr($value, $i, 1);
+            $codePoint = \mb_substr($value, $i, 1);
 
             if ($codePoint >= "\x41" && $codePoint <= "\x5A") {
-                $output .= mb_strtolower($codePoint);
+                $output .= \mb_strtolower($codePoint);
             } else {
                 $output .= $codePoint;
             }
@@ -92,14 +92,14 @@ class Utils
      */
     public static function toASCIIUppercase($value)
     {
-        $len = mb_strlen($value);
+        $len = \mb_strlen($value);
         $output = '';
 
         for ($i = 0; $i < $len; $i++) {
-            $codePoint = mb_substr($value, $i, 1);
+            $codePoint = \mb_substr($value, $i, 1);
 
             if ($codePoint >= "\x61" && $codePoint <= "\x7A") {
-                $output .= mb_strtoupper($codePoint);
+                $output .= \mb_strtoupper($codePoint);
             } else {
                 $output .= $codePoint;
             }
@@ -110,10 +110,10 @@ class Utils
 
     public static function unsignedLong($offset)
     {
-        $normalizedOffset = ((int) $offset) % pow(2, 32);
+        $normalizedOffset = ((int) $offset) % \pow(2, 32);
 
         if ($normalizedOffset < 0) {
-            $normalizedOffset += pow(2, 32);
+            $normalizedOffset += \pow(2, 32);
         }
 
         return $normalizedOffset;
@@ -121,9 +121,9 @@ class Utils
 
     public static function intAsString($value)
     {
-        if (is_string($value) && is_int(intval($value))) {
+        if (\is_string($value) && \is_int(\intval($value))) {
             return $value;
-        } elseif (is_int($value)) {
+        } elseif (\is_int($value)) {
             return (string)$value;
         } else {
             return false;
@@ -132,9 +132,9 @@ class Utils
 
     public static function toInt($value)
     {
-        if (is_string($value) && is_int($temp = intval($value))) {
+        if (\is_string($value) && \is_int($temp = \intval($value))) {
             return $temp;
-        } elseif (is_int($value)) {
+        } elseif (\is_int($value)) {
             return $value;
         } else {
             return false;
@@ -147,7 +147,7 @@ class Utils
         $value = 1;
         $divisor = 1;
         $exponent = 1;
-        $length = strlen($input);
+        $length = \strlen($input);
 
         self::collectCodePointSequence($input, $position, '/\s/');
 
@@ -169,16 +169,16 @@ class Utils
         }
 
         if ($input[$position] == '.' && ($position + 1) < ($length - 1) &&
-            preg_match('/\d/', $input[$position + 1])) {
+            \preg_match('/\d/', $input[$position + 1])) {
             $value = 0;
             goto Fraction;
         }
 
-        if (!preg_match('/\d/', $input[$position])) {
+        if (!\preg_match('/\d/', $input[$position])) {
             return false;
         }
 
-        $value *= intval(
+        $value *= \intval(
             self::collectCodePointSequence(
                 $input,
                 $position,
@@ -208,7 +208,7 @@ class Utils
     {
         $position = 0;
         $sign = 'positive';
-        $length = strlen($input);
+        $length = \strlen($input);
 
         self::collectCodePointSequence($input, $position, '/\s/');
 
@@ -228,11 +228,11 @@ class Utils
             }
         }
 
-        if (!preg_match('/\d/', $input[$position])) {
+        if (!\preg_match('/\d/', $input[$position])) {
             return false;
         }
 
-        $value = intval(
+        $value = \intval(
             self::collectCodePointSequence(
                 $input,
                 $position,
@@ -278,7 +278,7 @@ class Utils
     {
         $position = 0;
         $tokens = [];
-        $length = mb_strlen($input);
+        $length = \mb_strlen($input);
 
         self::collectCodePointSequence($input, $position, '/\s/');
 
@@ -292,7 +292,7 @@ class Utils
             self::collectCodePointSequence($input, $position, '/\s/');
         }
 
-        return array_keys($tokens);
+        return \array_keys($tokens);
     }
 
     /**
@@ -315,12 +315,12 @@ class Utils
         $pattern
     ) {
         $result = '';
-        $length = mb_strlen($input);
+        $length = \mb_strlen($input);
 
         while ($position < $length) {
-            $c = mb_substr($input, $position, 1);
+            $c = \mb_substr($input, $position, 1);
 
-            if (!preg_match($pattern, $c)) {
+            if (!\preg_match($pattern, $c)) {
                 break;
             }
 
@@ -341,7 +341,7 @@ class Utils
     {
         $position = 0;
         $tokens = [];
-        $length = mb_strlen($input);
+        $length = \mb_strlen($input);
 
         while ($position < $length) {
             $token = self::collectCodePointSequence(
@@ -387,7 +387,7 @@ class Utils
             return $set;
         }
 
-        return implode("\x20", $set);
+        return \implode("\x20", $set);
     }
 
     /**
