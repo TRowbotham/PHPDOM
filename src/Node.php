@@ -485,18 +485,21 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             && !($parent instanceof Element)
         ) {
             throw new HierarchyRequestError();
+            return;
         }
 
         // If node is a host-including inclusive ancestor of parent, throw a
         // HierarchyRequestError.
         if ($node->isHostIncludingInclusiveAncestorOf($parent)) {
             throw new HierarchyRequestError();
+            return;
         }
 
         // If child is not null and its parent is not parent, then throw a
         // NotFoundError.
         if ($child !== null && $child->parentNode !== $parent) {
             throw new NotFoundError();
+            return;
         }
 
         // If node is not a DocumentFragment, DocumentType, Element, Text,
@@ -510,6 +513,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             && !($node instanceof Comment)
         ) {
             throw new HierarchyRequestError();
+            return;
         }
 
         // If either node is a Text node and parent is a document, or node is a
@@ -518,6 +522,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             || ($node instanceof DocumentType && !($parent instanceof Document))
         ) {
             throw new HierarchyRequestError();
+            return;
         }
 
         if (!($parent instanceof Document)) {
@@ -536,11 +541,13 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
 
                     if ($elementChildren > 1) {
                         throw new HierarchyRequestError();
+                        return;
                     }
                 }
 
                 if ($elementChildren > 1 || $childNode instanceof Text) {
                     throw new HierarchyRequestError();
+                    return;
                 }
             }
 
@@ -554,6 +561,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             foreach ($parent->childNodes as $childNode) {
                 if ($childNode->nodeType === self::ELEMENT_NODE) {
                     throw new HierarchyRequestError();
+                    return;
                 }
             }
 
@@ -562,6 +570,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             // the doctype.
             if ($child instanceof DocumentType) {
                 throw new HierarchyRequestError();
+                return;
             }
 
             if ($child === null) {
@@ -584,6 +593,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             foreach ($parent->childNodes as $childNode) {
                 if ($childNode instanceof Element) {
                     throw new HierarchyRequestError();
+                    return;
                 }
             }
 
@@ -592,6 +602,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             // doctype.
             if ($child instanceof DocumentType) {
                 throw new HierarchyRequestError();
+                return;
             }
 
             if ($child === null) {
@@ -614,6 +625,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             foreach ($parent->childNodes as $childNode) {
                 if ($childNode instanceof DocumentType) {
                     throw new HierarchyRequestError();
+                    return;
                 }
             }
 
@@ -637,6 +649,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             foreach ($parent->childNodes as $childNode) {
                 if ($childNode instanceof Element) {
                     throw new HierarchyRequestError();
+                    return;
                 }
             }
         }
@@ -1807,14 +1820,17 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
 
             default:
                 throw new HierarchyRequestError();
+                return;
         }
 
         if ($node->isHostIncludingInclusiveAncestorOf($parent)) {
             throw new HierarchyRequestError();
+            return;
         }
 
         if ($child->parentNode !== $parent) {
             throw new NotFoundError();
+            return;
         }
 
         switch ($node->nodeType) {
@@ -1828,18 +1844,21 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
 
             default:
                 throw new HierarchyRequestError();
+                return;
         }
 
         if ($node->nodeType === self::TEXT_NODE
             && $parent->nodeType === self::DOCUMENT_NODE
         ) {
             throw new HierarchyRequestError();
+            return;
         }
 
         if ($node->nodeType === self::DOCUMENT_TYPE_NODE
             && $parent->nodeType !== self::DOCUMENT_NODE
         ) {
             throw new HierarchyRequestError();
+            return;
         }
 
         if ($parent->nodeType === self::DOCUMENT_NODE) {
@@ -1854,12 +1873,14 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
 
                                 if ($elementChildren > 1) {
                                     throw new HierarchyRequestError();
+                                    return;
                                 }
 
                                 break;
 
                             case self::TEXT_NODE:
                                 throw new HierarchyRequestError();
+                                return;
                         }
                     }
 
@@ -1869,6 +1890,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                                 && $childNode !== $child
                             ) {
                                 throw new HierarchyRequestError();
+                                return;
                             }
                         }
 
@@ -1880,6 +1902,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
 
                         if ($tw->nextNode()) {
                             throw new HierarchyRequestError();
+                            return;
                         }
                     }
 
@@ -1891,6 +1914,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                             && $childNode !== $child
                         ) {
                             throw new HierarchyRequestError();
+                            return;
                         }
                     }
 
@@ -1902,6 +1926,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
 
                     if ($tw->nextNode()) {
                         throw new HierarchyRequestError();
+                        return;
                     }
 
                     break;
@@ -1912,6 +1937,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                             && $childNode !== $child
                         ) {
                             throw new HierarchyRequestError();
+                            return;
                         }
                     }
 
@@ -1923,6 +1949,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
 
                     if ($tw->previousNode()) {
                         throw new HierarchyRequestError();
+                        return;
                     }
             }
         }
