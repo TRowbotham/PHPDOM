@@ -685,6 +685,7 @@ class Document extends Node implements Stringable
     {
         if ($node instanceof Document || $node instanceof ShadowRoot) {
             throw new NotSupportedError();
+            return;
         }
 
         return $node->doCloneNode($this, $deep);
