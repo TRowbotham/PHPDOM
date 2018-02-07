@@ -127,11 +127,13 @@ class Document extends Node implements Stringable
     public function adoptNode(Node $node)
     {
         if ($node instanceof Document) {
-            throw new NotSupportedError;
+            throw new NotSupportedError();
+            return;
         }
 
         if ($node instanceof ShadowRoot) {
-            throw new HierarchyRequestError;
+            throw new HierarchyRequestError();
+            return;
         }
 
         $this->doAdoptNode($node);
