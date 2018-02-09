@@ -181,6 +181,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
     {
         if ($this instanceof ShadowRoot) {
             throw new NotSupportedError();
+            return;
         }
 
         return $this->doCloneNode(null, $deep);
