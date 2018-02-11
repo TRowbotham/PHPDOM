@@ -115,10 +115,12 @@ trait GetElementsBy
      *
      * @return Element[]
      */
-    public function getElementsByTagNameNS($namespace, $localName)
+    public function getElementsByTagNameNS(?string $namespace, $localName)
     {
-        $namespace = Utils::DOMString($namespace, false, true);
-        $namespace = $namespace === '' ? null : $namespace;
+        if ($namespace === '') {
+            $namespace = null;
+        }
+
         $localName = Utils::DOMString($localName);
         $collection = [];
 

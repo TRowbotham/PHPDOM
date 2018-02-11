@@ -232,7 +232,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @throws NotSupportedError If the node being cloned is a ShadowRoot.
      */
-    public function cloneNode($deep = false)
+    public function cloneNode(bool $deep = false)
     {
         if ($this instanceof ShadowRoot) {
             throw new NotSupportedError();
@@ -258,7 +258,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *         Node::DOCUMENT_POSITION_CONTAINED_BY
      *         Node::DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC
      */
-    public function compareDocumentPosition(Node $otherNode)
+    public function compareDocumentPosition(Node $otherNode): int
     {
         // If context object is other, then return zero.
         if ($this === $otherNode) {
@@ -385,12 +385,12 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
     /**
      * Returns whether or not a node is an inclusive descendant of another node.
      *
-     * @param Node $node A node that you wanted to compare its position of.
+     * @param Node|null $node A node that you wanted to compare its position of.
      *
      * @return boolean Returns true if $node is an inclusive descendant of a
      *     node.
      */
-    public function contains(Node $node = null)
+    public function contains(?Node $node): bool
     {
         while ($node) {
             if ($node === $this) {
@@ -680,10 +680,10 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      * Returns a boolean indicating whether or not the current node contains any
      * nodes.
      *
-     * @return boolean Returns true if at least one child node is present,
+     * @return bool Returns true if at least one child node is present,
      *     otherwise false.
      */
-    public function hasChildNodes()
+    public function hasChildNodes(): bool
     {
         return !$this->childNodes->isEmpty();
     }
@@ -693,11 +693,11 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @param Node $node The node to be inserted into the document.
      *
-     * @param Node $child The node that the new node will be inserted before.
+     * @param Node|null $child The node that the new node will be inserted before.
      *
      * @return Node The node that was inserted into the document.
      */
-    public function insertBefore(Node $node, Node $child = null)
+    public function insertBefore(Node $node, ?Node $child)
     {
         return $this->preinsertNode($node, $child);
     }
@@ -811,10 +811,8 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @return bool
      */
-    public function isDefaultNamespace($namespace)
+    public function isDefaultNamespace(?string $namespace): bool
     {
-        $namespace = Utils::DOMString($namespace, false, true);
-
         if ($namespace === '') {
             $namespace = null;
         }
@@ -830,12 +828,12 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      * @link https://dom.spec.whatwg.org/#dom-node-isequalnode
      * @link https://dom.spec.whatwg.org/#concept-node-equals
      *
-     * @param Node $otherNode The node you want to compare the current node to.
+     * @param Node|null $otherNode The node you want to compare the current node to.
      *
      * @return boolean Returns true if the two nodes are the same, otherwise
      *     false.
      */
-    public function isEqualNode(Node $otherNode = null)
+    public function isEqualNode(?Node $otherNode): bool
     {
         if (!$otherNode || $this->nodeType != $otherNode->nodeType) {
             return false;
@@ -916,7 +914,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @return bool
      */
-    public function isSameNode(Node $otherNode = null)
+    public function isSameNode(?Node $otherNode)
     {
         return $this === $otherNode;
     }
@@ -930,10 +928,8 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @return string|null
      */
-    public function lookupNamespaceURI($prefix)
+    public function lookupNamespaceURI(?string $prefix): ?string
     {
-        $prefix = Utils::DOMString($prefix, false, true);
-
         if ($prefix === '') {
             $prefix = null;
         }

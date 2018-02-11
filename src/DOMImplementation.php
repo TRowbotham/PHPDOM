@@ -32,11 +32,10 @@ final class DOMImplementation
      * @return XMLDocument
      */
     public function createDocument(
-        $namespace,
+        ?string $namespace,
         $qualifiedName,
         DocumentType $doctype = null
     ) {
-        $namespace = Utils::DOMString($namespace, false, true);
         $qualifiedName = Utils::DOMString($qualifiedName, true);
         $doc = new XMLDocument();
         $element = null;

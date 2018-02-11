@@ -310,7 +310,7 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @return string|null
      */
-    public function getAttribute($name)
+    public function getAttribute($name): ?string
     {
         $attr = $this->attributeList->getAttrByName(Utils::DOMString($name));
 
@@ -336,7 +336,7 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @return string[]
      */
-    public function getAttributeNames()
+    public function getAttributeNames(): array
     {
         $list = [];
 
@@ -356,7 +356,7 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @return Attr|null
      */
-    public function getAttributeNode($name)
+    public function getAttributeNode($name): ?Attr
     {
         return $this->attributeList->getAttrByName(Utils::DOMString($name));
     }
@@ -375,10 +375,10 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @return Attr|null
      */
-    public function getAttributeNodeNS($namespace, $localName)
+    public function getAttributeNodeNS(?string $namespace, $localName): ?Attr
     {
         return $this->attributeList->getAttrByNamespaceAndLocalName(
-            Utils::DOMString($namespace, false, true),
+            $namespace,
             Utils::DOMString($localName)
         );
     }
@@ -392,11 +392,11 @@ class Element extends Node implements AttributeChangeObserver
      * @param  string       $localName The localName of the attribute whose value is to be retrieved.
      * @return string|null
      */
-    public function getAttributeNS($namespace, $localName)
+    public function getAttributeNS(?string $namespace, $localName)
     {
         return $this->attributeList->getAttrValue(
             Utils::DOMString($localName),
-            Utils::DOMString($namespace, false, true)
+            $namespace
         );
     }
 
@@ -410,7 +410,7 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @return bool
      */
-    public function hasAttribute($qualifiedName)
+    public function hasAttribute($qualifiedName): bool
     {
         $qualifiedName = Utils::DOMString($qualifiedName);
 
@@ -435,10 +435,10 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @return bool
      */
-    public function hasAttributeNS($namespace, $localName)
+    public function hasAttributeNS(?string $namespace, $localName): bool
     {
         return (bool) $this->attributeList->getAttrByNamespaceAndLocalName(
-            Utils::DOMString($namespace, false, true),
+            $namespace,
             Utils::DOMString($localName)
         );
     }
@@ -449,7 +449,7 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @return bool
      */
-    public function hasAttributes()
+    public function hasAttributes(): bool
     {
         return !$this->attributeList->isEmpty();
     }
@@ -471,14 +471,10 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @return null
      */
-    public function insertAdjacentElement($where, Element $element)
+    public function insertAdjacentElement(string $where, Element $element)
     {
         try {
-            return self::insertAdjacent(
-                $this,
-                Utils::DOMString($where),
-                $element
-            );
+            return self::insertAdjacent($this, $where, $element);
         } catch (DOMException $e) {
             throw $e;
         }
@@ -513,9 +509,9 @@ class Element extends Node implements AttributeChangeObserver
      * @throws NoModificationError If the given position for insertion isn't
      *     possible, such as trying to insert elements after the document.
      */
-    public function insertAdjacentHTML($position, $text)
+    public function insertAdjacentHTML(string $position, $text)
     {
-        $position = \mb_strtolower(Utils::DOMString($position));
+        $position = \mb_strtolower($position);
 
         if ($position === 'beforebegin' || $position === 'afterend') {
             // Let context be the context object's parent.
@@ -590,17 +586,13 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @param string $data The text to be inserted.
      */
-    public function insertAdjacentText($where, $data)
+    public function insertAdjacentText(string $where, $data)
     {
         $text = new Text($data);
         $text->nodeDocument = $this->nodeDocument;
 
         try {
-            self::insertAdjacent(
-                $this,
-                Utils::DOMString($where),
-                $text
-            );
+            self::insertAdjacent($this, $where, $text);
         } catch (DOMException $e) {
             throw $e;
         }
@@ -652,12 +644,12 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @link https://dom.spec.whatwg.org/#dom-element-hasattributens
      *
-     * @param string $namespace The namespaceURI of the attribute to be
+     * @param string|null $namespace The namespaceURI of the attribute to be
      *     removed.
      *
      * @param string $localName The localName of the attribute to be removed.
      */
-    public function removeAttributeNS($namespace, $localName)
+    public function removeAttributeNS(?string $namespace, $localName)
     {
         $this->attributeList->removeAttrByNamespaceAndLocalName(
             $namespace,
@@ -750,13 +742,13 @@ class Element extends Node implements AttributeChangeObserver
      * Either appends a new attribute or modifies the value of an existing
      * attribute with the given namespace and name.
      *
-     * @param string $namespace The namespaceURI of the attribute.
+     * @param string|null $namespace The namespaceURI of the attribute.
      *
      * @param string $name The name of the attribute.
      *
      * @param string $value The value of the attribute.
      */
-    public function setAttributeNS($namespace, $name, $value)
+    public function setAttributeNS(?string $namespace, $name, $value)
     {
         try {
             list(
@@ -764,7 +756,7 @@ class Element extends Node implements AttributeChangeObserver
                 $prefix,
                 $localName
             ) = Namespaces::validateAndExtract(
-                Utils::DOMString($namespace, false, true),
+                $namespace,
                 Utils::DOMString($name)
             );
         } catch (DOMException $e) {
@@ -872,7 +864,7 @@ class Element extends Node implements AttributeChangeObserver
      */
     protected static function insertAdjacent(
         Element $element,
-        $where,
+        string $where,
         Node $node
     ) {
         switch (\strtolower($where)) {

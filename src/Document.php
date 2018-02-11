@@ -195,7 +195,7 @@ class Document extends Node implements Stringable
      *
      * @see https://dom.spec.whatwg.org/#dom-document-createattributens
      *
-     * @param string $namespace The attribute's namespace.
+     * @param string|null $namespace The attribute's namespace.
      *
      * @param string $qualifiedName The attribute's qualified name.
      *
@@ -205,7 +205,7 @@ class Document extends Node implements Stringable
      *
      * @throws InvalidCharacterError
      */
-    public function createAttributeNS($namespace, $qualifiedName)
+    public function createAttributeNS(?string $namespace, $qualifiedName)
     {
         try {
             list(
@@ -213,7 +213,7 @@ class Document extends Node implements Stringable
                 $prefix,
                 $localName
             ) = Namespaces::validateAndExtract(
-                Utils::DOMString($namespace, false, true),
+                $namespace,
                 Utils::DOMString($qualifiedName)
             );
         } catch (DOMException $e) {
@@ -226,7 +226,7 @@ class Document extends Node implements Stringable
         return $attribute;
     }
 
-    public function createComment($data)
+    public function createComment($data): Comment
     {
         $node = new Comment($data);
         $node->nodeDocument = $this;
@@ -234,7 +234,7 @@ class Document extends Node implements Stringable
         return $node;
     }
 
-    public function createDocumentFragment()
+    public function createDocumentFragment(): DocumentFragment
     {
         $node = new DocumentFragment();
         $node->nodeDocument = $this;
@@ -309,11 +309,11 @@ class Document extends Node implements Stringable
      *
      * @throws NamespaceError
      */
-    public function createElementNS($namespace, $qualifiedName)
+    public function createElementNS(?string $namespace, $qualifiedName)
     {
         return ElementFactory::createNS(
             $this,
-            Utils::DOMString($namespace, false, true),
+            $namespace,
             Utils::DOMString($qualifiedName)
         );
     }
@@ -373,9 +373,9 @@ class Document extends Node implements Stringable
      */
     public function createNodeIterator(
         Node $root,
-        $whatToShow = NodeFilter::SHOW_ALL,
+        int $whatToShow = NodeFilter::SHOW_ALL,
         $filter = null
-    ) {
+    ): NodeIterator {
         $iter = new NodeIterator($root, $whatToShow, $filter);
         $this->nodeIteratorList[] = $iter;
 
@@ -404,7 +404,7 @@ class Document extends Node implements Stringable
         return $pi;
     }
 
-    public function createRange()
+    public function createRange(): Range
     {
         $range = new Range();
         $range->setStart($this, 0);
@@ -413,7 +413,7 @@ class Document extends Node implements Stringable
         return $range;
     }
 
-    public function createTextNode($data)
+    public function createTextNode($data): Text
     {
         $node = new Text($data);
         $node->nodeDocument = $this;
@@ -469,9 +469,9 @@ class Document extends Node implements Stringable
      */
     public function createTreeWalker(
         Node $root,
-        $whatToShow = NodeFilter::SHOW_ALL,
+        int $whatToShow = NodeFilter::SHOW_ALL,
         $filter = null
-    ) {
+    ): TreeWalker {
         return new TreeWalker($root, $whatToShow, $filter);
     }
 
@@ -698,7 +698,7 @@ class Document extends Node implements Stringable
         return $this->nodeIteratorList;
     }
 
-    public function importNode(Node $node, $deep = false)
+    public function importNode(Node $node, bool $deep = false)
     {
         if ($node instanceof Document || $node instanceof ShadowRoot) {
             throw new NotSupportedError();
