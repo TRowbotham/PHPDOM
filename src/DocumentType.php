@@ -38,6 +38,23 @@ class DocumentType extends Node
     }
 
     /**
+     * {@inheritDoc}
+     */
+    public function cloneNodeInternal(
+        Document $document = null,
+        bool $cloneChildren = false
+    ) {
+        $document = $document ?: $this->getNodeDocument();
+        $copy = new static($this->name);
+        $copy->name = $this->name;
+        $copy->publicId = $this->publicId;
+        $copy->systemId = $this->systemId;
+        $this->postCloneNode($copy, $document, $cloneChildren);
+
+        return $copy;
+    }
+
+    /**
      * Returns the Node's length, which is 0, as a DocumentType cannot have
      * children.
      *

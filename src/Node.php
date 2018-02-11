@@ -166,6 +166,61 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
     }
 
     /**
+     * Clones the given node and performs any node specific cloning steps
+     * if the interface defines them.
+     *
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#concept-node-clone
+     *
+     * @param Document|null $document      (optional) The document that will
+     *                                     own thecloned node.
+     * @param bool          $cloneChildren (optional) If set, all children of
+     *                                     the cloned node will also be cloned.
+     *
+     * @return Node The newly created node.
+     */
+    abstract public function cloneNodeInternal(
+        Document $document = null,
+        bool $cloneChildren = false
+    );
+
+    /**
+     * Performs steps after cloning a node.
+     *
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#concept-node-clone
+     *
+     * @param Node     $copy
+     * @param Document $document
+     * @param bool     $cloneChildren
+     */
+    protected function postCloneNode(
+        Node $copy,
+        Document $document,
+        bool $cloneChildren
+    ) {
+        if ($copy instanceof Document) {
+            $copy->setNodeDocument($copy);
+            $document = $copy;
+        } else {
+            $copy->setNodeDocument($document);
+        }
+
+        if (\method_exists($this, 'onCloneNode')) {
+            $this->onCloneNode($copy, $document, $cloneChildren);
+        }
+
+        if ($cloneChildren) {
+            foreach ($this->childNodes as $child) {
+                $copyChild = $child->cloneNodeInternal($document, true);
+                $copy->appendChild($copyChild);
+            }
+        }
+    }
+
+    /**
      * Returns a copy of the node upon which the method was called.
      *
      * @see https://dom.spec.whatwg.org/#dom-node-clonenode
@@ -184,7 +239,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             return;
         }
 
-        return $this->doCloneNode(null, $deep);
+        return $this->cloneNodeInternal(null, $deep);
     }
 
     /**
@@ -346,116 +401,6 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
         }
 
         return false;
-    }
-
-    /**
-     * Clones the given node and performs any node specific cloning steps
-     * if the interface defines them.
-     *
-     * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#concept-node-clone
-     *
-     * @param Node $aNode The node being cloned.
-     *
-     * @param Document|null $document The document that will own the cloned
-     *     node.
-     *
-     * @param bool $cloneChildren Optional. If set, all children of the cloned
-     *     node will also be cloned.
-     *
-     * @return Node The newly created node.
-     */
-    public function doCloneNode(
-        Document $document = null,
-        $cloneChildren = null
-    ) {
-        $node = $this;
-        $document = $document ?: $node->nodeDocument;
-
-        switch ($node->nodeType) {
-            case self::ELEMENT_NODE:
-                $copy = ElementFactory::create(
-                    $document,
-                    $node->localName,
-                    $node->namespaceURI,
-                    $node->prefix
-                );
-
-                foreach ($node->attributeList as $attr) {
-                    $copyAttribute = $attr->doCloneNode();
-                    $copy->attributeList->append($copyAttribute);
-                }
-
-                break;
-
-            case self::DOCUMENT_NODE:
-                $copy = new static();
-                $copy->characterSet = $node->characterSet;
-                $copy->contentType = $node->contentType;
-                $copy->mode = $node->mode;
-
-                break;
-
-            case self::DOCUMENT_TYPE_NODE:
-                $copy = new static(
-                    $this->name,
-                    $this->publicId,
-                    $this->systemId
-                );
-
-                break;
-
-            case self::ATTRIBUTE_NODE:
-                // Set copy's namespace, namespace prefix, local name, and
-                // value, to those of node.
-                $copy = new static(
-                    $this->localName,
-                    $this->value,
-                    $this->namespaceURI,
-                    $this->prefix
-                );
-
-                break;
-
-            case self::TEXT_NODE:
-            case self::COMMENT_NODE:
-                $copy = new static($node->data);
-
-                break;
-
-            case self::PROCESSING_INSTRUCTION_NODE:
-                $copy = new static($node->target, $node->data);
-
-                break;
-
-            default:
-                // If we have reached this point, then we don't know what type
-                // of Node is being cloned. This is probably a bad thing.
-                $copy = new static();
-        }
-
-        if ($copy instanceof Document) {
-            $copy->nodeDocument = $copy;
-            $document = $copy;
-        } else {
-            $copy->nodeDocument = $document;
-        }
-
-        // If the node being cloned defines custom cloning steps, perform them
-        // now.
-        if (\method_exists($node, 'doCloningSteps')) {
-            $this->doCloningSteps($copy, $document, $cloneChildren);
-        }
-
-        if ($cloneChildren) {
-            foreach ($node->childNodes as $child) {
-                $copyChild = $child->doCloneNode($document, true);
-                $copy->appendChild($copyChild);
-            }
-        }
-
-        return $copy;
     }
 
     /**

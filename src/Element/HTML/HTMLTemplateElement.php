@@ -38,16 +38,16 @@ class HTMLTemplateElement extends HTMLElement
         $doc->doAdoptNode($this->content);
     }
 
-    public function doCloningSteps(
+    public function onCloneNode(
         HTMLTemplateElement $copy,
         Document $document,
-        $cloneChildren
+        bool $cloneChildren
     ) {
         if (!$cloneChildren) {
             return;
         }
 
-        $copiedContents = $this->content->doCloneNode(
+        $copiedContents = $this->content->cloneNodeInternal(
             $copy->content->nodeDocument,
             true
         );

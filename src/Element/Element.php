@@ -225,6 +225,31 @@ class Element extends Node implements AttributeChangeObserver
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public function cloneNodeInternal(
+        Document $document = null,
+        bool $cloneChildren = false
+    ) {
+        $document = $document ?: $this->getNodeDocument();
+        $copy = ElementFactory::create(
+            $document,
+            $this->localName,
+            $this->namespaceURI,
+            $this->prefix
+        );
+
+        foreach ($this->attributeList as $attr) {
+            $copyAttribute = $attr->cloneNodeInternal();
+            $copy->attributeList->append($copyAttribute);
+        }
+
+        $this->postCloneNode($copy, $document, $cloneChildren);
+
+        return $copy;
+    }
+
     public function closest($selectorRule)
     {
         // TODO

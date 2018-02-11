@@ -45,6 +45,20 @@ class DocumentFragment extends Node
     }
 
     /**
+     * {@inheritDoc}
+     */
+    public function cloneNodeInternal(
+        Document $document = null,
+        bool $cloneChildren = false
+    ) {
+        $document = $document ?: $this->getNodeDocument();
+        $copy = new static();
+        $this->postCloneNode($copy, $document, $cloneChildren);
+
+        return $copy;
+    }
+
+    /**
      * Gets a DocumentFragment's host object.
      *
      * @internal

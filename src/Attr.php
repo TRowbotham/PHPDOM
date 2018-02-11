@@ -31,27 +31,27 @@ class Attr extends Node
     /**
      * @var string
      */
-    protected $localName;
+    private $localName;
 
     /**
      * @var string|null
      */
-    protected $namespaceURI;
+    private $namespaceURI;
 
     /**
      * @var Element|null
      */
-    protected $ownerElement;
+    private $ownerElement;
 
     /**
      * @var string|null
      */
-    protected $prefix;
+    private $prefix;
 
     /**
      * @var string
      */
-    protected $value;
+    private $value;
 
     public function __construct(
         $localName,
@@ -110,6 +110,25 @@ class Attr extends Node
             default:
                 parent::__set($name, $value);
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function cloneNodeInternal(
+        Document $document = null,
+        bool $cloneChildren = false
+    ) {
+        $document = $document ?: $this->getNodeDocument();
+        $copy = new static(
+            $this->localName,
+            $this->value,
+            $this->namespaceURI,
+            $this->prefix
+        );
+        $this->postCloneNode($copy, $document, $cloneChildren);
+
+        return $copy;
     }
 
     /**

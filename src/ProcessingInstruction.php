@@ -25,6 +25,22 @@ class ProcessingInstruction extends CharacterData
     }
 
     /**
+     * {@inheritDoc}
+     */
+    public function cloneNodeInternal(
+        Document $document = null,
+        bool $cloneChildren = false
+    ) {
+        $document = $document ?: $this->getNodeDocument();
+        $copy = new static($this->target, $this->data);
+        $copy->data = $this->data;
+        $copy->target = $this->target;
+        $this->postCloneNode($copy, $document, $cloneChildren);
+
+        return $copy;
+    }
+
+    /**
      * Gets the name of the node.
      *
      * @internal

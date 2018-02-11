@@ -115,6 +115,23 @@ class Document extends Node implements Stringable
     }
 
     /**
+     * {@inheritDoc}
+     */
+    public function cloneNodeInternal(
+        Document $document = null,
+        bool $cloneChildren = false
+    ) {
+        $document = $document ?: $this->getNodeDocument();
+        $copy = new static();
+        $copy->characterSet = $this->characterSet;
+        $copy->contentType = $this->contentType;
+        $copy->mode = $this->mode;
+        $this->postCloneNode($copy, $document, $cloneChildren);
+
+        return $copy;
+    }
+
+    /**
      * Adopts the given Node and its subtree from a differnt Document allowing
      * the node to be used in this Document.
      *
@@ -688,7 +705,7 @@ class Document extends Node implements Stringable
             return;
         }
 
-        return $node->doCloneNode($this, $deep);
+        return $node->cloneNodeInternal($this, $deep);
     }
 
     /**

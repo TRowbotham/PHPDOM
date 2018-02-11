@@ -48,6 +48,21 @@ class Text extends CharacterData
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public function cloneNodeInternal(
+        Document $document = null,
+        bool $cloneChildren = false
+    ) {
+        $document = $document ?: $this->getNodeDocument();
+        $copy = new static();
+        $copy->data = $this->data;
+        $this->postCloneNode($copy, $document, $cloneChildren);
+
+        return $copy;
+    }
+
     public function splitText($offset)
     {
         $length = $this->length;
