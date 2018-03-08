@@ -1,8 +1,7 @@
 <?php
 namespace Rowbot\DOM\Element;
 
-use Rowbot\DOM\URL\HostFactory;
-use Rowbot\DOM\URL\URLParser;
+use Rowbot\URL\BasicURLParser;
 
 /**
  * @see https://html.spec.whatwg.org/multipage/semantics.html#htmlhyperlinkelementutils
@@ -112,12 +111,12 @@ trait HTMLHyperlinkElementUtils
             return;
         }
 
-        URLParser::parseBasicUrl(
+        BasicURLParser::parseBasicUrl(
             $value . ':',
             null,
             null,
             $this->url,
-            URLParser::SCHEME_START_STATE
+            BasicURLParser::SCHEME_START_STATE
         );
         $this->attributeList->setAttrValue(
             'href',
@@ -255,12 +254,12 @@ trait HTMLHyperlinkElementUtils
             return;
         }
 
-        URLParser::parseBasicUrl(
+        BasicURLParser::parseBasicUrl(
             $value,
             null,
             null,
             $this->url,
-            URLParser::HOST_STATE
+            BasicURLParser::HOST_STATE
         );
         $this->attributeList->setAttrValue(
             'href',
@@ -304,12 +303,12 @@ trait HTMLHyperlinkElementUtils
             return;
         }
 
-        URLParser::parseBasicUrl(
+        BasicURLParser::parseBasicUrl(
             $value,
             null,
             null,
             $this->url,
-            URLParser::HOSTNAME_STATE
+            BasicURLParser::HOSTNAME_STATE
         );
         $this->attributeList->setAttrValue(
             'href',
@@ -358,12 +357,12 @@ trait HTMLHyperlinkElementUtils
         if ($value === '') {
             $this->url->port = null;
         } else {
-            URLParser::parseBasicUrl(
+            BasicURLParser::parseBasicUrl(
                 $value,
                 null,
                 null,
                 $this->url,
-                URLParser::PORT_STATE
+                BasicURLParser::PORT_STATE
             );
         }
 
@@ -418,12 +417,12 @@ trait HTMLHyperlinkElementUtils
         }
 
         $this->url->path = [];
-        URLParser::parseBasicUrl(
+        BasicURLParser::parseBasicUrl(
             $value,
             null,
             null,
             $this->url,
-            URLParser::PATH_START_STATE
+            BasicURLParser::PATH_START_STATE
         );
         $this->attributeList->setAttrValue(
             'href',
@@ -480,12 +479,12 @@ trait HTMLHyperlinkElementUtils
             }
 
             $this->url->query = '';
-            URLParser::parseBasicUrl(
+            BasicURLParser::parseBasicUrl(
                 $input,
                 null,
                 $this->nodeDocument->characterSet,
                 $this->url,
-                URLParser::QUERY_STATE
+                BasicURLParser::QUERY_STATE
             );
         }
 
@@ -544,12 +543,12 @@ trait HTMLHyperlinkElementUtils
             }
 
             $this->url->fragment = '';
-            URLParser::parseBasicUrl(
+            BasicURLParser::parseBasicUrl(
                 $input,
                 null,
                 null,
                 $this->url,
-                URLParser::FRAGMENT_STATE
+                BasicURLParser::FRAGMENT_STATE
             );
         }
 
