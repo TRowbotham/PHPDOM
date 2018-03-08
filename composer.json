@@ -1,7 +1,6 @@
 {
     "name": "PHPJS",
     "description": "A modern alternative to PHP's built in DOM classes.",
-    "version": "1.0.0-dev",
     "authors": [
         {
             "name": "Trevor Rowbotham",
