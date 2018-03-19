@@ -273,7 +273,7 @@ class DOMTokenList implements
         }
 
         if (!$this->tokens->contains($token)) {
-            return;
+            return false;
         }
 
         $this->tokens->replace($token, $newToken);
@@ -281,6 +281,8 @@ class DOMTokenList implements
             $this->attrLocalName,
             Utils::serializeOrderedSet($this->tokens->values())
         );
+
+        return true;
     }
 
     /**
