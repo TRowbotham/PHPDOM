@@ -1,12 +1,16 @@
 # PHPJS
+
 PHPJS is an attempt to implement the Document Object Model (DOM) in PHP that was more inline with current standards.
 While PHP does already have its own impelmentation of the DOM, it is somewhat outdated and is more geared towards
-XML/XHTML/HTML4.  This is very much a work in progress and as a result things may be broken.
+XML/XHTML/HTML4. This is very much a work in progress and as a result things may be broken.
 
 Here is a small sample of how to use PHPJS:
+
 ```php
 <?php
-require_once "phpjs.php";
+require_once "vendor/autoload.php";
+
+use Rowbot\DOM\HTMLDocument;
 
 /**
  * This creates a new empty HTML Document.
