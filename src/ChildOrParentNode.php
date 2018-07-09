@@ -3,6 +3,8 @@ namespace Rowbot\DOM;
 
 use Rowbot\DOM\Exception\DOMException;
 
+use function count;
+
 trait ChildOrParentNode
 {
     /**
@@ -14,11 +16,11 @@ trait ChildOrParentNode
      *
      * @see https://dom.spec.whatwg.org/#converting-nodes-into-a-node
      *
-     * @param (Node|string)[] $nodes    An array of Nodes and strings.
-     * @param Document        $document Context object's node document.
+     * @param (\Rowbot\DOM\Node|string)[] $nodes    An array of Nodes and strings.
+     * @param \Rowbot\DOM\Document        $document Context object's node document.
      *
-     * @return DocumentFragment|Node If $nodes > 1, then a DocumentFragment is
-     *     returned, otherwise a single Node is returned.
+     * @return \Rowbot\DOM\DocumentFragment|\Rowbot\DOM\Node If $nodes > 1, then a DocumentFragment is returned,
+     *                                                       otherwise a single Node is returned.
      */
     private function convertNodesToNode($nodes, Document $document)
     {
@@ -39,7 +41,7 @@ trait ChildOrParentNode
         // node to a new DocumentFragment whose node document is document, and
         // then append each node in nodes, if any, to it. Rethrow any
         // exceptions.
-        if (\count($nodes) == 1) {
+        if (count($nodes) == 1) {
             return $nodes[0];
         }
 
