@@ -37,7 +37,7 @@ final class DOMTokenList implements
      *
      * @return void
      */
-    public function __construct(Element $element, $attrLocalName)
+    public function __construct(Element $element, string $attrLocalName)
     {
         $this->attrLocalName = $attrLocalName;
         $this->element = $element;
@@ -64,7 +64,7 @@ final class DOMTokenList implements
      *
      * @return string|int
      */
-    public function __get($name)
+    public function __get(string $name)
     {
         switch ($name) {
             case 'length':
@@ -81,7 +81,7 @@ final class DOMTokenList implements
      *
      * @return string
      */
-    public function __set($name, $value)
+    public function __set(string $name, $value): string
     {
         switch ($name) {
             case 'value':
@@ -101,7 +101,7 @@ final class DOMTokenList implements
      *
      * @return string|null The token at the specified index or null if the index does not exist.
      */
-    public function item($index)
+    public function item($index): ?string
     {
         return $this->tokens->offsetGet($index);
     }
@@ -119,19 +119,17 @@ final class DOMTokenList implements
      *
      * @return void
      */
-    public function add(...$tokens)
+    public function add(...$tokens): void
     {
         foreach ($tokens as &$token) {
             $token = Utils::DOMString($token);
 
             if ($token === '') {
                 throw new SyntaxError();
-                return;
             }
 
             if (preg_match('/\s/', $token)) {
                 throw new InvalidCharacterError();
-                return;
             }
         }
 
@@ -159,7 +157,7 @@ final class DOMTokenList implements
      * @throws \Rowbot\DOM\Exception\SyntaxError           If the token is an empty string.
      * @throws \Rowbot\DOM\Exception\InvalidCharacterError If the token contains ASCII whitespace.
      */
-    public function contains($token)
+    public function contains($token): bool
     {
         return $this->tokens->contains($token);
     }
@@ -173,20 +171,20 @@ final class DOMTokenList implements
      *
      * @throws \Rowbot\DOM\Exception\SyntaxError           If the token is an empty string.
      * @throws \Rowbot\DOM\Exception\InvalidCharacterError If the token contains ASCII whitespace.
+     *
+     * @return void
      */
-    public function remove(...$tokens)
+    public function remove(...$tokens): void
     {
         foreach ($tokens as &$token) {
             $token = Utils::DOMString($token);
 
             if ($token === '') {
                 throw new SyntaxError();
-                return;
             }
 
             if (preg_match('/\s/', $token)) {
                 throw new InvalidCharacterError();
-                return;
             }
         }
 
@@ -218,22 +216,22 @@ final class DOMTokenList implements
      * @throws \Rowbot\DOM\Exception\SyntaxError           If either token is an empty string.
      * @throws \Rowbot\DOM\Exception\InvalidCharacterError If either token contains ASCII whitespace.
      */
-    public function toggle($token, $force = null)
+    public function toggle($token, bool $force = false): bool
     {
         $token = Utils::DOMString($token);
 
         if ($token === '') {
             throw new SyntaxError();
-            return;
         }
 
         if (preg_match('/\s/', $token)) {
             throw new InvalidCharacterError();
-            return;
         }
 
+        $forceIsGiven = func_num_args() > 1;
+
         if ($this->tokens->contains($token)) {
-            if (!$force) {
+            if ($forceIsGiven === false || $force === false) {
                 $this->tokens->remove($token);
                 $this->element->getAttributeList()->setAttrValue(
                     $this->attrLocalName,
@@ -246,7 +244,7 @@ final class DOMTokenList implements
             return true;
         }
 
-        if ($force === null || $force === true) {
+        if ($forceIsGiven === false || $force === true) {
             $this->tokens->append($token);
             $this->element->getAttributeList()->setAttrValue(
                 $this->attrLocalName,
@@ -269,20 +267,20 @@ final class DOMTokenList implements
      *
      * @throws \Rowbot\DOM\Exception\SyntaxError           If either token is an empty string.
      * @throws \Rowbot\DOM\Exception\InvalidCharacterError If either token contains ASCII whitespace.
+     *
+     * @return bool
      */
-    public function replace($token, $newToken)
+    public function replace($token, $newToken): bool
     {
         $token = Utils::DOMString($token);
         $newToken = Utils::DOMString($newToken);
 
         if ($token === '' || $newToken === '') {
             throw new SyntaxError();
-            return;
         }
 
         if (preg_match('/\s/', $token) || preg_match('/\s/', $newToken)) {
             throw new InvalidCharacterError();
-            return;
         }
 
         if (!$this->tokens->contains($token)) {
@@ -311,7 +309,7 @@ final class DOMTokenList implements
      * @throws \Rowbot\DOM\Exception\TypeError If the associated attribute's local name does not define a list of
      *                                         supported tokens.
      */
-    public function supports($token)
+    public function supports($token): bool
     {
         // TODO: This may not be worth implementing since we cannot accurately
         //     determine which values any particular browser actually supports.
@@ -331,7 +329,7 @@ final class DOMTokenList implements
      *
      * @return string
      */
-    public function toString()
+    public function toString(): string
     {
         return $this->element->getAttributeList()->getAttrValue(
             $this->attrLocalName
@@ -341,7 +339,7 @@ final class DOMTokenList implements
     /**
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->toString();
     }
@@ -353,7 +351,7 @@ final class DOMTokenList implements
      *
      * @return bool
      */
-    public function offsetExists($index)
+    public function offsetExists($index): bool
     {
         return $this->tokens->offsetExists($index);
     }
@@ -365,7 +363,7 @@ final class DOMTokenList implements
      *
      * @return string|null The token at the specified index or null if the index does not exist.
      */
-    public function offsetGet($index)
+    public function offsetGet($index): ?string
     {
         return $this->tokens->offsetGet($index);
     }
@@ -378,7 +376,7 @@ final class DOMTokenList implements
      *
      * @return void
      */
-    public function offsetSet($index, $token)
+    public function offsetSet($index, $token): void
     {
     }
 
@@ -389,7 +387,7 @@ final class DOMTokenList implements
      *
      * @return void
      */
-    public function offsetUnset($index)
+    public function offsetUnset($index): void
     {
     }
 
@@ -398,7 +396,7 @@ final class DOMTokenList implements
      *
      * @return int
      */
-    public function count()
+    public function count(): int
     {
         return $this->tokens->count();
     }
@@ -408,7 +406,7 @@ final class DOMTokenList implements
      *
      * @return string
      */
-    public function current()
+    public function current(): string
     {
         return $this->tokens->current();
     }
@@ -418,7 +416,7 @@ final class DOMTokenList implements
      *
      * @return int
      */
-    public function key()
+    public function key(): int
     {
         return $this->tokens->key();
     }
@@ -428,7 +426,7 @@ final class DOMTokenList implements
      *
      * @return void
      */
-    public function next()
+    public function next(): void
     {
         $this->tokens->next();
     }
@@ -438,7 +436,7 @@ final class DOMTokenList implements
      *
      * @return void
      */
-    public function rewind()
+    public function rewind(): void
     {
         $this->tokens->rewind();
     }
@@ -448,7 +446,7 @@ final class DOMTokenList implements
      *
      * @return bool
      */
-    public function valid()
+    public function valid(): bool
     {
         return $this->tokens->valid();
     }
@@ -462,7 +460,7 @@ final class DOMTokenList implements
         $oldValue,
         $value,
         $namespace
-    ) {
+    ): void {
         if ($localName === $this->attrLocalName && $namespace === null) {
             $this->tokens->clear();
 
