@@ -11,17 +11,15 @@ use Rowbot\DOM\Element\Element;
  *
  * @see https://dom.spec.whatwg.org/#concept-element-attributes-change-ext
  *
- * @param Element $element The Element whose content attribute changed.
+ * @param \Rowbot\DOM\Element\Element $element   The Element whose content attribute changed.
+ * @param string                      $localName The localname of the attribute that changed.
+ * @param string|null                 $oldValue  The previous value of the content attribute. This can be null if the
+ *                                               content attribute did not previously exist.
+ * @param string|null                 $value     The new value of the content attribute. This can be null if the content
+ *                                               attribtue is being removed from the Element.
+ * @param string|null                 $namespace The namespace of the content attribute.
  *
- * @param string $localName The localname of the attribute that changed.
- *
- * @param string|null $oldValue The previous value of the content attribute.
- *     This can be null if the content attribute did not previously exist.
- *
- * @param string|null $value The new value of the content attribute. This can
- *     be null if the content attribtue is being removed from the Element.
- *
- * @param string|null $namespace The namespace of the content attribute.
+ * @return void
  */
 interface AttributeChangeObserver
 {
