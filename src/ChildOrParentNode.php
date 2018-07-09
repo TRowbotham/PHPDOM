@@ -22,7 +22,7 @@ trait ChildOrParentNode
      * @return \Rowbot\DOM\DocumentFragment|\Rowbot\DOM\Node If $nodes > 1, then a DocumentFragment is returned,
      *                                                       otherwise a single Node is returned.
      */
-    private function convertNodesToNode($nodes, Document $document)
+    private function convertNodesToNode(array $nodes, Document $document): Node
     {
         $node = null;
 
