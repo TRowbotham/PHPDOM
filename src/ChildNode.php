@@ -22,7 +22,7 @@ trait ChildNode
      *
      * @throws \Rowbot\DOM\Exception\HierarchyRequestError
      */
-    public function after(...$nodes)
+    public function after(...$nodes): void
     {
         $parent = $this->parentNode;
 
@@ -55,7 +55,7 @@ trait ChildNode
      *
      * @throws \Rowbot\DOM\Exception\HierarchyRequestError
      */
-    public function before(...$nodes)
+    public function before(...$nodes): void
     {
         $parent = $this->parentNode;
 
@@ -87,7 +87,7 @@ trait ChildNode
      *
      * @return void
      */
-    public function remove()
+    public function remove(): void
     {
         if (!$this->parentNode) {
             return;
@@ -107,7 +107,7 @@ trait ChildNode
      *
      * @throws \Rowbot\DOM\Exception\HierarchyRequestError
      */
-    public function replaceWith(...$nodes)
+    public function replaceWith(...$nodes): void
     {
         $parent = $this->parentNode;
 
