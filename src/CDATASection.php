@@ -1,8 +1,18 @@
 <?php
 namespace Rowbot\DOM;
 
+/**
+ * @see https://dom.spec.whatwg.org/#interface-cdatasection
+ */
 class CDATASection extends Text
 {
+    /**
+     * Constructor.
+     *
+     * @param string $data
+     *
+     * @return void
+     */
     public function __construct($data)
     {
         parent::__construct($data);
@@ -11,14 +21,7 @@ class CDATASection extends Text
     }
 
     /**
-     * Gets the name of the node.
-     *
-     * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#dom-node-nodename
-     * @see Node::getNodeName()
-     *
-     * @return string Returns the string "#cdata-section".
+     * {@inheritDoc}
      */
     protected function getNodeName(): string
     {
