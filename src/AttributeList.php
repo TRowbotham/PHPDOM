@@ -13,9 +13,23 @@ use SplObjectStorage;
 
 class AttributeList extends OrderedSet
 {
+    /**
+     * @var \Rowbot\DOM\Element\Element
+     */
     private $element;
+
+    /**
+     * @var \SplObjectStorage
+     */
     private $observers;
 
+    /**
+     * Constructor.
+     *
+     * @param \Rowbot\DOM\Element\Element $element
+     *
+     * @return void
+     */
     public function __construct(Element $element)
     {
         parent::__construct();
@@ -29,9 +43,10 @@ class AttributeList extends OrderedSet
      *
      * @see https://dom.spec.whatwg.org/#concept-element-attributes-change
      *
-     * @param Attr   $attribute The attribute whose value is to be changed.
+     * @param \Rowbot\DOM\Attr $attribute The attribute whose value is to be changed.
+     * @param string           $value     The attribute's new value.
      *
-     * @param string $value     The attribute's new value.
+     * @return void
      */
     public function change(Attr $attribute, $value)
     {
@@ -57,7 +72,9 @@ class AttributeList extends OrderedSet
      *
      * @see https://dom.spec.whatwg.org/#concept-element-attributes-append
      *
-     * @param Attr $attribute The attribute to be appended.
+     * @param \Rowbot\DOM\Attr $attribute The attribute to be appended.
+     *
+     * @return void
      */
     public function append($attribute)
     {
@@ -89,7 +106,9 @@ class AttributeList extends OrderedSet
      *
      * @see https://dom.spec.whatwg.org/#concept-element-attributes-remove
      *
-     * @param Attr $attribute The attribute to be removed from the list.
+     * @param \Rowbot\DOM\Attr $attribute The attribute to be removed from the list.
+     *
+     * @return void
      */
     public function remove($attribute)
     {
@@ -121,9 +140,10 @@ class AttributeList extends OrderedSet
      *
      * @see https://dom.spec.whatwg.org/#concept-element-attributes-replace
      *
-     * @param Attr $oldAttr The attribute being removed from the list.
+     * @param \Rowbot\DOM\Attr $oldAttr The attribute being removed from the list.
+     * @param \Rowbot\DOM\Attr $newAttr The attribute being inserted into the list.
      *
-     * @param Attr $newAttr The attribute being inserted into the list.
+     * @return void
      */
     public function replace($oldAttr, $newAttr)
     {
@@ -156,10 +176,9 @@ class AttributeList extends OrderedSet
      *
      * @see https://dom.spec.whatwg.org/#concept-element-attributes-get-by-name
      *
-     * @param string $qualifiedName The fully qualified name of the attribute
-     *     to find.
+     * @param string $qualifiedName The fully qualified name of the attribute to find.
      *
-     * @return Attr|null
+     * @return \Rowbot\DOM\Attr|null
      */
     public function getAttrByName($qualifiedName)
     {
@@ -183,11 +202,10 @@ class AttributeList extends OrderedSet
      *
      * @see https://dom.spec.whatwg.org/#concept-element-attributes-get-by-namespace
      *
-     * @param string  $namespace The namespace of the attribute to find.
+     * @param string $namespace The namespace of the attribute to find.
+     * @param string $localName The local name of the attribute to find.
      *
-     * @param string  $localName The local name of the attribute to find.
-     *
-     * @return Attr|null
+     * @return \Rowbot\DOM\Attr|null
      */
     public function getAttrByNamespaceAndLocalName(
         $namespace,
@@ -213,11 +231,8 @@ class AttributeList extends OrderedSet
      *
      * @see https://dom.spec.whatwg.org/#concept-element-attributes-get-value
      *
-     * @param string  $localName The local name of the attribute whose value is
-     *     to be returned.
-     *
-     * @param string  $namespace The namespace of the attribute whose value is
-     *     to be returned.
+     * @param string      $localName The local name of the attribute whose value is to be returned.
+     * @param string|null $namespace (optional) The namespace of the attribute whose value is to be returned.
      *
      * @return string
      */
@@ -240,12 +255,12 @@ class AttributeList extends OrderedSet
      *
      * @see https://dom.spec.whatwg.org/#concept-element-attributes-set
      *
-     * @param Attr $attr The attribute to be set on an element.
+     * @param \Rowbot\DOM\Attr $attr The attribute to be set on an element.
      *
-     * @return Attr|null
+     * @return \Rowbot\DOM\Attr|null
      *
-     * @throws InUseAttributeError If the attribute's owning element is not null
-     *     and not an element.
+     * @throws \Rowbot\DOM\Exception\InUseAttributeError If the attribute's owning element is not null and not an
+     *                                                   element.
      */
     public function setAttr(Attr $attr)
     {
@@ -281,17 +296,12 @@ class AttributeList extends OrderedSet
      *
      * @see https://dom.spec.whatwg.org/#concept-element-attributes-set-value
      *
-     * @param string      $localName The local name of the attribute whose value
-     *     is to be set.
+     * @param string      $localName The local name of the attribute whose value is to be set.
+     * @param string      $value     The value of the attribute whose value is to be set.
+     * @param string|null $prefix    (optional) The namespace prefix of the attribute whose value is to be set.
+     * @param string|null $namespace (optional) The namespace of the attribute whose value is to be set.
      *
-     * @param string      $value     The value of the attribute whose value is
-     *     to be set.
-     *
-     * @param string|null $prefix    Optional. The namespace prefix of the
-     *     attribute whose value is to be set.
-     *
-     * @param string|null $namespace Optional. The namespace of the attribute
-     *     whose value is to be set.
+     * @return void
      */
     public function setAttrValue(
         $localName,
@@ -320,10 +330,9 @@ class AttributeList extends OrderedSet
      *
      * @see https://dom.spec.whatwg.org/#concept-element-attributes-remove-by-name
      *
-     * @param string $qualifiedName The fully qualified name of the attribute
-     *     to be removed.
+     * @param string $qualifiedName The fully qualified name of the attribute to be removed.
      *
-     * @return Attr|null
+     * @return \Rowbot\DOM\Attr|null
      */
     public function removeAttrByName($qualifiedName)
     {
@@ -342,10 +351,9 @@ class AttributeList extends OrderedSet
      * @see https://dom.spec.whatwg.org/#concept-element-attributes-remove-by-namespace
      *
      * @param string $namespace The namespace of the attribute to be removed.
-     *
      * @param string $localName The local name of the attribute to be removed.
      *
-     * @return Attr|null
+     * @return \Rowbot\DOM\Attr|null
      */
     public function removeAttrByNamespaceAndLocalName(
         $namespace,
@@ -360,6 +368,11 @@ class AttributeList extends OrderedSet
         return $attr;
     }
 
+    /**
+     * @param \Rowbot\DOM\AttributeChangeObserver $observer
+     *
+     * @return void
+     */
     public function observe(AttributeChangeObserver $observer)
     {
         if (!$this->observers->contains($observer)) {
@@ -367,6 +380,11 @@ class AttributeList extends OrderedSet
         }
     }
 
+    /**
+     * @param \Rowbot\DOM\AttributeChangeObserver $observer
+     *
+     * @return void
+     */
     public function unobserve(AttributeChangeObserver $observer)
     {
         $this->observers->detach($observer);
