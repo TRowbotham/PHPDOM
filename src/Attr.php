@@ -9,22 +9,17 @@ use Rowbot\DOM\Element\Element;
  * @see https://dom.spec.whatwg.org/#attr
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Attr
  *
- * @property-read string $localName The attribute's local name.
- *
- * @property-read string $name The attribute's fully qualified name, usually in
- *     the form of prefix:localName or localName if the attribute does not have
- *     a namespace.
- *
- * @property-read string|null $namespaceURI The attribute's namespace or null
- *     if it does not have a namespace.
- *
- * @property-read Element|null $ownerElement The Element to which this attribute
- *     belongs to, or null if it is not owned by an Element.
- *
- * @property-read string|null $prefix The attribute's namespace prefix or null
- *     if it does not have a namespace.
- *
- * @property-read string $value The value of the attribute.
+ * @property-read string                           $localName    The attribute's local name.
+ * @property-read string                           $name         The attribute's fully qualified name, usually inthe
+ *                                                               form  of prefix:localName or localName if the attribute
+ *                                                               does not have a namespace.
+ * @property-read string|null                      $namespaceURI The attribute's namespace or null if it does not have a
+ *                                                               namespace.
+ * @property-read \Rowbot\DOM\Element\Element|null $ownerElement The Element to which this attribute belongs to, or null
+ *                                                               if it is not owned by an Element.
+ * @property-read string|null                      $prefix       The attribute's namespace prefix or null if it does not
+ *                                                               have a namespace.
+ * @property-read string                           $value        The value of the attribute.
  */
 class Attr extends Node
 {
@@ -39,7 +34,7 @@ class Attr extends Node
     private $namespaceURI;
 
     /**
-     * @var Element|null
+     * @var \Rowbot\DOM\Element\Element|null
      */
     private $ownerElement;
 
@@ -53,6 +48,16 @@ class Attr extends Node
      */
     private $value;
 
+    /**
+     * Constructor.
+     *
+     * @param string  $localName
+     * @param string  $value
+     * @param ?string $namespace (optional)
+     * @param ?string $prefix    (optional)
+     *
+     * @return void
+     */
     public function __construct(
         $localName,
         $value,
@@ -69,6 +74,9 @@ class Attr extends Node
         $this->value = $value;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function __get($name)
     {
         switch ($name) {
@@ -99,6 +107,9 @@ class Attr extends Node
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function __set($name, $value)
     {
         switch ($name) {
@@ -136,10 +147,11 @@ class Attr extends Node
      *
      * @internal
      *
-     * @param Element|null $element The Element that this attribute belongs
-     *     to.
+     * @param \Rowbot\DOM\Element\Element|null $element The Element that this attribute belongs to.
+     *
+     * @return void
      */
-    public function setOwnerElement(Element $element = null)
+    public function setOwnerElement(?Element $element)
     {
         $this->ownerElement = $element;
     }
@@ -151,6 +163,8 @@ class Attr extends Node
      * @internal
      *
      * @param string $value The attribute's value.
+     *
+     * @return void
      */
     public function setValue($value)
     {
@@ -165,6 +179,8 @@ class Attr extends Node
      * @see https://dom.spec.whatwg.org/#set-an-existing-attribute-value
      *
      * @param string $value The attribute's value.
+     *
+     * @return void
      */
     protected function setExistingAttributeValue($value)
     {
@@ -177,14 +193,7 @@ class Attr extends Node
     }
 
     /**
-     * Gets the name of the node.
-     *
-     * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#dom-node-nodename
-     * @see Node::getNodeName()
-     *
-     * @return string Returns the attirbute's qualified name.
+     * {@inheritDoc}
      */
     protected function getNodeName(): string
     {
@@ -196,14 +205,7 @@ class Attr extends Node
     }
 
     /**
-     * Returns the Node's length, which is the number of child nodes.
-     *
-     * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#concept-node-length
-     * @see Node::getLength()
-     *
-     * @return int
+     * {@inheritDoc}
      */
     public function getLength(): int
     {
@@ -212,14 +214,7 @@ class Attr extends Node
     }
 
     /**
-     * Gets the value of the node.
-     *
-     * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#dom-node-nodevalue
-     * @see Node::getNodeValue()
-     *
-     * @return string
+     * {@inheritDoc}
      */
     protected function getNodeValue(): string
     {
@@ -227,14 +222,7 @@ class Attr extends Node
     }
 
     /**
-     * Sets the node's value.
-     *
-     * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#dom-node-nodevalue
-     * @see Node::setNodeValue()
-     *
-     * @param string|null $newValue The node's new value.
+     * {@inheritDoc}
      */
     protected function setNodeValue($newValue): void
     {
@@ -242,14 +230,7 @@ class Attr extends Node
     }
 
     /**
-     * Gets the attribute's value.
-     *
-     * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#dom-node-textcontent
-     * @see Node::getTextContent()
-     *
-     * @return string
+     * {@inheritDoc}
      */
     protected function getTextContent(): string
     {
@@ -257,14 +238,7 @@ class Attr extends Node
     }
 
     /**
-     * Sets the nodes text content.
-     *
-     * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#dom-node-textcontent
-     * @see Node::setTextContent()
-     *
-     * @param string|null $newValue The new attribute value.
+     * {@inheritDoc}
      */
     protected function setTextContent($newValue): void
     {
