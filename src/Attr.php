@@ -77,7 +77,7 @@ class Attr extends Node
     /**
      * {@inheritDoc}
      */
-    public function __get($name)
+    public function __get(string $name)
     {
         switch ($name) {
             case 'localName':
@@ -110,7 +110,7 @@ class Attr extends Node
     /**
      * {@inheritDoc}
      */
-    public function __set($name, $value)
+    public function __set(string $name, $value): void
     {
         switch ($name) {
             case 'value':
@@ -151,7 +151,7 @@ class Attr extends Node
      *
      * @return void
      */
-    public function setOwnerElement(?Element $element)
+    public function setOwnerElement(?Element $element): void
     {
         $this->ownerElement = $element;
     }
@@ -166,7 +166,7 @@ class Attr extends Node
      *
      * @return void
      */
-    public function setValue($value)
+    public function setValue($value): void
     {
         $this->value = $value;
     }
@@ -182,7 +182,7 @@ class Attr extends Node
      *
      * @return void
      */
-    protected function setExistingAttributeValue($value)
+    protected function setExistingAttributeValue($value): void
     {
         if (!$this->ownerElement) {
             $this->value = $value;
