@@ -1,7 +1,6 @@
 <?php
 namespace Rowbot\DOM;
 
-use Rowbot\DOM\DocumentType;
 use Rowbot\DOM\Element\HTML\HTMLBaseElement;
 use Rowbot\DOM\Element\HTML\HTMLHtmlElement;
 use Rowbot\DOM\Element\HTML\HTMLHeadElement;
@@ -16,12 +15,30 @@ use Rowbot\DOM\Exception\NotSupportedError;
 use Rowbot\DOM\Parser\MarkupFactory;
 use Rowbot\DOM\Support\Stringable;
 use Rowbot\DOM\URL\URLParser;
-use Rowbot\DOM\Utils;
+
+use function count;
+use function in_array;
+use function is_string;
+use function mb_strpos;
+use function method_exists;
+use function preg_match;
+use function strtolower;
 
 /**
  * @see https://dom.spec.whatwg.org/#interface-document
  * @see https://html.spec.whatwg.org/#document
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Document
+ *
+ * @property-read \Rowbot\DOM\DOMImplementation    $implementation
+ * @property-read string                           $URL
+ * @property-read string                           $documentURI
+ * @property-read string                           $origin
+ * @property-read string                           $compatMode
+ * @property-read string                           $characterSet
+ * @property-read string                           $contentType
+ * @property-read \Rowbot\DOM\DocumentType|null    $doctype
+ * @property-read \Rowbot\DOM\Element\Element|null $documentElement
+ * @property-read string                           $readyState
  */
 class Document extends Node implements Stringable
 {
@@ -31,23 +48,81 @@ class Document extends Node implements Stringable
 
     const INERT_TEMPLATE_DOCUMENT = 0x1;
 
+    /**
+     * @var ?self
+     */
     protected static $defaultDocument = null;
 
+    /**
+     * @var string
+     */
     protected $characterSet;
+
+    /**
+     * @var string
+     */
     protected $contentType;
+
+    /**
+     * @var int
+     */
     protected $flags;
+
+    /**
+     * @var ?self
+     */
     protected $inertTemplateDocument;
+
+    /**
+     * @var int
+     */
     protected $mode;
 
+    /**
+     * @var string
+     */
     private $compatMode;
+
+    /**
+     * @var \Rowbot\DOM\DOMImplementation
+     */
     private $implementation;
+
+    /**
+     * @var bool
+     */
     private $isIframeSrcDoc;
+
+    /**
+     * @var bool
+     */
     private $isHTMLDocument;
+
+    /**
+     * \Rowbot\DOM\NodeIterator[]
+     */
     private $nodeIteratorList;
+
+    /**
+     * \Rowbot\URL\URLRecord
+     */
     private $url;
+
+    /**
+     * @var string
+     */
     private $readyState;
+
+    /**
+     * @var int
+     */
     private $source;
 
+    /**
+     * Constructor.
+     *
+     * @return void
+     */
     public function __construct()
     {
         parent::__construct();
@@ -137,22 +212,23 @@ class Document extends Node implements Stringable
      * Adopts the given Node and its subtree from a differnt Document allowing
      * the node to be used in this Document.
      *
-     * @link https://dom.spec.whatwg.org/#dom-document-adoptnode
+     * @see https://dom.spec.whatwg.org/#dom-document-adoptnode
      *
-     * @param  Node  $node The Node to be adopted.
+     * @param \Rowbot\DOM\Node $node The Node to be adopted.
      *
-     * @return Node         The newly adopted Node.
+     * @return \Rowbot\DOM\Node The newly adopted Node.
+     *
+     * @throws \Rowbot\DOM\Exception\NotSupportedError
+     * @throws \Rowbot\DOM\Exception\HierarchyRequestError
      */
     public function adoptNode(Node $node)
     {
         if ($node instanceof Document) {
             throw new NotSupportedError();
-            return;
         }
 
         if ($node instanceof ShadowRoot) {
             throw new HierarchyRequestError();
-            return;
         }
 
         $this->doAdoptNode($node);
@@ -167,9 +243,9 @@ class Document extends Node implements Stringable
      *
      * @param string $localName The name of the attribute.
      *
-     * @return Attr
+     * @return \Rowbot\DOM\Attr
      *
-     * @throws InvalidCharacterError
+     * @throws \Rowbot\DOM\Exception\InvalidCharacterError
      */
     public function createAttribute($localName)
     {
@@ -177,7 +253,7 @@ class Document extends Node implements Stringable
 
         // If localName does not match the Name production in XML, then
         // throw an InvalidCharacterError.
-        if (!\preg_match(Namespaces::NAME_PRODUCTION, $localName)) {
+        if (!preg_match(Namespaces::NAME_PRODUCTION, $localName)) {
             throw new InvalidCharacterError();
         }
 
@@ -197,15 +273,13 @@ class Document extends Node implements Stringable
      *
      * @see https://dom.spec.whatwg.org/#dom-document-createattributens
      *
-     * @param string|null $namespace The attribute's namespace.
+     * @param string|null $namespace     The attribute's namespace.
+     * @param string      $qualifiedName The attribute's qualified name.
      *
-     * @param string $qualifiedName The attribute's qualified name.
+     * @return \Rowbot\DOM\Attr
      *
-     * @return Attr
-     *
-     * @throws NamespaceError
-     *
-     * @throws InvalidCharacterError
+     * @throws \Rowbot\DOM\Exception\NamespaceError
+     * @throws \Rowbot\DOM\Exception\InvalidCharacterError
      */
     public function createAttributeNS(?string $namespace, $qualifiedName)
     {
@@ -228,6 +302,15 @@ class Document extends Node implements Stringable
         return $attribute;
     }
 
+    /**
+     * Creates a comment node.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-document-createcomment
+     *
+     * @param string $data
+     *
+     * @return \Rowbot\DOM\Comment
+     */
     public function createComment($data): Comment
     {
         $node = new Comment($data);
@@ -236,6 +319,13 @@ class Document extends Node implements Stringable
         return $node;
     }
 
+    /**
+     * Creates a document fragment node.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-document-createdocumentfragment
+     *
+     * @return \Rowbot\DOM\DocumentFragment
+     */
     public function createDocumentFragment(): DocumentFragment
     {
         $node = new DocumentFragment();
@@ -247,11 +337,14 @@ class Document extends Node implements Stringable
     /**
      * Creates an HTMLElement with the specified tag name.
      *
-     * @link https://dom.spec.whatwg.org/#dom-document-createelement
+     * @see https://dom.spec.whatwg.org/#dom-document-createelement
      *
      * @param string $localName The name of the element to create.
      *
-     * @return HTMLElement A known HTMLElement or HTMLUnknownElement.
+     * @return \Rowbot\DOM\Element\HTML\HTMLElement A known \Rowbot\DOM\Element\HTML\HTMLElement or
+     *                                              \Rowbot\DOM\Element\HTML\HTMLUnknownElement.
+     *
+     * @throws \Rowbot\DOM\Exception\InvalidCharacterError
      */
     public function createElement($localName)
     {
@@ -259,7 +352,7 @@ class Document extends Node implements Stringable
 
         // If localName does not match the Name production, then throw an
         // InvalidCharacterError.
-        if (!\preg_match(Namespaces::NAME_PRODUCTION, $localName)) {
+        if (!preg_match(Namespaces::NAME_PRODUCTION, $localName)) {
             throw new InvalidCharacterError();
         }
 
@@ -282,16 +375,12 @@ class Document extends Node implements Stringable
                 $namespace = null;
         }
 
-        try {
-            $element = ElementFactory::create(
-                $this,
-                $localName,
-                $namespace,
-                null
-            );
-        } catch (DOMException $e) {
-            throw $e;
-        }
+        $element = ElementFactory::create(
+            $this,
+            $localName,
+            $namespace,
+            null
+        );
 
         return $element;
     }
@@ -301,15 +390,13 @@ class Document extends Node implements Stringable
      *
      * @see https://dom.spec.whatwg.org/#dom-document-createelementns
      *
-     * @param string|null $namespace The element's namespace.
+     * @param string|null $namespace     The element's namespace.
+     * @param string      $qualifiedName The element's qualified name.
      *
-     * @param string $qualifiedName The element's qualified name.
+     * @return \Rowbot\DOM\Element\Element
      *
-     * @return Element
-     *
-     * @throws InvalidCharacterError
-     *
-     * @throws NamespaceError
+     * @throws \Rowbot\DOM\Exception\InvalidCharacterError
+     * @throws \Rowbot\DOM\Exception\NamespaceError
      */
     public function createElementNS(?string $namespace, $qualifiedName)
     {
@@ -323,18 +410,18 @@ class Document extends Node implements Stringable
     /**
      * Creates a new Event of the specified type and returns it.
      *
-     * @link https://dom.spec.whatwg.org/#dom-document-createevent
+     * @see https://dom.spec.whatwg.org/#dom-document-createevent
      *
      * @param string $interface The type of event interface to be created.
      *
-     * @return Event
+     * @return \Rowbot\DOM\Event\Event
      *
-     * @throws NotSupportedError
+     * @throws \Rowbot\DOM\Exception\NotSupportedError
      */
     public function createEvent($interface)
     {
         $constructor = null;
-        $interface = \strtolower(Utils::DOMString($interface));
+        $interface = strtolower(Utils::DOMString($interface));
 
         switch ($interface) {
             case 'customevent':
@@ -362,16 +449,13 @@ class Document extends Node implements Stringable
      * Returns a new NodeIterator object, which represents an iterator over the
      * members of a list of the nodes in a subtree of the DOM.
      *
-     * @param Node $root The root node of the iterator object.
+     * @param \Rowbot\DOM\Node                     $root       The root node of the iterator object.
+     * @param int                                  $whatToShow (optional) A bitmask of NodeFilter constants allowing the
+     *                                                         user to filter for specific node types.
+     * @param \Rowbot\DOM\NodeFilter|callable|null $filter     A user defined function to determine whether or not to
+     *                                                         accept a node that has passed the whatToShow check.
      *
-     * @param int $whatToShow Optional. A bitmask of NodeFilter constants
-     *     allowing the user to filter for specific node types.
-     *
-     * @param NodeFilter|callable|null $filter A user defined function to
-     *     determine whether or not to accept a node that has passed the
-     *     whatToShow check.
-     *
-     * @return NodeIterator
+     * @return \Rowbot\DOM\NodeIterator
      */
     public function createNodeIterator(
         Node $root,
@@ -384,19 +468,31 @@ class Document extends Node implements Stringable
         return $iter;
     }
 
+    /**
+     * Creates a processing instruction.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-document-createprocessinginstruction
+     *
+     * @param string $target
+     * @param string $data
+     *
+     * @throws \Rowbot\DOM\Exception\InvalidCharacterError
+     *
+     * @return \Rowbot\DOM\ProcessingInstruction
+     */
     public function createProcessingInstruction($target, $data)
     {
         $target = Utils::DOMString($target);
 
         // If target does not match the Name production, then throw an
         // InvalidCharacterError.
-        if (!\preg_match(Namespaces::NAME_PRODUCTION, $target)) {
+        if (!preg_match(Namespaces::NAME_PRODUCTION, $target)) {
             throw new InvalidCharacterError();
         }
 
         $data = Utils::DOMString($data);
 
-        if (\mb_strpos($data, '?>') !== false) {
+        if (mb_strpos($data, '?>') !== false) {
             throw new InvalidCharacterError();
         }
 
@@ -406,6 +502,13 @@ class Document extends Node implements Stringable
         return $pi;
     }
 
+    /**
+     * Creates a range.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-document-createrange
+     *
+     * @return \Rowbot\DOM\Range
+     */
     public function createRange(): Range
     {
         $range = new Range();
@@ -415,6 +518,13 @@ class Document extends Node implements Stringable
         return $range;
     }
 
+    /**
+     * Creates a text node.
+     *
+     * @param string $data
+     *
+     * @return \Rowbot\DOM\Text
+     */
     public function createTextNode($data): Text
     {
         $node = new Text($data);
@@ -426,9 +536,14 @@ class Document extends Node implements Stringable
     /**
      * Creates a new CDATA Section node, with data as its data.
      *
-     * @param  string $data The node's content.
+     * @see https://dom.spec.whatwg.org/#dom-document-createcdatasection
      *
-     * @return CDATASection A CDATASection node.
+     * @param string $data The node's content.
+     *
+     * @return \Rowbot\DOM\CDATASection A CDATASection node.
+     *
+     * @throws \Rowbot\DOM\Exception\InvalidCharacterError
+     * @throws \Rowbot\DOM\Exception\NotSupportedError
      */
     public function createCDATASection($data)
     {
@@ -442,7 +557,7 @@ class Document extends Node implements Stringable
 
         // If data contains the string "]]>", then throw an
         // InvalidCharacterError.
-        if (\mb_strpos($data, ']]>') !== false) {
+        if (mb_strpos($data, ']]>') !== false) {
             throw new InvalidCharacterError();
         }
 
@@ -458,16 +573,13 @@ class Document extends Node implements Stringable
      * Returns a new TreeWalker object, which represents the nodes of a document
      * subtree and a position within them.
      *
-     * @param Node $root The root node of the DOM subtree being traversed.
+     * @param \Rowbot\DOM\Node                     $root       The root node of the DOM subtree being traversed.
+     * @param int                                  $whatToShow (optional) A bitmask of NodeFilter constants allowing the
+     *                                                         user to filter for specific node types.
+     * @param \Rowbot\DOM\NodeFilter|callable|null $filter     A user defined function to determine whether or not to
+     *                                                         accept a node that has passed the whatToShow check.
      *
-     * @param int $whatToShow Optional.  A bitmask of NodeFilter constants
-     *     allowing the user to filter for specific node types.
-     *
-     * @param NodeFilter|callable|null $filter A user defined function to
-     *     determine whether or not to accept a node that has passed the
-     *     whatToShow check.
-     *
-     * @return TreeWalker
+     * @return \Rowbot\DOM\TreeWalker
      */
     public function createTreeWalker(
         Node $root,
@@ -484,7 +596,9 @@ class Document extends Node implements Stringable
      *
      * @see https://dom.spec.whatwg.org/#concept-node-adopt
      *
-     * @param Node $node The node being adopted.
+     * @param \Rowbot\DOM\Node $node The node being adopted.
+     *
+     * @return void
      */
     public function doAdoptNode(Node $node)
     {
@@ -507,7 +621,7 @@ class Document extends Node implements Stringable
             $iter = new NodeIterator($node);
 
             while (($descendant = $iter->nextNode())) {
-                if (\method_exists($descendant, 'doAdoptingSteps')) {
+                if (method_exists($descendant, 'doAdoptingSteps')) {
                     $descendant->doAdoptingSteps($oldDocument);
                 }
             }
@@ -523,18 +637,11 @@ class Document extends Node implements Stringable
     }
 
     /**
-     * Returns the Node's length, which is the number of child nodes.
-     *
-     * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#concept-node-length
-     * @see Node::getLength()
-     *
-     * @return int
+     * {@inheritDoc}
      */
     public function getLength(): int
     {
-        return \count($this->childNodes);
+        return count($this->childNodes);
     }
 
     /**
@@ -545,7 +652,7 @@ class Document extends Node implements Stringable
      *
      * @see https://html.spec.whatwg.org/multipage/scripting.html#appropriate-template-contents-owner-document
      *
-     * @return Document
+     * @return self
      */
     public function getAppropriateTemplateContentsOwnerDocument()
     {
@@ -572,7 +679,7 @@ class Document extends Node implements Stringable
      *
      * @see https://html.spec.whatwg.org/multipage/infrastructure.html#document-base-url
      *
-     * @return URLRecord
+     * @return \Rowbot\URL\URLRecord
      */
     public function getBaseURL()
     {
@@ -604,13 +711,13 @@ class Document extends Node implements Stringable
 
     /**
      * Returns the first document created, which is assumed to be the global
-     * document.  This global document is the owning document for objects
+     * document. This global document is the owning document for objects
      * instantiated using its constructor.  These objects are DocumentFragment,
      * Text, Comment, and ProcessingInstruction.
      *
      * @internal
      *
-     * @return Document|null Returns the global document.  If null is returned,
+     * @return self|null Returns the global document. If null is returned,
      *     then no document existed before the user attempted to instantiate an
      *     object that has an owning document.
      */
@@ -680,46 +787,87 @@ class Document extends Node implements Stringable
         $this->mode = $mode;
     }
 
+    /**
+     * Indicates whether the document is an HTML document or not.
+     *
+     * @internal
+     *
+     * @return bool
+     */
     public function isHTMLDocument()
     {
         return $this->isHTMLDocument;
     }
 
+    /**
+     * Indicates whether the document is an iframe src document.
+     *
+     * @internal
+     *
+     * @return bool
+     */
     public function isIframeSrcdoc()
     {
         return $this->isIframeSrcDoc;
     }
 
+    /**
+     * Marks the document as being an iframe src document.
+     *
+     * @internal
+     *
+     * @return void
+     */
     public function markAsIframeSrcdoc()
     {
         $this->isIframeSrcDoc = true;
     }
 
+    /**
+     * Gets the node iterator collection.
+     *
+     * @internal
+     *
+     * @return \Rowbot\DOM\NodeIterator[]
+     */
     public function getNodeIteratorCollection()
     {
         return $this->nodeIteratorList;
     }
 
+    /**
+     * Imports a node from another document into the current document.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-document-importnode
+     *
+     * @param \Rowbot\DOM\Node $node
+     * @param bool             $deep (optional)
+     *
+     * @throws \Rowbot\DOM\Exception\NotSupportedError
+     *
+     * @return \Rowbot\DOM\Node
+     */
     public function importNode(Node $node, bool $deep = false)
     {
         if ($node instanceof Document || $node instanceof ShadowRoot) {
             throw new NotSupportedError();
-            return;
         }
 
         return $node->cloneNodeInternal($this, $deep);
     }
 
     /**
-     * @internal
-     *
      * Sets the document's character set.
      *
+     * @internal
+     *
      * @param string $characterSet The document's character set
+     *
+     * @return void
      */
     public function setCharacterSet($characterSet)
     {
-        if (!\is_string($characterSet)) {
+        if (!is_string($characterSet)) {
             return;
         }
 
@@ -732,6 +880,8 @@ class Document extends Node implements Stringable
      * @internal
      *
      * @param string $type The MIME content type of the document.
+     *
+     * @return void
      */
     public function setContentType($type)
     {
@@ -744,6 +894,8 @@ class Document extends Node implements Stringable
      * @internal
      *
      * @param int $flag Bitwise flags.
+     *
+     * @return void
      */
     public function setFlags($flag)
     {
@@ -756,6 +908,8 @@ class Document extends Node implements Stringable
      * @internal
      *
      * @param int $flag Bitwise flags.
+     *
+     * @return void
      */
     public function unsetFlags($flag)
     {
@@ -770,7 +924,7 @@ class Document extends Node implements Stringable
      *
      * @see https://html.spec.whatwg.org/multipage/dom.html#dom-document-head
      *
-     * @return HTMLHeadElement|null
+     * @return \Rowbot\DOM\Element\HTML\HTMLHeadElement|null
      */
     protected function getHeadElement()
     {
@@ -790,7 +944,7 @@ class Document extends Node implements Stringable
     }
 
     /**
-     * @see Node::getNodeName
+     * {@inheritDoc}
      */
     protected function getNodeName(): string
     {
@@ -798,7 +952,7 @@ class Document extends Node implements Stringable
     }
 
     /**
-     * @see Node::getNodeValue
+     * {@inheritDoc}
      */
     protected function getNodeValue(): ?string
     {
@@ -806,7 +960,7 @@ class Document extends Node implements Stringable
     }
 
     /**
-     * @see Node::getTextContent
+     * {@inheritDoc}
      */
     protected function getTextContent(): ?string
     {
@@ -838,13 +992,13 @@ class Document extends Node implements Stringable
      *
      * @see https://dom.spec.whatwg.org/#concept-document-url
      *
-     * @return string
+     * @return \Rowbot\URL\URLRecord
      */
     protected function getURL()
     {
         if (!isset($this->url)) {
             $ssl = isset($_SERVER['HTTPS']) && $_SERVER["HTTPS"] == 'on';
-            $port = \in_array($_SERVER['SERVER_PORT'], array(80, 443)) ?
+            $port = in_array($_SERVER['SERVER_PORT'], array(80, 443)) ?
                 '' : ':' . $_SERVER['SERVER_PORT'];
             $url = ($ssl ? 'https' : 'http') . '://' . $_SERVER['SERVER_NAME'] .
                 $port . $_SERVER['REQUEST_URI'];
@@ -857,7 +1011,7 @@ class Document extends Node implements Stringable
     }
 
     /**
-     * @see Node::setNodeValue
+     * {@inheritDoc}
      */
     protected function setNodeValue($newValue): void
     {
@@ -865,18 +1019,24 @@ class Document extends Node implements Stringable
     }
 
     /**
-     * @see Node::setTextContent
+     * {@inheritDoc}
      */
     protected function setTextContent($newValue): void
     {
         // Do nothing.
     }
 
+    /**
+     * {@inheirtDoc}
+     */
     public function toString(): string
     {
         return MarkupFactory::serializeFragment($this, true);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function __toString(): string
     {
         return MarkupFactory::serializeFragment($this, true);
