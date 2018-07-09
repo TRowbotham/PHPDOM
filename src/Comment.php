@@ -18,7 +18,7 @@ class Comment extends CharacterData
     public function cloneNodeInternal(
         Document $document = null,
         bool $cloneChildren = false
-    ) {
+    ): Node {
         $document = $document ?: $this->getNodeDocument();
         $copy = new static();
         $copy->data = $this->data;
@@ -37,7 +37,7 @@ class Comment extends CharacterData
      *
      * @return string Returns the string "#comment".
      */
-    protected function getNodeName()
+    protected function getNodeName(): string
     {
         return '#comment';
     }

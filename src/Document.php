@@ -6,7 +6,9 @@ use Rowbot\DOM\Element\HTML\HTMLBaseElement;
 use Rowbot\DOM\Element\HTML\HTMLHtmlElement;
 use Rowbot\DOM\Element\HTML\HTMLHeadElement;
 use Rowbot\DOM\Element\ElementFactory;
+use Rowbot\DOM\Event\Event;
 use Rowbot\DOM\Event\EventFlags;
+use Rowbot\DOM\Event\EventTarget;
 use Rowbot\DOM\Exception\DOMException;
 use Rowbot\DOM\Exception\HierarchyRequestError;
 use Rowbot\DOM\Exception\InvalidCharacterError;
@@ -120,7 +122,7 @@ class Document extends Node implements Stringable
     public function cloneNodeInternal(
         Document $document = null,
         bool $cloneChildren = false
-    ) {
+    ): Node {
         $document = $document ?: $this->getNodeDocument();
         $copy = new static();
         $copy->characterSet = $this->characterSet;
@@ -515,7 +517,7 @@ class Document extends Node implements Stringable
     /**
      * {@inheritDoc}
      */
-    public function ownerDocument()
+    public function ownerDocument(): ?self
     {
         return null;
     }
@@ -530,7 +532,7 @@ class Document extends Node implements Stringable
      *
      * @return int
      */
-    public function getLength()
+    public function getLength(): int
     {
         return \count($this->childNodes);
     }
@@ -790,7 +792,7 @@ class Document extends Node implements Stringable
     /**
      * @see Node::getNodeName
      */
-    protected function getNodeName()
+    protected function getNodeName(): string
     {
         return '#document';
     }
@@ -798,7 +800,7 @@ class Document extends Node implements Stringable
     /**
      * @see Node::getNodeValue
      */
-    protected function getNodeValue()
+    protected function getNodeValue(): ?string
     {
         return null;
     }
@@ -806,7 +808,7 @@ class Document extends Node implements Stringable
     /**
      * @see Node::getTextContent
      */
-    protected function getTextContent()
+    protected function getTextContent(): ?string
     {
         return null;
     }
@@ -816,13 +818,13 @@ class Document extends Node implements Stringable
      * not have a browsing context, and the document’s associated Window
      * object otherwise.
      *
-     * @see EventTarget::getTheParent
+     * @see \Rowbot\DOM\Event\EventTarget::getTheParent
      *
-     * @param Event $event An Event object
+     * @param \Rowbot\DOM\Event\Event $event An Event object
      *
-     * @return Document|null
+     * @return ?self
      */
-    protected function getTheParent($event)
+    protected function getTheParent(Event $event): ?EventTarget
     {
         // We don't currently support browsing contexts or the concept of a
         // Window object, so return null as this is the end of the chain.
@@ -857,7 +859,7 @@ class Document extends Node implements Stringable
     /**
      * @see Node::setNodeValue
      */
-    protected function setNodeValue($newValue)
+    protected function setNodeValue($newValue): void
     {
         // Do nothing.
     }
@@ -865,7 +867,7 @@ class Document extends Node implements Stringable
     /**
      * @see Node::setTextContent
      */
-    protected function setTextContent($newValue)
+    protected function setTextContent($newValue): void
     {
         // Do nothing.
     }

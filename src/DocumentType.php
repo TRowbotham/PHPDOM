@@ -43,7 +43,7 @@ class DocumentType extends Node
     public function cloneNodeInternal(
         Document $document = null,
         bool $cloneChildren = false
-    ) {
+    ): Node {
         $document = $document ?: $this->getNodeDocument();
         $copy = new static($this->name);
         $copy->name = $this->name;
@@ -65,7 +65,7 @@ class DocumentType extends Node
      *
      * @return int
      */
-    public function getLength()
+    public function getLength(): int
     {
         return 0;
     }
@@ -73,7 +73,7 @@ class DocumentType extends Node
     /**
      * @see Node::getNodeName
      */
-    protected function getNodeName()
+    protected function getNodeName(): string
     {
         return $this->name;
     }
@@ -81,7 +81,7 @@ class DocumentType extends Node
     /**
      * @see Node::getNodeValue
      */
-    protected function getNodeValue()
+    protected function getNodeValue(): ?string
     {
         return null;
     }
@@ -89,7 +89,7 @@ class DocumentType extends Node
     /**
      * @see Node::getTextContent
      */
-    protected function getTextContent()
+    protected function getTextContent(): ?string
     {
         return null;
     }
@@ -97,7 +97,7 @@ class DocumentType extends Node
     /**
      * @see Node::setNodeValue
      */
-    protected function setNodeValue($newValue)
+    protected function setNodeValue($newValue): void
     {
         // Do nothing.
     }
@@ -105,7 +105,7 @@ class DocumentType extends Node
     /**
      * @see Node::setTextContent
      */
-    protected function setTextContent($newValue)
+    protected function setTextContent($newValue): void
     {
         // Do nothing.
     }

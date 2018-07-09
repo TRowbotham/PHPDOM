@@ -294,7 +294,7 @@ abstract class CharacterData extends Node
      *
      * @return int
      */
-    public function getLength()
+    public function getLength(): int
     {
         return $this->length;
     }
@@ -309,7 +309,7 @@ abstract class CharacterData extends Node
      *
      * @return string
      */
-    protected function getNodeValue()
+    protected function getNodeValue(): string
     {
         return $this->data;
     }
@@ -324,7 +324,7 @@ abstract class CharacterData extends Node
      *
      * @param string|null $newValue The node's new value.
      */
-    protected function setNodeValue($newValue)
+    protected function setNodeValue($newValue): void
     {
         $this->doReplaceData(
             0,
@@ -343,7 +343,7 @@ abstract class CharacterData extends Node
      *
      * @return string
      */
-    protected function getTextContent()
+    protected function getTextContent(): string
     {
         return $this->data;
     }
@@ -358,7 +358,7 @@ abstract class CharacterData extends Node
      *
      * @param string|null $newValue The new text to be inserted into the node.
      */
-    protected function setTextContent($newValue)
+    protected function setTextContent($newValue): void
     {
         $this->doReplaceData(
             0,

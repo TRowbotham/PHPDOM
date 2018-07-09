@@ -20,7 +20,7 @@ class CDATASection extends Text
      *
      * @return string Returns the string "#cdata-section".
      */
-    protected function getNodeName()
+    protected function getNodeName(): string
     {
         return '#cdata-section';
     }

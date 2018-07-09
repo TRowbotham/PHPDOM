@@ -50,7 +50,7 @@ class DocumentFragment extends Node
     public function cloneNodeInternal(
         Document $document = null,
         bool $cloneChildren = false
-    ) {
+    ): Node {
         $document = $document ?: $this->getNodeDocument();
         $copy = new static();
         $this->postCloneNode($copy, $document, $cloneChildren);
@@ -95,7 +95,7 @@ class DocumentFragment extends Node
      *
      * @return int
      */
-    public function getLength()
+    public function getLength(): int
     {
         return \count($this->childNodes);
     }
@@ -103,7 +103,7 @@ class DocumentFragment extends Node
     /**
      * @see Node::getNodeName
      */
-    protected function getNodeName()
+    protected function getNodeName(): string
     {
         return '#document-fragment';
     }
@@ -111,7 +111,7 @@ class DocumentFragment extends Node
     /**
      * @see Node::getNodeValue
      */
-    protected function getNodeValue()
+    protected function getNodeValue(): ?string
     {
         return null;
     }
@@ -119,7 +119,7 @@ class DocumentFragment extends Node
     /**
      * @see Node::getTextContent
      */
-    protected function getTextContent()
+    protected function getTextContent(): string
     {
         $tw = new TreeWalker($this, NodeFilter::SHOW_TEXT);
         $data = '';
@@ -134,7 +134,7 @@ class DocumentFragment extends Node
     /**
      * @see Node::setNodeValue
      */
-    protected function setNodeValue($newValue)
+    protected function setNodeValue($newValue): void
     {
         // Do nothing.
     }
@@ -142,7 +142,7 @@ class DocumentFragment extends Node
     /**
      * @see Node::setTextContent
      */
-    protected function setTextContent($newValue)
+    protected function setTextContent($newValue): void
     {
         $node = null;
         $newValue = Utils::DOMString($newValue, true);

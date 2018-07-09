@@ -578,11 +578,11 @@ abstract class EventTarget
      *
      * @see https://dom.spec.whatwg.org/#get-the-parent
      *
-     * @param Event $event The Event object
+     * @param \Rowbot\DOM\Event\Event $event The Event object
      *
-     * @return EventTarget|null
+     * @return \Rowbot\DOM\Event\EventTarget|null
      */
-    protected function getTheParent($event)
+    protected function getTheParent(Event $event): ?self
     {
         return null;
     }

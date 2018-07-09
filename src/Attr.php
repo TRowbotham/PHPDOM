@@ -118,7 +118,7 @@ class Attr extends Node
     public function cloneNodeInternal(
         Document $document = null,
         bool $cloneChildren = false
-    ) {
+    ): Node {
         $document = $document ?: $this->getNodeDocument();
         $copy = new static(
             $this->localName,
@@ -186,7 +186,7 @@ class Attr extends Node
      *
      * @return string Returns the attirbute's qualified name.
      */
-    protected function getNodeName()
+    protected function getNodeName(): string
     {
         if ($this->prefix) {
             return $this->prefix . ':' . $this->localName;
@@ -205,7 +205,7 @@ class Attr extends Node
      *
      * @return int
      */
-    public function getLength()
+    public function getLength(): int
     {
         // Attr nodes cannot contain children, so just return 0.
         return 0;
@@ -221,7 +221,7 @@ class Attr extends Node
      *
      * @return string
      */
-    protected function getNodeValue()
+    protected function getNodeValue(): string
     {
         return $this->value;
     }
@@ -236,7 +236,7 @@ class Attr extends Node
      *
      * @param string|null $newValue The node's new value.
      */
-    protected function setNodeValue($newValue)
+    protected function setNodeValue($newValue): void
     {
         $this->setExistingAttributeValue($newValue);
     }
@@ -251,7 +251,7 @@ class Attr extends Node
      *
      * @return string
      */
-    protected function getTextContent()
+    protected function getTextContent(): string
     {
         return $this->value;
     }
@@ -266,7 +266,7 @@ class Attr extends Node
      *
      * @param string|null $newValue The new attribute value.
      */
-    protected function setTextContent($newValue)
+    protected function setTextContent($newValue): void
     {
         $this->setExistingAttributeValue($newValue);
     }

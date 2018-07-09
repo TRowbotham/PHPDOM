@@ -231,7 +231,7 @@ class Element extends Node implements AttributeChangeObserver
     public function cloneNodeInternal(
         Document $document = null,
         bool $cloneChildren = false
-    ) {
+    ): Node {
         $document = $document ?: $this->getNodeDocument();
         $copy = ElementFactory::create(
             $document,
@@ -781,7 +781,7 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @return int
      */
-    public function getLength()
+    public function getLength(): int
     {
         return \count($this->childNodes);
     }
@@ -789,7 +789,7 @@ class Element extends Node implements AttributeChangeObserver
     /**
      * @see Node::getNodeName
      */
-    protected function getNodeName()
+    protected function getNodeName(): string
     {
         return $this->getTagName();
     }
@@ -797,7 +797,7 @@ class Element extends Node implements AttributeChangeObserver
     /**
      * @see Node::getNodeValue
      */
-    protected function getNodeValue()
+    protected function getNodeValue(): ?string
     {
         return null;
     }
@@ -805,7 +805,7 @@ class Element extends Node implements AttributeChangeObserver
     /**
      * @see Node::getTextContent
      */
-    protected function getTextContent()
+    protected function getTextContent(): string
     {
         $tw = new TreeWalker($this, NodeFilter::SHOW_TEXT);
         $data = '';
@@ -1003,7 +1003,7 @@ class Element extends Node implements AttributeChangeObserver
     /**
      * @see Node::setNodeValue
      */
-    protected function setNodeValue($newValue)
+    protected function setNodeValue($newValue): void
     {
         // Do nothing.
     }
@@ -1011,7 +1011,7 @@ class Element extends Node implements AttributeChangeObserver
     /**
      * @see Node::setTextContent
      */
-    protected function setTextContent($newValue)
+    protected function setTextContent($newValue): void
     {
         $node = null;
         $newValue = Utils::DOMString($newValue, true);
