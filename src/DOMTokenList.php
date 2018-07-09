@@ -231,17 +231,17 @@ class DOMTokenList implements
             return true;
         }
 
-        if ($force === false) {
-            return false;
+        if ($force === null || $force === true) {
+            $this->tokens->append($token);
+            $this->element->getAttributeList()->setAttrValue(
+                $this->attrLocalName,
+                Utils::serializeOrderedSet($this->tokens->values())
+            );
+
+            return true;
         }
 
-        $this->tokens->append($token);
-        $this->element->getAttributeList()->setAttrValue(
-            $this->attrLocalName,
-            Utils::serializeOrderedSet($this->tokens->values())
-        );
-
-        return true;
+        return false;
     }
 
     /**
