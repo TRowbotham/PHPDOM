@@ -2,8 +2,10 @@
 namespace Rowbot\DOM;
 
 use Rowbot\DOM\Element\HTML\HTMLBaseElement;
-use Rowbot\DOM\Element\HTML\HTMLHtmlElement;
+use Rowbot\DOM\Element\HTML\HTMLElement;
 use Rowbot\DOM\Element\HTML\HTMLHeadElement;
+use Rowbot\DOM\Element\HTML\HTMLHtmlElement;
+use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Element\ElementFactory;
 use Rowbot\DOM\Event\Event;
 use Rowbot\DOM\Event\EventFlags;
@@ -15,6 +17,7 @@ use Rowbot\DOM\Exception\NotSupportedError;
 use Rowbot\DOM\Parser\MarkupFactory;
 use Rowbot\DOM\Support\Stringable;
 use Rowbot\DOM\URL\URLParser;
+use Rowbot\URL\URLRecord;
 
 use function count;
 use function in_array;
@@ -152,7 +155,7 @@ class Document extends Node implements Stringable
         $this->source = DocumentSource::NOT_FROM_PARSER;
     }
 
-    public function __get($name)
+    public function __get(string $name)
     {
         switch ($name) {
             case 'characterSet':
@@ -221,7 +224,7 @@ class Document extends Node implements Stringable
      * @throws \Rowbot\DOM\Exception\NotSupportedError
      * @throws \Rowbot\DOM\Exception\HierarchyRequestError
      */
-    public function adoptNode(Node $node)
+    public function adoptNode(Node $node): Node
     {
         if ($node instanceof Document) {
             throw new NotSupportedError();
@@ -247,7 +250,7 @@ class Document extends Node implements Stringable
      *
      * @throws \Rowbot\DOM\Exception\InvalidCharacterError
      */
-    public function createAttribute($localName)
+    public function createAttribute($localName): Attr
     {
         $localName = Utils::DOMString($localName);
 
@@ -281,7 +284,7 @@ class Document extends Node implements Stringable
      * @throws \Rowbot\DOM\Exception\NamespaceError
      * @throws \Rowbot\DOM\Exception\InvalidCharacterError
      */
-    public function createAttributeNS(?string $namespace, $qualifiedName)
+    public function createAttributeNS(?string $namespace, $qualifiedName): Attr
     {
         try {
             list(
@@ -346,7 +349,7 @@ class Document extends Node implements Stringable
      *
      * @throws \Rowbot\DOM\Exception\InvalidCharacterError
      */
-    public function createElement($localName)
+    public function createElement($localName): HTMLElement
     {
         $localName = Utils::DOMString($localName);
 
@@ -398,7 +401,7 @@ class Document extends Node implements Stringable
      * @throws \Rowbot\DOM\Exception\InvalidCharacterError
      * @throws \Rowbot\DOM\Exception\NamespaceError
      */
-    public function createElementNS(?string $namespace, $qualifiedName)
+    public function createElementNS(?string $namespace, $qualifiedName): Element
     {
         return ElementFactory::createNS(
             $this,
@@ -418,7 +421,7 @@ class Document extends Node implements Stringable
      *
      * @throws \Rowbot\DOM\Exception\NotSupportedError
      */
-    public function createEvent($interface)
+    public function createEvent($interface): Event
     {
         $constructor = null;
         $interface = strtolower(Utils::DOMString($interface));
@@ -480,8 +483,10 @@ class Document extends Node implements Stringable
      *
      * @return \Rowbot\DOM\ProcessingInstruction
      */
-    public function createProcessingInstruction($target, $data)
-    {
+    public function createProcessingInstruction(
+        $target,
+        $data
+    ): ProcessingInstruction {
         $target = Utils::DOMString($target);
 
         // If target does not match the Name production, then throw an
@@ -545,7 +550,7 @@ class Document extends Node implements Stringable
      * @throws \Rowbot\DOM\Exception\InvalidCharacterError
      * @throws \Rowbot\DOM\Exception\NotSupportedError
      */
-    public function createCDATASection($data)
+    public function createCDATASection($data): CDATASection
     {
         // If context object is an HTML document, then throw a
         // NotSupportedError.
@@ -576,8 +581,9 @@ class Document extends Node implements Stringable
      * @param \Rowbot\DOM\Node                     $root       The root node of the DOM subtree being traversed.
      * @param int                                  $whatToShow (optional) A bitmask of NodeFilter constants allowing the
      *                                                         user to filter for specific node types.
-     * @param \Rowbot\DOM\NodeFilter|callable|null $filter     A user defined function to determine whether or not to
-     *                                                         accept a node that has passed the whatToShow check.
+     * @param \Rowbot\DOM\NodeFilter|callable|null $filter     (optional) A user defined function to determine whether
+     *                                                         or not to accept a node that has passed the whatToShow
+     *                                                         check.
      *
      * @return \Rowbot\DOM\TreeWalker
      */
@@ -600,7 +606,7 @@ class Document extends Node implements Stringable
      *
      * @return void
      */
-    public function doAdoptNode(Node $node)
+    public function doAdoptNode(Node $node): void
     {
         $oldDocument = $node->nodeDocument;
 
@@ -654,7 +660,7 @@ class Document extends Node implements Stringable
      *
      * @return self
      */
-    public function getAppropriateTemplateContentsOwnerDocument()
+    public function getAppropriateTemplateContentsOwnerDocument(): self
     {
         $doc = $this;
 
@@ -681,7 +687,7 @@ class Document extends Node implements Stringable
      *
      * @return \Rowbot\URL\URLRecord
      */
-    public function getBaseURL()
+    public function getBaseURL(): URLRecord
     {
         $head = $this->getHeadElement();
         $base = null;
@@ -720,13 +726,15 @@ class Document extends Node implements Stringable
      * @return self|null Returns the global document. If null is returned,
      *     then no document existed before the user attempted to instantiate an
      *     object that has an owning document.
+     *
+     * @todo Returning null here is probably a bug. Look into it.
      */
-    public static function getDefaultDocument()
+    public static function getDefaultDocument(): ?self
     {
         return self::$defaultDocument;
     }
 
-    public function getFallbackBaseURL()
+    public function getFallbackBaseURL(): URLRecord
     {
         // TODO: If the Document is an iframe srcdoc document, then return the
         // document base URL of the Document's browsing context's browsing
@@ -746,7 +754,7 @@ class Document extends Node implements Stringable
      *
      * @return int
      */
-    public function getFlags()
+    public function getFlags(): int
     {
         return $this->flags;
     }
@@ -757,8 +765,10 @@ class Document extends Node implements Stringable
      * @internal
      *
      * @param string $readyState
+     *
+     * @return void
      */
-    public function setReadyState($readyState)
+    public function setReadyState(string $readyState): void
     {
         $this->readyState = $readyState;
     }
@@ -770,7 +780,7 @@ class Document extends Node implements Stringable
      *
      * @return int The document's current mode.
      */
-    public function getMode()
+    public function getMode(): int
     {
         return $this->mode;
     }
@@ -781,8 +791,10 @@ class Document extends Node implements Stringable
      * @internal
      *
      * @param int $mode An integer representing the current mode.
+     *
+     * @return void
      */
-    public function setMode($mode)
+    public function setMode(int $mode): void
     {
         $this->mode = $mode;
     }
@@ -794,7 +806,7 @@ class Document extends Node implements Stringable
      *
      * @return bool
      */
-    public function isHTMLDocument()
+    public function isHTMLDocument(): bool
     {
         return $this->isHTMLDocument;
     }
@@ -806,7 +818,7 @@ class Document extends Node implements Stringable
      *
      * @return bool
      */
-    public function isIframeSrcdoc()
+    public function isIframeSrcdoc(): bool
     {
         return $this->isIframeSrcDoc;
     }
@@ -818,7 +830,7 @@ class Document extends Node implements Stringable
      *
      * @return void
      */
-    public function markAsIframeSrcdoc()
+    public function markAsIframeSrcdoc(): void
     {
         $this->isIframeSrcDoc = true;
     }
@@ -830,7 +842,7 @@ class Document extends Node implements Stringable
      *
      * @return \Rowbot\DOM\NodeIterator[]
      */
-    public function getNodeIteratorCollection()
+    public function getNodeIteratorCollection(): array
     {
         return $this->nodeIteratorList;
     }
@@ -847,7 +859,7 @@ class Document extends Node implements Stringable
      *
      * @return \Rowbot\DOM\Node
      */
-    public function importNode(Node $node, bool $deep = false)
+    public function importNode(Node $node, bool $deep = false): Node
     {
         if ($node instanceof Document || $node instanceof ShadowRoot) {
             throw new NotSupportedError();
@@ -865,7 +877,7 @@ class Document extends Node implements Stringable
      *
      * @return void
      */
-    public function setCharacterSet($characterSet)
+    public function setCharacterSet(string $characterSet): void
     {
         if (!is_string($characterSet)) {
             return;
@@ -883,7 +895,7 @@ class Document extends Node implements Stringable
      *
      * @return void
      */
-    public function setContentType($type)
+    public function setContentType(string $type): void
     {
         $this->contentType = $type;
     }
@@ -897,7 +909,7 @@ class Document extends Node implements Stringable
      *
      * @return void
      */
-    public function setFlags($flag)
+    public function setFlags(int $flag): void
     {
         $this->flags |= $flag;
     }
@@ -911,7 +923,7 @@ class Document extends Node implements Stringable
      *
      * @return void
      */
-    public function unsetFlags($flag)
+    public function unsetFlags(int $flag): void
     {
         $this->flags &= ~$flag;
     }
@@ -926,7 +938,7 @@ class Document extends Node implements Stringable
      *
      * @return \Rowbot\DOM\Element\HTML\HTMLHeadElement|null
      */
-    protected function getHeadElement()
+    protected function getHeadElement(): ?HTMLHeadElement
     {
         $docElement = $this->getFirstElementChild();
 
@@ -994,7 +1006,7 @@ class Document extends Node implements Stringable
      *
      * @return \Rowbot\URL\URLRecord
      */
-    protected function getURL()
+    protected function getURL(): URLRecord
     {
         if (!isset($this->url)) {
             $ssl = isset($_SERVER['HTTPS']) && $_SERVER["HTTPS"] == 'on';
