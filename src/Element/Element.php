@@ -296,7 +296,7 @@ class Element extends Node implements AttributeChangeObserver
         $oldValue,
         $value,
         $namespace
-    ) {
+    ): void {
         // Do nothing.
     }
 

@@ -29,5 +29,5 @@ interface AttributeChangeObserver
         $oldValue,
         $value,
         $namespace
-    );
+    ): void;
 }

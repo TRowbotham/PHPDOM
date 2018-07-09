@@ -77,7 +77,7 @@ class HTMLBaseElement extends HTMLElement
         $oldValue,
         $value,
         $namespace
-    ) {
+    ): void {
         if ($localName === 'href' &&
             $namespace === null
         ) {
