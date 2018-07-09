@@ -2,6 +2,7 @@
 namespace Rowbot\DOM\URL;
 
 use Rowbot\URL\BasicURLParser;
+use Rowbot\URL\URLRecord;
 
 final class URLParser
 {
