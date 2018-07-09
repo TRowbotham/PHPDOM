@@ -1,6 +1,9 @@
 <?php
 namespace Rowbot\DOM;
 
+/**
+ * @see https://dom.spec.whatwg.org/#concept-document-mode
+ */
 abstract class DocumentMode
 {
     const NO_QUIRKS      = 1;
