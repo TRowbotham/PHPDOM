@@ -4,15 +4,39 @@ namespace Rowbot\DOM;
 /**
  * @see https://dom.spec.whatwg.org/#documenttype
  * @see https://developer.mozilla.org/en-US/docs/Web/API/DocumentType
+ *
+ * @property-read string $name
+ * @property-read string $publicId
+ * @property-read string $systemId
  */
 class DocumentType extends Node
 {
     use ChildNode;
 
+    /**
+     * @var string
+     */
     private $name;
+
+    /**
+     * @var string
+     */
     private $publicId;
+
+    /**
+     * @var string
+     */
     private $systemId;
 
+    /**
+     * Constructor.
+     *
+     * @param string $name
+     * @param string $publicId
+     * @param string $systemId
+     *
+     * @return void
+     */
     public function __construct($name, $publicId = '', $systemId = '')
     {
         parent::__construct();
@@ -23,6 +47,9 @@ class DocumentType extends Node
         $this->systemId = $systemId;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function __get($name)
     {
         switch ($name) {
@@ -55,23 +82,16 @@ class DocumentType extends Node
     }
 
     /**
-     * Returns the Node's length, which is 0, as a DocumentType cannot have
-     * children.
-     *
-     * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#concept-node-length
-     * @see Node::getLength()
-     *
-     * @return int
+     * {@inheritDoc}
      */
     public function getLength(): int
     {
+        // Return 0 since a DocumentType cannot have any children.
         return 0;
     }
 
     /**
-     * @see Node::getNodeName
+     * {@inheritDoc}
      */
     protected function getNodeName(): string
     {
@@ -79,7 +99,7 @@ class DocumentType extends Node
     }
 
     /**
-     * @see Node::getNodeValue
+     * {@inheritDoc}
      */
     protected function getNodeValue(): ?string
     {
@@ -87,7 +107,7 @@ class DocumentType extends Node
     }
 
     /**
-     * @see Node::getTextContent
+     * {@inheritDoc}
      */
     protected function getTextContent(): ?string
     {
@@ -95,7 +115,7 @@ class DocumentType extends Node
     }
 
     /**
-     * @see Node::setNodeValue
+     * {@inheritDoc}
      */
     protected function setNodeValue($newValue): void
     {
@@ -103,7 +123,7 @@ class DocumentType extends Node
     }
 
     /**
-     * @see Node::setTextContent
+     * {@inheritDoc}
      */
     protected function setTextContent($newValue): void
     {
