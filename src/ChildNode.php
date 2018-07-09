@@ -1,6 +1,8 @@
 <?php
 namespace Rowbot\DOM;
 
+use function in_array;
+
 /**
  * @see https://dom.spec.whatwg.org/#interface-childnode
  * @see https://developer.mozilla.org/en-US/docs/Web/API/ChildNode
@@ -14,8 +16,11 @@ trait ChildNode
      *
      * @see https://dom.spec.whatwg.org/#dom-childnode-after
      *
-     * @param Node|string ...$nodes A set of Node objects or strings to be
-     *     inserted.
+     * @param \Rowbot\DOM\Node|string ...$nodes A set of Node objects or strings to be inserted.
+     *
+     * @return void
+     *
+     * @throws \Rowbot\DOM\Exception\HierarchyRequestError
      */
     public function after(...$nodes)
     {
@@ -28,7 +33,7 @@ trait ChildNode
         $viableNextSibling = $this->nextSibling;
 
         while ($viableNextSibling) {
-            if (!\in_array($viableNextSibling, $nodes, true)) {
+            if (!in_array($viableNextSibling, $nodes, true)) {
                 break;
             }
 
@@ -44,8 +49,11 @@ trait ChildNode
      *
      * @see https://dom.spec.whatwg.org/#dom-childnode-before
      *
-     * @param Node|string ...$nodes A set of Node objects or strings to be
-     *     inserted.
+     * @param \Rowbot\DOM\Node|string ...$nodes A set of Node objects or strings to be inserted.
+     *
+     * @return void
+     *
+     * @throws \Rowbot\DOM\Exception\HierarchyRequestError
      */
     public function before(...$nodes)
     {
@@ -58,7 +66,7 @@ trait ChildNode
         $viablePreviousSibling = $this->previousSibling;
 
         while ($viablePreviousSibling) {
-            if (!\in_array($viablePreviousSibling, $nodes, true)) {
+            if (!in_array($viablePreviousSibling, $nodes, true)) {
                 break;
             }
 
@@ -76,6 +84,8 @@ trait ChildNode
      * Removes this ChildNode from its ParentNode.
      *
      * @see https://dom.spec.whatwg.org/#dom-childnode-remove
+     *
+     * @return void
      */
     public function remove()
     {
@@ -91,8 +101,11 @@ trait ChildNode
      *
      * @see https://dom.spec.whatwg.org/#dom-childnode-replacewith
      *
-     * @param Node|string ...$nodes A set of Node objects or strings to be
-     *     inserted in place of this ChildNode.
+     * @param \Rowbot\DOM\Node|string ...$nodes A set of Node objects or strings to be inserted in place of this ChildNode.
+     *
+     * @return void
+     *
+     * @throws \Rowbot\DOM\Exception\HierarchyRequestError
      */
     public function replaceWith(...$nodes)
     {
@@ -105,7 +118,7 @@ trait ChildNode
         $viableNextSibling = $this->nextSibling;
 
         while ($viableNextSibling) {
-            if (!\in_array($viableNextSibling, $nodes, true)) {
+            if (!in_array($viableNextSibling, $nodes, true)) {
                 break;
             }
 
