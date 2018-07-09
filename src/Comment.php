@@ -1,10 +1,19 @@
 <?php
 namespace Rowbot\DOM;
 
-// https://developer.mozilla.org/en-US/docs/Web/API/Comment
-// https://dom.spec.whatwg.org/#comment
+/**
+ * @see https://dom.spec.whatwg.org/#comment
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/Comment
+ */
 class Comment extends CharacterData
 {
+    /**
+     * Constructor.
+     *
+     * @param string $data (optional)
+     *
+     * @return void
+     */
     public function __construct($data = '')
     {
         parent::__construct(Utils::DOMString($data));
@@ -28,14 +37,7 @@ class Comment extends CharacterData
     }
 
     /**
-     * Gets the name of the node.
-     *
-     * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#dom-node-nodename
-     * @see Node::getNodeName()
-     *
-     * @return string Returns the string "#comment".
+     * {@inheritDoc}
      */
     protected function getNodeName(): string
     {
