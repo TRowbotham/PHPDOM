@@ -1,13 +1,9 @@
 <?php
 namespace Rowbot\DOM;
 
-use Rowbot\DOM\Attr;
-use Rowbot\DOM\AttributeChangeObserver;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Exception\InUseAttributeError;
 use Rowbot\DOM\Exception\TypeError;
-use Rowbot\DOM\HTMLDocument;
-use Rowbot\DOM\Namespaces;
 use Rowbot\DOM\Support\OrderedSet;
 use SplObjectStorage;
 
@@ -19,7 +15,7 @@ class AttributeList extends OrderedSet
     private $element;
 
     /**
-     * @var \SplObjectStorage
+     * @var \SplObjectStorage<\Rowbot\DOM\AttributeChangeObserver>
      */
     private $observers;
 
@@ -48,7 +44,7 @@ class AttributeList extends OrderedSet
      *
      * @return void
      */
-    public function change(Attr $attribute, $value)
+    public function change(Attr $attribute, $value): void
     {
         // TODO: Queue a mutation record of "attributes" for element with name
         // attribute’s local name, namespace attribute’s namespace, and
@@ -80,7 +76,6 @@ class AttributeList extends OrderedSet
     {
         if (!$attribute instanceof Attr) {
             throw new TypeError();
-            return;
         }
 
         // TODO: Queue a mutation record of "attributes" for element with name
@@ -114,7 +109,6 @@ class AttributeList extends OrderedSet
     {
         if (!$attribute instanceof Attr) {
             throw new TypeError();
-            return;
         }
 
         // TODO: Queue a mutation record of "attributes" for element with name
@@ -149,7 +143,6 @@ class AttributeList extends OrderedSet
     {
         if (!$oldAttr instanceof Attr || !$newAttr instanceof Attr) {
             throw new TypeError();
-            return;
         }
 
         // TODO: Queue a mutation record of "attributes" for element with name
@@ -180,7 +173,7 @@ class AttributeList extends OrderedSet
      *
      * @return \Rowbot\DOM\Attr|null
      */
-    public function getAttrByName($qualifiedName)
+    public function getAttrByName($qualifiedName): ?Attr
     {
         if ($this->element->namespaceURI === Namespaces::HTML
             && $this->element->getNodeDocument() instanceof HTMLDocument
@@ -210,7 +203,7 @@ class AttributeList extends OrderedSet
     public function getAttrByNamespaceAndLocalName(
         $namespace,
         $localName
-    ) {
+    ): ?Attr {
         if ($namespace === '') {
             $namespace = null;
         }
@@ -236,7 +229,7 @@ class AttributeList extends OrderedSet
      *
      * @return string
      */
-    public function getAttrValue($localName, $namespace = null)
+    public function getAttrValue($localName, $namespace = null): string
     {
         $attr = $this->getAttrByNamespaceAndLocalName(
             $namespace,
@@ -262,13 +255,12 @@ class AttributeList extends OrderedSet
      * @throws \Rowbot\DOM\Exception\InUseAttributeError If the attribute's owning element is not null and not an
      *                                                   element.
      */
-    public function setAttr(Attr $attr)
+    public function setAttr(Attr $attr): ?Attr
     {
         $owner = $attr->ownerElement;
 
         if ($owner !== null && $owner !== $this->element) {
             throw new InUseAttributeError();
-            return;
         }
 
         $oldAttr = $this->getAttrByNamespaceAndLocalName(
@@ -308,7 +300,7 @@ class AttributeList extends OrderedSet
         $value,
         $prefix = null,
         $namespace = null
-    ) {
+    ): void {
         $attribute = $this->getAttrByNamespaceAndLocalName(
             $namespace,
             $localName
@@ -334,7 +326,7 @@ class AttributeList extends OrderedSet
      *
      * @return \Rowbot\DOM\Attr|null
      */
-    public function removeAttrByName($qualifiedName)
+    public function removeAttrByName($qualifiedName): ?Attr
     {
         $attr = $this->getAttrByName($qualifiedName);
 
@@ -358,7 +350,7 @@ class AttributeList extends OrderedSet
     public function removeAttrByNamespaceAndLocalName(
         $namespace,
         $localName
-    ) {
+    ): ?Attr {
         $attr = $this->getAttrByNamespaceAndLocalName($namespace, $localName);
 
         if ($attr !== null) {
@@ -373,7 +365,7 @@ class AttributeList extends OrderedSet
      *
      * @return void
      */
-    public function observe(AttributeChangeObserver $observer)
+    public function observe(AttributeChangeObserver $observer): void
     {
         if (!$this->observers->contains($observer)) {
             $this->observers->attach($observer);
@@ -385,7 +377,7 @@ class AttributeList extends OrderedSet
      *
      * @return void
      */
-    public function unobserve(AttributeChangeObserver $observer)
+    public function unobserve(AttributeChangeObserver $observer): void
     {
         $this->observers->detach($observer);
     }
