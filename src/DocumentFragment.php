@@ -5,6 +5,8 @@ use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\NodeFilter;
 use Rowbot\DOM\TreeWalker;
 
+use function count;
+
 /**
  * @see https://dom.spec.whatwg.org/#interface-documentfragment
  * @see https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
@@ -35,7 +37,7 @@ class DocumentFragment extends Node
     /**
      * {@inheritDoc}
      */
-    public function __get($name)
+    public function __get(string $name)
     {
         switch ($name) {
             case 'childElementCount':
@@ -76,7 +78,7 @@ class DocumentFragment extends Node
      *
      * @return \Rowbot\DOM\Element\Element|null
      */
-    public function getHost()
+    public function getHost(): ?Element
     {
         return $this->host;
     }
@@ -90,8 +92,10 @@ class DocumentFragment extends Node
      *
      * @param \Rowbot\DOM\Element\Element|null $host The element that is hosting the DocumentFragment such as a template
      *                                         element or shadow root.
+     *
+     * @return void
      */
-    public function setHost(Element $host = null)
+    public function setHost(?Element $host): void
     {
         $this->host = $host;
     }
@@ -101,7 +105,7 @@ class DocumentFragment extends Node
      */
     public function getLength(): int
     {
-        return \count($this->childNodes);
+        return count($this->childNodes);
     }
 
     /**
