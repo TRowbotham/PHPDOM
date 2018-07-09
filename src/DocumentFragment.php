@@ -14,8 +14,16 @@ class DocumentFragment extends Node
     use NonElementParentNode;
     use ParentNode;
 
+    /**
+     * @var \Rowbot\DOM\Element\Element|null
+     */
     protected $host;
 
+    /**
+     * Constructor.
+     *
+     * @return void
+     */
     public function __construct()
     {
         parent::__construct();
@@ -24,6 +32,9 @@ class DocumentFragment extends Node
         $this->nodeType = Node::DOCUMENT_FRAGMENT_NODE;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function __get($name)
     {
         switch ($name) {
@@ -63,7 +74,7 @@ class DocumentFragment extends Node
      *
      * @internal
      *
-     * @return Element|null
+     * @return \Rowbot\DOM\Element\Element|null
      */
     public function getHost()
     {
@@ -77,8 +88,8 @@ class DocumentFragment extends Node
      *
      * @see https://dom.spec.whatwg.org/#concept-documentfragment-host
      *
-     * @param Element|null $host The element that is hosting the
-     *     DocumentFragment such as a template element or shadow root.
+     * @param \Rowbot\DOM\Element\Element|null $host The element that is hosting the DocumentFragment such as a template
+     *                                         element or shadow root.
      */
     public function setHost(Element $host = null)
     {
@@ -86,14 +97,7 @@ class DocumentFragment extends Node
     }
 
     /**
-     * Returns the Node's length, which is the number of child nodes.
-     *
-     * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#concept-node-length
-     * @see Node::getLength()
-     *
-     * @return int
+     * {@inheritDoc}
      */
     public function getLength(): int
     {
@@ -101,7 +105,7 @@ class DocumentFragment extends Node
     }
 
     /**
-     * @see Node::getNodeName
+     * {@inheritDoc}
      */
     protected function getNodeName(): string
     {
@@ -109,7 +113,7 @@ class DocumentFragment extends Node
     }
 
     /**
-     * @see Node::getNodeValue
+     * {@inheritDoc}
      */
     protected function getNodeValue(): ?string
     {
@@ -117,7 +121,7 @@ class DocumentFragment extends Node
     }
 
     /**
-     * @see Node::getTextContent
+     * {@inheritDoc}
      */
     protected function getTextContent(): string
     {
@@ -132,7 +136,7 @@ class DocumentFragment extends Node
     }
 
     /**
-     * @see Node::setNodeValue
+     * {@inheritDoc}
      */
     protected function setNodeValue($newValue): void
     {
@@ -140,7 +144,7 @@ class DocumentFragment extends Node
     }
 
     /**
-     * @see Node::setTextContent
+     * {@inheritDoc}
      */
     protected function setTextContent($newValue): void
     {
