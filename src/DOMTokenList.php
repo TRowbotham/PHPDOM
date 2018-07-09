@@ -10,24 +10,33 @@ use Rowbot\DOM\Exception\SyntaxError;
 use Rowbot\DOM\Support\OrderedSet;
 use Rowbot\DOM\Support\Stringable;
 
+use function preg_match;
+
 /**
  * @see https://dom.spec.whatwg.org/#interface-domtokenlist
  *
  * @property-read int $length Returns the number of tokens in the list.
- *
  * @property string $value
  */
-class DOMTokenList implements
+final class DOMTokenList implements
     ArrayAccess,
     AttributeChangeObserver,
     Countable,
     Iterator,
     Stringable
 {
-    protected $attrLocalName;
-    protected $element;
-    protected $tokens;
+    private $attrLocalName;
+    private $element;
+    private $tokens;
 
+    /**
+     * Constructor.
+     *
+     * @param \Rowbot\DOM\Element\Element $element
+     * @param string                      $attrLocalName
+     *
+     * @return void
+     */
     public function __construct(Element $element, $attrLocalName)
     {
         $this->attrLocalName = $attrLocalName;
@@ -50,6 +59,11 @@ class DOMTokenList implements
         );
     }
 
+    /**
+     * @param string $name
+     *
+     * @return string|int
+     */
     public function __get($name)
     {
         switch ($name) {
@@ -61,6 +75,12 @@ class DOMTokenList implements
         }
     }
 
+    /**
+     * @param string $name
+     * @param string $value
+     *
+     * @return string
+     */
     public function __set($name, $value)
     {
         switch ($name) {
@@ -79,8 +99,7 @@ class DOMTokenList implements
      *
      * @param int $index An integer index.
      *
-     * @return string|null The token at the specified index or null if
-     *     the index does not exist.
+     * @return string|null The token at the specified index or null if the index does not exist.
      */
     public function item($index)
     {
@@ -93,12 +112,12 @@ class DOMTokenList implements
      *
      * @see https://dom.spec.whatwg.org/#dom-domtokenlist-add
      *
-     * @param string ...$tokens One or more tokens to be added to the token
-     *     list.
+     * @param string ...$tokens One or more tokens to be added to the token list.
      *
-     * @throws SyntaxError If the token is an empty string.
+     * @throws \Rowbot\DOM\Exception\SyntaxError           If the token is an empty string.
+     * @throws \Rowbot\DOM\Exception\InvalidCharacterError If the token contains ASCII whitespace.
      *
-     * @throws InvalidCharacterError If the token contains ASCII whitespace.
+     * @return void
      */
     public function add(...$tokens)
     {
@@ -110,7 +129,7 @@ class DOMTokenList implements
                 return;
             }
 
-            if (\preg_match('/\s/', $token)) {
+            if (preg_match('/\s/', $token)) {
                 throw new InvalidCharacterError();
                 return;
             }
@@ -137,9 +156,8 @@ class DOMTokenList implements
      *
      * @return bool Returns true if the token is present, and false otherwise.
      *
-     * @throws SyntaxError If the token is an empty string.
-     *
-     * @throws InvalidCharacterError If the token contains ASCII whitespace.
+     * @throws \Rowbot\DOM\Exception\SyntaxError           If the token is an empty string.
+     * @throws \Rowbot\DOM\Exception\InvalidCharacterError If the token contains ASCII whitespace.
      */
     public function contains($token)
     {
@@ -153,9 +171,8 @@ class DOMTokenList implements
      *
      * @param string ...$tokens One or more tokens to be removed.
      *
-     * @throws SyntaxError If the token is an empty string.
-     *
-     * @throws InvalidCharacterError If the token contains ASCII whitespace.
+     * @throws \Rowbot\DOM\Exception\SyntaxError           If the token is an empty string.
+     * @throws \Rowbot\DOM\Exception\InvalidCharacterError If the token contains ASCII whitespace.
      */
     public function remove(...$tokens)
     {
@@ -167,7 +184,7 @@ class DOMTokenList implements
                 return;
             }
 
-            if (\preg_match('/\s/', $token)) {
+            if (preg_match('/\s/', $token)) {
                 throw new InvalidCharacterError();
                 return;
             }
@@ -193,15 +210,13 @@ class DOMTokenList implements
      * @see https://dom.spec.whatwg.org/#dom-domtokenlist-toggle
      *
      * @param string $token The token to be toggled.
-     *
-     * @param bool $force Optional. Whether or not the token should be
-     *     forcefully added or removed.
+     * @param bool   $force (optional) Whether or not the token should be
+     *                                 forcefully added or removed.
      *
      * @return bool Returns true if the token is present, and false otherwise.
      *
-     * @throws SyntaxError If either token is an empty string.
-     *
-     * @throws InvalidCharacterError If either token contains ASCII whitespace.
+     * @throws \Rowbot\DOM\Exception\SyntaxError           If either token is an empty string.
+     * @throws \Rowbot\DOM\Exception\InvalidCharacterError If either token contains ASCII whitespace.
      */
     public function toggle($token, $force = null)
     {
@@ -212,7 +227,7 @@ class DOMTokenList implements
             return;
         }
 
-        if (\preg_match('/\s/', $token)) {
+        if (preg_match('/\s/', $token)) {
             throw new InvalidCharacterError();
             return;
         }
@@ -250,12 +265,10 @@ class DOMTokenList implements
      * @see https://dom.spec.whatwg.org/#dom-domtokenlist-replace
      *
      * @param string $token    The token to be replaced.
-     *
      * @param string $newToken The token to be inserted.
      *
-     * @throws SyntaxError           If either token is an empty string.
-     *
-     * @throws InvalidCharacterError If either token contains ASCII whitespace.
+     * @throws \Rowbot\DOM\Exception\SyntaxError           If either token is an empty string.
+     * @throws \Rowbot\DOM\Exception\InvalidCharacterError If either token contains ASCII whitespace.
      */
     public function replace($token, $newToken)
     {
@@ -267,7 +280,7 @@ class DOMTokenList implements
             return;
         }
 
-        if (\preg_match('/\s/', $token) || \preg_match('/\s/', $newToken)) {
+        if (preg_match('/\s/', $token) || preg_match('/\s/', $newToken)) {
             throw new InvalidCharacterError();
             return;
         }
@@ -295,8 +308,8 @@ class DOMTokenList implements
      *
      * @return bool
      *
-     * @throws TypeError If the associated attribute's local name does not
-     *     define a list of supported tokens.
+     * @throws \Rowbot\DOM\Exception\TypeError If the associated attribute's local name does not define a list of
+     *                                         supported tokens.
      */
     public function supports($token)
     {
@@ -325,6 +338,9 @@ class DOMTokenList implements
         );
     }
 
+    /**
+     * @return string
+     */
     public function __toString()
     {
         return $this->toString();
@@ -347,8 +363,7 @@ class DOMTokenList implements
      *
      * @param int $index An integer index.
      *
-     * @return string|null The token at the specified index or null if
-     *     the index does not exist.
+     * @return string|null The token at the specified index or null if the index does not exist.
      */
     public function offsetGet($index)
     {
@@ -356,16 +371,23 @@ class DOMTokenList implements
     }
 
     /**
-     * Setting a token using array notation is not permitted.  Use the add() or
-     * toggle() methods instead.
+     * Setting a token using array notation is not permitted.  Use the add() or toggle() methods instead.
+     *
+     * @param int    $index
+     * @param string $token
+     *
+     * @return void
      */
     public function offsetSet($index, $token)
     {
     }
 
     /**
-     * Unsetting a token using array notation is not permitted.  Use the
-     * remove() or toggle() methods instead.
+     * Unsetting a token using array notation is not permitted.  Use the remove() or toggle() methods instead.
+     *
+     * @param int $index
+     *
+     * @return void
      */
     public function offsetUnset($index)
     {
@@ -403,6 +425,8 @@ class DOMTokenList implements
 
     /**
      * Advances the iterator to the next item.
+     *
+     * @return void
      */
     public function next()
     {
@@ -411,6 +435,8 @@ class DOMTokenList implements
 
     /**
      * Rewinds the iterator to the beginning.
+     *
+     * @return void
      */
     public function rewind()
     {
@@ -428,7 +454,7 @@ class DOMTokenList implements
     }
 
     /**
-     * @see AttributeChangeObserver
+     * {@inheritDoc}
      */
     public function onAttributeChanged(
         Element $element,
