@@ -21,46 +21,20 @@ use function mb_substr;
  * @see https://dom.spec.whatwg.org/#range
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Range
  *
- * @property-read bool             $collapsed      Returns true if the range's starting and ending points are at the
- *                                                 same position, otherwise false.
  * @property-read \Rowbot\DOM\Node $commonAncestor Returns the deepest node in the node tree that contains both the
  *                                                 start and end nodes.
- * @property-read \Rowbot\DOM\Node $endContainer   Returns the node where the range ends.
- * @property-read int              $endOffset      Returns the a number representing where in the endContainer the range ends.
- * @property-read \Rowbot\DOM\Node $startContainer Returns the node where the range begins.
- * @property-read int              $startOffset    Returns a number representing where within the startContainer the range begins.
  */
-final class Range implements Stringable
+final class Range extends AbstractRange implements Stringable
 {
-    const START_TO_START = 0;
-    const START_TO_END   = 1;
-    const END_TO_END     = 2;
-    const END_TO_START   = 3;
+    public const START_TO_START = 0;
+    public const START_TO_END   = 1;
+    public const END_TO_END     = 2;
+    public const END_TO_START   = 3;
 
     /**
      * @var self[]
      */
     private static $collection = [];
-
-    /**
-     * @var \Rowbot\DOM\Node
-     */
-    private $endContainer;
-
-    /**
-     * @var int
-     */
-    private $endOffset;
-
-    /**
-     * @var \Rowbot\DOM\Node
-     */
-    private $startContainer;
-
-    /**
-     * @var int
-     */
-    private $startOffset;
 
     /**
      * Constructor.
@@ -70,42 +44,25 @@ final class Range implements Stringable
     public function __construct()
     {
         self::$collection[] = $this;
-        $this->endContainer = Document::getDefaultDocument();
+        $this->endNode = Document::getDefaultDocument();
         $this->endOffset = 0;
-        $this->startContainer = Document::getDefaultDocument();
+        $this->startNode = Document::getDefaultDocument();
         $this->startOffset = 0;
     }
 
     /**
-     * @param string $name
-     *
-     * @return mixed
+     * {@inheritDoc}
      */
     public function __get(string $name)
     {
-        switch ($name) {
-            case 'collapsed':
-                return $this->startContainer === $this->endContainer
-                        && $this->startOffset == $this->endOffset;
-
-            case 'commonAncestorContainer':
-                return Node::getCommonAncestor(
-                    $this->startContainer,
-                    $this->endContainer
-                );
-
-            case 'endContainer':
-                return $this->endContainer;
-
-            case 'endOffset':
-                return $this->endOffset;
-
-            case 'startContainer':
-                return $this->startContainer;
-
-            case 'startOffset':
-                return $this->startOffset;
+        if ($name === 'commonAncestor') {
+            return Node::getCommonAncestor(
+                $this->startNode,
+                $this->endNode
+            );
         }
+
+        return parent::__get($name);
     }
 
     /**
@@ -117,18 +74,18 @@ final class Range implements Stringable
      */
     public function cloneContents(): DocumentFragment
     {
-        $nodeDocument = $this->startContainer->getNodeDocument();
+        $nodeDocument = $this->startNode->getNodeDocument();
         $fragment = $nodeDocument->createDocumentFragment();
 
-        if ($this->startContainer === $this->endContainer
+        if ($this->startNode === $this->endNode
             && $this->startOffset == $this->endOffset
         ) {
             return $fragment;
         }
 
-        $originalStartNode = $this->startContainer;
+        $originalStartNode = $this->startNode;
         $originalStartOffset = $this->startOffset;
-        $originalEndNode = $this->endContainer;
+        $originalEndNode = $this->endNode;
         $originalEndOffset = $this->endOffset;
 
         if ($originalStartNode === $originalEndNode
@@ -251,8 +208,8 @@ final class Range implements Stringable
     public function cloneRange(): self
     {
         $range = new Range();
-        $range->setStart($this->startContainer, $this->startOffset);
-        $range->setEnd($this->endContainer, $this->endOffset);
+        $range->setStart($this->startNode, $this->startOffset);
+        $range->setEnd($this->endNode, $this->endOffset);
 
         return $range;
     }
@@ -270,10 +227,10 @@ final class Range implements Stringable
     public function collapse(bool $toStart = false): void
     {
         if ($toStart) {
-            $this->endContainer = $this->startContainer;
+            $this->endNode = $this->startNode;
             $this->endOffset = $this->startOffset;
         } else {
-            $this->startContainer = $this->endContainer;
+            $this->startNode = $this->endNode;
             $this->startOffset = $this->endOffset;
         }
     }
@@ -308,44 +265,44 @@ final class Range implements Stringable
             throw new NotSupportedError();
         }
 
-        $sourceRangeRoot = $sourceRange->startContainer->getRootNode();
+        $sourceRangeRoot = $sourceRange->startNode->getRootNode();
 
-        if ($this->startContainer->getRootNode() !== $sourceRangeRoot) {
+        if ($this->startNode->getRootNode() !== $sourceRangeRoot) {
             throw new WrongDocumentError();
         }
 
         switch ($how) {
             case self::START_TO_START:
-                $thisPoint = [$this->startContainer, $this->startOffset];
+                $thisPoint = [$this->startNode, $this->startOffset];
                 $otherPoint = [
-                    $sourceRange->startContainer,
+                    $sourceRange->startNode,
                     $sourceRange->startOffset
                 ];
 
                 break;
 
             case self::START_TO_END:
-                $thisPoint = [$this->endContainer, $this->endOffset];
+                $thisPoint = [$this->endNode, $this->endOffset];
                 $otherPoint = [
-                    $sourceRange->startContainer,
+                    $sourceRange->startNode,
                     $sourceRange->startOffset
                 ];
 
                 break;
 
             case self::END_TO_END:
-                $thisPoint = [$this->endContainer, $this->endOffset];
+                $thisPoint = [$this->endNode, $this->endOffset];
                 $otherPoint = [
-                    $sourceRange->endContainer,
+                    $sourceRange->endNode,
                     $sourceRange->endOffset
                 ];
 
                 break;
 
             case self::END_TO_START:
-                $thisPoint = [$this->startContainer, $this->startOffset];
+                $thisPoint = [$this->startNode, $this->startOffset];
                 $otherPoint = [
-                    $sourceRange->endContainer,
+                    $sourceRange->endNode,
                     $sourceRange->endOffset
                 ];
 
@@ -381,7 +338,7 @@ final class Range implements Stringable
      */
     public function comparePoint(Node $node, int $offset): int
     {
-        $root = $this->startContainer->getRootNode();
+        $root = $this->startNode->getRootNode();
 
         if ($node->getRootNode() !== $root) {
             throw new WrongDocumentError();
@@ -398,14 +355,14 @@ final class Range implements Stringable
         $bp = [$node, $offset];
 
         if ($this->computePosition($bp, [
-            $this->startContainer,
+            $this->startNode,
             $this->startOffset
         ]) === 'before') {
             return -1;
         }
 
         if ($this->computePosition($bp, [
-            $this->endContainer,
+            $this->endNode,
             $this->endOffset
         ]) === 'after') {
             return 1;
@@ -423,14 +380,14 @@ final class Range implements Stringable
      */
     public function deleteContents(): void
     {
-        if ($this->startContainer === $this->endContainer &&
+        if ($this->startNode === $this->endNode &&
             $this->startOffset == $this->endOffset) {
             return;
         }
 
-        $originalStartNode = $this->startContainer;
+        $originalStartNode = $this->startNode;
         $originalStartOffset = $this->startOffset;
-        $originalEndNode = $this->endContainer;
+        $originalEndNode = $this->endNode;
         $originalEndOffset = $this->endOffset;
 
         if ($originalStartNode === $originalEndNode
@@ -518,18 +475,18 @@ final class Range implements Stringable
      */
     public function extractContents(): DocumentFragment
     {
-        $fragment = $this->startContainer->getNodeDocument()
+        $fragment = $this->startNode->getNodeDocument()
             ->createDocumentFragment();
 
-        if ($this->startContainer === $this->endContainer
+        if ($this->startNode === $this->endNode
             && $this->startOffset == $this->endOffset
         ) {
             return $fragment;
         }
 
-        $originalStartNode = $this->startContainer;
+        $originalStartNode = $this->startNode;
         $originalStartOffset = $this->startOffset;
-        $originalEndNode = $this->endContainer;
+        $originalEndNode = $this->endNode;
         $originalEndOffset = $this->endOffset;
 
         if ($originalStartNode === $originalEndNode
@@ -646,9 +603,9 @@ final class Range implements Stringable
             $clone = $firstPartiallyContainedChild->cloneNodeInternal();
             $fragment->appendChild($clone);
             $subrange = new Range();
-            $subrange->startContainer = $originalStartNode;
+            $subrange->startNode = $originalStartNode;
             $subrange->startOffset = $originalStartOffset;
-            $subrange->endContainer = $firstPartiallyContainedChild;
+            $subrange->endNode = $firstPartiallyContainedChild;
             $subrange->endOffset = $firstPartiallyContainedChild->getLength();
             $subfragment = $subrange->extractContents();
             $clone->appendChild($subfragment);
@@ -678,17 +635,17 @@ final class Range implements Stringable
             $clone = $lastPartiallyContainedChild->cloneNodeInternal();
             $fragment->appendChild($clone);
             $subrange = new Range();
-            $subrange->startContainer = $lastPartiallyContainedChild;
+            $subrange->startNode = $lastPartiallyContainedChild;
             $subrange->startOffset = 0;
-            $subrange->endContainer = $originalEndNode;
+            $subrange->endNode = $originalEndNode;
             $subrange->endOffset = $originalEndOffset;
             $subfragment = $subrange->extractContents();
             $clone->appendChild($subfragment);
         }
 
-        $this->startContainer = $newNode;
+        $this->startNode = $newNode;
         $this->startOffset = $newOffset;
-        $this->endContainer = $newNode;
+        $this->endNode = $newNode;
         $this->endOffset = $newOffset;
 
         return $fragment;
@@ -707,22 +664,22 @@ final class Range implements Stringable
      */
     public function insertNode(Node $node): void
     {
-        if (($this->startContainer instanceof ProcessingInstruction
-                || $this->startContainer instanceof Comment)
-            || ($this->startContainer instanceof Text
-                && $this->startContainer->parentNode === null)
+        if (($this->startNode instanceof ProcessingInstruction
+                || $this->startNode instanceof Comment)
+            || ($this->startNode instanceof Text
+                && $this->startNode->parentNode === null)
         ) {
             throw new HierarchyRequestError();
         }
 
         $referenceNode = null;
 
-        if ($this->startContainer instanceof Text) {
-            $referenceNode = $this->startContainer;
+        if ($this->startNode instanceof Text) {
+            $referenceNode = $this->startNode;
         } else {
-            if (isset($this->startContainer->childNodes[$this->startOffset])) {
+            if (isset($this->startNode->childNodes[$this->startOffset])) {
                 $referenceNode = $this
-                    ->startContainer
+                    ->startNode
                     ->childNodes[$this->startOffset];
             } else {
                 $referenceNode = null;
@@ -730,12 +687,12 @@ final class Range implements Stringable
         }
 
         $parent = !$referenceNode
-            ? $this->startContainer
+            ? $this->startNode
             : $referenceNode->parentNode;
         $parent->ensurePreinsertionValidity($node, $referenceNode);
 
-        if ($this->startContainer instanceof Text) {
-            $this->startContainer->splitText($this->startOffset);
+        if ($this->startNode instanceof Text) {
+            $this->startNode->splitText($this->startOffset);
         }
 
         if ($node === $referenceNode) {
@@ -755,10 +712,10 @@ final class Range implements Stringable
 
         $parent->preinsertNode($node, $referenceNode);
 
-        if ($this->startContainer === $this->endContainer
+        if ($this->startNode === $this->endNode
             && $this->startOffset == $this->endOffset
         ) {
-            $this->endContainer = $parent;
+            $this->endNode = $parent;
             $this->endOffset = $newOffset;
         }
     }
@@ -775,7 +732,7 @@ final class Range implements Stringable
      */
     public function intersectsNode(Node $node): bool
     {
-        $root = $this->startContainer->getRootNode();
+        $root = $this->startNode->getRootNode();
 
         if ($node->getRootNode() !== $root) {
             return false;
@@ -791,9 +748,9 @@ final class Range implements Stringable
         $bp = [$parent, $offset];
 
         if ($this->computePosition($bp, [
-                $this->endContainer, $this->endOffset
+                $this->endNode, $this->endOffset
             ]) === 'before' && $this->computePosition($bp, [
-                $this->startContainer, $this->startOffset + 1
+                $this->startNode, $this->startOffset + 1
             ]) === 'after'
         ) {
             return true;
@@ -817,7 +774,7 @@ final class Range implements Stringable
      */
     public function isPointInRange(Node $node, int $offset): bool
     {
-        $root = $this->startContainer->getRootNode();
+        $root = $this->startNode->getRootNode();
 
         if ($node->getRootNode() !== $root) {
             return false;
@@ -834,9 +791,9 @@ final class Range implements Stringable
         $bp = array($node, $offset);
 
         if ($this->computePosition($bp, [
-                $this->startContainer, $this->startOffset
+                $this->startNode, $this->startOffset
             ]) === 'before' || $this->computePosition($bp, [
-                $this->endContainer, $this->endOffset
+                $this->endNode, $this->endOffset
             ]) === 'after'
         ) {
             return false;
@@ -866,9 +823,9 @@ final class Range implements Stringable
 
         $index = $node->getTreeIndex();
 
-        $this->startContainer = $parent;
+        $this->startNode = $parent;
         $this->startOffset = $index;
-        $this->endContainer = $parent;
+        $this->endNode = $parent;
         $this->endOffset = $index + 1;
     }
 
@@ -889,9 +846,9 @@ final class Range implements Stringable
             throw new InvalidNodeTypeError();
         }
 
-        $this->startContainer = $node;
+        $this->startNode = $node;
         $this->startOffset = 0;
-        $this->endContainer = $node;
+        $this->endNode = $node;
         $this->endOffset = $node->getLength();
     }
 
@@ -1027,10 +984,10 @@ final class Range implements Stringable
      */
     public function surroundCountents(Node $newParent): void
     {
-        if ((!($this->startContainer instanceof Text)
-                && $this->isPartiallyContainedNode($this->startContainer))
-            || (!($this->endContainer instanceof Text)
-                && $this->isPartiallyContainedNode($this->endContainer))
+        if ((!($this->startNode instanceof Text)
+                && $this->isPartiallyContainedNode($this->startNode))
+            || (!($this->endNode instanceof Text)
+                && $this->isPartiallyContainedNode($this->endNode))
         ) {
             throw new InvalidStateError();
         }
@@ -1071,23 +1028,23 @@ final class Range implements Stringable
     public function toString(): string
     {
         $s = '';
-        $owner = $this->startContainer->getNodeDocument();
+        $owner = $this->startNode->getNodeDocument();
         $encoding = $owner->characterSet;
 
-        if ($this->startContainer === $this->endContainer &&
-            $this->startContainer instanceof Text
+        if ($this->startNode === $this->endNode &&
+            $this->startNode instanceof Text
         ) {
             return mb_substr(
-                $this->startContainer->data,
+                $this->startNode->data,
                 $this->startOffset,
                 $this->endOffset - $this->startOffset,
                 $encoding
             );
         }
 
-        if ($this->startContainer instanceof Text) {
+        if ($this->startNode instanceof Text) {
             $s .= mb_substr(
-                $this->startContainer->data,
+                $this->startNode->data,
                 $this->startOffset,
                 null,
                 $encoding
@@ -1095,7 +1052,7 @@ final class Range implements Stringable
         }
 
         $tw = new TreeWalker(
-            $this->startContainer->getRootNode(),
+            $this->startNode->getRootNode(),
             NodeFilter::SHOW_TEXT,
             function ($node) {
                 if ($this->isFullyContainedNode($node)) {
@@ -1105,15 +1062,15 @@ final class Range implements Stringable
                 return NodeFilter::FILTER_REJECT;
             }
         );
-        $tw->currentNode = $this->startContainer;
+        $tw->currentNode = $this->startNode;
 
         while ($text = $tw->nextNode()) {
             $s .= $text->data;
         }
 
-        if ($this->endContainer instanceof Text) {
+        if ($this->endNode instanceof Text) {
             $s .= mb_substr(
-                $this->endContainer->data,
+                $this->endNode->data,
                 0,
                 $this->endOffset,
                 $encoding
@@ -1144,7 +1101,7 @@ final class Range implements Stringable
      */
     public function createContextualFragment($fragment)
     {
-        $node = $this->startContainer;
+        $node = $this->startNode;
 
         switch ($node->nodeType) {
             case Node::DOCUMENT_NODE:
@@ -1181,7 +1138,7 @@ final class Range implements Stringable
                 && $element->namespaceURI === Namespaces::HTML)
         ) {
             $element = ElementFactory::create(
-                $this->startContainer->getNodeDocument(),
+                $this->startNode->getNodeDocument(),
                 'body',
                 Namespaces::HTML
             );
@@ -1290,9 +1247,9 @@ final class Range implements Stringable
      */
     private function isFullyContainedNode(Node $node): bool
     {
-        $startBP = array($this->startContainer, $this->startOffset);
-        $endBP = array($this->endContainer, $this->endOffset);
-        $root = $this->startContainer->getRootNode();
+        $startBP = array($this->startNode, $this->startOffset);
+        $endBP = array($this->endNode, $this->endOffset);
+        $root = $this->startNode->getRootNode();
 
         return $node->getRootNode() === $root
             && $this->computePosition([$node, 0], $startBP) === 'after'
@@ -1313,8 +1270,8 @@ final class Range implements Stringable
      */
     private function isPartiallyContainedNode(Node $node): bool
     {
-        $isAncestorOfStart = $node->contains($this->startContainer);
-        $isAncestorOfEnd = $node->contains($this->endContainer);
+        $isAncestorOfStart = $node->contains($this->startNode);
+        $isAncestorOfEnd = $node->contains($this->endNode);
 
         return ($isAncestorOfStart && !$isAncestorOfEnd)
             || (!$isAncestorOfStart && $isAncestorOfEnd);
@@ -1351,32 +1308,32 @@ final class Range implements Stringable
         switch ($type) {
             case 'start':
                 if ($this->computePosition($bp, [
-                        $this->endContainer, $this->endOffset
+                        $this->endNode, $this->endOffset
                     ]) === 'after'
-                    || $this->startContainer->getRootNode() !==
+                    || $this->startNode->getRootNode() !==
                     $node->getRootNode()
                 ) {
-                    $this->endContainer = $node;
+                    $this->endNode = $node;
                     $this->endOffset = $offset;
                 }
 
-                $this->startContainer = $node;
+                $this->startNode = $node;
                 $this->startOffset = $offset;
 
                 break;
 
             case 'end':
                 if ($this->computePosition($bp, [
-                        $this->startContainer, $this->startOffset
+                        $this->startNode, $this->startOffset
                     ]) === 'before'
-                    || $this->startContainer->getRootNode() !==
+                    || $this->startNode->getRootNode() !==
                     $node->getRootNode()
                 ) {
-                    $this->startContainer = $node;
+                    $this->startNode = $node;
                     $this->startOffset = $offset;
                 }
 
-                $this->endContainer = $node;
+                $this->endNode = $node;
                 $this->endOffset = $offset;
         }
     }
