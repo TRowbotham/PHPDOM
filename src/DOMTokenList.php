@@ -150,10 +150,7 @@ final class DOMTokenList implements
             $this->tokens->append($token);
         }
 
-        $this->element->getAttributeList()->setAttrValue(
-            $this->attrLocalName,
-            Utils::serializeOrderedSet($this->tokens->values())
-        );
+        $this->update();
     }
 
     /**
@@ -205,10 +202,7 @@ final class DOMTokenList implements
             $this->tokens->remove($token);
         }
 
-        $this->element->getAttributeList()->setAttrValue(
-            $this->attrLocalName,
-            Utils::serializeOrderedSet($this->tokens->values())
-        );
+        $this->update();
     }
 
     /**
@@ -244,10 +238,7 @@ final class DOMTokenList implements
         if ($this->tokens->contains($token)) {
             if ($forceIsGiven === false || $force === false) {
                 $this->tokens->remove($token);
-                $this->element->getAttributeList()->setAttrValue(
-                    $this->attrLocalName,
-                    Utils::serializeOrderedSet($this->tokens->values())
-                );
+                $this->update();
 
                 return false;
             }
@@ -257,10 +248,7 @@ final class DOMTokenList implements
 
         if ($forceIsGiven === false || $force === true) {
             $this->tokens->append($token);
-            $this->element->getAttributeList()->setAttrValue(
-                $this->attrLocalName,
-                Utils::serializeOrderedSet($this->tokens->values())
-            );
+            $this->update();
 
             return true;
         }
@@ -299,10 +287,7 @@ final class DOMTokenList implements
         }
 
         $this->tokens->replace($token, $newToken);
-        $this->element->getAttributeList()->setAttrValue(
-            $this->attrLocalName,
-            Utils::serializeOrderedSet($this->tokens->values())
-        );
+        $this->update();
 
         return true;
     }
@@ -330,6 +315,32 @@ final class DOMTokenList implements
         // If lowercase token is present in supported tokens, return true.
         // Return false.
         return true;
+    }
+
+    /**
+     * Runs the token list's update steps.
+     *
+     * @see https://dom.spec.whatwg.org/#concept-dtl-update
+     *
+     * @return void
+     */
+    private function update()
+    {
+        $attrList = $this->element->getAttributeList();
+        $attr = $attrList->getAttrByNamespaceAndLocalName(
+            null,
+            $this->attrLocalName
+        );
+
+        // Don't create an empty attribute.
+        if ($attr === null && $this->tokens->isEmpty()) {
+            return;
+        }
+
+        $attrList->setAttrValue(
+            $this->attrLocalName,
+            Utils::serializeOrderedSet($this->tokens->values())
+        );
     }
 
     /**
