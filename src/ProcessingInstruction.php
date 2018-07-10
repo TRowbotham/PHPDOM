@@ -1,10 +1,26 @@
 <?php
 namespace Rowbot\DOM;
 
+/**
+ * @see https://dom.spec.whatwg.org/#interface-processinginstruction
+ *
+ * @property-read string $target
+ */
 class ProcessingInstruction extends CharacterData
 {
+    /**
+     * @var string
+     */
     protected $target;
 
+    /**
+     * Constructor.
+     *
+     * @param string $target
+     * @param string $data
+     *
+     * @return void
+     */
     public function __construct($target, $data)
     {
         parent::__construct($data);
@@ -13,7 +29,10 @@ class ProcessingInstruction extends CharacterData
         $this->target = $target;
     }
 
-    public function __get($name)
+    /**
+     * {@inheritDoc}
+     */
+    public function __get(string $name)
     {
         switch ($name) {
             case 'target':
@@ -41,14 +60,7 @@ class ProcessingInstruction extends CharacterData
     }
 
     /**
-     * Gets the name of the node.
-     *
-     * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#dom-node-nodename
-     * @see Node::getNodeName()
-     *
-     * @return string Returns the node's target.
+     * {@inheritDoc}
      */
     protected function getNodeName(): string
     {
