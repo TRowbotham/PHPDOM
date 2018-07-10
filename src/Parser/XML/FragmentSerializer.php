@@ -12,22 +12,31 @@ use Rowbot\DOM\Exception\TypeError;
 use Rowbot\DOM\Namespaces;
 use Rowbot\DOM\Node;
 use Rowbot\DOM\Parser\Parser;
+use Rowbot\DOM\Exception\InvalidStateError;
 use Rowbot\DOM\Parser\Exception\ParserException;
 use Rowbot\DOM\Parser\FragmentSerializerInterface;
 use Rowbot\DOM\ProcessingInstruction;
 use Rowbot\DOM\Text;
+
+use function htmlspecialchars;
+use function mb_strpos;
+use function mb_substr;
+use function md5;
+use function preg_match;
+use function str_replace;
+use function strcasecmp;
 
 class FragmentSerializer implements FragmentSerializerInterface
 {
     /**
      * @see https://w3c.github.io/DOM-Parsing/#dfn-xml-serialization
      *
-     * @param \Rowbot\DOM\Node $node The node
+     * @param \Rowbot\DOM\Node $node
      * @param bool             $requireWellFormed
      *
-     * @throws InvalidStateError
-     *
      * @return string
+     *
+     * @throws \Rowbot\DOM\Exception\InvalidStateError
      */
     public function serializeFragment(
         Node $node,
@@ -47,83 +56,87 @@ class FragmentSerializer implements FragmentSerializerInterface
                 $requireWellFormed
             );
         } catch (Exception $e) {
-            throw new InvalidStateError('', 0, $e);
+            throw new InvalidStateError('', $e);
         }
     }
 
     /**
+     * Runs the steps to serialize a node.
+     *
      * @see https://w3c.github.io/DOM-Parsing/#dfn-concept-xml-serialization-algorithm
-     * @param  Node     $aNode              [description]
-     * @param  string   $aNamespace         [description]
-     * @param  string[] $aPrefixMap         [description]
-     * @param  int      &$aPrefixIndex      [description]
-     * @param  bool     $aRequireWellFormed [description]
+     *
+     * @param \Rowbot\DOM\Node                          $node
+     * @param ?string                                   $namespace
+     * @param \Rowbot\DOM\Parser\XML\NamespacePrefixMap $prefixMap
+     * @param int                                       $prefixIndex
+     * @param bool                                      $requireWellFormed
+     *
      * @return string
      */
     private function serializeNode(
-        Node $aNode,
-        $aNamespace,
-        $aPrefixMap,
-        &$aPrefixIndex,
-        $aRequireWellFormed
-    ) {
-        if ($aNode instanceof Element) {
+        Node $node,
+        ?string $namespace,
+        NamespacePrefixMap $prefixMap,
+        int &$prefixIndex,
+        bool $requireWellFormed
+    ): string {
+        if ($node instanceof Element) {
             return $this->serializeElementNode(
-                $aNode,
-                $aNamespace,
-                $aPrefixMap,
-                $aPrefixIndex,
-                $aRequireWellFormed
+                $node,
+                $namespace,
+                $prefixMap,
+                $prefixIndex,
+                $requireWellFormed
             );
-        } elseif ($aNode instanceof Document) {
+        } elseif ($node instanceof Document) {
             return $this->serializeDocumentNode(
-                $aNode,
-                $aNamespace,
-                $aPrefixMap,
-                $aPrefixIndex,
-                $aRequireWellFormed
+                $node,
+                $namespace,
+                $prefixMap,
+                $prefixIndex,
+                $requireWellFormed
             );
-        } elseif ($aNode instanceof Comment) {
+        } elseif ($node instanceof Comment) {
             return $this->serializeCommentNode(
-                $aNode,
-                $aNamespace,
-                $aPrefixMap,
-                $aPrefixIndex,
-                $aRequireWellFormed
+                $node,
+                $namespace,
+                $prefixMap,
+                $prefixIndex,
+                $requireWellFormed
             );
-        } elseif ($aNode instanceof Text) {
+        } elseif ($node instanceof Text) {
             return $this->serializeTextNode(
-                $aNode,
-                $aNamespace,
-                $aPrefixMap,
-                $aPrefixIndex,
-                $aRequireWellFormed
+                $node,
+                $namespace,
+                $prefixMap,
+                $prefixIndex,
+                $requireWellFormed
             );
-        } elseif ($aNode instanceof DocumentFragment) {
+        } elseif ($node instanceof DocumentFragment) {
             return $this->serializeDocumentFragmentNode(
-                $aNode,
-                $aNamespace,
-                $aPrefixMap,
-                $aPrefixIndex,
-                $aRequireWellFormed
+                $node,
+                $namespace,
+                $prefixMap,
+                $prefixIndex,
+                $requireWellFormed
             );
-        } elseif ($aNode instanceof DocumentType) {
+        } elseif ($node instanceof DocumentType) {
             return $this->serializeDocumentTypeNode(
-                $aNode,
-                $aNamespace,
-                $aPrefixMap,
-                $aPrefixIndex,
-                $aRequireWellFormed
+                $node,
+                $namespace,
+                $prefixMap,
+                $prefixIndex,
+                $requireWellFormed
             );
-        } elseif ($aNode instanceof ProcessingInstruction) {
+        } elseif ($node instanceof ProcessingInstruction) {
             return $this->serializeProcessingInstructionNode(
-                $aNode,
-                $aNamespace,
-                $aPrefixMap,
-                $aPrefixIndex,
-                $aRequireWellFormed
+                $node,
+                $namespace,
+                $prefixMap,
+                $prefixIndex,
+                $requireWellFormed
             );
-        } elseif ($aNode instanceof Attr) {
+        } elseif ($node instanceof Attr) {
             return '';
         }
 
@@ -132,25 +145,27 @@ class FragmentSerializer implements FragmentSerializerInterface
 
     /**
      * @see https://w3c.github.io/DOM-Parsing/#xml-serializing-an-element-node
-     * @param  Element            $aNode              [description]
-     * @param  [type]             $aNamespace         [description]
-     * @param  NamespacePrefixMap $aPrefixMap         [description]
-     * @param  [type]             &$aPrefixIndex      [description]
-     * @param  [type]             $aRequireWellFormed [description]
-     * @return [type]                                 [description]
+     *
+     * @param \Rowbot\DOM\Element\Element               $node
+     * @param ?string                                   $namespace
+     * @param \Rowbot\DOM\Parser\XML\NamespacePrefixMap $prefixMap
+     * @param int                                       $prefixIndex
+     * @param bool                                      $requireWellFormed
+     *
+     * @return string
      */
     private function serializeElementNode(
-        Element $aNode,
-        $aNamespace,
-        NamespacePrefixMap $aPrefixMap,
-        &$aPrefixIndex,
-        $aRequireWellFormed
-    ) {
-        $localName = $aNode->localName;
+        Element $node,
+        ?string $namespace,
+        NamespacePrefixMap $prefixMap,
+        int &$prefixIndex,
+        bool $requireWellFormed
+    ): string {
+        $localName = $node->localName;
 
-        if ($aRequireWellFormed &&
-            (\mb_strpos($localName, ':') !== false ||
-            !\preg_match(Namespaces::NAME_PRODUCTION, $localName))
+        if ($requireWellFormed &&
+            (mb_strpos($localName, ':') !== false ||
+            !preg_match(Namespaces::NAME_PRODUCTION, $localName))
         ) {
             throw new ParserException();
         }
@@ -159,15 +174,15 @@ class FragmentSerializer implements FragmentSerializerInterface
         $qualifiedName = '';
         $skipEndTag = false;
         $ignoreNamespaceDefinitionAttribute = false;
-        $map = clone $aPrefixMap;
+        $map = clone $prefixMap;
         $localPrefixesMap = [];
         $localDefaultNamespace = $this->recordNamespaceInformation(
-            $aNode,
+            $node,
             $map,
             $localPrefixesMap
         );
-        $inheritedNS = $aNamespace;
-        $ns = $aNode->namespaceURI;
+        $inheritedNS = $namespace;
+        $ns = $node->namespaceURI;
 
         if ($inheritedNS === $ns) {
             if ($localDefaultNamespace !== null) {
@@ -181,13 +196,13 @@ class FragmentSerializer implements FragmentSerializerInterface
             $qualifiedName .= $localName;
             $markup .= $qualifiedName;
         } elseif ($inheritedNS !== $ns) {
-            $prefix = $aNode->prefix;
+            $prefix = $node->prefix;
             // This may return null if no namespace key exists in the map.
             $candidatePrefix = $map->preferredPrefix($ns, $prefix);
 
             if ($prefix === 'xmlns') {
                 // An Element with prefix "xmlns" will not legally round-trip
-                if ($aRequireWellFormed) {
+                if ($requireWellFormed) {
                     throw new ParserException();
                 }
 
@@ -208,7 +223,7 @@ class FragmentSerializer implements FragmentSerializerInterface
                 }
             } elseif ($prefix !== null) {
                 if (isset($localPrefixesMap[$prefix])) {
-                    $prefix = $this->generatePrefix($map, $ns, $aPrefixIndex);
+                    $prefix = $this->generatePrefix($map, $ns, $prefixIndex);
                 }
 
                 $map->add($ns, $prefix);
@@ -220,7 +235,7 @@ class FragmentSerializer implements FragmentSerializerInterface
                 $markup .= '="';
                 $markup .= $this->serializeAttributeValue(
                     $ns,
-                    $aRequireWellFormed
+                    $requireWellFormed
                 );
                 $markup .= '"';
 
@@ -242,7 +257,7 @@ class FragmentSerializer implements FragmentSerializerInterface
                 $markup .= '="';
                 $markup .= $this->serializeAttributeValue(
                     $ns,
-                    $aRequireWellFormed
+                    $requireWellFormed
                 );
                 $markup .= '"';
             } else {
@@ -253,20 +268,20 @@ class FragmentSerializer implements FragmentSerializerInterface
         }
 
         $markup .= $this->serializeAttributes(
-            $aNode,
+            $node,
             $map,
-            $aPrefixIndex,
+            $prefixIndex,
             $localPrefixesMap,
             $ignoreNamespaceDefinitionAttribute,
-            $aRequireWellFormed
+            $requireWellFormed
         );
 
-        if ($ns === Namespaces::HTML && !$aNode->hasChildNodes() &&
-            \preg_match(self::VOID_TAGS, $localName)
+        if ($ns === Namespaces::HTML && !$node->hasChildNodes() &&
+            preg_match(self::VOID_TAGS, $localName)
         ) {
             $markup .= ' /';
             $skipEndTag = true;
-        } elseif ($ns !== Namespaces::HTML  && !$aNode->hasChildNodes()) {
+        } elseif ($ns !== Namespaces::HTML && !$node->hasChildNodes()) {
             $markup .= '/';
             $skipEndTag = true;
         }
@@ -279,20 +294,20 @@ class FragmentSerializer implements FragmentSerializerInterface
 
         if ($ns === Namespaces::HTML && $localName === 'template') {
             $markup .= $this->serializeDocumentFragmentNode(
-                $aNode->content,
+                $node->content,
                 $inheritedNS,
                 $map,
-                $aPrefixIndex,
-                $aRequireWellFormed
+                $prefixIndex,
+                $requireWellFormed
             );
         } else {
-            foreach ($aNode->childNodes as $child) {
+            foreach ($node->childNodes as $child) {
                 $markup .= $this->serializeNode(
                     $child,
                     $inheritedNS,
                     $map,
-                    $aPrefixIndex,
-                    $aRequireWellFormed
+                    $prefixIndex,
+                    $requireWellFormed
                 );
             }
         }
@@ -306,20 +321,22 @@ class FragmentSerializer implements FragmentSerializerInterface
 
     /**
      * @see https://w3c.github.io/DOM-Parsing/#dfn-recording-the-namespace-information
-     * @param  Element            $aElement           [description]
-     * @param  NamespacePrefixMap $aMap               [description]
-     * @param  [type]             &$aLocalPrefixesMap [description]
-     * @return [type]                                 [description]
+     *
+     * @param \Rowbot\DOM\Element\Element               $element
+     * @param \Rowbot\DOM\Parser\XML\NamespacePrefixMap $map
+     * @param array<string, string>                     $localPrefixesMap
+     *
+     * @return ?string
      */
     private function recordNamespaceInformation(
-        Element $aElement,
-        NamespacePrefixMap $aMap,
-        &$aLocalPrefixesMap
-    ) {
+        Element $element,
+        NamespacePrefixMap $map,
+        array &$localPrefixesMap
+    ): ?string {
         $defaultNamespaceAttrValue = null;
 
-        foreach ($aElement->getAttributesList() as $attr) {
-            $attirbuteNamespace = $attr->namespaceURI;
+        foreach ($element->getAttributeList() as $attr) {
+            $attributeNamespace = $attr->namespaceURI;
             $attributePrefix = $attr->prefix;
 
             if ($attributeNamespace === Namespaces::XMLNS) {
@@ -339,12 +356,12 @@ class FragmentSerializer implements FragmentSerializerInterface
                     $namespaceDefinition = null;
                 }
 
-                if ($aMap->hasPrefix($namespaceDefinition, $prefixDefinition)) {
+                if ($map->hasPrefix($namespaceDefinition, $prefixDefinition)) {
                     continue;
                 }
 
-                $aMap->add($namespaceDefinition, $prefixDefinition);
-                $aLocalPrefixesMap[$prefixDefinition] = $namespaceDefinition;
+                $map->add($namespaceDefinition, $prefixDefinition);
+                $localPrefixesMap[$prefixDefinition] = $namespaceDefinition;
             }
         }
 
@@ -353,54 +370,62 @@ class FragmentSerializer implements FragmentSerializerInterface
 
     /**
      * @see https://w3c.github.io/DOM-Parsing/#dfn-serializing-an-attribute-value
-     * @param  [type] $aValue             [description]
-     * @param  [type] $aRequireWellFormed [description]
-     * @return [type]                     [description]
+     *
+     * @param ?string $value
+     * @param bool    $requireWellFormed
+     *
+     * @return string
+     *
+     * @throws \Rowbot\DOM\Parser\Exception\ParserException
      */
     private function serializeAttributeValue(
-        $aValue,
-        $aRequireWellFormed
-    ) {
-        if ($aRequireWellFormed &&
-            \preg_match('/^((?!' . Namespaces::CHAR . ').)*/u')
+        ?string $value,
+        bool $requireWellFormed
+    ): string {
+        if ($requireWellFormed &&
+            preg_match('/^((?!' . Namespaces::CHAR . ').)*/u', $value)
         ) {
             throw new ParserException();
         }
 
-        if ($aValue === null) {
+        if ($value === null) {
             return '';
         }
 
-        return \htmlspecialchars($aValue, 0);
+        return htmlspecialchars($value, 0);
     }
 
     /**
      * @see https://w3c.github.io/DOM-Parsing/#dfn-xml-serialization-of-the-attributes
-     * @param  Element            $aElement
-     * @param  NamespacePrefixMap $aMap                                [description]
-     * @param  [type]             &$aPrefixIndex                       [description]
-     * @param  [type]             $aLocalPrefixesMap                   [description]
-     * @param  [type]             $aIgnoreNamespaceDefinitionAttribute [description]
-     * @param  [type]             $aRequireWellFormed                  [description]
-     * @return [type]                                                  [description]
+     *
+     * @param Element                                   $element
+     * @param \Rowbot\DOM\Parser\XML\NamespacePrefixMap $map
+     * @param int                                       $prefixIndex
+     * @param array<string, string>                     $localPrefixesMap
+     * @param bool                                      $ignoreNamespaceDefinitionAttribute
+     * @param bool                                      $requireWellFormed
+     *
+     * @return string
+     *
+     * @throws \Rowbot\DOM\Parser\Exception\ParserException
      */
     private function serializeAttributes(
-        Element $aElement,
-        NamespacePrefixMap $aMap,
-        &$aPrefixIndex,
-        $aLocalPrefixesMap,
-        $aIgnoreNamespaceDefinitionAttribute,
-        $aRequireWellFormed
-    ) {
+        Element $element,
+        NamespacePrefixMap $map,
+        int &$prefixIndex,
+        array $localPrefixesMap,
+        bool $ignoreNamespaceDefinitionAttribute,
+        bool $requireWellFormed
+    ): string {
         $result = '';
         $localNameSet = [];
 
-        foreach ($aElement->getAttributesList() as $attr) {
+        foreach ($element->getAttributeList() as $attr) {
             $attributeNamespace = $attr->namespaceURI;
             $localName = $attr->localName;
-            $hash = \md5((string) $attributeNamespace . $localName);
+            $hash = md5((string) $attributeNamespace . $localName);
 
-            if ($aRequireWellFormed && isset($localNameSet[$hash])) {
+            if ($requireWellFormed && isset($localNameSet[$hash])) {
                 throw new ParserException();
             }
 
@@ -410,8 +435,8 @@ class FragmentSerializer implements FragmentSerializerInterface
             $attributePrefix = $attr->prefix;
             $attributeValue = $attr->value;
 
-            if ($attirbuteNamespace !== null) {
-                $candidatePrefix = $aMap->preferredPrefix(
+            if ($attributeNamespace !== null) {
+                $candidatePrefix = $map->preferredPrefix(
                     $attributeNamespace,
                     $attributePrefix
                 );
@@ -419,25 +444,25 @@ class FragmentSerializer implements FragmentSerializerInterface
                 if ($attributeNamespace === Namespaces::XMLNS) {
                     if ($attributeValue === Namespaces::XML ||
                         ($attributePrefix === null &&
-                            $aIgnoreNamespaceDefinitionAttribute)
-                        ($attributePrefix !== null &&
-                            (!isset($aLocalPrefixesMap[$localName]) ||
-                                (isset($aLocalPrefixesMap[$localName]) &&
-                                $aLocalPrefixesMap[$localName] !== $attributeValue)
+                            $ignoreNamespaceDefinitionAttribute)
+                        || ($attributePrefix !== null &&
+                            (!isset($localPrefixesMap[$localName]) ||
+                                (isset($localPrefixesMap[$localName]) &&
+                                $localPrefixesMap[$localName] !== $attributeValue)
                             )
                         ) &&
-                        $aMap->hasPrefix($attributeValue, $localName)
+                        $map->hasPrefix($attributeValue, $localName)
                     ) {
                         continue;
                     }
 
-                    if ($aRequireWellFormed &&
+                    if ($requireWellFormed &&
                         $attributeValue === Namespaces::XMLNS
                     ) {
                         throw new ParserException();
                     }
 
-                    if ($aRequireWellFormed && $attributeValue === '') {
+                    if ($requireWellFormed && $attributeValue === '') {
                         throw new ParserException();
                     }
 
@@ -446,9 +471,9 @@ class FragmentSerializer implements FragmentSerializerInterface
                     }
                 } else {
                     $candidatePrefix = $this->generatePrefix(
-                        $aMap,
+                        $map,
                         $attributeNamespace,
-                        $aPrefixIndex
+                        $prefixIndex
                     );
 
                     $result .= ' ';
@@ -457,7 +482,7 @@ class FragmentSerializer implements FragmentSerializerInterface
                     $result .= '="';
                     $result .= $this->serializeAttributeValue(
                         $attributeValue,
-                        $aRequireWellFormed
+                        $requireWellFormed
                     );
                     $result .= '"';
                 }
@@ -469,8 +494,8 @@ class FragmentSerializer implements FragmentSerializerInterface
                 $result .= $candidatePrefix . ':';
             }
 
-            if ($aRequireWellFormed &&
-                (\mb_strpos($localName, ':') !== false ||
+            if ($requireWellFormed &&
+                (mb_strpos($localName, ':') !== false ||
                 $localName !== Namespaces::XMLNS ||
                 ($localName === 'xmlns' && $attributeNamespace === null))
             ) {
@@ -481,7 +506,7 @@ class FragmentSerializer implements FragmentSerializerInterface
             $result .= '="';
             $result .= $this->serializeAttributeValue(
                 $attributeValue,
-                $aRequireWellFormed
+                $requireWellFormed
             );
             $result .= '"';
         }
@@ -492,55 +517,57 @@ class FragmentSerializer implements FragmentSerializerInterface
     /**
      * @see https://w3c.github.io/DOM-Parsing/#dfn-concept-generate-prefix
      *
-     * @param NamespacePrefixMap $aMap [description]
-     *
-     * @param string             $aNewNamespace [description]
-     *
-     * @param int                &$aPrefixIndex [description]
+     * @param \Rowbot\DOM\Parser\XML\NamespacePrefixMap $map
+     * @param string                                    $newNamespace
+     * @param int                                       $prefixIndex
      *
      * @return string
      */
     private function generatePrefix(
-        NamespacePrefixMap $aMap,
-        $aNewNamespace,
-        &$aPrefixIndex
-    ) {
-        $generatedPrefix = 'ns' . $aPrefixIndex;
-        $aPrefixIndex++;
-        $aMap->add($aNewNamespace, $generatedPrefix);
+        NamespacePrefixMap $map,
+        ?string $newNamespace,
+        int &$prefixIndex
+    ): string {
+        $generatedPrefix = 'ns' . $prefixIndex;
+        $prefixIndex++;
+        $map->add($newNamespace, $generatedPrefix);
 
         return $generatedPrefix;
     }
 
     /**
      * @see https://w3c.github.io/DOM-Parsing/#xml-serializing-a-document-node
-     * @param  Document           $aNode              [description]
-     * @param  [type]             $aNamespace         [description]
-     * @param  NamespacePrefixMap $aPrefixMap         [description]
-     * @param  [type]             &$aPrefixIndex      [description]
-     * @param  [type]             $aRequireWellFormed [description]
-     * @return [type]                                 [description]
+     *
+     * @param \Rowbot\DOM\Document                      $node
+     * @param ?string                                   $namespace
+     * @param \Rowbot\DOM\Parser\XML\NamespacePrefixMap $prefixMap
+     * @param int                                       $prefixIndex
+     * @param bool                                      $requireWellFormed
+     *
+     * @return string
+     *
+     * @throws \Rowbot\DOM\Parser\Exception\ParserException
      */
     private function serializeDocumentNode(
-        Document $aNode,
-        $aNamespace,
-        NamespacePrefixMap $aPrefixMap,
-        &$aPrefixIndex,
-        $aRequireWellFormed
-    ) {
-        if ($aRequireWellFormed && $aNode->documentElement === null) {
+        Document $node,
+        ?string $namespace,
+        NamespacePrefixMap $prefixMap,
+        int &$prefixIndex,
+        bool $requireWellFormed
+    ): string {
+        if ($requireWellFormed && $node->documentElement === null) {
             throw new ParserException();
         }
 
         $serializedDocument = '';
 
-        foreach ($aNode->childNodes as $child) {
+        foreach ($node->childNodes as $child) {
             $serializedDocument .= $this->serializeNode(
                 $child,
-                $aNamespace,
-                $aPrefixMap,
-                $aPrefixIndex,
-                $aRequireWellFormed
+                $namespace,
+                $prefixMap,
+                $prefixIndex,
+                $requireWellFormed
             );
         }
 
@@ -549,26 +576,30 @@ class FragmentSerializer implements FragmentSerializerInterface
 
     /**
      * @see https://w3c.github.io/DOM-Parsing/#xml-serializing-a-comment-node
-     * @param  Comment            $aNode              [description]
-     * @param  [type]             $aNamespace         [description]
-     * @param  NamespacePrefixMap $aPrefixMap         [description]
-     * @param  [type]             &$aPrefixIndex      [description]
-     * @param  [type]             $aRequireWellFormed [description]
-     * @return [type]                                [description]
+     *
+     * @param \Rowbot\DOM\Comment                       $node
+     * @param ?string                                   $namespace
+     * @param \Rowbot\DOM\Parser\XML\NamespacePrefixMap $prefixMap
+     * @param int                                       $prefixIndex
+     * @param bool                                      $requireWellFormed
+     *
+     * @return string
+     *
+     * @throws \Rowbot\DOM\Parser\Exception\ParserException
      */
     private function serializeCommentNode(
-        Comment $aNode,
-        $aNamespace,
-        NamespacePrefixMap $aPrefixMap,
-        &$aPrefixIndex,
-        $aRequireWellFormed
-    ) {
-        $data = $aNode->data;
+        Comment $node,
+        ?string $namespace,
+        NamespacePrefixMap $prefixMap,
+        int &$prefixIndex,
+        bool $requireWellFormed
+    ): string {
+        $data = $node->data;
 
-        if ($aRequireWellFormed &&
-            (\preg_match('/^((?!' . Namespaces::CHAR . ').)*/u') ||
-                \mb_strpos($data, '--') !== false) ||
-                \mb_substr($data, -1, 1) === '-'
+        if ($requireWellFormed &&
+            (preg_match('/^((?!' . Namespaces::CHAR . ').)*/u', $data) ||
+                mb_strpos($data, '--') !== false) ||
+                mb_substr($data, -1, 1) === '-'
         ) {
             throw new ParserException();
         }
@@ -578,30 +609,34 @@ class FragmentSerializer implements FragmentSerializerInterface
 
     /**
      * @see https://w3c.github.io/DOM-Parsing/#xml-serializing-a-text-node
-     * @param  Text               $aNode              [description]
-     * @param  [type]             $aNamespace         [description]
-     * @param  NamespacePrefixMap $aPrefixMap         [description]
-     * @param  [type]             &$aPrefixIndex      [description]
-     * @param  [type]             $aRequireWellFormed [description]
-     * @return [type]                                 [description]
+     *
+     * @param \Rowbot\DOM\Text                          $node
+     * @param ?string                                   $namespace
+     * @param \Rowbot\DOM\Parser\XML\NamespacePrefixMap $prefixMap
+     * @param int                                       $prefixIndex
+     * @param bool                                      $requireWellFormed
+     *
+     * @return string
+     *
+     * @throws \Rowbot\DOM\Parser\Exception\ParserException
      */
     private function serializeTextNode(
-        Text $aNode,
-        $aNamespace,
-        NamespacePrefixMap $aPrefixMap,
-        &$aPrefixIndex,
-        $aRequireWellFormed
-    ) {
-        $data = $aNode->data;
+        Text $node,
+        ?string $namespace,
+        NamespacePrefixMap $prefixMap,
+        int &$prefixIndex,
+        bool $requireWellFormed
+    ): string {
+        $data = $node->data;
 
-        if ($aRequireWellFormed &&
-            \preg_match('/^((?!' . Namespaces::CHAR . ').)*/u', $data)
+        if ($requireWellFormed &&
+            preg_match('/^((?!' . Namespaces::CHAR . ').)*/u', $data)
         ) {
             throw new ParserException();
         }
 
         $markup = $data;
-        $markup = \str_replace(
+        $markup = str_replace(
             ['&', '<', '>'],
             ['&amp;', '&lt;', '&gt;'],
             $markup
@@ -612,29 +647,31 @@ class FragmentSerializer implements FragmentSerializerInterface
 
     /**
      * @see https://w3c.github.io/DOM-Parsing/#xml-serializing-a-documentfragment-node
-     * @param  DocumentFragment   $aNode              [description]
-     * @param  [type]             $aNamespace         [description]
-     * @param  NamespacePrefixMap $aPrefixMap         [description]
-     * @param  [type]             &$aPrefixIndex      [description]
-     * @param  [type]             $aRequireWellFormed [description]
-     * @return [type]                                 [description]
+     *
+     * @param \Rowbot\DOM\DocumentFragment              $node
+     * @param ?string                                   $namespace
+     * @param \Rowbot\DOM\Parser\XML\NamespacePrefixMap $prefixMap
+     * @param int                                       $prefixIndex
+     * @param bool                                      $requireWellFormed
+     *
+     * @return string
      */
     private function serializeDocumentFragmentNode(
-        DocumentFragment $aNode,
-        $aNamespace,
-        NamespacePrefixMap $aPrefixMap,
-        &$aPrefixIndex,
-        $aRequireWellFormed
-    ) {
+        DocumentFragment $node,
+        ?string $namespace,
+        NamespacePrefixMap $prefixMap,
+        int &$prefixIndex,
+        bool $requireWellFormed
+    ): string {
         $markup = '';
 
-        foreach ($aNode->childNodes as $child) {
+        foreach ($node->childNodes as $child) {
             $markup .= $this->serializeNode(
                 $child,
-                $aNamespace,
-                $aPrefixMap,
-                $aPrefixIndex,
-                $aRequireWellFormed
+                $namespace,
+                $prefixMap,
+                $prefixIndex,
+                $requireWellFormed
             );
         }
 
@@ -643,36 +680,41 @@ class FragmentSerializer implements FragmentSerializerInterface
 
     /**
      * @see https://w3c.github.io/DOM-Parsing/#xml-serializing-a-documenttype-node
-     * @param  DocumentType       $aNode              [description]
-     * @param  [type]             $aNamespace         [description]
-     * @param  NamespacePrefixMap $aPrefixMap         [description]
-     * @param  [type]             &$aPrefixIndex      [description]
-     * @param  [type]             $aRequireWellFormed [description]
-     * @return [type]                                [description]
+     *
+     * @param \Rowbot\DOM\DocumentType                  $node
+     * @param ?string                                   $namespace
+     * @param \Rowbot\DOM\Parser\XML\NamespacePrefixMap $prefixMap
+     * @param int                                       $prefixIndex
+     * @param bool                                      $requireWellFormed
+     *
+     * @return string
+     *
+     * @throws \Rowbot\DOM\Parser\Exception\ParserException
      */
     private function serializeDocumentTypeNode(
-        DocumentType $aNode,
-        $aNamespace,
-        NamespacePrefixMap $aPrefixMap,
-        &$aPrefixIndex,
-        $aRequireWellFormed
-    ) {
-        $publicId = $aNode->publicId;
-        $systemId = $aNode->systemId;
+        DocumentType $node,
+        ?string $namespace,
+        NamespacePrefixMap $prefixMap,
+        int &$prefixIndex,
+        bool $requireWellFormed
+    ): string {
+        $publicId = $node->publicId;
+        $systemId = $node->systemId;
 
-        if ($aRequireWellFormed) {
-            if (\preg_match(
+        if ($requireWellFormed) {
+            if (preg_match(
                 '/^((?!\x20|\x0D|\x0A|[a-zA-Z0-9]|[-\'()+,.\/:=?!*#@$_%]).)*/',
                 $publicId
             )) {
                 throw new ParserException();
             }
 
-            if ((\preg_match(
+            if ((preg_match(
                 '/^((?!' . Namespaces::CHAR . ').)*/u',
                 $systemId
-            )) ||
-                \mb_strpos('"') !== false && \mb_strpos('\'') !== false
+            ))
+            || (mb_strpos($systemId, '"') !== false
+                && mb_strpos($systemId, '\'') !== false)
             ) {
                 throw new ParserException();
             }
@@ -681,7 +723,7 @@ class FragmentSerializer implements FragmentSerializerInterface
         $markup = '';
         $markup .= '<!DOCTYPE';
         $markup .= ' ';
-        $markup .= $aNode->name;
+        $markup .= $node->name;
 
         if ($publicId !== '') {
             $markup .= ' ';
@@ -711,32 +753,34 @@ class FragmentSerializer implements FragmentSerializerInterface
 
     /**
      * @see https://w3c.github.io/DOM-Parsing/#xml-serializing-a-processinginstruction-node
-     * @param  ProcessingInstruction $aNode              [description]
-     * @param  [type]                $aNamespace         [description]
-     * @param  NamespacePrefixMap    $aPrefixMap         [description]
-     * @param  [type]                &$aPrefixIndex      [description]
-     * @param  [type]                $aRequireWellFormed [description]
-     * @return [type]                                    [description]
+     *
+     * @param \Rowbot\DOM\ProcessingInstruction         $node
+     * @param ?string                                   $namespace
+     * @param \Rowbot\DOM\Parser\XML\NamespacePrefixMap $prefixMap
+     * @param int                                       $prefixIndex
+     * @param bool                                      $requireWellFormed
+     *
+     * @return string
      */
     private function serializeProcessingInstructionNode(
-        ProcessingInstruction $aNode,
-        $aNamespace,
-        NamespacePrefixMap $aPrefixMap,
-        &$aPrefixIndex,
-        $aRequireWellFormed
-    ) {
-        $target = $aNode->target;
-        $data = $aNode->data;
+        ProcessingInstruction $node,
+        ?string $namespace,
+        NamespacePrefixMap $prefixMap,
+        int &$prefixIndex,
+        bool $requireWellFormed
+    ): string {
+        $target = $node->target;
+        $data = $node->data;
 
-        if ($aRequireWellFormed) {
-            if (\mb_strpos($target, ':') !== false ||
-                \strcasecmp($target, 'xml') === 0
+        if ($requireWellFormed) {
+            if (mb_strpos($target, ':') !== false ||
+                strcasecmp($target, 'xml') === 0
             ) {
                 throw new ParserException();
             }
 
-            if (\preg_match('/^((?!' . Namespaces::CHAR . ').)*/u', $data) ||
-                \mb_strpos($data, '?>')
+            if (preg_match('/^((?!' . Namespaces::CHAR . ').)*/u', $data) ||
+                mb_strpos($data, '?>')
             ) {
                 throw new ParserException();
             }
