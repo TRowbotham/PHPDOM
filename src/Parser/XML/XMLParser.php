@@ -4,45 +4,89 @@ namespace Rowbot\DOM\Parser\XML;
 use Exception;
 use Rowbot\DOM\Document;
 use Rowbot\DOM\Element\Element;
+use Rowbot\DOM\Exception\SyntaxError;
 use Rowbot\DOM\Parser\Parser;
 
 class XMLParser extends Parser
 {
+    /**
+     * @var \Rowbot\DOM\Document
+     */
     private $document;
 
-    public function __construct(Document $aDocument)
+    /**
+     * Constructor.
+     *
+     * @param \Rowbot\DOM\Document $document
+     *
+     * @return void
+     */
+    public function __construct(Document $document)
     {
         parent::__construct();
 
-        $this->document = $aDocument;
+        $this->document = $document;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function abort()
     {
     }
 
     /**
+     * Parses an XML string fragment.
+     *
      * @see https://html.spec.whatwg.org/multipage/xhtml.html#xml-fragment-parsing-algorithm
-     * @param string       $aInput          [description]
-     * @param Element|null $aContextElement [description]
+     *
+     * @param string                      $input
+     * @param \Rowbot\DOM\Element\Element $contextElement
+     *
+     * @return \Rowbot\DOM\Node[]
+     *
+     * @throws \Rowbot\DOM\Exception\SyntaxError
      */
     public static function parseXMLFragment(
-        $aInput,
-        Element $aContextElement = null
-    ) {
+        $input,
+        Element $contextElement
+    ): array {
         $document = new Document();
         $parser = new XMLParser($document);
-        $parser->inputStream->append($aInput);
+        $parser->inputStream->append($input);
 
         try {
             $parser->run();
         } catch (Exception $e) {
-            throw new SyntaxError('', 0, $e);
+            throw new SyntaxError('', $e);
         }
+
+        $docElement = $document->documentElement;
+
+        if ($docElement !== null
+            && ($docElement->previousSibling !== null
+                || $docElement->nextSibling !== null)
+        ) {
+            throw new SyntaxError();
+        }
+
+        return $document->childNodes;
     }
 
-    public function preprocessInputStream($aInput)
+    /**
+     * {@inheritDoc}
+     */
+    public function preprocessInputStream($input)
     {
-        $this->inputStream->append($aInput);
+        $this->inputStream->append($input);
+    }
+
+    /**
+     * Executes the parsing steps.
+     *
+     * @return void
+     */
+    public function run()
+    {
     }
 }
