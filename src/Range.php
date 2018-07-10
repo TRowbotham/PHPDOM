@@ -66,152 +66,121 @@ final class Range extends AbstractRange implements Stringable
     }
 
     /**
-     * @see https://dom.spec.whatwg.org/#dom-range-clonecontents
+     * Sets the Range's start boundary relative to the given Node.
      *
-     * @return \Rowbot\DOM\DocumentFragment
+     * @see https://dom.spec.whatwg.org/#dom-range-setstart
      *
-     * @throws \Rowbot\DOM\Exception\HierarchyRequestError
+     * @param \Rowbot\DOM\Node $node   The Node where the Range will start.
+     * @param int              $offset The offset within the given node where the Range starts.
+     *
+     * @return void
      */
-    public function cloneContents(): DocumentFragment
+    public function setStart(Node $node, $offset): void
     {
-        $nodeDocument = $this->startNode->getNodeDocument();
-        $fragment = $nodeDocument->createDocumentFragment();
-
-        if ($this->startNode === $this->endNode
-            && $this->startOffset == $this->endOffset
-        ) {
-            return $fragment;
-        }
-
-        $originalStartNode = $this->startNode;
-        $originalStartOffset = $this->startOffset;
-        $originalEndNode = $this->endNode;
-        $originalEndOffset = $this->endOffset;
-
-        if ($originalStartNode === $originalEndNode
-            && ($originalStartNode instanceof Text
-                || $originalStartNode instanceof ProcessingInstruction
-                || $originalStartNode instanceof Comment)
-        ) {
-            $clone = $originalStartNode->cloneNodeInternal();
-            $clone->data = $originalStartNode->substringData(
-                $originalStartOffset,
-                $originalEndOffset - $originalStartOffset
-            );
-            $fragment->appendChild($clone);
-
-            return $fragment;
-        }
-
-        $commonAncestor = Node::getCommonAncestor(
-            $originalStartNode,
-            $originalEndNode
-        );
-        $firstPartiallyContainedChild = null;
-
-        if (!$originalStartNode->contains($originalEndNode)) {
-            foreach ($commonAncestor->childNodes as $node) {
-                if ($this->isPartiallyContainedNode($node)) {
-                    $firstPartiallyContainedChild = $node;
-                    break;
-                }
-            }
-        }
-
-        $lastPartiallyContainedChild = null;
-
-        if (!$originalEndNode->contains($originalStartNode)) {
-            $childNodes = $commonAncestor
-                ->childNodes
-                ->getIterator()
-                ->getArrayCopy();
-
-            foreach (array_reverse($childNodes) as $node) {
-                if ($this->isPartiallyContainedNode($node)) {
-                    $lastPartiallyContainedChild = $node;
-                    break;
-                }
-            }
-        }
-
-        $containedChildren = [];
-
-        foreach ($commonAncestor->childNodes as $child) {
-            if ($this->isFullyContainedNode($child)) {
-                if ($child instanceof DocumentType) {
-                    throw new HierarchyRequestError();
-                }
-
-                $containedChildren[] = $child;
-            }
-        }
-
-        if ($firstPartiallyContainedChild instanceof Text
-            || $firstPartiallyContainedChild instanceof ProcessingInstruction
-            || $firstPartiallyContainedChild instanceof Comment
-        ) {
-            $clone = $originalStartNode->cloneNodeInternal();
-            $clone->data = $originalStartNode->substringData(
-                $originalStartOffset,
-                $originalStartNode->length - $originalStartOffset
-            );
-            $fragment->appendChild($clone);
-        } elseif ($firstPartiallyContainedChild) {
-            $clone = $firstPartiallyContainedChild->cloneNodeInternal();
-            $fragment->appendChild($clone);
-            $subrange = new Range();
-            $subrange->setStart($originalStartNode, $originalStartOffset);
-            $subrange->setEnd(
-                $firstPartiallyContainedChild,
-                $firstPartiallyContainedChild->getLength()
-            );
-            $subfragment = $subrange->cloneRange();
-            $clone->appendChild($subfragment);
-        }
-
-        foreach ($containedChildren as $child) {
-            $clone = $child->cloneNodeInternal(null, true);
-            $fragment->appendChild($clone);
-        }
-
-        if ($lastPartiallyContainedChild instanceof Text
-            || $lastPartiallyContainedChild instanceof ProcessingInstruction
-            || $lastPartiallyContainedChild instanceof Comment
-        ) {
-            $clone = $originalEndNode->cloneNodeInternal();
-            $clone->data = $originalEndNode->substringData(
-                0,
-                $originalEndOffset
-            );
-            $fragment->appendChild($clone);
-        } elseif ($lastPartiallyContainedChild) {
-            $clone = $lastPartiallyContainedChild->cloneNodeInternal();
-            $fragment->appendChild($clone);
-            $subrange = new Range();
-            $subrange->setStart($lastPartiallyContainedChild, 0);
-            $subrange->setEnd($originalEndNode, $originalEndOffset);
-            $subfragment = $subrange->cloneContents();
-            $clone->appendChild($subfragment);
-        }
-
-        return $fragment;
+        $this->setStartOrEnd('start', $node, $offset);
     }
 
     /**
-     * Returns a new Range that has identical starting and ending nodes
-     * as well as identical starting and ending offsets.
+     * Sets the Range's end boundary.
      *
-     * @see https://dom.spec.whatwg.org/#dom-range-clonerange
+     * @see https://dom.spec.whatwg.org/#dom-range-setend
      *
-     * @return self
+     * @param \Rowbot\DOM\Node $node The Node where the Range ends.
+     * @param int $offset The offset within the given node where the Range ends.
+     *
+     * @return void
      */
-    public function cloneRange(): self
+    public function setEnd(Node $node, int $offset): void
     {
-        $range = new Range();
-        $range->setStart($this->startNode, $this->startOffset);
-        $range->setEnd($this->endNode, $this->endOffset);
+        $this->setStartOrEnd('end', $node, $offset);
+    }
 
-        return $range;
+    /**
+     * Sets the Range's start boundary relative to the given Node.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-range-setstartbefore
+     *
+     * @param \Rowbot\DOM\Node $node The Node where the Range will start.
+     *
+     * @return void
+     *
+     * @throws \Rowbot\DOM\Exception\InvalidNodeTypeError
+     */
+    public function setStartBefore(Node $node): void
+    {
+        $parent = $node->parentNode;
+
+        if (!$parent) {
+            throw new InvalidNodeTypeError();
+        }
+
+        $this->setStartOrEnd('start', $parent, $node->getTreeIndex());
+    }
+
+    /**
+     * Sets the Range's start boundary relative to the given Node.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-range-setstartafter
+     *
+     * @param \Rowbot\DOM\Node $node The Node where the Range will start.
+     *
+     * @return void
+     *
+     * @throws \Rowbot\DOM\Exception\InvalidNodeTypeError
+     */
+    public function setStartAfter(Node $node): void
+    {
+        $parent = $node->parentNode;
+
+        if (!$parent) {
+            throw new InvalidNodeTypeError();
+        }
+
+        $this->setStartOrEnd('start', $parent, $node->getTreeIndex() + 1);
+    }
+
+    /**
+     * Sets the Range's end boundary relative to the given Node.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-range-setendbefore
+     *
+     * @param \Rowbot\DOM\Node $node The Node where the Range will end.
+     *
+     * @return void
+     *
+     * @throws \Rowbot\DOM\Exception\InvalidNodeTypeError
+     */
+    public function setEndBefore(Node $node): void
+    {
+        $parent = $node->parentNode;
+
+        if (!$parent) {
+            throw new InvalidNodeTypeError();
+        }
+
+        $this->setStartOrEnd('end', $parent, $node->getTreeIndex());
+    }
+
+    /**
+     * Sets the Range's end boundary relative to the given Node.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-range-setendafter
+     *
+     * @param \Rowbot\DOM\Node $node The Node where the Range will end.
+     *
+     * @return void
+     *
+     * @throws \Rowbot\DOM\Exception\InvalidNodeTypeError
+     */
+    public function setEndAfter(Node $node): void
+    {
+        $parent = $node->parentNode;
+
+        if (!$parent) {
+            throw new InvalidNodeTypeError();
+        }
+
+        $this->setStartOrEnd('end', $parent, $node->getTreeIndex() + 1);
     }
 
     /**
@@ -233,6 +202,56 @@ final class Range extends AbstractRange implements Stringable
             $this->startNode = $this->endNode;
             $this->startOffset = $this->endOffset;
         }
+    }
+
+    /**
+     * Selects the given Node and its contents.
+     *
+     * @see https://dom.spec.whatwg.org/#concept-range-select
+     *
+     * @param \Rowbot\DOM\Node $node The node and its contents to be selected.
+     *
+     * @return void
+     *
+     * @throws \Rowbot\DOM\Exception\InvalidNodeTypeError
+     */
+    public function selectNode(Node $node): void
+    {
+        $parent = $node->parentNode;
+
+        if (!$parent) {
+            throw new InvalidNodeTypeError();
+        }
+
+        $index = $node->getTreeIndex();
+
+        $this->startNode = $parent;
+        $this->startOffset = $index;
+        $this->endNode = $parent;
+        $this->endOffset = $index + 1;
+    }
+
+    /**
+     * Selects the contents of the given Node.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-range-selectnodecontents
+     *
+     * @param \Rowbot\DOM\Node $node The Node whose content is to be selected.
+     *
+     * @return void
+     *
+     * @throws \Rowbot\DOM\Exception\InvalidNodeTypeError
+     */
+    public function selectNodeContents(Node $node): void
+    {
+        if ($node instanceof DocumentType) {
+            throw new InvalidNodeTypeError();
+        }
+
+        $this->startNode = $node;
+        $this->startOffset = 0;
+        $this->endNode = $node;
+        $this->endOffset = $node->getLength();
     }
 
     /**
@@ -319,56 +338,6 @@ final class Range extends AbstractRange implements Stringable
             case 'after':
                 return 1;
         }
-    }
-
-    /**
-     * Checks to see if a node comes before, after, or within the range.
-     *
-     * @see https://dom.spec.whatwg.org/#dom-range-comparepoint
-     *
-     * @param \Rowbot\DOM\Node $node   The node to compare with.
-     * @param int              $offset The offset position within the node.
-     *
-     * @return int Returns -1, 0, or 1 to indicated whether the node lies before, after, or within the range,
-     *             respectively.
-     *
-     * @throws \Rowbot\DOM\Exception\IndexSizeError
-     * @throws \Rowbot\DOM\Exception\InvalidNodeTypeError
-     * @throws \Rowbot\DOM\Exception\WrongDocumentError
-     */
-    public function comparePoint(Node $node, int $offset): int
-    {
-        $root = $this->startNode->getRootNode();
-
-        if ($node->getRootNode() !== $root) {
-            throw new WrongDocumentError();
-        }
-
-        if ($node instanceof DocumentType) {
-            throw new InvalidNodeTypeError();
-        }
-
-        if ($offset > $node->getLength()) {
-            throw new IndexSizeError();
-        }
-
-        $bp = [$node, $offset];
-
-        if ($this->computePosition($bp, [
-            $this->startNode,
-            $this->startOffset
-        ]) === 'before') {
-            return -1;
-        }
-
-        if ($this->computePosition($bp, [
-            $this->endNode,
-            $this->endOffset
-        ]) === 'after') {
-            return 1;
-        }
-
-        return 0;
     }
 
     /**
@@ -652,6 +621,138 @@ final class Range extends AbstractRange implements Stringable
     }
 
     /**
+     * @see https://dom.spec.whatwg.org/#dom-range-clonecontents
+     *
+     * @return \Rowbot\DOM\DocumentFragment
+     *
+     * @throws \Rowbot\DOM\Exception\HierarchyRequestError
+     */
+    public function cloneContents(): DocumentFragment
+    {
+        $nodeDocument = $this->startNode->getNodeDocument();
+        $fragment = $nodeDocument->createDocumentFragment();
+
+        if ($this->startNode === $this->endNode
+            && $this->startOffset == $this->endOffset
+        ) {
+            return $fragment;
+        }
+
+        $originalStartNode = $this->startNode;
+        $originalStartOffset = $this->startOffset;
+        $originalEndNode = $this->endNode;
+        $originalEndOffset = $this->endOffset;
+
+        if ($originalStartNode === $originalEndNode
+            && ($originalStartNode instanceof Text
+                || $originalStartNode instanceof ProcessingInstruction
+                || $originalStartNode instanceof Comment)
+        ) {
+            $clone = $originalStartNode->cloneNodeInternal();
+            $clone->data = $originalStartNode->substringData(
+                $originalStartOffset,
+                $originalEndOffset - $originalStartOffset
+            );
+            $fragment->appendChild($clone);
+
+            return $fragment;
+        }
+
+        $commonAncestor = Node::getCommonAncestor(
+            $originalStartNode,
+            $originalEndNode
+        );
+        $firstPartiallyContainedChild = null;
+
+        if (!$originalStartNode->contains($originalEndNode)) {
+            foreach ($commonAncestor->childNodes as $node) {
+                if ($this->isPartiallyContainedNode($node)) {
+                    $firstPartiallyContainedChild = $node;
+                    break;
+                }
+            }
+        }
+
+        $lastPartiallyContainedChild = null;
+
+        if (!$originalEndNode->contains($originalStartNode)) {
+            $childNodes = $commonAncestor
+                ->childNodes
+                ->getIterator()
+                ->getArrayCopy();
+
+            foreach (array_reverse($childNodes) as $node) {
+                if ($this->isPartiallyContainedNode($node)) {
+                    $lastPartiallyContainedChild = $node;
+                    break;
+                }
+            }
+        }
+
+        $containedChildren = [];
+
+        foreach ($commonAncestor->childNodes as $child) {
+            if ($this->isFullyContainedNode($child)) {
+                if ($child instanceof DocumentType) {
+                    throw new HierarchyRequestError();
+                }
+
+                $containedChildren[] = $child;
+            }
+        }
+
+        if ($firstPartiallyContainedChild instanceof Text
+            || $firstPartiallyContainedChild instanceof ProcessingInstruction
+            || $firstPartiallyContainedChild instanceof Comment
+        ) {
+            $clone = $originalStartNode->cloneNodeInternal();
+            $clone->data = $originalStartNode->substringData(
+                $originalStartOffset,
+                $originalStartNode->length - $originalStartOffset
+            );
+            $fragment->appendChild($clone);
+        } elseif ($firstPartiallyContainedChild) {
+            $clone = $firstPartiallyContainedChild->cloneNodeInternal();
+            $fragment->appendChild($clone);
+            $subrange = new Range();
+            $subrange->setStart($originalStartNode, $originalStartOffset);
+            $subrange->setEnd(
+                $firstPartiallyContainedChild,
+                $firstPartiallyContainedChild->getLength()
+            );
+            $subfragment = $subrange->cloneRange();
+            $clone->appendChild($subfragment);
+        }
+
+        foreach ($containedChildren as $child) {
+            $clone = $child->cloneNodeInternal(null, true);
+            $fragment->appendChild($clone);
+        }
+
+        if ($lastPartiallyContainedChild instanceof Text
+            || $lastPartiallyContainedChild instanceof ProcessingInstruction
+            || $lastPartiallyContainedChild instanceof Comment
+        ) {
+            $clone = $originalEndNode->cloneNodeInternal();
+            $clone->data = $originalEndNode->substringData(
+                0,
+                $originalEndOffset
+            );
+            $fragment->appendChild($clone);
+        } elseif ($lastPartiallyContainedChild) {
+            $clone = $lastPartiallyContainedChild->cloneNodeInternal();
+            $fragment->appendChild($clone);
+            $subrange = new Range();
+            $subrange->setStart($lastPartiallyContainedChild, 0);
+            $subrange->setEnd($originalEndNode, $originalEndOffset);
+            $subfragment = $subrange->cloneContents();
+            $clone->appendChild($subfragment);
+        }
+
+        return $fragment;
+    }
+
+    /**
      * Inserts a new Node into at the start of the Range.
      *
      * @see https://dom.spec.whatwg.org/#dom-range-insertnode
@@ -721,42 +822,60 @@ final class Range extends AbstractRange implements Stringable
     }
 
     /**
-     * Returns a boolean indicating whether or not the given Node intersects the
-     * Range.
+     * Wraps the content of Range in a new Node and inserts it in to the Document.
      *
-     * @see https://dom.spec.whatwg.org/#dom-range-intersectsnode
+     * @see https://dom.spec.whatwg.org/#dom-range-surroundcontents
      *
-     * @param \Rowbot\DOM\Node $node The Node to be checked for intersection.
+     * @param Node $newParent The node that will surround the Range's content.
      *
-     * @return bool
+     * @return void
+     *
+     * @throws \Rowbot\DOM\Exception\InvalidNodeTypeError
+     * @throws \Rowbot\DOM\Exception\InvalidStateError
      */
-    public function intersectsNode(Node $node): bool
+    public function surroundCountents(Node $newParent): void
     {
-        $root = $this->startNode->getRootNode();
-
-        if ($node->getRootNode() !== $root) {
-            return false;
-        }
-
-        $parent = $node->parentNode;
-
-        if (!$parent) {
-            return true;
-        }
-
-        $offset = $node->getTreeIndex();
-        $bp = [$parent, $offset];
-
-        if ($this->computePosition($bp, [
-                $this->endNode, $this->endOffset
-            ]) === 'before' && $this->computePosition($bp, [
-                $this->startNode, $this->startOffset + 1
-            ]) === 'after'
+        if ((!($this->startNode instanceof Text)
+                && $this->isPartiallyContainedNode($this->startNode))
+            || (!($this->endNode instanceof Text)
+                && $this->isPartiallyContainedNode($this->endNode))
         ) {
-            return true;
+            throw new InvalidStateError();
         }
 
-        return false;
+        if ($newParent instanceof Document
+            || $newParent instanceof DocumentType
+            || $newParent instanceof DocumentFragment
+        ) {
+            throw new InvalidNodeTypeError();
+        }
+
+        $fragment = $this->extractContents();
+
+        if ($newParent->hasChildNodes()) {
+            $newParent->replaceAllNodes(null);
+        }
+
+        $this->insertNode($newParent);
+        $newParent->appendChild($fragment);
+        $this->selectNode($newParent);
+    }
+
+    /**
+     * Returns a new Range that has identical starting and ending nodes
+     * as well as identical starting and ending offsets.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-range-clonerange
+     *
+     * @return self
+     */
+    public function cloneRange(): self
+    {
+        $range = new Range();
+        $range->setStart($this->startNode, $this->startOffset);
+        $range->setEnd($this->endNode, $this->endOffset);
+
+        return $range;
     }
 
     /**
@@ -803,211 +922,92 @@ final class Range extends AbstractRange implements Stringable
     }
 
     /**
-     * Selects the given Node and its contents.
+     * Checks to see if a node comes before, after, or within the range.
      *
-     * @see https://dom.spec.whatwg.org/#concept-range-select
+     * @see https://dom.spec.whatwg.org/#dom-range-comparepoint
      *
-     * @param \Rowbot\DOM\Node $node The node and its contents to be selected.
+     * @param \Rowbot\DOM\Node $node   The node to compare with.
+     * @param int              $offset The offset position within the node.
      *
-     * @return void
+     * @return int Returns -1, 0, or 1 to indicated whether the node lies before, after, or within the range,
+     *             respectively.
      *
+     * @throws \Rowbot\DOM\Exception\IndexSizeError
      * @throws \Rowbot\DOM\Exception\InvalidNodeTypeError
+     * @throws \Rowbot\DOM\Exception\WrongDocumentError
      */
-    public function selectNode(Node $node): void
+    public function comparePoint(Node $node, int $offset): int
     {
-        $parent = $node->parentNode;
+        $root = $this->startNode->getRootNode();
 
-        if (!$parent) {
-            throw new InvalidNodeTypeError();
+        if ($node->getRootNode() !== $root) {
+            throw new WrongDocumentError();
         }
 
-        $index = $node->getTreeIndex();
-
-        $this->startNode = $parent;
-        $this->startOffset = $index;
-        $this->endNode = $parent;
-        $this->endOffset = $index + 1;
-    }
-
-    /**
-     * Selects the contents of the given Node.
-     *
-     * @see https://dom.spec.whatwg.org/#dom-range-selectnodecontents
-     *
-     * @param \Rowbot\DOM\Node $node The Node whose content is to be selected.
-     *
-     * @return void
-     *
-     * @throws \Rowbot\DOM\Exception\InvalidNodeTypeError
-     */
-    public function selectNodeContents(Node $node): void
-    {
         if ($node instanceof DocumentType) {
             throw new InvalidNodeTypeError();
         }
 
-        $this->startNode = $node;
-        $this->startOffset = 0;
-        $this->endNode = $node;
-        $this->endOffset = $node->getLength();
+        if ($offset > $node->getLength()) {
+            throw new IndexSizeError();
+        }
+
+        $bp = [$node, $offset];
+
+        if ($this->computePosition($bp, [
+            $this->startNode,
+            $this->startOffset
+        ]) === 'before') {
+            return -1;
+        }
+
+        if ($this->computePosition($bp, [
+            $this->endNode,
+            $this->endOffset
+        ]) === 'after') {
+            return 1;
+        }
+
+        return 0;
     }
 
     /**
-     * Sets the Range's end boundary.
+     * Returns a boolean indicating whether or not the given Node intersects the
+     * Range.
      *
-     * @see https://dom.spec.whatwg.org/#dom-range-setend
+     * @see https://dom.spec.whatwg.org/#dom-range-intersectsnode
      *
-     * @param \Rowbot\DOM\Node $node The Node where the Range ends.
-     * @param int $offset The offset within the given node where the Range ends.
+     * @param \Rowbot\DOM\Node $node The Node to be checked for intersection.
      *
-     * @return void
+     * @return bool
      */
-    public function setEnd(Node $node, int $offset): void
+    public function intersectsNode(Node $node): bool
     {
-        $this->setStartOrEnd('end', $node, $offset);
-    }
+        $root = $this->startNode->getRootNode();
 
-    /**
-     * Sets the Range's end boundary relative to the given Node.
-     *
-     * @see https://dom.spec.whatwg.org/#dom-range-setendafter
-     *
-     * @param \Rowbot\DOM\Node $node The Node where the Range will end.
-     *
-     * @return void
-     *
-     * @throws \Rowbot\DOM\Exception\InvalidNodeTypeError
-     */
-    public function setEndAfter(Node $node): void
-    {
+        if ($node->getRootNode() !== $root) {
+            return false;
+        }
+
         $parent = $node->parentNode;
 
         if (!$parent) {
-            throw new InvalidNodeTypeError();
+            return true;
         }
 
-        $this->setStartOrEnd('end', $parent, $node->getTreeIndex() + 1);
-    }
+        $offset = $node->getTreeIndex();
+        $bp = [$parent, $offset];
 
-    /**
-     * Sets the Range's end boundary relative to the given Node.
-     *
-     * @see https://dom.spec.whatwg.org/#dom-range-setendbefore
-     *
-     * @param \Rowbot\DOM\Node $node The Node where the Range will end.
-     *
-     * @return void
-     *
-     * @throws \Rowbot\DOM\Exception\InvalidNodeTypeError
-     */
-    public function setEndBefore(Node $node): void
-    {
-        $parent = $node->parentNode;
-
-        if (!$parent) {
-            throw new InvalidNodeTypeError();
-        }
-
-        $this->setStartOrEnd('end', $parent, $node->getTreeIndex());
-    }
-
-    /**
-     * Sets the Range's start boundary relative to the given Node.
-     *
-     * @see https://dom.spec.whatwg.org/#dom-range-setstart
-     *
-     * @param \Rowbot\DOM\Node $node   The Node where the Range will start.
-     * @param int              $offset The offset within the given node where the Range starts.
-     *
-     * @return void
-     */
-    public function setStart(Node $node, $offset): void
-    {
-        $this->setStartOrEnd('start', $node, $offset);
-    }
-
-    /**
-     * Sets the Range's start boundary relative to the given Node.
-     *
-     * @see https://dom.spec.whatwg.org/#dom-range-setstartafter
-     *
-     * @param \Rowbot\DOM\Node $node The Node where the Range will start.
-     *
-     * @return void
-     *
-     * @throws \Rowbot\DOM\Exception\InvalidNodeTypeError
-     */
-    public function setStartAfter(Node $node): void
-    {
-        $parent = $node->parentNode;
-
-        if (!$parent) {
-            throw new InvalidNodeTypeError();
-        }
-
-        $this->setStartOrEnd('start', $parent, $node->getTreeIndex() + 1);
-    }
-
-    /**
-     * Sets the Range's start boundary relative to the given Node.
-     *
-     * @see https://dom.spec.whatwg.org/#dom-range-setstartbefore
-     *
-     * @param \Rowbot\DOM\Node $node The Node where the Range will start.
-     *
-     * @return void
-     *
-     * @throws \Rowbot\DOM\Exception\InvalidNodeTypeError
-     */
-    public function setStartBefore(Node $node): void
-    {
-        $parent = $node->parentNode;
-
-        if (!$parent) {
-            throw new InvalidNodeTypeError();
-        }
-
-        $this->setStartOrEnd('start', $parent, $node->getTreeIndex());
-    }
-
-    /**
-     * Wraps the content of Range in a new Node and inserts it in to the Document.
-     *
-     * @see https://dom.spec.whatwg.org/#dom-range-surroundcontents
-     *
-     * @param Node $newParent The node that will surround the Range's content.
-     *
-     * @return void
-     *
-     * @throws \Rowbot\DOM\Exception\InvalidNodeTypeError
-     * @throws \Rowbot\DOM\Exception\InvalidStateError
-     */
-    public function surroundCountents(Node $newParent): void
-    {
-        if ((!($this->startNode instanceof Text)
-                && $this->isPartiallyContainedNode($this->startNode))
-            || (!($this->endNode instanceof Text)
-                && $this->isPartiallyContainedNode($this->endNode))
+        if ($this->computePosition($bp, [
+                $this->endNode, $this->endOffset
+            ]) === 'before' && $this->computePosition($bp, [
+                $this->startNode, $this->startOffset + 1
+            ]) === 'after'
         ) {
-            throw new InvalidStateError();
+            return true;
         }
 
-        if ($newParent instanceof Document
-            || $newParent instanceof DocumentType
-            || $newParent instanceof DocumentFragment
-        ) {
-            throw new InvalidNodeTypeError();
-        }
-
-        $fragment = $this->extractContents();
-
-        if ($newParent->hasChildNodes()) {
-            $newParent->replaceAllNodes(null);
-        }
-
-        $this->insertNode($newParent);
-        $newParent->appendChild($fragment);
-        $this->selectNode($newParent);
+        return false;
     }
 
     /**
