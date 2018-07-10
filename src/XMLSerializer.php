@@ -1,11 +1,25 @@
 <?php
+declare(strict_types=1);
+
 namespace Rowbot\DOM;
 
 use Rowbot\DOM\Parser\XML\XMLParser;
 
-class XMLSerializer
+/**
+ * @see https://w3c.github.io/DOM-Parsing/#the-xmlserializer-interface
+ */
+final class XMLSerializer
 {
-    public function serializeToString(Node $root)
+    /**
+     * Serializes the node as an XML string.
+     *
+     * @see https://w3c.github.io/DOM-Parsing/#dfn-serializetostring
+     *
+     * @param \Rowbot\DOM\Node $root
+     *
+     * @return string
+     */
+    public function serializeToString(Node $root): string
     {
         return XMLParser::serializeAsXML($root, false);
     }
