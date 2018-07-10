@@ -1,10 +1,10 @@
 <?php
 namespace Rowbot\DOM\Element;
 
+use Rowbot\DOM\Document;
 use Rowbot\DOM\Namespaces;
-use Rowbot\DOM\Exception\DOMException;
 
-abstract class ElementFactory
+final class ElementFactory
 {
     private const HTML_ELEMENTS = [
         'a'          => 'HTMLAnchorElement',
@@ -137,18 +137,25 @@ abstract class ElementFactory
     ];
 
     /**
+     * Constructor.
+     *
+     * @return void
+     */
+    private function __construct()
+    {
+    }
+
+    /**
+     * Creates an element.
+     *
      * @see https://dom.spec.whatwg.org/#concept-create-element
      *
-     * @param Document $document The element's owner document.
+     * @param \Rowbot\DOM\Document $document  The element's owner document.
+     * @param string               $localName The element's local name that you are creating.
+     * @param string               $namespace The namespace that the element belongs to.
+     * @param string|null          $prefix    (optional) The namespace prefix of the element.
      *
-     * @param string $localName The element's local name that you are creating.
-     *
-     * @param string $namespace The namespace that the element belongs to.
-     *
-     * @param string|null $prefix Optional. The namespace prefix of the
-     *     element.
-     *
-     * @return Element
+     * @return \Rowbot\DOM\Element\Element
      */
     public static function create(
         $document,
@@ -175,42 +182,32 @@ abstract class ElementFactory
     }
 
     /**
+     * Creates an element in a given namespace.
+     *
      * @see https://dom.spec.whatwg.org/#internal-createelementns-steps
      *
-     * @param Document $document The Element's owner document.
+     * @param \Rowbot\DOM\Document $document      The Element's owner document.
+     * @param string               $namespace     The Element's namespace.
+     * @param string               $qualifiedName The Element's fully qualified name.
      *
-     * @param string $namespace The Element's namespace.
-     *
-     * @param string $qualifiedName The Element's fully qualified name.
-     *
-     * @return Element
+     * @return \Rowbot\DOM\Element\Element
      */
     public static function createNS($document, $namespace, $qualifiedName)
     {
-        try {
-            list(
-                $namespace,
-                $prefix,
-                $localName
-            ) = Namespaces::validateAndExtract(
-                $namespace,
-                $qualifiedName
-            );
-        } catch (DOMException $e) {
-            throw $e;
-        }
+        list(
+            $namespace,
+            $prefix,
+            $localName
+        ) = Namespaces::validateAndExtract(
+            $namespace,
+            $qualifiedName
+        );
 
-        try {
-            $element = self::create(
-                $document,
-                $localName,
-                $namespace,
-                $prefix
-            );
-        } catch (DOMException $e) {
-            throw $e;
-        }
-
-        return $element;
+        return self::create(
+            $document,
+            $localName,
+            $namespace,
+            $prefix
+        );
     }
 }
