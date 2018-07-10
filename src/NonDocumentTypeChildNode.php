@@ -1,11 +1,23 @@
 <?php
+declare(strict_types=1);
+
 namespace Rowbot\DOM;
 
 use Rowbot\DOM\Element\Element;
 
+/**
+ * @see https://dom.spec.whatwg.org/#interface-nondocumenttypechildnode
+ */
 trait NonDocumentTypeChildNode
 {
-    private function getNextElementSibling()
+    /**
+     * Gets the next element sibling.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-nondocumenttypechildnode-previouselementsibling
+     *
+     * @return \Rowbot\DOM\Element\Element
+     */
+    private function getNextElementSibling(): ?Element
     {
         $node = $this->nextSibling;
 
@@ -20,6 +32,13 @@ trait NonDocumentTypeChildNode
         return $node;
     }
 
+    /**
+     * Gets the previous element sibling.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-nondocumenttypechildnode-nextelementsibling
+     *
+     * @return \Rowbot\DOM\Element\Element
+     */
     private function getPreviousElementSibling()
     {
         $node = $this->previousSibling;
