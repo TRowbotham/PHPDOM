@@ -1,13 +1,14 @@
 <?php
 namespace Rowbot\DOM;
 
+use Exception;
 use Rowbot\DOM\Element\ElementFactory;
 use Rowbot\DOM\Parser\HTML\HTMLParser;
 
 /**
  * @see https://w3c.github.io/DOM-Parsing/#the-domparser-interface
  */
-class DOMParser
+final class DOMParser
 {
     /**
      * This takes a string of markup text and parses it, returning a Document
@@ -20,8 +21,7 @@ class DOMParser
      *
      * @see https://w3c.github.io/DOM-Parsing/#dom-domparser-parsefromstring
      *
-     * @param string $str A string of markup consiting of unicode characters.
-     *
+     * @param string $str  A string of markup consiting of unicode characters.
      * @param string $type The MIME type of the markup string. Valid types are:
      *     - "text/html"
      *     - "text/xml"
@@ -29,7 +29,7 @@ class DOMParser
      *     - "application/xhtml+xml"
      *     - "image/svg+xml"
      *
-     * @return Document
+     * @return \Rowbot\DOM\Document
      */
     public function parseFromString($str, $type)
     {
