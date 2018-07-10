@@ -1,25 +1,39 @@
 <?php
 namespace Rowbot\DOM\Parser\XML;
 
+use function count;
+
 /**
  * @see https://w3c.github.io/DOM-Parsing/#the-namespace-prefix-map
  */
 class NamespacePrefixMap
 {
+    /**
+     * @var array<string, array<string, int>>
+     */
     private $map;
 
+    /**
+     * Constructor.
+     *
+     * @return void
+     */
     public function __construct()
     {
         $this->map = [];
     }
 
     /**
-     * @see https://w3c.github.io/DOM-Parsing/#dfn-retrieve-a-preferred-prefix-string
-     * @param  [type] $namespace       [description]
-     * @param  [type] $preferredPrefix [description]
-     * @return [type]                  [description]
+     * Retrieves the preferred prefix string.
+     *
+     * @see https://w3c.github.io/DOM-Parsing/#dfn-retrieving-a-preferred-prefix-string
+     *
+     * @param ?string $namespace
+     * @param string  $preferredPrefix
+     *
+     * @return ?string
      */
-    public function preferredPrefix($namespace, $preferredPrefix)
+    public function preferredPrefix($namespace, $preferredPrefix): ?string
     {
         if (!isset($this->map[$namespace])) {
             return null;
@@ -31,14 +45,18 @@ class NamespacePrefixMap
             }
         }
 
-        return $this->map[$namespace][\count($this->map) - 1];
+        return $prefix;
     }
 
     /**
+     * Checks if the given prefix exists in the given namespace.
+     *
      * @see https://w3c.github.io/DOM-Parsing/#dfn-found
-     * @param  [type]  $namespace [description]
-     * @param  [type]  $prefix    [description]
-     * @return boolean            [description]
+     *
+     * @param ?string $namespace
+     * @param string  $prefix
+     *
+     * @return bool
      */
     public function hasPrefix($namespace, $prefix)
     {
@@ -46,9 +64,14 @@ class NamespacePrefixMap
     }
 
     /**
+     * Associates the given prefix with the given namespace.
+     *
      * @see https://w3c.github.io/DOM-Parsing/#dfn-add
-     * @param [type] $namespace [description]
-     * @param [type] $prefix    [description]
+     *
+     * @param ?string $namespace
+     * @param string  $prefix
+     *
+     * @return void
      */
     public function add($namespace, $prefix)
     {
