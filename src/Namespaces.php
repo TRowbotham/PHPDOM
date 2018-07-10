@@ -5,7 +5,11 @@ use Rowbot\DOM\Exception\DOMException;
 use Rowbot\DOM\Exception\NamespaceError;
 use Rowbot\DOM\Exception\InvalidCharacterError;
 
-class Namespaces
+use function explode;
+use function mb_strpos;
+use function preg_match;
+
+final class Namespaces
 {
     const HTML   = 'http://www.w3.org/1999/xhtml';
     const SVG    = 'http://www.w3.org/2000/svg';
@@ -38,21 +42,32 @@ class Namespaces
         . ')$/u';
 
     /**
+     * Constructor.
+     *
+     * @return void
+     */
+    private function __construct()
+    {
+    }
+
+    /**
      * Ensures that a qualified name is a valid one.
      *
      * @see https://dom.spec.whatwg.org/#validate
      *
      * @param string $qualifiedName The qualified name to validate.
      *
-     * @throws InvalidCharacterError If the qualified name does not match the
-     *     XML 'Name' production.
+     * @return void
+     *
+     * @throws \Rowbot\DOM\Exception\InvalidCharacterError If the qualified name does not match the XML 'Name' or
+     *                                                     'QName' production.
      */
     public static function validate($qualifiedName)
     {
         // If qualifiedName does not match the 'Name' or 'QName' production,
         // then throw an InvalidCharacterError.
-        if (!\preg_match(self::NAME_PRODUCTION, $qualifiedName)
-            || !\preg_match(self::QNAME, $qualifiedName)
+        if (!preg_match(self::NAME_PRODUCTION, $qualifiedName)
+            || !preg_match(self::QNAME, $qualifiedName)
         ) {
             throw new InvalidCharacterError();
         }
@@ -64,13 +79,12 @@ class Namespaces
      *
      * @see https://dom.spec.whatwg.org/#validate-and-extract
      *
-     * @param string $namespace A namespace.
-     *
+     * @param string $namespace     A namespace.
      * @param string $qualifiedName The qualified name to validate.
      *
      * @return string[] Returns the namespace, namespace prefix, and localName.
      *
-     * @throws NamespaceError
+     * @throws \Rowbot\DOM\Exception\NamespaceError
      */
     public static function validateAndExtract($namespace, $qualifiedName)
     {
@@ -78,17 +92,13 @@ class Namespaces
             $namespace = null;
         }
 
-        try {
-            self::validate($qualifiedName);
-        } catch (DOMException $e) {
-            throw $e;
-        }
+        self::validate($qualifiedName);
 
         $prefix = null;
         $localName = $qualifiedName;
 
-        if (\mb_strpos($qualifiedName, ':') !== false) {
-            list($prefix, $localName) = \explode(':', $qualifiedName, 2);
+        if (mb_strpos($qualifiedName, ':') !== false) {
+            list($prefix, $localName) = explode(':', $qualifiedName, 2);
         }
 
         if ($prefix !== null && $namespace === null) {
