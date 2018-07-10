@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace Rowbot\DOM;
 
 use Rowbot\DOM\Element\Element;
@@ -25,7 +27,7 @@ trait ParentNode
      *
      * @throws \Rowbot\DOM\Exception\HierarchyRequestError
      */
-    public function append(...$nodes)
+    public function append(...$nodes): void
     {
         $node = $this->convertNodesToNode($nodes, $this->nodeDocument);
         $this->preinsertNode($node, null);
@@ -43,7 +45,7 @@ trait ParentNode
      *
      * @throws \Rowbot\DOM\Exception\HierarchyRequestError
      */
-    public function prepend(...$nodes)
+    public function prepend(...$nodes): void
     {
         $node = $this->convertNodesToNode($nodes, $this->nodeDocument);
         $this->preinsertNode($node, $this->childNodes->first());
@@ -56,7 +58,7 @@ trait ParentNode
      *
      * @return \Rowbot\DOM\Element\Element[]
      */
-    protected function getChildren()
+    protected function getChildren(): array
     {
         return $this->childNodes->filter(function ($node) {
             return $node->nodeType == Node::ELEMENT_NODE;
@@ -72,7 +74,7 @@ trait ParentNode
      *
      * @return \Rowbot\DOM\Element\Element|null
      */
-    protected function getFirstElementChild()
+    protected function getFirstElementChild(): ?Element
     {
         $node = $this->childNodes->first();
 
@@ -96,7 +98,7 @@ trait ParentNode
      *
      * @return \Rowbot\DOM\Element\Element|null
      */
-    protected function getLastElementChild()
+    protected function getLastElementChild(): ?Element
     {
         $node = $this->childNodes->last();
 
@@ -120,7 +122,7 @@ trait ParentNode
      *
      * @return int
      */
-    protected function getChildElementCount()
+    protected function getChildElementCount(): int
     {
         return count($this->getChildren());
     }
