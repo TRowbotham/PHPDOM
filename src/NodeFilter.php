@@ -33,12 +33,12 @@ interface NodeFilter
      *
      * @see https://dom.spec.whatwg.org/#dom-nodefilter-acceptnode
      *
-     * @param  Node   $node The current node being processed.
+     * @param \Rowbot\DOM\Node $node The current node being processed.
      *
      * @return int Returns one of NodeFilter's FILTER_* constants.
      *     - NodeFilter::FILTER_ACCEPT
      *     - NodeFilter::FILTER_REJECT
      *     - NodeFilter::FILTER_SKIP
      */
-    public function acceptNode(Node $node);
+    public function acceptNode(Node $node): int;
 }
