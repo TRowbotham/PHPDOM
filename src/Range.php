@@ -2,13 +2,14 @@
 namespace Rowbot\DOM;
 
 use Rowbot\DOM\Element\ElementFactory;
-use Rowbot\DOM\Exception\DOMException;
 use Rowbot\DOM\Exception\HierarchyRequestError;
 use Rowbot\DOM\Exception\IndexSizeError;
 use Rowbot\DOM\Exception\InvalidNodeTypeError;
+use Rowbot\DOM\Exception\InvalidStateError;
 use Rowbot\DOM\Exception\NotSupportedError;
 use Rowbot\DOM\Exception\WrongDocumentError;
 use Rowbot\DOM\Parser\ParserFactory;
+use Rowbot\DOM\Support\Stringable;
 
 /**
  * Represents a sequence of content within a node tree.
@@ -16,36 +17,52 @@ use Rowbot\DOM\Parser\ParserFactory;
  * @see https://dom.spec.whatwg.org/#range
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Range
  *
- * @property-read boolean $collapsed Returns true if the range's starting and
- *     ending points are at the same position, otherwise false.
- *
- * @property-read Node $commonAncestor Returns the deepest node in the node tree
- *     that contains both the start and end nodes.
- *
- * @property-read Node $endContainer Returns the node where the range ends.
- *
- * @property-read int $endOffset Returns the a number representing where in the
- *     endContainer the range ends.
- *
- * @property-read Node $startContainer Returns the node where the range begins.
- *
- * @property-read int $startOffset Returns a number representing where within
- *     the startContainer the range begins.
+ * @property-read bool             $collapsed      Returns true if the range's starting and ending points are at the
+ *                                                 same position, otherwise false.
+ * @property-read \Rowbot\DOM\Node $commonAncestor Returns the deepest node in the node tree that contains both the
+ *                                                 start and end nodes.
+ * @property-read \Rowbot\DOM\Node $endContainer   Returns the node where the range ends.
+ * @property-read int              $endOffset      Returns the a number representing where in the endContainer the range ends.
+ * @property-read \Rowbot\DOM\Node $startContainer Returns the node where the range begins.
+ * @property-read int              $startOffset    Returns a number representing where within the startContainer the range begins.
  */
-class Range
+final class Range implements Stringable
 {
     const START_TO_START = 0;
-    const START_TO_END = 1;
-    const END_TO_END = 2;
-    const END_TO_START = 3;
+    const START_TO_END   = 1;
+    const END_TO_END     = 2;
+    const END_TO_START   = 3;
 
+    /**
+     * @var self[]
+     */
     private static $collection = [];
 
+    /**
+     * @var \Rowbot\DOM\Node
+     */
     private $endContainer;
+
+    /**
+     * @var int
+     */
     private $endOffset;
+
+    /**
+     * @var \Rowbot\DOM\Node
+     */
     private $startContainer;
+
+    /**
+     * @var int
+     */
     private $startOffset;
 
+    /**
+     * Constructor.
+     *
+     * @return void
+     */
     public function __construct()
     {
         self::$collection[] = $this;
@@ -55,6 +72,11 @@ class Range
         $this->startOffset = 0;
     }
 
+    /**
+     * @param string $name
+     *
+     * @return mixed
+     */
     public function __get($name)
     {
         switch ($name) {
@@ -82,6 +104,13 @@ class Range
         }
     }
 
+    /**
+     * @see https://dom.spec.whatwg.org/#dom-range-clonecontents
+     *
+     * @return \Rowbot\DOM\DocumentFragment
+     *
+     * @throws \Rowbot\DOM\Exception\HierarchyRequestError
+     */
     public function cloneContents()
     {
         $nodeDocument = $this->startContainer->getNodeDocument();
@@ -213,7 +242,7 @@ class Range
      *
      * @see https://dom.spec.whatwg.org/#dom-range-clonerange
      *
-     * @return Range
+     * @return self
      */
     public function cloneRange()
     {
@@ -229,9 +258,8 @@ class Range
      *
      * @see https://dom.spec.whatwg.org/#dom-range-collapse
      *
-     * @param bool $toStart Optional.  If true is passed, the Range will
-     *     collapse on its starting boundary, otherwise it will collapse on its
-     *     ending boundary.
+     * @param bool $toStart (optional) If true is passed, the Range will collapse on its starting boundary, otherwise it
+     *                      will collapse on its ending boundary.
      */
     public function collapse($toStart = false)
     {
@@ -249,26 +277,24 @@ class Range
      *
      * @see https://dom.spec.whatwg.org/#dom-range-compareboundarypoints
      *
-     * @param int $how A constant describing how the two Ranges should be
-     *     compared.  Possible values:
+     * @param int               $how         A constant describing how the two Ranges should be compared. Possible
+     *                                       values:
      *
-     *     Range::END_TO_END     - Compares the end boundary points of both
-     *         Ranges.
-     *     Range::END_TO_START   - Compares the end boudary point of
-     *         $sourceRange to the start boundary point of this Range.
-     *     Range::START_TO_END   - Compares the start boundary point of
-     *         $sourceRange to the end boundary of this Range.
-     *     Range::START_TO_START - Compares the start boundary point of
-     *         $sourceRange to the start boundary of this Range.
+     *                                       Range::END_TO_END     - Compares the end boundary points of both Ranges.
+     *                                       Range::END_TO_START   - Compares the end boudary point of $sourceRange to
+     *                                                               the start boundary point of this Range.
+     *                                       Range::START_TO_END   - Compares the start boundary point of $sourceRange
+     *                                                               to the end boundary of this Range.
+     *                                       Range::START_TO_START - Compares the start boundary point of $sourceRange
+     *                                                               to the start boundary of this Range.
      *
-     * @param Range $sourceRange A Range whose boundary points are to be
-     *     compared.
+     * @param \Rowbot\DOM\Range $sourceRange A Range whose boundary points are to be compared.
      *
-     * @return int Returns -1, 0, or 1 indicating wether the Range's boundary
-     *     points are before, equal, or after $sourceRange's boundary points,
-     *     respectively.
+     * @return int Returns -1, 0, or 1 indicating wether the Range's boundary points are before, equal, or after
+     *             $sourceRange's boundary points, respectively.
      *
-     * @throws WrongDocumentError
+     * @throws \Rowbot\DOM\Exception\NotSupportedError
+     * @throws \Rowbot\DOM\Exception\WrongDocumentError
      */
     public function compareBoundaryPoints($how, Range $sourceRange)
     {
@@ -337,18 +363,15 @@ class Range
      *
      * @see https://dom.spec.whatwg.org/#dom-range-comparepoint
      *
-     * @param Node $node The node to compare with.
+     * @param \Rowbot\DOM\Node $node   The node to compare with.
+     * @param int              $offset The offset position within the node.
      *
-     * @param int $offset The offset position within the node.
+     * @return int Returns -1, 0, or 1 to indicated whether the node lies before, after, or within the range,
+     *             respectively.
      *
-     * @return int Returns -1, 0, or 1 to indicated whether the node lies
-     *     before, after, or within the range, respectively.
-     *
-     * @throws WrongDocumentError
-     *
-     * @throws InvalidNodeTypeError
-     *
-     * @throws IndexSizeError
+     * @throws \Rowbot\DOM\Exception\IndexSizeError
+     * @throws \Rowbot\DOM\Exception\InvalidNodeTypeError
+     * @throws \Rowbot\DOM\Exception\WrongDocumentError
      */
     public function comparePoint(Node $node, $offset)
     {
@@ -389,6 +412,8 @@ class Range
      * Removes the contents of the Range from the Document.
      *
      * @see https://dom.spec.whatwg.org/#dom-range-deletecontents
+     *
+     * @return void
      */
     public function deleteContents()
     {
@@ -483,7 +508,7 @@ class Range
      *
      * @see https://dom.spec.whatwg.org/#dom-range-extractcontents
      *
-     * @return DocumentFragment
+     * @return \Rowbot\DOM\DocumentFragment
      */
     public function extractContents()
     {
@@ -668,9 +693,9 @@ class Range
      *
      * @see https://dom.spec.whatwg.org/#dom-range-insertnode
      *
-     * @param Node $node The Node to be inserted.
+     * @param \Rowbot\DOM\Node $node The Node to be inserted.
      *
-     * @throws HierarchyRequestError
+     * @throws \Rowbot\DOM\Exception\HierarchyRequestError
      */
     public function insertNode(Node $node)
     {
@@ -699,13 +724,7 @@ class Range
         $parent = !$referenceNode
             ? $this->startContainer
             : $referenceNode->parentNode;
-
-        try {
-            $parent->ensurePreinsertionValidity($node, $referenceNode);
-        } catch (DOMException $e) {
-            throw $e;
-            return;
-        }
+        $parent->ensurePreinsertionValidity($node, $referenceNode);
 
         if ($this->startContainer instanceof Text) {
             $this->startContainer->splitText($this->startOffset);
@@ -742,7 +761,7 @@ class Range
      *
      * @see https://dom.spec.whatwg.org/#dom-range-intersectsnode
      *
-     * @param Node $node The Node to be checked for intersection.
+     * @param \Rowbot\DOM\Node $node The Node to be checked for intersection.
      *
      * @return bool
      */
@@ -780,15 +799,13 @@ class Range
      *
      * @see https://dom.spec.whatwg.org/#dom-range-ispointinrange
      *
-     * @param Node $node The Node whose position is to be checked.
-     *
-     * @param int $offset The offset within the given node.
+     * @param \Rowbot\DOM\Node $node   The Node whose position is to be checked.
+     * @param int              $offset The offset within the given node.
      *
      * @return bool
      *
-     * @throws InvalidNodeTypeError
-     *
-     * @throws IndexSizeError
+     * @throws \Rowbot\DOM\Exception\IndexSizeError
+     * @throws \Rowbot\DOM\Exception\InvalidNodeTypeError
      */
     public function isPointInRange(Node $node, $offset)
     {
@@ -825,9 +842,9 @@ class Range
      *
      * @see https://dom.spec.whatwg.org/#concept-range-select
      *
-     * @param Node $node The node and its contents to be selected.
+     * @param \Rowbot\DOM\Node $node The node and its contents to be selected.
      *
-     * @throws InvalidNodeTypeError
+     * @throws \Rowbot\DOM\Exception\InvalidNodeTypeError
      */
     public function selectNode(Node $node)
     {
@@ -850,9 +867,9 @@ class Range
      *
      * @see https://dom.spec.whatwg.org/#dom-range-selectnodecontents
      *
-     * @param Node $node The Node whose content is to be selected.
+     * @param \Rowbot\DOM\Node $node The Node whose content is to be selected.
      *
-     * @throws InvalidNodeTypeError
+     * @throws \Rowbot\DOM\Exception\InvalidNodeTypeError
      */
     public function selectNodeContents(Node $node)
     {
@@ -871,10 +888,10 @@ class Range
      *
      * @see https://dom.spec.whatwg.org/#dom-range-setend
      *
-     * @param Node $node The Node where the Range ends.
+     * @param \Rowbot\DOM\Node $node The Node where the Range ends.
+     * @param int $offset The offset within the given node where the Range ends.
      *
-     * @param int $offset The offset within the given node where the Range
-     *     ends.
+     * @return void
      */
     public function setEnd(Node $node, $offset)
     {
@@ -886,9 +903,11 @@ class Range
      *
      * @see https://dom.spec.whatwg.org/#dom-range-setendafter
      *
-     * @param Node $node The Node where the Range will end.
+     * @param \Rowbot\DOM\Node $node The Node where the Range will end.
      *
-     * @throws InvalidNodeTypeError
+     * @return void
+     *
+     * @throws \Rowbot\DOM\Exception\InvalidNodeTypeError
      */
     public function setEndAfter(Node $node)
     {
@@ -906,9 +925,9 @@ class Range
      *
      * @see https://dom.spec.whatwg.org/#dom-range-setendbefore
      *
-     * @param Node $node The Node where the Range will end.
+     * @param \Rowbot\DOM\Node $node The Node where the Range will end.
      *
-     * @throws InvalidNodeTypeError
+     * @throws \Rowbot\DOM\Exception\InvalidNodeTypeError
      */
     public function setEndBefore(Node $node)
     {
@@ -926,10 +945,10 @@ class Range
      *
      * @see https://dom.spec.whatwg.org/#dom-range-setstart
      *
-     * @param Node $node The Node where the Range will start.
+     * @param \Rowbot\DOM\Node $node   The Node where the Range will start.
+     * @param int              $offset The offset within the given node where the Range starts.
      *
-     * @param int  $offset The offset within the given node where the Range
-     *     starts.
+     * @return void
      */
     public function setStart(Node $node, $offset)
     {
@@ -941,9 +960,11 @@ class Range
      *
      * @see https://dom.spec.whatwg.org/#dom-range-setstartafter
      *
-     * @param Node $node The Node where the Range will start.
+     * @param \Rowbot\DOM\Node $node The Node where the Range will start.
      *
-     * @throws InvalidNodeTypeError
+     * @return void
+     *
+     * @throws \Rowbot\DOM\Exception\InvalidNodeTypeError
      */
     public function setStartAfter(Node $node)
     {
@@ -961,9 +982,11 @@ class Range
      *
      * @see https://dom.spec.whatwg.org/#dom-range-setstartbefore
      *
-     * @param Node $node The Node where the Range will start.
+     * @param \Rowbot\DOM\Node $node The Node where the Range will start.
      *
-     * @throws InvalidNodeTypeError
+     * @return void
+     *
+     * @throws \Rowbot\DOM\Exception\InvalidNodeTypeError
      */
     public function setStartBefore(Node $node)
     {
@@ -982,6 +1005,11 @@ class Range
      * @see https://dom.spec.whatwg.org/#dom-range-surroundcontents
      *
      * @param Node $newParent The node that will surround the Range's content.
+     *
+     * @return void
+     *
+     * @throws \Rowbot\DOM\Exception\InvalidNodeTypeError
+     * @throws \Rowbot\DOM\Exception\InvalidStateError
      */
     public function surroundCountents(Node $newParent)
     {
@@ -1012,11 +1040,19 @@ class Range
     }
 
     /**
+     * {@inheritDoc}
+     */
+    public function __toString()
+    {
+        return $this->toString();
+    }
+
+    /**
      * Concatenates the contents of the Range in to a string.
      *
-     * @see https://dom.spec.whatwg.org/#dom-range-stringifier
+     * {@inheritDoc}
      *
-     * @return string
+     * @see https://dom.spec.whatwg.org/#dom-range-stringifier
      */
     public function toString()
     {
@@ -1078,7 +1114,7 @@ class Range
      *
      * @internal
      *
-     * @return Range[]
+     * @return self[]
      */
     public static function getRangeCollection()
     {
@@ -1086,11 +1122,11 @@ class Range
     }
 
     /**
-     * @see https://w3c.github.io/DOM-Parsing/#idl-def-range-createcontextualfragment(domstring)
+     * @see https://w3c.github.io/DOM-Parsing/#dfn-createcontextualfragment-fragment
      *
      * @param string $fragment
      *
-     * @return DocumentFragment
+     * @return \Rowbot\DOM\DocumentFragment
      */
     public function createContextualFragment($fragment)
     {
@@ -1154,14 +1190,11 @@ class Range
      *
      * @see https://dom.spec.whatwg.org/#concept-range-bp-position
      *
-     * @param mixed[] $boundaryPointA An array containing a Node and an offset within that
-     *     Node representing a boundary.
+     * @param mixed[] $boundaryPointA An array containing a Node and an offset within that Node representing a boundary.
+     * @param mixed[] $boundaryPointB An array containing a Node and an offset within that Node representing a boundary.
      *
-     * @param mixed[] $boundaryPointB An array containing a Node and an offset within that
-     *     Node representing a boundary.
-     *
-     * @return int Returns before, equal, or after based on the position of the
-     *     first boundary relative to the second boundary.
+     * @return string Returns before, equal, or after based on the position of the first boundary relative to the second
+     *                boundary.
      */
     private function computePosition($boundaryPointA, $boundaryPointB)
     {
@@ -1237,7 +1270,7 @@ class Range
      *
      * @see https://dom.spec.whatwg.org/#contained
      *
-     * @param Node $node The Node to check against.
+     * @param \Rowbot\DOM\Node $node The Node to check against.
      *
      * @return bool
      */
@@ -1260,7 +1293,7 @@ class Range
      *
      * @see https://dom.spec.whatwg.org/#partially-contained
      *
-     * @param Node $node The Node to check against.
+     * @param \Rowbot\DOM\Node $node The Node to check against.
      *
      * @return bool
      */
@@ -1280,17 +1313,14 @@ class Range
      *
      * @see https://dom.spec.whatwg.org/#concept-range-bp-set
      *
-     * @param string $type Which boundary point should be set.  Valid values
-     *     are start or end.
+     * @param string           $type   Which boundary point should be set. Valid values are start or end.
+     * @param \Rowbot\DOM\Node $node   The Node that will become the boundary.
+     * @param int              $offset The offset within the given Node that will be the boundary.
      *
-     * @param Node $node The Node that will become the boundary.
-     *
-     * @param int $offset The offset within the given Node that will be the
-     *     boundary.
-     *
-     * @throws InvalidNodeTypeError
+     * @return void
      *
      * @throws IndexSizeError
+     * @throws InvalidNodeTypeError
      */
     private function setStartOrEnd($type, $node, $offset)
     {
