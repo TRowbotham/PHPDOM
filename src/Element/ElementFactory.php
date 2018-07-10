@@ -162,7 +162,7 @@ final class ElementFactory
         $localName,
         $namespace,
         $prefix = null
-    ) {
+    ): Element {
         $interface = 'Element';
 
         if ($namespace === Namespaces::HTML) {
@@ -192,8 +192,11 @@ final class ElementFactory
      *
      * @return \Rowbot\DOM\Element\Element
      */
-    public static function createNS($document, $namespace, $qualifiedName)
-    {
+    public static function createNS(
+        Document $document,
+        $namespace,
+        $qualifiedName
+    ): Element {
         list(
             $namespace,
             $prefix,
