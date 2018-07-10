@@ -3,22 +3,24 @@ namespace Rowbot\DOM;
 
 use Rowbot\DOM\Exception\IndexSizeError;
 
+use function mb_strlen;
+use function mb_substr;
+use function sprintf;
+
 /**
  * Represents a Node that contains characters.
  *
  * @see https://dom.spec.whatwg.org/#characterdata
  * @see https://developer.mozilla.org/en-US/docs/Web/API/CharacterData
  *
- * @property string $data Represents the textual data contained by this Node.
- *
- * @property-read int $length Represents the length of the data contained by
- *     this Node.
- *
- * @property-read Element|null $nextElementSibling Returns the next sibling that
- *     is an Element, if any.
- *
- * @property-read Element|null $previousElementSibling Returns the previous
- *     sibling that is an Element, if any.
+ * @property      string                           $data                   Represents the textual data contained by this
+ *                                                                         Node.
+ * @property-read int                              $length                 Represents the length of the data contained
+ *                                                                         by this Node.
+ * @property-read \Rowbot\DOM\Element\Element|null $nextElementSibling     Returns the next sibling that is an Element,
+ *                                                                         if any.
+ * @property-read \Rowbot\DOM\Element\Element|null $previousElementSibling Returns the previous sibling that is an
+ *                                                                         Element, if any.
  */
 abstract class CharacterData extends Node
 {
@@ -28,14 +30,24 @@ abstract class CharacterData extends Node
     protected $data;
     protected $length;
 
+    /**
+     * Constructor.
+     *
+     * @param string $data
+     *
+     * @return void
+     */
     public function __construct($data)
     {
         parent::__construct();
 
         $this->data = $data;
-        $this->length = \mb_strlen($data, $this->nodeDocument->characterSet);
+        $this->length = mb_strlen($data, $this->nodeDocument->characterSet);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function __get($name)
     {
         switch ($name) {
@@ -52,6 +64,9 @@ abstract class CharacterData extends Node
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function __set($name, $value)
     {
         switch ($name) {
@@ -72,7 +87,11 @@ abstract class CharacterData extends Node
     /**
      * Appends the given string to the Node's existing string data.
      *
-     * @param  string $data The string data to be appended to the Node.
+     * @see https://dom.spec.whatwg.org/#dom-characterdata-appenddata
+     *
+     * @param string $data The string data to be appended to the Node.
+     *
+     * @return void
      */
     public function appendData($data)
     {
@@ -83,13 +102,14 @@ abstract class CharacterData extends Node
      * Removes the specified number of characters starting from the given
      * offset.
      *
+     * @see https://dom.spec.whatwg.org/#dom-characterdata-deletedata
+     *
      * @param int $offset The offset where data deletion should begin.
+     * @param int $count  How many characters to delete starting from the given offset.
      *
-     * @param int $count How many characters to delete starting from the
-     *     given offset.
+     * @return void
      *
-     * @throws IndexSizeError If the given offset is greater than the length
-     *     of the data.
+     * @throws IndexSizeError If the given offset is greater than the length of the data.
      */
     public function deleteData($offset, $count)
     {
@@ -103,12 +123,14 @@ abstract class CharacterData extends Node
     /**
      * Inserts the given string data at the specified offset.
      *
-     * @param  int      $offset The offset where insertion should begin.
+     * @see https://dom.spec.whatwg.org/#dom-characterdata-insertdata
      *
-     * @param  string   $data   The string data to be inserted.
+     * @param int    $offset The offset where insertion should begin.
+     * @param string $data   The string data to be inserted.
      *
-     * @throws IndexSizeError If the given offset is greater than the length
-     *     of the data.
+     * @return void
+     *
+     * @throws IndexSizeError If the given offset is greater than the length of the data.
      */
     public function insertData($offset, $data)
     {
@@ -125,16 +147,13 @@ abstract class CharacterData extends Node
      *
      * @see https://dom.spec.whatwg.org/#dom-characterdata-replacedata
      *
-     * @param int $offset The position within the string where the
-     *     replacement should begin.
+     * @param int    $offset The position within the string where the replacement should begin.
+     * @param int    $count  The number of characters from the given offset that the replacement should extend to.
+     * @param string $data   The data to be inserted in to the string.
      *
-     * @param int $count The number of characters from the given offset that
-     *     the replacement should extend to.
+     * @return void
      *
-     * @param string $data The data to be inserted in to the string.
-     *
-     * @throws IndexSizeError If the given offset is greater than the length
-     *     of the data.
+     * @throws IndexSizeError If the given offset is greater than the length of the data.
      */
     public function replaceData($offset, $count, $data)
     {
@@ -150,23 +169,20 @@ abstract class CharacterData extends Node
      *
      * @see https://dom.spec.whatwg.org/#concept-cd-replace
      *
-     * @param int $offset The position within the string where the
-     *     replacement should begin.
-     *
-     * @param int $count The number of characters from the given offset that
-     *     the replacement should extend to.
-     *
+     * @param int $offset The position within the string where the replacement should begin.
+     * @param int $count The number of characters from the given offset that the replacement should extend to.
      * @param string $data The data to be inserted in to the string.
      *
-     * @throws IndexSizeError If the given offset is greater than the length
-     *     of the data.
+     * @return void
+     *
+     * @throws IndexSizeError If the given offset is greater than the length of the data.
      */
     public function doReplaceData($offset, $count, $data)
     {
         $length = $this->length;
 
         if ($offset < 0 || $offset > $length) {
-            throw new IndexSizeError(\sprintf(
+            throw new IndexSizeError(sprintf(
                 'The offset should be less than the length of the data. The'
                 . 'offset given is %d and the length of the data is %d.',
                 $offset,
@@ -182,15 +198,15 @@ abstract class CharacterData extends Node
         // oldValue node’s data.
 
         $encoding = $this->nodeDocument->characterSet;
-        $this->data = \mb_substr($this->data, 0, $offset, $encoding)
+        $this->data = mb_substr($this->data, 0, $offset, $encoding)
             . $data
-            . \mb_substr(
+            . mb_substr(
                 $this->data,
                 $offset + $count,
                 $length - $offset,
                 $encoding
             );
-        $newDataLen = \mb_strlen($data, $encoding);
+        $newDataLen = mb_strlen($data, $encoding);
         $this->length += $newDataLen - $count;
 
         $ranges = Range::getRangeCollection();
@@ -250,16 +266,12 @@ abstract class CharacterData extends Node
      *
      * @see https://dom.spec.whatwg.org/#concept-CD-substring
      *
-     * @param  int  $offset  The position in the string where the substring
-     *     should begin.
-     *
-     * @param  int  $count  The number of characters the substring should
-     *     include starting from the given offset.
+     * @param int $offset The position in the string where the substring should begin.
+     * @param int $count  The number of characters the substring should include starting from the given offset.
      *
      * @return string
      *
-     * @throws IndexSizeError If the given offset is greater than the length
-     *     of the data.
+     * @throws IndexSizeError If the given offset is greater than the length of the data.
      */
     public function substringData($offset, $count)
     {
@@ -268,7 +280,7 @@ abstract class CharacterData extends Node
         $count = Utils::unsignedLong($count);
 
         if ($offset < 0 || $offset > $length) {
-            throw new IndexSizeError(\sprintf(
+            throw new IndexSizeError(sprintf(
                 'The offset should be less than the length of the data. The'
                 . 'offset given is %d and the length of the data is %d.',
                 $offset,
@@ -277,22 +289,14 @@ abstract class CharacterData extends Node
         }
 
         if ($offset + $count > $length) {
-            return \mb_substr($this->data, $offset);
+            return mb_substr($this->data, $offset);
         }
 
-        return \mb_substr($this->data, $offset, $count);
+        return mb_substr($this->data, $offset, $count);
     }
 
     /**
-     * Returns the Node's length, which is the number of codepoints in the data
-     * attribute.
-     *
-     * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#concept-node-length
-     * @see Node::getLength()
-     *
-     * @return int
+     * {@inheritDoc}
      */
     public function getLength(): int
     {
@@ -300,14 +304,7 @@ abstract class CharacterData extends Node
     }
 
     /**
-     * Gets the value of the node.
-     *
-     * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#dom-node-nodevalue
-     * @see Node::getNodeValue()
-     *
-     * @return string
+     * {@inheritDoc}
      */
     protected function getNodeValue(): string
     {
@@ -315,14 +312,7 @@ abstract class CharacterData extends Node
     }
 
     /**
-     * Sets the node's value.
-     *
-     * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#dom-node-nodevalue
-     * @see Node::setNodeValue()
-     *
-     * @param string|null $newValue The node's new value.
+     * {@inheritDoc}
      */
     protected function setNodeValue($newValue): void
     {
@@ -334,14 +324,7 @@ abstract class CharacterData extends Node
     }
 
     /**
-     * Gets the concatenation of all descendant text nodes.
-     *
-     * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#dom-node-textcontent
-     * @see Node::getTextContent()
-     *
-     * @return string
+     * {@inheritDoc}
      */
     protected function getTextContent(): string
     {
@@ -349,14 +332,7 @@ abstract class CharacterData extends Node
     }
 
     /**
-     * Sets the nodes text content.
-     *
-     * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#dom-node-textcontent
-     * @see Node::setTextContent()
-     *
-     * @param string|null $newValue The new text to be inserted into the node.
+     * {@inheritDoc}
      */
     protected function setTextContent($newValue): void
     {
