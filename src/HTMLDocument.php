@@ -6,23 +6,26 @@ use Rowbot\DOM\Element\HTML\HTMLBodyElement;
 use Rowbot\DOM\Element\HTML\HTMLFrameSetElement;
 use Rowbot\DOM\Element\HTML\HTMLHtmlElement;
 use Rowbot\DOM\Element\HTML\HTMLTitleElement;
-use Rowbot\DOM\Element\svg\SVGSVGElement;
-use Rowbot\DOM\Element\svg\SVGTitleElement;
+use Rowbot\DOM\Element\SVG\SVGSVGElement;
+use Rowbot\DOM\Element\SVG\SVGTitleElement;
 use Rowbot\DOM\Exception\HierarchyRequestError;
+
+use function preg_replace;
 
 /**
  * HTMLDocument represents an HTML document.
  *
- * @property HTMLBodyElement $body Represents the HTML document's <body>
- *     element.
- *
- * @property HTMLHeadElement $head Represents the HTML document's <head>
- *     element.
- *
- * @property string $title  Reflects the text content of the <title> element.
+ * @property \Rowbot\DOM\Element\HTML\HTMLBodyElement $body Represents the HTML document's <body> element.
+ * @property \Rowbot\DOM\Element\HTML\HTMLHeadElement $head Represents the HTML document's <head> element.
+ * @property string                                   $title  Reflects the text content of the <title> element.
  */
 class HTMLDocument extends Document
 {
+    /**
+     * Constructor.
+     *
+     * @return void
+     */
     public function __construct()
     {
         parent::__construct();
@@ -30,6 +33,9 @@ class HTMLDocument extends Document
         $this->contentType = 'text/html';
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function __get($name)
     {
         switch ($name) {
@@ -47,6 +53,9 @@ class HTMLDocument extends Document
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function __set($name, $value)
     {
         switch ($name) {
@@ -74,7 +83,7 @@ class HTMLDocument extends Document
      *
      * @see https://html.spec.whatwg.org/multipage/dom.html#dom-document-body
      *
-     * @return HTMLElement|null
+     * @return \Rowbot\DOM\Element\HTML\HTMLElement|null
      */
     protected function getBodyElement()
     {
@@ -123,7 +132,7 @@ class HTMLDocument extends Document
         // Trim whitespace and replace consecutive whitespace with a single
         // space.
         if (!empty($value)) {
-            return \preg_replace(
+            return preg_replace(
                 ['/^\s+/', '/\s+$/', '/\s+/'],
                 ['', '', ' '],
                 $value
@@ -142,7 +151,7 @@ class HTMLDocument extends Document
      *
      * @see https://html.spec.whatwg.org/multipage/dom.html#document.title
      *
-     * @return Element|null
+     * @return \Rowbot\DOM\Element\Element|null
      */
     protected function getTitleElement()
     {
@@ -183,7 +192,9 @@ class HTMLDocument extends Document
      *
      * @see https://html.spec.whatwg.org/multipage/dom.html#dom-document-body
      *
-     * @param HTMLElement $newBody The new body element.
+     * @param \Rowbot\DOM\Element\HTML\HTMLElement $newBody The new body element.
+     *
+     * @return void
      */
     protected function setBodyElement($newBody)
     {
@@ -195,7 +206,6 @@ class HTMLDocument extends Document
 
         if (!$isValidBody) {
             throw new HierarchyRequestError();
-            return;
         }
 
         $oldBody = $this->getBodyElement();
@@ -219,7 +229,6 @@ class HTMLDocument extends Document
         // does not exist.
         if (!$docElement) {
             throw new HierarchyRequestError();
-            return;
         }
 
         if (!$oldBody) {
@@ -235,6 +244,8 @@ class HTMLDocument extends Document
      * @see https://html.spec.whatwg.org/multipage/dom.html#document.title
      *
      * @param string $newTitle The new title.
+     *
+     * @return void
      */
     protected function setTitle($newTitle)
     {
