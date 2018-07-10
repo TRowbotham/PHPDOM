@@ -9,11 +9,18 @@ use Rowbot\DOM\Exception\IndexSizeError;
  * @see https://dom.spec.whatwg.org/#text
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Text
  *
- * @property-read string $wholeText Returns the concatenated string data of all
- *     contingious Text nodes relative to this Node in tree order.
+ * @property-read string $wholeText Returns the concatenated string data of all contingious Text nodes relative to this
+ *                                  Node in tree order.
  */
 class Text extends CharacterData
 {
+    /**
+     * Constructor.
+     *
+     * @param string $data
+     *
+     * @return void
+     */
     public function __construct($data = '')
     {
         parent::__construct(Utils::DOMString($data));
@@ -21,7 +28,10 @@ class Text extends CharacterData
         $this->nodeType = Node::TEXT_NODE;
     }
 
-    public function __get($name)
+    /**
+     * {@inheritDoc}
+     */
+    public function __get(string $name)
     {
         switch ($name) {
             case 'wholeText':
@@ -63,7 +73,18 @@ class Text extends CharacterData
         return $copy;
     }
 
-    public function splitText($offset)
+    /**
+     * Splits the text at the given offset.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-text-splittext
+     *
+     * @param int $offset
+     *
+     * @return self
+     *
+     * @throws \Rowbot\DOM\Exception\IndexSizeError
+     */
+    public function splitText(int $offset): self
     {
         $length = $this->length;
 
@@ -126,14 +147,7 @@ class Text extends CharacterData
     }
 
     /**
-     * Gets the name of the node.
-     *
-     * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#dom-node-nodename
-     * @see Node::getNodeName()
-     *
-     * @return string Returns the string "#text".
+     * {@inheritDoc}
      */
     protected function getNodeName(): string
     {
