@@ -1,19 +1,50 @@
 <?php
 namespace Rowbot\DOM;
 
+use function is_callable;
+
 /**
  * @see https://dom.spec.whatwg.org/#treewalker
  * @see https://developer.mozilla.org/en-US/docs/Web/API/TreeWalker
+ *
+ * @property-read \Rowbot\DOM\Node                     $root
+ * @property-read int                                  $whatToShow
+ * @property-read \Rowbot\DOM\NodeFilter|callable|null $filter
+ * @property      \Rowbot\DOM\Node                     $currentNode
  */
 final class TreeWalker
 {
     use NodeFilterUtils;
 
+    /**
+     * @var \Rowbot\DOM\Node
+     */
     private $currentNode;
+
+    /**
+     * @var \Rowbot\DOM\NodeFilter|callable|null
+     */
     private $filter;
+
+    /**
+     * @var \Rowbot\DOM\Node
+     */
     private $root;
+
+    /**
+     * @var int
+     */
     private $whatToShow;
 
+    /**
+     * Construct.
+     *
+     * @param \Rowbot\DOM\Node                     $root
+     * @param int                                  $whatToShow
+     * @param \Rowbot\DOM\NodeFilter|callable|null $filter
+     *
+     * @return void
+     */
     public function __construct(
         Node $root,
         $whatToShow = NodeFilter::SHOW_ALL,
@@ -21,7 +52,7 @@ final class TreeWalker
     ) {
         $this->currentNode = $root;
 
-        if ($filter instanceof NodeFilter || \is_callable($filter)) {
+        if ($filter instanceof NodeFilter || is_callable($filter)) {
             $this->filter = $filter;
         }
 
@@ -29,6 +60,11 @@ final class TreeWalker
         $this->whatToShow = $whatToShow;
     }
 
+    /**
+     * @param string $name
+     *
+     * @return mixed
+     */
     public function __get($name)
     {
         switch ($name) {
@@ -46,6 +82,10 @@ final class TreeWalker
         }
     }
 
+    /**
+     * @param string           $name
+     * @param \Rowbot\DOM\Node $value
+     */
     public function __set($name, $value)
     {
         switch ($name) {
@@ -56,16 +96,37 @@ final class TreeWalker
         }
     }
 
+    /**
+     * Gets the first child node.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-treewalker-firstchild
+     *
+     * @return \Rowbot\DOM\Node|null
+     */
     public function firstChild()
     {
         return $this->traverseChildren('first');
     }
 
+    /**
+     * Gets the last child node.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-treewalker-lastchild
+     *
+     * @return \Rowbot\DOM\Node|null
+     */
     public function lastChild()
     {
         return $this->traverseChildren('last');
     }
 
+    /**
+     * Gets the next node.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-treewalker-nextnode
+     *
+     * @return \Rowbot\DOM\Node|null
+     */
     public function nextNode()
     {
         $node = $this->currentNode;
@@ -119,6 +180,13 @@ final class TreeWalker
         return null;
     }
 
+    /**
+     * Gets the next sibling node.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-treewalker-nextsibling
+     *
+     * @return \Rowbot\DOM\Node|null
+     */
     public function nextSibling()
     {
         return $this->traverseSiblings('next');
@@ -143,6 +211,13 @@ final class TreeWalker
         return null;
     }
 
+    /**
+     * Gets the previous node.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-treewalker-previousnode
+     *
+     * @return \Rowbot\DOM\Node|null
+     */
     public function previousNode()
     {
         $node = $this->currentNode;
@@ -186,11 +261,27 @@ final class TreeWalker
         return null;
     }
 
+    /**
+     * Gets the previous sibling node.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-treewalker-previoussibling
+     *
+     * @return \Rowbot\DOM\Node|null
+     */
     public function previousSibling()
     {
         return $this->traverseSiblings('previous');
     }
 
+    /**
+     * Traverses a tree of nodes.
+     *
+     * @see https://dom.spec.whatwg.org/#concept-traverse-children
+     *
+     * @param string $type
+     *
+     * @return \Rowbot\DOM\Node|null
+     */
     private function traverseChildren($type)
     {
         $node = $this->currentNode;
@@ -245,6 +336,15 @@ final class TreeWalker
         }
     }
 
+    /**
+     * Traverses a tree of nodes.
+     *
+     * @see https://dom.spec.whatwg.org/#concept-traverse-siblings
+     *
+     * @param string $type
+     *
+     * @return \Rowbot\DOM\Node|null
+     */
     private function traverseSiblings($type)
     {
         $node = $this->currentNode;
