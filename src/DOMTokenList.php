@@ -25,8 +25,19 @@ final class DOMTokenList implements
     Iterator,
     Stringable
 {
+    /**
+     * @var string
+     */
     private $attrLocalName;
+
+    /**
+     * @var \Rowbot\DOM\Element\Element
+     */
     private $element;
+
+    /**
+     * @var \Rowbot\DOM\Support\OrderedSet
+     */
     private $tokens;
 
     /**
