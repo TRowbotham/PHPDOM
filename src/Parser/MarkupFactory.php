@@ -11,8 +11,8 @@ class MarkupFactory
     /**
      * @see https://w3c.github.io/DOM-Parsing/#dfn-fragment-serializing-algorithm
      *
-     * @param Node $node
-     * @param bool $requireWellFormed
+     * @param \Rowbot\DOM\Node $node
+     * @param bool             $requireWellFormed
      *
      * @return string
      */
