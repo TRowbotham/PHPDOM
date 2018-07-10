@@ -5,6 +5,7 @@ use ArrayAccess;
 use ArrayIterator;
 use Countable;
 use IteratorAggregate;
+use Rowbot\DOM\Support\OrderedSet;
 
 /**
  * @see https://dom.spec.whatwg.org/#interface-nodelist
@@ -24,7 +25,7 @@ class NodeList implements ArrayAccess, Countable, IteratorAggregate
      *
      * @return void
      */
-    public function __construct($nodes)
+    public function __construct(OrderedSet $nodes)
     {
         $this->nodes = $nodes;
     }
@@ -34,7 +35,7 @@ class NodeList implements ArrayAccess, Countable, IteratorAggregate
      *
      * @return int
      */
-    public function __get($name)
+    public function __get(string $name)
     {
         switch ($name) {
             case 'length':
@@ -49,7 +50,7 @@ class NodeList implements ArrayAccess, Countable, IteratorAggregate
      *
      * @return \Rowbot\DOM\Node|null
      */
-    public function item($index)
+    public function item(int $index): ?Node
     {
         return $this->nodes->offsetGet($index);
     }
@@ -61,7 +62,7 @@ class NodeList implements ArrayAccess, Countable, IteratorAggregate
      *
      * @return bool
      */
-    public function offsetExists($offset)
+    public function offsetExists($offset): bool
     {
         return $this->nodes->offsetExists($offset);
     }
@@ -73,7 +74,7 @@ class NodeList implements ArrayAccess, Countable, IteratorAggregate
      *
      * @return \Rowbot\DOM\Node|null
      */
-    public function offsetGet($offset)
+    public function offsetGet($offset): ?Node
     {
         return $this->nodes->offsetGet($offset);
     }
@@ -86,9 +87,9 @@ class NodeList implements ArrayAccess, Countable, IteratorAggregate
      *
      * @return void
      */
-    public function offsetSet($offset, $value)
+    public function offsetSet($offset, $value): void
     {
-        return $this->nodes->offsetSet($offset, $value);
+        $this->nodes->offsetSet($offset, $value);
     }
 
     /**
@@ -98,7 +99,7 @@ class NodeList implements ArrayAccess, Countable, IteratorAggregate
      *
      * @return void
      */
-    public function offsetUnset($offset)
+    public function offsetUnset($offset): void
     {
         $this->nodes->offsetUnset($offset);
     }
@@ -108,7 +109,7 @@ class NodeList implements ArrayAccess, Countable, IteratorAggregate
      *
      * @return int
      */
-    public function count()
+    public function count(): int
     {
         return $this->nodes->count();
     }
@@ -118,7 +119,7 @@ class NodeList implements ArrayAccess, Countable, IteratorAggregate
      *
      * @return \ArrayIterator
      */
-    public function getIterator()
+    public function getIterator(): ArrayIterator
     {
         return new ArrayIterator($this->nodes->values());
     }
