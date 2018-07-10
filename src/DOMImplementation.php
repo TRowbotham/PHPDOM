@@ -4,32 +4,47 @@ namespace Rowbot\DOM;
 use Rowbot\DOM\Element\ElementFactory;
 use Rowbot\DOM\Exception\DOMException;
 
+use function func_num_args;
+
 /**
  * @see https://dom.spec.whatwg.org/#interface-domimplementation
  * @see https://developer.mozilla.org/en-US/docs/Web/API/DOMImplementation
  */
 final class DOMImplementation
 {
+    /**
+     * @var \Rowbot\DOM\Document
+     */
     protected $document;
 
+    /**
+     * Constructor.
+     *
+     * @param \Rowbot\DOM\Document $document
+     *
+     * @return void
+     */
     public function __construct(Document $document)
     {
         $this->document = $document;
     }
 
     /**
+     * Creates a XML Document.
+     *
      * @see https://dom.spec.whatwg.org/#dom-domimplementation-createdocument
      *
-     * @param string $namespace The namespace of the element to be created,
-     *     which becomes the document's document element.
+     * @param string                        $namespace     The namespace of the element to be created, which becomes the
+     *                                                     document's document element.
+     * @param string|null                   $qualifiedName The local name of the element that is to become the
+     *                                                     document's document element.
+     * @param \Rowbot\DOM\DocumentType|null $doctype       (optional) A DocumentType object to be appended to the
+     *                                                     document.
      *
-     * @param string|null $aQualifiedName The local name of the element that is
-     *     to become the document's document element.
+     * @return \Rowbot\DOM\XMLDocument
      *
-     * @param DocumentType|null $aDoctype Optional. A DocumentType object to be
-     *     appended to the document.
-     *
-     * @return XMLDocument
+     * @throws \Rowbot\DOM\Exception\InvalidCharacterError
+     * @throws \Rowbot\DOM\Exception\NamespaceError
      */
     public function createDocument(
         ?string $namespace,
@@ -82,21 +97,18 @@ final class DOMImplementation
     }
 
     /**
+     * Creates a document type node.
+     *
      * @see https://dom.spec.whatwg.org/#dom-domimplementation-createdocumenttype
      *
      * @param string $qualifiedName The document type's name.
+     * @param string $publicId      The document type's public identifier.
+     * @param string $systemId      The document type's system identifier.
      *
-     * @param string $publicId The document type's public identifier.
+     * @return \Rowbot\DOM\DocumentType
      *
-     * @param string $systemId The document type's system identifier.
-     *
-     * @return DocumentType
-     *
-     * @throws InvalidCharacterError If the qualified name does not match the
-     *     Name production.
-     *
-     * @throws NamespaceError If the qualified name does not match the QName
-     *     production.
+     * @throws \Rowbot\DOM\Exception\InvalidCharacterError If the qualified name does not match the Name production.
+     * @throws \Rowbot\DOM\Exception\NamespaceError        If the qualified name does not match the QName production.
      */
     public function createDocumentType($qualifiedName, $publicId, $systemId)
     {
@@ -117,11 +129,13 @@ final class DOMImplementation
     }
 
     /**
+     * Creates a HTML document.
+     *
      * @see https://dom.spec.whatwg.org/#dom-domimplementation-createhtmldocument
      *
-     * @param string $title Optional. The title of the document.
+     * @param string $title (optional) The title of the document.
      *
-     * @return HTMLDocument
+     * @return \Rowbot\DOM\HTMLDocument
      */
     public function createHTMLDocument($title = null)
     {
@@ -137,7 +151,7 @@ final class DOMImplementation
 
         // Only create a HTMLTitleElement if the user actually provided us with
         // a title to use.
-        if (\func_num_args() > 0) {
+        if (func_num_args() > 0) {
             $titleNode = ElementFactory::create(
                 $doc,
                 'title',
@@ -160,5 +174,4 @@ final class DOMImplementation
 
         return $doc;
     }
-
 }
