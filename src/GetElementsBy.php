@@ -8,12 +8,11 @@ trait GetElementsBy
      *
      * @see https://dom.spec.whatwg.org/#dom-element-getelementsbyclassname
      *
-     * @param string $className A space delimited string containing the
-     *     classNames to search for.
+     * @param string $className A space delimited string containing the classNames to search for.
      *
-     * @return Element[]
+     * @return \Rowbot\DOM\Element\Element[]
      */
-    public function getElementsByClassName($className)
+    public function getElementsByClassName($className): array
     {
         $classes = Utils::parseOrderedSet(
             Utils::DOMString($className)
@@ -53,12 +52,12 @@ trait GetElementsBy
      *
      * @see https://dom.spec.whatwg.org/#dom-document-getelementsbytagname
      *
-     * @param string $localName The element's local name to search for. If
-     *     given '*', all element decendants will be returned.
+     * @param string $localName The element's local name to search for. If given '*', all element decendants will be
+     *                          returned.
      *
-     * @return Element[] A list of Elements with the specified local name.
+     * @return \Rowbot\DOM\Element\Element[] A list of Elements with the specified local name.
      */
-    public function getElementsByTagName($localName)
+    public function getElementsByTagName($localName): array
     {
         $collection = [];
         $localName = Utils::DOMString($localName);
@@ -103,20 +102,19 @@ trait GetElementsBy
      *
      * @see https://dom.spec.whatwg.org/#dom-document-getelementsbytagnamens
      *
-     * @param string $namespace The namespaceURI to search for.  If both
-     *     namespace and local name are given '*', all element decendants will
-     *     be returned.  If only namespace is given '*' all element decendants
-     *     matching only local name will be returned.
+     * @param string $namespace The namespaceURI to search for. If both namespace and local name are given '*', all
+     *                          element decendants will be returned. If only namespace is given '*' all element
+     *                          decendants matching only local name will be returned.
+     * @param string $localName The Element's local name to search for. If both namespace and local name are given '*',
+     *                          all element decendants will be returned.  If only local name is given '*' all element
+     *                          decendants matching only namespace will be returned.
      *
-     * @param string $localName The Element's local name to search for.  If
-     *     both namespace and local name are given '*', all element decendants
-     *     will be returned.  If only local name is given '*' all element
-     *     decendants matching only namespace will be returned.
-     *
-     * @return Element[]
+     * @return \Rowbot\DOM\Element\Element[]
      */
-    public function getElementsByTagNameNS(?string $namespace, $localName)
-    {
+    public function getElementsByTagNameNS(
+        ?string $namespace,
+        $localName
+    ): array {
         if ($namespace === '') {
             $namespace = null;
         }
