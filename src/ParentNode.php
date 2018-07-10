@@ -3,6 +3,8 @@ namespace Rowbot\DOM;
 
 use Rowbot\DOM\Element\Element;
 
+use function count;
+
 /**
  * @see https://dom.spec.whatwg.org/#interface-parentnode
  * @see https://developer.mozilla.org/en-US/docs/Web/API/ParentNode
@@ -17,8 +19,11 @@ trait ParentNode
      *
      * @see https://dom.spec.whatwg.org/#dom-parentnode-append
      *
-     * @param Node|string ...$nodes One or more Nodes or strings to be
-     *     appended to this Node.
+     * @param Node|string ...$nodes One or more Nodes or strings to be appended to this Node.
+     *
+     * @return void
+     *
+     * @throws \Rowbot\DOM\Exception\HierarchyRequestError
      */
     public function append(...$nodes)
     {
@@ -32,8 +37,11 @@ trait ParentNode
      *
      * @see https://dom.spec.whatwg.org/#dom-parentnode-prepend
      *
-     * @param Node|string ...$nodes One or more Nodes or strings to be
-     *     prepended to this node;
+     * @param Node|string ...$nodes One or more Nodes or strings to be prepended to this node
+     *
+     * @return void
+     *
+     * @throws \Rowbot\DOM\Exception\HierarchyRequestError
      */
     public function prepend(...$nodes)
     {
@@ -41,6 +49,13 @@ trait ParentNode
         $this->preinsertNode($node, $this->childNodes->first());
     }
 
+    /**
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#dom-parentnode-children
+     *
+     * @return \Rowbot\DOM\Element\Element[]
+     */
     protected function getChildren()
     {
         return $this->childNodes->filter(function ($node) {
@@ -48,6 +63,15 @@ trait ParentNode
         })->values();
     }
 
+    /**
+     * Gets the first element child.
+     *
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#dom-parentnode-firstelementchild
+     *
+     * @return \Rowbot\DOM\Element\Element|null
+     */
     protected function getFirstElementChild()
     {
         $node = $this->childNodes->first();
@@ -63,6 +87,15 @@ trait ParentNode
         return $node;
     }
 
+    /**
+     * Gets the last element child.
+     *
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#dom-parentnode-lastelementchild
+     *
+     * @return \Rowbot\DOM\Element\Element|null
+     */
     protected function getLastElementChild()
     {
         $node = $this->childNodes->last();
@@ -78,8 +111,17 @@ trait ParentNode
         return $node;
     }
 
+    /**
+     * Gets the number of element children.
+     *
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#dom-parentnode-childelementcount
+     *
+     * @return int
+     */
     protected function getChildElementCount()
     {
-        return \count($this->getChildren());
+        return count($this->getChildren());
     }
 }
