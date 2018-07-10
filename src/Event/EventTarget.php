@@ -598,17 +598,15 @@ abstract class EventTarget
      */
     private function flattenOptions($options)
     {
-        $capture = false;
-
         if (\is_bool($options)) {
-            $capture = $options;
-        } elseif (\is_array($options)) {
-            if (isset($options['capture'])) {
-                $capture = (bool) $options['capture'];
-            }
+            return $options;
         }
 
-        return $capture;
+        if (\is_array($options) && isset($options['capture'])) {
+            return (bool) $options['capture'];
+        }
+
+        return false;
     }
 
     /**
