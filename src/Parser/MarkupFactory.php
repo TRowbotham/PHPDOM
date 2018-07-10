@@ -18,7 +18,7 @@ class MarkupFactory
      */
     public static function serializeFragment(
         Node $node,
-        $requireWellFormed
+        bool $requireWellFormed
     ): string {
         if ($node->getNodeDocument() instanceof HTMLDocument) {
             $serializer = new HTMLFragmentSerializer();

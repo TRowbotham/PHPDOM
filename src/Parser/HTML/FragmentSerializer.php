@@ -12,12 +12,15 @@ class FragmentSerializer implements FragmentSerializerInterface
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#serialising-html-fragments
      *
-     * @param  Element|Document|DocumentFragment $node
+     * @param Element|Document|DocumentFragment $node
+     * @param bool                              $requireWellFormed
      *
      * @return string
      */
-    public function serializeFragment(Node $node): string
-    {
+    public function serializeFragment(
+        Node $node,
+        bool $requireWellFormed = false
+    ): string {
         $s = '';
 
         // If the node is a template element, then let the node instead be the
