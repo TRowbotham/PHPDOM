@@ -10,6 +10,17 @@ final class URLParser
     {
     }
 
+    /**
+     * Parses a url string.
+     *
+     * @see https://url.spec.whatwg.org/#concept-url-parser
+     *
+     * @param string                $input
+     * @param \Rowbot\URL\URLRecord $base             (optional)
+     * @param string                $encodingOverride (optional)
+     *
+     * @return \Rowbot\URL\URLRecord
+     */
     public static function parseUrl(
         $input,
         URLRecord $base = null,
