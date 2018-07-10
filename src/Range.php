@@ -55,7 +55,7 @@ final class Range extends AbstractRange implements Stringable
      */
     public function __get(string $name)
     {
-        if ($name === 'commonAncestor') {
+        if ($name === 'commonAncestorContainer') {
             return Node::getCommonAncestor(
                 $this->startNode,
                 $this->endNode
@@ -75,7 +75,7 @@ final class Range extends AbstractRange implements Stringable
      *
      * @return void
      */
-    public function setStart(Node $node, $offset): void
+    public function setStart(Node $node, int $offset): void
     {
         $this->setStartOrEnd('start', $node, $offset);
     }
@@ -1167,8 +1167,10 @@ final class Range extends AbstractRange implements Stringable
      * @return string Returns before, equal, or after based on the position of the first boundary relative to the second
      *                boundary.
      */
-    private function computePosition($boundaryPointA, $boundaryPointB): string
-    {
+    private function computePosition(
+        array $boundaryPointA,
+        array $boundaryPointB
+    ): string {
         if ($boundaryPointA[0] === $boundaryPointB[0]) {
             if ($boundaryPointA[1] == $boundaryPointB[1]) {
                 return 'equal';
