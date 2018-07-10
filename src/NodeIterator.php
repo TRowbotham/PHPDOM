@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace Rowbot\DOM;
 
 use function is_callable;
@@ -53,7 +55,7 @@ final class NodeIterator
      */
     public function __construct(
         Node $root,
-        $whatToShow = NodeFilter::SHOW_ALL,
+        int $whatToShow = NodeFilter::SHOW_ALL,
         $filter = null
     ) {
         $this->filter = null;
@@ -73,7 +75,7 @@ final class NodeIterator
      *
      * @return mixed
      */
-    public function __get($name)
+    public function __get(string $name)
     {
         switch ($name) {
             case 'filter':
@@ -100,7 +102,7 @@ final class NodeIterator
      *
      * @return \Rowbot\DOM\Node|null
      */
-    public function nextNode()
+    public function nextNode(): ?Node
     {
         return $this->traverse('next');
     }
@@ -112,7 +114,7 @@ final class NodeIterator
      *
      * @return \Rowbot\DOM\Node|null
      */
-    public function previousNode()
+    public function previousNode(): ?Node
     {
         return $this->traverse('previous');
     }
@@ -126,7 +128,7 @@ final class NodeIterator
      *
      * @return void
      */
-    public function preremoveNode($nodeToBeRemoved)
+    public function preremoveNode(Node $nodeToBeRemoved): void
     {
         if (!$nodeToBeRemoved->contains($this->referenceNode)) {
             return;
@@ -175,7 +177,7 @@ final class NodeIterator
      *
      * @return \Rowbot\DOM\Node|null
      */
-    private function traverse($direction)
+    private function traverse(string $direction): ?Node
     {
         $node = $this->referenceNode;
         $beforeNode = $this->pointerBeforeReferenceNode;
