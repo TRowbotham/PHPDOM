@@ -48,7 +48,7 @@ abstract class CharacterData extends Node
     /**
      * {@inheritDoc}
      */
-    public function __get($name)
+    public function __get(string $name)
     {
         switch ($name) {
             case 'data':
@@ -67,7 +67,7 @@ abstract class CharacterData extends Node
     /**
      * {@inheritDoc}
      */
-    public function __set($name, $value)
+    public function __set(string $name, $value)
     {
         switch ($name) {
             case 'data':
@@ -93,7 +93,7 @@ abstract class CharacterData extends Node
      *
      * @return void
      */
-    public function appendData($data)
+    public function appendData($data): void
     {
         $this->doReplaceData($this->length, 0, Utils::DOMString($data));
     }
@@ -111,7 +111,7 @@ abstract class CharacterData extends Node
      *
      * @throws IndexSizeError If the given offset is greater than the length of the data.
      */
-    public function deleteData($offset, $count)
+    public function deleteData(int $offset, $count): void
     {
         $this->doReplaceData(
             Utils::unsignedLong($offset),
@@ -132,7 +132,7 @@ abstract class CharacterData extends Node
      *
      * @throws IndexSizeError If the given offset is greater than the length of the data.
      */
-    public function insertData($offset, $data)
+    public function insertData(int $offset, $data): void
     {
         $this->doReplaceData(
             Utils::unsignedLong($offset),
@@ -155,7 +155,7 @@ abstract class CharacterData extends Node
      *
      * @throws IndexSizeError If the given offset is greater than the length of the data.
      */
-    public function replaceData($offset, $count, $data)
+    public function replaceData(int $offset, int $count, $data): void
     {
         $this->doReplaceData(
             Utils::unsignedLong($offset),
@@ -177,7 +177,7 @@ abstract class CharacterData extends Node
      *
      * @throws IndexSizeError If the given offset is greater than the length of the data.
      */
-    public function doReplaceData($offset, $count, $data)
+    public function doReplaceData(int $offset, int $count, $data): void
     {
         $length = $this->length;
 
@@ -273,7 +273,7 @@ abstract class CharacterData extends Node
      *
      * @throws IndexSizeError If the given offset is greater than the length of the data.
      */
-    public function substringData($offset, $count)
+    public function substringData(int $offset, int $count): string
     {
         $length = $this->length;
         $offset = Utils::unsignedLong($offset);
