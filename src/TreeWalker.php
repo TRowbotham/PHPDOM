@@ -151,25 +151,20 @@ final class TreeWalker
             $sibling = null;
             $temp = $node;
 
-            do {
+            while ($temp !== null) {
                 if ($temp === $this->root) {
-                    break;
+                    return null;
                 }
 
                 $sibling = $temp->nextSibling;
 
-                if ($sibling) {
+                if ($sibling !== null) {
                     break;
                 }
 
                 $temp = $temp->parentNode;
-            } while ($temp);
-
-            if (!$sibling) {
-                break;
             }
 
-            $node = $sibling;
             $result = $this->filterNode($node);
 
             if ($result == NodeFilter::FILTER_ACCEPT) {
@@ -178,8 +173,6 @@ final class TreeWalker
                 return $node;
             }
         }
-
-        return null;
     }
 
     /**
