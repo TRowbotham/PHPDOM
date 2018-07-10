@@ -50,7 +50,7 @@ final class DOMImplementation
         ?string $namespace,
         $qualifiedName,
         DocumentType $doctype = null
-    ) {
+    ): XMLDocument {
         $qualifiedName = Utils::DOMString($qualifiedName, true);
         $doc = new XMLDocument();
         $element = null;
@@ -110,8 +110,11 @@ final class DOMImplementation
      * @throws \Rowbot\DOM\Exception\InvalidCharacterError If the qualified name does not match the Name production.
      * @throws \Rowbot\DOM\Exception\NamespaceError        If the qualified name does not match the QName production.
      */
-    public function createDocumentType($qualifiedName, $publicId, $systemId)
-    {
+    public function createDocumentType(
+        $qualifiedName,
+        $publicId,
+        $systemId
+    ): DocumentType {
         $qualifiedName = Utils::DOMString($qualifiedName);
         $publicId = Utils::DOMString($publicId);
         $systemId = Utils::DOMString($systemId);
@@ -137,7 +140,7 @@ final class DOMImplementation
      *
      * @return \Rowbot\DOM\HTMLDocument
      */
-    public function createHTMLDocument($title = null)
+    public function createHTMLDocument($title = ''): HTMLDocument
     {
         $doc = new HTMLDocument();
         $doc->setContentType('text/html');
