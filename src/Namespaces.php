@@ -62,7 +62,7 @@ final class Namespaces
      * @throws \Rowbot\DOM\Exception\InvalidCharacterError If the qualified name does not match the XML 'Name' or
      *                                                     'QName' production.
      */
-    public static function validate($qualifiedName)
+    public static function validate($qualifiedName): void
     {
         // If qualifiedName does not match the 'Name' or 'QName' production,
         // then throw an InvalidCharacterError.
@@ -86,7 +86,7 @@ final class Namespaces
      *
      * @throws \Rowbot\DOM\Exception\NamespaceError
      */
-    public static function validateAndExtract($namespace, $qualifiedName)
+    public static function validateAndExtract($namespace, $qualifiedName): array
     {
         if ($namespace === '') {
             $namespace = null;
