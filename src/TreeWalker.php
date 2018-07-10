@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace Rowbot\DOM;
 
 use function is_callable;
@@ -47,7 +49,7 @@ final class TreeWalker
      */
     public function __construct(
         Node $root,
-        $whatToShow = NodeFilter::SHOW_ALL,
+        int $whatToShow = NodeFilter::SHOW_ALL,
         $filter = null
     ) {
         $this->currentNode = $root;
@@ -65,7 +67,7 @@ final class TreeWalker
      *
      * @return mixed
      */
-    public function __get($name)
+    public function __get(string $name)
     {
         switch ($name) {
             case 'currentNode':
@@ -86,7 +88,7 @@ final class TreeWalker
      * @param string           $name
      * @param \Rowbot\DOM\Node $value
      */
-    public function __set($name, $value)
+    public function __set(string $name, Node $value)
     {
         switch ($name) {
             case 'currentNode':
@@ -103,7 +105,7 @@ final class TreeWalker
      *
      * @return \Rowbot\DOM\Node|null
      */
-    public function firstChild()
+    public function firstChild(): ?Node
     {
         return $this->traverseChildren('first');
     }
@@ -115,7 +117,7 @@ final class TreeWalker
      *
      * @return \Rowbot\DOM\Node|null
      */
-    public function lastChild()
+    public function lastChild(): ?Node
     {
         return $this->traverseChildren('last');
     }
@@ -127,7 +129,7 @@ final class TreeWalker
      *
      * @return \Rowbot\DOM\Node|null
      */
-    public function nextNode()
+    public function nextNode(): ?Node
     {
         $node = $this->currentNode;
         $result = NodeFilter::FILTER_ACCEPT;
@@ -187,12 +189,19 @@ final class TreeWalker
      *
      * @return \Rowbot\DOM\Node|null
      */
-    public function nextSibling()
+    public function nextSibling(): ?Node
     {
         return $this->traverseSiblings('next');
     }
 
-    public function parentNode()
+    /**
+     * Gets the parent node.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-treewalker-parentnode
+     *
+     * @return \Rowbot\DOM\Node|null
+     */
+    public function parentNode(): ?Node
     {
         $node = $this->currentNode;
 
@@ -218,7 +227,7 @@ final class TreeWalker
      *
      * @return \Rowbot\DOM\Node|null
      */
-    public function previousNode()
+    public function previousNode(): ?Node
     {
         $node = $this->currentNode;
 
@@ -268,7 +277,7 @@ final class TreeWalker
      *
      * @return \Rowbot\DOM\Node|null
      */
-    public function previousSibling()
+    public function previousSibling(): ?Node
     {
         return $this->traverseSiblings('previous');
     }
@@ -282,7 +291,7 @@ final class TreeWalker
      *
      * @return \Rowbot\DOM\Node|null
      */
-    private function traverseChildren($type)
+    private function traverseChildren(string $type): ?Node
     {
         $node = $this->currentNode;
         $node = $type == 'first' ? $node->firstChild : $node->lastChild;
@@ -345,7 +354,7 @@ final class TreeWalker
      *
      * @return \Rowbot\DOM\Node|null
      */
-    private function traverseSiblings($type)
+    private function traverseSiblings(string $type): ?Node
     {
         $node = $this->currentNode;
 
