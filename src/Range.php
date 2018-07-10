@@ -11,6 +11,10 @@ use Rowbot\DOM\Exception\WrongDocumentError;
 use Rowbot\DOM\Parser\ParserFactory;
 use Rowbot\DOM\Support\Stringable;
 
+use function array_reverse;
+use function in_array;
+use function mb_substr;
+
 /**
  * Represents a sequence of content within a node tree.
  *
@@ -77,7 +81,7 @@ final class Range implements Stringable
      *
      * @return mixed
      */
-    public function __get($name)
+    public function __get(string $name)
     {
         switch ($name) {
             case 'collapsed':
@@ -111,7 +115,7 @@ final class Range implements Stringable
      *
      * @throws \Rowbot\DOM\Exception\HierarchyRequestError
      */
-    public function cloneContents()
+    public function cloneContents(): DocumentFragment
     {
         $nodeDocument = $this->startContainer->getNodeDocument();
         $fragment = $nodeDocument->createDocumentFragment();
@@ -165,7 +169,7 @@ final class Range implements Stringable
                 ->getIterator()
                 ->getArrayCopy();
 
-            foreach (\array_reverse($childNodes) as $node) {
+            foreach (array_reverse($childNodes) as $node) {
                 if ($this->isPartiallyContainedNode($node)) {
                     $lastPartiallyContainedChild = $node;
                     break;
@@ -244,7 +248,7 @@ final class Range implements Stringable
      *
      * @return self
      */
-    public function cloneRange()
+    public function cloneRange(): self
     {
         $range = new Range();
         $range->setStart($this->startContainer, $this->startOffset);
@@ -260,8 +264,10 @@ final class Range implements Stringable
      *
      * @param bool $toStart (optional) If true is passed, the Range will collapse on its starting boundary, otherwise it
      *                      will collapse on its ending boundary.
+     *
+     * @return void
      */
-    public function collapse($toStart = false)
+    public function collapse(bool $toStart = false): void
     {
         if ($toStart) {
             $this->endContainer = $this->startContainer;
@@ -296,7 +302,7 @@ final class Range implements Stringable
      * @throws \Rowbot\DOM\Exception\NotSupportedError
      * @throws \Rowbot\DOM\Exception\WrongDocumentError
      */
-    public function compareBoundaryPoints($how, Range $sourceRange)
+    public function compareBoundaryPoints(int $how, self $sourceRange): int
     {
         if ($how < self::START_TO_START || $how > self::END_TO_START) {
             throw new NotSupportedError();
@@ -373,7 +379,7 @@ final class Range implements Stringable
      * @throws \Rowbot\DOM\Exception\InvalidNodeTypeError
      * @throws \Rowbot\DOM\Exception\WrongDocumentError
      */
-    public function comparePoint(Node $node, $offset)
+    public function comparePoint(Node $node, int $offset): int
     {
         $root = $this->startContainer->getRootNode();
 
@@ -415,7 +421,7 @@ final class Range implements Stringable
      *
      * @return void
      */
-    public function deleteContents()
+    public function deleteContents(): void
     {
         if ($this->startContainer === $this->endContainer &&
             $this->startOffset == $this->endOffset) {
@@ -510,7 +516,7 @@ final class Range implements Stringable
      *
      * @return \Rowbot\DOM\DocumentFragment
      */
-    public function extractContents()
+    public function extractContents(): DocumentFragment
     {
         $fragment = $this->startContainer->getNodeDocument()
             ->createDocumentFragment();
@@ -564,7 +570,7 @@ final class Range implements Stringable
         $lastPartiallyContainedChild = null;
 
         if (!$originalEndNode->contains($originalStartNode)) {
-            foreach (\array_reverse($commonAncestor->childNodes) as $node) {
+            foreach (array_reverse($commonAncestor->childNodes) as $node) {
                 if ($this->isPartiallyContainedNode($node)) {
                     $lastPartiallyContainedChild = $node;
                     break;
@@ -695,9 +701,11 @@ final class Range implements Stringable
      *
      * @param \Rowbot\DOM\Node $node The Node to be inserted.
      *
+     * @retur void
+     *
      * @throws \Rowbot\DOM\Exception\HierarchyRequestError
      */
-    public function insertNode(Node $node)
+    public function insertNode(Node $node): void
     {
         if (($this->startContainer instanceof ProcessingInstruction
                 || $this->startContainer instanceof Comment)
@@ -765,7 +773,7 @@ final class Range implements Stringable
      *
      * @return bool
      */
-    public function intersectsNode(Node $node)
+    public function intersectsNode(Node $node): bool
     {
         $root = $this->startContainer->getRootNode();
 
@@ -807,7 +815,7 @@ final class Range implements Stringable
      * @throws \Rowbot\DOM\Exception\IndexSizeError
      * @throws \Rowbot\DOM\Exception\InvalidNodeTypeError
      */
-    public function isPointInRange(Node $node, $offset)
+    public function isPointInRange(Node $node, int $offset): bool
     {
         $root = $this->startContainer->getRootNode();
 
@@ -844,9 +852,11 @@ final class Range implements Stringable
      *
      * @param \Rowbot\DOM\Node $node The node and its contents to be selected.
      *
+     * @return void
+     *
      * @throws \Rowbot\DOM\Exception\InvalidNodeTypeError
      */
-    public function selectNode(Node $node)
+    public function selectNode(Node $node): void
     {
         $parent = $node->parentNode;
 
@@ -869,9 +879,11 @@ final class Range implements Stringable
      *
      * @param \Rowbot\DOM\Node $node The Node whose content is to be selected.
      *
+     * @return void
+     *
      * @throws \Rowbot\DOM\Exception\InvalidNodeTypeError
      */
-    public function selectNodeContents(Node $node)
+    public function selectNodeContents(Node $node): void
     {
         if ($node instanceof DocumentType) {
             throw new InvalidNodeTypeError();
@@ -893,7 +905,7 @@ final class Range implements Stringable
      *
      * @return void
      */
-    public function setEnd(Node $node, $offset)
+    public function setEnd(Node $node, int $offset): void
     {
         $this->setStartOrEnd('end', $node, $offset);
     }
@@ -909,7 +921,7 @@ final class Range implements Stringable
      *
      * @throws \Rowbot\DOM\Exception\InvalidNodeTypeError
      */
-    public function setEndAfter(Node $node)
+    public function setEndAfter(Node $node): void
     {
         $parent = $node->parentNode;
 
@@ -927,9 +939,11 @@ final class Range implements Stringable
      *
      * @param \Rowbot\DOM\Node $node The Node where the Range will end.
      *
+     * @return void
+     *
      * @throws \Rowbot\DOM\Exception\InvalidNodeTypeError
      */
-    public function setEndBefore(Node $node)
+    public function setEndBefore(Node $node): void
     {
         $parent = $node->parentNode;
 
@@ -950,7 +964,7 @@ final class Range implements Stringable
      *
      * @return void
      */
-    public function setStart(Node $node, $offset)
+    public function setStart(Node $node, $offset): void
     {
         $this->setStartOrEnd('start', $node, $offset);
     }
@@ -966,7 +980,7 @@ final class Range implements Stringable
      *
      * @throws \Rowbot\DOM\Exception\InvalidNodeTypeError
      */
-    public function setStartAfter(Node $node)
+    public function setStartAfter(Node $node): void
     {
         $parent = $node->parentNode;
 
@@ -988,7 +1002,7 @@ final class Range implements Stringable
      *
      * @throws \Rowbot\DOM\Exception\InvalidNodeTypeError
      */
-    public function setStartBefore(Node $node)
+    public function setStartBefore(Node $node): void
     {
         $parent = $node->parentNode;
 
@@ -1011,7 +1025,7 @@ final class Range implements Stringable
      * @throws \Rowbot\DOM\Exception\InvalidNodeTypeError
      * @throws \Rowbot\DOM\Exception\InvalidStateError
      */
-    public function surroundCountents(Node $newParent)
+    public function surroundCountents(Node $newParent): void
     {
         if ((!($this->startContainer instanceof Text)
                 && $this->isPartiallyContainedNode($this->startContainer))
@@ -1042,7 +1056,7 @@ final class Range implements Stringable
     /**
      * {@inheritDoc}
      */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->toString();
     }
@@ -1054,7 +1068,7 @@ final class Range implements Stringable
      *
      * @see https://dom.spec.whatwg.org/#dom-range-stringifier
      */
-    public function toString()
+    public function toString(): string
     {
         $s = '';
         $owner = $this->startContainer->getNodeDocument();
@@ -1063,7 +1077,7 @@ final class Range implements Stringable
         if ($this->startContainer === $this->endContainer &&
             $this->startContainer instanceof Text
         ) {
-            return \mb_substr(
+            return mb_substr(
                 $this->startContainer->data,
                 $this->startOffset,
                 $this->endOffset - $this->startOffset,
@@ -1072,7 +1086,7 @@ final class Range implements Stringable
         }
 
         if ($this->startContainer instanceof Text) {
-            $s .= \mb_substr(
+            $s .= mb_substr(
                 $this->startContainer->data,
                 $this->startOffset,
                 null,
@@ -1098,7 +1112,7 @@ final class Range implements Stringable
         }
 
         if ($this->endContainer instanceof Text) {
-            $s .= \mb_substr(
+            $s .= mb_substr(
                 $this->endContainer->data,
                 0,
                 $this->endOffset,
@@ -1116,7 +1130,7 @@ final class Range implements Stringable
      *
      * @return self[]
      */
-    public static function getRangeCollection()
+    public static function getRangeCollection(): array
     {
         return self::$collection;
     }
@@ -1196,7 +1210,7 @@ final class Range implements Stringable
      * @return string Returns before, equal, or after based on the position of the first boundary relative to the second
      *                boundary.
      */
-    private function computePosition($boundaryPointA, $boundaryPointB)
+    private function computePosition($boundaryPointA, $boundaryPointB): string
     {
         if ($boundaryPointA[0] === $boundaryPointB[0]) {
             if ($boundaryPointA[1] == $boundaryPointB[1]) {
@@ -1250,7 +1264,7 @@ final class Range implements Stringable
                 ->getArrayCopy();
 
             while ($child) {
-                if (\in_array($child, $childNodes, true)) {
+                if (in_array($child, $childNodes, true)) {
                     break;
                 }
 
@@ -1274,7 +1288,7 @@ final class Range implements Stringable
      *
      * @return bool
      */
-    private function isFullyContainedNode(Node $node)
+    private function isFullyContainedNode(Node $node): bool
     {
         $startBP = array($this->startContainer, $this->startOffset);
         $endBP = array($this->endContainer, $this->endOffset);
@@ -1297,7 +1311,7 @@ final class Range implements Stringable
      *
      * @return bool
      */
-    private function isPartiallyContainedNode(Node $node)
+    private function isPartiallyContainedNode(Node $node): bool
     {
         $isAncestorOfStart = $node->contains($this->startContainer);
         $isAncestorOfEnd = $node->contains($this->endContainer);
@@ -1319,10 +1333,10 @@ final class Range implements Stringable
      *
      * @return void
      *
-     * @throws IndexSizeError
-     * @throws InvalidNodeTypeError
+     * @throws \Rowbot\DOM\Exception\IndexSizeError
+     * @throws \Rowbot\DOM\Exception\InvalidNodeTypeError
      */
-    private function setStartOrEnd($type, $node, $offset)
+    private function setStartOrEnd(string $type, Node $node, int $offset): void
     {
         if ($node instanceof DocumentType) {
             throw new InvalidNodeTypeError();
