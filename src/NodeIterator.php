@@ -1,20 +1,56 @@
 <?php
 namespace Rowbot\DOM;
 
+use function is_callable;
+
 /**
  * @see https://dom.spec.whatwg.org/#nodeiterator
  * @see https://developer.mozilla.org/en-US/docs/Web/API/NodeIterator
+ *
+ * @property-read \Rowbot\DOM\Node                     $root
+ * @property-read \Rowbot\DOM\Node                     $referenceNode
+ * @property-read bool                                 $pointerBeforeReferenceNode
+ * @property-read int                                  $whatToShow
+ * @property-read \Rowbot\DOM\NodeFilter|callable|null $filter
  */
 final class NodeIterator
 {
     use NodeFilterUtils;
 
+    /**
+     * @var \Rowbot\DOM\NodeFilter|callable|null
+     */
     private $filter;
+
+    /**
+     * @var bool
+     */
     private $pointerBeforeReferenceNode;
+
+    /**
+     * @var \Rowbot\DOM\Node
+     */
     private $referenceNode;
+
+    /**
+     * @var \Rowbot\DOM\Node
+     */
     private $root;
+
+    /**
+     * @var int
+     */
     private $whatToShow;
 
+    /**
+     * Constructor.
+     *
+     * @param \Rowbot\DOM\Node                     $root
+     * @param int                                  $whatToShow
+     * @param \Rowbot\DOM\NodeFilter|callable|null $filter
+     *
+     * @return void
+     */
     public function __construct(
         Node $root,
         $whatToShow = NodeFilter::SHOW_ALL,
@@ -22,7 +58,7 @@ final class NodeIterator
     ) {
         $this->filter = null;
 
-        if ($filter instanceof NodeFilter || \is_callable($filter)) {
+        if ($filter instanceof NodeFilter || is_callable($filter)) {
             $this->filter = $filter;
         }
 
@@ -32,6 +68,11 @@ final class NodeIterator
         $this->whatToShow = $whatToShow;
     }
 
+    /**
+     * @param string $name
+     *
+     * @return mixed
+     */
     public function __get($name)
     {
         switch ($name) {
@@ -52,20 +93,39 @@ final class NodeIterator
         }
     }
 
+    /**
+     * Returns the next node in the iterator.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-nodeiterator-nextnode
+     *
+     * @return \Rowbot\DOM\Node|null
+     */
     public function nextNode()
     {
         return $this->traverse('next');
     }
 
+    /**
+     * Returns the previous node in the iterator.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-nodeiterator-previousnode
+     *
+     * @return \Rowbot\DOM\Node|null
+     */
     public function previousNode()
     {
         return $this->traverse('previous');
     }
 
-    public function detatch()
-    {
-    }
-
+    /**
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#nodeiterator-pre-removing-steps
+     *
+     * @param \Rowbot\DOM\Node $nodeToBeRemoved
+     *
+     * @return void
+     */
     public function preremoveNode($nodeToBeRemoved)
     {
         if (!$nodeToBeRemoved->contains($this->referenceNode)) {
@@ -106,6 +166,15 @@ final class NodeIterator
         }
     }
 
+    /**
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#concept-nodeiterator-traverse
+     *
+     * @param string $direction
+     *
+     * @return \Rowbot\DOM\Node|null
+     */
     private function traverse($direction)
     {
         $node = $this->referenceNode;
