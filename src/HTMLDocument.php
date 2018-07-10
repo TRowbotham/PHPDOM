@@ -1,8 +1,10 @@
 <?php
 namespace Rowbot\DOM;
 
+use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Element\ElementFactory;
 use Rowbot\DOM\Element\HTML\HTMLBodyElement;
+use Rowbot\DOM\Element\HTML\HTMLElement;
 use Rowbot\DOM\Element\HTML\HTMLFrameSetElement;
 use Rowbot\DOM\Element\HTML\HTMLHtmlElement;
 use Rowbot\DOM\Element\HTML\HTMLTitleElement;
@@ -36,7 +38,7 @@ class HTMLDocument extends Document
     /**
      * {@inheritDoc}
      */
-    public function __get($name)
+    public function __get(string $name)
     {
         switch ($name) {
             case 'body':
@@ -56,7 +58,7 @@ class HTMLDocument extends Document
     /**
      * {@inheritDoc}
      */
-    public function __set($name, $value)
+    public function __set(string $name, $value)
     {
         switch ($name) {
             case 'body':
@@ -85,7 +87,7 @@ class HTMLDocument extends Document
      *
      * @return \Rowbot\DOM\Element\HTML\HTMLElement|null
      */
-    protected function getBodyElement()
+    protected function getBodyElement(): ?HTMLElement
     {
         $docElement = $this->getFirstElementChild();
 
@@ -114,7 +116,7 @@ class HTMLDocument extends Document
      *
      * @return string
      */
-    protected function getTitle()
+    protected function getTitle(): string
     {
         $element = $this->getTitleElement();
         $value = '';
@@ -153,7 +155,7 @@ class HTMLDocument extends Document
      *
      * @return \Rowbot\DOM\Element\Element|null
      */
-    protected function getTitleElement()
+    protected function getTitleElement(): ?Element
     {
         $docElement = $this->getFirstElementChild();
 
@@ -196,7 +198,7 @@ class HTMLDocument extends Document
      *
      * @return void
      */
-    protected function setBodyElement($newBody)
+    protected function setBodyElement(HTMLElement $newBody)
     {
         // The document's body can only be a body or frameset element. If the
         // new value being passed is not one of these, then throw an exception
@@ -247,7 +249,7 @@ class HTMLDocument extends Document
      *
      * @return void
      */
-    protected function setTitle($newTitle)
+    protected function setTitle($newTitle): void
     {
         $docElement = $this->getFirstElementChild();
         $element = null;
