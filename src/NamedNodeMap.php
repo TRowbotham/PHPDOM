@@ -37,7 +37,7 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
      *
      * @return int
      */
-    public function __get($name)
+    public function __get(string $name): int
     {
         switch ($name) {
             case 'length':
@@ -54,7 +54,7 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
      *
      * @return \Rowbot\DOM\Attr|null
      */
-    public function item($index)
+    public function item(int $index): ?Attr
     {
         return $this->element->getAttributeList()->offsetGet($index);
     }
@@ -68,7 +68,7 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
      *
      * @return \Rowbot\DOM\Attr|null
      */
-    public function getNamedItem($qualifiedName)
+    public function getNamedItem($qualifiedName): ?Attr
     {
         return $this->element->getAttributeList()->getAttrByName(
             Utils::DOMString($qualifiedName)
@@ -85,7 +85,7 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
      *
      * @return \Rowbot\DOM\Attr|null
      */
-    public function getNamedItemNS(?string $namespace, $localName)
+    public function getNamedItemNS(?string $namespace, $localName): ?Attr
     {
         return $this->element->getAttributeList()
             ->getAttrByNamespaceAndLocalName(
@@ -103,7 +103,7 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
      *
      * @return \Rowbot\DOM\Attr|null
      */
-    public function setNamedItem(Attr $attr)
+    public function setNamedItem(Attr $attr): ?Attr
     {
         return $this->element->getAttributeList()->setAttr($attr);
     }
@@ -117,7 +117,7 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
      *
      * @return \Rowbot\DOM\Attr|null
      */
-    public function setNamedItemNS(Attr $attr)
+    public function setNamedItemNS(Attr $attr): ?Attr
     {
         return $this->element->getAttributeList()->setAttr($attr);
     }
@@ -133,7 +133,7 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
      *
      * @throws \Rowbot\DOM\Exception\NotFoundError
      */
-    public function removeNamedItem($qualifiedName)
+    public function removeNamedItem($qualifiedName): Attr
     {
         $attr = $this->element->getAttributeList()->removeAttrByName(
             Utils::DOMString($qualifiedName)
@@ -158,7 +158,7 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
      *
      * @throws \Rowbot\DOM\Exception\NotFoundError
      */
-    public function removeNamedItemNS(?string $namespace, $localName)
+    public function removeNamedItemNS(?string $namespace, $localName): Attr
     {
         $attr = $this->element->getAttributeList()
             ->removeAttrByNamespaceAndLocalName(
@@ -180,7 +180,7 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
      *
      * @return bool
      */
-    public function offsetExists($offset)
+    public function offsetExists($offset): bool
     {
         return $this->element->getAttributeList()->offsetExists($offset);
     }
@@ -192,7 +192,7 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
      *
      * @return \Rowbot\DOM\Attr|null
      */
-    public function offsetGet($offset)
+    public function offsetGet($offset): ?Attr
     {
         return $this->element->getAttributeList()->offsetGet($offset);
     }
@@ -205,7 +205,7 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
      *
      * @return void
      */
-    public function offsetSet($offset, $attr)
+    public function offsetSet($offset, $attr): void
     {
         // Do nothing.
     }
@@ -217,7 +217,7 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
      *
      * @return void
      */
-    public function offsetUnset($offset)
+    public function offsetUnset($offset): void
     {
         // Do nothing.
     }
@@ -227,7 +227,7 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
      *
      * @return int
      */
-    public function count()
+    public function count(): int
     {
         return $this->element->getAttributeList()->count();
     }
@@ -237,7 +237,7 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
      *
      * @return \Rowbot\DOM\Attr
      */
-    public function current()
+    public function current(): Attr
     {
         return $this->element->getAttributeList()->current();
     }
@@ -247,7 +247,7 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
      *
      * @return int
      */
-    public function key()
+    public function key(): int
     {
         return $this->element->getAttributeList()->key();
     }
@@ -257,7 +257,7 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
      *
      * @return void
      */
-    public function next()
+    public function next(): void
     {
         $this->element->getAttributeList()->next();
     }
@@ -267,7 +267,7 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
      *
      * @return void
      */
-    public function rewind()
+    public function rewind(): void
     {
         $this->element->getAttributeList()->rewind();
     }
@@ -277,7 +277,7 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
      *
      * @return bool
      */
-    public function valid()
+    public function valid(): bool
     {
         return $this->element->getAttributeList()->valid();
     }
