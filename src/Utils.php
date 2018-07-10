@@ -48,9 +48,9 @@ final class Utils
      */
     public static function DOMString(
         $value,
-        $treatNullAsEmptyString = false,
-        $nullable = false
-    ) {
+        bool $treatNullAsEmptyString = false,
+        bool $nullable = false
+    ): ?string {
         if (is_string($value)) {
             return $value;
         } elseif (is_bool($value)) {
@@ -86,7 +86,7 @@ final class Utils
      *
      * @return string
      */
-    public static function toASCIILowercase($value)
+    public static function toASCIILowercase($value): string
     {
         $len = mb_strlen($value);
         $output = '';
@@ -114,7 +114,7 @@ final class Utils
      *
      * @return string
      */
-    public static function toASCIIUppercase($value)
+    public static function toASCIIUppercase($value): string
     {
         $len = mb_strlen($value);
         $output = '';
@@ -137,7 +137,7 @@ final class Utils
      *
      * @return int
      */
-    public static function unsignedLong($offset)
+    public static function unsignedLong(int $offset): int
     {
         $normalizedOffset = $offset % pow(2, 32);
 
@@ -155,7 +155,7 @@ final class Utils
      *
      * @return float|false
      */
-    public static function parseFloatingPointNumber($input)
+    public static function parseFloatingPointNumber(string $input)
     {
         $position = 0;
         $value = 1;
@@ -219,7 +219,7 @@ final class Utils
      *
      * @return int|false
      */
-    public static function parseSignedInt($input)
+    public static function parseSignedInt(string $input)
     {
         $position = 0;
         $sign = 'positive';
@@ -266,7 +266,7 @@ final class Utils
      *
      * @return int|false
      */
-    public static function parseNonNegativeInt($input)
+    public static function parseNonNegativeInt(string $input)
     {
         $value = self::parseSignedInt($input);
 
@@ -291,7 +291,7 @@ final class Utils
      *
      * @return string[] Array containing the parsed tokens.
      */
-    public static function parseOrderedSet($input)
+    public static function parseOrderedSet($input): array
     {
         $position = 0;
         $tokens = [];
@@ -325,9 +325,9 @@ final class Utils
      */
     public static function collectCodePointSequence(
         $input,
-        &$position,
-        $pattern
-    ) {
+        int &$position,
+        string $pattern
+    ): string {
         $result = '';
         $length = mb_strlen($input);
 
@@ -348,12 +348,12 @@ final class Utils
     /**
      * @see https://html.spec.whatwg.org/multipage/infrastructure.html#strictly-split-a-string
      *
-     * @param  string   $input
-     * @param  string   $delimiter
+     * @param string $input
+     * @param string $delimiter
      *
      * @return string[]
      */
-    public function strictlySplitString($input, $delimiter)
+    public function strictlySplitString($input, string $delimiter): array
     {
         $position = 0;
         $tokens = [];
@@ -387,8 +387,10 @@ final class Utils
      *
      * @return string Concatenated string of tokens.
      */
-    public static function serializeOrderedSet($set, $isAssoc = false)
-    {
+    public static function serializeOrderedSet(
+        array $set,
+        bool $isAssoc = false
+    ): string {
         if ($isAssoc) {
             $count = 0;
             $output = '';
@@ -415,7 +417,7 @@ final class Utils
      *
      * @return \Rowbot\DOM\Node
      */
-    public static function retargetObject($objectA, $objectB)
+    public static function retargetObject(Node $objectA, Node $objectB): Node
     {
         while (true) {
             $root = $objectA->getRootNode();
