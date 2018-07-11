@@ -11,6 +11,7 @@ use Rowbot\DOM\Element\HTML\HTMLTemplateElement;
 use Rowbot\DOM\HTMLDocument;
 use Rowbot\DOM\Namespaces;
 use Rowbot\DOM\Node;
+use Rowbot\DOM\NodeList;
 use Rowbot\DOM\Parser\Collection\ActiveFormattingElementStack;
 use Rowbot\DOM\Parser\Collection\OpenElementStack;
 use Rowbot\DOM\Parser\Parser;
@@ -21,6 +22,11 @@ use Rowbot\DOM\Parser\Token\StartTagToken;
 use SplStack;
 use SplObjectStorage;
 
+use function mb_check_encoding;
+use function mb_convert_encoding;
+use function preg_match;
+use function preg_replace;
+
 class HTMLParser extends Parser
 {
     use ParserOrTreeBuilder;
@@ -28,21 +34,30 @@ class HTMLParser extends Parser
     /**
      * The tokenizer associated with the parser.
      *
-     * @var Tokenizer
+     * @var \Rowbot\DOM\Parser\HTML\Tokenizer
      */
     private $tokenizer;
 
     /**
      * The treebuilder associated with the parser.
      *
-     * @var TreeBuilder
+     * @var \Rowbot\DOM\Parser\HTML\TreeBuilder
      */
     private $treeBuilder;
 
+    /**
+     * Constructor.
+     *
+     * @param \Rowbot\DOM\Document             $document
+     * @param bool                             $isFragmentCase (optional)
+     * @param \Rowbot\DOM\Element\Element|null $contextElement (optional)
+     *
+     * @return void
+     */
     public function __construct(
         Document $document,
-        $isFragmentCase = false,
-        $contextElement = null
+        bool $isFragmentCase = false,
+        Element $contextElement = null
     ) {
         parent::__construct();
 
@@ -79,8 +94,10 @@ class HTMLParser extends Parser
 
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#abort-a-parser
+     *
+     * @return void
      */
-    public function abort()
+    public function abort(): void
     {
         // Throw away any pending content in the input stream, and discard any
         // future content that would have been added to it.
@@ -90,7 +107,7 @@ class HTMLParser extends Parser
         $this->document->setReadyState(DocumentReadyState::INTERACTIVE);
 
         // Pop all the nodes off the stack of open elements.
-        $openElements = $this->openElements->clear();
+        $this->openElements->clear();
 
         // Set the current document readiness to "complete"
         $this->document->setReadyState(DocumentReadyState::COMPLETE);
@@ -99,29 +116,30 @@ class HTMLParser extends Parser
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#parsing-html-fragments
      *
-     * @param string $aInput The markup string to parse
+     * @param string                      $input The markup string to parse
+     * @param \Rowbot\DOM\Element\Element $contextElement The context for the parser.
      *
-     * @param Element $aContextElement The context for the parser.
-     *
-     * @return Node[]
+     * @return \Rowbot\DOM\NodeList
      */
-    public static function parseHTMLFragment($aInput, Element $aContextElement)
-    {
+    public static function parseHTMLFragment(
+        string $input,
+        Element $contextElement
+    ): NodeList {
         // Create a new Document node, and mark it as being an HTML document.
         $doc = new HTMLDocument();
-        $mode = $aContextElement->getNodeDocument()->getMode();
+        $mode = $contextElement->getNodeDocument()->getMode();
 
         // If the node document of the context element is in quirks mode, then
         // let the Document be in quirks mode. Otherwise, the node document of
         // the context element is in limited-quirks mode, then let the Document
         // be in limited-quirks mode. Otherwise, leave the Document in no-quirks
         // mode.
-        $doc->setMode($aContextElement->getNodeDocument()->getMode());
+        $doc->setMode($contextElement->getNodeDocument()->getMode());
 
         // Create a new HTML parser, and associate it with the just created
         // Document node.
-        $parser = new HTMLParser($doc, true, $aContextElement);
-        $localName = $aContextElement->localName;
+        $parser = new HTMLParser($doc, true, $contextElement);
+        $localName = $contextElement->localName;
 
         // Set the state of the HTML parser's tokenization stage as follows,
         // switching on the context element:
@@ -148,7 +166,7 @@ class HTMLParser extends Parser
 
             case 'noscript':
                 if ($parser->isScriptingEnabled) {
-                    $parser->tokenizerState = TokenizerState::RAWTEXT;
+                    $parser->state->tokenizerState = TokenizerState::RAWTEXT;
                 }
 
                 break;
@@ -178,7 +196,7 @@ class HTMLParser extends Parser
         // If the context element is a template element, push "in template" onto
         // the stack of template insertion modes so that it is the new current
         // template insertion mode.
-        if ($aContextElement instanceof HTMLTemplateElement) {
+        if ($contextElement instanceof HTMLTemplateElement) {
             $parser->templateInsertionModes->push(
                 ParserInsertionMode::IN_TEMPLATE
             );
@@ -189,7 +207,7 @@ class HTMLParser extends Parser
         $token = new StartTagToken($localName);
         $attributes = $token->attributes;
 
-        foreach ($aContextElement->attributes as $attr) {
+        foreach ($contextElement->attributes as $attr) {
             $attrToken = new AttributeToken($attr->name, $attr->value);
             $attributes->push($attrToken);
         }
@@ -198,13 +216,13 @@ class HTMLParser extends Parser
         // e.g. for the purposes of determining if it is an HTML integration
         // point.
         $parser->tokenRepository->attach(
-            $aContextElement,
+            $contextElement,
             $token
         );
 
         // Reset the parser's insertion mode appropriately.
         $parser->resetInsertionMode();
-        $node = $aContextElement;
+        $node = $contextElement;
 
         // Set the parser's form element pointer to the nearest node to the
         // context element that is a form element (going straight up the
@@ -222,7 +240,7 @@ class HTMLParser extends Parser
 
         // Place the input into the input stream for the HTML parser just
         // created. The encoding confidence is irrelevant.
-        $parser->preprocessInputStream($aInput);
+        $parser->preprocessInputStream($input);
 
         // Start the parser and let it run until it has consumed all the
         // characters just inserted into the input stream.
@@ -232,7 +250,10 @@ class HTMLParser extends Parser
         return $root->childNodes;
     }
 
-    public function run()
+    /**
+     * @return void
+     */
+    public function run(): void
     {
         $gen = $this->tokenizer->run();
 
@@ -268,11 +289,18 @@ class HTMLParser extends Parser
         $this->textBuilder->flushText();
     }
 
-    public function preprocessInputStream($aInput)
+    /**
+     * Preprocesses the input stream.
+     *
+     * @param string $input
+     *
+     * @return void
+     */
+    public function preprocessInputStream(string $input): void
     {
-        $aInput = \mb_convert_encoding($aInput, 'UTF-8');
+        $input = mb_convert_encoding($input, 'UTF-8');
 
-        if (\preg_match(
+        if (preg_match(
             '/[\x01-\x08\x0E-\x1F\x7F-\x9F\x{FDD0}-\x{FDEF}\x0B' .
             '\x{FFFE}\x{FFFF}' .
             '\x{1FFFE}\x{1FFFF}' .
@@ -291,7 +319,7 @@ class HTMLParser extends Parser
             '\x{EFFFE}\x{EFFFF}' .
             '\x{FFFFE}\x{FFFFF}' .
             '\x{10FFFE}\x{10FFFF}]/u',
-            $aInput
+            $input
         )) {
             // Parse error
         }
@@ -299,7 +327,7 @@ class HTMLParser extends Parser
         // Any character that is a not a Unicode character, i.e. any isolated
         // surrogate, is a parse error. (These can only find their way into the
         // input stream via script APIs such as document.write().)
-        if (!\mb_check_encoding($aInput, 'UTF-8')) {
+        if (!mb_check_encoding($input, 'UTF-8')) {
             // Parse error
         }
 
@@ -310,7 +338,7 @@ class HTMLParser extends Parser
         // represented by LF characters, and there are never any CR characters
         // in the input to the tokenization stage.
         $this->inputStream->append(
-            \preg_replace(['/\x0D\x0A/u', '/\x0D/u'], "\x0A", $aInput)
+            preg_replace(['/\x0D\x0A/u', '/\x0D/u'], "\x0A", $input)
         );
     }
 }
