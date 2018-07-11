@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Parser\HTML;
 
 class ParserState
@@ -18,21 +20,21 @@ class ParserState
      * If no encoding is necessary, i.e. because the input stream is Unicode,
      * then the confidence is irrelevant.
      *
-     * @var int
+     * @var ?int
      */
     public $encodingConfidence;
 
     /**
      * The last form element that was opened and has not yet been closed.
      *
-     * @var ?HTMLFormElement
+     * @var \Rowbot\DOM\Element\HTML\HTMLFormElement|null
      */
     public $formElementPointer;
 
     /**
      * The parsed head element.
      *
-     * @var ?HTMLHeadElement
+     * @var \Rowbot\DOM\Element\HTML\HTMLHeadElement|null
      */
     public $headElementPointer;
 
@@ -59,6 +61,8 @@ class ParserState
 
     /**
      * Constructor.
+     *
+     * @return void
      */
     public function __construct()
     {
