@@ -31,7 +31,7 @@ class XMLParser extends Parser
     /**
      * {@inheritDoc}
      */
-    public function abort()
+    public function abort(): void
     {
     }
 
@@ -76,7 +76,7 @@ class XMLParser extends Parser
     /**
      * {@inheritDoc}
      */
-    public function preprocessInputStream($input)
+    public function preprocessInputStream(string $input): void
     {
         $this->inputStream->append($input);
     }
