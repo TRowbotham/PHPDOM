@@ -19,7 +19,7 @@ final class URLParser
      * @param \Rowbot\URL\URLRecord $base             (optional)
      * @param string                $encodingOverride (optional)
      *
-     * @return \Rowbot\URL\URLRecord
+     * @return \Rowbot\URL\URLRecord|false
      */
     public static function parseUrl(
         $input,
