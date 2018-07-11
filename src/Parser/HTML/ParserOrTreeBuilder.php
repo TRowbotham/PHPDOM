@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Parser\HTML;
 
 use Rowbot\DOM\DocumentReadyState;
@@ -22,19 +24,19 @@ trait ParserOrTreeBuilder
     /**
      * The stack of active formatting elements.
      *
-     * @var ActiveFormattingElementStack
+     * @var \Rowbot\DOM\Parser\Collection\ActiveFormattingElementStack
      */
     private $activeFormattingElements;
 
     /**
      * The document the parser is associated with.
      *
-     * @var Document
+     * @var \Rowbot\DOM\Document
      */
     private $document;
 
     /**
-     * Whether or not  scripting is enabled for the document that the parser is
+     * Whether or not scripting is enabled for the document that the parser is
      * associated with.
      *
      * @var bool
@@ -44,25 +46,30 @@ trait ParserOrTreeBuilder
     /**
      * The stack of template insertion modes.
      *
-     * @var SplStack<int>
+     * @var \SplStack<int>
      */
     private $templateInsertionModes;
 
     /**
      * A collection of nodes and the tokens that were used to create them.
      *
-     * @var SplObjectStorage<Node, Token>
+     * @var \SplObjectStorage<Node, Token>
      */
     private $tokenRepository;
 
+    /**
+     * @var \Rowbot\DOM\Parser\TextBuilder
+     */
     private $textBuilder;
 
     /**
      * Resets the HTML Parser's insertion mode.
      *
      * @see https://html.spec.whatwg.org/multipage/syntax.html#reset-the-insertion-mode-appropriately
+     *
+     * @return void
      */
-    public function resetInsertionMode()
+    public function resetInsertionMode(): void
     {
         $last = false;
         $iterator = $this->openElements->getIterator();
@@ -154,8 +161,10 @@ trait ParserOrTreeBuilder
 
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#stop-parsing
+     *
+     * @return void
      */
-    public function stopParsing()
+    public function stopParsing(): void
     {
         // TODO: Set the current document readiness to "interactive" and the
         // insertion point to undefined.
