@@ -7,13 +7,16 @@ use Rowbot\DOM\Node;
 use Rowbot\DOM\Namespaces;
 use Rowbot\DOM\Parser\FragmentSerializerInterface;
 
+use function preg_match;
+use function str_replace;
+
 class FragmentSerializer implements FragmentSerializerInterface
 {
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#serialising-html-fragments
      *
-     * @param Element|Document|DocumentFragment $node
-     * @param bool                              $requireWellFormed
+     * @param \Rowbot\DOM\Element\Element|\Rowbot\DOM\Document|\Rowbot\DOM\DocumentFragment $node
+     * @param bool                                                                          $requireWellFormed
      *
      * @return string
      */
@@ -59,7 +62,7 @@ class FragmentSerializer implements FragmentSerializerInterface
 
                     // If the current node's local name is a known void element,
                     // then move on to current node's next sibling, if any.
-                    if (\preg_match(self::VOID_TAGS, $localName)) {
+                    if (preg_match(self::VOID_TAGS, $localName)) {
                         continue 2;
                     }
 
@@ -71,14 +74,14 @@ class FragmentSerializer implements FragmentSerializerInterface
                 case Node::TEXT_NODE:
                     $localName = $currentNode->parentNode->localName;
 
-                    if ($localName === 'style' ||
-                        $localName === 'script' ||
-                        $localName === 'xmp' ||
-                        $localName === 'iframe' ||
-                        $localName === 'noembed' ||
-                        $localName === 'noframes' ||
-                        $localName === 'plaintext' ||
-                        $localName === 'noscript'
+                    if ($localName === 'style'
+                        || $localName === 'script'
+                        || $localName === 'xmp'
+                        || $localName === 'iframe'
+                        || $localName === 'noembed'
+                        || $localName === 'noframes'
+                        || $localName === 'plaintext'
+                        || $localName === 'noscript'
                     ) {
                         $s .= $currentNode->data;
                     } else {
@@ -111,12 +114,15 @@ class FragmentSerializer implements FragmentSerializerInterface
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#escapingString
      *
-     * @param string $string The input string to be escaped.
+     * @param string $string          The input string to be escaped.
+     * @param bool   $inAttributeMode (optional)
      *
      * @return string The escaped input string.
      */
-    private function escapeHTMLString($string, $inAttributeMode = false): string
-    {
+    private function escapeHTMLString(
+        string $string,
+        bool $inAttributeMode = false
+    ): string {
         if ($string === '') {
             return '';
         }
@@ -132,13 +138,13 @@ class FragmentSerializer implements FragmentSerializerInterface
             $replace += ['&lt;', '&gt;'];
         }
 
-        return \str_replace($search, $replace, $string);
+        return str_replace($search, $replace, $string);
     }
 
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#attribute's-serialised-name
      *
-     * @param Attr $attr The attribute whose name is to be serialized.
+     * @param \Rowbot\DOM\Attr $attr The attribute whose name is to be serialized.
      *
      * @return string The attribute's serialized name.
      */
