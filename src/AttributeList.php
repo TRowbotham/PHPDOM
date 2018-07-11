@@ -264,7 +264,7 @@ class AttributeList extends OrderedSet
         }
 
         $oldAttr = $this->getAttrByNamespaceAndLocalName(
-            $attr->namespace,
+            $attr->namespaceURI,
             $attr->localName
         );
 
