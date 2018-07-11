@@ -188,10 +188,26 @@ class TreeBuilder
     /**
      * A list of character tokens pending insertion during table building.
      *
-     * @var Token[]
+     * @var \Rowbot\DOM\Parser\Token\Token[]
      */
     private $pendingTableCharacterTokens;
 
+    /**
+     * Constructor.
+     *
+     * @param \Rowbot\DOM\Document                                                $document
+     * @param \Rowbot\DOM\Parser\Collection\ActiveFormattingElementStack          $activeFormattingElements
+     * @param \Rowbot\DOM\Parser\Collection\OpenElementStack                      $openElements
+     * @param \SplStack<int>                                                      $templateInsertionModes
+     * @param \Rowbot\DOM\Parser\TextBuilder                                      $textBuilder
+     * @param \SplObjectStorage<\Rowbot\DOM\Node, \Rowbot\DOM\Parser\Token\Token> $tokenRepository
+     * @param bool                                                                $isFragmentCase
+     * @param bool                                                                $isScriptingEnabled
+     * @param \Rowbot\DOM\Element\Element                                         $contextElement
+     * @param \Rowbot\DOM\Parser\ParserState                                      $state
+     *
+     * @return void
+     */
     public function __construct(
         Document $document,
         $activeFormattingElements,
@@ -222,7 +238,9 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#the-initial-insertion-mode
      *
-     * @param  Token  $aToken The token currently being processed.
+     * @param \Rowbot\DOM\Parser\Token\Token $aToken The token currently being processed.
+     *
+     * @return void
      */
     protected function initialInsertionMode(Token $aToken)
     {
@@ -372,7 +390,9 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#the-before-html-insertion-mode
      *
-     * @param  Token  $aToken The token currently being processed.
+     * @param \Rowbot\DOM\Parser\Token\Token $aToken The token currently being processed.
+     *
+     * @return void
      */
     protected function beforeHTMLInsertionMode(Token $aToken)
     {
@@ -460,7 +480,9 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#the-before-head-insertion-mode
      *
-     * @param  Token  $aToken The token currently being processed.
+     * @param \Rowbot\DOM\Parser\Token\Token $aToken The token currently being processed.
+     *
+     * @return void
      */
     protected function beforeHeadInsertionMode(Token $aToken)
     {
@@ -536,7 +558,9 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-inhead
      *
-     * @param  Token  $aToken The token currently being processed.
+     * @param \Rowbot\DOM\Parser\Token\Token $aToken The token currently being processed.
+     *
+     * @return void
      */
     protected function inHeadInsertionMode(Token $aToken)
     {
@@ -781,7 +805,7 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-inheadnoscript
      *
-     * @param Token $aToken
+     * @param \Rowbot\DOM\Parser\Token\Token $aToken
      *
      * @return void
      */
@@ -854,7 +878,9 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#the-after-head-insertion-mode
      *
-     * @param Token $aToken The token currently being processed.
+     * @param \Rowbot\DOM\Parser\Token\Token $aToken The token currently being processed.
+     *
+     * @return void
      */
     protected function afterHeadInsertionMode(Token $aToken)
     {
@@ -957,7 +983,9 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-inbody
      *
-     * @param  Token  $aToken The token currently being processed.
+     * @param \Rowbot\DOM\Parser\Token\Token $aToken The token currently being processed.
+     *
+     * @return void
      */
     protected function inBodyInsertionMode(Token $aToken)
     {
@@ -2262,6 +2290,11 @@ class TreeBuilder
         }
     }
 
+    /**
+     * @param \Rowbot\DOM\Parser\Token\Token $aToken
+     *
+     * @return void
+     */
     protected function applyAnyOtherEndTagForInBodyInsertionMode(Token $aToken)
     {
         // Initialise node to be the current node (the bottommost node of the
@@ -2301,6 +2334,8 @@ class TreeBuilder
      * Closes a paragraph (p) element.
      *
      * @see https://html.spec.whatwg.org/multipage/#close-a-p-element
+     *
+     * @return void
      */
     protected function closePElement()
     {
@@ -2320,7 +2355,7 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#adoption-agency-algorithm
      *
-     * @param TagToken $aToken
+     * @param \Rowbot\DOM\Parser\Token\TagToken $aToken
      *
      * @return void
      */
@@ -2584,7 +2619,9 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-incdata
      *
-     * @param Token $aToken The token currently being processed.
+     * @param \Rowbot\DOM\Parser\Token\Token $aToken The token currently being processed.
+     *
+     * @return void
      */
     protected function inTextInsertionMode(Token $aToken)
     {
@@ -2638,7 +2675,9 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-intable
      *
-     * @param Token $aToken The token currently being processed.
+     * @param \Rowbot\DOM\Parser\Token\Token $aToken The token currently being processed.
+     *
+     * @return void
      */
     protected function inTableInsertionMode(Token $aToken)
     {
@@ -2877,7 +2916,9 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-intabletext
      *
-     * @param Token $aToken The token currently being processed.
+     * @param \Rowbot\DOM\Parser\Token\Token $aToken The token currently being processed.
+     *
+     * @return void
      */
     protected function inTableTextInsertionMode(Token $aToken)
     {
@@ -2937,7 +2978,9 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-incaption
      *
-     * @param Token $aToken The token currently being processed.
+     * @param \Rowbot\DOM\Parser\Token\Token $aToken The token currently being processed.
+     *
+     * @return void
      */
     protected function inCaptionInsertionMode(Token $aToken)
     {
@@ -3051,7 +3094,9 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-incolgroup
      *
-     * @param Token $aToken The token currently being processed.
+     * @param \Rowbot\DOM\Parser\Token\Token $aToken The token currently being processed.
+     *
+     * @return void
      */
     protected function inColumnGroupInsertionMode(Token $aToken)
     {
@@ -3143,7 +3188,9 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-intbody
      *
-     * @param Token $aToken The token currently being processed.
+     * @param \Rowbot\DOM\Parser\Token\Token $aToken The token currently being processed.
+     *
+     * @return void
      */
     protected function inTableBodyInsertionMode(Token $aToken)
     {
@@ -3253,7 +3300,9 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-intr
      *
-     * @param Token $aToken The token currently being processed.
+     * @param \Rowbot\DOM\Parser\Token\Token $aToken The token currently being processed.
+     *
+     * @return void
      */
     protected function inRowInsertionMode(Token $aToken)
     {
@@ -3360,7 +3409,9 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-intd
      *
-     * @param Token $aToken The token currently being processed.
+     * @param \Rowbot\DOM\Parser\Token\Token $aToken The token currently being processed.
+     *
+     * @return void
      */
     protected function inCellInsertionMode(Token $aToken)
     {
@@ -3462,6 +3513,8 @@ class TreeBuilder
      * Performs the steps necessary to close a table cell (td) element.
      *
      * @see https://html.spec.whatwg.org/multipage/syntax.html#close-the-cell
+     *
+     * @return void
      */
     protected function closeCell()
     {
@@ -3504,7 +3557,9 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-inselect
      *
-     * @param Token $aToken The token currently being processed.
+     * @param \Rowbot\DOM\Parser\Token\Token $aToken The token currently being processed.
+     *
+     * @return void
      */
     protected function inSelectInsertionMode(Token $aToken)
     {
@@ -3687,7 +3742,9 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-inselectintable
      *
-     * @param Token $aToken The token currently being processed.
+     * @param \Rowbot\DOM\Parser\Token\Token $aToken The token currently being processed.
+     *
+     * @return void
      */
     protected function inSelectInTableInsertionMode(Token $aToken)
     {
@@ -3754,7 +3811,9 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-intemplate
      *
-     * @param Token $aToken The token currently being processed.
+     * @param \Rowbot\DOM\Parser\Token\Token $aToken The token currently being processed.
+     *
+     * @return void
      */
     protected function inTemplateInsertionMode(Token $aToken)
     {
@@ -3892,7 +3951,9 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-afterbody
      *
-     * @param Token $aToken The token currently being processed.
+     * @param \Rowbot\DOM\Parser\Token\Token $aToken The token currently being processed.
+     *
+     * @return void
      */
     protected function afterBodyInsertionMode(Token $aToken)
     {
@@ -3946,7 +4007,9 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-inframeset
      *
-     * @param Token $aToken The token currently being processed.
+     * @param \Rowbot\DOM\Parser\Token\Token $aToken The token currently being processed.
+     *
+     * @return void
      */
     protected function inFramesetInsertionMode(Token $aToken)
     {
@@ -4037,7 +4100,9 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-afterframeset
      *
-     * @param Token $aToken The token currently being processed.
+     * @param \Rowbot\DOM\Parser\Token\Token $aToken The token currently being processed.
+     *
+     * @return void
      */
     protected function afterFramesetInsertionMode(Token $aToken)
     {
@@ -4082,7 +4147,9 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#the-after-after-body-insertion-mode
      *
-     * @param Token $aToken The token currently being processed.
+     * @param \Rowbot\DOM\Parser\Token\Token $aToken The token currently being processed.
+     *
+     * @return void
      */
     protected function afterAfterBodyInsertionMode(Token $aToken)
     {
@@ -4115,7 +4182,9 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#the-after-after-frameset-insertion-mode
      *
-     * @param Token $aToken The token currently being processed.
+     * @param \Rowbot\DOM\Parser\Token\Token $aToken The token currently being processed.
+     *
+     * @return void
      */
     protected function afterAfterFramesetInsertionMode(Token $aToken)
     {
@@ -4153,7 +4222,7 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-inforeign
      *
-     * @param Token $aToken
+     * @param \Rowbot\DOM\Parser\Token\Token $aToken
      *
      * @return void
      */
@@ -4434,7 +4503,7 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#tree-construction-dispatcher
      *
-     * @param Token $token
+     * @param \Rowbot\DOM\Parser\Token\Token $token
      *
      * @return void
      */
@@ -4620,7 +4689,7 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#adjust-foreign-attributes
      *
-     * @param TagToken $aToken
+     * @param \Rowbot\DOM\Parser\Token\TagToken $aToken
      *
      * @return void
      */
@@ -4655,7 +4724,7 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#adjust-mathml-attributes
      *
-     * @param TagToken $aToken
+     * @param \Rowbot\DOM\Parser\Token\TagToken $aToken
      *
      * @return void
      */
@@ -4672,7 +4741,7 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#adjust-svg-attributes
      *
-     * @param TagToken $aToken
+     * @param \Rowbot\DOM\Parser\Token\TagToken $aToken
      *
      * @return void
      */
@@ -4693,15 +4762,12 @@ class TreeBuilder
      *
      * @see https://html.spec.whatwg.org/multipage/syntax.html#create-an-element-for-the-token
      *
-     * @param Token $aToken The token currently being processed.
+     * @param \Rowbot\DOM\Parser\Token\Token $aToken          The token currently being processed.
+     * @param string                         $aNamespace      The namespace of the element that is to be created.
+     * @param \Rowbot\DOM\Node               $aIntendedParent The parent not which the newely created node will be
+     *                                                        inserted in to.
      *
-     * @param string $aNamespace The namespace of the element that is to be
-     *     created.
-     *
-     * @param Node $aIntendedParent The parent not which the newely created node
-     *     will be inserted in to.
-     *
-     * @return Node
+     * @return \Rowbot\DOM\Node
      */
     protected function createElementForToken(
         Token $aToken,
@@ -4765,10 +4831,10 @@ class TreeBuilder
         return $element;
     }
 
-
-
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#generate-all-implied-end-tags-thoroughly
+     *
+     * @return void
      */
     protected function generateAllImpliedEndTagsThoroughly()
     {
@@ -4790,6 +4856,8 @@ class TreeBuilder
      * @see https://html.spec.whatwg.org/multipage/syntax.html#generate-implied-end-tags
      *
      * @param string $aExcluded
+     *
+     * @return void
      */
     protected function generateImpliedEndTags($aExcluded = '')
     {
@@ -4824,13 +4892,11 @@ class TreeBuilder
      *
      * @see https://html.spec.whatwg.org/multipage/syntax.html#appropriate-place-for-inserting-a-node
      *
-     * @param Node|null $overrideTarget (optional) When given, it
-     *     overrides the target insertion point for the node. Default value is
-     *     null.
+     * @param \Rowbot\DOM\Node|null $overrideTarget (optional) When given, it overrides the target insertion point for
+     *                                              the node. Default value is null.
      *
-     * @return array The first index contains the node where another node will
-     *     be inserted. The second index contains where, relative to the node
-     *     in the first index that, the node to be inserted will be inserted.
+     * @return array The first index contains the node where another node will be in the first index that, the node to
+     *               be inserted will be inserted.
      */
     private function getAppropriatePlaceForInsertingNode(
         Node $overrideTarget = null
@@ -4923,11 +4989,11 @@ class TreeBuilder
      *
      * @see https://html.spec.whatwg.org/multipage/syntax.html#insert-a-character
      *
-     * @param CharacterToken|string $aData A token that contains character data
-     *     or A literal string of characters to insert instead of data from a
-     *     token.
+     * @param \Rowbot\DOM\Parser\Token\CharacterToken|string $aData A token that contains character data or a literal
+     *                                                              string of characters to insert instead of data from
+     *                                                              a token.
      *
-     * @param string $aCharacters
+     * @return void
      */
     protected function insertCharacter($aData)
     {
@@ -4996,10 +5062,10 @@ class TreeBuilder
      *
      * @see https://html.spec.whatwg.org/multipage/syntax.html#insert-a-comment
      *
-     * @param CommentToken $aToken The comment token being processed.
+     * @param \Rowbot\DOM\Parser\Token\CommentToken $aToken    The comment token being processed.
+     * @param array|null                            $aPosition (optional) The position where the comment should be inserted.
      *
-     * @param array $aPosition The position where the comment should be
-     *     inserted.
+     * @return void
      */
     protected function insertComment(
         CommentToken $aToken,
@@ -5032,14 +5098,12 @@ class TreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#insert-a-foreign-element
      *
-     * @param TagToken The start or end tag token that will be used to create a
-     *     new element.
+     * @param \Rowbot\DOM\Parser\Token\TagToken $aToken     The start or end tag token that will be used to create a new
+     *                                                      element.
+     * @param string                            $aNamespace The namespace that the created element will reside in.
      *
-     * @param string $aNamespace The namespace that the created element will
-     *     reside in.
-     *
-     * @return Element|null The newly created element or void if the element
-     *     could not be inserted into the intended location.
+     * @return \Rowbot\DOM\Element\Element|null The newly created element or void if the element could not be inserted
+     *                                          into the intended location.
      */
     protected function insertForeignElement(TagToken $aToken, $aNamespace)
     {
@@ -5083,9 +5147,10 @@ class TreeBuilder
      * Inserts a node based at a specific location. It follows similar rules to
      * Element's insertAdjacentHTML method.
      *
-     * @param Node $aNode The node that is being inserted in to the document.
+     * @param \Rowbot\DOM\Node $aNode     The node that is being inserted in to the document.
+     * @param array            $aPosition The position at which the node is to be inserted.
      *
-     * @param array $aPosition The position at which the node is to be inserted.
+     * @return void
      */
     protected function insertNode(Node $aNode, array $aPosition)
     {
@@ -5116,6 +5181,12 @@ class TreeBuilder
         }
     }
 
+    /**
+     * @param \Rowbot\DOM\Node $aNode
+     * @param string           $aLocalName
+     *
+     * @return bool
+     */
     protected function isHTMLElementWithName(Node $aNode, $aLocalName)
     {
         return $aNode instanceof Element &&
@@ -5142,7 +5213,7 @@ class TreeBuilder
      *
      * @see https://html.spec.whatwg.org/multipage/syntax.html#html-integration-point
      *
-     * @param Node $node
+     * @param \Rowbot\DOM\Node $node
      *
      * @return bool
      */
@@ -5192,7 +5263,7 @@ class TreeBuilder
      *
      * @see https://html.spec.whatwg.org/multipage/syntax.html#mathml-text-integration-point
      *
-     * @param Node $aNode
+     * @param \Rowbot\DOM\Node $aNode
      *
      * @return bool
      */
@@ -5219,7 +5290,7 @@ class TreeBuilder
      *
      * @see https://html.spec.whatwg.org/multipage/syntax.html#special
      *
-     * @param Node $node
+     * @param \Rowbot\DOM\Node $node
      *
      * @return bool
      */
@@ -5343,8 +5414,8 @@ class TreeBuilder
      * @see https://html.spec.whatwg.org/multipage/syntax.html#generic-raw-text-element-parsing-algorithm
      * @see https://html.spec.whatwg.org/multipage/syntax.html#generic-rcdata-element-parsing-algorithm
      *
-     * @param Token $aToken
-     * @param int   $aAlgorithm
+     * @param \Rowbot\DOM\Parser\Token\Token $aToken
+     * @param int                            $aAlgorithm
      *
      * @return void
      */
@@ -5372,6 +5443,8 @@ class TreeBuilder
 
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#reconstruct-the-active-formatting-elements
+     *
+     * @return void
      */
     public function reconstructActiveFormattingElements()
     {
