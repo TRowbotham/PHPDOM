@@ -204,7 +204,7 @@ class TreeBuilder
      * @param bool                                                                $isFragmentCase
      * @param bool                                                                $isScriptingEnabled
      * @param \Rowbot\DOM\Element\Element                                         $contextElement
-     * @param \Rowbot\DOM\Parser\ParserState                                      $state
+     * @param \Rowbot\DOM\Parser\HTML\ParserState                                 $state
      *
      * @return void
      */
