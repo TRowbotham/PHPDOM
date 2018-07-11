@@ -7,7 +7,7 @@ trait ParserCommon
      * The context element for the parser when it is created in the fragment
      * case.
      *
-     * @var ?Element
+     * @var \Rowbot\DOM\Element\Element|null
      */
     private $contextElement;
 
@@ -22,14 +22,14 @@ trait ParserCommon
     /**
      * The stack of open elements.
      *
-     * @var OpenElementStack
+     * @var \Rowbot\DOM\Parser\Collection\OpenElementStack
      */
     private $openElements;
 
     /**
      * The shared state of the parser, tokenizer, and treebuilder.
      *
-     * @var ParserState
+     * @var \Rowbot\DOM\Parser\HTML\ParserState
      */
     private $state;
 }
