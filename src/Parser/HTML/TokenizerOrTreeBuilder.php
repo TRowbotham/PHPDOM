@@ -1,6 +1,10 @@
 <?php
 namespace Rowbot\DOM\Parser\HTML;
 
+use Rowbot\DOM\Element\Element;
+
+use function count;
+
 trait TokenizerOrTreeBuilder
 {
     use ParserCommon;
@@ -8,11 +12,11 @@ trait TokenizerOrTreeBuilder
     /**
      * @see https://html.spec.whatwg.org/multipage/parsing.html#adjusted-current-node
      *
-     * @return Element
+     * @return \Rowbot\DOM\Element\Element
      */
-    public function getAdjustedCurrentNode()
+    public function getAdjustedCurrentNode(): Element
     {
-        if ($this->isFragmentCase && \count($this->openElements) == 1) {
+        if ($this->isFragmentCase && count($this->openElements) == 1) {
             return $this->contextElement;
         }
 
