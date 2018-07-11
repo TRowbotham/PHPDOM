@@ -18,19 +18,19 @@ use Rowbot\DOM\Support\UuidTrait;
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Node
  *
  * @property-read string                           $baseURI
- * @property-read \Rowbot\DOM\Node[]               $childNodes
+ * @property-read \Rowbot\DOM\NodeList             $childNodes
  * @property-read \Rowbot\DOM\Node|null            $firstChild
  * @property-read \Rowbot\DOM\Node|null            $lastChild
  * @property-read \Rowbot\DOM\Node|null            $nextSibling
  * @property-read string                           $nodeName
  * @property-read int                              $nodeType
- * @property string|null                           $nodeValue
+ * @property      ?string                          $nodeValue
  * @property-read bool                             $isConnected
  * @property-read \Rowbot\DOM\Document|null        $ownerDocument
  * @property-read \Rowbot\DOM\Node|null            $parentNode
  * @property-read \Rowbot\DOM\Element\Element|null $parentElement
  * @property-read \Rowbot\DOM\Node|null            $previousSibling
- * @property string|null                           $textContent
+ * @property      ?string                          $textContent
  */
 abstract class Node extends EventTarget implements UniquelyIdentifiable
 {
