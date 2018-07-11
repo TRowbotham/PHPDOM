@@ -1,14 +1,28 @@
 <?php
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Parser\Token;
 
+/**
+ * When an end tag token is emitted with attributes, that is an end-tag-with-attributes parse error. When an end tag
+ * token is emitted with its self-closing flag set, that is an end-tag-with-trailing-solidus parse error.
+ *
+ * {@inheritDoc}
+ */
 class EndTagToken extends TagToken
 {
-    public function __construct($aTagName = null)
+    /**
+     * {@inheritDoc}
+     */
+    public function __construct(string $tagName = null)
     {
-        parent::__construct($aTagName);
+        parent::__construct($tagName);
     }
 
-    public function getType()
+    /**
+     * {@inheritDoc}
+     */
+    public function getType(): int
     {
         return self::END_TAG_TOKEN;
     }

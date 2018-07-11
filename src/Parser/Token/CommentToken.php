@@ -1,20 +1,38 @@
 <?php
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Parser\Token;
 
+/**
+ * Comment tokens have data.
+ *
+ * {@inheritDoc}
+ */
 class CommentToken implements Token
 {
+    /**
+     * @var string
+     */
     public $data;
 
-    public function __construct($aData = null)
+    /**
+     * Constructor.
+     *
+     * @param string $data
+     *
+     * @return void
+     */
+    public function __construct(string $data = null)
     {
-        $this->data = null;
-
-        if ($aData !== null) {
-            $this->data = $aData;
+        if ($data !== null) {
+            $this->data = $data;
         }
     }
 
-    public function getType()
+    /**
+     * {@inheritDoc}
+     */
+    public function getType(): int
     {
         return self::COMMENT_TOKEN;
     }
