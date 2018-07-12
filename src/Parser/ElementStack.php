@@ -1,6 +1,7 @@
 <?php
 namespace Rowbot\DOM\Parser;
 
+use Rowbot\DOM\Parser\Exception\ParserException;
 use Rowbot\DOM\Support\Stack;
 use SeekableIterator;
 
