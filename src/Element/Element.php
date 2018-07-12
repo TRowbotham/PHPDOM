@@ -1029,7 +1029,15 @@ class Element extends Node implements AttributeChangeObserver
         $value,
         $namespace
     ): void {
-        // Do nothing.
+        // We currently don't do anything special with the element's ID.
+        if ($localName === 'id'
+            && $namespace === null
+            && ($value === null || $value === '')
+        ) {
+            // Unset the element's ID.
+        } elseif ($localName === 'id' && $namespace === null) {
+            // Set the element's ID to $value.
+        }
     }
 
     /**
