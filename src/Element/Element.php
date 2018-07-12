@@ -342,19 +342,23 @@ class Element extends Node implements AttributeChangeObserver
     }
 
     /**
-     * Retrieves the value of the attribute with the given name, if any.
+     * Retrieves the value of the attribute with the given qualifiedName, if any.
      *
      * @see https://dom.spec.whatwg.org/#dom-element-getattribute
      *
-     * @param string $name The name of the attribute whose value is to be retrieved.
+     * @param string $qualifiedName The qualifiedName of the attribute whose value is to be retrieved.
      *
      * @return ?string
      */
-    public function getAttribute($name): ?string
+    public function getAttribute(string $qualifiedName): ?string
     {
-        $attr = $this->attributeList->getAttrByName(Utils::DOMString($name));
+        $attr = $this->attributeList->getAttrByName($qualifiedName);
 
-        return $attr ? $attr->value : null;
+        if ($attr === null) {
+            return null;
+        }
+
+        return $attr->value;
     }
 
     /**
@@ -367,12 +371,11 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @return ?string
      */
-    public function getAttributeNS(?string $namespace, $localName)
-    {
-        return $this->attributeList->getAttrValue(
-            Utils::DOMString($localName),
-            $namespace
-        );
+    public function getAttributeNS(
+        ?string $namespace,
+        string $localName
+    ): ?string {
+        return $this->attributeList->getAttrValue($localName, $namespace);
     }
 
     /**
@@ -387,10 +390,8 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @return void
      */
-    public function setAttribute($qualifiedName, $value)
+    public function setAttribute(string $qualifiedName, string $value): void
     {
-        $qualifiedName = Utils::DOMString($qualifiedName);
-
         // If qualifiedName does not match the Name production in XML,
         // throw an InvalidCharacterError exception.
         if (!\preg_match(Namespaces::NAME_PRODUCTION, $qualifiedName)) {
@@ -412,38 +413,38 @@ class Element extends Node implements AttributeChangeObserver
             }
         }
 
-        if (!$attribute) {
-            $attribute = new Attr($qualifiedName, Utils::DOMString($value));
+        if ($attribute === null) {
+            $attribute = new Attr($qualifiedName, $value);
             $attribute->setNodeDocument($this->nodeDocument);
             $this->attributeList->append($attribute);
             return;
         }
 
-        $this->attributeList->change(
-            $attribute,
-            Utils::DOMString($value)
-        );
+        $this->attributeList->change($attribute, $value);
     }
 
     /**
      * Either appends a new attribute or modifies the value of an existing
-     * attribute with the given namespace and name.
+     * attribute with the given namespace and qualifiedName.
      *
-     * @param ?string $namespace The namespaceURI of the attribute.
-     * @param string  $name      The name of the attribute.
-     * @param string  $value     The value of the attribute.
+     * @param ?string $namespace     The namespaceURI of the attribute.
+     * @param string  $qualifiedName The qualifiedName of the attribute.
+     * @param string  $value         The value of the attribute.
      *
      * @return void
      */
-    public function setAttributeNS(?string $namespace, $name, $value)
-    {
+    public function setAttributeNS(
+        ?string $namespace,
+        string $qualifiedName,
+        string $value
+    ): void {
         list(
             $namespace,
             $prefix,
             $localName
         ) = Namespaces::validateAndExtract(
             $namespace,
-            Utils::DOMString($name)
+            $qualifiedName
         );
 
         $this->attributeList->setAttrValue(
@@ -455,18 +456,18 @@ class Element extends Node implements AttributeChangeObserver
     }
 
     /**
-     * Removes an attribute with the specified name from the Element's attribute
+     * Removes an attribute with the specified qualifiedName from the Element's attribute
      * list.
      *
      * @see https://dom.spec.whatwg.org/#dom-element-removeattribute
      *
-     * @param string $name The attributes name.
+     * @param string $qualifiedName The attributes qualifiedName.
      *
      * @return void
      */
-    public function removeAttribute($name)
+    public function removeAttribute(string $qualifiedName): void
     {
-        $this->attributeList->removeAttrByName($name);
+        $this->attributeList->removeAttrByName($qualifiedName);
     }
 
     /**
@@ -480,8 +481,10 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @return void
      */
-    public function removeAttributeNS(?string $namespace, $localName)
-    {
+    public function removeAttributeNS(
+        ?string $namespace,
+        string $localName
+    ): void {
         $this->attributeList->removeAttrByNamespaceAndLocalName(
             $namespace,
             $localName
@@ -498,17 +501,15 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @return bool
      */
-    public function hasAttribute($qualifiedName): bool
+    public function hasAttribute(string $qualifiedName): bool
     {
-        $qualifiedName = Utils::DOMString($qualifiedName);
-
         if ($this->namespaceURI === Namespaces::HTML
             && $this->nodeDocument instanceof HTMLDocument
         ) {
             $qualifiedName = Utils::toASCIILowercase($qualifiedName);
         }
 
-        return (bool) $this->attributeList->getAttrByName($qualifiedName);
+        return $this->attributeList->getAttrByName($qualifiedName) !== null;
     }
 
     /**
@@ -522,26 +523,26 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @return bool
      */
-    public function hasAttributeNS(?string $namespace, $localName): bool
+    public function hasAttributeNS(?string $namespace, string $localName): bool
     {
-        return (bool) $this->attributeList->getAttrByNamespaceAndLocalName(
+        return $this->attributeList->getAttrByNamespaceAndLocalName(
             $namespace,
-            Utils::DOMString($localName)
-        );
+            $localName
+        ) !== null;
     }
 
     /**
-     * Retrieves the attribute node with the given name, if any.
+     * Retrieves the attribute node with the given qualifiedName, if any.
      *
      * @see https://dom.spec.whatwg.org/#dom-element-getattributenode
      *
-     * @param string $name The name of the attribute that is to be retrieved.
+     * @param string $qualifiedName The qualifiedName of the attribute that is to be retrieved.
      *
      * @return \Rowbot\DOM\Attr|null
      */
-    public function getAttributeNode($name): ?Attr
+    public function getAttributeNode(string $qualifiedName): ?Attr
     {
-        return $this->attributeList->getAttrByName(Utils::DOMString($name));
+        return $this->attributeList->getAttrByName($qualifiedName);
     }
 
     /**
@@ -555,8 +556,10 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @return \Rowbot\DOM\Attr|null
      */
-    public function getAttributeNodeNS(?string $namespace, $localName): ?Attr
-    {
+    public function getAttributeNodeNS(
+        ?string $namespace,
+        string $localName
+    ): ?Attr {
         return $this->attributeList->getAttrByNamespaceAndLocalName(
             $namespace,
             Utils::DOMString($localName)
@@ -572,7 +575,7 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @return \Rowbot\DOM\Attr|null
      */
-    public function setAttributeNode(Attr $attr)
+    public function setAttributeNode(Attr $attr): ?Attr
     {
         return $this->attributeList->setAttr($attr);
     }
@@ -586,7 +589,7 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @return \Rowbot\DOM\Attr|null
      */
-    public function setAttributeNodeNS(Attr $attr)
+    public function setAttributeNodeNS(Attr $attr): ?Attr
     {
         return $this->attributeList->setAttr($attr);
     }
@@ -602,7 +605,7 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @throws \Rowbot\DOM\Exception\NotFoundError
      */
-    public function removeAttributeNode(Attr $attr)
+    public function removeAttributeNode(Attr $attr): Attr
     {
         if (!$this->attributeList->contains($attr)) {
             throw new NotFoundError();
