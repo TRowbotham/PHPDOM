@@ -69,12 +69,7 @@ class OpenElementStack extends ObjectStack
         UniquelyIdentifiable $newItem,
         UniquelyIdentifiable $oldItem
     ) {
-        try {
-            parent::replace($newItem, $oldItem);
-        } catch (CollectionException $e) {
-            throw $e;
-            return;
-        }
+        parent::replace($newItem, $oldItem);
 
         if ($newItem instanceof HTMLTemplateElement) {
             ++$this->templateElementCount;
@@ -92,12 +87,7 @@ class OpenElementStack extends ObjectStack
         UniquelyIdentifiable $newItem,
         UniquelyIdentifiable $oldItem = null
     ) {
-        try {
-            parent::insertBefore($newItem, $oldItem);
-        } catch (CollectionException $e) {
-            throw $e;
-            return;
-        }
+        parent::insertBefore($newItem, $oldItem);
 
         if ($newItem instanceof HTMLTemplateElement) {
             ++$this->templateElementCount;
@@ -111,12 +101,7 @@ class OpenElementStack extends ObjectStack
         UniquelyIdentifiable $newItem,
         UniquelyIdentifiable $oldItem
     ) {
-        try {
-            parent::insertAfter($newItem, $oldItem);
-        } catch (CollectionException $e) {
-            throw $e;
-            return;
-        }
+        parent::insertAfter($newItem, $oldItem);
 
         if ($newItem instanceof HTMLTemplateElement) {
             ++$this->templateElementCount;
@@ -128,12 +113,7 @@ class OpenElementStack extends ObjectStack
      */
     public function remove(UniquelyIdentifiable $item)
     {
-        try {
-            parent::remove($item);
-        } catch (CollectionException $e) {
-            throw $e;
-            return;
-        }
+        parent::remove($item);
 
         if ($item instanceof HTMLTemplateElement) {
             --$this->templateElementCount;
@@ -145,12 +125,7 @@ class OpenElementStack extends ObjectStack
      */
     public function push(UniquelyIdentifiable $item)
     {
-        try {
-            parent::push($item);
-        } catch (CollectionException $e) {
-            throw $e;
-            return;
-        }
+        parent::push($item);
 
         if ($item instanceof HTMLTemplateElement) {
             ++$this->templateElementCount;
@@ -162,12 +137,7 @@ class OpenElementStack extends ObjectStack
      */
     public function pop()
     {
-        try {
-            $popped = parent::pop();
-        } catch (CollectionException $e) {
-            throw $e;
-            return;
-        }
+        $popped = parent::pop();
 
         if ($popped instanceof HTMLTemplateElement) {
             --$this->templateElementCount;
@@ -183,7 +153,6 @@ class OpenElementStack extends ObjectStack
     {
         if ($this->size == 0) {
             throw new EmptyStackException();
-            return;
         }
 
         return $this->collection[0];
@@ -196,7 +165,6 @@ class OpenElementStack extends ObjectStack
     {
         if ($this->size == 0) {
             throw new EmptyStackException();
-            return;
         }
 
         return $this->collection[$this->size - 1];
