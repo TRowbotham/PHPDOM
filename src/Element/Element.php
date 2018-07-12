@@ -285,36 +285,6 @@ class Element extends Node implements AttributeChangeObserver
     }
 
     /**
-     * {@inheritDoc}
-     */
-    public function cloneNodeInternal(
-        Document $document = null,
-        bool $cloneChildren = false
-    ): Node {
-        $document = $document ?: $this->getNodeDocument();
-        $copy = ElementFactory::create(
-            $document,
-            $this->localName,
-            $this->namespaceURI,
-            $this->prefix
-        );
-
-        foreach ($this->attributeList as $attr) {
-            $copyAttribute = $attr->cloneNodeInternal();
-            $copy->attributeList->append($copyAttribute);
-        }
-
-        $this->postCloneNode($copy, $document, $cloneChildren);
-
-        return $copy;
-    }
-
-    public function closest($selectorRule)
-    {
-        // TODO
-    }
-
-    /**
      * Creates a new instance of an the specified element interface and
      * intializes that elements local name, namespace, and namespace prefix.
      *
@@ -343,44 +313,14 @@ class Element extends Node implements AttributeChangeObserver
     }
 
     /**
-     * {@inheritDoc}
+     * Returns true if there are attributes present in the Element's attribute
+     * list, otherwise false.
+     *
+     * @return bool
      */
-    public function onAttributeChanged(
-        Element $element,
-        $localName,
-        $oldValue,
-        $value,
-        $namespace
-    ): void {
-        // Do nothing.
-    }
-
-    /**
-     * Retrieves the value of the attribute with the given name, if any.
-     *
-     * @see https://dom.spec.whatwg.org/#dom-element-getattribute
-     *
-     * @param string $name The name of the attribute whose value is to be retrieved.
-     *
-     * @return ?string
-     */
-    public function getAttribute($name): ?string
+    public function hasAttributes(): bool
     {
-        $attr = $this->attributeList->getAttrByName(Utils::DOMString($name));
-
-        return $attr ? $attr->value : null;
-    }
-
-    /**
-     * Returns the element's internal attribute list.
-     *
-     * @internal
-     *
-     * @return \Rowbot\DOM\AttributeList
-     */
-    public function getAttributeList()
-    {
-        return $this->attributeList;
+        return !$this->attributeList->isEmpty();
     }
 
     /**
@@ -402,36 +342,19 @@ class Element extends Node implements AttributeChangeObserver
     }
 
     /**
-     * Retrieves the attribute node with the given name, if any.
+     * Retrieves the value of the attribute with the given name, if any.
      *
-     * @see https://dom.spec.whatwg.org/#dom-element-getattributenode
+     * @see https://dom.spec.whatwg.org/#dom-element-getattribute
      *
-     * @param string $name The name of the attribute that is to be retrieved.
+     * @param string $name The name of the attribute whose value is to be retrieved.
      *
-     * @return \Rowbot\DOM\Attr|null
+     * @return ?string
      */
-    public function getAttributeNode($name): ?Attr
+    public function getAttribute($name): ?string
     {
-        return $this->attributeList->getAttrByName(Utils::DOMString($name));
-    }
+        $attr = $this->attributeList->getAttrByName(Utils::DOMString($name));
 
-    /**
-     * Retrieves the attribute node with the given namespace and local name, if
-     * any.
-     *
-     * @see https://dom.spec.whatwg.org/#dom-element-getattributenodens
-     *
-     * @param ?string $namespace The namespaceURI of the attribute node to be retrieved.
-     * @param string  $localName The localName of the attribute node to be retrieved.
-     *
-     * @return \Rowbot\DOM\Attr|null
-     */
-    public function getAttributeNodeNS(?string $namespace, $localName): ?Attr
-    {
-        return $this->attributeList->getAttrByNamespaceAndLocalName(
-            $namespace,
-            Utils::DOMString($localName)
-        );
+        return $attr ? $attr->value : null;
     }
 
     /**
@@ -449,6 +372,119 @@ class Element extends Node implements AttributeChangeObserver
         return $this->attributeList->getAttrValue(
             Utils::DOMString($localName),
             $namespace
+        );
+    }
+
+    /**
+     * Either adds a new attribute to the Element's attribute list or it
+     * modifies the value of an already existing attribute with the the same
+     * name.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-element-setattribute
+     *
+     * @param string $qualifiedName The name of the attribute.
+     * @param string $value         The value of the attribute.
+     *
+     * @return void
+     */
+    public function setAttribute($qualifiedName, $value)
+    {
+        $qualifiedName = Utils::DOMString($qualifiedName);
+
+        // If qualifiedName does not match the Name production in XML,
+        // throw an InvalidCharacterError exception.
+        if (!\preg_match(Namespaces::NAME_PRODUCTION, $qualifiedName)) {
+            throw new InvalidCharacterError();
+        }
+
+        if ($this->namespaceURI === Namespaces::HTML
+            && $this->nodeDocument instanceof HTMLDocument
+        ) {
+            $qualifiedName = Utils::toASCIILowercase($qualifiedName);
+        }
+
+        $attribute = null;
+
+        foreach ($this->attributeList as $attr) {
+            if ($attr->name === $qualifiedName) {
+                $attribute = $attr;
+                break;
+            }
+        }
+
+        if (!$attribute) {
+            $attribute = new Attr($qualifiedName, Utils::DOMString($value));
+            $attribute->setNodeDocument($this->nodeDocument);
+            $this->attributeList->append($attribute);
+            return;
+        }
+
+        $this->attributeList->change(
+            $attribute,
+            Utils::DOMString($value)
+        );
+    }
+
+    /**
+     * Either appends a new attribute or modifies the value of an existing
+     * attribute with the given namespace and name.
+     *
+     * @param ?string $namespace The namespaceURI of the attribute.
+     * @param string  $name      The name of the attribute.
+     * @param string  $value     The value of the attribute.
+     *
+     * @return void
+     */
+    public function setAttributeNS(?string $namespace, $name, $value)
+    {
+        list(
+            $namespace,
+            $prefix,
+            $localName
+        ) = Namespaces::validateAndExtract(
+            $namespace,
+            Utils::DOMString($name)
+        );
+
+        $this->attributeList->setAttrValue(
+            $localName,
+            $value,
+            $prefix,
+            $namespace
+        );
+    }
+
+    /**
+     * Removes an attribute with the specified name from the Element's attribute
+     * list.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-element-removeattribute
+     *
+     * @param string $name The attributes name.
+     *
+     * @return void
+     */
+    public function removeAttribute($name)
+    {
+        $this->attributeList->removeAttrByName($name);
+    }
+
+    /**
+     * Removes the attribute with the given namespace and local name from the
+     * Element's attribute list.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-element-hasattributens
+     *
+     * @param ?string $namespace The namespaceURI of the attribute to be removed.
+     * @param string  $localName The localName of the attribute to be removed.
+     *
+     * @return void
+     */
+    public function removeAttributeNS(?string $namespace, $localName)
+    {
+        $this->attributeList->removeAttrByNamespaceAndLocalName(
+            $namespace,
+            $localName
         );
     }
 
@@ -495,14 +531,96 @@ class Element extends Node implements AttributeChangeObserver
     }
 
     /**
-     * Returns true if there are attributes present in the Element's attribute
-     * list, otherwise false.
+     * Retrieves the attribute node with the given name, if any.
      *
-     * @return bool
+     * @see https://dom.spec.whatwg.org/#dom-element-getattributenode
+     *
+     * @param string $name The name of the attribute that is to be retrieved.
+     *
+     * @return \Rowbot\DOM\Attr|null
      */
-    public function hasAttributes(): bool
+    public function getAttributeNode($name): ?Attr
     {
-        return !$this->attributeList->isEmpty();
+        return $this->attributeList->getAttrByName(Utils::DOMString($name));
+    }
+
+    /**
+     * Retrieves the attribute node with the given namespace and local name, if
+     * any.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-element-getattributenodens
+     *
+     * @param ?string $namespace The namespaceURI of the attribute node to be retrieved.
+     * @param string  $localName The localName of the attribute node to be retrieved.
+     *
+     * @return \Rowbot\DOM\Attr|null
+     */
+    public function getAttributeNodeNS(?string $namespace, $localName): ?Attr
+    {
+        return $this->attributeList->getAttrByNamespaceAndLocalName(
+            $namespace,
+            Utils::DOMString($localName)
+        );
+    }
+
+    /**
+     * Appends the given attribute to the Element's attribute list.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-element-setattributenode
+     *
+     * @param \Rowbot\DOM\Attr $attr The attribute to be appended.
+     *
+     * @return \Rowbot\DOM\Attr|null
+     */
+    public function setAttributeNode(Attr $attr)
+    {
+        return $this->attributeList->setAttr($attr);
+    }
+
+    /**
+     * Appends the given namespaced attribute to the Element's attribute list.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-element-setattributenodens
+     *
+     * @param \Rowbot\DOM\Attr $attr The namespaced attribute to be appended.
+     *
+     * @return \Rowbot\DOM\Attr|null
+     */
+    public function setAttributeNodeNS(Attr $attr)
+    {
+        return $this->attributeList->setAttr($attr);
+    }
+
+    /**
+     * Removes the given attribute from the Element's attribute list.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-element-removeattributenode
+     *
+     * @param \Rowbot\DOM\Attr $attr The attribute to be removed.
+     *
+     * @return \Rowbot\DOM\Attr The Attr node that was removed.
+     *
+     * @throws \Rowbot\DOM\Exception\NotFoundError
+     */
+    public function removeAttributeNode(Attr $attr)
+    {
+        if (!$this->attributeList->contains($attr)) {
+            throw new NotFoundError();
+        }
+
+        $this->attributeList->remove($attr);
+
+        return $attr;
+    }
+
+    public function closest($selectorRule)
+    {
+        // TODO
+    }
+
+    public function matches($selectorRule)
+    {
+        // TODO
     }
 
     /**
@@ -522,6 +640,33 @@ class Element extends Node implements AttributeChangeObserver
     public function insertAdjacentElement(string $where, self $element)
     {
         return self::insertAdjacent($this, $where, $element);
+    }
+
+    /**
+     * Inserts plain text adjacent to the current element.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-element-insertadjacenttext
+     *
+     * @param string $where The position relative to this node. Possible values are:
+     *                          - beforebegin - Inserts an element as this element's previous sibling.
+     *                          - afterend - Inserts an element as this element's next sibling.
+     *                          - afterbegin - Inserts an element as this element's first child.
+     *                          - beforeend - Inserts an element as this element's last child.
+     *
+     * @param string $data  The text to be inserted.
+     *
+     * @return void
+     */
+    public function insertAdjacentText(string $where, $data)
+    {
+        $text = new Text($data);
+        $text->nodeDocument = $this->nodeDocument;
+
+        try {
+            self::insertAdjacent($this, $where, $text);
+        } catch (DOMException $e) {
+            throw $e;
+        }
     }
 
     /**
@@ -616,237 +761,15 @@ class Element extends Node implements AttributeChangeObserver
     }
 
     /**
-     * Inserts plain text adjacent to the current element.
+     * Returns the element's internal attribute list.
      *
-     * @see https://dom.spec.whatwg.org/#dom-element-insertadjacenttext
+     * @internal
      *
-     * @param string $where The position relative to this node. Possible values are:
-     *                          - beforebegin - Inserts an element as this element's previous sibling.
-     *                          - afterend - Inserts an element as this element's next sibling.
-     *                          - afterbegin - Inserts an element as this element's first child.
-     *                          - beforeend - Inserts an element as this element's last child.
-     *
-     * @param string $data  The text to be inserted.
-     *
-     * @return void
+     * @return \Rowbot\DOM\AttributeList
      */
-    public function insertAdjacentText(string $where, $data)
+    public function getAttributeList()
     {
-        $text = new Text($data);
-        $text->nodeDocument = $this->nodeDocument;
-
-        try {
-            self::insertAdjacent($this, $where, $text);
-        } catch (DOMException $e) {
-            throw $e;
-        }
-    }
-
-    public function matches($selectorRule)
-    {
-        // TODO
-    }
-
-    /**
-     * Removes an attribute with the specified name from the Element's attribute
-     * list.
-     *
-     * @see https://dom.spec.whatwg.org/#dom-element-removeattribute
-     *
-     * @param string $name The attributes name.
-     *
-     * @return void
-     */
-    public function removeAttribute($name)
-    {
-        $this->attributeList->removeAttrByName($name);
-    }
-
-    /**
-     * Removes the given attribute from the Element's attribute list.
-     *
-     * @see https://dom.spec.whatwg.org/#dom-element-removeattributenode
-     *
-     * @param \Rowbot\DOM\Attr $attr The attribute to be removed.
-     *
-     * @return \Rowbot\DOM\Attr The Attr node that was removed.
-     *
-     * @throws \Rowbot\DOM\Exception\NotFoundError
-     */
-    public function removeAttributeNode(Attr $attr)
-    {
-        if (!$this->attributeList->contains($attr)) {
-            throw new NotFoundError();
-        }
-
-        $this->attributeList->remove($attr);
-
-        return $attr;
-    }
-
-    /**
-     * Removes the attribute with the given namespace and local name from the
-     * Element's attribute list.
-     *
-     * @see https://dom.spec.whatwg.org/#dom-element-hasattributens
-     *
-     * @param ?string $namespace The namespaceURI of the attribute to be removed.
-     * @param string  $localName The localName of the attribute to be removed.
-     *
-     * @return void
-     */
-    public function removeAttributeNS(?string $namespace, $localName)
-    {
-        $this->attributeList->removeAttrByNamespaceAndLocalName(
-            $namespace,
-            $localName
-        );
-    }
-
-    /**
-     * Either adds a new attribute to the Element's attribute list or it
-     * modifies the value of an already existing attribute with the the same
-     * name.
-     *
-     * @see https://dom.spec.whatwg.org/#dom-element-setattribute
-     *
-     * @param string $qualifiedName The name of the attribute.
-     * @param string $value         The value of the attribute.
-     *
-     * @return void
-     */
-    public function setAttribute($qualifiedName, $value)
-    {
-        $qualifiedName = Utils::DOMString($qualifiedName);
-
-        // If qualifiedName does not match the Name production in XML,
-        // throw an InvalidCharacterError exception.
-        if (!\preg_match(Namespaces::NAME_PRODUCTION, $qualifiedName)) {
-            throw new InvalidCharacterError();
-        }
-
-        if ($this->namespaceURI === Namespaces::HTML
-            && $this->nodeDocument instanceof HTMLDocument
-        ) {
-            $qualifiedName = Utils::toASCIILowercase($qualifiedName);
-        }
-
-        $attribute = null;
-
-        foreach ($this->attributeList as $attr) {
-            if ($attr->name === $qualifiedName) {
-                $attribute = $attr;
-                break;
-            }
-        }
-
-        if (!$attribute) {
-            $attribute = new Attr($qualifiedName, Utils::DOMString($value));
-            $attribute->setNodeDocument($this->nodeDocument);
-            $this->attributeList->append($attribute);
-            return;
-        }
-
-        $this->attributeList->change(
-            $attribute,
-            Utils::DOMString($value)
-        );
-    }
-
-    /**
-     * Appends the given attribute to the Element's attribute list.
-     *
-     * @see https://dom.spec.whatwg.org/#dom-element-setattributenode
-     *
-     * @param \Rowbot\DOM\Attr $attr The attribute to be appended.
-     *
-     * @return \Rowbot\DOM\Attr|null
-     */
-    public function setAttributeNode(Attr $attr)
-    {
-        return $this->attributeList->setAttr($attr);
-    }
-
-    /**
-     * Appends the given namespaced attribute to the Element's attribute list.
-     *
-     * @see https://dom.spec.whatwg.org/#dom-element-setattributenodens
-     *
-     * @param \Rowbot\DOM\Attr $attr The namespaced attribute to be appended.
-     *
-     * @return \Rowbot\DOM\Attr|null
-     */
-    public function setAttributeNodeNS(Attr $attr)
-    {
-        return $this->attributeList->setAttr($attr);
-    }
-
-    /**
-     * Either appends a new attribute or modifies the value of an existing
-     * attribute with the given namespace and name.
-     *
-     * @param ?string $namespace The namespaceURI of the attribute.
-     * @param string  $name      The name of the attribute.
-     * @param string  $value     The value of the attribute.
-     *
-     * @return void
-     */
-    public function setAttributeNS(?string $namespace, $name, $value)
-    {
-        list(
-            $namespace,
-            $prefix,
-            $localName
-        ) = Namespaces::validateAndExtract(
-            $namespace,
-            Utils::DOMString($name)
-        );
-
-        $this->attributeList->setAttrValue(
-            $localName,
-            $value,
-            $prefix,
-            $namespace
-        );
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getLength(): int
-    {
-        return count($this->childNodes);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected function getNodeName(): string
-    {
-        return $this->getTagName();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected function getNodeValue(): ?string
-    {
-        return null;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected function getTextContent(): string
-    {
-        $tw = new TreeWalker($this, NodeFilter::SHOW_TEXT);
-        $data = '';
-
-        while (($node = $tw->nextNode())) {
-            $data .= $node->data;
-        }
-
-        return $data;
+        return $this->attributeList;
     }
 
     /**
@@ -941,6 +864,31 @@ class Element extends Node implements AttributeChangeObserver
     }
 
     /**
+     * Returns an array of Elements with the specified tagName that are
+     * immediate children of the parent.
+     *
+     * @param string $tagName The tagName to search for.
+     *
+     * @return \Rowbot\DOM\Element\Element[] A list of Elements with the specified tagName.
+     */
+    protected function shallowGetElementsByTagName($tagName)
+    {
+        $collection = [];
+        $node = $this->childNodes->first();
+        $tagName = strtoupper($tagName);
+
+        while ($node) {
+            if ($node->tagName === $tagName) {
+                $collection[] = $node;
+            }
+
+            $node = $node->nextElementSibling;
+        }
+
+        return $collection;
+    }
+
+    /**
      * Resolves a URL to the absolute URL that it implies.
      *
      * @see https://html.spec.whatwg.org/multipage/infrastructure.html#parse-a-url
@@ -999,6 +947,83 @@ class Element extends Node implements AttributeChangeObserver
     /**
      * {@inheritDoc}
      */
+    public function cloneNodeInternal(
+        Document $document = null,
+        bool $cloneChildren = false
+    ): Node {
+        $document = $document ?: $this->getNodeDocument();
+        $copy = ElementFactory::create(
+            $document,
+            $this->localName,
+            $this->namespaceURI,
+            $this->prefix
+        );
+
+        foreach ($this->attributeList as $attr) {
+            $copyAttribute = $attr->cloneNodeInternal();
+            $copy->attributeList->append($copyAttribute);
+        }
+
+        $this->postCloneNode($copy, $document, $cloneChildren);
+
+        return $copy;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function onAttributeChanged(
+        Element $element,
+        $localName,
+        $oldValue,
+        $value,
+        $namespace
+    ): void {
+        // Do nothing.
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getLength(): int
+    {
+        return count($this->childNodes);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function getNodeName(): string
+    {
+        return $this->getTagName();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function getNodeValue(): ?string
+    {
+        return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function getTextContent(): string
+    {
+        $tw = new TreeWalker($this, NodeFilter::SHOW_TEXT);
+        $data = '';
+
+        while (($node = $tw->nextNode())) {
+            $data .= $node->data;
+        }
+
+        return $data;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     protected function setNodeValue($newValue): void
     {
         // Do nothing.
@@ -1018,30 +1043,5 @@ class Element extends Node implements AttributeChangeObserver
         }
 
         $this->replaceAllNodes($node);
-    }
-
-    /**
-     * Returns an array of Elements with the specified tagName that are
-     * immediate children of the parent.
-     *
-     * @param string $tagName The tagName to search for.
-     *
-     * @return \Rowbot\DOM\Element\Element[] A list of Elements with the specified tagName.
-     */
-    protected function shallowGetElementsByTagName($tagName)
-    {
-        $collection = [];
-        $node = $this->childNodes->first();
-        $tagName = strtoupper($tagName);
-
-        while ($node) {
-            if ($node->tagName === $tagName) {
-                $collection[] = $node;
-            }
-
-            $node = $node->nextElementSibling;
-        }
-
-        return $collection;
     }
 }
