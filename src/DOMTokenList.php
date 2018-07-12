@@ -478,10 +478,10 @@ final class DOMTokenList implements
      */
     public function onAttributeChanged(
         Element $element,
-        $localName,
-        $oldValue,
-        $value,
-        $namespace
+        string $localName,
+        ?string $oldValue,
+        ?string $value,
+        ?string $namespace
     ): void {
         if ($localName === $this->attrLocalName && $namespace === null) {
             $this->tokens->clear();

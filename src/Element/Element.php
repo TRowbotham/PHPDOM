@@ -1024,10 +1024,10 @@ class Element extends Node implements AttributeChangeObserver
      */
     public function onAttributeChanged(
         Element $element,
-        $localName,
-        $oldValue,
-        $value,
-        $namespace
+        string $localName,
+        ?string $oldValue,
+        ?string $value,
+        ?string $namespace
     ): void {
         // We currently don't do anything special with the element's ID.
         if ($localName === 'id'

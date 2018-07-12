@@ -73,10 +73,10 @@ class HTMLBaseElement extends HTMLElement
      */
     public function onAttributeChanged(
         Element $element,
-        $localName,
-        $oldValue,
-        $value,
-        $namespace
+        string $localName,
+        ?string $oldValue,
+        ?string $value,
+        ?string $namespace
     ): void {
         if ($localName === 'href' &&
             $namespace === null
