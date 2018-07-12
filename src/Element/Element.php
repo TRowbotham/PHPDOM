@@ -907,7 +907,7 @@ class Element extends Node implements AttributeChangeObserver
             return $element->parentNode->preinsertNode(
                 $node,
                 $element->nextSibling
-            )
+            );
         }
 
         throw new SyntaxError();
