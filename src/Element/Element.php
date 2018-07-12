@@ -649,9 +649,9 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @return ?self
      */
-    public function insertAdjacentElement(string $where, self $element)
+    public function insertAdjacentElement(string $where, self $element): ?self
     {
-        return self::insertAdjacent($this, $where, $element);
+        return $this->insertAdjacent($this, $where, $element);
     }
 
     /**
@@ -669,16 +669,11 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @return void
      */
-    public function insertAdjacentText(string $where, $data)
+    public function insertAdjacentText(string $where, string $data): void
     {
         $text = new Text($data);
-        $text->nodeDocument = $this->nodeDocument;
-
-        try {
-            self::insertAdjacent($this, $where, $text);
-        } catch (DOMException $e) {
-            throw $e;
-        }
+        $text->setNodeDocument($this->nodeDocument);
+        $this->insertAdjacent($this, $where, $text);
     }
 
     /**
@@ -697,10 +692,10 @@ class Element extends Node implements AttributeChangeObserver
      * will wish to use template.content.insertAdjacentHTML instead of directly
      * manipulating the child nodes of a template element.
      *
-     * @see https://w3c.github.io/DOM-Parsing/#dom-element-insertadjacenthtml
+     * @see https://w3c.github.io/DOM-Parsing/#dfn-insertadjacenthtml
      *
      * @param string $position One of the types listed above.
-     * @param string $text The markup text to parse and subsequently, insert relative to this element.
+     * @param string $text     The markup text to parse and subsequently, insert relative to this element.
      *
      * @return void
      *
@@ -710,9 +705,9 @@ class Element extends Node implements AttributeChangeObserver
      *                                                          possible, such as trying to insert elements after the
      *                                                          document.
      */
-    public function insertAdjacentHTML(string $position, $text)
+    public function insertAdjacentHTML(string $position, string $text): void
     {
-        $position = mb_strtolower($position);
+        $position = Utils::toASCIILowercase($position);
 
         if ($position === 'beforebegin' || $position === 'afterend') {
             // Let context be the context object's parent.
@@ -720,7 +715,7 @@ class Element extends Node implements AttributeChangeObserver
 
             // If context is null or a Document, throw a
             // "NoModificationAllowedError" DOMException.
-            if (!$context || $context instanceof Document) {
+            if ($context === null || $context instanceof Document) {
                 throw new NoModificationAllowedError();
             }
         } elseif ($position === 'afterbegin' || $position === 'beforeend') {
@@ -736,13 +731,13 @@ class Element extends Node implements AttributeChangeObserver
         // namespace is the HTML namespace. Let context be a new Element with
         // "body" as its local name, the HTML namespace as its namespace, and
         // the context object's node document as its node document.
-        if (!($context instanceof Element)
-            || ($context->ownerDocument instanceof HTMLDocument
+        if (!$context instanceof self
+            || ($context->getNodeDocument() instanceof HTMLDocument
                 && $context->localName === 'html'
                 && $context->namespaceURI === Namespaces::HTML)
         ) {
             $context = self::create(
-                $this->ownerDocument,
+                $this->nodeDocument,
                 'body',
                 Namespaces::HTML
             );
@@ -750,25 +745,22 @@ class Element extends Node implements AttributeChangeObserver
 
         // Let fragment be the result of invoking the fragment parsing algorithm
         // with text as markup, and context as the context element.
-        $fragment = ParserFactory::parseFragment(
-            Utils::DOMString($text),
-            $context
-        );
+        $fragment = ParserFactory::parseFragment($text, $context);
 
         if ($position === 'beforebegin') {
             // Insert fragment into the context object's parent before the
             // context object.
-            $this->parentNode->insertNode($fragment, $this);
+            $this->parentNode->preinsertNode($fragment, $this);
         } elseif ($position === 'afterbegin') {
             // Insert fragment into the context object before its first child.
-            $this->insertNode($fragment, $this->firstChild);
+            $this->preinsertNode($fragment, $this->firstChild);
         } elseif ($position === 'beforeend') {
             // Append fragment to the context object.
-            $this->appendChild($fragment);
+            $this->preinsertNode($fragment, null);
         } elseif ($position === 'afterend') {
             // Insert fragment into the context object's parent before the
             // context object's next sibling.
-            $this->parentNode->insertNode($fragment, $this->nextSibling);
+            $this->parentNode->preinsertNode($fragment, $this->nextSibling);
         }
     }
 
@@ -813,66 +805,56 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @see https://dom.spec.whatwg.org/#insert-adjacent
      *
-     * @param \Rowbot\DOM\Element\Element $element The context element.
-     *
-     * @param string                      $where   The position relative to this node. Possible values are:
-     *                                                  - beforebegin - Inserts an element as this element's previous
-     *                                                                  sibling.
-     *                                                  - afterend - Inserts an element as this element's next sibling.
-     *                                                  - afterbegin - Inserts an element as this element's first child.
-     *                                                  - beforeend - Inserts an element as this element's last child.
-     * @param Node                        $node    The node to be inserted adjacent to the element.
+     * @param self             $element The context element.
+     * @param string           $where   The position relative to this node. Possible values are:
+     *                                      - beforebegin - Inserts an element as this element's previous sibling.
+     *                                      - afterend - Inserts an element as this element's next sibling.
+     *                                      - afterbegin - Inserts an element as this element's first child.
+     *                                      - beforeend - Inserts an element as this element's last child.
+     * @param \Rowbot\DOM\Node $node    The node to be inserted adjacent to the element.
      *
      * @return \Rowbot\DOM\Node|null
      *
      * @throws \Rowbot\DOM\Exception\SyntaxError If an invalid value for "where" is given.
      */
-    protected static function insertAdjacent(
+    private function insertAdjacent(
         Element $element,
         string $where,
         Node $node
-    ) {
-        switch (strtolower($where)) {
-            case 'beforebegin':
-                if (!$element->parentNode) {
-                    return null;
-                }
+    ): ?Node {
+        $where = Utils::toASCIILowercase($where);
 
-                return $element->parentNode->preinsertNode(
-                    $node,
-                    $element
-                );
+        if ($where === 'beforebegin') {
+            if ($element->parentNode === null) {
+                return null;
+            }
 
-                break;
-
-            case 'afterbegin':
-                return $element->preinsertNode(
-                    $node,
-                    $element->childNodes->first()
-                );
-
-                break;
-
-            case 'beforeend':
-                return $element->preinsertNode($node, null);
-
-                break;
-
-            case 'afterend':
-                if (!$element->parentNode) {
-                    return null;
-                }
-
-                return $element->parentNode->preinsertNode(
-                    $node,
-                    $element->nextSibling
-                );
-
-                break;
-
-            default:
-                throw new SyntaxError();
+            return $element->parentNode->preinsertNode($node, $element);
         }
+
+        if ($where === 'afterbegin') {
+            return $element->preinsertNode(
+                $node,
+                $element->childNodes->first()
+            );
+        }
+
+        if ($where === 'beforeend') {
+            return $element->preinsertNode($node, null);
+        }
+
+        if ($where === 'afterend') {
+            if ($element->parentNode === null) {
+                return null;
+            }
+
+            return $element->parentNode->preinsertNode(
+                $node,
+                $element->nextSibling
+            )
+        }
+
+        throw new SyntaxError();
     }
 
     /**
