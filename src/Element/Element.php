@@ -375,7 +375,16 @@ class Element extends Node implements AttributeChangeObserver
         ?string $namespace,
         string $localName
     ): ?string {
-        return $this->attributeList->getAttrValue($localName, $namespace);
+        $attr = $this->attributeList->getAttrByNamespaceAndLocalName(
+            $namespace,
+            $localName
+        );
+
+        if ($attr === null) {
+            return null;
+        }
+
+        return $attr->value;
     }
 
     /**
