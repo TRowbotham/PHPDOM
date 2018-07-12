@@ -334,7 +334,7 @@ class Element extends Node implements AttributeChangeObserver
         $list = [];
 
         foreach ($this->attributeList as $attr) {
-            $list[] = $attr->name;
+            $list[] = $attr->getQualifiedName();
         }
 
         return $list;
@@ -415,7 +415,7 @@ class Element extends Node implements AttributeChangeObserver
         $attribute = null;
 
         foreach ($this->attributeList as $attr) {
-            if ($attr->name === $qualifiedName) {
+            if ($attr->getQualifiedName() === $qualifiedName) {
                 $attribute = $attr;
                 break;
             }
@@ -529,7 +529,7 @@ class Element extends Node implements AttributeChangeObserver
         $forceIsGiven = func_num_args() > 1;
 
         foreach ($this->attributeList as $attr) {
-            if ($attr->name === $qualifiedName) {
+            if ($attr->getQualifiedName() === $qualifiedName) {
                 $attribute = $attr;
                 break;
             }

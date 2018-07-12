@@ -838,9 +838,9 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                 return false;
             }
         } elseif ($this instanceof Attr) {
-            if ($this->namespaceURI !== $otherNode->namespaceURI
-                || $this->localName !== $otherNode->localName
-                || $this->value !== $otherNode->value
+            if ($this->namespaceURI !== $otherNode->getNamespace()
+                || $this->localName !== $otherNode->getLocalName()
+                || $this->value !== $otherNode->getValue()
             ) {
                 return false;
             }
@@ -1063,8 +1063,10 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
         }
 
         foreach ($element->getAttributeList() as $attr) {
-            if ($attr->prefix === 'xmlns' && $attr->value === $namespace) {
-                return $attr->localName;
+            if ($attr->getPrefix() === 'xmlns'
+                && $attr->getValue() === $namespace
+            ) {
+                return $attr->getLocalName();
             }
         }
 

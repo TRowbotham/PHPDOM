@@ -124,26 +124,57 @@ class Attr extends Node
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the attribute's namespace.
+     *
+     * @internal
+     *
+     * @return ?string
      */
-    public function cloneNodeInternal(
-        Document $document = null,
-        bool $cloneChildren = false
-    ): Node {
-        $document = $document ?: $this->getNodeDocument();
-        $copy = new static(
-            $this->localName,
-            $this->value,
-            $this->namespaceURI,
-            $this->prefix
-        );
-        $this->postCloneNode($copy, $document, $cloneChildren);
-
-        return $copy;
+    public function getNamespace(): ?string
+    {
+        return $this->namespaceURI;
     }
 
     /**
-     * Set the attribute's owning Element.
+     * Returns the attribute's local name.
+     *
+     * @internal
+     *
+     * @return string
+     */
+    public function getLocalName(): string
+    {
+        return $this->localName;
+    }
+
+    /**
+     * Returns the attribute's qualified name.
+     *
+     * @internal
+     *
+     * @return string
+     */
+    public function getQualifiedName(): string
+    {
+        if ($this->prefix === null) {
+            return $this->localName;
+        }
+
+        return $this->prefix . ':' . $this->localName;
+    }
+
+    /**
+     * Returns the attribute's owner element.
+     *
+     * @return \Rowbot\DOM\Element\Element|null
+     */
+    public function getOwnerElement(): ?Element
+    {
+        return $this->ownerElement;
+    }
+
+    /**
+     * Set the attribute's owning element.
      *
      * @internal
      *
@@ -157,6 +188,18 @@ class Attr extends Node
     }
 
     /**
+     * Returns the attribute's value.
+     *
+     * @internal
+     *
+     * @return string
+     */
+    public function getValue(): string
+    {
+        return $this->value;
+    }
+
+    /**
      * Sets the attribute's value without running the change algorithm when an
      * owning element is present.
      *
@@ -166,7 +209,7 @@ class Attr extends Node
      *
      * @return void
      */
-    public function setValue($value): void
+    public function setValue(string $value): void
     {
         $this->value = $value;
     }
@@ -190,6 +233,25 @@ class Attr extends Node
         }
 
         $this->ownerElement->getAttributeList()->change($this, $value);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function cloneNodeInternal(
+        Document $document = null,
+        bool $cloneChildren = false
+    ): Node {
+        $document = $document ?: $this->getNodeDocument();
+        $copy = new static(
+            $this->localName,
+            $this->value,
+            $this->namespaceURI,
+            $this->prefix
+        );
+        $this->postCloneNode($copy, $document, $cloneChildren);
+
+        return $copy;
     }
 
     /**

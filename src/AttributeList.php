@@ -53,10 +53,10 @@ class AttributeList extends OrderedSet
         foreach ($this->observers as $observer) {
             $observer->onAttributeChanged(
                 $this->element,
-                $attribute->localName,
-                $attribute->value,
+                $attribute->getLocalName(),
+                $attribute->getValue(),
                 $value,
-                $attribute->namespaceURI
+                $attribute->getNamespace()
             );
         }
 
@@ -85,10 +85,10 @@ class AttributeList extends OrderedSet
         foreach ($this->observers as $observer) {
             $observer->onAttributeChanged(
                 $this->element,
-                $attribute->localName,
+                $attribute->getLocalName(),
                 null,
-                $attribute->value,
-                $attribute->namespaceURI
+                $attribute->getValue(),
+                $attribute->getNamespace()
             );
         }
 
@@ -118,10 +118,10 @@ class AttributeList extends OrderedSet
         foreach ($this->observers as $observer) {
             $observer->onAttributeChanged(
                 $this->element,
-                $attribute->localName,
-                $attribute->value,
+                $attribute->getLocalName(),
+                $attribute->getValue(),
                 null,
-                $attribute->namespaceURI
+                $attribute->getNamespace()
             );
         }
 
@@ -152,10 +152,10 @@ class AttributeList extends OrderedSet
         foreach ($this->observers as $observer) {
             $observer->onAttributeChanged(
                 $this->element,
-                $oldAttr->localName,
-                $oldAttr->value,
-                $newAttr->value,
-                $oldAttr->namespaceURI
+                $oldAttr->getLocalName(),
+                $oldAttr->getValue(),
+                $newAttr->getValue(),
+                $oldAttr->getNamespace()
             );
         }
 
@@ -182,7 +182,7 @@ class AttributeList extends OrderedSet
         }
 
         foreach ($this as $attribute) {
-            if ($attribute->name === $qualifiedName) {
+            if ($attribute->getQualifiedName() === $qualifiedName) {
                 return $attribute;
             }
         }
@@ -209,8 +209,8 @@ class AttributeList extends OrderedSet
         }
 
         foreach ($this as $attribute) {
-            if ($attribute->namespaceURI === $namespace
-                && $attribute->localName === $localName
+            if ($attribute->getNamespace() === $namespace
+                && $attribute->getLocalName() === $localName
             ) {
                 return $attribute;
             }
@@ -240,7 +240,7 @@ class AttributeList extends OrderedSet
             return '';
         }
 
-        return $attr->value;
+        return $attr->getValue();
     }
 
     /**
@@ -257,7 +257,7 @@ class AttributeList extends OrderedSet
      */
     public function setAttr(Attr $attr): ?Attr
     {
-        $owner = $attr->ownerElement;
+        $owner = $attr->getOwnerElement();
 
         if ($owner !== null && $owner !== $this->element) {
             throw new InUseAttributeError();

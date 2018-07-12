@@ -52,7 +52,7 @@ class FragmentSerializer implements FragmentSerializerInterface
                     foreach ($currentNode->getAttributeList() as $attr) {
                         $s .= ' ' . $this->serializeContentAttributeName($attr);
                         $s .= '="' . $this->escapeHTMLString(
-                            $attr->value,
+                            $attr->getValue(),
                             true
                         ) . '"';
                     }
@@ -150,18 +150,18 @@ class FragmentSerializer implements FragmentSerializerInterface
      */
     private function serializeContentAttributeName(Attr $attr): string
     {
-        $namespace = $attr->namespaceURI;
+        $namespace = $attr->getNamespace();
 
         if ($namespace === null) {
-            return $attr->localName;
+            return $attr->getLocalName();
         }
 
         if ($namespace === Namespaces::XML) {
-            return 'xml:' . $attr->localName;
+            return 'xml:' . $attr->getLocalName();
         }
 
         if ($namespace === Namespaces::XMLNS) {
-            $localName = $attr->localName;
+            $localName = $attr->getLocalName();
 
             if ($localName === 'xmlns') {
                 return 'xmlns';
@@ -171,9 +171,9 @@ class FragmentSerializer implements FragmentSerializerInterface
         }
 
         if ($namespace === Namespaces::XLINK) {
-            return 'xlink:' . $attr->localName;
+            return 'xlink:' . $attr->getLocalName();
         }
 
-        return $attr->name;
+        return $attr->getQualifiedName();
     }
 }
