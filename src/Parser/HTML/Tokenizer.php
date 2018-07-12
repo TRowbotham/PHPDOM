@@ -13,6 +13,20 @@ use Rowbot\DOM\Parser\Token\StartTagToken;
 use Rowbot\DOM\Parser\Token\Token;
 use Rowbot\DOM\Support\CodePointStream;
 
+use function array_key_exists;
+use function ctype_alnum;
+use function ctype_alpha;
+use function ctype_digit;
+use function ctype_lower;
+use function ctype_upper;
+use function ctype_xdigit;
+use function file_get_contents;
+use function intval;
+use function json_decode;
+use function preg_match;
+use function strcasecmp;
+use function strtolower;
+
 class Tokenizer
 {
     use TokenizerOrTreeBuilder;
@@ -235,7 +249,7 @@ class Tokenizer
                         // Switch to the end tag open state.
                         $this->state->tokenizerState =
                             TokenizerState::END_TAG_OPEN;
-                    } elseif (\ctype_alpha($c)) {
+                    } elseif (ctype_alpha($c)) {
                         // Create a new start tag token, set its tag name to the
                         // empty string. Reconsume in the tag name state.
                         $tagToken = new StartTagToken('');
@@ -265,7 +279,7 @@ class Tokenizer
                 case TokenizerState::END_TAG_OPEN:
                     $c = $this->inputStream->get();
 
-                    if (\ctype_alpha($c)) {
+                    if (ctype_alpha($c)) {
                         // Create a new end tag token, set its tag name to the
                         // empty string. Reconsume in the tag name state.
                         $tagToken = new EndTagToken('');
@@ -318,11 +332,11 @@ class Tokenizer
                         // Switch to the data state. Emit the current tag token.
                         $this->state->tokenizerState = TokenizerState::DATA;
                         yield $tagToken;
-                    } elseif (\ctype_upper($c)) {
+                    } elseif (ctype_upper($c)) {
                         // Append the lowercase version of the current input
                         // character (add 0x0020 to the character's code point)
                         // to the current tag token's tag name.
-                        $tagToken->tagName .= \strtolower($c);
+                        $tagToken->tagName .= strtolower($c);
                     } elseif ($c === "\0") {
                         // Parse error.
                         // Append a U+FFFD REPLACEMENT CHARACTER character to
@@ -366,7 +380,7 @@ class Tokenizer
                 case TokenizerState::RCDATA_END_TAG_OPEN:
                     $c = $this->inputStream->get();
 
-                    if (\ctype_alpha($c)) {
+                    if (ctype_alpha($c)) {
                         // Create a new end tag token, set its tag name to the
                         // empty string. Reconsume in the RCDATA end tag name
                         // state.
@@ -477,14 +491,14 @@ class Tokenizer
                             $this->state->tokenizerState =
                                 TokenizerState::RCDATA;
                         }
-                    } elseif (\ctype_upper($c)) {
+                    } elseif (ctype_upper($c)) {
                         // Append the lowercase version of the current input
                         // character (add 0x0020 to the character's code point)
                         // to the current tag token's tag name. Append the
                         // current input character to the temporary buffer.
-                        $tagToken->tagName .= \strtolower($c);
+                        $tagToken->tagName .= strtolower($c);
                         $buffer .= $c;
-                    } elseif (\ctype_lower($c)) {
+                    } elseif (ctype_lower($c)) {
                         // Append the current input character to the current tag
                         // token's tag name. Append the current input character
                         // to the temporary buffer.
@@ -536,7 +550,7 @@ class Tokenizer
                 case TokenizerState::RAWTEXT_END_TAG_OPEN:
                     $c = $this->inputStream->get();
 
-                    if (\ctype_alpha($c)) {
+                    if (ctype_alpha($c)) {
                         // Create a new end tag token, set its tag name to the
                         // empty string. Reconsume in the RAWTEXT end tag name
                         // state.
@@ -650,14 +664,14 @@ class Tokenizer
                             $this->state->tokenizerState =
                                 TokenizerState::RAWTEXT;
                         }
-                    } elseif (\ctype_upper($c)) {
+                    } elseif (ctype_upper($c)) {
                         // Append the lowercase version of the current input
                         // character (add 0x0020 to the character's code point)
                         // to the current tag token's tag name. Append the
                         // current input character to the temporary buffer.
-                        $tagToken->tagName .= \strtolower($c);
+                        $tagToken->tagName .= strtolower($c);
                         $buffer .= $c;
-                    } elseif (\ctype_lower($c)) {
+                    } elseif (ctype_lower($c)) {
                         // Append the current input character to the current tag
                         // token's tag name. Append the current input character
                         // to the temporary buffer.
@@ -718,7 +732,7 @@ class Tokenizer
                 case TokenizerState::SCRIPT_DATA_END_TAG_OPEN:
                     $c = $this->inputStream->get();
 
-                    if (\ctype_alpha($c)) {
+                    if (ctype_alpha($c)) {
                         // Create a new end tag token, set its tag name to the
                         // empty string. Reconsume in the script data end tag
                         // name state.
@@ -832,14 +846,14 @@ class Tokenizer
                             $this->state->tokenizerState =
                                 TokenizerState::SCRIPT_DATA;
                         }
-                    } elseif (\ctype_upper($c)) {
+                    } elseif (ctype_upper($c)) {
                         // Append the lowercase version of the current input
                         // character (add 0x0020 to the character's code point)
                         // to the current tag token's tag name. Append the
                         // current input character to the temporary buffer.
-                        $tagToken->tagName .= \strtolower($c);
+                        $tagToken->tagName .= strtolower($c);
                         $buffer .= $c;
-                    } elseif (\ctype_lower($c)) {
+                    } elseif (ctype_lower($c)) {
                         // Append the current input character to the current tag
                         // token's tag name. Append the current input character
                         // to the temporary buffer.
@@ -1018,7 +1032,7 @@ class Tokenizer
                         $buffer = '';
                         $this->state->tokenizerState =
                             TokenizerState::SCRIPT_DATA_ESCAPED_END_TAG_OPEN;
-                    } elseif (\ctype_alpha($c)) {
+                    } elseif (ctype_alpha($c)) {
                         // Set the temporary buffer to the empty string. Emit a
                         // U+003C LESS-THAN SIGN character token. Reconsume in
                         // the script data double escape start state.
@@ -1042,7 +1056,7 @@ class Tokenizer
                 case TokenizerState::SCRIPT_DATA_ESCAPED_END_TAG_OPEN:
                     $c = $this->inputStream->get();
 
-                    if (\ctype_alpha($c)) {
+                    if (ctype_alpha($c)) {
                         // Create a new end tag token. Reconsume in the script
                         // data escaped end tag name state. (Don't emit the
                         // token yet; further details will be filled in before
@@ -1157,14 +1171,14 @@ class Tokenizer
                             $this->state->tokenizerState =
                                 TokenizerState::SCRIPT_DATA;
                         }
-                    } elseif (\ctype_upper($c)) {
+                    } elseif (ctype_upper($c)) {
                         // Append the lowercase version of the current input
                         // character (add 0x0020 to the character's code point)
                         // to the current tag token's tag name. Append the
                         // current input character to the temporary buffer.
-                        $tagToken->tagName .= \strtolower($c);
+                        $tagToken->tagName .= strtolower($c);
                         $buffer .= $c;
-                    } elseif (\ctype_lower($c)) {
+                    } elseif (ctype_lower($c)) {
                         // Append the current input character to the current tag
                         // token's tag name. Append the current input character
                         // to the temporary buffer.
@@ -1216,14 +1230,14 @@ class Tokenizer
                         }
 
                         yield new CharacterToken($c);
-                    } elseif (\ctype_upper($c)) {
+                    } elseif (ctype_upper($c)) {
                         // Append the lowercase version of the current input
                         // character (add 0x0020 to the character's code point)
                         // to the temporary buffer. Emit the current input
                         // character as a character token.
-                        $buffer .= \strtolower($c);
+                        $buffer .= strtolower($c);
                         yield new CharacterToken($c);
-                    } elseif (\ctype_lower($c)) {
+                    } elseif (ctype_lower($c)) {
                         // Append the current input character to the temporary
                         // buffer. Emit the current input character as a
                         // character token.
@@ -1398,14 +1412,14 @@ class Tokenizer
                         }
 
                         yield new CharacterToken($c);
-                    } elseif (\ctype_upper($c)) {
+                    } elseif (ctype_upper($c)) {
                         // Append the lowercase version of the current input
                         // character (add 0x0020 to the character's code point)
                         // to the temporary buffer. Emit the current input
                         // character as a character token.
-                        $buffer .= \strtolower($c);
+                        $buffer .= strtolower($c);
                         yield new CharacterToken($c);
-                    } elseif (\ctype_lower($c)) {
+                    } elseif (ctype_lower($c)) {
                         // Append the current input character to the temporary
                         // buffer. Emit the current input character as a
                         // character token.
@@ -1481,11 +1495,11 @@ class Tokenizer
                         // Switch to the before attribute value state.
                         $state = TokenizerState::BEFORE_ATTRIBUTE_VALUE;
                         $this->state->tokenizerState = $state;
-                    } elseif (\ctype_upper($c)) {
+                    } elseif (ctype_upper($c)) {
                         // Append the lowercase version of the current input
                         // character (add 0x0020 to the character's code point)
                         // to the current attribute's name.
-                        $attributeToken->name .= \strtolower($c);
+                        $attributeToken->name .= strtolower($c);
                     } elseif ($c === "\0") {
                         // Parse error.
                         // Append a U+FFFD REPLACEMENT CHARACTER character to
@@ -1815,7 +1829,7 @@ class Tokenizer
                         $commentToken = new CommentToken('');
                         $this->state->tokenizerState =
                             TokenizerState::COMMENT_START;
-                    } elseif (\strcasecmp(
+                    } elseif (strcasecmp(
                         $this->inputStream->peek(7),
                         'DOCTYPE'
                     ) === 0) {
@@ -2147,13 +2161,13 @@ class Tokenizer
                         $c === "\x20"
                     ) {
                         // Ignore the character.
-                    } elseif (\ctype_upper($c)) {
+                    } elseif (ctype_upper($c)) {
                         // Create a new DOCTYPE token. Set the token's name to
                         // the lowercase version of the current input character
                         // (add 0x0020 to the character's code point). Switch to
                         // the DOCTYPE name state.
                         $doctypeToken = new DoctypeToken();
-                        $doctypeToken->name = \strtolower($c);
+                        $doctypeToken->name = strtolower($c);
                         $this->state->tokenizerState =
                             TokenizerState::DOCTYPE_NAME;
                     } elseif ($c === "\0") {
@@ -2211,11 +2225,11 @@ class Tokenizer
                         // token.
                         $this->state->tokenizerState = TokenizerState::DATA;
                         yield $doctypeToken;
-                    } elseif (\ctype_upper($c)) {
+                    } elseif (ctype_upper($c)) {
                         // Append the lowercase version of the current input
                         // character (add 0x0020 to the character's code point)
                         // to the current DOCTYPE token's name.
-                        $doctypeToken->name .= \strtolower($c);
+                        $doctypeToken->name .= strtolower($c);
                     } elseif ($c === "\0") {
                         // Parse error.
                         // Append a U+FFFD REPLACEMENT CHARACTER character to
@@ -2268,11 +2282,11 @@ class Tokenizer
                         // character are an ASCII case-insensitive match for the
                         // word "PUBLIC", then consume those characters and
                         // switch to the after DOCTYPE public keyword state.
-                        if (\strcasecmp($chars, 'PUBLIC') === 0) {
+                        if (strcasecmp($chars, 'PUBLIC') === 0) {
                             $this->inputStream->get(5);
                             $this->state->tokenizerState =
                                 TokenizerState::AFTER_DOCTYPE_PUBLIC_KEYWORD;
-                        } elseif (\strcasecmp($chars, 'SYSTEM') === 0) {
+                        } elseif (strcasecmp($chars, 'SYSTEM') === 0) {
                             // Otherwise, if the six characters starting from
                             // the current input character are an ASCII
                             // case-insensitive match for the word "SYSTEM",
@@ -2863,7 +2877,7 @@ class Tokenizer
                     $buffer = '&';
                     $c = $this->inputStream->get();
 
-                    if (\ctype_alnum($c)) {
+                    if (ctype_alnum($c)) {
                         $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::NAMED_CHARACTER_REFERENCE;
@@ -2891,7 +2905,7 @@ class Tokenizer
                     // Load the JSON file for the named character references
                     // table on demand.
                     if (!self::$namedCharacterReferences) {
-                        self::$namedCharacterReferences = \json_decode(\file_get_contents(
+                        self::$namedCharacterReferences = json_decode(file_get_contents(
                             self::NAMED_CHAR_REFERENCES_PATH
                         ), true);
                     }
@@ -2944,7 +2958,7 @@ class Tokenizer
                             case TokenizerState::ATTRIBUTE_VALUE_SINGLE_QUOTED:
                             case TokenizerState::ATTRIBUTE_VALUE_UNQUOTED:
                                 if ($char !== ';' &&
-                                    \preg_match(
+                                    preg_match(
                                         '/^[=A-Za-z0-9]$/',
                                         $this->inputStream->peek()
                                     )
@@ -3005,7 +3019,7 @@ class Tokenizer
                 case TokenizerState::AMBIGUOUS_AMPERSAND:
                     $c = $this->inputStream->get();
 
-                    if (\ctype_alnum($c)) {
+                    if (ctype_alnum($c)) {
                         switch ($returnState) {
                             case TokenizerState::ATTRIBUTE_VALUE_DOUBLE_QUOTED:
                             case TokenizerState::ATTRIBUTE_VALUE_SINGLE_QUOTED:
@@ -3055,7 +3069,7 @@ class Tokenizer
                 case TokenizerState::HEXADECIMAL_CHARACTER_REFERENCE_START:
                     $c = $this->inputStream->get();
 
-                    if (\ctype_xdigit($c)) {
+                    if (ctype_xdigit($c)) {
                         // Reconsume in the hexademical character reference
                         // state.
                         $this->inputStream->seek(-1);
@@ -3079,7 +3093,7 @@ class Tokenizer
                 case TokenizerState::DECIMAL_CHARACTER_REFERENCE_START:
                     $c = $this->inputStream->get();
 
-                    if (\ctype_digit($c)) {
+                    if (ctype_digit($c)) {
                         // Reconsume in the decimal character reference state.
                         $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
@@ -3102,29 +3116,29 @@ class Tokenizer
                 case TokenizerState::HEXADECIMAL_CHARACTER_REFERENCE:
                     $c = $this->inputStream->get();
 
-                    if (\ctype_upper($c)) {
+                    if (ctype_upper($c)) {
                         // Multiply the character reference code by 16. Add a
                         // numeric version of the current input character as a
                         // hexademical digit (subtract 0x0037 from the
                         // character's code point) to the character reference
                         // code.
                         $characterReferenceCode *= 16;
-                        $characterReferenceCode += \intval($c, 16);
-                    } elseif (\ctype_lower($c)) {
+                        $characterReferenceCode += intval($c, 16);
+                    } elseif (ctype_lower($c)) {
                         // Multiply the character reference code by 16. Add a
                         // numeric version of the current input character as a
                         // hexademical digit (subtract 0x0057 from the
                         // character's code point) to the character reference
                         // code.
                         $characterReferenceCode *= 16;
-                        $characterReferenceCode += \intval($c, 16);
-                    } elseif (\ctype_digit($c)) {
+                        $characterReferenceCode += intval($c, 16);
+                    } elseif (ctype_digit($c)) {
                         // Multiply the character reference code by 16.
                         // Add a numeric version of the current input character
                         // (subtract 0x0030 from the character's code point) to
                         // the character reference code.
                         $characterReferenceCode *= 16;
-                        $characterReferenceCode += \intval($c, 16);
+                        $characterReferenceCode += intval($c, 16);
                     } elseif ($c === ';') {
                         // Switch to the numeric character reference end state.
                         $this->state->tokenizerState =
@@ -3144,7 +3158,7 @@ class Tokenizer
                 case TokenizerState::DECIMAL_CHARACTER_REFERENCE:
                     $c = $this->inputStream->get();
 
-                    if (\ctype_digit($c)) {
+                    if (ctype_digit($c)) {
                         // Multiply the character reference code by 10. Add a
                         // numeric version of the current input character
                         // (subtract 0x0030 from the character's code point) to
@@ -3170,7 +3184,7 @@ class Tokenizer
                 case TokenizerState::NUMERIC_CHARACTER_REFERENCE_END:
                     // Can't use isset() here because PHP < 7 thinks it is
                     // operating on an expression.
-                    $mapCode = \array_key_exists(
+                    $mapCode = array_key_exists(
                         $characterReferenceCode,
                         self::CHARACTER_REFERENCE_MAP
                     );

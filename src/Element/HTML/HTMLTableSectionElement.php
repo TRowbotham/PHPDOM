@@ -5,6 +5,8 @@ use Rowbot\DOM\Element\ElementFactory;
 use Rowbot\DOM\Exception\IndexSizeError;
 use Rowbot\DOM\Namespaces;
 
+use function count;
+
 /**
  * Represents the HTML table sectioning elements <thead>, <tfoot>, and <tbody>.
  *
@@ -44,7 +46,7 @@ class HTMLTableSectionElement extends HTMLElement
     public function insertRow($index = -1)
     {
         $rows = $this->shallowGetElementsByTagName('tr');
-        $numRows = \count($rows);
+        $numRows = count($rows);
 
         if ($index < -1 || $index > $numRows) {
             throw new IndexSizeError();
@@ -76,7 +78,7 @@ class HTMLTableSectionElement extends HTMLElement
     {
         $rows = $this->shallowGetElementsByTagName('tr');
 
-        if ($index < 0 || $index >= \count($rows)) {
+        if ($index < 0 || $index >= count($rows)) {
             throw new IndexSizeError();
         }
 

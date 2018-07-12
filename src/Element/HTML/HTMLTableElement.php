@@ -4,6 +4,9 @@ namespace Rowbot\DOM\Element\HTML;
 use Rowbot\DOM\Exception\HierarchyRequestError;
 use Rowbot\DOM\Exception\IndexSizeError;
 
+use function array_merge;
+use function count;
+
 /**
  * Represents the HTML table element <table>.
  *
@@ -56,15 +59,15 @@ class HTMLTableElement extends HTMLElement
             case 'caption':
                 $caption = $this->shallowGetElementsByTagName('caption');
 
-                return \count($caption) ? $caption[0] : null;
+                return count($caption) ? $caption[0] : null;
 
             case 'rows':
                 $thead = $this->shallowGetElementsByTagName('thead');
                 $tfoot = $this->shallowGetElementsByTagName('tfoot');
                 $collection = array();
 
-                if (\count($thead)) {
-                    $collection = \array_merge(
+                if (count($thead)) {
+                    $collection = array_merge(
                         $collection,
                         $thead[0]->shallowGetElementsByTagName('tr')
                     );
@@ -76,15 +79,15 @@ class HTMLTableElement extends HTMLElement
                     } elseif ($node instanceof HTMLTableSectionElement
                         && $node->tagName === 'TBODY'
                     ) {
-                        $collection = \array_merge(
+                        $collection = array_merge(
                             $collection,
                             $node->shallowGetElementsByTagName('tr')
                         );
                     }
                 }
 
-                if (\count($tfoot)) {
-                    \array_merge(
+                if (count($tfoot)) {
+                    array_merge(
                         $collection,
                         $tfoot[0]->shallowGetElementsByTagName('tr')
                     );
@@ -98,12 +101,12 @@ class HTMLTableElement extends HTMLElement
             case 'tFoot':
                 $tfoot = $this->shallowGetElementsByTagName('tfoot');
 
-                return \count($tfoot) ? $tfoot[0] : null;
+                return count($tfoot) ? $tfoot[0] : null;
 
             case 'tHead':
                 $thead = $this->shallowGetElementsByTagName('thead');
 
-                return \count($thead) ? $thead[0] : null;
+                return count($thead) ? $thead[0] : null;
 
             default:
                 return parent::__get($name);
@@ -284,7 +287,7 @@ class HTMLTableElement extends HTMLElement
     public function createTBody()
     {
         $tbodies = $this->shallowGetElementsByTagName('tbody');
-        $len = \count($tbodies);
+        $len = count($tbodies);
         $lastTbody = $len ? $tbodies[$len - 1]->nextSibling : null;
         $node = $this->nodeDocument->createElement('tbody');
         $this->insertBefore($node, $lastTbody);
@@ -309,7 +312,7 @@ class HTMLTableElement extends HTMLElement
     public function insertRow($index = -1)
     {
         $rows = $this->rows;
-        $numRows = \count($rows);
+        $numRows = count($rows);
 
         if ($index < -1 || $index > $numRows) {
             throw new IndexSizeError();
@@ -319,7 +322,7 @@ class HTMLTableElement extends HTMLElement
 
         if (!$numRows) {
             $tbodies = $this->shallowGetElementsByTagName('tbody');
-            $numTbodies = \count($tbodies);
+            $numTbodies = count($tbodies);
 
             if (!$tbodies) {
                 $tbody = $this->nodeDocument->createElement('tbody');
@@ -349,7 +352,7 @@ class HTMLTableElement extends HTMLElement
     public function deleteRow($index)
     {
         $rows = $this->rows;
-        $numRows = \count($rows);
+        $numRows = count($rows);
 
         if ($index == -1) {
             $index = $numRows - 1;

@@ -5,6 +5,10 @@ use Rowbot\DOM\Parser\Exception\ParserException;
 use Rowbot\DOM\Support\Stack;
 use SeekableIterator;
 
+use array_flip;
+use array_slice;
+use array_splice;
+
 abstract class ElementStack extends Stack implements SeekableIterator
 {
     public function __construct()
@@ -28,11 +32,11 @@ abstract class ElementStack extends Stack implements SeekableIterator
             return;
         }
 
-        $offset = \array_flip($this->keys)[$hash];
-        $this->map = \array_slice($this->map, 0, $offset, true)
+        $offset = array_flip($this->keys)[$hash];
+        $this->map = array_slice($this->map, 0, $offset, true)
             + [$newHash => $newItem]
-            + \array_slice($this->map, $offset, null, true);
-        \array_splice($this->keys, $offset, 0, $newHash);
+            + array_slice($this->map, $offset, null, true);
+        array_splice($this->keys, $offset, 0, $newHash);
         $this->length++;
     }
 
@@ -55,6 +59,6 @@ abstract class ElementStack extends Stack implements SeekableIterator
             return;
         }
 
-        $this->position = \array_flip($this->keys)[$hash];
+        $this->position = array_flip($this->keys)[$hash];
     }
 }

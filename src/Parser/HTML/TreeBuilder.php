@@ -55,6 +55,12 @@ use Rowbot\DOM\Parser\{
     Token\Token
 };
 
+use function count;
+use function is_string;
+use function preg_match;
+use function strcasecmp;
+use function stripos;
+
 class TreeBuilder
 {
     use ParserOrTreeBuilder;
@@ -286,83 +292,83 @@ class TreeBuilder
             if (!$this->document->isIframeSrcdoc() &&
                 ($aToken->getQuirksMode() === 'on' ||
                 $name !== 'html' ||
-                \strcasecmp($publicId, '-//W3O//DTD W3 HTML Strict 3.0//EN//') === 0 ||
-                \strcasecmp($publicId, '-/W3C/DTD HTML 4.0 Transitional/EN') === 0 ||
-                \strcasecmp($publicId, 'HTML') === 0 ||
-                \strcasecmp($systemId, 'http://www.ibm.com/data/dtd/v11/ibmxhtml1-transitional.dtd') === 0 ||
-                \stripos($publicId, '+//Silmaril//dtd html Pro v0r11 19970101//') === 0 ||
-                \stripos($publicId, '-//AS//DTD HTML 3.0 asWedit + extensions//') === 0 ||
-                \stripos($publicId, '-//AdvaSoft Ltd//DTD HTML 3.0 asWedit + extensions//') === 0 ||
-                \stripos($publicId, '-//IETF//DTD HTML 2.0 Level 1//') === 0 ||
-                \stripos($publicId, '-//IETF//DTD HTML 2.0 Level 2//') === 0 ||
-                \stripos($publicId, '-//IETF//DTD HTML 2.0 Strict Level 1//') === 0 ||
-                \stripos($publicId, '-//IETF//DTD HTML 2.0 Strict Level 2//') === 0 ||
-                \stripos($publicId, '-//IETF//DTD HTML 2.0 Strict//') === 0 ||
-                \stripos($publicId, '-//IETF//DTD HTML 2.0//') === 0 ||
-                \stripos($publicId, '-//IETF//DTD HTML 2.1E//') === 0 ||
-                \stripos($publicId, '-//IETF//DTD HTML 3.0//') === 0 ||
-                \stripos($publicId, '-//IETF//DTD HTML 3.2 Final//') === 0 ||
-                \stripos($publicId, '-//IETF//DTD HTML 3.2//') === 0 ||
-                \stripos($publicId, '-//IETF//DTD HTML 3//') === 0 ||
-                \stripos($publicId, '-//IETF//DTD HTML Level 0//') === 0 ||
-                \stripos($publicId, '-//IETF//DTD HTML Level 1//') === 0 ||
-                \stripos($publicId, '-//IETF//DTD HTML Level 2//') === 0 ||
-                \stripos($publicId, '-//IETF//DTD HTML Level 3//') === 0 ||
-                \stripos($publicId, '-//IETF//DTD HTML Strict Level 0//') === 0 ||
-                \stripos($publicId, '-//IETF//DTD HTML Strict Level 1//') === 0 ||
-                \stripos($publicId, '-//IETF//DTD HTML Strict Level 2//') === 0 ||
-                \stripos($publicId, '-//IETF//DTD HTML Strict Level 3//') === 0 ||
-                \stripos($publicId, '-//IETF//DTD HTML Strict//') === 0 ||
-                \stripos($publicId, '-//IETF//DTD HTML//') === 0 ||
-                \stripos($publicId, '-//Metrius//DTD Metrius Presentational//') === 0 ||
-                \stripos($publicId, '-//Microsoft//DTD Internet Explorer 2.0 HTML Strict//') === 0 ||
-                \stripos($publicId, '-//Microsoft//DTD Internet Explorer 2.0 HTML//') === 0 ||
-                \stripos($publicId, '-//Microsoft//DTD Internet Explorer 2.0 Tables//') === 0 ||
-                \stripos($publicId, '-//Microsoft//DTD Internet Explorer 3.0 HTML Strict//') === 0 ||
-                \stripos($publicId, '-//Microsoft//DTD Internet Explorer 3.0 HTML//') === 0 ||
-                \stripos($publicId, '-//Microsoft//DTD Internet Explorer 3.0 Tables//') === 0 ||
-                \stripos($publicId, '-//Netscape Comm. Corp.//DTD HTML//') === 0 ||
-                \stripos($publicId, '-//Netscape Comm. Corp.//DTD Strict HTML//') === 0 ||
-                \stripos($publicId, '-//O\'Reilly and Associates//DTD HTML 2.0//') === 0 ||
-                \stripos($publicId, '-//O\'Reilly and Associates//DTD HTML Extended 1.0//') === 0 ||
-                \stripos($publicId, '-//O\'Reilly and Associates//DTD HTML Extended Relaxed 1.0//') === 0 ||
-                \stripos($publicId, '-//SQ//DTD HTML 2.0 HoTMetaL + extensions//') === 0 ||
-                \stripos($publicId, '-//SoftQuad Software//DTD HoTMetaL PRO 6.0::19990601::extensions to HTML 4.0//') === 0 ||
-                \stripos($publicId, '-//SoftQuad//DTD HoTMetaL PRO 4.0::19971010::extensions to HTML 4.0//') === 0 ||
-                \stripos($publicId, '-//Spyglass//DTD HTML 2.0 Extended//') === 0 ||
-                \stripos($publicId, '-//Sun Microsystems Corp.//DTD HotJava HTML//') === 0 ||
-                \stripos($publicId, '-//Sun Microsystems Corp.//DTD HotJava Strict HTML//') === 0 ||
-                \stripos($publicId, '-//W3C//DTD HTML 3 1995-03-24//') === 0 ||
-                \stripos($publicId, '-//W3C//DTD HTML 3.2 Draft//') === 0 ||
-                \stripos($publicId, '-//W3C//DTD HTML 3.2 Final//') === 0 ||
-                \stripos($publicId, '-//W3C//DTD HTML 3.2//') === 0 ||
-                \stripos($publicId, '-//W3C//DTD HTML 3.2S Draft//') === 0 ||
-                \stripos($publicId, '-//W3C//DTD HTML 4.0 Frameset//') === 0 ||
-                \stripos($publicId, '-//W3C//DTD HTML 4.0 Transitional//') === 0 ||
-                \stripos($publicId, '-//W3C//DTD HTML Experimental 19960712//') === 0 ||
-                \stripos($publicId, '-//W3C//DTD HTML Experimental 970421//') === 0 ||
-                \stripos($publicId, '-//W3C//DTD W3 HTML//') === 0 ||
-                \stripos($publicId, '-//W3O//DTD W3 HTML 3.0//') === 0 ||
-                \stripos($publicId, '-//WebTechs//DTD Mozilla HTML 2.0//') === 0 ||
-                \stripos($publicId, '-//WebTechs//DTD Mozilla HTML//') === 0 ||
-                ($systemId === null && \stripos($publicId, '-//W3C//DTD HTML 4.01 Frameset//') === 0) ||
-                ($systemId === null && \stripos($publicId, '-//W3C//DTD HTML 4.01 Transitional//') === 0))
+                strcasecmp($publicId, '-//W3O//DTD W3 HTML Strict 3.0//EN//') === 0 ||
+                strcasecmp($publicId, '-/W3C/DTD HTML 4.0 Transitional/EN') === 0 ||
+                strcasecmp($publicId, 'HTML') === 0 ||
+                strcasecmp($systemId, 'http://www.ibm.com/data/dtd/v11/ibmxhtml1-transitional.dtd') === 0 ||
+                stripos($publicId, '+//Silmaril//dtd html Pro v0r11 19970101//') === 0 ||
+                stripos($publicId, '-//AS//DTD HTML 3.0 asWedit + extensions//') === 0 ||
+                stripos($publicId, '-//AdvaSoft Ltd//DTD HTML 3.0 asWedit + extensions//') === 0 ||
+                stripos($publicId, '-//IETF//DTD HTML 2.0 Level 1//') === 0 ||
+                stripos($publicId, '-//IETF//DTD HTML 2.0 Level 2//') === 0 ||
+                stripos($publicId, '-//IETF//DTD HTML 2.0 Strict Level 1//') === 0 ||
+                stripos($publicId, '-//IETF//DTD HTML 2.0 Strict Level 2//') === 0 ||
+                stripos($publicId, '-//IETF//DTD HTML 2.0 Strict//') === 0 ||
+                stripos($publicId, '-//IETF//DTD HTML 2.0//') === 0 ||
+                stripos($publicId, '-//IETF//DTD HTML 2.1E//') === 0 ||
+                stripos($publicId, '-//IETF//DTD HTML 3.0//') === 0 ||
+                stripos($publicId, '-//IETF//DTD HTML 3.2 Final//') === 0 ||
+                stripos($publicId, '-//IETF//DTD HTML 3.2//') === 0 ||
+                stripos($publicId, '-//IETF//DTD HTML 3//') === 0 ||
+                stripos($publicId, '-//IETF//DTD HTML Level 0//') === 0 ||
+                stripos($publicId, '-//IETF//DTD HTML Level 1//') === 0 ||
+                stripos($publicId, '-//IETF//DTD HTML Level 2//') === 0 ||
+                stripos($publicId, '-//IETF//DTD HTML Level 3//') === 0 ||
+                stripos($publicId, '-//IETF//DTD HTML Strict Level 0//') === 0 ||
+                stripos($publicId, '-//IETF//DTD HTML Strict Level 1//') === 0 ||
+                stripos($publicId, '-//IETF//DTD HTML Strict Level 2//') === 0 ||
+                stripos($publicId, '-//IETF//DTD HTML Strict Level 3//') === 0 ||
+                stripos($publicId, '-//IETF//DTD HTML Strict//') === 0 ||
+                stripos($publicId, '-//IETF//DTD HTML//') === 0 ||
+                stripos($publicId, '-//Metrius//DTD Metrius Presentational//') === 0 ||
+                stripos($publicId, '-//Microsoft//DTD Internet Explorer 2.0 HTML Strict//') === 0 ||
+                stripos($publicId, '-//Microsoft//DTD Internet Explorer 2.0 HTML//') === 0 ||
+                stripos($publicId, '-//Microsoft//DTD Internet Explorer 2.0 Tables//') === 0 ||
+                stripos($publicId, '-//Microsoft//DTD Internet Explorer 3.0 HTML Strict//') === 0 ||
+                stripos($publicId, '-//Microsoft//DTD Internet Explorer 3.0 HTML//') === 0 ||
+                stripos($publicId, '-//Microsoft//DTD Internet Explorer 3.0 Tables//') === 0 ||
+                stripos($publicId, '-//Netscape Comm. Corp.//DTD HTML//') === 0 ||
+                stripos($publicId, '-//Netscape Comm. Corp.//DTD Strict HTML//') === 0 ||
+                stripos($publicId, '-//O\'Reilly and Associates//DTD HTML 2.0//') === 0 ||
+                stripos($publicId, '-//O\'Reilly and Associates//DTD HTML Extended 1.0//') === 0 ||
+                stripos($publicId, '-//O\'Reilly and Associates//DTD HTML Extended Relaxed 1.0//') === 0 ||
+                stripos($publicId, '-//SQ//DTD HTML 2.0 HoTMetaL + extensions//') === 0 ||
+                stripos($publicId, '-//SoftQuad Software//DTD HoTMetaL PRO 6.0::19990601::extensions to HTML 4.0//') === 0 ||
+                stripos($publicId, '-//SoftQuad//DTD HoTMetaL PRO 4.0::19971010::extensions to HTML 4.0//') === 0 ||
+                stripos($publicId, '-//Spyglass//DTD HTML 2.0 Extended//') === 0 ||
+                stripos($publicId, '-//Sun Microsystems Corp.//DTD HotJava HTML//') === 0 ||
+                stripos($publicId, '-//Sun Microsystems Corp.//DTD HotJava Strict HTML//') === 0 ||
+                stripos($publicId, '-//W3C//DTD HTML 3 1995-03-24//') === 0 ||
+                stripos($publicId, '-//W3C//DTD HTML 3.2 Draft//') === 0 ||
+                stripos($publicId, '-//W3C//DTD HTML 3.2 Final//') === 0 ||
+                stripos($publicId, '-//W3C//DTD HTML 3.2//') === 0 ||
+                stripos($publicId, '-//W3C//DTD HTML 3.2S Draft//') === 0 ||
+                stripos($publicId, '-//W3C//DTD HTML 4.0 Frameset//') === 0 ||
+                stripos($publicId, '-//W3C//DTD HTML 4.0 Transitional//') === 0 ||
+                stripos($publicId, '-//W3C//DTD HTML Experimental 19960712//') === 0 ||
+                stripos($publicId, '-//W3C//DTD HTML Experimental 970421//') === 0 ||
+                stripos($publicId, '-//W3C//DTD W3 HTML//') === 0 ||
+                stripos($publicId, '-//W3O//DTD W3 HTML 3.0//') === 0 ||
+                stripos($publicId, '-//WebTechs//DTD Mozilla HTML 2.0//') === 0 ||
+                stripos($publicId, '-//WebTechs//DTD Mozilla HTML//') === 0 ||
+                ($systemId === null && stripos($publicId, '-//W3C//DTD HTML 4.01 Frameset//') === 0) ||
+                ($systemId === null && stripos($publicId, '-//W3C//DTD HTML 4.01 Transitional//') === 0))
             ) {
                 $this->document->setMode(DocumentMode::QUIRKS);
             } elseif (!$this->document->isIframeSrcdoc() &&
-                (\stripos(
+                (stripos(
                     $publicId,
                     '-//W3C//DTD XHTML 1.0 Frameset//'
                 ) === 0 ||
-                \stripos(
+                stripos(
                     $publicId,
                     '-//W3C//DTD XHTML 1.0 Transitional//'
                 ) === 0 ||
-                ($systemId !== null && \stripos(
+                ($systemId !== null && stripos(
                     $publicId,
                     '-//W3C//DTD HTML 4.01 Frameset//'
                 ) === 0) ||
-                ($systemId !== null && \stripos(
+                ($systemId !== null && stripos(
                     $publicId,
                     '-//W3C//DTD HTML 4.01 Transitional//'
                 ) === 0))
@@ -626,7 +632,7 @@ class TreeBuilder
             ) {
                 // TODO: change the encoding to the resulting encoding
             } elseif ($node->hasAttribute('http-equiv') &&
-                \strcasecmp(
+                strcasecmp(
                     $node->getAttribute('http-equiv'),
                     'Content-Type'
                 ) === 0 && $node->hasAttribute('content')
@@ -1060,7 +1066,7 @@ class TreeBuilder
             // or if there is a template element on the stack of open elements,
             // then ignore the token. (fragment case)
             if (!($this->openElements[1] instanceof HTMLBodyElement) ||
-                \count($this->openElements) == 1 ||
+                count($this->openElements) == 1 ||
                 $this->openElements->containsTemplateElement()
             ) {
                 // Fragment case
@@ -1090,7 +1096,7 @@ class TreeBuilder
             // If the stack of open elements has only one node on it, or if the
             // second element on the stack of open elements is not a body
             // element, then ignore the token. (fragment case)
-            $count = \count($this->openElements);
+            $count = count($this->openElements);
 
             if ($count == 1 ||
                 !($this->openElements[$count - 2] instanceof HTMLBodyElement)
@@ -1147,7 +1153,7 @@ class TreeBuilder
 
             foreach ($this->openElements as $el) {
                 if (!($el instanceof HTMLElement &&
-                    \preg_match($pattern, $el->localName))
+                    preg_match($pattern, $el->localName))
                 ) {
                     // Parse error.
                     break;
@@ -1180,7 +1186,7 @@ class TreeBuilder
 
             foreach ($this->openElements as $el) {
                 if (!($el instanceof HTMLElement &&
-                    \preg_match($pattern, $el->localName))
+                    preg_match($pattern, $el->localName))
                 ) {
                     // Parse error.
                     break;
@@ -1213,7 +1219,7 @@ class TreeBuilder
 
             foreach ($this->openElements as $el) {
                 if (!($el instanceof HTMLElement &&
-                    \preg_match($pattern, $el->localName))
+                    preg_match($pattern, $el->localName))
                 ) {
                     // Parse error.
                     break;
@@ -1226,7 +1232,7 @@ class TreeBuilder
             // Reprocess the token.
             $this->run($aToken);
         } elseif ($tokenType == Token::START_TAG_TOKEN &&
-            \preg_match(
+            preg_match(
                 '/^(address|article|aside|blockquote|center|details|dialog|' .
                 'dir|div|dl|fieldset|figcaption|figure|footer|header|hgroup|' .
                 'main|menu|nav|ol|p|section|summary|ul)$/',
@@ -1523,7 +1529,7 @@ class TreeBuilder
             // Set the frameset-ok flag to "not ok".
             $this->framesetOk = 'not ok';
         } elseif ($tokenType == Token::END_TAG_TOKEN &&
-            \preg_match(
+            preg_match(
                 '/^(address|article|aside|blockquote|button|center|details|' .
                 'dialog|dir|div|dl|fieldset|figcaption|figure|footer|header|' .
                 'hgroup|listing|main|menu|nav|ol|pre|section|summary|ul)$/',
@@ -2021,7 +2027,7 @@ class TreeBuilder
             }
 
             if (!$typeAttribute ||
-                ($typeAttribute && \strcasecmp(
+                ($typeAttribute && strcasecmp(
                     $typeAttribute->value,
                     'hidden'
                 ) !== 0)
@@ -2449,7 +2455,7 @@ class TreeBuilder
             $formattingElementIndex = $this->openElements->indexOf(
                 $formattingElement
             );
-            $count = \count($this->openElements);
+            $count = count($this->openElements);
 
             for ($i = $formattingElementIndex + 1; $i < $count; $i++) {
                 $current = $this->openElements[$i];
@@ -2856,7 +2862,7 @@ class TreeBuilder
             }
 
             if (!$typeAttr ||
-                ($typeAttr && \strcasecmp($typeAttr->value, 'hidden') !== 0)
+                ($typeAttr && strcasecmp($typeAttr->value, 'hidden') !== 0)
             ) {
                 // Parse error.
                 // Enable foster parenting, process the token using the rules
@@ -4270,7 +4276,7 @@ class TreeBuilder
             // Parse error.
             // Ignore the token.
         } elseif ($tokenType == Token::START_TAG_TOKEN &&
-            (\preg_match(
+            (preg_match(
                 '/^(b|big|blockquote|body|br|center|code|dd|div|dl|dt|em|' .
                 'embed|h[1-6]|head|hr|i|img|li|listing|menu|meta|nobr|ol|p|' .
                 'pre|ruby|s|small|span|strong|strike|sub|sup|table|tt|u|ul|' .
@@ -4698,7 +4704,7 @@ class TreeBuilder
         foreach ($aToken->attributes as $attr) {
             $name = $attr->name;
 
-            if (\preg_match(
+            if (preg_match(
                 '/^(xlink):(actuate|arcrole|href|role|show|title|type)$/',
                 $name,
                 $matches
@@ -4706,7 +4712,7 @@ class TreeBuilder
                 $attr->prefix = $matches[0][1];
                 $attr->name = $matches[0][2];
                 $attr->namespace = Namespaces::XLINK;
-            } elseif (\preg_match('/^(xml):(lang|space)$/', $name, $matches)) {
+            } elseif (preg_match('/^(xml):(lang|space)$/', $name, $matches)) {
                 $attr->prefix = $matches[0][1];
                 $attr->name = $matches[0][2];
                 $attr->namespace = Namespaces::XML;
@@ -4843,7 +4849,7 @@ class TreeBuilder
 
         foreach ($this->openElements as $currentNode) {
             if (!$currentNode instanceof HTMLElement ||
-                !\preg_match($pattern, $currentNode->localName)
+                !preg_match($pattern, $currentNode->localName)
             ) {
                 break;
             }
@@ -5000,7 +5006,7 @@ class TreeBuilder
         // Let data be the characters passed to the algorithm, or, if no
         // characters were explicitly specified, the character of the character
         // token being processed.
-        $data = \is_string($aData) ? $aData : $aData->data;
+        $data = is_string($aData) ? $aData : $aData->data;
 
         // Let the adjusted insertion location be the appropriate place for
         // inserting a node.
@@ -5234,8 +5240,8 @@ class TreeBuilder
 
             foreach ($token->attributes as $attr) {
                 if ($attr->name === 'encoding' &&
-                    (\strcasecmp($attr->value, 'text/html') ||
-                    \strcasecmp($attr->value, 'application/xhtml+xml'))
+                    (strcasecmp($attr->value, 'text/html') ||
+                    strcasecmp($attr->value, 'application/xhtml+xml'))
                 ) {
                     return true;
                 }
@@ -5466,7 +5472,7 @@ class TreeBuilder
             return;
         }
 
-        $cursor = \count($this->activeFormattingElements) - 1;
+        $cursor = count($this->activeFormattingElements) - 1;
 
         // If there are no entries before entry in the list of active formatting
         // elements, then jump to the step labeled create.

@@ -1,6 +1,20 @@
 <?php
 namespace Rowbot\DOM\Encoding;
 
+use function chr;
+use function class_exists;
+use function is_array;
+use function intval;
+use function mb_convert_encoding;
+use function mb_detect_order;
+use function mb_internal_encoding;
+use function mb_language;
+use function mb_strtolower;
+use function ord;
+use function strlen;
+use function trim;
+use function unpack;
+
 abstract class EncodingUtils
 {
     private static $mbDetectOrder = [
@@ -46,7 +60,7 @@ abstract class EncodingUtils
         if (!$BOMSeen) {
             $stream->prependData($buffer);
         } else {
-            $stream->prependData($buffer[\strlen($buffer) - 1]);
+            $stream->prependData($buffer[strlen($buffer) - 1]);
         }
 
         $output = new CodePointStream();
@@ -82,7 +96,7 @@ abstract class EncodingUtils
      */
     public static function getEncoding($label)
     {
-        switch (\trim(\mb_strtolower($label, 'utf-8'))) {
+        switch (trim(mb_strtolower($label, 'utf-8'))) {
             case 'unicode-1-1-utf-8':
             case 'utf-8':
             case 'utf8':
@@ -495,20 +509,20 @@ abstract class EncodingUtils
 
     public static function mb_html_entity_decode($string)
     {
-        $oldLang = \mb_language();
-        $oldInternalEnc = \mb_internal_encoding();
-        $oldDetectOrder = \mb_detect_order();
+        $oldLang = mb_language();
+        $oldInternalEnc = mb_internal_encoding();
+        $oldDetectOrder = mb_detect_order();
 
-        \mb_language('neutral');
-        \mb_internal_encoding('UTF-8');
-        \mb_detect_order(self::$mbDetectOrder);
+        mb_language('neutral');
+        mb_internal_encoding('UTF-8');
+        mb_detect_order(self::$mbDetectOrder);
 
-        $entity = \mb_convert_encoding($string, 'UTF-8', 'HTML-ENTITIES');
+        $entity = mb_convert_encoding($string, 'UTF-8', 'HTML-ENTITIES');
 
         // Restore original values
-        \mb_language($oldLang);
-        \mb_internal_encoding($oldInternalEnc);
-        \mb_detect_order($oldDetectOrder);
+        mb_language($oldLang);
+        mb_internal_encoding($oldInternalEnc);
+        mb_detect_order($oldDetectOrder);
 
         return $entity;
     }
@@ -516,32 +530,32 @@ abstract class EncodingUtils
     public static function mb_ord($string)
     {
         if (!isset(self::$useIntlChar)) {
-            self::$useIntlChar = \class_exists('\IntlChar');
+            self::$useIntlChar = class_exists('\IntlChar');
         }
 
         if (self::$useIntlChar) {
             return \IntlChar::ord($string);
         }
 
-        $oldLang = \mb_language();
-        $oldInternalEnc = \mb_internal_encoding();
-        $oldDetectOrder = \mb_detect_order();
+        $oldLang = mb_language();
+        $oldInternalEnc = mb_internal_encoding();
+        $oldDetectOrder = mb_detect_order();
 
-        \mb_language('neutral');
-        \mb_internal_encoding('UTF-8');
-        \mb_detect_order(self::$mbDetectOrder);
+        mb_language('neutral');
+        mb_internal_encoding('UTF-8');
+        mb_detect_order(self::$mbDetectOrder);
 
-        $result = \unpack(
+        $result = unpack(
             'N',
-            \mb_convert_encoding($string, 'UCS-4BE', 'UTF-8')
+            mb_convert_encoding($string, 'UCS-4BE', 'UTF-8')
         );
 
         // Restore original values
-        \mb_language($oldLang);
-        \mb_internal_encoding($oldInternalEnc);
-        \mb_detect_order($oldDetectOrder);
+        mb_language($oldLang);
+        mb_internal_encoding($oldInternalEnc);
+        mb_detect_order($oldDetectOrder);
 
-        if (\is_array($result) === true) {
+        if (is_array($result) === true) {
             return $result[1];
         }
     }
@@ -549,12 +563,12 @@ abstract class EncodingUtils
     public static function mb_chr($string)
     {
         if (!isset(self::$useIntlChar)) {
-            self::$useIntlChar = \class_exists('\IntlChar');
+            self::$useIntlChar = class_exists('\IntlChar');
         }
 
         return self::$useIntlChar ?
             \IntlChar::chr($string) :
-            self::mb_html_entity_decode('&#' . \intval($string) . ';');
+            self::mb_html_entity_decode('&#' . intval($string) . ';');
     }
 
     /**
@@ -638,15 +652,15 @@ abstract class EncodingUtils
      */
     protected static function charToCodePoint($char)
     {
-        $code = \ord($char[0]);
+        $code = ord($char[0]);
         if ($code < 128) {
             return $code;
         } elseif ($code < 224) {
-            return (($code - 192) * 64) + (\ord($char[1]) - 128);
+            return (($code - 192) * 64) + (ord($char[1]) - 128);
         } elseif ($code < 240) {
-            return (($code - 224) * 4096) + ((\ord($char[1]) - 128) * 64) + (\ord($char[2]) - 128);
+            return (($code - 224) * 4096) + ((ord($char[1]) - 128) * 64) + (ord($char[2]) - 128);
         } else {
-            return (($code - 240) * 262144) + ((\ord($char[1]) - 128) * 4096) + ((\ord($char[2]) - 128) * 64) + (\ord($char[3]) - 128);
+            return (($code - 240) * 262144) + ((ord($char[1]) - 128) * 4096) + ((ord($char[2]) - 128) * 64) + (ord($char[3]) - 128);
         }
     }
     /**
@@ -658,13 +672,13 @@ abstract class EncodingUtils
     protected static function codePointToChar($code)
     {
         if ($code <= 0x7F) {
-            return \chr($code);
+            return chr($code);
         } elseif ($code <= 0x7FF) {
-            return \chr(($code >> 6) + 192) . \chr(($code & 63) + 128);
+            return chr(($code >> 6) + 192) . chr(($code & 63) + 128);
         } elseif ($code <= 0xFFFF) {
-            return \chr(($code >> 12) + 224) . \chr((($code >> 6) & 63) + 128) . \chr(($code & 63) + 128);
+            return chr(($code >> 12) + 224) . chr((($code >> 6) & 63) + 128) . chr(($code & 63) + 128);
         } else {
-            return \chr(($code >> 18) + 240) . \chr((($code >> 12) & 63) + 128) . \chr((($code >> 6) & 63) + 128) . \chr(($code & 63) + 128);
+            return chr(($code >> 18) + 240) . chr((($code >> 12) & 63) + 128) . chr((($code >> 6) & 63) + 128) . chr(($code & 63) + 128);
         }
     }
 }

@@ -1,6 +1,8 @@
 <?php
 namespace Rowbot\DOM\Element\HTML;
 
+use function is_string;
+
 /**
  * Represents the HTML table header element <th>.
  *
@@ -53,7 +55,7 @@ class HTMLTableHeaderCellElement extends HTMLTableCellElement
     {
         switch ($name) {
             case 'abbr':
-                if (!\is_string($value)) {
+                if (!is_string($value)) {
                     break;
                 }
 
@@ -63,7 +65,7 @@ class HTMLTableHeaderCellElement extends HTMLTableCellElement
                 break;
 
             case 'scope':
-                if (!\is_string($value)) {
+                if (!is_string($value)) {
                     break;
                 }
 
@@ -73,7 +75,7 @@ class HTMLTableHeaderCellElement extends HTMLTableCellElement
                 break;
 
             case 'sorted':
-                if (!\is_string($value)) {
+                if (!is_string($value)) {
                     break;
                 }
 

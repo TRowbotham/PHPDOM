@@ -3,6 +3,8 @@ namespace Rowbot\DOM\Element\HTML;
 
 use Rowbot\DOM\DOMTokenList;
 
+use function is_int;
+
 /**
  * A common class from which the HTMLTableDataCellElement and
  * HTMLTableHeaderCellElement classes derive from.  The HTMLTableDataCellElement
@@ -74,7 +76,7 @@ class HTMLTableCellElement extends HTMLElement
     {
         switch ($name) {
             case 'colspan':
-                if (!\is_int((int)$value)) {
+                if (!is_int((int)$value)) {
                     break;
                 }
 
@@ -84,7 +86,7 @@ class HTMLTableCellElement extends HTMLElement
                 break;
 
             case 'rowspan':
-                if (!\is_int((int)$value)) {
+                if (!is_int((int)$value)) {
                     break;
                 }
 

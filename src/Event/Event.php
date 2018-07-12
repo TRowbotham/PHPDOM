@@ -2,6 +2,9 @@
 namespace Rowbot\DOM\Event;
 
 use Rowbot\DOM\Utils;
+use SplDoublyLinkedList;
+
+use function microtime;
 
 /**
  * Represents an event which can be dispatched to different objects to signal
@@ -77,9 +80,9 @@ class Event
         $this->eventPhase = self::NONE;
         $this->flags |= EventFlags::INITIALIZED;
         $this->isTrusted = false;
-        $this->path = new \SplDoublyLinkedList();
+        $this->path = new SplDoublyLinkedList();
         $this->target = null;
-        $this->timeStamp = \microtime();
+        $this->timeStamp = microtime();
         $this->type = $type;
     }
 
@@ -150,8 +153,8 @@ class Event
         // is currently in the capturing phase.
         $path = clone $this->path;
         $path->setIteratorMode(
-            \SplDoublyLinkedList::IT_MODE_FIFO |
-            \SplDoublyLinkedList::IT_MODE_KEEP
+            SplDoublyLinkedList::IT_MODE_FIFO |
+            SplDoublyLinkedList::IT_MODE_KEEP
         );
 
         foreach ($path as $tuple) {
@@ -273,7 +276,7 @@ class Event
      */
     public function emptyPath()
     {
-        $this->path = new \SplDoublyLinkedList();
+        $this->path = new SplDoublyLinkedList();
     }
 
     /**

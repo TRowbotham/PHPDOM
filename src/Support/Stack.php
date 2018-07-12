@@ -3,6 +3,8 @@ namespace Rowbot\DOM\Support;
 
 use Exception;
 
+use function array_pop;
+
 class Stack extends OrderedSet
 {
     public function __construct()
@@ -27,10 +29,10 @@ class Stack extends OrderedSet
             return;
         }
 
-        \array_pop($this->keys);
+        array_pop($this->keys);
         $this->length--;
 
-        return \array_pop($this->map);
+        return array_pop($this->map);
     }
 
     public function top()

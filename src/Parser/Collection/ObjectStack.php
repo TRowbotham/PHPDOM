@@ -9,6 +9,10 @@ use Rowbot\DOM\Parser\Collection\Exception\EmptyStackException;
 use Rowbot\DOM\Parser\Collection\Exception\NotInCollectionException;
 use Rowbot\DOM\Support\UniquelyIdentifiable;
 
+use function array_pop;
+use function array_search;
+use function array_splice;
+
 abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
 {
     protected $cache;
@@ -59,7 +63,7 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
             return;
         }
 
-        $index = \array_search($oldItem, $this->collection, true);
+        $index = array_search($oldItem, $this->collection, true);
         $this->collection[$index] = $newItem;
         unset($this->cache[$oldHash]);
         $this->cache[$newHash] = true;
@@ -102,8 +106,8 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
             return;
         }
 
-        $index = \array_search($oldItem, $this->collection, true);
-        \array_splice($this->collection, $index, 0, [$newItem]);
+        $index = array_search($oldItem, $this->collection, true);
+        array_splice($this->collection, $index, 0, [$newItem]);
         $this->cache[$newHash] = true;
         ++$this->size;
     }
@@ -140,8 +144,8 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
             return;
         }
 
-        $index = \array_search($oldItem, $this->collection, true);
-        \array_splice($this->collection, $index + 1, 0, [$newItem]);
+        $index = array_search($oldItem, $this->collection, true);
+        array_splice($this->collection, $index + 1, 0, [$newItem]);
         $this->cache[$newHash] = true;
         ++$this->size;
     }
@@ -168,12 +172,12 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
         --$this->size;
 
         if ($this->collection[$this->size] === $item) {
-            \array_pop($this->collection);
+            array_pop($this->collection);
             return;
         }
 
-        $index = \array_search($item, $this->collection, true);
-        \array_splice($this->collection, $index, 1);
+        $index = array_search($item, $this->collection, true);
+        array_splice($this->collection, $index, 1);
     }
 
     /**
@@ -237,7 +241,7 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
             return -1;
         }
 
-        return \array_search($item, $this->collection, true);
+        return array_search($item, $this->collection, true);
     }
 
     /**
@@ -277,7 +281,7 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
             return;
         }
 
-        $item = \array_pop($this->collection);
+        $item = array_pop($this->collection);
         unset($this->cache[$item->uuid()->toString()]);
         --$this->size;
         return $item;

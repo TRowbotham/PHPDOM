@@ -12,6 +12,8 @@ use Rowbot\DOM\Parser\Collection\Exception\CollectionException;
 use Rowbot\DOM\Parser\Collection\Exception\EmptyStackException;
 use Rowbot\DOM\Support\UniquelyIdentifiable;
 
+use function array_merge_recursive;
+
 class OpenElementStack extends ObjectStack
 {
     const SPECIFIC_SCOPE = [
@@ -272,7 +274,7 @@ class OpenElementStack extends ObjectStack
         $aNamespace,
         ...$list
     ): bool {
-        $list = \array_merge_recursive(...$list);
+        $list = array_merge_recursive(...$list);
         $size = $this->size;
 
         while ($size--) {
