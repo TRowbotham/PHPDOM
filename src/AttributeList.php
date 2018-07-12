@@ -1,14 +1,23 @@
 <?php
+declare(strict_types=1);
+
 namespace Rowbot\DOM;
 
+use ArrayAccess;
+use Countable;
+use Iterator;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Exception\InUseAttributeError;
-use Rowbot\DOM\Exception\TypeError;
 use Rowbot\DOM\Support\OrderedSet;
 use SplObjectStorage;
 
-class AttributeList extends OrderedSet
+class AttributeList implements ArrayAccess, Countable, Iterator
 {
+    /**
+     * @var \Rowbot\DOM\Support\OrderedSet
+     */
+    private $list;
+
     /**
      * @var \Rowbot\DOM\Element\Element
      */
@@ -28,8 +37,7 @@ class AttributeList extends OrderedSet
      */
     public function __construct(Element $element)
     {
-        parent::__construct();
-
+        $this->list = new OrderedSet();
         $this->element = $element;
         $this->observers = new SplObjectStorage();
     }
@@ -44,7 +52,7 @@ class AttributeList extends OrderedSet
      *
      * @return void
      */
-    public function change(Attr $attribute, $value): void
+    public function change(Attr $attribute, string $value): void
     {
         // TODO: Queue a mutation record of "attributes" for element with name
         // attribute’s local name, namespace attribute’s namespace, and
@@ -72,12 +80,8 @@ class AttributeList extends OrderedSet
      *
      * @return void
      */
-    public function append($attribute)
+    public function append(Attr $attribute): void
     {
-        if (!$attribute instanceof Attr) {
-            throw new TypeError();
-        }
-
         // TODO: Queue a mutation record of "attributes" for element with name
         // attribute’s local name, namespace attribute’s namespace, and
         // oldValue null.
@@ -92,7 +96,7 @@ class AttributeList extends OrderedSet
             );
         }
 
-        parent::append($attribute);
+        $this->list->append($attribute);
         $attribute->setOwnerElement($this->element);
     }
 
@@ -105,12 +109,8 @@ class AttributeList extends OrderedSet
      *
      * @return void
      */
-    public function remove($attribute)
+    public function remove(Attr $attribute): void
     {
-        if (!$attribute instanceof Attr) {
-            throw new TypeError();
-        }
-
         // TODO: Queue a mutation record of "attributes" for element with name
         // attribute’s local name, namespace attribute’s namespace, and
         // oldValue attribute’s value.
@@ -125,7 +125,7 @@ class AttributeList extends OrderedSet
             );
         }
 
-        parent::remove($attribute);
+        $this->list->remove($attribute);
         $attribute->setOwnerElement(null);
     }
 
@@ -139,12 +139,8 @@ class AttributeList extends OrderedSet
      *
      * @return void
      */
-    public function replace($oldAttr, $newAttr)
+    public function replace(Attr $oldAttr, Attr $newAttr): void
     {
-        if (!$oldAttr instanceof Attr || !$newAttr instanceof Attr) {
-            throw new TypeError();
-        }
-
         // TODO: Queue a mutation record of "attributes" for element with name
         // oldAttr’s local name, namespace oldAttr’s namespace, and oldValue
         // oldAttr’s value.
@@ -159,7 +155,7 @@ class AttributeList extends OrderedSet
             );
         }
 
-        parent::replace($oldAttr, $newAttr);
+        $this->list->replace($oldAttr, $newAttr);
         $oldAttr->setOwnerElement(null);
         $newAttr->setOwnerElement($this->element);
     }
@@ -173,7 +169,7 @@ class AttributeList extends OrderedSet
      *
      * @return \Rowbot\DOM\Attr|null
      */
-    public function getAttrByName($qualifiedName): ?Attr
+    public function getAttrByName(string $qualifiedName): ?Attr
     {
         if ($this->element->namespaceURI === Namespaces::HTML
             && $this->element->getNodeDocument() instanceof HTMLDocument
@@ -181,7 +177,7 @@ class AttributeList extends OrderedSet
             $qualifiedName = Utils::toASCIILowercase($qualifiedName);
         }
 
-        foreach ($this as $attribute) {
+        foreach ($this->list as $attribute) {
             if ($attribute->getQualifiedName() === $qualifiedName) {
                 return $attribute;
             }
@@ -195,20 +191,20 @@ class AttributeList extends OrderedSet
      *
      * @see https://dom.spec.whatwg.org/#concept-element-attributes-get-by-namespace
      *
-     * @param string $namespace The namespace of the attribute to find.
-     * @param string $localName The local name of the attribute to find.
+     * @param ?string $namespace The namespace of the attribute to find.
+     * @param string  $localName The local name of the attribute to find.
      *
      * @return \Rowbot\DOM\Attr|null
      */
     public function getAttrByNamespaceAndLocalName(
-        $namespace,
-        $localName
+        ?string $namespace,
+        string $localName
     ): ?Attr {
         if ($namespace === '') {
             $namespace = null;
         }
 
-        foreach ($this as $attribute) {
+        foreach ($this->list as $attribute) {
             if ($attribute->getNamespace() === $namespace
                 && $attribute->getLocalName() === $localName
             ) {
@@ -224,13 +220,15 @@ class AttributeList extends OrderedSet
      *
      * @see https://dom.spec.whatwg.org/#concept-element-attributes-get-value
      *
-     * @param string      $localName The local name of the attribute whose value is to be returned.
-     * @param string|null $namespace (optional) The namespace of the attribute whose value is to be returned.
+     * @param string  $localName The local name of the attribute whose value is to be returned.
+     * @param ?string $namespace (optional) The namespace of the attribute whose value is to be returned.
      *
      * @return string
      */
-    public function getAttrValue($localName, $namespace = null): string
-    {
+    public function getAttrValue(
+        string $localName,
+        ?string $namespace = null
+    ): string {
         $attr = $this->getAttrByNamespaceAndLocalName(
             $namespace,
             $localName
@@ -288,18 +286,18 @@ class AttributeList extends OrderedSet
      *
      * @see https://dom.spec.whatwg.org/#concept-element-attributes-set-value
      *
-     * @param string      $localName The local name of the attribute whose value is to be set.
-     * @param string      $value     The value of the attribute whose value is to be set.
-     * @param string|null $prefix    (optional) The namespace prefix of the attribute whose value is to be set.
-     * @param string|null $namespace (optional) The namespace of the attribute whose value is to be set.
+     * @param string  $localName The local name of the attribute whose value is to be set.
+     * @param string  $value     The value of the attribute whose value is to be set.
+     * @param ?string $prefix    (optional) The namespace prefix of the attribute whose value is to be set.
+     * @param ?string $namespace (optional) The namespace of the attribute whose value is to be set.
      *
      * @return void
      */
     public function setAttrValue(
-        $localName,
-        $value,
-        $prefix = null,
-        $namespace = null
+        string $localName,
+        string $value,
+        ?string $prefix = null,
+        ?string $namespace = null
     ): void {
         $attribute = $this->getAttrByNamespaceAndLocalName(
             $namespace,
@@ -326,7 +324,7 @@ class AttributeList extends OrderedSet
      *
      * @return \Rowbot\DOM\Attr|null
      */
-    public function removeAttrByName($qualifiedName): ?Attr
+    public function removeAttrByName(string $qualifiedName): ?Attr
     {
         $attr = $this->getAttrByName($qualifiedName);
 
@@ -342,14 +340,14 @@ class AttributeList extends OrderedSet
      *
      * @see https://dom.spec.whatwg.org/#concept-element-attributes-remove-by-namespace
      *
-     * @param string $namespace The namespace of the attribute to be removed.
-     * @param string $localName The local name of the attribute to be removed.
+     * @param ?string $namespace The namespace of the attribute to be removed.
+     * @param string  $localName The local name of the attribute to be removed.
      *
      * @return \Rowbot\DOM\Attr|null
      */
     public function removeAttrByNamespaceAndLocalName(
-        $namespace,
-        $localName
+        ?string $namespace,
+        string $localName
     ): ?Attr {
         $attr = $this->getAttrByNamespaceAndLocalName($namespace, $localName);
 
@@ -380,5 +378,58 @@ class AttributeList extends OrderedSet
     public function unobserve(AttributeChangeObserver $observer): void
     {
         $this->observers->detach($observer);
+    }
+
+    public function isEmpty(): bool
+    {
+        return $this->list->isEmpty();
+    }
+
+    public function offsetExists($offset): bool
+    {
+        return $this->list->offsetExists($offset);
+    }
+
+    public function offsetGet($offset): ?Attr
+    {
+        return $this->list->offsetGet($offset);
+    }
+
+    public function offsetSet($offset, $value): void
+    {
+    }
+
+    public function offsetUnset($offset): void
+    {
+    }
+
+    public function count(): int
+    {
+        return $this->list->count();
+    }
+
+    public function current(): Attr
+    {
+        return $this->list->current();
+    }
+
+    public function key(): int
+    {
+        return $this->list->key();
+    }
+
+    public function next(): void
+    {
+        $this->list->next();
+    }
+
+    public function rewind(): void
+    {
+        $this->list->rewind();
+    }
+
+    public function valid(): bool
+    {
+        return $this->list->valid();
     }
 }
