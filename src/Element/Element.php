@@ -501,7 +501,64 @@ class Element extends Node implements AttributeChangeObserver
     }
 
     /**
-     * Returns true if the attribtue with the given name is present in the
+     * Toggles the presence of an attribute. If force is not given, it toggles the attribute with qualifiedName,
+     * removing it if it is present and adding it if it is not present. If force is true, it adds an attribute with
+     * qualifiedName. If force is false, it removes the attribute with qualifiedName.
+     *
+     * @param string $qualifiedName
+     * @param bool   $force         (optional)
+     *
+     * @return bool
+     *
+     * @throws \Rowbot\DOM\Exception\InvalidCharacterError
+     */
+    public function toggleAttribute(
+        string $qualifiedName,
+        bool $force = false
+    ): bool {
+        if (!preg_match(Namespaces::NAME_PRODUCTION, $qualifiedName)) {
+            throw new InvalidCharacterError();
+        }
+
+        if ($this->namespaceURI === Namespaces::HTML
+            && $this->nodeDocument instanceof HTMLDocument
+        ) {
+            $qualifiedName = Utils::toASCIILowercase($qualifiedName);
+        }
+
+        $attribute = null;
+        $forceIsGiven = func_num_args() > 1;
+
+        foreach ($this->attributeList as $attr) {
+            if ($attr->name === $qualifiedName) {
+                $attribute = $attr;
+                break;
+            }
+        }
+
+        if ($attribute === null) {
+            if ($forceIsGiven === false || $force === true) {
+                $attribute = new Attr($qualifiedName, '');
+                $attribute->setNodeDocument($this->nodeDocument);
+                $this->attributeList->append($attribute);
+
+                return true;
+            }
+
+            return false;
+        }
+
+        if ($forceIsGiven === false || $force === false) {
+            $this->attributeList->removeAttrByName($qualifiedName);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Returns true if the attribute with the given name is present in the
      * Element's attribute list, otherwise false.
      *
      * @see https://dom.spec.whatwg.org/#dom-element-hasattribute
