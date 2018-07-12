@@ -7,6 +7,11 @@ use SeekableIterator;
 
 class ReverseArrayIterator implements ArrayAccess, Countable, SeekableIterator
 {
+    /**
+     * @var array
+     */
+    private $array;
+
     public function __construct(array $array)
     {
         $this->array = $array;
