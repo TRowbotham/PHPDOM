@@ -34,7 +34,6 @@ use Rowbot\DOM\Element\HTML\HTMLTemplateElement;
 
 use function count;
 use function preg_match;
-use function strtolower;
 use function strtoupper;
 
 /**
@@ -403,7 +402,7 @@ class Element extends Node implements AttributeChangeObserver
     {
         // If qualifiedName does not match the Name production in XML,
         // throw an InvalidCharacterError exception.
-        if (!\preg_match(Namespaces::NAME_PRODUCTION, $qualifiedName)) {
+        if (!preg_match(Namespaces::NAME_PRODUCTION, $qualifiedName)) {
             throw new InvalidCharacterError();
         }
 
@@ -628,7 +627,7 @@ class Element extends Node implements AttributeChangeObserver
     ): ?Attr {
         return $this->attributeList->getAttrByNamespaceAndLocalName(
             $namespace,
-            Utils::DOMString($localName)
+            $localName
         );
     }
 
