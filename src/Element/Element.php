@@ -837,11 +837,11 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @internal
      *
-     * @see https://dom.spec.whatwg.org/#dom-element-tagname
+     * @see https://dom.spec.whatwg.org/#element-html-uppercased-qualified-name
      *
      * @return string
      */
-    protected function getTagName()
+    protected function getTagName(): string
     {
         $qualifiedName = $this->prefix === null
             ? $this->localName
