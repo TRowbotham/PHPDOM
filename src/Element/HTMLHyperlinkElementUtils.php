@@ -353,7 +353,7 @@ trait HTMLHyperlinkElementUtils
             return '';
         }
 
-        return $this->url->port;
+        return (string) $this->url->port;
     }
 
     /**
