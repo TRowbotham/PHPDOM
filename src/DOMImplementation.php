@@ -2,7 +2,6 @@
 namespace Rowbot\DOM;
 
 use Rowbot\DOM\Element\ElementFactory;
-use Rowbot\DOM\Exception\DOMException;
 
 use function func_num_args;
 
@@ -15,7 +14,7 @@ final class DOMImplementation
     /**
      * @var \Rowbot\DOM\Document
      */
-    protected $document;
+    private $document;
 
     /**
      * Constructor.
@@ -36,7 +35,7 @@ final class DOMImplementation
      *
      * @param string                        $namespace     The namespace of the element to be created, which becomes the
      *                                                     document's document element.
-     * @param string|null                   $qualifiedName The local name of the element that is to become the
+     * @param string                        $qualifiedName The local name of the element that is to become the
      *                                                     document's document element.
      * @param \Rowbot\DOM\DocumentType|null $doctype       (optional) A DocumentType object to be appended to the
      *                                                     document.
@@ -48,27 +47,26 @@ final class DOMImplementation
      */
     public function createDocument(
         ?string $namespace,
-        $qualifiedName,
+        string $qualifiedName,
         DocumentType $doctype = null
     ): XMLDocument {
-        $qualifiedName = Utils::DOMString($qualifiedName, true);
-        $doc = new XMLDocument();
+        $document = new XMLDocument();
         $element = null;
 
         if ($qualifiedName !== '') {
             $element = ElementFactory::createNS(
-                $doc,
+                $document,
                 $namespace,
                 $qualifiedName
             );
         }
 
-        if ($doctype) {
-            $doc->appendChild($doctype);
+        if ($doctype !== null) {
+            $document->appendChild($doctype);
         }
 
-        if ($element) {
-            $doc->appendChild($element);
+        if ($element !== null) {
+            $document->appendChild($element);
         }
 
         // TODO: document's origin is the origin of the context object's
@@ -76,20 +74,20 @@ final class DOMImplementation
 
         switch ($namespace) {
             case Namespaces::HTML:
-                $doc->setContentType('application/xhtml+xml');
+                $document->setContentType('application/xhtml+xml');
 
                 break;
 
             case Namespaces::SVG:
-                $doc->setContentType('image/svg+xml');
+                $document->setContentType('image/svg+xml');
 
                 break;
 
             default:
-                $doc->setContentType('application/xml');
+                $document->setContentType('application/xml');
         }
 
-        return $doc;
+        return $document;
     }
 
     /**
@@ -107,14 +105,10 @@ final class DOMImplementation
      * @throws \Rowbot\DOM\Exception\NamespaceError        If the qualified name does not match the QName production.
      */
     public function createDocumentType(
-        $qualifiedName,
-        $publicId,
-        $systemId
+        string $qualifiedName,
+        string $publicId,
+        string $systemId
     ): DocumentType {
-        $qualifiedName = Utils::DOMString($qualifiedName);
-        $publicId = Utils::DOMString($publicId);
-        $systemId = Utils::DOMString($systemId);
-
         Namespaces::validate($qualifiedName);
 
         $docType = new DocumentType($qualifiedName, $publicId, $systemId);
@@ -132,7 +126,7 @@ final class DOMImplementation
      *
      * @return \Rowbot\DOM\HTMLDocument
      */
-    public function createHTMLDocument($title = ''): HTMLDocument
+    public function createHTMLDocument(string $title = ''): HTMLDocument
     {
         $doc = new HTMLDocument();
         $doc->setContentType('text/html');
@@ -153,7 +147,7 @@ final class DOMImplementation
                 Namespaces::HTML
             );
             $head->appendChild($titleNode);
-            $text = new Text(Utils::DOMString($title));
+            $text = new Text($title);
             $text->setNodeDocument($doc);
             $titleNode->appendChild($text);
         }
