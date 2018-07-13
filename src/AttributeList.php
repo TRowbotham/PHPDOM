@@ -380,6 +380,11 @@ class AttributeList implements ArrayAccess, Countable, Iterator
         $this->observers->detach($observer);
     }
 
+    public function contains(Attr $attr): bool
+    {
+        return $this->list->contains($attr);
+    }
+
     public function isEmpty(): bool
     {
         return $this->list->isEmpty();
