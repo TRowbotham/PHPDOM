@@ -56,15 +56,11 @@ final class DOMImplementation
         $element = null;
 
         if ($qualifiedName !== '') {
-            try {
-                $element = ElementFactory::createNS(
-                    $doc,
-                    $namespace,
-                    $qualifiedName
-                );
-            } catch (DOMException $e) {
-                throw $e;
-            }
+            $element = ElementFactory::createNS(
+                $doc,
+                $namespace,
+                $qualifiedName
+            );
         }
 
         if ($doctype) {
@@ -119,11 +115,7 @@ final class DOMImplementation
         $publicId = Utils::DOMString($publicId);
         $systemId = Utils::DOMString($systemId);
 
-        try {
-            Namespaces::validate($qualifiedName);
-        } catch (DOMException $e) {
-            throw $e;
-        }
+        Namespaces::validate($qualifiedName);
 
         $docType = new DocumentType($qualifiedName, $publicId, $systemId);
         $docType->setNodeDocument($this->document);
