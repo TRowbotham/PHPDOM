@@ -61,12 +61,39 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
     const DOCUMENT_POSITION_CONTAINED_BY            = 0x10;
     const DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC = 0x20;
 
+    /**
+     * @var \Rowbot\DOM\Support\OrderedSet
+     */
     protected $childNodes;
+
+    /**
+     * @var int
+     */
     protected $nodeType;
+
+    /**
+     * @var ?self
+     */
     protected $parentNode;
+
+    /**
+     * @var ?self
+     */
     protected $nextSibling;
+
+    /**
+     * @var \Rowbot\DOM\Document
+     */
     protected $nodeDocument;
+
+    /**
+     * @var \Rowbot\DOM\NodeList
+     */
     protected $nodeList;
+
+    /**
+     * @var ?self
+     */
     protected $previousSibling;
 
     /**
@@ -80,11 +107,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
 
         $this->childNodes = new OrderedSet();
         $this->nodeList = new NodeList($this->childNodes);
-        $this->nodeType = '';
         $this->nodeDocument = Document::getDefaultDocument();
-        $this->parentNode = null;
-        $this->previousSibling = null;
-        $this->nextSibling = null;
     }
 
     /**
@@ -143,7 +166,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
 
     /**
      * @param string $name
-     * @param string $value
+     * @param mixed  $value
      */
     public function __set(string $name, $value)
     {
