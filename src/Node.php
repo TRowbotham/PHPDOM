@@ -63,7 +63,6 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
 
     protected $childNodes;
     protected $nodeType;
-    protected $ownerDocument;
     protected $parentNode;
     protected $nextSibling;
     protected $nodeDocument;
