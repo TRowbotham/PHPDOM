@@ -1150,14 +1150,11 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
     protected function replaceNode(self $node, self $child): self {
         $parent = $this;
 
-        switch ($parent->nodeType) {
-            case self::DOCUMENT_NODE:
-            case self::DOCUMENT_FRAGMENT_NODE:
-            case self::ELEMENT_NODE:
-                break;
-
-            default:
-                throw new HierarchyRequestError();
+        if (!$parent instanceof Document
+            && !$parent instanceof DocumentFragment
+            && !$parent instanceof Element
+        ) {
+            throw new HierarchyRequestError();
         }
 
         if ($node->isHostIncludingInclusiveAncestorOf($parent)) {
@@ -1168,77 +1165,48 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             throw new NotFoundError();
         }
 
-        switch ($node->nodeType) {
-            case self::DOCUMENT_FRAGMENT_NODE:
-            case self::DOCUMENT_TYPE_NODE:
-            case self::ELEMENT_NODE:
-            case self::TEXT_NODE:
-            case self::PROCESSING_INSTRUCTION_NODE:
-            case self::COMMENT_NODE:
-                break;
-
-            default:
-                throw new HierarchyRequestError();
-        }
-
-        if ($node->nodeType === self::TEXT_NODE
-            && $parent->nodeType === self::DOCUMENT_NODE
+        if (!$node instanceof DocumentFragment
+            && !$node instanceof DocumentType
+            && !$node instanceof Element
+            && !$node instanceof Text
+            && !$node instanceof ProcessingInstruction
+            && !$node instanceof Comment
         ) {
             throw new HierarchyRequestError();
         }
 
-        if ($node->nodeType === self::DOCUMENT_TYPE_NODE
-            && $parent->nodeType !== self::DOCUMENT_NODE
-        ) {
+        if ($node instanceof Text && $parent instanceof Document) {
             throw new HierarchyRequestError();
         }
 
-        if ($parent->nodeType === self::DOCUMENT_NODE) {
-            switch ($node->nodeType) {
-                case self::DOCUMENT_FRAGMENT_NODE:
-                    $elementChildren = 0;
+        if ($node instanceof DocumentType && !$parent instanceof Document) {
+            throw new HierarchyRequestError();
+        }
 
-                    foreach ($node->childNodes as $childNode) {
-                        switch ($childNode->nodeType) {
-                            case self::ELEMENT_NODE:
-                                $elementChildren++;
+        // If $parent is a document, and any of the statements below, switched
+        // on $node are true, throw a HierarchyRequestError.
+        if ($parent instanceof Document) {
+            if ($node instanceof DocumentFragment) {
+                $elementChildren = 0;
 
-                                if ($elementChildren > 1) {
-                                    throw new HierarchyRequestError();
-                                }
-
-                                break;
-
-                            case self::TEXT_NODE:
-                                throw new HierarchyRequestError();
-                        }
+                // If $node has mode than one element child or has a Text node
+                // child.
+                foreach ($node->childNodes as $childNode) {
+                    if ($childNode instanceof Element) {
+                        ++$elementChildren;
                     }
 
-                    if ($elementChildren === 1) {
-                        foreach ($parent->childNodes as $childNode) {
-                            if ($childNode->nodeType === self::ELEMENT_NODE
-                                && $childNode !== $child
-                            ) {
-                                throw new HierarchyRequestError();
-                            }
-                        }
-
-                        $tw = new TreeWalker(
-                            $parent,
-                            NodeFilter::SHOW_DOCUMENT_TYPE
-                        );
-                        $tw->currentNode = $child;
-
-                        if ($tw->nextNode()) {
-                            throw new HierarchyRequestError();
-                        }
+                    if ($elementChildren > 1 || $childNode instanceof Text) {
+                        throw new HierarchyRequestError();
                     }
+                }
 
-                    break;
-
-                case self::ELEMENT_NODE:
+                // Otherwise, if $node has one element child and either $parent
+                // has an element child that is not $child or a doctype is
+                // following $child.
+                if ($elementChildren === 1) {
                     foreach ($parent->childNodes as $childNode) {
-                        if ($childNode->nodeType === self::ELEMENT_NODE
+                        if ($childNode instanceof Element
                             && $childNode !== $child
                         ) {
                             throw new HierarchyRequestError();
@@ -1251,30 +1219,50 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                     );
                     $tw->currentNode = $child;
 
-                    if ($tw->nextNode()) {
+                    if ($tw->nextNode() !== null) {
                         throw new HierarchyRequestError();
                     }
-
-                    break;
-
-                case self::DOCUMENT_TYPE_NODE:
-                    foreach ($parent->childNodes as $childNode) {
-                        if ($childNode->nodeType === self::DOCUMENT_TYPE_NODE
-                            && $childNode !== $child
-                        ) {
-                            throw new HierarchyRequestError();
-                        }
-                    }
-
-                    $tw = new TreeWalker(
-                        $parent,
-                        NodeFilter::SHOW_ELEMENT
-                    );
-                    $tw->currentNode = $child;
-
-                    if ($tw->previousNode()) {
+                }
+            } elseif ($node instanceof Element) {
+                // If $parent has an element child that is not $child or a
+                // doctype is following $child.
+                foreach ($parent->childNodes as $childNode) {
+                    if ($childNode instanceof Element
+                        && $childNode !== $child
+                    ) {
                         throw new HierarchyRequestError();
                     }
+                }
+
+                $tw = new TreeWalker(
+                    $parent,
+                    NodeFilter::SHOW_DOCUMENT_TYPE
+                );
+                $tw->currentNode = $child;
+
+                if ($tw->nextNode() !== null) {
+                    throw new HierarchyRequestError();
+                }
+            } elseif ($node instanceof DocumentType) {
+                // If $parent has a doctype child that is not $child, or an
+                // element is preceding $child.
+                foreach ($parent->childNodes as $childNode) {
+                    if ($childNode instanceof DocumentType
+                        && $childNode !== $child
+                    ) {
+                        throw new HierarchyRequestError();
+                    }
+                }
+
+                $tw = new TreeWalker(
+                    $parent,
+                    NodeFilter::SHOW_ELEMENT
+                );
+                $tw->currentNode = $child;
+
+                if ($tw->previousNode() !== null) {
+                    throw new HierarchyRequestError();
+                }
             }
         }
 
@@ -1293,7 +1281,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             $child->parentNode->removeNode($child, true);
         }
 
-        $nodes = $node->nodeType == self::DOCUMENT_FRAGMENT_NODE
+        $nodes = $node instanceof DocumentFragment
             ? $node->childNodes->values()
             : [$node];
         $parent->insertNode($node, $referenceChild, true);

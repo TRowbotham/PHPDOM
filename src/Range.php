@@ -1,6 +1,7 @@
 <?php
 namespace Rowbot\DOM;
 
+use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Element\ElementFactory;
 use Rowbot\DOM\Exception\HierarchyRequestError;
 use Rowbot\DOM\Exception\IndexSizeError;
@@ -1103,28 +1104,16 @@ final class Range extends AbstractRange implements Stringable
     {
         $node = $this->startNode;
 
-        switch ($node->nodeType) {
-            case Node::DOCUMENT_NODE:
-            case Node::DOCUMENT_FRAGMENT_NODE:
-                $element = null;
-
-                break;
-
-            case Node::ELEMENT_NODE:
-                $element = $node;
-
-                break;
-
-            case Node::TEXT_NODE:
-            case Node::COMMENT_NODE:
-                $element = $node->parentNode;
-
-                break;
-
-            case Node::DOCUMENT_TYPE_NODE:
-            case Node::PROCESSING_INSTRUCTION_NODE:
-                // DOM4 prevents this case.
-                return;
+        if ($node instanceof Document || $node instanceof DocumentFragment) {
+            $element = null;
+        } elseif ($node instanceof Element) {
+            $element = $node;
+        } elseif ($node instanceof Text || $node instanceof Comment) {
+            $element = $node->parentElement;
+        } elseif ($node instanceof DocumentType
+            || $node instanceof ProcessingInstruction
+        ) {
+            // DOM4 prevents this case.
         }
 
         // If either element is null or element's node document is an HTML
