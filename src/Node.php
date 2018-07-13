@@ -160,71 +160,238 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
     }
 
     /**
-     * Appends a node to the parent node.  If the node being appended is already
-     * associated with another parent node, it will be removed from that parent
-     * node before being appended to the current parent node.
+     * Gets the name of the node.
      *
-     * @param self $node A node representing an element on the page.
+     * @internal
      *
-     * @return self The node that was just appended to the parent node.
+     * @see https://dom.spec.whatwg.org/#dom-node-nodename
+     *
+     * @return string
      */
-    public function appendChild(self $node): self
+    abstract protected function getNodeName(): string;
+
+    /**
+     * Returns null if the node is a document, and the node's node document otherwise.
+     *
+     * @return \Rowbot\DOM\Document|null
+     */
+    public function ownerDocument(): ?Document
     {
-        return $this->preinsertNode($node, null);
+        return $this->nodeDocument;
     }
 
     /**
-     * Clones the given node and performs any node specific cloning steps
-     * if the interface defines them.
+     * Gets a node's root.
      *
-     * @internal
+     * @see https://dom.spec.whatwg.org/#concept-tree-root
      *
-     * @see https://dom.spec.whatwg.org/#concept-node-clone
+     * @param array<string, bool> $options (optional) The only valid argument is a key named "composed" with a bool
+     *                                     value.
      *
-     * @param \Rowbot\DOM\Document|null $document      (optional) The document that will own thecloned node.
-     * @param bool                      $cloneChildren (optional) If set, all children of the cloned node will also be
-     *                                                 cloned.
-     *
-     * @return self The newly created node.
+     * @return self If the value of the "composed" key is true, then theshadow-including root will be returned,
+     *              otherwise, the root will be returned.
      */
-    abstract public function cloneNodeInternal(
-        Document $document = null,
-        bool $cloneChildren = false
-    ): self;
+    public function getRootNode(array $options = []): self
+    {
+        $root = $this;
+
+        while ($root->parentNode) {
+            $root = $root->parentNode;
+        }
+
+        if (isset($options['composed'])
+            && $options['composed'] === true
+            && $root instanceof ShadowRoot
+        ) {
+            $root = $root->getHost()->getRootNode($options);
+        }
+
+        return $root;
+    }
 
     /**
-     * Performs steps after cloning a node.
+     * Returns the node's parent element.
      *
      * @internal
      *
-     * @see https://dom.spec.whatwg.org/#concept-node-clone
+     * @return \Rowbot\DOM\Element\Element|null
+     */
+    public function parentElement(): ?Element
+    {
+        return $this->parentNode instanceof Element
+            ? $this->parentNode
+            : null;
+    }
+
+    /**
+     * Returns a boolean indicating whether or not the current node contains any nodes.
      *
-     * @param \Rowbot\DOM\Node     $copy
-     * @param \Rowbot\DOM\Document $document
-     * @param bool                 $cloneChildren
+     * @return bool Returns true if at least one child node is present, otherwise false.
+     */
+    public function hasChildNodes(): bool
+    {
+        return !$this->childNodes->isEmpty();
+    }
+
+    /**
+     * Gets the value of the node.
+     *
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#dom-node-nodevalue
+     *
+     * @return string|null
+     */
+    abstract protected function getNodeValue(): ?string;
+
+    /**
+     * Sets the node's value.
+     *
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#dom-node-nodevalue
+     *
+     * @param string $newValue The node's new value.
      *
      * @return void
      */
-    protected function postCloneNode(
-        Node $copy,
-        Document $document,
-        bool $cloneChildren
-    ): void {
-        if ($copy instanceof Document) {
-            $copy->setNodeDocument($copy);
-            $document = $copy;
-        } else {
-            $copy->setNodeDocument($document);
-        }
+    abstract protected function setNodeValue($newValue): void;
 
-        if (method_exists($this, 'onCloneNode')) {
-            $this->onCloneNode($copy, $document, $cloneChildren);
-        }
+    /**
+     * Gets the concatenation of all descendant text nodes.
+     *
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#dom-node-textcontent
+     *
+     * @return string|null
+     */
+    abstract protected function getTextContent(): ?string;
 
-        if ($cloneChildren) {
-            foreach ($this->childNodes as $child) {
-                $copyChild = $child->cloneNodeInternal($document, true);
-                $copy->appendChild($copyChild);
+    /**
+     * Sets the nodes text content.
+     *
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#dom-node-textcontent
+     *
+     * @param string|null $newValue The new text to be inserted into the node.
+     *
+     * @return void
+     */
+    abstract protected function setTextContent($newValue): void;
+
+    /**
+     * "Normalizes" the node and its sub-tree so that there are no empty text
+     * nodes present and there are no text nodes that appear consecutively.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-node-normalize
+     *
+     * @return void
+     */
+    public function normalize(): void
+    {
+        $iter = $this->nodeDocument->createNodeIterator(
+            $this,
+            NodeFilter::SHOW_TEXT
+        );
+
+        while ($node = $iter->nextNode()) {
+            $length = $node->getLength();
+
+            // If length is zero, then remove node and continue with the next
+            // exclusive Text node, if any.
+            if ($length == 0) {
+                $node->parentNode->removeNode($node);
+                continue;
+            }
+
+            // Let data be the concatenation of the data of node’s contiguous
+            // exclusive Text nodes (excluding itself), in tree order.
+            $data = '';
+            $contingiousTextNodes = [];
+            $startNode = $node->previousSibling;
+
+            while ($startNode) {
+                if ($startNode->nodeType != self::TEXT_NODE) {
+                    break;
+                }
+
+                $data .= $startNode->data;
+                $contingiousTextNodes[] = $startNode;
+                $startNode = $startNode->previousSibling;
+            }
+
+            $startNode = $node->nextSibling;
+
+            while ($startNode) {
+                if ($startNode->nodeType != self::TEXT_NODE) {
+                    break;
+                }
+
+                $data .= $startNode->data;
+                $contingiousTextNodes[] = $startNode;
+                $startNode = $startNode->nextSibling;
+            }
+
+            // Replace data with node node, offset length, count 0, and data
+            // data.
+            $node->doReplaceData($length, 0, $data);
+            $ranges = Range::getRangeCollection();
+
+            foreach (clone $node->childNodes as $currentNode) {
+                if ($currentNode->nodeType != self::TEXT_NODE) {
+                    break;
+                }
+
+                $treeIndex = $currentNode->getTreeIndex();
+
+                // For each range whose start node is currentNode, add length to
+                // its start offset and set its start node to node.
+                foreach ($ranges as $range) {
+                    if ($range->startContainer === $currentNode) {
+                        $range->setStart($node, $range->startOffset + $length);
+                    }
+                }
+
+                // For each range whose end node is currentNode, add length to
+                // its end offset and set its end node to node.
+                foreach ($ranges as $range) {
+                    if ($range->endContainer === $currentNode) {
+                        $range->setEnd($node, $range->endOffset + $length);
+                    }
+                }
+
+                // For each range whose start node is currentNode’s parent and
+                // start offset is currentNode’s index, set its start node to
+                // node and its start offset to length.
+                foreach ($ranges as $range) {
+                    if ($range->startContainer === $currentNode->parentNode
+                        && $range->startOffset == $treeIndex
+                    ) {
+                        $range->setStart($node, $length);
+                    }
+                }
+
+                // For each range whose end node is currentNode’s parent and end
+                // offset is currentNode’s index, set its end node to node and
+                // its end offset to length.
+                foreach ($ranges as $range) {
+                    if ($range->endContainer === $currentNode->parentNode
+                        && $range->endOffset == $treeIndex
+                    ) {
+                        $range->setEnd($node, $length);
+                    }
+                }
+
+                // Add currentNode’s length to length.
+                $length += $currentNode->getLength();
+            }
+
+            // Remove node’s contiguous exclusive Text nodes (excluding itself),
+            // in tree order.
+            foreach ($contingiousTextNodes as $textNode) {
+                $textNode->parentNode->removeNode($textNode);
             }
         }
     }
@@ -247,6 +414,101 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
         }
 
         return $this->cloneNodeInternal(null, $deep);
+    }
+
+    /**
+     * Compares two nodes to see if they are equal.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-node-isequalnode
+     * @see https://dom.spec.whatwg.org/#concept-node-equals
+     *
+     * @param ?self $otherNode The node you want to compare the current node to.
+     *
+     * @return bool Returns true if the two nodes are the same, otherwise false.
+     */
+    public function isEqualNode(?self $otherNode): bool
+    {
+        if (!$otherNode || $this->nodeType != $otherNode->nodeType) {
+            return false;
+        }
+
+        if ($this instanceof DocumentType) {
+            if ($this->name !== $otherNode->name
+                || $this->publicId !== $otherNode->publicId
+                || $this->systemId !== $otherNode->systemId
+            ) {
+                return false;
+            }
+        } elseif ($this instanceof Element) {
+            if ($this->namespaceURI !== $otherNode->namespaceURI
+                || $this->prefix !== $otherNode->prefix
+                || $this->localName !== $otherNode->localName
+                || $this->attributeList->count() !==
+                $otherNode->attributes->length
+            ) {
+                return false;
+            }
+        } elseif ($this instanceof Attr) {
+            if ($this->namespaceURI !== $otherNode->getNamespace()
+                || $this->localName !== $otherNode->getLocalName()
+                || $this->value !== $otherNode->getValue()
+            ) {
+                return false;
+            }
+        } elseif ($this instanceof ProcessingInstruction) {
+            if ($this->target !== $otherNode->target
+                || $this->data !== $otherNode->data
+            ) {
+                return false;
+            }
+        } elseif ($this instanceof Text || $this instanceof Comment) {
+            if ($this->data !== $otherNode->data) {
+                return false;
+            }
+        }
+
+        if ($this instanceof Element) {
+            foreach ($this->attributeList as $i => $attribute) {
+                $isEqual = $attribute->isEqualNode(
+                    $otherNode->attributeList[$i]
+                );
+
+                if (!$isEqual) {
+                    return false;
+                }
+            }
+        }
+
+        $childNodeCount = count($this->childNodes);
+
+        if ($childNodeCount !== count($otherNode->childNodes)) {
+            return false;
+        }
+
+        for ($i = 0; $i < $childNodeCount; $i++) {
+            if (!$this->childNodes[$i]->isEqualNode(
+                $otherNode->childNodes[$i]
+            )) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Checks if another node is the same node as this node.  This is equivilant
+     * to using the strict equality operator (===).
+     *
+     * @see https://dom.spec.whatwg.org/#dom-node-issamenode
+     *
+     * @param ?self $otherNode The node whose equality is to be checked.
+     *
+     * @return bool
+     */
+    public function isSameNode(?self $otherNode): bool
+    {
+        return $this === $otherNode;
     }
 
     /**
@@ -406,6 +668,160 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
         }
 
         return false;
+    }
+
+    /**
+     * Locates the prefix associated with the given namespace on the given node.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-node-lookupprefix
+     *
+     * @param ?string $namespace The namespace of the prefix to be found.
+     *
+     * @return ?string
+     */
+    public function lookupPrefix(?string $namespace): ?string
+    {
+        if ($namespace === null || $namespace === '') {
+            return null;
+        }
+
+        $namespace = Utils::DOMString($namespace);
+
+        if ($this instanceof Element) {
+            return $this->locatePrefix($this, $namespace);
+        }
+
+        if ($this instanceof Document) {
+            $documentElement = $this->documentElement;
+
+            if ($documentElement !== null) {
+                return $this->locatePrefix($documentElement, $namespace);
+            }
+
+            return null;
+        }
+
+        if ($this instanceof DocumentType
+            || $this instanceof DocumentFragment
+        ) {
+            return null;
+        }
+
+        if ($this instanceof Attr) {
+            $ownerElement = $this->ownerElement;
+
+            if ($ownerElement !== null) {
+                return $this->locatePrefix($ownerElement, $namespace);
+            }
+
+            return null;
+        }
+
+        $parentElement = $this->parentElement;
+
+        if ($parentElement !== null) {
+            return $this->locatePrefix($parentElement, $namespace);
+        }
+
+        return null;
+    }
+
+    /**
+     * Finds the namespace associated with the given prefix.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-node-lookupnamespaceuri
+     *
+     * @param ?string $prefix The prefix of the namespace to be found.
+     *
+     * @return ?string
+     */
+    public function lookupNamespaceURI(?string $prefix): ?string
+    {
+        if ($prefix === '') {
+            $prefix = null;
+        }
+
+        return $this->locateNamespace($this, $prefix);
+    }
+
+    /**
+     * Returns whether or not the namespace of the node is the node's default
+     * namespace.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-node-isdefaultnamespace
+     *
+     * @param string|null $namespace A namespaceURI to check against.
+     *
+     * @return bool
+     */
+    public function isDefaultNamespace(?string $namespace): bool
+    {
+        if ($namespace === '') {
+            $namespace = null;
+        }
+
+        $defaultNamespace = $this->locateNamespace($this, null);
+
+        return $defaultNamespace === $namespace;
+    }
+
+    /**
+     * Inserts a node before another node in a common parent node.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-node-insertbefore
+     *
+     * @param \Rowbot\DOM\Node      $node  The node to be inserted into the document.
+     * @param \Rowbot\DOM\Node|null $child The node that the new node will be inserted before.
+     *
+     * @return \Rowbot\DOM\Node The node that was inserted into the document.
+     */
+    public function insertBefore(Node $node, ?Node $child): self
+    {
+        return $this->preinsertNode($node, $child);
+    }
+
+    /**
+     * Appends a node to the parent node.  If the node being appended is already
+     * associated with another parent node, it will be removed from that parent
+     * node before being appended to the current parent node.
+     *
+     * @param self $node A node representing an element on the page.
+     *
+     * @return self The node that was just appended to the parent node.
+     */
+    public function appendChild(self $node): self
+    {
+        return $this->preinsertNode($node, null);
+    }
+
+    /**
+     * Replaces a node with another node.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-node-replacechild
+     *
+     * @param self $node  The node to be inserted into the DOM.
+     * @param self $child The node that is being replaced by the new node.
+     *
+     * @return self The node that was replaced in the DOM.
+     *
+     * @throws \Rowbot\DOM\Exception\HierarchyRequestError
+     * @throws \Rowbot\DOM\Exception\NotFoundError
+     */
+    public function replaceChild(self $node, self $child): self
+    {
+        return $this->replaceNode($node, $child);
+    }
+
+    /**
+     * Removes the specified node from the current node.
+     *
+     * @param self $child The node to be removed from the DOM.
+     *
+     * @return self The node that was removed from the DOM.
+     */
+    public function removeChild(self $child): self
+    {
+        return $this->preremoveNode($child);
     }
 
     /**
@@ -593,104 +1009,40 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
     }
 
     /**
-     * Returns null if the node is a document, and the node's node document otherwise.
-     *
-     * @return \Rowbot\DOM\Document|null
-     */
-    public function ownerDocument(): ?Document
-    {
-        return $this->nodeDocument;
-    }
-
-    /**
-     * Returns the node's parent element.
+     * Performs additional validation and preparation steps prior to inserting
+     * a node in to a parent node, optionally, in relation to another child
+     * node.
      *
      * @internal
      *
-     * @return \Rowbot\DOM\Element\Element|null
-     */
-    public function parentElement(): ?Element
-    {
-        return $this->parentNode instanceof Element
-            ? $this->parentNode
-            : null;
-    }
-
-    /**
-     * Gets the bottom most common ancestor of two nodes, if any. If null is returned, the two nodes do not have a
-     * common ancestor.
+     * @see https://dom.spec.whatwg.org/#concept-node-pre-insert
      *
-     * @internal
+     * @param self      $node  The node being inserted.
+     * @param self|null $child (optional) A child node used as a reference to where the new node should be inserted.
      *
-     * @return self
+     * @return self The node that was inserted.
      */
-    public static function getCommonAncestor(Node $nodeA, Node $nodeB): self
+    public function preinsertNode(self $node, self $child = null): self
     {
-        while ($nodeA) {
-            $node = $nodeB;
+        $parent = $this;
 
-            while ($node) {
-                if ($node === $nodeA) {
-                    break 2;
-                }
-
-                $node = $node->parentNode;
-            }
-
-            $nodeA = $nodeA->parentNode;
+        try {
+            $parent->ensurePreinsertionValidity($node, $child);
+        } catch (DOMException $e) {
+            throw $e;
         }
 
-        return $nodeA;
-    }
+        $referenceChild = $child;
 
-    /**
-     * Returns the Node's length.
-     *
-     * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#concept-node-length
-     *
-     * @return int
-     */
-    abstract public function getLength(): int;
+        if ($referenceChild === $node) {
+            $referenceChild = $node->nextSibling;
+        }
 
-    /**
-     * Returns the Node's index.
-     *
-     * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#concept-tree-index
-     *
-     * @return int
-     */
-    public function getTreeIndex(): int
-    {
-        return $this->parentNode->childNodes->indexOf($this);
-    }
+        // The DOM4 spec states that nodes should be implicitly adopted
+        $parent->nodeDocument->doAdoptNode($node);
+        $parent->insertNode($node, $referenceChild);
 
-    /**
-     * Returns a boolean indicating whether or not the current node contains any nodes.
-     *
-     * @return bool Returns true if at least one child node is present, otherwise false.
-     */
-    public function hasChildNodes(): bool
-    {
-        return !$this->childNodes->isEmpty();
-    }
-
-    /**
-     * Inserts a node before another node in a common parent node.
-     *
-     * @see https://dom.spec.whatwg.org/#dom-node-insertbefore
-     *
-     * @param \Rowbot\DOM\Node      $node  The node to be inserted into the document.
-     * @param \Rowbot\DOM\Node|null $child The node that the new node will be inserted before.
-     *
-     * @return \Rowbot\DOM\Node The node that was inserted into the document.
-     */
-    public function insertBefore(Node $node, ?Node $child): self
-    {
-        return $this->preinsertNode($node, $child);
+        return $node;
     }
 
     /**
@@ -790,460 +1142,239 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
     }
 
     /**
-     * Returns whether or not the namespace of the node is the node's default
-     * namespace.
-     *
-     * @see https://dom.spec.whatwg.org/#dom-node-isdefaultnamespace
-     *
-     * @param string|null $namespace A namespaceURI to check against.
-     *
-     * @return bool
-     */
-    public function isDefaultNamespace(?string $namespace): bool
-    {
-        if ($namespace === '') {
-            $namespace = null;
-        }
-
-        $defaultNamespace = $this->locateNamespace($this, null);
-
-        return $defaultNamespace === $namespace;
-    }
-
-    /**
-     * Compares two nodes to see if they are equal.
-     *
-     * @see https://dom.spec.whatwg.org/#dom-node-isequalnode
-     * @see https://dom.spec.whatwg.org/#concept-node-equals
-     *
-     * @param ?self $otherNode The node you want to compare the current node to.
-     *
-     * @return bool Returns true if the two nodes are the same, otherwise false.
-     */
-    public function isEqualNode(?self $otherNode): bool
-    {
-        if (!$otherNode || $this->nodeType != $otherNode->nodeType) {
-            return false;
-        }
-
-        if ($this instanceof DocumentType) {
-            if ($this->name !== $otherNode->name
-                || $this->publicId !== $otherNode->publicId
-                || $this->systemId !== $otherNode->systemId
-            ) {
-                return false;
-            }
-        } elseif ($this instanceof Element) {
-            if ($this->namespaceURI !== $otherNode->namespaceURI
-                || $this->prefix !== $otherNode->prefix
-                || $this->localName !== $otherNode->localName
-                || $this->attributeList->count() !==
-                $otherNode->attributes->length
-            ) {
-                return false;
-            }
-        } elseif ($this instanceof Attr) {
-            if ($this->namespaceURI !== $otherNode->getNamespace()
-                || $this->localName !== $otherNode->getLocalName()
-                || $this->value !== $otherNode->getValue()
-            ) {
-                return false;
-            }
-        } elseif ($this instanceof ProcessingInstruction) {
-            if ($this->target !== $otherNode->target
-                || $this->data !== $otherNode->data
-            ) {
-                return false;
-            }
-        } elseif ($this instanceof Text || $this instanceof Comment) {
-            if ($this->data !== $otherNode->data) {
-                return false;
-            }
-        }
-
-        if ($this instanceof Element) {
-            foreach ($this->attributeList as $i => $attribute) {
-                $isEqual = $attribute->isEqualNode(
-                    $otherNode->attributeList[$i]
-                );
-
-                if (!$isEqual) {
-                    return false;
-                }
-            }
-        }
-
-        $childNodeCount = count($this->childNodes);
-
-        if ($childNodeCount !== count($otherNode->childNodes)) {
-            return false;
-        }
-
-        for ($i = 0; $i < $childNodeCount; $i++) {
-            if (!$this->childNodes[$i]->isEqualNode(
-                $otherNode->childNodes[$i]
-            )) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Checks if another node is the same node as this node.  This is equivilant
-     * to using the strict equality operator (===).
-     *
-     * @see https://dom.spec.whatwg.org/#dom-node-issamenode
-     *
-     * @param ?self $otherNode The node whose equality is to be checked.
-     *
-     * @return bool
-     */
-    public function isSameNode(?self $otherNode): bool
-    {
-        return $this === $otherNode;
-    }
-
-    /**
-     * Finds the namespace associated with the given prefix.
-     *
-     * @see https://dom.spec.whatwg.org/#dom-node-lookupnamespaceuri
-     *
-     * @param ?string $prefix The prefix of the namespace to be found.
-     *
-     * @return ?string
-     */
-    public function lookupNamespaceURI(?string $prefix): ?string
-    {
-        if ($prefix === '') {
-            $prefix = null;
-        }
-
-        return $this->locateNamespace($this, $prefix);
-    }
-
-    /**
-     * Finds the namespace associated with the given prefix on the given node.
-     *
-     * @see https://dom.spec.whatwg.org/#locate-a-namespace
-     *
-     * @param self    $node
-     * @param ?string $prefix
-     *
-     * @return ?string
-     */
-    private function locateNamespace(self $node, ?string $prefix): ?string
-    {
-        if ($node instanceof Element) {
-            if ($node->namespaceURI !== null && $node->prefix === $prefix) {
-                return $node->namespaceURI;
-            }
-
-            foreach ($node->getAttributeList() as $attr) {
-                if ($attr->namespaceURI === Namespaces::XMLNS) {
-                    $localName = $attr->localName;
-
-                    if (($$attr->prefix === 'xmlns' && $localName === $prefix)
-                        || ($prefix === null && $localName === 'xmlns')
-                    ) {
-                        if ($attr->value !== '') {
-                            return $attr->value;
-                        }
-
-                        return null;
-                    }
-                }
-            }
-
-            if ($node->parentElement === null) {
-                return null;
-            }
-
-            return $this->locateNamespace($node->parentElement, $prefix);
-        }
-
-        if ($node instanceof Document) {
-            if ($node->documentElement === null) {
-                return null;
-            }
-
-            return $this->locateNamespace($node->documentElement, $prefix);
-        }
-
-        if ($node instanceof DocumentType
-            || $node instanceof DocumentFragment
-        ) {
-            return null;
-        }
-
-        if ($node instanceof Attr) {
-            if ($node->ownerElement === null) {
-                return null;
-            }
-
-            return $this->locateNamespace($node->ownerElement, $prefix);
-        }
-
-        if ($node->parentElement === null) {
-            return null;
-        }
-
-        return $this->locateNamespace($node->parentElement, $prefix);
-    }
-
-    /**
-     * Locates the prefix associated with the given namespace on the given node.
-     *
-     * @see https://dom.spec.whatwg.org/#dom-node-lookupprefix
-     *
-     * @param ?string $namespace The namespace of the prefix to be found.
-     *
-     * @return ?string
-     */
-    public function lookupPrefix(?string $namespace): ?string
-    {
-        if ($namespace === null || $namespace === '') {
-            return null;
-        }
-
-        $namespace = Utils::DOMString($namespace);
-
-        if ($this instanceof Element) {
-            return $this->locatePrefix($this, $namespace);
-        }
-
-        if ($this instanceof Document) {
-            $documentElement = $this->documentElement;
-
-            if ($documentElement !== null) {
-                return $this->locatePrefix($documentElement, $namespace);
-            }
-
-            return null;
-        }
-
-        if ($this instanceof DocumentType
-            || $this instanceof DocumentFragment
-        ) {
-            return null;
-        }
-
-        if ($this instanceof Attr) {
-            $ownerElement = $this->ownerElement;
-
-            if ($ownerElement !== null) {
-                return $this->locatePrefix($ownerElement, $namespace);
-            }
-
-            return null;
-        }
-
-        $parentElement = $this->parentElement;
-
-        if ($parentElement !== null) {
-            return $this->locatePrefix($parentElement, $namespace);
-        }
-
-        return null;
-    }
-
-    /**
-     * Locates the prefix associated with the given namespace on the given
-     * element.
-     *
-     * @see https://dom.spec.whatwg.org/#locate-a-namespace-prefix
-     *
-     * @param \Rowbot\DOM\Element\Element $element
-     * @param ?string                     $namespace
-     *
-     * @return ?string
-     */
-    private function locatePrefix(Element $element, ?string $namespace): ?string
-    {
-        if ($element->namespaceURI === $namespace
-            && $element->prefix !== null
-        ) {
-            return $element->prefix;
-        }
-
-        foreach ($element->getAttributeList() as $attr) {
-            if ($attr->getPrefix() === 'xmlns'
-                && $attr->getValue() === $namespace
-            ) {
-                return $attr->getLocalName();
-            }
-        }
-
-        if ($element->parentElement !== null) {
-            return $this->locatePrefix($element, $namespace);
-        }
-
-        return null;
-    }
-
-    /**
-     * "Normalizes" the node and its sub-tree so that there are no empty text
-     * nodes present and there are no text nodes that appear consecutively.
-     *
-     * @see https://dom.spec.whatwg.org/#dom-node-normalize
-     *
-     * @return void
-     */
-    public function normalize(): void
-    {
-        $iter = $this->nodeDocument->createNodeIterator(
-            $this,
-            NodeFilter::SHOW_TEXT
-        );
-
-        while ($node = $iter->nextNode()) {
-            $length = $node->getLength();
-
-            // If length is zero, then remove node and continue with the next
-            // exclusive Text node, if any.
-            if ($length == 0) {
-                $node->parentNode->removeNode($node);
-                continue;
-            }
-
-            // Let data be the concatenation of the data of node’s contiguous
-            // exclusive Text nodes (excluding itself), in tree order.
-            $data = '';
-            $contingiousTextNodes = [];
-            $startNode = $node->previousSibling;
-
-            while ($startNode) {
-                if ($startNode->nodeType != self::TEXT_NODE) {
-                    break;
-                }
-
-                $data .= $startNode->data;
-                $contingiousTextNodes[] = $startNode;
-                $startNode = $startNode->previousSibling;
-            }
-
-            $startNode = $node->nextSibling;
-
-            while ($startNode) {
-                if ($startNode->nodeType != self::TEXT_NODE) {
-                    break;
-                }
-
-                $data .= $startNode->data;
-                $contingiousTextNodes[] = $startNode;
-                $startNode = $startNode->nextSibling;
-            }
-
-            // Replace data with node node, offset length, count 0, and data
-            // data.
-            $node->doReplaceData($length, 0, $data);
-            $ranges = Range::getRangeCollection();
-
-            foreach (clone $node->childNodes as $currentNode) {
-                if ($currentNode->nodeType != self::TEXT_NODE) {
-                    break;
-                }
-
-                $treeIndex = $currentNode->getTreeIndex();
-
-                // For each range whose start node is currentNode, add length to
-                // its start offset and set its start node to node.
-                foreach ($ranges as $range) {
-                    if ($range->startContainer === $currentNode) {
-                        $range->setStart($node, $range->startOffset + $length);
-                    }
-                }
-
-                // For each range whose end node is currentNode, add length to
-                // its end offset and set its end node to node.
-                foreach ($ranges as $range) {
-                    if ($range->endContainer === $currentNode) {
-                        $range->setEnd($node, $range->endOffset + $length);
-                    }
-                }
-
-                // For each range whose start node is currentNode’s parent and
-                // start offset is currentNode’s index, set its start node to
-                // node and its start offset to length.
-                foreach ($ranges as $range) {
-                    if ($range->startContainer === $currentNode->parentNode
-                        && $range->startOffset == $treeIndex
-                    ) {
-                        $range->setStart($node, $length);
-                    }
-                }
-
-                // For each range whose end node is currentNode’s parent and end
-                // offset is currentNode’s index, set its end node to node and
-                // its end offset to length.
-                foreach ($ranges as $range) {
-                    if ($range->endContainer === $currentNode->parentNode
-                        && $range->endOffset == $treeIndex
-                    ) {
-                        $range->setEnd($node, $length);
-                    }
-                }
-
-                // Add currentNode’s length to length.
-                $length += $currentNode->getLength();
-            }
-
-            // Remove node’s contiguous exclusive Text nodes (excluding itself),
-            // in tree order.
-            foreach ($contingiousTextNodes as $textNode) {
-                $textNode->parentNode->removeNode($textNode);
-            }
-        }
-    }
-
-    /**
-     * Performs additional validation and preparation steps prior to inserting
-     * a node in to a parent node, optionally, in relation to another child
-     * node.
+     * Replaces a node with another node inside this node.
      *
      * @internal
      *
-     * @see https://dom.spec.whatwg.org/#concept-node-pre-insert
+     * @see https://dom.spec.whatwg.org/#concept-node-replace
      *
-     * @param self      $node  The node being inserted.
-     * @param self|null $child (optional) A child node used as a reference to where the new node should be inserted.
+     * @param self $node  The node being inserted.
+     * @param self $child The node being replaced.
      *
-     * @return self The node that was inserted.
+     * @return self The node that was replaced.
      */
-    public function preinsertNode(self $node, self $child = null): self
-    {
+    protected function replaceNode(self $node, self $child): self {
         $parent = $this;
 
-        try {
-            $parent->ensurePreinsertionValidity($node, $child);
-        } catch (DOMException $e) {
-            throw $e;
+        switch ($parent->nodeType) {
+            case self::DOCUMENT_NODE:
+            case self::DOCUMENT_FRAGMENT_NODE:
+            case self::ELEMENT_NODE:
+                break;
+
+            default:
+                throw new HierarchyRequestError();
         }
 
-        $referenceChild = $child;
+        if ($node->isHostIncludingInclusiveAncestorOf($parent)) {
+            throw new HierarchyRequestError();
+        }
+
+        if ($child->parentNode !== $parent) {
+            throw new NotFoundError();
+        }
+
+        switch ($node->nodeType) {
+            case self::DOCUMENT_FRAGMENT_NODE:
+            case self::DOCUMENT_TYPE_NODE:
+            case self::ELEMENT_NODE:
+            case self::TEXT_NODE:
+            case self::PROCESSING_INSTRUCTION_NODE:
+            case self::COMMENT_NODE:
+                break;
+
+            default:
+                throw new HierarchyRequestError();
+        }
+
+        if ($node->nodeType === self::TEXT_NODE
+            && $parent->nodeType === self::DOCUMENT_NODE
+        ) {
+            throw new HierarchyRequestError();
+        }
+
+        if ($node->nodeType === self::DOCUMENT_TYPE_NODE
+            && $parent->nodeType !== self::DOCUMENT_NODE
+        ) {
+            throw new HierarchyRequestError();
+        }
+
+        if ($parent->nodeType === self::DOCUMENT_NODE) {
+            switch ($node->nodeType) {
+                case self::DOCUMENT_FRAGMENT_NODE:
+                    $elementChildren = 0;
+
+                    foreach ($node->childNodes as $childNode) {
+                        switch ($childNode->nodeType) {
+                            case self::ELEMENT_NODE:
+                                $elementChildren++;
+
+                                if ($elementChildren > 1) {
+                                    throw new HierarchyRequestError();
+                                }
+
+                                break;
+
+                            case self::TEXT_NODE:
+                                throw new HierarchyRequestError();
+                        }
+                    }
+
+                    if ($elementChildren === 1) {
+                        foreach ($parent->childNodes as $childNode) {
+                            if ($childNode->nodeType === self::ELEMENT_NODE
+                                && $childNode !== $child
+                            ) {
+                                throw new HierarchyRequestError();
+                            }
+                        }
+
+                        $tw = new TreeWalker(
+                            $parent,
+                            NodeFilter::SHOW_DOCUMENT_TYPE
+                        );
+                        $tw->currentNode = $child;
+
+                        if ($tw->nextNode()) {
+                            throw new HierarchyRequestError();
+                        }
+                    }
+
+                    break;
+
+                case self::ELEMENT_NODE:
+                    foreach ($parent->childNodes as $childNode) {
+                        if ($childNode->nodeType === self::ELEMENT_NODE
+                            && $childNode !== $child
+                        ) {
+                            throw new HierarchyRequestError();
+                        }
+                    }
+
+                    $tw = new TreeWalker(
+                        $parent,
+                        NodeFilter::SHOW_DOCUMENT_TYPE
+                    );
+                    $tw->currentNode = $child;
+
+                    if ($tw->nextNode()) {
+                        throw new HierarchyRequestError();
+                    }
+
+                    break;
+
+                case self::DOCUMENT_TYPE_NODE:
+                    foreach ($parent->childNodes as $childNode) {
+                        if ($childNode->nodeType === self::DOCUMENT_TYPE_NODE
+                            && $childNode !== $child
+                        ) {
+                            throw new HierarchyRequestError();
+                        }
+                    }
+
+                    $tw = new TreeWalker(
+                        $parent,
+                        NodeFilter::SHOW_ELEMENT
+                    );
+                    $tw->currentNode = $child;
+
+                    if ($tw->previousNode()) {
+                        throw new HierarchyRequestError();
+                    }
+            }
+        }
+
+        $referenceChild = $child->nextSibling;
 
         if ($referenceChild === $node) {
             $referenceChild = $node->nextSibling;
         }
 
-        // The DOM4 spec states that nodes should be implicitly adopted
+        $previousSibling = $child->previousSibling;
         $parent->nodeDocument->doAdoptNode($node);
-        $parent->insertNode($node, $referenceChild);
+        $removedNodes = [];
 
-        return $node;
+        if ($child->parentNode) {
+            $removedNodes[] = $child;
+            $child->parentNode->removeNode($child, true);
+        }
+
+        $nodes = $node->nodeType == self::DOCUMENT_FRAGMENT_NODE
+            ? $node->childNodes->values()
+            : [$node];
+        $parent->insertNode($node, $referenceChild, true);
+
+        // TODO: Queue a mutation record of "childList" for target parent with
+        // addedNodes nodes, removedNodes removedNodes, nextSibling reference
+        // child, and previousSibling previousSibling.
+
+        return $child;
     }
 
     /**
-     * Removes the specified node from the current node.
+     * Replaces all nodes within a parent.
      *
-     * @param self $child The node to be removed from the DOM.
+     * @internal
      *
-     * @return self The node that was removed from the DOM.
+     * @see https://dom.spec.whatwg.org/#concept-node-replace-all
+     *
+     * @param ?self $node The node that is to be inserted.
+     *
+     * @return void
      */
-    public function removeChild(self $child): self
+    public function replaceAllNodes(?self $node): void
     {
-        return $this->preremoveNode($child);
+        if ($node) {
+            $this->nodeDocument->doAdoptNode($node);
+        }
+
+        $removedNodes = $this->childNodes->values();
+
+        if (!$node) {
+            $addedNodes = [];
+        } elseif ($node instanceof DocumentFragment) {
+            $addedNodes = $node->childNodes->values();
+        } else {
+            $addedNodes = [$node];
+        }
+
+        foreach ($removedNodes as $index => $removableNode) {
+            $this->removeNode($removableNode, true);
+        }
+
+        if ($node) {
+            $this->insertNode($node, null, true);
+        }
+
+        // TODO: Queue a mutation record for "childList"
+    }
+
+    /**
+     * Removes a node from another node after making sure that they share
+     * the same parent node.
+     *
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#concept-node-pre-remove
+     *
+     * @param self $child The node being removed.
+     *
+     * @return self The node that was removed.
+     *
+     * @throws \Rowbot\DOM\Exception\NotFoundError If the parent of the node being removed does not match the given
+     *                                             parent node.
+     */
+    protected function preremoveNode(self $child): self
+    {
+        $parent = $this;
+
+        if ($child->parentNode !== $parent) {
+            throw new NotFoundError();
+        }
+
+        $parent->removeNode($child);
+
+        return $child;
     }
 
     /**
@@ -1346,24 +1477,6 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
     }
 
     /**
-     * Replaces a node with another node.
-     *
-     * @see https://dom.spec.whatwg.org/#dom-node-replacechild
-     *
-     * @param self $node  The node to be inserted into the DOM.
-     * @param self $child The node that is being replaced by the new node.
-     *
-     * @return self The node that was replaced in the DOM.
-     *
-     * @throws \Rowbot\DOM\Exception\HierarchyRequestError
-     * @throws \Rowbot\DOM\Exception\NotFoundError
-     */
-    public function replaceChild(self $node, self $child): self
-    {
-        return $this->replaceNode($node, $child);
-    }
-
-    /**
      * Gets the node's node document.
      *
      * @internal
@@ -1392,91 +1505,214 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
     }
 
     /**
-     * Replaces all nodes within a parent.
+     * Returns the Node's length.
      *
      * @internal
      *
-     * @see https://dom.spec.whatwg.org/#concept-node-replace-all
+     * @see https://dom.spec.whatwg.org/#concept-node-length
      *
-     * @param ?self $node The node that is to be inserted.
-     *
-     * @return void
+     * @return int
      */
-    public function replaceAllNodes(?self $node): void
+    abstract public function getLength(): int;
+
+    /**
+     * Returns the Node's index.
+     *
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#concept-tree-index
+     *
+     * @return int
+     */
+    public function getTreeIndex(): int
     {
-        if ($node) {
-            $this->nodeDocument->doAdoptNode($node);
-        }
-
-        $removedNodes = $this->childNodes->values();
-
-        if (!$node) {
-            $addedNodes = [];
-        } elseif ($node instanceof DocumentFragment) {
-            $addedNodes = $node->childNodes->values();
-        } else {
-            $addedNodes = [$node];
-        }
-
-        foreach ($removedNodes as $index => $removableNode) {
-            $this->removeNode($removableNode, true);
-        }
-
-        if ($node) {
-            $this->insertNode($node, null, true);
-        }
-
-        // TODO: Queue a mutation record for "childList"
+        return $this->parentNode->childNodes->indexOf($this);
     }
 
     /**
-     * Gets the name of the node.
+     * Locates the prefix associated with the given namespace on the given
+     * element.
      *
-     * @internal
+     * @see https://dom.spec.whatwg.org/#locate-a-namespace-prefix
      *
-     * @see https://dom.spec.whatwg.org/#dom-node-nodename
+     * @param \Rowbot\DOM\Element\Element $element
+     * @param ?string                     $namespace
      *
-     * @return string
+     * @return ?string
      */
-    abstract protected function getNodeName(): string;
-
-    /**
-     * Gets the value of the node.
-     *
-     * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#dom-node-nodevalue
-     *
-     * @return string|null
-     */
-    abstract protected function getNodeValue(): ?string;
-
-    /**
-     * Gets a node's root.
-     *
-     * @see https://dom.spec.whatwg.org/#concept-tree-root
-     *
-     * @param array<string, bool> $options (optional) The only valid argument is a key named "composed" with a bool
-     *                                     value.
-     *
-     * @return self If the value of the "composed" key is true, then theshadow-including root will be returned,
-     *              otherwise, the root will be returned.
-     */
-    public function getRootNode(array $options = []): self
+    private function locatePrefix(Element $element, ?string $namespace): ?string
     {
-        $root = $this;
-
-        while ($root->parentNode) {
-            $root = $root->parentNode;
-        }
-
-        if (isset($options['composed']) && $options['composed'] === true &&
-            $root instanceof ShadowRoot
+        if ($element->namespaceURI === $namespace
+            && $element->prefix !== null
         ) {
-            $root = $root->host->getRootNode($options);
+            return $element->prefix;
         }
 
-        return $root;
+        foreach ($element->getAttributeList() as $attr) {
+            if ($attr->getPrefix() === 'xmlns'
+                && $attr->getValue() === $namespace
+            ) {
+                return $attr->getLocalName();
+            }
+        }
+
+        if ($element->parentElement !== null) {
+            return $this->locatePrefix($element, $namespace);
+        }
+
+        return null;
+    }
+
+    /**
+     * Finds the namespace associated with the given prefix on the given node.
+     *
+     * @see https://dom.spec.whatwg.org/#locate-a-namespace
+     *
+     * @param self    $node
+     * @param ?string $prefix
+     *
+     * @return ?string
+     */
+    private function locateNamespace(self $node, ?string $prefix): ?string
+    {
+        if ($node instanceof Element) {
+            if ($node->namespaceURI !== null && $node->prefix === $prefix) {
+                return $node->namespaceURI;
+            }
+
+            foreach ($node->getAttributeList() as $attr) {
+                if ($attr->namespaceURI === Namespaces::XMLNS) {
+                    $localName = $attr->localName;
+
+                    if (($$attr->prefix === 'xmlns' && $localName === $prefix)
+                        || ($prefix === null && $localName === 'xmlns')
+                    ) {
+                        if ($attr->value !== '') {
+                            return $attr->value;
+                        }
+
+                        return null;
+                    }
+                }
+            }
+
+            if ($node->parentElement === null) {
+                return null;
+            }
+
+            return $this->locateNamespace($node->parentElement, $prefix);
+        }
+
+        if ($node instanceof Document) {
+            if ($node->documentElement === null) {
+                return null;
+            }
+
+            return $this->locateNamespace($node->documentElement, $prefix);
+        }
+
+        if ($node instanceof DocumentType
+            || $node instanceof DocumentFragment
+        ) {
+            return null;
+        }
+
+        if ($node instanceof Attr) {
+            if ($node->ownerElement === null) {
+                return null;
+            }
+
+            return $this->locateNamespace($node->ownerElement, $prefix);
+        }
+
+        if ($node->parentElement === null) {
+            return null;
+        }
+
+        return $this->locateNamespace($node->parentElement, $prefix);
+    }
+
+    /**
+     * Clones the given node and performs any node specific cloning steps
+     * if the interface defines them.
+     *
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#concept-node-clone
+     *
+     * @param \Rowbot\DOM\Document|null $document      (optional) The document that will own thecloned node.
+     * @param bool                      $cloneChildren (optional) If set, all children of the cloned node will also be
+     *                                                 cloned.
+     *
+     * @return self The newly created node.
+     */
+    abstract public function cloneNodeInternal(
+        Document $document = null,
+        bool $cloneChildren = false
+    ): self;
+
+    /**
+     * Performs steps after cloning a node.
+     *
+     * @internal
+     *
+     * @see https://dom.spec.whatwg.org/#concept-node-clone
+     *
+     * @param \Rowbot\DOM\Node     $copy
+     * @param \Rowbot\DOM\Document $document
+     * @param bool                 $cloneChildren
+     *
+     * @return void
+     */
+    protected function postCloneNode(
+        Node $copy,
+        Document $document,
+        bool $cloneChildren
+    ): void {
+        if ($copy instanceof Document) {
+            $copy->setNodeDocument($copy);
+            $document = $copy;
+        } else {
+            $copy->setNodeDocument($document);
+        }
+
+        if (method_exists($this, 'onCloneNode')) {
+            $this->onCloneNode($copy, $document, $cloneChildren);
+        }
+
+        if ($cloneChildren) {
+            foreach ($this->childNodes as $child) {
+                $copyChild = $child->cloneNodeInternal($document, true);
+                $copy->appendChild($copyChild);
+            }
+        }
+    }
+
+    /**
+     * Gets the bottom most common ancestor of two nodes, if any. If null is returned, the two nodes do not have a
+     * common ancestor.
+     *
+     * @internal
+     *
+     * @return self
+     */
+    public static function getCommonAncestor(Node $nodeA, Node $nodeB): self
+    {
+        while ($nodeA) {
+            $node = $nodeB;
+
+            while ($node) {
+                if ($node === $nodeA) {
+                    break 2;
+                }
+
+                $node = $node->parentNode;
+            }
+
+            $nodeA = $nodeA->parentNode;
+        }
+
+        return $nodeA;
     }
 
     /**
@@ -1494,17 +1730,6 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
         // return the node's parent.
         return $this->parentNode;
     }
-
-    /**
-     * Gets the concatenation of all descendant text nodes.
-     *
-     * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#dom-node-textcontent
-     *
-     * @return string|null
-     */
-    abstract protected function getTextContent(): ?string;
 
     /**
      * @internal
@@ -1692,228 +1917,4 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
 
         return false;
     }
-
-    /**
-     * Removes a node from another node after making sure that they share
-     * the same parent node.
-     *
-     * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#concept-node-pre-remove
-     *
-     * @param self $child The node being removed.
-     *
-     * @return self The node that was removed.
-     *
-     * @throws \Rowbot\DOM\Exception\NotFoundError If the parent of the node being removed does not match the given
-     *                                             parent node.
-     */
-    protected function preremoveNode(self $child): self
-    {
-        $parent = $this;
-
-        if ($child->parentNode !== $parent) {
-            throw new NotFoundError();
-        }
-
-        $parent->removeNode($child);
-
-        return $child;
-    }
-
-    /**
-     * Replaces a node with another node inside this node.
-     *
-     * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#concept-node-replace
-     *
-     * @param self $node  The node being inserted.
-     * @param self $child The node being replaced.
-     *
-     * @return self The node that was replaced.
-     */
-    protected function replaceNode(self $node, self $child): self {
-        $parent = $this;
-
-        switch ($parent->nodeType) {
-            case self::DOCUMENT_NODE:
-            case self::DOCUMENT_FRAGMENT_NODE:
-            case self::ELEMENT_NODE:
-                break;
-
-            default:
-                throw new HierarchyRequestError();
-        }
-
-        if ($node->isHostIncludingInclusiveAncestorOf($parent)) {
-            throw new HierarchyRequestError();
-        }
-
-        if ($child->parentNode !== $parent) {
-            throw new NotFoundError();
-        }
-
-        switch ($node->nodeType) {
-            case self::DOCUMENT_FRAGMENT_NODE:
-            case self::DOCUMENT_TYPE_NODE:
-            case self::ELEMENT_NODE:
-            case self::TEXT_NODE:
-            case self::PROCESSING_INSTRUCTION_NODE:
-            case self::COMMENT_NODE:
-                break;
-
-            default:
-                throw new HierarchyRequestError();
-        }
-
-        if ($node->nodeType === self::TEXT_NODE
-            && $parent->nodeType === self::DOCUMENT_NODE
-        ) {
-            throw new HierarchyRequestError();
-        }
-
-        if ($node->nodeType === self::DOCUMENT_TYPE_NODE
-            && $parent->nodeType !== self::DOCUMENT_NODE
-        ) {
-            throw new HierarchyRequestError();
-        }
-
-        if ($parent->nodeType === self::DOCUMENT_NODE) {
-            switch ($node->nodeType) {
-                case self::DOCUMENT_FRAGMENT_NODE:
-                    $elementChildren = 0;
-
-                    foreach ($node->childNodes as $childNode) {
-                        switch ($childNode->nodeType) {
-                            case self::ELEMENT_NODE:
-                                $elementChildren++;
-
-                                if ($elementChildren > 1) {
-                                    throw new HierarchyRequestError();
-                                }
-
-                                break;
-
-                            case self::TEXT_NODE:
-                                throw new HierarchyRequestError();
-                        }
-                    }
-
-                    if ($elementChildren === 1) {
-                        foreach ($parent->childNodes as $childNode) {
-                            if ($childNode->nodeType === self::ELEMENT_NODE
-                                && $childNode !== $child
-                            ) {
-                                throw new HierarchyRequestError();
-                            }
-                        }
-
-                        $tw = new TreeWalker(
-                            $parent,
-                            NodeFilter::SHOW_DOCUMENT_TYPE
-                        );
-                        $tw->currentNode = $child;
-
-                        if ($tw->nextNode()) {
-                            throw new HierarchyRequestError();
-                        }
-                    }
-
-                    break;
-
-                case self::ELEMENT_NODE:
-                    foreach ($parent->childNodes as $childNode) {
-                        if ($childNode->nodeType === self::ELEMENT_NODE
-                            && $childNode !== $child
-                        ) {
-                            throw new HierarchyRequestError();
-                        }
-                    }
-
-                    $tw = new TreeWalker(
-                        $parent,
-                        NodeFilter::SHOW_DOCUMENT_TYPE
-                    );
-                    $tw->currentNode = $child;
-
-                    if ($tw->nextNode()) {
-                        throw new HierarchyRequestError();
-                    }
-
-                    break;
-
-                case self::DOCUMENT_TYPE_NODE:
-                    foreach ($parent->childNodes as $childNode) {
-                        if ($childNode->nodeType === self::DOCUMENT_TYPE_NODE
-                            && $childNode !== $child
-                        ) {
-                            throw new HierarchyRequestError();
-                        }
-                    }
-
-                    $tw = new TreeWalker(
-                        $parent,
-                        NodeFilter::SHOW_ELEMENT
-                    );
-                    $tw->currentNode = $child;
-
-                    if ($tw->previousNode()) {
-                        throw new HierarchyRequestError();
-                    }
-            }
-        }
-
-        $referenceChild = $child->nextSibling;
-
-        if ($referenceChild === $node) {
-            $referenceChild = $node->nextSibling;
-        }
-
-        $previousSibling = $child->previousSibling;
-        $parent->nodeDocument->doAdoptNode($node);
-        $removedNodes = [];
-
-        if ($child->parentNode) {
-            $removedNodes[] = $child;
-            $child->parentNode->removeNode($child, true);
-        }
-
-        $nodes = $node->nodeType == self::DOCUMENT_FRAGMENT_NODE
-            ? $node->childNodes->values()
-            : [$node];
-        $parent->insertNode($node, $referenceChild, true);
-
-        // TODO: Queue a mutation record of "childList" for target parent with
-        // addedNodes nodes, removedNodes removedNodes, nextSibling reference
-        // child, and previousSibling previousSibling.
-
-        return $child;
-    }
-
-    /**
-     * Sets the node's value.
-     *
-     * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#dom-node-nodevalue
-     *
-     * @param string $newValue The node's new value.
-     *
-     * @return void
-     */
-    abstract protected function setNodeValue($newValue): void;
-
-    /**
-     * Sets the nodes text content.
-     *
-     * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#dom-node-textcontent
-     *
-     * @param string|null $newValue The new text to be inserted into the node.
-     *
-     * @return void
-     */
-    abstract protected function setTextContent($newValue): void;
 }
