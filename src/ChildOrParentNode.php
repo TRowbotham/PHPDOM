@@ -48,12 +48,8 @@ trait ChildOrParentNode
         $node = new DocumentFragment();
         $node->setNodeDocument($document);
 
-        try {
-            foreach ($nodes as $child) {
-                $node->appendChild($child);
-            }
-        } catch (DOMException $e) {
-            throw $e;
+        foreach ($nodes as $child) {
+            $node->appendChild($child);
         }
 
         return $node;
