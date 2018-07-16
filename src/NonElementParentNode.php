@@ -4,7 +4,6 @@ namespace Rowbot\DOM;
 use Rowbot\DOM\Element\Element;
 
 use function is_string;
-use function mb_strtolower;
 
 /**
  * @see https://dom.spec.whatwg.org/#interface-nonelementparentnode
@@ -31,7 +30,7 @@ trait NonElementParentNode
             $this,
             NodeFilter::SHOW_ELEMENT,
             function ($node) use ($elementId) {
-                if (mb_strtolower($node->id) === mb_strtolower($elementId)) {
+                if ($node->id === $elementId) {
                     return NodeFilter::FILTER_ACCEPT;
                 }
 
