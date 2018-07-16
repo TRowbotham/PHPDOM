@@ -160,9 +160,6 @@ final class DOMTokenList implements
      * @param string $token A token to check against the token list.
      *
      * @return bool Returns true if the token is present, and false otherwise.
-     *
-     * @throws \Rowbot\DOM\Exception\SyntaxError           If the token is an empty string.
-     * @throws \Rowbot\DOM\Exception\InvalidCharacterError If the token contains ASCII whitespace.
      */
     public function contains($token): bool
     {
