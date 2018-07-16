@@ -62,7 +62,7 @@ trait ParentNode
     {
         return $this->childNodes->filter(function ($node) {
             return $node->nodeType == Node::ELEMENT_NODE;
-        })->values();
+        })->all();
     }
 
     /**

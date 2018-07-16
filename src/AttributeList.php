@@ -8,13 +8,13 @@ use Countable;
 use Iterator;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Exception\InUseAttributeError;
-use Rowbot\DOM\Support\OrderedSet;
+use Rowbot\DOM\Support\Collection\NodeSet;
 use SplObjectStorage;
 
 class AttributeList implements ArrayAccess, Countable, Iterator
 {
     /**
-     * @var \Rowbot\DOM\Support\OrderedSet
+     * @var \Rowbot\DOM\Support\Collection\NodeSet
      */
     private $list;
 
@@ -37,7 +37,7 @@ class AttributeList implements ArrayAccess, Countable, Iterator
      */
     public function __construct(Element $element)
     {
-        $this->list = new OrderedSet();
+        $this->list = new NodeSet();
         $this->element = $element;
         $this->observers = new SplObjectStorage();
     }

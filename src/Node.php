@@ -9,7 +9,7 @@ use Rowbot\DOM\Exception\DOMException;
 use Rowbot\DOM\Exception\HierarchyRequestError;
 use Rowbot\DOM\Exception\NotFoundError;
 use Rowbot\DOM\Exception\NotSupportedError;
-use Rowbot\DOM\Support\OrderedSet;
+use Rowbot\DOM\Support\Collection\NodeSet;
 use Rowbot\DOM\Support\UniquelyIdentifiable;
 use Rowbot\DOM\Support\UuidTrait;
 
@@ -62,7 +62,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
     const DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC = 0x20;
 
     /**
-     * @var \Rowbot\DOM\Support\OrderedSet
+     * @var \Rowbot\DOM\Support\Collection\NodeSet
      */
     protected $childNodes;
 
@@ -105,7 +105,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
     {
         parent::__construct();
 
-        $this->childNodes = new OrderedSet();
+        $this->childNodes = new NodeSet();
         $this->nodeList = new NodeList($this->childNodes);
         $this->nodeDocument = Document::getDefaultDocument();
     }
@@ -1114,7 +1114,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
 
         // Let nodes be node's children if node is a DocumentFragment node, and
         // a list containing solely node otherwise.
-        $nodes = $nodeIsFragment ? $node->childNodes->values() : [$node];
+        $nodes = $nodeIsFragment ? $node->childNodes->all() : [$node];
 
         // If node is a DocumentFragment node, remove its children with the
         // suppress observers flag set.
@@ -1345,7 +1345,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
         }
 
         $nodes = $node instanceof DocumentFragment
-            ? $node->childNodes->values()
+            ? $node->childNodes->all()
             : [$node];
         $parent->insertNode($node, $referenceChild, true);
 
@@ -1373,12 +1373,12 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             $this->nodeDocument->doAdoptNode($node);
         }
 
-        $removedNodes = $this->childNodes->values();
+        $removedNodes = $this->childNodes->all();
 
         if (!$node) {
             $addedNodes = [];
         } elseif ($node instanceof DocumentFragment) {
-            $addedNodes = $node->childNodes->values();
+            $addedNodes = $node->childNodes->all();
         } else {
             $addedNodes = [$node];
         }

@@ -5,7 +5,7 @@ use ArrayAccess;
 use ArrayIterator;
 use Countable;
 use IteratorAggregate;
-use Rowbot\DOM\Support\OrderedSet;
+use Rowbot\DOM\Support\Collection\NodeSet;
 
 /**
  * @see https://dom.spec.whatwg.org/#interface-nodelist
@@ -14,18 +14,18 @@ use Rowbot\DOM\Support\OrderedSet;
 class NodeList implements ArrayAccess, Countable, IteratorAggregate
 {
     /**
-     * @var \Rowbot\DOM\Support\OrderedSet
+     * @var \Rowbot\DOM\Support\Collection\NodeSet
      */
     private $nodes;
 
     /**
      * Constructor.
      *
-     * @param \Rowbot\DOM\Support\OrderedSet $nodes
+     * @param \Rowbot\DOM\Support\Collection\NodeSet $nodes
      *
      * @return void
      */
-    public function __construct(OrderedSet $nodes)
+    public function __construct(NodeSet $nodes)
     {
         $this->nodes = $nodes;
     }
@@ -121,6 +121,6 @@ class NodeList implements ArrayAccess, Countable, IteratorAggregate
      */
     public function getIterator(): ArrayIterator
     {
-        return new ArrayIterator($this->nodes->values());
+        return new ArrayIterator($this->nodes->all());
     }
 }
