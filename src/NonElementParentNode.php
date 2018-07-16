@@ -1,6 +1,8 @@
 <?php
 namespace Rowbot\DOM;
 
+use Rowbot\DOM\Element\Element;
+
 use function is_string;
 use function mb_strtolower;
 
