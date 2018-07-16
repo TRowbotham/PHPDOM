@@ -212,15 +212,6 @@ final class StringSet implements ArrayAccess, Countable, Iterator
         // the list.
         $this->cache[$newItem] = true;
 
-        // If item is the first item in the list, replace it with the
-        // replacement item using splice as this is faster than shifting and
-        // unshifting the array, which would result in the array being reindexed
-        // twice.
-        if ($this->list[0] === $item) {
-            array_splice($this->list, 0, 1, [$newItem]);
-            return;
-        }
-
         // If item is the last item in the list, pop it off the list and append
         // the replacement item.
         if ($this->list[$this->length - 1] === $item) {
@@ -228,6 +219,10 @@ final class StringSet implements ArrayAccess, Countable, Iterator
             $this->list[] = $newItem;
             return;
         }
+
+
+        $index = array_search($item, $this->list, true);
+        array_splice($this->list, $index, 1, [$newItem]);
     }
 
     /**
