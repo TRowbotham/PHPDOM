@@ -89,6 +89,10 @@ final class StringSet implements ArrayAccess, Countable, Iterator
      */
     public function append(string $item): void
     {
+        if (isset($this->cache[$item])) {
+            return;
+        }
+
         $this->list[] = $item;
         $this->cache[$item] = true;
         ++$this->length;
@@ -103,6 +107,10 @@ final class StringSet implements ArrayAccess, Countable, Iterator
      */
     public function prepend(string $item): void
     {
+        if (isset($this->cache[$item])) {
+            return;
+        }
+
         array_unshift($this->list, $item);
         $this->cache[$item] = true;
         ++$this->length;

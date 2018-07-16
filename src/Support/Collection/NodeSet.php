@@ -62,6 +62,10 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
      */
     public function append(Node $item): void
     {
+        if (isset($this->cache[$item->uuid()->toString()])) {
+            return;
+        }
+
         $this->list[] = $item;
         $this->cache[$item->uuid()->toString()] = true;
         ++$this->length;
@@ -76,6 +80,10 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
      */
     public function prepend(Node $item): void
     {
+        if (isset($this->cache[$item->uuid()->toString()])) {
+            return;
+        }
+
         array_unshift($this->list, $item);
         $this->cache[$item->uuid()->toString()] = true;
         ++$this->length;
