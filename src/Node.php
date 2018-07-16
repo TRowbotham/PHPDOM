@@ -1071,18 +1071,23 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      * @param \Rowbot\DOM\Node      $node              The nodes to be inserted into the document tree.
      * @param \Rowbot\DOM\Node|null $child             A child node used as a reference to where the new node should be
      *                                                 inserted.
-     * @param bool|null             $suppressObservers (optional) If true, mutation events are ignored for this operation.
+     * @param bool                  $suppressObservers (optional) If true, mutation events are ignored for this
+     *                                                 operation.
      */
     public function insertNode(
         Node $node,
         ?Node $child,
-        $suppressObservers = null
+        bool $suppressObservers = false
     ) {
         $parent = $this;
-        $nodeIsFragment = $node->nodeType === self::DOCUMENT_FRAGMENT_NODE;
+        $nodeIsFragment = $node instanceof DocumentFragment;
+
+        // Let count be the number of children of node if it is a
+        // DocumentFragment, and one otherwise.
         $count = $nodeIsFragment ? count($node->childNodes) : 1;
 
-        if ($child) {
+        // If child is non-null, then...
+        if ($child !== null) {
             $childIndex = $child->parentNode->childNodes->indexOf($child);
 
             foreach (Range::getRangeCollection() as $range) {
@@ -1091,48 +1096,87 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                 $endContainer = $range->endContainer;
                 $endOffset = $range->endOffset;
 
+                // For each live range whose start node is parent and start
+                // offset is greater than child's index, increase its start
+                // offset by count.
                 if ($startContainer === $parent && $startOffset > $childIndex) {
                     $range->setStart($startContainer, $startOffset + $count);
                 }
 
+                // For each live range whose end node is parent and end offset
+                // is greater than child's index, increase its end offset by
+                // count.
                 if ($endContainer === $parent && $endOffset > $childIndex) {
                     $range->setEnd($endContainer, $endOffset + $count);
                 }
             }
         }
 
+        // Let nodes be node's children if node is a DocumentFragment node, and
+        // a list containing solely node otherwise.
         $nodes = $nodeIsFragment ? $node->childNodes->values() : [$node];
 
+        // If node is a DocumentFragment node, remove its children with the
+        // suppress observers flag set.
         if ($nodeIsFragment) {
             foreach (clone $node->childNodes as $childNode) {
                 $node->removeNode($childNode, true);
             }
-
-            // TODO: queue a mutation record of "childList" for node with
-            // removedNodes nodes.
         }
 
+        // TODO: If node is a DocumentFragment node, then queue a tree
+        // mutation record for node, with « », nodes, null, and null. This step
+        // intentionally does not pay attention to the suppress observers flag.
+
+        // Let previousSibling be child's previous sibling or parent's last
+        // child if child is null.
+        $previousSibling = $child !== null
+            ? $child->previousSibling
+            : $parent->lastChild;
+
+        // For each node in nodes, in tree order...
         foreach ($nodes as $node) {
-            if (!$child) {
+            if ($child === null) {
                 $last = $this->childNodes->last();
             }
 
+            // If child is null, then append node to parent's children.
+            // Otherwise, insert node into parent's children before child's
+            // index.
+            if ($child === null) {
+                $parent->childNodes->append($node);
+            } else {
+                $parent->childNodes->insertBefore($child, $node);
+            }
+
             $node->parentNode = $parent;
-            $parent->childNodes->insertBefore($child, $node);
 
-            // TODO: For each inclusive descendant inclusiveDescendant of node,
-            // in tree order, run the insertion steps with inclusiveDescendant
-            // and parent.
+            // TODO: If parent is a shadow host and node is a slotable, then
+            // assign a slot for node.
 
+            // TODO: If node is a Text node, run the child text content change
+            // steps for parent.
+
+            // TODO: If parent's root is a shadow root, and parent is a slot
+            // whose assigned nodes is the empty list, then run signal a slot
+            // change for parent.
+
+            // TODO: Run assign slotables for a tree with node's root.
+
+            // TODO: For each shadow-including inclusive descendant
+            // inclusiveDescendant of node, in shadow-including tree order...
             $iter = new NodeIterator($node);
 
-            while (($descendant = $iter->nextNode())) {
-                if (method_exists($descendant, 'doInsertingSteps')) {
-                    $descendant->doInsertingSteps();
+            while (($inclusiveDescendant = $iter->nextNode())) {
+                // Run the insertion steps with inclusiveDescendant.
+                if (method_exists($inclusiveDescendant, 'doInsertingSteps')) {
+                    $inclusiveDescendant->doInsertingSteps(
+                        $inclusiveDescendant
+                    );
                 }
             }
 
-            if ($child) {
+            if ($child !== null) {
                 $oldPreviousSibling = $child->previousSibling;
                 $nextSibling = $child;
                 $child->previousSibling = $node;
@@ -1149,12 +1193,9 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             $node->nextSibling = $nextSibling;
         }
 
-        if (!$suppressObservers) {
-            // TODO: If suppress observers flag is unset, queue a mutation
-            // record of "childList" for parent with addedNodes nodes,
-            // nextSibling child, and previousSibling child’s previous
-            // sibling or parent’s last child if child is null.
-        }
+        // TODO: If suppress observers flag is unset, then queue a tree
+        // mutation record for parent with nodes, « », previous sibling, and
+        // child.
     }
 
     /**
