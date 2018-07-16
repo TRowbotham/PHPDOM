@@ -91,7 +91,7 @@ final class DOMTokenList implements
      *
      * @return string
      */
-    public function __set(string $name, $value): string
+    public function __set(string $name, string $value): string
     {
         switch ($name) {
             case 'value':
@@ -111,7 +111,7 @@ final class DOMTokenList implements
      *
      * @return string|null The token at the specified index or null if the index does not exist.
      */
-    public function item($index): ?string
+    public function item(int $index): ?string
     {
         return $this->tokens->offsetGet($index);
     }
@@ -129,11 +129,9 @@ final class DOMTokenList implements
      *
      * @return void
      */
-    public function add(...$tokens): void
+    public function add(string ...$tokens): void
     {
-        foreach ($tokens as &$token) {
-            $token = Utils::DOMString($token);
-
+        foreach ($tokens as $token) {
             if ($token === '') {
                 throw new SyntaxError();
             }
@@ -142,8 +140,6 @@ final class DOMTokenList implements
                 throw new InvalidCharacterError();
             }
         }
-
-        unset($token);
 
         foreach ($tokens as $token) {
             $this->tokens->append($token);
@@ -161,7 +157,7 @@ final class DOMTokenList implements
      *
      * @return bool Returns true if the token is present, and false otherwise.
      */
-    public function contains($token): bool
+    public function contains(string $token): bool
     {
         return $this->tokens->contains($token);
     }
@@ -178,11 +174,9 @@ final class DOMTokenList implements
      *
      * @return void
      */
-    public function remove(...$tokens): void
+    public function remove(string ...$tokens): void
     {
-        foreach ($tokens as &$token) {
-            $token = Utils::DOMString($token);
-
+        foreach ($tokens as $token) {
             if ($token === '') {
                 throw new SyntaxError();
             }
@@ -191,8 +185,6 @@ final class DOMTokenList implements
                 throw new InvalidCharacterError();
             }
         }
-
-        unset($token);
 
         foreach ($tokens as $token) {
             $this->tokens->remove($token);
@@ -217,10 +209,8 @@ final class DOMTokenList implements
      * @throws \Rowbot\DOM\Exception\SyntaxError           If either token is an empty string.
      * @throws \Rowbot\DOM\Exception\InvalidCharacterError If either token contains ASCII whitespace.
      */
-    public function toggle($token, bool $force = false): bool
+    public function toggle(string $token, bool $force = false): bool
     {
-        $token = Utils::DOMString($token);
-
         if ($token === '') {
             throw new SyntaxError();
         }
@@ -265,11 +255,8 @@ final class DOMTokenList implements
      *
      * @return bool
      */
-    public function replace($token, $newToken): bool
+    public function replace(string $token, string $newToken): bool
     {
-        $token = Utils::DOMString($token);
-        $newToken = Utils::DOMString($newToken);
-
         if ($token === '' || $newToken === '') {
             throw new SyntaxError();
         }
@@ -303,7 +290,7 @@ final class DOMTokenList implements
      * @throws \Rowbot\DOM\Exception\TypeError If the associated attribute's local name does not define a list of
      *                                         supported tokens.
      */
-    public function supports($token): bool
+    public function supports(string $token): bool
     {
         // TODO: This may not be worth implementing since we cannot accurately
         //     determine which values any particular browser actually supports.
