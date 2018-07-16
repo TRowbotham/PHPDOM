@@ -1210,7 +1210,8 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @return self The node that was replaced.
      */
-    protected function replaceNode(self $node, self $child): self {
+    protected function replaceNode(self $node, self $child): self
+    {
         $parent = $this;
 
         if (!$parent instanceof Document
