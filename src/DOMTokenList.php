@@ -138,7 +138,7 @@ final class DOMTokenList implements
                 throw new SyntaxError();
             }
 
-            if (preg_match('/\s/', $token)) {
+            if (preg_match(Utils::ASCII_WHITESPACE, $token)) {
                 throw new InvalidCharacterError();
             }
         }
@@ -187,7 +187,7 @@ final class DOMTokenList implements
                 throw new SyntaxError();
             }
 
-            if (preg_match('/\s/', $token)) {
+            if (preg_match(Utils::ASCII_WHITESPACE, $token)) {
                 throw new InvalidCharacterError();
             }
         }
@@ -225,7 +225,7 @@ final class DOMTokenList implements
             throw new SyntaxError();
         }
 
-        if (preg_match('/\s/', $token)) {
+        if (preg_match(Utils::ASCII_WHITESPACE, $token)) {
             throw new InvalidCharacterError();
         }
 
@@ -274,7 +274,9 @@ final class DOMTokenList implements
             throw new SyntaxError();
         }
 
-        if (preg_match('/\s/', $token) || preg_match('/\s/', $newToken)) {
+        if (preg_match(Utils::ASCII_WHITESPACE, $token)
+            || preg_match(Utils::ASCII_WHITESPACE, $newToken)
+        ) {
             throw new InvalidCharacterError();
         }
 
