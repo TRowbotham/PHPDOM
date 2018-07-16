@@ -7,7 +7,7 @@ use Iterator;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Exception\InvalidCharacterError;
 use Rowbot\DOM\Exception\SyntaxError;
-use Rowbot\DOM\Support\OrderedSet;
+use Rowbot\DOM\Support\Collection\StringSet;
 use Rowbot\DOM\Support\Stringable;
 
 use function preg_match;
@@ -15,8 +15,8 @@ use function preg_match;
 /**
  * @see https://dom.spec.whatwg.org/#interface-domtokenlist
  *
- * @property-read int $length Returns the number of tokens in the list.
- * @property string $value
+ * @property-read int    $length Returns the number of tokens in the list.
+ * @property      string $value
  */
 final class DOMTokenList implements
     ArrayAccess,
@@ -36,7 +36,7 @@ final class DOMTokenList implements
     private $element;
 
     /**
-     * @var \Rowbot\DOM\Support\OrderedSet
+     * @var \Rowbot\DOM\Support\Collection\StringSet
      */
     private $tokens;
 
@@ -52,14 +52,13 @@ final class DOMTokenList implements
     {
         $this->attrLocalName = $attrLocalName;
         $this->element = $element;
-        $this->tokens = new OrderedSet();
         $attrList = $this->element->getAttributeList();
         $attrList->observe($this);
         $attr = $attrList->getAttrByNamespaceAndLocalName(
             null,
             $this->attrLocalName
         );
-        $value = $attr ? $attr->value : null;
+        $value = $attr ? $attr->getValue() : '';
 
         $this->onAttributeChanged(
             $this->element,
@@ -339,7 +338,7 @@ final class DOMTokenList implements
 
         $attrList->setAttrValue(
             $this->attrLocalName,
-            Utils::serializeOrderedSet($this->tokens->values())
+            $this->tokens->toString()
         );
     }
 
@@ -484,13 +483,13 @@ final class DOMTokenList implements
         ?string $namespace
     ): void {
         if ($localName === $this->attrLocalName && $namespace === null) {
-            $this->tokens->clear();
+            if ($value === null) {
+                $this->tokens->clear();
 
-            if ($value !== null) {
-                foreach (Utils::parseOrderedSet($value) as $token) {
-                    $this->tokens->append($token);
-                }
+                return;
             }
+
+            $this->tokens = StringSet::createFromString($value);
         }
     }
 }

@@ -1,6 +1,8 @@
 <?php
 namespace Rowbot\DOM;
 
+use Rowbot\DOM\Support\Collection\StringSet;
+
 trait GetElementsBy
 {
     /**
@@ -14,12 +16,10 @@ trait GetElementsBy
      */
     public function getElementsByClassName($className): array
     {
-        $classes = Utils::parseOrderedSet(
-            Utils::DOMString($className)
-        );
+        $classes = StringSet::createFromString(Utils::DOMString($className));
         $collection = [];
 
-        if ($classes === '') {
+        if ($classes->isEmpty()) {
             return $collection;
         }
 

@@ -22,6 +22,13 @@ use function strlen;
 final class Utils
 {
     /**
+     * @see https://infra.spec.whatwg.org/#ascii-whitespace
+     *
+     * @var string
+     */
+    public const ASCII_WHITESPACE = '/[\x09\x0A\x0C\x0D\x20]+/u';
+
+    /**
      * Constructor.
      *
      * @return void
@@ -279,134 +286,6 @@ final class Utils
         }
 
         return $value;
-    }
-
-    /**
-     * Takes an input string and then parses the string for tokens while
-     * skipping over whitespace.
-     *
-     * @see https://dom.spec.whatwg.org/#concept-ordered-set-parser
-     *
-     * @param string $input A space delimited string of tokens to be parsed.
-     *
-     * @return string[] Array containing the parsed tokens.
-     */
-    public static function parseOrderedSet($input): array
-    {
-        $position = 0;
-        $tokens = [];
-        $length = mb_strlen($input);
-
-        self::collectCodePointSequence($input, $position, '/\s/');
-
-        while ($position < $length) {
-            $token = self::collectCodePointSequence($input, $position, '/\S/');
-
-            if (!isset($tokens[$token])) {
-                $tokens[$token] = 1;
-            }
-
-            self::collectCodePointSequence($input, $position, '/\s/');
-        }
-
-        return array_keys($tokens);
-    }
-
-    /**
-     * Parses a string for a token and returns that token.
-     *
-     * @see https://dom.spec.whatwg.org/#collect-a-code-point-sequence
-     *
-     * @param string $input    String of tokens to be parsed.
-     * @param int    $position Current position in the token string.
-     * @param string $pattern  A regular expresion representing a set of characers that should be collected.
-     *
-     * @return string Concatenated list of characters.
-     */
-    public static function collectCodePointSequence(
-        $input,
-        int &$position,
-        string $pattern
-    ): string {
-        $result = '';
-        $length = mb_strlen($input);
-
-        while ($position < $length) {
-            $c = mb_substr($input, $position, 1);
-
-            if (!preg_match($pattern, $c)) {
-                break;
-            }
-
-            $result .= $c;
-            $position++;
-        }
-
-        return $result;
-    }
-
-    /**
-     * @see https://html.spec.whatwg.org/multipage/infrastructure.html#strictly-split-a-string
-     *
-     * @param string $input
-     * @param string $delimiter
-     *
-     * @return string[]
-     */
-    public function strictlySplitString($input, string $delimiter): array
-    {
-        $position = 0;
-        $tokens = [];
-        $length = mb_strlen($input);
-
-        while ($position < $length) {
-            $token = self::collectCodePointSequence(
-                $input,
-                $position,
-                '/[^\x20]/'
-            );
-
-            if ($token) {
-                $tokens[] = $token;
-            }
-
-            $position++;
-        }
-
-        return $tokens;
-    }
-
-    /**
-     * Takes an array and concatenates the values of the array into a string
-     * with each token separated by U+0020.
-     *
-     * @see https://dom.spec.whatwg.org/#concept-ordered-set-serializer
-     *
-     * @param string[] $set     An ordered set of tokens.
-     * @param bool     $isAssoc (optional) If $set is an associative array.
-     *
-     * @return string Concatenated string of tokens.
-     */
-    public static function serializeOrderedSet(
-        array $set,
-        bool $isAssoc = false
-    ): string {
-        if ($isAssoc) {
-            $count = 0;
-            $output = '';
-
-            foreach ($set as $key => $value) {
-                if ($count++ != 0) {
-                    $output .= "\x20";
-                }
-
-                $output .= $key;
-            }
-
-            return $output;
-        }
-
-        return implode("\x20", $set);
     }
 
     /**
