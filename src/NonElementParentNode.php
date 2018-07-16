@@ -3,8 +3,6 @@ namespace Rowbot\DOM;
 
 use Rowbot\DOM\Element\Element;
 
-use function is_string;
-
 /**
  * @see https://dom.spec.whatwg.org/#interface-nonelementparentnode
  */
@@ -20,12 +18,8 @@ trait NonElementParentNode
      *
      * @return \Rowbot\DOM\Element\Element|null
      */
-    public function getElementById($elementId): ?Element
+    public function getElementById(string $elementId): ?Element
     {
-        if (!is_string($elementId)) {
-            return null;
-        }
-
         $tw = new TreeWalker(
             $this,
             NodeFilter::SHOW_ELEMENT,
