@@ -97,7 +97,7 @@ final class DOMTokenList implements
             case 'value':
                 $this->element->getAttributeList()->setAttrValue(
                     $this->attrLocalName,
-                    Utils::DOMString($value)
+                    $value
                 );
         }
     }
