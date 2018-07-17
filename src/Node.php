@@ -707,8 +707,6 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             return null;
         }
 
-        $namespace = Utils::DOMString($namespace);
-
         if ($this instanceof Element) {
             return $this->locatePrefix($this, $namespace);
         }
