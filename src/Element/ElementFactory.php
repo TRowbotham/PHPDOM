@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Element;
 
 use Rowbot\DOM\Document;
