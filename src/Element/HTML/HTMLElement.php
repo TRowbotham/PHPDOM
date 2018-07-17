@@ -59,7 +59,7 @@ class HTMLElement extends Element
         $this->dataset;
     }
 
-    public function __get($name)
+    public function __get(string $name)
     {
         switch ($name) {
             case 'accessKey':
@@ -154,7 +154,7 @@ class HTMLElement extends Element
         }
     }
 
-    public function __set($name, $value)
+    public function __set(string $name, $value)
     {
         switch ($name) {
             case 'accessKey':

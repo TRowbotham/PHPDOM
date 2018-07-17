@@ -114,7 +114,7 @@ class Attr extends Node
     {
         switch ($name) {
             case 'value':
-                $this->setExistingAttributeValue(Utils::DOMString($value));
+                $this->setExistingAttributeValue($value);
 
                 break;
 
@@ -225,7 +225,7 @@ class Attr extends Node
      *
      * @return void
      */
-    protected function setExistingAttributeValue($value): void
+    protected function setExistingAttributeValue(string $value): void
     {
         if (!$this->ownerElement) {
             $this->value = $value;
@@ -286,9 +286,13 @@ class Attr extends Node
     /**
      * {@inheritDoc}
      */
-    protected function setNodeValue($newValue): void
+    protected function setNodeValue(?string $value): void
     {
-        $this->setExistingAttributeValue($newValue);
+        if ($value === null) {
+            $value = '';
+        }
+
+        $this->setExistingAttributeValue($value);
     }
 
     /**
@@ -302,8 +306,12 @@ class Attr extends Node
     /**
      * {@inheritDoc}
      */
-    protected function setTextContent($newValue): void
+    protected function setTextContent(?string $value): void
     {
+        if ($value === null) {
+            $value = '';
+        }
+
         $this->setExistingAttributeValue($newValue);
     }
 }

@@ -111,7 +111,7 @@ class Element extends Node implements AttributeChangeObserver
     /**
      * {@inheritDoc}
      */
-    public function __get($name)
+    public function __get(string $name)
     {
         switch ($name) {
             case 'attributes':
@@ -186,7 +186,7 @@ class Element extends Node implements AttributeChangeObserver
     /**
      * {@inheritDoc}
      */
-    public function __set($name, $value)
+    public function __set(string $name, $value)
     {
         switch ($name) {
             case 'classList':
@@ -195,29 +195,24 @@ class Element extends Node implements AttributeChangeObserver
                 break;
 
             case 'className':
-                $this->attributeList->setAttrValue(
-                    'class',
-                    Utils::DOMString($value)
-                );
+                $this->attributeList->setAttrValue('class', $value);
 
                 break;
 
             case 'id':
-                $this->attributeList->setAttrValue(
-                    $name,
-                    Utils::DOMString($value)
-                );
+                $this->attributeList->setAttrValue($name, $value);
 
                 break;
 
             case 'innerHTML':
+                if ($value === null) {
+                    $value = '';
+                }
+
                 // Let fragment be the result of invoking the fragment parsing
                 // algorithm with the new value as markup, and the context
                 // object as the context element.
-                $fragment = ParserFactory::parseFragment(
-                    Utils::DOMString($value, true),
-                    $this
-                );
+                $fragment = ParserFactory::parseFragment($value, $this);
 
                 // If the context object is a template element, then let context
                 // object be the template's template contents (a
@@ -236,6 +231,10 @@ class Element extends Node implements AttributeChangeObserver
                 break;
 
             case 'outerHTML':
+                if ($value === null) {
+                    $value = '';
+                }
+
                 // Let parent be the context object's parent.
                 $parent = $this->parentNode;
 
@@ -267,10 +266,7 @@ class Element extends Node implements AttributeChangeObserver
                 // Let fragment be the result of invoking the fragment parsing
                 // algorithm with the new value as markup, and parent as the
                 // context element.
-                $fragment = ParserFactory::parseFragment(
-                    Utils::DOMString($value, true),
-                    $parent
-                );
+                $fragment = ParserFactory::parseFragment($value, $parent);
 
                 // Replace the context object with fragment within the context
                 // object's parent.
@@ -298,9 +294,9 @@ class Element extends Node implements AttributeChangeObserver
      */
     public static function create(
         $document,
-        $localName,
-        $namespace,
-        $prefix = null
+        string $localName,
+        ?string $namespace,
+        ?string $prefix = null
     ) {
         $element = new static();
         $element->localName = $localName;
@@ -681,12 +677,12 @@ class Element extends Node implements AttributeChangeObserver
         return $attr;
     }
 
-    public function closest($selectorRule)
+    public function closest(string $selectorRule)
     {
         // TODO
     }
 
-    public function matches($selectorRule)
+    public function matches(string $selectorRule)
     {
         // TODO
     }
@@ -921,7 +917,7 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @return \Rowbot\DOM\Element\Element[] A list of Elements with the specified tagName.
      */
-    protected function shallowGetElementsByTagName($tagName)
+    protected function shallowGetElementsByTagName(string $tagName)
     {
         $collection = [];
         $node = $this->childNodes->first();
@@ -952,7 +948,7 @@ class Element extends Node implements AttributeChangeObserver
      * @return array<string, mixed>|false An array containing the serialized absolute URL as well as the parsed URL or
      *                                    false on failure.
      */
-    protected function parseURL($url, $documentOrEnvironmentSetting)
+    protected function parseURL(string $url, $documentOrEnvironmentSetting)
     {
         if ($documentOrEnvironmentSetting instanceof Document) {
             $encoding = $documentOrEnvironmentSetting->characterSet;
@@ -989,7 +985,7 @@ class Element extends Node implements AttributeChangeObserver
      *
      * @return string
      */
-    protected function reflectStringAttributeValue($name)
+    protected function reflectStringAttributeValue(string $name)
     {
         return $this->attributeList->getAttrValue($name);
     }
@@ -1082,7 +1078,7 @@ class Element extends Node implements AttributeChangeObserver
     /**
      * {@inheritDoc}
      */
-    protected function setNodeValue($newValue): void
+    protected function setNodeValue(?string $value): void
     {
         // Do nothing.
     }
@@ -1090,13 +1086,16 @@ class Element extends Node implements AttributeChangeObserver
     /**
      * {@inheritDoc}
      */
-    protected function setTextContent($newValue): void
+    protected function setTextContent(?string $value): void
     {
-        $node = null;
-        $newValue = Utils::DOMString($newValue, true);
+        if ($value === null) {
+            $value = '';
+        }
 
-        if ($newValue !== '') {
-            $node = new Text($newValue);
+        $node = null;
+
+        if ($value !== '') {
+            $node = new Text($value);
             $node->nodeDocument = $this->nodeDocument;
         }
 

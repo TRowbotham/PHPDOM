@@ -6,7 +6,7 @@ namespace Rowbot\DOM\Exception;
  */
 class SyntaxError extends DOMException
 {
-    public function __construct($message = '', $previous = null)
+    public function __construct(string $message = '', $previous = null)
     {
         if ($message === '') {
             $message = 'The string did not match the expected pattern.';

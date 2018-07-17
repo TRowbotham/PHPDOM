@@ -14,9 +14,9 @@ class Comment extends CharacterData
      *
      * @return void
      */
-    public function __construct($data = '')
+    public function __construct(string $data = '')
     {
-        parent::__construct(Utils::DOMString($data));
+        parent::__construct($data);
 
         $this->nodeType = Node::COMMENT_NODE;
     }

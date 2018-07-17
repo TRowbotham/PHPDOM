@@ -33,7 +33,7 @@ class CodePointStream
      *
      * @return void
      */
-    public function __construct($data = '')
+    public function __construct(string $data = '')
     {
         $this->currentChar = 0;
         $this->nextChar = 0;
@@ -53,7 +53,7 @@ class CodePointStream
      *
      * @return void
      */
-    public function append($data): void
+    public function append(string $data): void
     {
         $data = preg_split('//u', $data, -1, PREG_SPLIT_NO_EMPTY);
 
@@ -71,7 +71,7 @@ class CodePointStream
      *
      * @return void
      */
-    public function prepend($data): void
+    public function prepend(string $data): void
     {
         $data = preg_split('//u', $data, -1, PREG_SPLIT_NO_EMPTY);
 

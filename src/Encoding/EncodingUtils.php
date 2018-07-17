@@ -94,7 +94,7 @@ abstract class EncodingUtils
      * @return string|bool Returns the encoding name on succes or false on
      *     failure.
      */
-    public static function getEncoding($label)
+    public static function getEncoding(string $label)
     {
         switch (trim(mb_strtolower($label, 'utf-8'))) {
             case 'unicode-1-1-utf-8':
@@ -496,7 +496,7 @@ abstract class EncodingUtils
      *
      * @return string
      */
-    public static function getOutputEncoding($encoding)
+    public static function getOutputEncoding(string $encoding): string
     {
         if ($encoding === 'replacement' || $encoding === 'UTF-16BE' ||
             $encoding === 'UTF-16LE'
@@ -507,7 +507,7 @@ abstract class EncodingUtils
         return $encoding;
     }
 
-    public static function mb_html_entity_decode($string)
+    public static function mb_html_entity_decode(string $string): string
     {
         $oldLang = mb_language();
         $oldInternalEnc = mb_internal_encoding();
@@ -527,7 +527,7 @@ abstract class EncodingUtils
         return $entity;
     }
 
-    public static function mb_ord($string)
+    public static function mb_ord(string $string)
     {
         if (!isset(self::$useIntlChar)) {
             self::$useIntlChar = class_exists('\IntlChar');
@@ -560,15 +560,15 @@ abstract class EncodingUtils
         }
     }
 
-    public static function mb_chr($string)
+    public static function mb_chr($int)
     {
         if (!isset(self::$useIntlChar)) {
             self::$useIntlChar = class_exists('\IntlChar');
         }
 
         return self::$useIntlChar ?
-            \IntlChar::chr($string) :
-            self::mb_html_entity_decode('&#' . intval($string) . ';');
+            \IntlChar::chr($int) :
+            self::mb_html_entity_decode('&#' . intval($int) . ';');
     }
 
     /**
@@ -650,7 +650,7 @@ abstract class EncodingUtils
      * @param string $char
      * @return integer
      */
-    protected static function charToCodePoint($char)
+    protected static function charToCodePoint(string $char)
     {
         $code = ord($char[0]);
         if ($code < 128) {
@@ -669,7 +669,7 @@ abstract class EncodingUtils
      * @param integer $code
      * @return string
      */
-    protected static function codePointToChar($code)
+    protected static function codePointToChar($code): string
     {
         if ($code <= 0x7F) {
             return chr($code);

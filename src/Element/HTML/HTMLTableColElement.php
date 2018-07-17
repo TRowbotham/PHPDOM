@@ -16,7 +16,7 @@ class HTMLTableColElement extends HTMLElement
         $this->span = 0;
     }
 
-    public function __get($name)
+    public function __get(string $name)
     {
         switch ($name) {
             case 'span':
@@ -27,7 +27,7 @@ class HTMLTableColElement extends HTMLElement
         }
     }
 
-    public function __set($name, $value)
+    public function __set(string $name, $value)
     {
         switch ($name) {
             case 'span':

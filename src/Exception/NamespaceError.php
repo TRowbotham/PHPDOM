@@ -6,7 +6,7 @@ namespace Rowbot\DOM\Exception;
  */
 class NamespaceError extends DOMException
 {
-    public function __construct($message = '', $previous = null)
+    public function __construct(string $message = '', $previous = null)
     {
         if ($message === '') {
             $message = 'The operation is not allowed by Namespaces in XML.';

@@ -622,13 +622,12 @@ class TreeBuilder
             // from a meta element to that attribute's value returns an
             // encoding, and the confidence is currently tentative, then
             // change the encoding to the extracted encoding.
-            $encoding = EncodingUtils::getEncoding(
-                $node->getAttribute('charset')
-            );
+            $charset = $node->getAttribute('charset');
 
-            if ($encoding !== false &&
-                $this->state->encodingConfidence ==
-                    ParserState::CONFIDENCE_TENTATIVE
+            if ($charset !== null
+                && EncodingUtils::getEncoding($charset) !== false
+                && $this->state->encodingConfidence
+                == ParserState::CONFIDENCE_TENTATIVE
             ) {
                 // TODO: change the encoding to the resulting encoding
             } elseif ($node->hasAttribute('http-equiv') &&

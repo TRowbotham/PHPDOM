@@ -20,7 +20,7 @@ class HTMLTemplateElement extends HTMLElement
         $this->content->setHost($this);
     }
 
-    public function __get($name)
+    public function __get(string $name)
     {
         switch ($name) {
             case 'content':

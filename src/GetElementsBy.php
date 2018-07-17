@@ -14,9 +14,9 @@ trait GetElementsBy
      *
      * @return \Rowbot\DOM\Element\Element[]
      */
-    public function getElementsByClassName($className): array
+    public function getElementsByClassName(string $classNames): array
     {
-        $classes = StringSet::createFromString(Utils::DOMString($className));
+        $classes = StringSet::createFromString($classNames);
         $collection = [];
 
         if ($classes->isEmpty()) {
@@ -52,22 +52,23 @@ trait GetElementsBy
      *
      * @see https://dom.spec.whatwg.org/#dom-document-getelementsbytagname
      *
-     * @param string $localName The element's local name to search for. If given '*', all element decendants will be
-     *                          returned.
+     * @param string $qualifiedName The element's local name to search for. If given '*', all element decendants will be
+     *                              returned.
      *
      * @return \Rowbot\DOM\Element\Element[] A list of Elements with the specified local name.
      */
-    public function getElementsByTagName($localName): array
+    public function getElementsByTagName(string $qualifiedName): array
     {
         $collection = [];
-        $localName = Utils::DOMString($localName);
 
-        if ($localName === '*') {
+        if ($qualifiedName === '*') {
             $nodeFilter = null;
         } elseif ($this instanceof Document) {
-            $nodeFilter = function ($node) use ($localName) {
+            $nodeFilter = function ($node) use ($qualifiedName) {
                 $shouldAccept = ($node->namespaceURI === Namespaces::HTML
-                    && $node->localName === Utils::toASCIILowercase($localName))
+                    && $node->localName === Utils::toASCIILowercase(
+                        $qualifiedName
+                    ))
                     || ($node->namespaceURI === Namespaces::HTML
                     && $node->localName === $localName);
 
@@ -78,8 +79,8 @@ trait GetElementsBy
                 return NodeFilter::FILTER_SKIP;
             };
         } else {
-            $nodeFilter = function ($node) use ($localName) {
-                if ($node->localName === $localName) {
+            $nodeFilter = function ($node) use ($qualifiedName) {
+                if ($node->localName === $qualifiedName) {
                     return NodeFilter::FILTER_ACCEPT;
                 }
 
@@ -113,13 +114,12 @@ trait GetElementsBy
      */
     public function getElementsByTagNameNS(
         ?string $namespace,
-        $localName
+        string $localName
     ): array {
         if ($namespace === '') {
             $namespace = null;
         }
 
-        $localName = Utils::DOMString($localName);
         $collection = [];
 
         if ($namespace === '*' && $localName === '*') {

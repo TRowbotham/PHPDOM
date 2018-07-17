@@ -67,7 +67,7 @@ class HTMLDocument extends Document
                 break;
 
             case 'title':
-                $this->setTitle(Utils::DOMString($value));
+                $this->setTitle($value);
 
                 break;
 
@@ -249,7 +249,7 @@ class HTMLDocument extends Document
      *
      * @return void
      */
-    protected function setTitle($newTitle): void
+    protected function setTitle(string $newTitle): void
     {
         $docElement = $this->getFirstElementChild();
         $element = null;

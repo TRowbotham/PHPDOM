@@ -46,7 +46,11 @@ abstract class EventTarget
      *         ]
      *
      */
-    public function addEventListener($type, $callback, $options = false) {
+    public function addEventListener(
+        string $type,
+        $callback,
+        $options = false
+    ) {
         // If callback is null, terminate these steps.
         if ($callback === null) {
             return;
@@ -62,13 +66,7 @@ abstract class EventTarget
             return;
         }
 
-        $listener = new Listener(
-            Utils::DOMString($type),
-            $callback,
-            $capture,
-            $once,
-            $passive
-        );
+        $listener = new Listener($type, $callback, $capture, $once, $passive);
         $found = false;
 
         foreach ($this->listeners as $l) {
@@ -102,7 +100,11 @@ abstract class EventTarget
      *              capture => boolean
      *          ]
      */
-    public function removeEventListener($type, $callback, $options = false) {
+    public function removeEventListener(
+        string $type,
+        $callback,
+        $options = false
+    ) {
         // If callback is null, terminate these steps.
         if ($callback === null) {
             return;
@@ -118,11 +120,7 @@ abstract class EventTarget
             return;
         }
 
-        $listener = new Listener(
-            Utils::DOMString($type),
-            $callback,
-            $capture
-        );
+        $listener = new Listener($type, $callback, $capture);
 
         foreach ($this->listeners as $index => $eventListener) {
             if ($eventListener->isEqual($listener)) {

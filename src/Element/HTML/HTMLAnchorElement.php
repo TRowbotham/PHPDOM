@@ -81,7 +81,7 @@ class HTMLAnchorElement extends HTMLElement
         $this->setURL();
     }
 
-    public function __get($name)
+    public function __get(string $name)
     {
         switch ($name) {
             case 'download':
@@ -146,7 +146,7 @@ class HTMLAnchorElement extends HTMLElement
         }
     }
 
-    public function __set($name, $value)
+    public function __set(string $name, $value)
     {
         switch ($name) {
             case 'download':

@@ -6,7 +6,7 @@ namespace Rowbot\DOM\Exception;
  */
 class InvalidNodeTypeError extends DOMException
 {
-    public function __construct($message = '', $previous = null)
+    public function __construct(string $message = '', $previous = null)
     {
         if ($message === '') {
             $message = 'The supplied node is incorrect or has an incorrect '

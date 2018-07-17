@@ -22,9 +22,9 @@ final class URLParser
      * @return \Rowbot\URL\URLRecord|false
      */
     public static function parseUrl(
-        $input,
+        string $input,
         URLRecord $base = null,
-        $encodingOverride = null
+        string $encodingOverride = null
     ) {
         $url = BasicURLParser::parseBasicUrl($input, $base, $encodingOverride);
 

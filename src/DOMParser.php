@@ -31,7 +31,7 @@ final class DOMParser
      *
      * @return \Rowbot\DOM\Document
      */
-    public function parseFromString($str, string $type): Document
+    public function parseFromString(string $str, string $type): Document
     {
         switch ($type) {
             case 'text/html':

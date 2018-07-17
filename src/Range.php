@@ -1100,7 +1100,7 @@ final class Range extends AbstractRange implements Stringable
      *
      * @return \Rowbot\DOM\DocumentFragment
      */
-    public function createContextualFragment($fragment)
+    public function createContextualFragment(string $fragment)
     {
         $node = $this->startNode;
 

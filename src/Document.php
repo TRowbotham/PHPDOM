@@ -250,10 +250,8 @@ class Document extends Node implements Stringable
      *
      * @throws \Rowbot\DOM\Exception\InvalidCharacterError
      */
-    public function createAttribute($localName): Attr
+    public function createAttribute(string $localName): Attr
     {
-        $localName = Utils::DOMString($localName);
-
         // If localName does not match the Name production in XML, then
         // throw an InvalidCharacterError.
         if (!preg_match(Namespaces::NAME_PRODUCTION, $localName)) {
@@ -284,8 +282,10 @@ class Document extends Node implements Stringable
      * @throws \Rowbot\DOM\Exception\NamespaceError
      * @throws \Rowbot\DOM\Exception\InvalidCharacterError
      */
-    public function createAttributeNS(?string $namespace, $qualifiedName): Attr
-    {
+    public function createAttributeNS(
+        ?string $namespace,
+        string $qualifiedName
+    ): Attr {
         try {
             list(
                 $namespace,
@@ -293,7 +293,7 @@ class Document extends Node implements Stringable
                 $localName
             ) = Namespaces::validateAndExtract(
                 $namespace,
-                Utils::DOMString($qualifiedName)
+                $qualifiedName
             );
         } catch (DOMException $e) {
             throw $e;
@@ -314,7 +314,7 @@ class Document extends Node implements Stringable
      *
      * @return \Rowbot\DOM\Comment
      */
-    public function createComment($data): Comment
+    public function createComment(string $data): Comment
     {
         $node = new Comment($data);
         $node->nodeDocument = $this;
@@ -349,10 +349,8 @@ class Document extends Node implements Stringable
      *
      * @throws \Rowbot\DOM\Exception\InvalidCharacterError
      */
-    public function createElement($localName): HTMLElement
+    public function createElement(string $localName): HTMLElement
     {
-        $localName = Utils::DOMString($localName);
-
         // If localName does not match the Name production, then throw an
         // InvalidCharacterError.
         if (!preg_match(Namespaces::NAME_PRODUCTION, $localName)) {
@@ -393,21 +391,19 @@ class Document extends Node implements Stringable
      *
      * @see https://dom.spec.whatwg.org/#dom-document-createelementns
      *
-     * @param string|null $namespace     The element's namespace.
-     * @param string      $qualifiedName The element's qualified name.
+     * @param ?string $namespace     The element's namespace.
+     * @param string  $qualifiedName The element's qualified name.
      *
      * @return \Rowbot\DOM\Element\Element
      *
      * @throws \Rowbot\DOM\Exception\InvalidCharacterError
      * @throws \Rowbot\DOM\Exception\NamespaceError
      */
-    public function createElementNS(?string $namespace, $qualifiedName): Element
-    {
-        return ElementFactory::createNS(
-            $this,
-            $namespace,
-            Utils::DOMString($qualifiedName)
-        );
+    public function createElementNS(
+        ?string $namespace,
+        string $qualifiedName
+    ): Element {
+        return ElementFactory::createNS($this, $namespace, $qualifiedName);
     }
 
     /**
@@ -421,10 +417,10 @@ class Document extends Node implements Stringable
      *
      * @throws \Rowbot\DOM\Exception\NotSupportedError
      */
-    public function createEvent($interface): Event
+    public function createEvent(string $interface): Event
     {
         $constructor = null;
-        $interface = strtolower(Utils::DOMString($interface));
+        $interface = strtolower($interface);
 
         switch ($interface) {
             case 'customevent':
@@ -484,18 +480,14 @@ class Document extends Node implements Stringable
      * @return \Rowbot\DOM\ProcessingInstruction
      */
     public function createProcessingInstruction(
-        $target,
-        $data
+        string $target,
+        string $data
     ): ProcessingInstruction {
-        $target = Utils::DOMString($target);
-
         // If target does not match the Name production, then throw an
         // InvalidCharacterError.
         if (!preg_match(Namespaces::NAME_PRODUCTION, $target)) {
             throw new InvalidCharacterError();
         }
-
-        $data = Utils::DOMString($data);
 
         if (mb_strpos($data, '?>') !== false) {
             throw new InvalidCharacterError();
@@ -530,7 +522,7 @@ class Document extends Node implements Stringable
      *
      * @return \Rowbot\DOM\Text
      */
-    public function createTextNode($data): Text
+    public function createTextNode(string $data): Text
     {
         $node = new Text($data);
         $node->nodeDocument = $this;
@@ -550,15 +542,13 @@ class Document extends Node implements Stringable
      * @throws \Rowbot\DOM\Exception\InvalidCharacterError
      * @throws \Rowbot\DOM\Exception\NotSupportedError
      */
-    public function createCDATASection($data): CDATASection
+    public function createCDATASection(string $data): CDATASection
     {
         // If context object is an HTML document, then throw a
         // NotSupportedError.
         if ($this instanceof HTMLDocument) {
             throw new NotSupportedError();
         }
-
-        $data = Utils::DOMString($data);
 
         // If data contains the string "]]>", then throw an
         // InvalidCharacterError.
@@ -1025,7 +1015,7 @@ class Document extends Node implements Stringable
     /**
      * {@inheritDoc}
      */
-    protected function setNodeValue($newValue): void
+    protected function setNodeValue(?string $value): void
     {
         // Do nothing.
     }
@@ -1033,7 +1023,7 @@ class Document extends Node implements Stringable
     /**
      * {@inheritDoc}
      */
-    protected function setTextContent($newValue): void
+    protected function setTextContent(?string $value): void
     {
         // Do nothing.
     }

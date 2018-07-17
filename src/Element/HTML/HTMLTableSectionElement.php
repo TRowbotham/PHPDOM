@@ -24,7 +24,7 @@ class HTMLTableSectionElement extends HTMLElement
         parent::__construct();
     }
 
-    public function __get($name)
+    public function __get(string $name)
     {
         switch ($name) {
             case 'rows':

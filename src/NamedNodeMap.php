@@ -68,10 +68,10 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
      *
      * @return \Rowbot\DOM\Attr|null
      */
-    public function getNamedItem($qualifiedName): ?Attr
+    public function getNamedItem(string $qualifiedName): ?Attr
     {
         return $this->element->getAttributeList()->getAttrByName(
-            Utils::DOMString($qualifiedName)
+            $qualifiedName
         );
     }
 
@@ -85,13 +85,12 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
      *
      * @return \Rowbot\DOM\Attr|null
      */
-    public function getNamedItemNS(?string $namespace, $localName): ?Attr
+    public function getNamedItemNS(?string $namespace, string $localName): ?Attr
     {
-        return $this->element->getAttributeList()
-            ->getAttrByNamespaceAndLocalName(
-            $namespace,
-            Utils::DOMString($localName)
-        );
+        return $this
+            ->element
+            ->getAttributeList()
+            ->getAttrByNamespaceAndLocalName($namespace, $localName);
     }
 
     /**
@@ -133,10 +132,10 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
      *
      * @throws \Rowbot\DOM\Exception\NotFoundError
      */
-    public function removeNamedItem($qualifiedName): Attr
+    public function removeNamedItem(string $qualifiedName): Attr
     {
         $attr = $this->element->getAttributeList()->removeAttrByName(
-            Utils::DOMString($qualifiedName)
+            $qualifiedName
         );
 
         if (!$attr) {
@@ -158,13 +157,14 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
      *
      * @throws \Rowbot\DOM\Exception\NotFoundError
      */
-    public function removeNamedItemNS(?string $namespace, $localName): Attr
-    {
-        $attr = $this->element->getAttributeList()
-            ->removeAttrByNamespaceAndLocalName(
-            $namespace,
-            Utils::DOMString($localName)
-        );
+    public function removeNamedItemNS(
+        ?string $namespace,
+        string $localName
+    ): Attr {
+        $attr = $this
+            ->element
+            ->getAttributeList()
+            ->removeAttrByNamespaceAndLocalName($namespace, $localName);
 
         if (!$attr) {
             throw new NotFoundError();

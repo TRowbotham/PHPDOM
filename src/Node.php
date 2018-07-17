@@ -273,11 +273,11 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @see https://dom.spec.whatwg.org/#dom-node-nodevalue
      *
-     * @param string $newValue The node's new value.
+     * @param ?string $newValue The node's new value.
      *
      * @return void
      */
-    abstract protected function setNodeValue($newValue): void;
+    abstract protected function setNodeValue(?string $value): void;
 
     /**
      * Gets the concatenation of all descendant text nodes.
@@ -297,11 +297,11 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @see https://dom.spec.whatwg.org/#dom-node-textcontent
      *
-     * @param string|null $newValue The new text to be inserted into the node.
+     * @param ?string $newValue The new text to be inserted into the node.
      *
      * @return void
      */
-    abstract protected function setTextContent($newValue): void;
+    abstract protected function setTextContent(?string $value): void;
 
     /**
      * "Normalizes" the node and its sub-tree so that there are no empty text

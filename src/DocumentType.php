@@ -37,8 +37,11 @@ class DocumentType extends Node
      *
      * @return void
      */
-    public function __construct($name, $publicId = '', $systemId = '')
-    {
+    public function __construct(
+        string $name,
+        string $publicId = '',
+        string $systemId = ''
+    ) {
         parent::__construct();
 
         $this->name = $name;
@@ -50,7 +53,7 @@ class DocumentType extends Node
     /**
      * {@inheritDoc}
      */
-    public function __get($name)
+    public function __get(string $name)
     {
         switch ($name) {
             case 'name':
@@ -117,7 +120,7 @@ class DocumentType extends Node
     /**
      * {@inheritDoc}
      */
-    protected function setNodeValue($newValue): void
+    protected function setNodeValue(?string $value): void
     {
         // Do nothing.
     }
@@ -125,7 +128,7 @@ class DocumentType extends Node
     /**
      * {@inheritDoc}
      */
-    protected function setTextContent($newValue): void
+    protected function setTextContent(?string $value): void
     {
         // Do nothing.
     }

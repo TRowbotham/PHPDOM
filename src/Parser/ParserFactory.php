@@ -22,7 +22,7 @@ final class ParserFactory
      *
      * @return \Rowbot\DOM\HTMLDocument
      */
-    public static function parseHTMLDocument($markup)
+    public static function parseHTMLDocument(string $markup)
     {
         $doc = new HTMLDocument();
         $parser = new HTMLParser($doc);
@@ -40,8 +40,10 @@ final class ParserFactory
      *
      * @return \Rowbot\DOM\DocumentFragment
      */
-    public static function parseFragment($markup, Element $contextElement)
-    {
+    public static function parseFragment(
+        string $markup,
+        Element $contextElement
+    ) {
         $ownerDocument = $contextElement->getNodeDocument();
 
         if ($ownerDocument instanceof HTMLDocument) {

@@ -1,8 +1,6 @@
 <?php
 namespace Rowbot\DOM\Event;
 
-use Rowbot\DOM\Utils;
-
 /**
  * Represents a custom event defined by the user which they can use to signal
  * that an event has occured in their code.
@@ -18,7 +16,7 @@ class CustomEvent extends Event
     private $detail;
 
     public function __construct(
-        $type,
+        string $type,
         CustomEventInit $eventInitDict = null
     ) {
         parent::__construct($type);
@@ -29,7 +27,7 @@ class CustomEvent extends Event
         $this->detail =& $initDict->detail;
     }
 
-    public function __get($name)
+    public function __get(string $name)
     {
         switch ($name) {
             case 'detail':
@@ -57,7 +55,7 @@ class CustomEvent extends Event
      *     the event.
      */
     public function initCustomEvent(
-        $type,
+        string $type,
         $bubbles = false,
         $cancelable = false,
         &$detail = null
@@ -66,7 +64,7 @@ class CustomEvent extends Event
             return;
         }
 
-        $this->init(Utils::DOMString($type), $bubbles, $cancelable);
+        $this->init($type, $bubbles, $cancelable);
         $this->detail =& $detail;
     }
 }

@@ -152,16 +152,16 @@ final class ElementFactory
      *
      * @param \Rowbot\DOM\Document $document  The element's owner document.
      * @param string               $localName The element's local name that you are creating.
-     * @param string               $namespace The namespace that the element belongs to.
-     * @param string|null          $prefix    (optional) The namespace prefix of the element.
+     * @param ?string              $namespace The namespace that the element belongs to.
+     * @param ?string              $prefix    (optional) The namespace prefix of the element.
      *
      * @return \Rowbot\DOM\Element\Element
      */
     public static function create(
         $document,
-        $localName,
-        $namespace,
-        $prefix = null
+        string $localName,
+        ?string $namespace,
+        ?string $prefix = null
     ): Element {
         $interface = 'Element';
 
@@ -187,15 +187,15 @@ final class ElementFactory
      * @see https://dom.spec.whatwg.org/#internal-createelementns-steps
      *
      * @param \Rowbot\DOM\Document $document      The Element's owner document.
-     * @param string               $namespace     The Element's namespace.
+     * @param ?string              $namespace     The Element's namespace.
      * @param string               $qualifiedName The Element's fully qualified name.
      *
      * @return \Rowbot\DOM\Element\Element
      */
     public static function createNS(
         Document $document,
-        $namespace,
-        $qualifiedName
+        ?string $namespace,
+        string $qualifiedName
     ): Element {
         list(
             $namespace,

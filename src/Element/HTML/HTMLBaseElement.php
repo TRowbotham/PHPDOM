@@ -16,7 +16,7 @@ class HTMLBaseElement extends HTMLElement
         parent::__construct();
     }
 
-    public function __get($name)
+    public function __get(string $name)
     {
         switch ($name) {
             case 'href':
@@ -42,7 +42,7 @@ class HTMLBaseElement extends HTMLElement
         }
     }
 
-    public function __set($name, $value)
+    public function __set(string $name, $value)
     {
         switch ($name) {
             case 'href':
@@ -105,7 +105,7 @@ class HTMLBaseElement extends HTMLElement
      *     a content attribute being added to the element, the content attribute
      *     has not yet been placed in the element's content attribute list.
      */
-    public function setFrozenBaseURL($href = null)
+    public function setFrozenBaseURL(?string $href = null)
     {
         $document = $this->nodeDocument;
         $fallbackBaseURL = $document->getFallbackBaseURL();

@@ -1,20 +1,11 @@
 <?php
 namespace Rowbot\DOM;
 
-use function array_keys;
-use function get_class;
-use function implode;
 use function intval;
-use function is_bool;
-use function is_int;
-use function is_object;
-use function is_scalar;
-use function is_string;
 use function mb_strlen;
 use function mb_substr;
 use function mb_strtolower;
 use function mb_strtoupper;
-use function method_exists;
 use function pow;
 use function preg_match;
 use function strlen;
@@ -38,52 +29,6 @@ final class Utils
     }
 
     /**
-     * Returns a string representation of the given value. If the nullable
-     * option is true, then this method has a chance to return null, otherwise,
-     * it will always return a string. According to the spec, a DOMString
-     * should be a UTF-16 encoded string, however, we intentionally skip this at
-     * the present time.
-     *
-     * @param mixed $value                  A variable to be converted to a string.
-     * @param bool  $treatNullAsEmptyString Whether or not a null value should be represented as an empty string or
-     *                                      represented as the literal string "null".
-     * @param bool  $nullable               If true, null is an accepted value and it will return null instead of a
-     *                                      string and it will take precedence over the $treatNullAsEmptyString
-     *                                      argument.
-     *
-     * @return ?string
-     */
-    public static function DOMString(
-        $value,
-        bool $treatNullAsEmptyString = false,
-        bool $nullable = false
-    ): ?string {
-        if (is_string($value)) {
-            return $value;
-        } elseif (is_bool($value)) {
-            return $value ? 'true' : 'false';
-        } elseif ($value === null) {
-            if ($nullable) {
-                return null;
-            } elseif ($treatNullAsEmptyString) {
-                return '';
-            } else {
-                return 'null';
-            }
-        } elseif (is_scalar($value)) {
-            return (string) $value;
-        } elseif (is_object($value)) {
-            if (method_exists($value, '__toString')) {
-                return (string) $value;
-            } else {
-                return '[object ' . get_class($value) . ']';
-            }
-        }
-
-        return '';
-    }
-
-    /**
      * Replaces all characters in the range U+0041 to U+005A, inclusive, with
      * the corresponding characters in the range U+0061 to U+007A, inclusive.
      *
@@ -93,7 +38,7 @@ final class Utils
      *
      * @return string
      */
-    public static function toASCIILowercase($value): string
+    public static function toASCIILowercase(string $value): string
     {
         $len = mb_strlen($value);
         $output = '';
@@ -121,7 +66,7 @@ final class Utils
      *
      * @return string
      */
-    public static function toASCIIUppercase($value): string
+    public static function toASCIIUppercase(string $value): string
     {
         $len = mb_strlen($value);
         $output = '';

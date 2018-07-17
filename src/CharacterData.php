@@ -37,7 +37,7 @@ abstract class CharacterData extends Node
      *
      * @return void
      */
-    public function __construct($data)
+    public function __construct(string $data)
     {
         parent::__construct();
 
@@ -71,11 +71,11 @@ abstract class CharacterData extends Node
     {
         switch ($name) {
             case 'data':
-                $this->doReplaceData(
-                    0,
-                    $this->length,
-                    Utils::DOMString($value, true)
-                );
+                if ($value === null) {
+                    $value = '';
+                }
+
+                $this->doReplaceData(0, $this->length, $value);
 
                 break;
 
@@ -93,9 +93,9 @@ abstract class CharacterData extends Node
      *
      * @return void
      */
-    public function appendData($data): void
+    public function appendData(string $data): void
     {
-        $this->doReplaceData($this->length, 0, Utils::DOMString($data));
+        $this->doReplaceData($this->length, 0, $data);
     }
 
     /**
@@ -132,12 +132,12 @@ abstract class CharacterData extends Node
      *
      * @throws IndexSizeError If the given offset is greater than the length of the data.
      */
-    public function insertData(int $offset, $data): void
+    public function insertData(int $offset, string $data): void
     {
         $this->doReplaceData(
             Utils::unsignedLong($offset),
             0,
-            Utils::DOMString($data)
+            $data
         );
     }
 
@@ -155,12 +155,12 @@ abstract class CharacterData extends Node
      *
      * @throws IndexSizeError If the given offset is greater than the length of the data.
      */
-    public function replaceData(int $offset, int $count, $data): void
+    public function replaceData(int $offset, int $count, string $data): void
     {
         $this->doReplaceData(
             Utils::unsignedLong($offset),
             Utils::unsignedLong($count),
-            Utils::DOMString($data)
+            $data
         );
     }
 
@@ -177,7 +177,7 @@ abstract class CharacterData extends Node
      *
      * @throws IndexSizeError If the given offset is greater than the length of the data.
      */
-    public function doReplaceData(int $offset, int $count, $data): void
+    public function doReplaceData(int $offset, int $count, string $data): void
     {
         $length = $this->length;
 
@@ -314,13 +314,13 @@ abstract class CharacterData extends Node
     /**
      * {@inheritDoc}
      */
-    protected function setNodeValue($newValue): void
+    protected function setNodeValue(?string $value): void
     {
-        $this->doReplaceData(
-            0,
-            $this->length,
-            Utils::DOMString($newValue, true)
-        );
+        if ($value === null) {
+            $value = '';
+        }
+
+        $this->doReplaceData(0, $this->length, $value);
     }
 
     /**
@@ -334,12 +334,12 @@ abstract class CharacterData extends Node
     /**
      * {@inheritDoc}
      */
-    protected function setTextContent($newValue): void
+    protected function setTextContent(?string $value): void
     {
-        $this->doReplaceData(
-            0,
-            $this->length,
-            Utils::DOMString($newValue, true)
-        );
+        if ($value === null) {
+            $value = '';
+        }
+
+        $this->doReplaceData(0, $this->length, $value);
     }
 }

@@ -142,7 +142,7 @@ class DocumentFragment extends Node
     /**
      * {@inheritDoc}
      */
-    protected function setNodeValue($newValue): void
+    protected function setNodeValue(?string $value): void
     {
         // Do nothing.
     }
@@ -150,13 +150,16 @@ class DocumentFragment extends Node
     /**
      * {@inheritDoc}
      */
-    protected function setTextContent($newValue): void
+    protected function setTextContent(?string $value): void
     {
-        $node = null;
-        $newValue = Utils::DOMString($newValue, true);
+        if ($value === null) {
+            $value = '';
+        }
 
-        if ($newValue !== '') {
-            $node = new Text($newValue);
+        $node = null;
+
+        if ($value !== '') {
+            $node = new Text($value);
             $node->nodeDocument = $this->nodeDocument;
         }
 

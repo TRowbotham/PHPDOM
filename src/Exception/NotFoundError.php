@@ -6,7 +6,7 @@ namespace Rowbot\DOM\Exception;
  */
 class NotFoundError extends DOMException
 {
-    public function __construct($message = '', $previous = null)
+    public function __construct(string $message = '', $previous = null)
     {
         if ($message === '') {
             $message = 'The object can not be found here.';

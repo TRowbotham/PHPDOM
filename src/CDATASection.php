@@ -13,7 +13,7 @@ class CDATASection extends Text
      *
      * @return void
      */
-    public function __construct($data)
+    public function __construct(string $data)
     {
         parent::__construct($data);
 

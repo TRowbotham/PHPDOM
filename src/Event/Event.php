@@ -1,7 +1,6 @@
 <?php
 namespace Rowbot\DOM\Event;
 
-use Rowbot\DOM\Utils;
 use SplDoublyLinkedList;
 
 use function microtime;
@@ -71,7 +70,7 @@ class Event
     protected $timeStamp;
     protected $type;
 
-    public function __construct($type, EventInit $eventInitDict = null)
+    public function __construct(string $type, EventInit $eventInitDict = null)
     {
         $initDict = $eventInitDict ?: new EventInit();
         $this->bubbles = $initDict->bubbles;
@@ -86,7 +85,7 @@ class Event
         $this->type = $type;
     }
 
-    public function __get($name)
+    public function __get(string $name)
     {
         switch ($name) {
             case 'bubbles':
@@ -126,13 +125,16 @@ class Event
      * @param boolean $cancelable Optional. Whether or not the event's default
      *     action can be prevented.  Defaults to false.
      */
-    public function initEvent($type, $bubbles = false, $cancelable = false)
-    {
+    public function initEvent(
+        string $type,
+        $bubbles = false,
+        $cancelable = false
+    ) {
         if ($this->flags & EventFlags::DISPATCH) {
             return;
         }
 
-        $this->init(Utils::DOMString($type), $bubbles, $cancelable);
+        $this->init($type, $bubbles, $cancelable);
     }
 
     /**
@@ -310,7 +312,7 @@ class Event
      *
      * @param string $type The event's type.
      */
-    public function setType($type)
+    public function setType(string $type)
     {
         $this->type = $type;
     }
@@ -338,7 +340,7 @@ class Event
      *
      * @param bool $cancelable Whether the event is cancelable or not.
      */
-    protected function init($type, $bubbles, $cancelable)
+    protected function init(string $type, $bubbles, $cancelable)
     {
         $this->flags |= EventFlags::INITIALIZED;
         $this->flags &= ~(EventFlags::STOP_PROPAGATION

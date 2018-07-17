@@ -6,7 +6,7 @@ namespace Rowbot\DOM\Exception;
  */
 class HierarchyRequestError extends DOMException
 {
-    public function __construct($message = '', $previous = null)
+    public function __construct(string $message = '', $previous = null)
     {
         if ($message === '') {
             $message = 'The operation would yield an incorrect node tree.';

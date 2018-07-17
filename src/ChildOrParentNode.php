@@ -30,7 +30,7 @@ trait ChildOrParentNode
         // string and node document is document.
         foreach ($nodes as &$potentialNode) {
             if (!$potentialNode instanceof Node) {
-                $potentialNode = new Text(Utils::DOMString($potentialNode));
+                $potentialNode = new Text($potentialNode);
                 $potentialNode->setNodeDocument($document);
             }
         }

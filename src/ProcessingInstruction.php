@@ -21,7 +21,7 @@ class ProcessingInstruction extends CharacterData
      *
      * @return void
      */
-    public function __construct($target, $data)
+    public function __construct(string $target, string $data)
     {
         parent::__construct($data);
 

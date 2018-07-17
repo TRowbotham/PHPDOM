@@ -6,7 +6,7 @@ namespace Rowbot\DOM\Exception;
  */
 class TypeError extends DOMException
 {
-    public function __construct($message = '', $previous = null)
+    public function __construct(string $message = '', $previous = null)
     {
         parent::__construct($message, 0, $previous);
     }

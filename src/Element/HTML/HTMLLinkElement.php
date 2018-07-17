@@ -48,7 +48,7 @@ class HTMLLinkElement extends HTMLElement
         $this->sizes = new DOMTokenList($this, 'sizes');
     }
 
-    public function __get($name)
+    public function __get(string $name)
     {
         switch ($name) {
             case 'crossOrigin':
@@ -85,7 +85,7 @@ class HTMLLinkElement extends HTMLElement
         }
     }
 
-    public function __set($name, $value)
+    public function __set(string $name, $value)
     {
         switch ($name) {
             case 'crossOrigin':

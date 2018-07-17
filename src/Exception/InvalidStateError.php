@@ -6,7 +6,7 @@ namespace Rowbot\DOM\Exception;
  */
 class InvalidStateError extends DOMException
 {
-    public function __construct($message = '', $previous = null)
+    public function __construct(string $message = '', $previous = null)
     {
         if ($message === '') {
             $message = 'This object is in an invalid state.';
