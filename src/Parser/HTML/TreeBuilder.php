@@ -36,9 +36,7 @@ use Rowbot\DOM\Element\HTML\{
     HTMLTableCaptionElement,
     HTMLTableCellElement,
     HTMLTableColElement,
-    HTMLTableDataElement,
     HTMLTableElement,
-    HTMLTableHeaderCellElement,
     HTMLTableRowElement,
     HTMLTableSectionElement,
     HTMLTemplateElement,
@@ -3530,22 +3528,14 @@ class TreeBuilder
 
         // If the current node is not now a td element or a th element, then
         // this is a parse error.
-        $currentNode = $this->openElements->bottom();
-
-        if (!($currentNode instanceof HTMLTableDataElement) &&
-            !($currentNode instanceof HTMLTableHeaderCellElement)
-        ) {
+        if (!$this->openElement->bottom() instanceof HTMLTableCellElement) {
             // Parse error.
         }
 
         // Pop elements from the stack of open elements stack until a td
         // element or a th element has been popped from the stack.
         while (!$this->openElements->isEmpty()) {
-            $popped = $this->openElements->pop();
-
-            if ($popped instanceof HTMLTableDataElement ||
-                $popped instanceof HTMLTableHeaderCellElement
-            ) {
+            if ($this->openElements->pop() instanceof HTMLTableCellElement) {
                 break;
             }
         }

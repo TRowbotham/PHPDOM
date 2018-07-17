@@ -6,12 +6,12 @@ use Rowbot\DOM\DOMTokenList;
 use function is_int;
 
 /**
- * A common class from which the HTMLTableDataCellElement and
- * HTMLTableHeaderCellElement classes derive from.  The HTMLTableDataCellElement
- * and HTMLTableHeaderCellElement classes represent the HTML <td> and <th>
- * elements respectively.
+ * Represents the HTML <td> and <th> elements respectively.
  *
- * @see https://html.spec.whatwg.org/#htmltablecellelement
+ * @see https://html.spec.whatwg.org/multipage/tables.html#htmltablecellelement
+ * @see https://html.spec.whatwg.org/multipage/obsolete.html#HTMLTableCellElement-partial
+ * @see https://html.spec.whatwg.org/multipage/tables.html#the-td-element
+ * @see https://html.spec.whatwg.org/multipage/tables.html#the-th-element
  *
  * @property int $colSpan Represents the number of columns this row must span.
  *     Default value is 1.  Reflects the value of the colspan attribute.
