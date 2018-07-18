@@ -111,7 +111,7 @@ abstract class CharacterData extends Node
      *
      * @throws IndexSizeError If the given offset is greater than the length of the data.
      */
-    public function deleteData(int $offset, $count): void
+    public function deleteData(int $offset, int $count): void
     {
         $this->doReplaceData(
             Utils::unsignedLong($offset),

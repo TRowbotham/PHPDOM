@@ -160,7 +160,7 @@ final class ElementFactory
      * @return \Rowbot\DOM\Element\Element
      */
     public static function create(
-        $document,
+        Document $document,
         string $localName,
         ?string $namespace,
         ?string $prefix = null

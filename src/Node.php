@@ -1433,8 +1433,10 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @return void
      */
-    public function removeNode(self $node, $suppressObservers = null): void
-    {
+    public function removeNode(
+        self $node,
+        bool $suppressObservers = false
+    ): void {
         $parent = $this;
         $index = $parent->childNodes->indexOf($node);
         $ranges = Range::getRangeCollection();

@@ -50,7 +50,7 @@ class XMLParser extends Parser
      * @throws \Rowbot\DOM\Exception\SyntaxError
      */
     public static function parseXMLFragment(
-        $input,
+        string $input,
         Element $contextElement
     ): array {
         $document = new Document();

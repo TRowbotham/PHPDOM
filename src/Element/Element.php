@@ -293,7 +293,7 @@ class Element extends Node implements AttributeChangeObserver
      * @return self
      */
     public static function create(
-        $document,
+        Document $document,
         string $localName,
         ?string $namespace,
         ?string $prefix = null

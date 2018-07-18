@@ -59,10 +59,10 @@ class Attr extends Node
      * @return void
      */
     public function __construct(
-        $localName,
-        $value,
-        $namespace = null,
-        $prefix = null
+        string $localName,
+        string $value,
+        ?string $namespace = null,
+        ?string $prefix = null
     ) {
         parent::__construct();
 
