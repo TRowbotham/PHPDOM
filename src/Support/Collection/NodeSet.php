@@ -62,12 +62,12 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
      */
     public function append(Node $item): void
     {
-        if (isset($this->cache[$item->uuid()->toString()])) {
+        if (isset($this->cache[$item->uuid()])) {
             return;
         }
 
         $this->list[] = $item;
-        $this->cache[$item->uuid()->toString()] = true;
+        $this->cache[$item->uuid()] = true;
         ++$this->length;
     }
 
@@ -80,12 +80,12 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
      */
     public function prepend(Node $item): void
     {
-        if (isset($this->cache[$item->uuid()->toString()])) {
+        if (isset($this->cache[$item->uuid()])) {
             return;
         }
 
         array_unshift($this->list, $item);
-        $this->cache[$item->uuid()->toString()] = true;
+        $this->cache[$item->uuid()] = true;
         ++$this->length;
     }
 
@@ -106,8 +106,8 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
             return;
         }
 
-        $itemId = $item->uuid()->toString();
-        $newItemId = $newItem->uuid()->toString();
+        $itemId = $item->uuid();
+        $newItemId = $newItem->uuid();
         $containsItem = isset($this->cache[$itemId]);
         $containsNewItem = isset($this->cache[$newItemId]);
 
@@ -209,11 +209,11 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
      */
     public function insertBefore(Node $item, Node $newItem): void
     {
-        if (!isset($this->cache[$item->uuid()->toString()])) {
+        if (!isset($this->cache[$item->uuid()])) {
             return;
         }
 
-        $this->cache[$newItem->uuid()->toString()] = true;
+        $this->cache[$newItem->uuid()] = true;
         ++$this->length;
 
         // If we are trying to insert before the first item in the array use
@@ -237,7 +237,7 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
      */
     public function remove(Node $item): void
     {
-        $id = $item->uuid()->toString();
+        $id = $item->uuid();
 
         if (!isset($this->cache[$id])) {
             return;
@@ -295,7 +295,7 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
      */
     public function contains(Node $item): bool
     {
-        return isset($this->cache[$item->uuid()->toString()]);
+        return isset($this->cache[$item->uuid()]);
     }
 
     /**
@@ -317,7 +317,7 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
      */
     public function indexOf(Node $item): int
     {
-        if (!isset($this->cache[$item->uuid()->toString()])) {
+        if (!isset($this->cache[$item->uuid()])) {
             return -1;
         }
 

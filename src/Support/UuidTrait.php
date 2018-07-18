@@ -10,8 +10,8 @@ trait UuidTrait
 {
     private $uuid;
 
-    public function uuid(): UuidInterface
+    public function uuid(): string
     {
-        return $this->uuid ?? $this->uuid = Uuid::uuid4();
+        return $this->uuid ?? ($this->uuid = Uuid::uuid4()->toString());
     }
 }

@@ -51,14 +51,14 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
             return;
         }
 
-        $oldHash = $oldItem->uuid()->toString();
+        $oldHash = $oldItem->uuid();
 
         if (!isset($this->cache[$oldHash])) {
             throw new NotInCollectionException();
             return;
         }
 
-        $newHash = $newItem->uuid()->toString();
+        $newHash = $newItem->uuid();
 
         if (isset($this->cache[$newHash])) {
             throw new DuplicateItemException();
@@ -96,12 +96,12 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
             return;
         }
 
-        if (!isset($this->cache[$oldItem->uuid()->toString()])) {
+        if (!isset($this->cache[$oldItem->uuid()])) {
             throw new NotInCollectionException();
             return;
         }
 
-        $newHash = $newItem->uuid()->toString();
+        $newHash = $newItem->uuid();
 
         if (isset($this->cache[$newHash])) {
             throw new DuplicateItemException();
@@ -134,12 +134,12 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
             return;
         }
 
-        if (!isset($this->cache[$oldItem->uuid()->toString()])) {
+        if (!isset($this->cache[$oldItem->uuid()])) {
             throw new NotInCollectionException();
             return;
         }
 
-        $newHash = $newItem->uuid()->toString();
+        $newHash = $newItem->uuid();
 
         if (isset($this->cache[$newHash])) {
             throw new DuplicateItemException();
@@ -163,7 +163,7 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
      */
     public function remove(UniquelyIdentifiable $item)
     {
-        $hash = $item->uuid()->toString();
+        $hash = $item->uuid();
 
         if (!isset($this->cache[$hash])) {
             throw new NotInCollectionException();
@@ -203,7 +203,7 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
      */
     public function contains(UniquelyIdentifiable $item): bool
     {
-        return isset($this->cache[$item->uuid()->toString()]);
+        return isset($this->cache[$item->uuid()]);
     }
 
     /**
@@ -238,7 +238,7 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
      */
     public function indexOf(UniquelyIdentifiable $item): int
     {
-        if (!isset($this->cache[$item->uuid()->toString()])) {
+        if (!isset($this->cache[$item->uuid()])) {
             throw new NotInCollectionException();
             return -1;
         }
@@ -257,7 +257,7 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
      */
     public function push(UniquelyIdentifiable $item)
     {
-        $hash = $item->uuid()->toString();
+        $hash = $item->uuid();
 
         if (isset($this->cache[$hash])) {
             throw new DuplicateItemException();
@@ -284,7 +284,7 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
         }
 
         $item = array_pop($this->collection);
-        unset($this->cache[$item->uuid()->toString()]);
+        unset($this->cache[$item->uuid()]);
         --$this->size;
         return $item;
     }
