@@ -324,10 +324,10 @@ class Tokenizer
                 case TokenizerState::TAG_NAME:
                     $c = $this->inputStream->get();
 
-                    if ($c === "\x09" ||
-                        $c === "\x0A" ||
-                        $c === "\x0C" ||
-                        $c === "\x20"
+                    if ($c === "\x09"
+                        || $c === "\x0A"
+                        || $c === "\x0C"
+                        || $c === "\x20"
                     ) {
                         // Switch to the before attribute name state.
                         $this->state->tokenizerState =
@@ -352,9 +352,9 @@ class Tokenizer
                         $tagToken->tagName .= self::REPLACEMENT_CHAR;
                     } elseif ($this->inputStream->isEoS()) {
                         // Parse error.
-                        // Reconsume in the data state.
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState = TokenizerState::DATA;
+                        // Emit an end-of-file token.
+                        yield new EOFToken();
+                        return;
                     } else {
                         // Append the current input character to the current tag
                         // token's tag name.
