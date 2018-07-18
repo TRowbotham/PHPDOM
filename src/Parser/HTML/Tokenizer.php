@@ -221,7 +221,7 @@ class Tokenizer
                     break;
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#plaintext-state
-                case TokenizerState::SCRIPT_DATA:
+                case TokenizerState::PLAINTEXT:
                     $c = $this->inputStream->get();
 
                     if ($c === "\0") {
