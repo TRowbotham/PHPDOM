@@ -978,9 +978,9 @@ class Tokenizer
                         yield new CharacterToken(self::REPLACEMENT_CHAR);
                     } elseif ($this->inputStream->isEoS()) {
                         // Parse error.
-                        // Reconsume in the data state.
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState = TokenizerState::DATA;
+                        // Emit an end-of-file token.
+                        yield new EOFToken();
+                        return;
                     } else {
                         // Switch to the script data escaped state. Emit the
                         // current input character as a character token.
