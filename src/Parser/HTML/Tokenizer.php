@@ -1607,10 +1607,9 @@ class Tokenizer
                             TokenizerState::ATTRIBUTE_VALUE_SINGLE_QUOTED;
                     } elseif ($c === '>') {
                         // Parse error.
-                        // Treat it as per the "anything else" entry below.
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::ATTRIBUTE_VALUE_UNQUOTED;
+                        // Switch to the data state. Emit the current tag token.
+                        $this->state->tokenizerState = TokenizerState::DATA;
+                        yield $tagToken;
                     } else {
                         // Reconsume in the attribute value (unquoted) state.
                         $this->inputStream->seek(-1);
