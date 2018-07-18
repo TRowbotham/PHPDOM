@@ -1726,9 +1726,9 @@ class Tokenizer
                         $attributeToken->value .= $c;
                     } elseif ($this->inputStream->isEoS()) {
                         // Parse error.
-                        // Reconsume in the data state.
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState = TokenizerState::DATA;
+                        // Emit an end-of-file token.
+                        yield new EOFToken();
+                        return;
                     } else {
                         // Append the current input character to the current
                         // attribute's value.
