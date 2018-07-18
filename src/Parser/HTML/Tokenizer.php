@@ -1807,10 +1807,10 @@ class Tokenizer
                             TokenizerState::DATA;
                         yield $commentToken;
                     } elseif ($this->inputStream->isEoS()) {
-                        // Emit the comment. Reconsume in the data state.
+                        // Emit the comment. Emit an end of-file token.
                         yield $commentToken;
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState = TokenizerState::DATA;
+                        yield new EOFToken();
+                        return;
                     } elseif ($c === "\0") {
                         // Append a U+FFFD REPLACEMENT CHARACTER character to
                         // the comment token's data.
