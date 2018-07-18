@@ -226,6 +226,10 @@ final class StringSet implements ArrayAccess, Countable, Iterator
             return;
         }
 
+        if (isset($this->cache[$newItem])) {
+            return;
+        }
+
         $this->cache[$newItem] = true;
         ++$this->length;
 

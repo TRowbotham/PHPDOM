@@ -205,7 +205,13 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
             return;
         }
 
-        $this->cache[$newItem->uuid()] = true;
+        $newItemId = $newItem->uuid();
+
+        if (isset($this->cache[$newItemId])) {
+            return;
+        }
+
+        $this->cache[$newItemId] = true;
         ++$this->length;
 
         // If we are trying to insert before the first item in the array use
