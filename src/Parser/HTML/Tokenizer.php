@@ -301,14 +301,13 @@ class Tokenizer
                         $this->state->tokenizerState = TokenizerState::DATA;
                     } elseif ($this->inputStream->isEoS()) {
                         // Parse error.
-                        // Emit a U+003C LESS-THAN SIGN character token and a
-                        // U+002F SOLIDUS character token. Reconsume in the
-                        // data state.
+                        // Emit a U+003C LESS-THAN SIGN character token, a
+                        // U+002F SOLIDUS character token and an end-of-file
+                        // token.
                         yield new CharacterToken('<');
                         yield new CharacterToken('/');
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::DATA;
+                        yield new EOFToken();
+                        return;
                     } else {
                         // Parse error.
                         // Create a comment token whose data is the empty
