@@ -1571,9 +1571,9 @@ class Tokenizer
                         yield $tagToken;
                     } elseif ($this->inputStream->isEoS()) {
                         // Parse error.
-                        // Reconsume in the data state.
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState = TokenizerState::DATA;
+                        // Emit an end-of-file token.
+                        yield new EOFToken();
+                        return;
                     } else {
                         // Start a new attribute in the current tag token. Set
                         // that attribute name and value to the empty string.
