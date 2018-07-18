@@ -312,6 +312,6 @@ class Attr extends Node
             $value = '';
         }
 
-        $this->setExistingAttributeValue($newValue);
+        $this->setExistingAttributeValue($value);
     }
 }
