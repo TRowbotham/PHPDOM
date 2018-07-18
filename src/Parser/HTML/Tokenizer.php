@@ -413,10 +413,10 @@ class Tokenizer
                 case TokenizerState::RCDATA_END_TAG_NAME:
                     $c = $this->inputStream->get();
 
-                    if ($c === "\x09" ||
-                        $c === "\x0A" ||
-                        $c === "\x0C" ||
-                        $c === "\x20"
+                    if ($c === "\x09"
+                        || $c === "\x0A"
+                        || $c === "\x0C"
+                        || $c === "\x20"
                     ) {
                         // If the current end tag token is an appropriate end
                         // tag token, then switch to the before attribute name
