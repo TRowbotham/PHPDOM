@@ -115,13 +115,6 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
         $containsItem = isset($this->cache[$itemId]);
         $containsNewItem = isset($this->cache[$newItemId]);
 
-        // If neither item nor its replacement item are contained in the list,
-        // then return.
-        if (!$containsItem && !$containsNewItem) {
-            return;
-        }
-
-        // At this point, we know that the list contains the replacement item.
         // If it doesn't contain item, then there is nothing to replace or move.
         if (!$containsItem) {
             return;
@@ -132,7 +125,9 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
         unset($this->cache[$itemId]);
 
         if ($containsNewItem) {
-            // Since item is going to be removed, decrement the length.
+            // At this point, we know that the list contains both item and
+            // replacement item, so we know that item is going to be removed;
+            // decrement the length.
             --$this->length;
 
             // If item is the last item in the list just pop it off as we don't
@@ -146,7 +141,7 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
             $popped = null;
 
             // If the replacement item is the last item in the list, pop it off
-            // since we will be moving it to replace item later.
+            // since we will be replacing item with replacement item later.
             if ($this->list[$this->length] === $newItem) {
                 $popped = array_pop($this->list);
             }
@@ -167,22 +162,15 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
                     return;
                 }
 
-                // At this point, we know that the replacement item comes before
-                // item in the list. If the replacement item's index is 0, use
-                // array_shift since its faster than splicing, otherwise, splice
-                // it out of the list.
-                if ($newItemIndex === 0) {
-                    array_shift($this->list);
-                } else {
-                    array_splice($this->list, $newItemIndex, 1);
-                }
+                // At this point, we know that the replacement item comes after
+                // item in the list. Remove it from the list so that we can
+                // insert it into item's place next.
+                array_splice($this->list, $newItemIndex, 1);
             }
 
             // We removed the existing instance of replacement item from the
-            // list above and now we will replace the item with the replacement
-            // item.
-            array_splice($this->list, $itemIndex, 1, [$newItem]);
-
+            // list above and now we will replace item with replacement item.
+            $this->list[$itemIndex] = $newItem;
             return;
         }
 
@@ -200,7 +188,7 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
         }
 
         $index = array_search($item, $this->list, true);
-        array_splice($this->list, $index, 1, [$newItem]);
+        $this->list[$index] = $newItem;
     }
 
     /**
