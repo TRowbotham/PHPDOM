@@ -1120,7 +1120,7 @@ class Tokenizer
 
                             $this->inputStream->seek(-1);
                             $this->state->tokenizerState =
-                                TokenizerState::SCRIPT_DATA;
+                                TokenizerState::SCRIPT_DATA_ESCAPED;
                         }
                     } elseif ($c === '/') {
                         // If the current end tag token is an appropriate end
@@ -1148,7 +1148,7 @@ class Tokenizer
 
                             $this->inputStream->seek(-1);
                             $this->state->tokenizerState =
-                                TokenizerState::SCRIPT_DATA;
+                                TokenizerState::SCRIPT_DATA_ESCAPED;
                         }
                     } elseif ($c === '>') {
                         // If the current end tag token is an appropriate end
@@ -1177,7 +1177,7 @@ class Tokenizer
 
                             $this->inputStream->seek(-1);
                             $this->state->tokenizerState =
-                                TokenizerState::SCRIPT_DATA;
+                                TokenizerState::SCRIPT_DATA_ESCAPED;
                         }
                     } elseif (ctype_upper($c)) {
                         // Append the lowercase version of the current input
@@ -1209,7 +1209,7 @@ class Tokenizer
 
                         $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
-                            TokenizerState::SCRIPT_DATA;
+                            TokenizerState::SCRIPT_DATA_ESCAPED;
                     }
 
                     break;
