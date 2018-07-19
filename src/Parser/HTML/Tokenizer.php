@@ -28,7 +28,6 @@ use function file_get_contents;
 use function intval;
 use function json_decode;
 use function preg_match;
-use function strcasecmp;
 use function strtolower;
 
 class Tokenizer
@@ -2291,38 +2290,42 @@ class Tokenizer
                         yield $doctypeToken;
                     } elseif ($this->inputStream->isEoS()) {
                         // Parse error.
-                        // Set the DOCTYPE token's force-quirks
-                        // flag to on. Emit that DOCTYPE token. Reconsume in
-                        // the data state.
+                        // Set the DOCTYPE token's force-quirks flag to on. Emit
+                        // that DOCTYPE token. Emit an end-of-file token.
                         $doctypeToken->setQuirksMode('on');
                         yield $doctypeToken;
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState = TokenizerState::DATA;
+                        yield new EOFToken();
+                        return;
                     } else {
-                        $chars = $c . $this->inputStream->peek(5);
+                        $chars = Utils::toASCIILowercase(
+                            $c . $this->inputStream->peek(5)
+                        );
 
                         // If the six characters starting from the current input
                         // character are an ASCII case-insensitive match for the
                         // word "PUBLIC", then consume those characters and
                         // switch to the after DOCTYPE public keyword state.
-                        if (strcasecmp($chars, 'PUBLIC') === 0) {
+                        if ($chars = Utils::toASCIILowercase('PUBLIC')) {
                             $this->inputStream->get(5);
                             $this->state->tokenizerState =
                                 TokenizerState::AFTER_DOCTYPE_PUBLIC_KEYWORD;
-                        } elseif (strcasecmp($chars, 'SYSTEM') === 0) {
+
                             // Otherwise, if the six characters starting from
                             // the current input character are an ASCII
                             // case-insensitive match for the word "SYSTEM",
                             // then consume those characters and switch to the
                             // after DOCTYPE system keyword state.
+                        } elseif ($chars === Utils::toASCIILowercase('SYSTEM')) {
                             $this->inputStream->get(5);
                             $this->state->tokenizerState =
                                 TokenizerState::AFTER_DOCTYPE_SYSTEM_KEYWORD;
-                        } else {
+
                             // Otherwise, this is a parse error. Set the DOCTYPE
-                            // token's force-quirks flag to on. Switch to the
+                            // token's force-quirks flag to on. Reconsume in the
                             // bogus DOCTYPE state.
+                        } else {
                             $doctypeToken->setQuirksMode('on');
+                            $this->inputStream->seek(-1);
                             $this->state->tokenizerState =
                                 TokenizerState::BOGUS_DOCTYPE;
                         }
