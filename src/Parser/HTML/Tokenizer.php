@@ -2854,9 +2854,9 @@ class Tokenizer
                             TokenizerState::CDATA_SECTION_BRACKET;
                     } elseif ($this->inputStream->isEoS()) {
                         // Parse error.
-                        // Reconsume in the data state.
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState = TokenizerState::DATA;
+                        // Emit an end-of-file token.
+                        yield new EOFToken();
+                        return;
                     } else {
                         // Emit the current input character as a character token.
                         // NOTE: U+0000 NULL characters are handled in the tree
