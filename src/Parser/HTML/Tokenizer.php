@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Parser\HTML;
 
+use IntlChar;
 use Rowbot\DOM\Element\Element;
-use Rowbot\DOM\Encoding\EncodingUtils;
 use Rowbot\DOM\Namespaces;
 use Rowbot\DOM\Parser\Token\AttributeToken;
 use Rowbot\DOM\Parser\Token\CharacterToken;
@@ -17,7 +17,6 @@ use Rowbot\DOM\Parser\Token\Token;
 use Rowbot\DOM\Support\CodePointStream;
 use Rowbot\DOM\Utils;
 
-use function array_key_exists;
 use function ctype_alnum;
 use function ctype_alpha;
 use function ctype_digit;
@@ -3219,84 +3218,99 @@ class Tokenizer
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#numeric-character-reference-end-state
                 case TokenizerState::NUMERIC_CHARACTER_REFERENCE_END:
-                    // Can't use isset() here because PHP < 7 thinks it is
-                    // operating on an expression.
-                    $mapCode = array_key_exists(
-                        $characterReferenceCode,
-                        self::CHARACTER_REFERENCE_MAP
-                    );
-
-                    // If that number is one of the numbers in the first column
-                    // of the following table, then this is a parse error. Find
-                    // the row with that number in the first column, and set the
-                    // character reference code to the number in the second
-                    // column of that row.
-                    if ($mapCode) {
-                        $characterReferenceCode = self::CHARACTER_REFERENCE_MAP[
-                            $characterReferenceCode
-                        ];
-                    }
-
-                    // If the number is in the range 0xD800 to 0xDFFF or is
-                    // greater than 0x10FFFF, then this is a parse error. Set
-                    // the character reference code to 0xFFFD.
-                    if (($characterReferenceCode >= 0xD800 &&
-                        $characterReferenceCode <= 0xDFFF) ||
-                        $characterReferenceCode > 0x10FFF
-                    ) {
+                    if ($characterReferenceCode === 0x00) {
+                        // This is a null-character-reference parse error. Set
+                        // the character reference code to 0xFFFD
                         $characterReferenceCode = 0xFFFD;
-                    } elseif (($characterReferenceCode >= 0x0001 &&
-                        $characterReferenceCode <= 0x0008) ||
-                        ($characterReferenceCode >= 0x000D &&
-                            $characterReferenceCode <= 0x001F) ||
-                        ($characterReferenceCode >= 0x007F &&
-                            $characterReferenceCode <= 0x009F) ||
-                        ($characterReferenceCode >= 0xFDD0 &&
-                            $characterReferenceCode <= 0xFDEF) ||
-                        ($characterReferenceCode == 0xFFFE ||
-                            $characterReferenceCode == 0xFFFF ||
-                            $characterReferenceCode == 0x1FFFE ||
-                            $characterReferenceCode == 0x1FFFF ||
-                            $characterReferenceCode == 0x2FFFE ||
-                            $characterReferenceCode == 0x2FFFF ||
-                            $characterReferenceCode == 0x3FFFE ||
-                            $characterReferenceCode == 0x3FFFF ||
-                            $characterReferenceCode == 0x4FFFE ||
-                            $characterReferenceCode == 0x4FFFF ||
-                            $characterReferenceCode == 0x5FFFE ||
-                            $characterReferenceCode == 0x5FFFF ||
-                            $characterReferenceCode == 0x6FFFE ||
-                            $characterReferenceCode == 0x6FFFF ||
-                            $characterReferenceCode == 0x7FFFE ||
-                            $characterReferenceCode == 0x7FFFF ||
-                            $characterReferenceCode == 0x8FFFE ||
-                            $characterReferenceCode == 0x8FFFF ||
-                            $characterReferenceCode == 0x9FFFE ||
-                            $characterReferenceCode == 0x9FFFF ||
-                            $characterReferenceCode == 0xAFFFE ||
-                            $characterReferenceCode == 0xAFFFF ||
-                            $characterReferenceCode == 0xBFFFE ||
-                            $characterReferenceCode == 0xBFFFF ||
-                            $characterReferenceCode == 0xCFFFE ||
-                            $characterReferenceCode == 0xCFFFF ||
-                            $characterReferenceCode == 0xDFFFE ||
-                            $characterReferenceCode == 0xDFFFF ||
-                            $characterReferenceCode == 0xEFFFE ||
-                            $characterReferenceCode == 0xEFFFF ||
-                            $characterReferenceCode == 0xFFFFE ||
-                            $characterReferenceCode == 0xFFFFF ||
-                            $characterReferenceCode == 0x10FFFE ||
-                            $characterReferenceCode == 0x10FFFF)
+                    } elseif ($characterReferenceCode > 0x10FFFF) {
+                        // This is a character-reference-outside-unicode-range
+                        // parse error. Set the character reference code to
+                        // 0xFFFD.
+                        $characterReferenceCode = 0xFFFD;
+
+                        // If the number is a surrogate...
+                    } elseif ($characterReferenceCode >= 0xD800
+                        && $characterReferenceCode <= 0xDFFF
                     ) {
-                        // Parse error.
+                        // This is a surrogate-character-reference parse error.
+                        // Set the character reference code to 0xFFFD.
+                        $characterReferenceCode = 0xFFFD;
+
+                        // If  the number is a noncharacter...
+                    } elseif (($characterReferenceCode >= 0xFDD0
+                        && $characterReferenceCode <= 0xFDEF)
+                        || ($characterReferenceCode == 0xFFFE
+                            || $characterReferenceCode == 0xFFFF
+                            || $characterReferenceCode == 0x1FFFE
+                            || $characterReferenceCode == 0x1FFFF
+                            || $characterReferenceCode == 0x2FFFE
+                            || $characterReferenceCode == 0x2FFFF
+                            || $characterReferenceCode == 0x3FFFE
+                            || $characterReferenceCode == 0x3FFFF
+                            || $characterReferenceCode == 0x4FFFE
+                            || $characterReferenceCode == 0x4FFFF
+                            || $characterReferenceCode == 0x5FFFE
+                            || $characterReferenceCode == 0x5FFFF
+                            || $characterReferenceCode == 0x6FFFE
+                            || $characterReferenceCode == 0x6FFFF
+                            || $characterReferenceCode == 0x7FFFE
+                            || $characterReferenceCode == 0x7FFFF
+                            || $characterReferenceCode == 0x8FFFE
+                            || $characterReferenceCode == 0x8FFFF
+                            || $characterReferenceCode == 0x9FFFE
+                            || $characterReferenceCode == 0x9FFFF
+                            || $characterReferenceCode == 0xAFFFE
+                            || $characterReferenceCode == 0xAFFFF
+                            || $characterReferenceCode == 0xBFFFE
+                            || $characterReferenceCode == 0xBFFFF
+                            || $characterReferenceCode == 0xCFFFE
+                            || $characterReferenceCode == 0xCFFFF
+                            || $characterReferenceCode == 0xDFFFE
+                            || $characterReferenceCode == 0xDFFFF
+                            || $characterReferenceCode == 0xEFFFE
+                            || $characterReferenceCode == 0xEFFFF
+                            || $characterReferenceCode == 0xFFFFE
+                            || $characterReferenceCode == 0xFFFFF
+                            || $characterReferenceCode == 0x10FFFE
+                            || $characterReferenceCode == 0x10FFFF)
+                    ) {
+                        // This is a noncharacter-character-reference parse
+                        // error.
+
+                        // If the number is 0x0D, or a control that's not ASCII
+                        // whitespace...
+                    } elseif ($characterReferenceCode === 0x0D
+                        || ((($characterReferenceCode >= 0x00
+                            && $characterReferenceCode <= 0x1F)
+                                || ($characterReferenceCode >= 0x7F
+                                    && $characterReferenceCode <= 0x9F))
+                        && $characterReference !== 0x09
+                        && $characterReference !== 0x0A
+                        && $characterReference !== 0x0C
+                        && $characterReference !== 0x0D
+                        && $characterReference !== 0x20)
+                    ) {
+                        // This is a control-character-reference parse error.
+
+                        // If the number is one of the numbers in the first
+                        // column of the character reference map, then find the
+                        // row with that number in the first column, and set the
+                        // character reference code to the number in the second
+                        // column of that row.
+                        if (isset(self::CHARACTER_REFERENCE_MAP[
+                            $characterReferenceCode
+                        ])) {
+                            $characterReferenceCode = self::CHARACTER_REFERENCE_MAP[
+                                $characterReferenceCode
+                            ];
+                        }
                     }
 
-                    // Set the temporary buffer to the empty string. Append the
-                    // Unicode character with code point equal to the character
-                    // reference code to the temporary buffer. Switch to the
-                    // character reference end state.
-                    $buffer = '';
-                    $buffer .= EncodingUtils::mb_chr($characterReferenceCode);
+                    // Set the temporary buffer to the empty string. Append a
+                    // code point equal to the character reference code to the
+                    // temporary buffer. Flush code points consumed as a
+                    // character reference. Switch to the return state.
+                    $buffer = IntlChar::chr($characterReferenceCode);
                     yield from $this->flush(
                         $buffer,
                         $attributeToken,
