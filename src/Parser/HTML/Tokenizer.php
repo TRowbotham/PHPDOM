@@ -2213,12 +2213,12 @@ class Tokenizer
                     } elseif ($this->inputStream->isEoS()) {
                         // Parse error.
                         // Create a new DOCTYPE token. Set its force-quirks flag
-                        // to on. Emit the token. Reconsume in the data state.
+                        // to on. Emit the token. Emit an end-of-file token.
                         $doctypeToken = new DoctypeToken();
                         $doctypeToken->setQuirksMode('on');
                         yield $doctypeToken;
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState = TokenizerState::DATA;
+                        yield new EOFToken();
+                        return;
                     } else {
                         // Create a new DOCTYPE token. Set the token's name to
                         // the current input character. Switch to the DOCTYPE
