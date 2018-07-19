@@ -2057,10 +2057,10 @@ class Tokenizer
                             TokenizerState::COMMENT_END;
                     } elseif ($this->inputStream->isEoS()) {
                         // Parse error.
-                        // Emit the comment token. Reconsume in the data state.
+                        // Emit the comment token. Emit an end-of-file token.
                         yield $commentToken;
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState = TokenizerState::DATA;
+                        yield new EOFToken();
+                        return;
                     } else {
                         // Append a U+002D HYPHEN-MINUS character (-) to the
                         // comment token's data. Reconsume in the comment state.
