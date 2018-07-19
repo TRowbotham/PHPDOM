@@ -2117,23 +2117,23 @@ class Tokenizer
                         $this->state->tokenizerState =
                             TokenizerState::COMMENT_END_DASH;
                     } elseif ($c === '>') {
+                        // Parse error.
                         // Switch to the data state. Emit the comment token.
                         $this->state->tokenizerState = TokenizerState::DATA;
                         yield $commentToken;
                     } elseif ($this->inputStream->isEoS()) {
                         // Parse error.
-                        // Emit the comment token. Reconsume in the data state.
+                        // Emit the comment token. Emit an end-of-file token.
                         yield $commentToken;
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState = TokenizerState::DATA;
+                        yield new EOFToken();
+                        return;
                     } else {
                         // Append two U+002D HYPHEN-MINUS characters (-),
                         // a U+0021 EXCLAMATION MARK character (!), and the
                         // current input character to the comment token's data.
                         // Switch to the comment state
                         $commentToken->data .= '--!';
-                        $this->state->tokenizerState =
-                            TokenizerState::COMMENT;
+                        $this->state->tokenizerState = TokenizerState::COMMENT;
                     }
 
                     break;
