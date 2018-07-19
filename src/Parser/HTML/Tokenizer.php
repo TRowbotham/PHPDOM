@@ -6,6 +6,8 @@ namespace Rowbot\DOM\Parser\HTML;
 use IntlChar;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Namespaces;
+use Rowbot\DOM\Parser\Collection\OpenElementStack;
+use Rowbot\DOM\Parser\HTML\ParserState;
 use Rowbot\DOM\Parser\Token\AttributeToken;
 use Rowbot\DOM\Parser\Token\CharacterToken;
 use Rowbot\DOM\Parser\Token\CommentToken;
@@ -36,7 +38,11 @@ class Tokenizer
 {
     use TokenizerOrTreeBuilder;
 
-    // https://html.spec.whatwg.org/multipage/parsing.html#table-charref-overrides
+    /**
+     * @see https://html.spec.whatwg.org/multipage/parsing.html#table-charref-overrides
+     *
+     * @var array<int, int>
+     */
     private const CHARACTER_REFERENCE_MAP = [
         0x80 => 0x20AC, // EURO SIGN (€)
         0x82 => 0x201A, // SINGLE LOW-9 QUOTATION MARK (‚)
@@ -67,28 +73,70 @@ class Tokenizer
         0x9F => 0x0178  // LATIN CAPITAL LETTER Y WITH DIAERESIS (Ÿ)
     ];
 
-    // Currrently, the longest named character reference, from the named
-    // character references table, consists of 33 characters, however, because
-    // the ampersand (&) is already in the temporary buffer, subtract 1.
-    const MAX_NAMED_CHAR_REFERENCE_LENGTH = 32;
-    const NAMED_CHAR_REFERENCES_PATH = __DIR__ . DIRECTORY_SEPARATOR . '..' .
-        DIRECTORY_SEPARATOR . 'entities.json';
+    /**
+     * Currrently, the longest named character reference, from the named
+     * character references table, consists of 33 characters, however, because
+     * the ampersand (&) is already in the temporary buffer, subtract 1.
+     *
+     * @var int
+     */
+    private const MAX_NAMED_CHAR_REFERENCE_LENGTH = 32;
 
-    private $inputStream;
+    /**
+     * The path to the entities.json file.
+     *
+     * @see https://html.spec.whatwg.org/multipage/named-characters.html#named-character-references
+     * @see https://html.spec.whatwg.org/entities.json
+     *
+     * @var string
+     */
+    private const NAMED_CHAR_REFERENCES_PATH = __DIR__
+        . DIRECTORY_SEPARATOR
+        . '..'
+        . DIRECTORY_SEPARATOR
+        . 'entities.json';
+
+    /**
+     * The input stream.
+     *
+     * @var \Rowbot\DOM\Support\CodePointStream
+     */
+    private $input;
+
+    /**
+     * The last StartTagToken that was emitted by the tokenizer.
+     *
+     * @var \Rowbot\DOM\Parser\Token\StartTagToken|null
+     */
     private $lastEmittedStartTagToken;
+
+    /**
+     * The contents of the entities.json file decoded as JSON. The contents are
+     * lazily loaded.
+     *
+     * @var string
+     */
     private static $namedCharacterReferences;
 
+    /**
+     * Constructor.
+     *
+     * @param \Rowbot\DOM\Support\CodePointStream            $input
+     * @param \Rowbot\DOM\Parser\Collection\OpenElementStack $openElements
+     * @param bool                                           $isFragmentCase
+     * @param \Rowbot\DOM\Element\Element|null               $contextElement
+     * @param \Rowbot\DOM\Parser\HTML\ParserState            $state
+     */
     public function __construct(
-        $inputStream,
-        $openElements,
+        CodePointStream $input,
+        OpenElementStack $openElements,
         bool $isFragmentCase,
-        $contextElement,
-        $state
+        ?Element $contextElement,
+        ParserState $state
     ) {
         $this->contextElement = $contextElement;
-        $this->inputStream = $inputStream;
+        $this->input = $input;
         $this->isFragmentCase = $isFragmentCase;
-        $this->lastEmittedStartTagToken = null;
         $this->openElements = $openElements;
         $this->state = $state;
     }
@@ -115,24 +163,22 @@ class Tokenizer
             switch ($this->state->tokenizerState) {
                 // https://html.spec.whatwg.org/multipage/syntax.html#data-state
                 case TokenizerState::DATA:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if ($c === '&') {
                         // Set the return state to the data state. Switch to the
                         // character reference state.
                         $returnState = TokenizerState::DATA;
-                        $this->state->tokenizerState =
-                            TokenizerState::CHARACTER_REFERENCE;
+                        $this->state->tokenizerState = TokenizerState::CHARACTER_REFERENCE;
                     } elseif ($c === '<') {
                         // Switch to the tag open state.
-                        $this->state->tokenizerState =
-                            TokenizerState::TAG_OPEN;
+                        $this->state->tokenizerState = TokenizerState::TAG_OPEN;
                     } elseif ($c === "\0") {
                         // Parse error.
                         // Emit the current input character as a character
                         // token.
                         yield new CharacterToken($c);
-                    } elseif ($this->inputStream->isEoS()) {
+                    } elseif ($this->input->isEoS()) {
                         // Emit an end-of-file token.
                         yield new EOFToken();
                         return;
@@ -146,23 +192,21 @@ class Tokenizer
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#rcdata-state
                 case TokenizerState::RCDATA:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if ($c === '&') {
                         // Set the return state to the RCDATA state. Switch to
                         // the character reference state.
                         $returnState = TokenizerState::RCDATA;
-                        $this->state->tokenizerState =
-                            TokenizerState::CHARACTER_REFERENCE;
+                        $this->state->tokenizerState = TokenizerState::CHARACTER_REFERENCE;
                     } elseif ($c === '<') {
                         // Switch to the RCDATA less-than sign state.
-                        $this->state->tokenizerState =
-                            TokenizerState::RCDATA_LESS_THAN_SIGN;
+                        $this->state->tokenizerState = TokenizerState::RCDATA_LESS_THAN_SIGN;
                     } elseif ($c === "\0") {
                         // Parse error.
                         // Emit a U+FFFD REPLACEMENT CHARACTER character token.
                         yield new CharacterToken("\u{FFFD}");
-                    } elseif ($this->inputStream->isEoS()) {
+                    } elseif ($this->input->isEoS()) {
                         // Emit an end-of-file token.
                         yield new EOFToken();
                         return;
@@ -176,17 +220,16 @@ class Tokenizer
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#rawtext-state
                 case TokenizerState::RAWTEXT:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if ($c === '<') {
                         // Switch to the RAWTEXT less-than sign state.
-                        $this->state->tokenizerState =
-                            TokenizerState::RAWTEXT_LESS_THAN_SIGN;
+                        $this->state->tokenizerState = TokenizerState::RAWTEXT_LESS_THAN_SIGN;
                     } elseif ($c === "\0") {
                         // Parse error.
                         // Emit a U+FFFD REPLACEMENT CHARACTER character token.
                         yield new CharacterToken("\u{FFFD}");
-                    } elseif ($this->inputStream->isEoS()) {
+                    } elseif ($this->input->isEoS()) {
                         // Emit an end-of-file token.
                         yield new EOFToken();
                         return;
@@ -200,17 +243,16 @@ class Tokenizer
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#script-data-state
                 case TokenizerState::SCRIPT_DATA:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if ($c === '<') {
                         // Switch to the script data less-than sign state.
-                        $this->state->tokenizerState =
-                            TokenizerState::SCRIPT_DATA_LESS_THAN_SIGN;
+                        $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_LESS_THAN_SIGN;
                     } elseif ($c === "\0") {
                         // Parse error.
                         // Emit a U+FFFD REPLACEMENT CHARACTER character token.
                         yield new CharacterToken("\u{FFFD}");
-                    } elseif ($this->inputStream->isEoS()) {
+                    } elseif ($this->input->isEoS()) {
                         // Emit an end-of-file token.
                         yield new EOFToken();
                         return;
@@ -224,13 +266,13 @@ class Tokenizer
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#plaintext-state
                 case TokenizerState::PLAINTEXT:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if ($c === "\0") {
                         // Parse error.
                         // Emit a U+FFFD REPLACEMENT CHARACTER character token.
                         yield new CharacterToken("\u{FFFD}");
-                    } elseif ($this->inputStream->isEoS()) {
+                    } elseif ($this->input->isEoS()) {
                         // Emit an end-of-file token.
                         yield new EOFToken();
                         return;
@@ -243,32 +285,28 @@ class Tokenizer
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#tag-open-state
                 case TokenizerState::TAG_OPEN:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if ($c === '!') {
                         // Switch to the markup declaration open state.
-                        $this->state->tokenizerState =
-                            TokenizerState::MARKUP_DECLARATION_OPEN;
+                        $this->state->tokenizerState = TokenizerState::MARKUP_DECLARATION_OPEN;
                     } elseif ($c === '/') {
                         // Switch to the end tag open state.
-                        $this->state->tokenizerState =
-                            TokenizerState::END_TAG_OPEN;
+                        $this->state->tokenizerState = TokenizerState::END_TAG_OPEN;
                     } elseif (ctype_alpha($c)) {
                         // Create a new start tag token, set its tag name to the
                         // empty string. Reconsume in the tag name state.
                         $tagToken = new StartTagToken('');
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::TAG_NAME;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::TAG_NAME;
                     } elseif ($c === '?') {
                         // Parse error.
                         // Create a comment token whose data is the empty
                         // string. Reconsume in the bogus comment state.
                         $commentToken = new CommentToken('');
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::BOGUS_COMMENT;
-                    } elseif ($this->inputStream->isEoS()) {
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::BOGUS_COMMENT;
+                    } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Emit a U+003C LESS-THAN SIGN character token and an
                         // end-of-file token.
@@ -280,7 +318,7 @@ class Tokenizer
                         // Emit a U+003C LESS-THAN SIGN character token.
                         // Reconsume in the data state.
                         yield new CharacterToken('<');
-                        $this->inputStream->seek(-1);
+                        $this->input->seek(-1);
                         $this->state->tokenizerState = TokenizerState::DATA;
                     }
 
@@ -288,20 +326,19 @@ class Tokenizer
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#end-tag-open-state
                 case TokenizerState::END_TAG_OPEN:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if (ctype_alpha($c)) {
                         // Create a new end tag token, set its tag name to the
                         // empty string. Reconsume in the tag name state.
                         $tagToken = new EndTagToken('');
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::TAG_NAME;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::TAG_NAME;
                     } elseif ($c === '>') {
                         // Parse error.
                         // Switch to the data state.
                         $this->state->tokenizerState = TokenizerState::DATA;
-                    } elseif ($this->inputStream->isEoS()) {
+                    } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Emit a U+003C LESS-THAN SIGN character token, a
                         // U+002F SOLIDUS character token and an end-of-file
@@ -315,16 +352,15 @@ class Tokenizer
                         // Create a comment token whose data is the empty
                         // string. Reconsume in the bogus comment state.
                         $commentToken = new CommentToken('');
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::BOGUS_COMMENT;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::BOGUS_COMMENT;
                     }
 
                     break;
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#tag-name-state
                 case TokenizerState::TAG_NAME:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if ($c === "\x09"
                         || $c === "\x0A"
@@ -332,12 +368,10 @@ class Tokenizer
                         || $c === "\x20"
                     ) {
                         // Switch to the before attribute name state.
-                        $this->state->tokenizerState =
-                            TokenizerState::BEFORE_ATTRIBUTE_NAME;
+                        $this->state->tokenizerState = TokenizerState::BEFORE_ATTRIBUTE_NAME;
                     } elseif ($c === '/') {
                         // Switch to the self-closing start tag state.
-                        $this->state->tokenizerState =
-                            TokenizerState::SELF_CLOSING_START_TAG;
+                        $this->state->tokenizerState = TokenizerState::SELF_CLOSING_START_TAG;
                     } elseif ($c === '>') {
                         // Switch to the data state. Emit the current tag token.
                         $this->state->tokenizerState = TokenizerState::DATA;
@@ -352,7 +386,7 @@ class Tokenizer
                         // Append a U+FFFD REPLACEMENT CHARACTER character to
                         // the current tag token's tag name.
                         $tagToken->tagName .= "\u{FFFD}";
-                    } elseif ($this->inputStream->isEoS()) {
+                    } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Emit an end-of-file token.
                         yield new EOFToken();
@@ -367,53 +401,49 @@ class Tokenizer
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#rcdata-less-than-sign-state
                 case TokenizerState::RCDATA_LESS_THAN_SIGN:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if ($c === '/') {
                         // Set the temporary buffer to the empty string. Switch
                         // to the RCDATA end tag open state.
                         $buffer = '';
-                        $this->state->tokenizerState =
-                            TokenizerState::RCDATA_END_TAG_OPEN;
+                        $this->state->tokenizerState = TokenizerState::RCDATA_END_TAG_OPEN;
                     } else {
                         // Emit a U+003C LESS-THAN SIGN character token.
                         // Reconsume in the RCDATA state.
                         yield new CharacterToken('<');
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::RCDATA;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::RCDATA;
                     }
 
                     break;
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#rcdata-end-tag-open-state
                 case TokenizerState::RCDATA_END_TAG_OPEN:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if (ctype_alpha($c)) {
                         // Create a new end tag token, set its tag name to the
                         // empty string. Reconsume in the RCDATA end tag name
                         // state.
                         $tagToken = new EndTagToken('');
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::RCDATA_END_TAG_NAME;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::RCDATA_END_TAG_NAME;
                     } else {
                         // Emit a U+003C LESS-THAN SIGN character token and a
                         // U+002F SOLIDUS character token. Reconsume in the
                         // RCDATA state.
                         yield new CharacterToken('<');
                         yield new CharacterToken('/');
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::RCDATA;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::RCDATA;
                     }
 
                     break;
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#rcdata-end-tag-name-state
                 case TokenizerState::RCDATA_END_TAG_NAME:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if ($c === "\x09"
                         || $c === "\x0A"
@@ -429,8 +459,7 @@ class Tokenizer
                         );
 
                         if ($isAppropriateEndTag) {
-                            $this->state->tokenizerState =
-                                TokenizerState::BEFORE_ATTRIBUTE_NAME;
+                            $this->state->tokenizerState = TokenizerState::BEFORE_ATTRIBUTE_NAME;
                         } else {
                             yield new CharacterToken('<');
                             yield new CharacterToken('/');
@@ -442,9 +471,8 @@ class Tokenizer
                                 );
                             }
 
-                            $this->inputStream->seek(-1);
-                            $this->state->tokenizerState =
-                                TokenizerState::RCDATA;
+                            $this->input->seek(-1);
+                            $this->state->tokenizerState = TokenizerState::RCDATA;
                         }
                     } elseif ($c === '/') {
                         // If the current end tag token is an appropriate end
@@ -456,8 +484,7 @@ class Tokenizer
                         );
 
                         if ($isAppropriateEndTag) {
-                            $this->state->tokenizerState =
-                                TokenizerState::SELF_CLOSING_START_TAG;
+                            $this->state->tokenizerState = TokenizerState::SELF_CLOSING_START_TAG;
                         } else {
                             yield new CharacterToken('<');
                             yield new CharacterToken('/');
@@ -469,9 +496,8 @@ class Tokenizer
                                 );
                             }
 
-                            $this->inputStream->seek(-1);
-                            $this->state->tokenizerState =
-                                TokenizerState::RCDATA;
+                            $this->input->seek(-1);
+                            $this->state->tokenizerState = TokenizerState::RCDATA;
                         }
                     } elseif ($c === '>') {
                         // If the current end tag token is an appropriate end
@@ -483,8 +509,7 @@ class Tokenizer
                         );
 
                         if ($isAppropriateEndTag) {
-                            $this->state->tokenizerState =
-                                TokenizerState::DATA;
+                            $this->state->tokenizerState = TokenizerState::DATA;
                             yield $tagToken;
                         } else {
                             yield new CharacterToken('<');
@@ -497,9 +522,8 @@ class Tokenizer
                                 );
                             }
 
-                            $this->inputStream->seek(-1);
-                            $this->state->tokenizerState =
-                                TokenizerState::RCDATA;
+                            $this->input->seek(-1);
+                            $this->state->tokenizerState = TokenizerState::RCDATA;
                         }
                     } elseif (ctype_upper($c)) {
                         // Append the lowercase version of the current input
@@ -528,67 +552,62 @@ class Tokenizer
                             yield new CharacterToken($streamBuffer->get());
                         }
 
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::RCDATA;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::RCDATA;
                     }
 
                     break;
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#rawtext-less-than-sign-state
                 case TokenizerState::RAWTEXT_LESS_THAN_SIGN:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if ($c === '/') {
                         // Set the temporary buffer to the empty string. Switch
                         // to the RCDATA end tag open state.
                         $buffer = '';
-                        $this->state->tokenizerState =
-                            TokenizerState::RAWTEXT_END_TAG_OPEN;
+                        $this->state->tokenizerState = TokenizerState::RAWTEXT_END_TAG_OPEN;
                     } else {
                         // Emit a U+003C LESS-THAN SIGN character token.
                         // Reconsume in the RAWTEXT state.
                         yield new CharacterToken('<');
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::RAWTEXT;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::RAWTEXT;
                     }
 
                     break;
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#rawtext-end-tag-open-state
                 case TokenizerState::RAWTEXT_END_TAG_OPEN:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if (ctype_alpha($c)) {
                         // Create a new end tag token, set its tag name to the
                         // empty string. Reconsume in the RAWTEXT end tag name
                         // state.
                         $tagToken = new EndTagToken('');
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::RAWTEXT_END_TAG_NAME;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::RAWTEXT_END_TAG_NAME;
                     } else {
                         // Emit a U+003C LESS-THAN SIGN character token and a
                         // U+002F SOLIDUS character token. Reconsume in the
                         // RAWTEXT state.
                         yield new CharacterToken('<');
                         yield new CharacterToken('/');
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::RAWTEXT;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::RAWTEXT;
                     }
 
                     break;
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#rawtext-end-tag-name-state
                 case TokenizerState::RAWTEXT_END_TAG_NAME:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
-                    if ($c === "\x09" ||
-                        $c === "\x0A" ||
-                        $c === "\x0C" ||
-                        $c === "\x20"
+                    if ($c === "\x09"
+                        || $c === "\x0A"
+                        || $c === "\x0C"
+                        || $c === "\x20"
                     ) {
                         // If the current end tag token is an appropriate end
                         // tag token, then switch to the before attribute name
@@ -599,8 +618,7 @@ class Tokenizer
                         );
 
                         if ($isAppropriateEndTag) {
-                            $this->state->tokenizerState =
-                                TokenizerState::BEFORE_ATTRIBUTE_NAME;
+                            $this->state->tokenizerState = TokenizerState::BEFORE_ATTRIBUTE_NAME;
                         } else {
                             yield new CharacterToken('<');
                             yield new CharacterToken('/');
@@ -613,9 +631,8 @@ class Tokenizer
                                 );
                             }
 
-                            $this->inputStream->seek(-1);
-                            $this->state->tokenizerState =
-                                TokenizerState::RAWTEXT;
+                            $this->input->seek(-1);
+                            $this->state->tokenizerState = TokenizerState::RAWTEXT;
                         }
                     } elseif ($c === '/') {
                         // If the current end tag token is an appropriate end
@@ -627,8 +644,7 @@ class Tokenizer
                         );
 
                         if ($isAppropriateEndTag) {
-                            $this->state->tokenizerState =
-                                TokenizerState::SELF_CLOSING_START_TAG;
+                            $this->state->tokenizerState = TokenizerState::SELF_CLOSING_START_TAG;
                         } else {
                             yield new CharacterToken('<');
                             yield new CharacterToken('/');
@@ -641,9 +657,8 @@ class Tokenizer
                                 );
                             }
 
-                            $this->inputStream->seek(-1);
-                            $this->state->tokenizerState =
-                                TokenizerState::RAWTEXT;
+                            $this->input->seek(-1);
+                            $this->state->tokenizerState = TokenizerState::RAWTEXT;
                         }
                     } elseif ($c === '>') {
                         // If the current end tag token is an appropriate end
@@ -655,8 +670,7 @@ class Tokenizer
                         );
 
                         if ($isAppropriateEndTag) {
-                            $this->state->tokenizerState =
-                                TokenizerState::DATA;
+                            $this->state->tokenizerState = TokenizerState::DATA;
                             yield $tagToken;
                         } else {
                             yield new CharacterToken('<');
@@ -670,9 +684,8 @@ class Tokenizer
                                 );
                             }
 
-                            $this->inputStream->seek(-1);
-                            $this->state->tokenizerState =
-                                TokenizerState::RAWTEXT;
+                            $this->input->seek(-1);
+                            $this->state->tokenizerState = TokenizerState::RAWTEXT;
                         }
                     } elseif (ctype_upper($c)) {
                         // Append the lowercase version of the current input
@@ -702,75 +715,69 @@ class Tokenizer
                             yield new CharacterToken($bufferStream->get());
                         }
 
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::RAWTEXT;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::RAWTEXT;
                     }
 
                     break;
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#script-data-less-than-sign-state
                 case TokenizerState::SCRIPT_DATA_LESS_THAN_SIGN:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if ($c === '/') {
                         // Set the temporary buffer to the empty string. Switch
                         // to the script data end tag open state.
                         $buffer = '';
-                        $this->state->tokenizerState =
-                            TokenizerState::SCRIPT_DATA_END_TAG_OPEN;
+                        $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_END_TAG_OPEN;
                     } elseif ($c === '!') {
                         // Switch to the script data escape start state. Emit a
                         // U+003C LESS-THAN SIGN character token and a U+0021
                         // EXCLAMATION MARK character token.
-                        $this->state->tokenizerState =
-                            TokenizerState::SCRIPT_DATA_ESCAPE_START;
+                        $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_ESCAPE_START;
                         yield new CharacterToken('<');
                         yield new CharacterToken('!');
                     } else {
                         // Emit a U+003C LESS-THAN SIGN character token.
                         // Reconsume in the script data state.
                         yield new CharacterToken('<');
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::SCRIPT_DATA;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::SCRIPT_DATA;
                     }
 
                     break;
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#script-data-end-tag-open-state
                 case TokenizerState::SCRIPT_DATA_END_TAG_OPEN:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if (ctype_alpha($c)) {
                         // Create a new end tag token, set its tag name to the
                         // empty string. Reconsume in the script data end tag
                         // name state.
                         $tagToken = new EndTagToken('');
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::SCRIPT_DATA_END_TAG_NAME;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_END_TAG_NAME;
                     } else {
                         // Emit a U+003C LESS-THAN SIGN character token and a
                         // U+002F SOLIDUS character token. Reconsume in the
                         // script data state.
                         yield new CharacterToken('<');
                         yield new CharacterToken('/');
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::SCRIPT_DATA;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::SCRIPT_DATA;
                     }
 
                     break;
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#script-data-end-tag-name-state
                 case TokenizerState::SCRIPT_DATA_END_TAG_NAME:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
-                    if ($c === "\x09" ||
-                        $c === "\x0A" ||
-                        $c === "\x0C" ||
-                        $c === "\x20"
+                    if ($c === "\x09"
+                        || $c === "\x0A"
+                        || $c === "\x0C"
+                        || $c === "\x20"
                     ) {
                         // If the current end tag token is an appropriate end
                         // tag token, then switch to the before attribute name
@@ -781,8 +788,7 @@ class Tokenizer
                         );
 
                         if ($isAppropriateEndTag) {
-                            $this->state->tokenizerState =
-                                TokenizerState::BEFORE_ATTRIBUTE_NAME;
+                            $this->state->tokenizerState = TokenizerState::BEFORE_ATTRIBUTE_NAME;
                         } else {
                             yield new CharacterToken('<');
                             yield new CharacterToken('/');
@@ -795,9 +801,8 @@ class Tokenizer
                                 );
                             }
 
-                            $this->inputStream->seek(-1);
-                            $this->state->tokenizerState =
-                                TokenizerState::SCRIPT_DATA;
+                            $this->input->seek(-1);
+                            $this->state->tokenizerState = TokenizerState::SCRIPT_DATA;
                         }
                     } elseif ($c === '/') {
                         // If the current end tag token is an appropriate end
@@ -809,8 +814,7 @@ class Tokenizer
                         );
 
                         if ($isAppropriateEndTag) {
-                            $this->state->tokenizerState =
-                                TokenizerState::SELF_CLOSING_START_TAG;
+                            $this->state->tokenizerState = TokenizerState::SELF_CLOSING_START_TAG;
                         } else {
                             yield new CharacterToken('<');
                             yield new CharacterToken('/');
@@ -823,9 +827,8 @@ class Tokenizer
                                 );
                             }
 
-                            $this->inputStream->seek(-1);
-                            $this->state->tokenizerState =
-                                TokenizerState::SCRIPT_DATA;
+                            $this->input->seek(-1);
+                            $this->state->tokenizerState = TokenizerState::SCRIPT_DATA;
                         }
                     } elseif ($c === '>') {
                         // If the current end tag token is an appropriate end
@@ -837,8 +840,7 @@ class Tokenizer
                         );
 
                         if ($isAppropriateEndTag) {
-                            $this->state->tokenizerState =
-                                TokenizerState::DATA;
+                            $this->state->tokenizerState = TokenizerState::DATA;
                             yield $tagToken;
                         } else {
                             yield new CharacterToken('<');
@@ -852,9 +854,8 @@ class Tokenizer
                                 );
                             }
 
-                            $this->inputStream->seek(-1);
-                            $this->state->tokenizerState =
-                                TokenizerState::SCRIPT_DATA;
+                            $this->input->seek(-1);
+                            $this->state->tokenizerState = TokenizerState::SCRIPT_DATA;
                         }
                     } elseif (ctype_upper($c)) {
                         // Append the lowercase version of the current input
@@ -884,7 +885,7 @@ class Tokenizer
                             yield new CharacterToken($bufferStream->get());
                         }
 
-                        $this->inputStream->seek(-1);
+                        $this->input->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::SCRIPT_DATA;
                     }
@@ -893,60 +894,54 @@ class Tokenizer
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#script-data-escape-start-state
                 case TokenizerState::SCRIPT_DATA_ESCAPE_START:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if ($c === '-') {
                         // Switch to the script data escape start dash state.
                         // Emit a U+002D HYPHEN-MINUS character token.
-                        $this->state->tokenizerState =
-                            TokenizerState::SCRIPT_DATA_ESCAPE_START_DASH;
+                        $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_ESCAPE_START_DASH;
                         yield new CharacterToken('-');
                     } else {
                         // Reconsume in the script data state.
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::SCRIPT_DATA;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::SCRIPT_DATA;
                     }
 
                     break;
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#script-data-escape-start-dash-state
                 case TokenizerState::SCRIPT_DATA_ESCAPE_START_DASH:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if ($c === '-') {
                         // Switch to the script data escaped dash dash state.
                         // Emit a U+002D HYPHEN-MINUS character token.
-                        $this->state->tokenizerState =
-                            TokenizerState::SCRIPT_DATA_ESCAPED_DASH_DASH;
+                        $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_ESCAPED_DASH_DASH;
                         yield new CharacterToken('-');
                     } else {
                         // Reconsume in the script data state.
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::SCRIPT_DATA;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::SCRIPT_DATA;
                     }
 
                     break;
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#script-data-escaped-state
                 case TokenizerState::SCRIPT_DATA_ESCAPED:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if ($c === '-') {
                         // Switch to the script data escaped dash state. Emit a
                         // U+002D HYPHEN-MINUS character token.
-                        $this->state->tokenizerState =
-                            TokenizerState::SCRIPT_DATA_ESCAPED_DASH;
+                        $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_ESCAPED_DASH;
                         yield new CharacterToken('-');
                     } elseif ($c === '<') {
-                        $this->state->tokenizerState =
-                            TokenizerState::SCRIPT_DATA_ESCAPED_LESS_THAN_SIGN;
+                        $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_ESCAPED_LESS_THAN_SIGN;
                     } elseif ($c === "\0") {
                         // Parse error.
                         // Emit a U+FFFD REPLACEMENT CHARACTER character token.
                         yield new CharacterToken("\u{FFFD}");
-                    } elseif ($this->inputStream->isEoS()) {
+                    } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Emit an end-of-file token.
                         yield new EOFToken();
@@ -960,25 +955,22 @@ class Tokenizer
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#script-data-escaped-dash-state
                 case TokenizerState::SCRIPT_DATA_ESCAPED_DASH:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if ($c === '-') {
                         // Switch to the script data escaped dash state. Emit a
                         // U+002D HYPHEN-MINUS character token.
-                        $this->state->tokenizerState =
-                            TokenizerState::SCRIPT_DATA_ESCAPED_DASH_DASH;
+                        $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_ESCAPED_DASH_DASH;
                         yield new CharacterToken('-');
                     } elseif ($c === '<') {
                         // Switch to the script data escaped less-than sign state.
-                        $this->state->tokenizerState =
-                            TokenizerState::SCRIPT_DATA_ESCAPED_LESS_THAN_SIGN;
+                        $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_ESCAPED_LESS_THAN_SIGN;
                     } elseif ($c === "\0") {
                         // Parse error.
                         // Emit a U+FFFD REPLACEMENT CHARACTER character token.
-                        $this->state->tokenizerState =
-                            TokenizerState::SCRIPT_DATA_ESCAPED;
+                        $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_ESCAPED;
                         yield new CharacterToken("\u{FFFD}");
-                    } elseif ($this->inputStream->isEoS()) {
+                    } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Emit an end-of-file token.
                         yield new EOFToken();
@@ -986,8 +978,7 @@ class Tokenizer
                     } else {
                         // Switch to the script data escaped state. Emit the
                         // current input character as a character token.
-                        $this->state->tokenizerState =
-                            TokenizerState::SCRIPT_DATA_ESCAPED;
+                        $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_ESCAPED;
                         yield new CharacterToken($c);
                     }
 
@@ -995,29 +986,26 @@ class Tokenizer
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#script-data-escaped-dash-dash-state
                 case TokenizerState::SCRIPT_DATA_ESCAPED_DASH_DASH:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if ($c === '-') {
                         // Emit a U+002D HYPHEN-MINUS character token.
                         yield new CharacterToken('-');
                     } elseif ($c === '<') {
                         // Switch to the script data escaped less-than sign state.
-                        $this->state->tokenizerState =
-                            TokenizerState::SCRIPT_DATA_ESCAPED_LESS_THAN_SIGN;
+                        $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_ESCAPED_LESS_THAN_SIGN;
                     } elseif ($c === '>') {
                         // Switch to the script data state. Emit a
                         // U+003E GREATER-THAN SIGN character token.
-                        $this->state->tokenizerState =
-                            TokenizerState::SCRIPT_DATA;
+                        $this->state->tokenizerState = TokenizerState::SCRIPT_DATA;
                         yield new CharacterToken('>');
                     } elseif ($c === "\0") {
                         // Parse error.
                         // Switch to the script data escaped state. Emit a
                         // U+FFFD REPLACEMENT CHARACTER character token.
-                        $this->state->tokenizerState =
-                            TokenizerState::SCRIPT_DATA_ESCAPED;
+                        $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_ESCAPED;
                         yield new CharacterToken("\u{FFFD}");
-                    } elseif ($this->inputStream->isEoS()) {
+                    } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Emit an end-of-file token.
                         yield new EOFToken();
@@ -1025,8 +1013,7 @@ class Tokenizer
                     } else {
                         // Switch to the script data escaped state. Emit the
                         // current input character as a character token.
-                        $this->state->tokenizerState =
-                            TokenizerState::SCRIPT_DATA_ESCAPED;
+                        $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_ESCAPED;
                         yield new CharacterToken($c);
                     }
 
@@ -1034,37 +1021,34 @@ class Tokenizer
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#script-data-escaped-less-than-sign-state
                 case TokenizerState::SCRIPT_DATA_ESCAPED_LESS_THAN_SIGN:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if ($c === '/') {
                         // Set the temporary buffer to the empty string. Switch
                         // to the script data escaped end tag open state.
                         $buffer = '';
-                        $this->state->tokenizerState =
-                            TokenizerState::SCRIPT_DATA_ESCAPED_END_TAG_OPEN;
+                        $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_ESCAPED_END_TAG_OPEN;
                     } elseif (ctype_alpha($c)) {
                         // Set the temporary buffer to the empty string. Emit a
                         // U+003C LESS-THAN SIGN character token. Reconsume in
                         // the script data double escape start state.
                         $buffer = '';
                         yield new CharacterToken('<');
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPE_START;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPE_START;
                     } else {
                         // Emit a U+003C LESS-THAN SIGN character token.
                         // Reconsume in the script data escaped state.
                         yield new CharacterToken('<');
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::SCRIPT_DATA_ESCAPED;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_ESCAPED;
                     }
 
                     break;
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#script-data-escaped-end-tag-open-state
                 case TokenizerState::SCRIPT_DATA_ESCAPED_END_TAG_OPEN:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if (ctype_alpha($c)) {
                         // Create a new end tag token. Reconsume in the script
@@ -1072,30 +1056,28 @@ class Tokenizer
                         // token yet; further details will be filled in before
                         // it is emitted.)
                         $tagToken = new EndTagToken();
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::SCRIPT_DATA_ESCAPED_END_TAG_NAME;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_ESCAPED_END_TAG_NAME;
                     } else {
                         // Emit a U+003C LESS-THAN SIGN character token and a
                         // U+002F SOLIDUS character token. Reconsume in the
                         // script data escaped state.
                         yield new CharacterToken('<');
                         yield new CharacterToken('/');
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::SCRIPT_DATA_ESCAPED;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_ESCAPED;
                     }
 
                     break;
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#script-data-escaped-end-tag-name-state
                 case TokenizerState::SCRIPT_DATA_ESCAPED_END_TAG_NAME:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
-                    if ($c === "\x09" ||
-                        $c === "\x0A" ||
-                        $c === "\x0C" ||
-                        $c === "\x20"
+                    if ($c === "\x09"
+                        || $c === "\x0A"
+                        || $c === "\x0C"
+                        || $c === "\x20"
                     ) {
                         // If the current end tag token is an appropriate end
                         // tag token, then switch to the before attribute name
@@ -1106,8 +1088,7 @@ class Tokenizer
                         );
 
                         if ($isAppropriateEndTag) {
-                            $this->state->tokenizerState =
-                                TokenizerState::BEFORE_ATTRIBUTE_NAME;
+                            $this->state->tokenizerState = TokenizerState::BEFORE_ATTRIBUTE_NAME;
                         } else {
                             yield new CharacterToken('<');
                             yield new CharacterToken('/');
@@ -1120,9 +1101,8 @@ class Tokenizer
                                 );
                             }
 
-                            $this->inputStream->seek(-1);
-                            $this->state->tokenizerState =
-                                TokenizerState::SCRIPT_DATA_ESCAPED;
+                            $this->input->seek(-1);
+                            $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_ESCAPED;
                         }
                     } elseif ($c === '/') {
                         // If the current end tag token is an appropriate end
@@ -1134,8 +1114,7 @@ class Tokenizer
                         );
 
                         if ($isAppropriateEndTag) {
-                            $this->state->tokenizerState =
-                                TokenizerState::SELF_CLOSING_START_TAG;
+                            $this->state->tokenizerState = TokenizerState::SELF_CLOSING_START_TAG;
                         } else {
                             yield new CharacterToken('<');
                             yield new CharacterToken('/');
@@ -1148,9 +1127,8 @@ class Tokenizer
                                 );
                             }
 
-                            $this->inputStream->seek(-1);
-                            $this->state->tokenizerState =
-                                TokenizerState::SCRIPT_DATA_ESCAPED;
+                            $this->input->seek(-1);
+                            $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_ESCAPED;
                         }
                     } elseif ($c === '>') {
                         // If the current end tag token is an appropriate end
@@ -1162,8 +1140,7 @@ class Tokenizer
                         );
 
                         if ($isAppropriateEndTag) {
-                            $this->state->tokenizerState =
-                                TokenizerState::DATA;
+                            $this->state->tokenizerState = TokenizerState::DATA;
                             yield $tagToken;
                         } else {
                             yield new CharacterToken('<');
@@ -1177,9 +1154,8 @@ class Tokenizer
                                 );
                             }
 
-                            $this->inputStream->seek(-1);
-                            $this->state->tokenizerState =
-                                TokenizerState::SCRIPT_DATA_ESCAPED;
+                            $this->input->seek(-1);
+                            $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_ESCAPED;
                         }
                     } elseif (ctype_upper($c)) {
                         // Append the lowercase version of the current input
@@ -1209,34 +1185,31 @@ class Tokenizer
                             yield new CharacterToken($bufferStream->get());
                         }
 
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::SCRIPT_DATA_ESCAPED;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_ESCAPED;
                     }
 
                     break;
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#script-data-double-escape-start-state
                 case TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPE_START:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
-                    if ($c === "\x09" ||
-                        $c === "\x0A" ||
-                        $c === "\x0C" ||
-                        $c === "\x20" ||
-                        $c === '/' ||
-                        $c === '>'
+                    if ($c === "\x09"
+                        || $c === "\x0A"
+                        || $c === "\x0C"
+                        || $c === "\x20"
+                        || $c === '/'
+                        || $c === '>'
                     ) {
                         // If the temporary buffer is the string "script",
                         // then switch to the script data double escaped state.
                         // Otherwise, switch to the script data escaped state.
                         // Emit the current input character as a character token.
                         if ($buffer === 'script') {
-                            $this->state->tokenizerState =
-                                TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPED;
+                            $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPED;
                         } else {
-                            $this->state->tokenizerState =
-                                TokenizerState::SCRIPT_DATA_ESCAPED;
+                            $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_ESCAPED;
                         }
 
                         yield new CharacterToken($c);
@@ -1255,35 +1228,32 @@ class Tokenizer
                         yield new CharacterToken($c);
                     } else {
                         // Reconsume in the script data escaped state.
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::SCRIPT_DATA_ESCAPED;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_ESCAPED;
                     }
 
                     break;
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#script-data-double-escaped-state
                 case TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPED:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if ($c === '-') {
                         // Switch to the script data double escaped dash state.
                         // Emit a U+002D HYPHEN-MINUS character token.
-                        $this->state->tokenizerState =
-                            TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPED_DASH;
+                        $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPED_DASH;
                         yield new CharacterToken('-');
                     } elseif ($c === '<') {
                         // Switch to the script data double escaped less-than
                         // sign state. Emit a U+003C LESS-THAN SIGN character
                         // token.
-                        $this->state->tokenizerState =
-                            TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPED_LESS_THAN_SIGN;
+                        $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPED_LESS_THAN_SIGN;
                         yield new CharacterToken('<');
                     } elseif ($c === "\0") {
                         // Parse error.
                         // Emit a U+FFFD REPLACEMENT CHARACTER character token.
                         yield new CharacterToken("\u{FFFD}");
-                    } elseif ($this->inputStream->isEoS()) {
+                    } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Emit an end-of-file token.
                         yield new EOFToken();
@@ -1298,29 +1268,26 @@ class Tokenizer
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#script-data-double-escaped-dash-state
                 case TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPED_DASH:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if ($c === '-') {
                         // Switch to the script data double escaped dash dash
                         // state. Emit a U+002D HYPHEN-MINUS character token.
-                        $this->state->tokenizerState =
-                            TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPED_DASH_DASH;
+                        $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPED_DASH_DASH;
                         yield new CharacterToken('-');
                     } elseif ($c === '<') {
                         // Switch to the script data double escaped less-than
                         // sign state. Emit a U+003C LESS-THAN SIGN character
                         // token.
-                        $this->state->tokenizerState =
-                            TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPED_LESS_THAN_SIGN;
+                        $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPED_LESS_THAN_SIGN;
                         yield new CharacterToken('<');
                     } elseif ($c === "\0") {
                         // Parse error.
                         // Switch to the script data double escaped state. Emit
                         // a U+FFFD REPLACEMENT CHARACTER character token.
-                        $this->state->tokenizerState =
-                            TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPED;
+                        $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPED;
                         yield new CharacterToken("\u{FFFD}");
-                    } elseif ($this->inputStream->isEoS()) {
+                    } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Emit an end-of-file token.
                         yield new EOFToken();
@@ -1328,8 +1295,7 @@ class Tokenizer
                     } else {
                         // Switch to the script data double escaped state. Emit
                         // the current input character as a character token.
-                        $this->state->tokenizerState =
-                            TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPED;
+                        $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPED;
                         yield new CharacterToken($c);
                     }
 
@@ -1337,7 +1303,7 @@ class Tokenizer
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#script-data-double-escaped-dash-dash-state
                 case TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPED_DASH_DASH:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if ($c === '-') {
                         // Emit a U+002D HYPHEN-MINUS character token.
@@ -1346,23 +1312,20 @@ class Tokenizer
                         // Switch to the script data double escaped less-than
                         // sign state. Emit a U+003C LESS-THAN SIGN character
                         // token.
-                        $this->state->tokenizerState =
-                            TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPED_LESS_THAN_SIGN;
+                        $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPED_LESS_THAN_SIGN;
                         yield new CharacterToken('<');
                     } elseif ($c === '>') {
                         // Switch to the script data state. Emit a U+003E
                         // GREATER-THAN SIGN character token.
-                        $this->state->tokenizerState =
-                            TokenizerState::SCRIPT_DATA;
+                        $this->state->tokenizerState = TokenizerState::SCRIPT_DATA;
                         yield new CharacterToken('>');
                     } elseif ($c === "\0") {
                         // Parse error.
                         // Switch to the script data double escaped state. Emit
                         // a U+FFFD REPLACEMENT CHARACTER character token.
-                        $this->state->tokenizerState =
-                            TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPED;
+                        $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPED;
                         yield new CharacterToken("\u{FFFD}");
-                    } elseif ($this->inputStream->isEoS()) {
+                    } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Emit an end-of-file token.
                         yield new EOFToken();
@@ -1370,8 +1333,7 @@ class Tokenizer
                     } else {
                         // Switch to the script data double escaped state. Emit
                         // the current input character as a character token.
-                        $this->state->tokenizerState =
-                            TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPED;
+                        $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPED;
                         yield new CharacterToken($c);
                     }
 
@@ -1379,46 +1341,42 @@ class Tokenizer
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#script-data-double-escaped-less-than-sign-state
                 case TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPED_LESS_THAN_SIGN:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if ($c === '/') {
                         // Set the temporary buffer to the empty string. Switch
                         // to the script data double escape end state. Emit a
                         // U+002F SOLIDUS character token.
                         $buffer = '';
-                        $this->state->tokenizerState =
-                            TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPE_END;
+                        $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPE_END;
                         yield new CharacterToken('/');
                     } else {
                         // Reconsume in the script data double escaped state.
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPED;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPED;
                     }
 
                     break;
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#script-data-double-escape-end-state
                 case TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPE_END:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
-                    if ($c === "\x09" ||
-                        $c === "\x0A" ||
-                        $c === "\x0C" ||
-                        $c === "\x20" ||
-                        $c === "\x2F" ||
-                        $c === "\x3E"
+                    if ($c === "\x09"
+                        || $c === "\x0A"
+                        || $c === "\x0C"
+                        || $c === "\x20"
+                        || $c === "\x2F"
+                        || $c === "\x3E"
                     ) {
                         // If the temporary buffer is the string "script", then
                         // switch to the script data escaped state. Otherwise,
                         // switch to the script data double escaped state. Emit
                         // the current input character as a character token.
                         if ($buffer === 'script') {
-                            $this->state->tokenizerState =
-                                TokenizerState::SCRIPT_DATA_ESCAPED;
+                            $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_ESCAPED;
                         } else {
-                            $this->state->tokenizerState =
-                                TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPED;
+                            $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPED;
                         }
 
                         yield new CharacterToken($c);
@@ -1437,30 +1395,29 @@ class Tokenizer
                         yield new CharacterToken($c);
                     } else {
                         // Reconsume in the script data double escaped state.
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPED;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPED;
                     }
 
                     break;
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#before-attribute-name-state
                 case TokenizerState::BEFORE_ATTRIBUTE_NAME:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
-                    if ($c === "\x09" ||
-                        $c === "\x0A" ||
-                        $c === "\x0C" ||
-                        $c === "\x20"
+                    if ($c === "\x09"
+                        || $c === "\x0A"
+                        || $c === "\x0C"
+                        || $c === "\x20"
                     ) {
                         // Ignore the character.
-                    } elseif ($c === '/' || $c === '>' ||
-                        $this->inputStream->isEoS()
+                    } elseif ($c === '/'
+                        || $c === '>'
+                        || $this->input->isEoS()
                     ) {
                         // Reconsume in the after attribute name state.
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::AFTER_ATTRIBUTE_NAME;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::AFTER_ATTRIBUTE_NAME;
                     } elseif ($c === '=') {
                         // Parse error.
                         // Start a new attribute in the current tag token. Set
@@ -1469,36 +1426,34 @@ class Tokenizer
                         // attribute name state.
                         $attributeToken = new AttributeToken($c, '');
                         $tagToken->attributes->push($attributeToken);
-                        $this->state->tokenizerState =
-                            TokenizerState::ATTRIBUTE_NAME;
+                        $this->state->tokenizerState = TokenizerState::ATTRIBUTE_NAME;
                     } else {
                         // Start a new attribute in the current tag token. Set
                         // that attribute name and value to the empty string.
                         // Reconsume in the attribute name state.
                         $attributeToken = new AttributeToken('', '');
                         $tagToken->attributes->push($attributeToken);
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::ATTRIBUTE_NAME;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::ATTRIBUTE_NAME;
                     }
 
                     break;
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#attribute-name-state
                 case TokenizerState::ATTRIBUTE_NAME:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
                     $state = TokenizerState::ATTRIBUTE_NAME;
 
-                    if ($c === "\x09" ||
-                        $c === "\x0A" ||
-                        $c === "\x0C" ||
-                        $c === "\x20" ||
-                        $c === '/' ||
-                        $c === '>' ||
-                        $this->inputStream->isEoS()
+                    if ($c === "\x09"
+                        || $c === "\x0A"
+                        || $c === "\x0C"
+                        || $c === "\x20"
+                        || $c === '/'
+                        || $c === '>'
+                        || $this->input->isEoS()
                     ) {
                         // Reconsume in the after attribute name state.
-                        $this->inputStream->seek(-1);
+                        $this->input->seek(-1);
                         $state = TokenizerState::AFTER_ATTRIBUTE_NAME;
                         $this->state->tokenizerState = $state;
                     } elseif ($c === '=') {
@@ -1532,14 +1487,15 @@ class Tokenizer
                     // attribute on the token with the exact same name, then
                     // this is a parse error and the new attribute must be
                     // removed from the token.
-                    if ($state != TokenizerState::ATTRIBUTE_NAME) {
+                    if ($state !== TokenizerState::ATTRIBUTE_NAME) {
                         $state = TokenizerState::ATTRIBUTE_NAME;
                         $attributes = $tagToken->attributes;
                         $attrName = $attributeToken->name;
 
                         foreach ($attributes as $attr) {
-                            if ($attr->name === $attrName &&
-                                $attr !== $attributeToken) {
+                            if ($attr->name === $attrName
+                                && $attr !== $attributeToken
+                            ) {
                                 // Parse error.
                                 $attributes->pop();
                                 break;
@@ -1551,27 +1507,25 @@ class Tokenizer
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#after-attribute-name-state
                 case TokenizerState::AFTER_ATTRIBUTE_NAME:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
-                    if ($c === "\x09" ||
-                        $c === "\x0A" ||
-                        $c === "\x0C" ||
-                        $c === "\x20"
+                    if ($c === "\x09"
+                        || $c === "\x0A"
+                        || $c === "\x0C"
+                        || $c === "\x20"
                     ) {
                         // Ignore the character.
                     } elseif ($c === '/') {
                         // Switch to the self-closing start tag state.
-                        $this->state->tokenizerState =
-                            TokenizerState::SELF_CLOSING_START_TAG;
+                        $this->state->tokenizerState = TokenizerState::SELF_CLOSING_START_TAG;
                     } elseif ($c === '=') {
                         // Switch to the before attribute value state.
-                        $this->state->tokenizerState =
-                            TokenizerState::BEFORE_ATTRIBUTE_VALUE;
+                        $this->state->tokenizerState = TokenizerState::BEFORE_ATTRIBUTE_VALUE;
                     } elseif ($c === '>') {
                         // Switch to the data state. Emit the current tag token.
                         $this->state->tokenizerState = TokenizerState::DATA;
                         yield $tagToken;
-                    } elseif ($this->inputStream->isEoS()) {
+                    } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Emit an end-of-file token.
                         yield new EOFToken();
@@ -1582,31 +1536,28 @@ class Tokenizer
                         // Reconsume in the attribute name state.
                         $attributeToken = new AttributeToken('', '');
                         $tagToken->attributes->push($attributeToken);
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::ATTRIBUTE_NAME;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::ATTRIBUTE_NAME;
                     }
 
                     break;
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#before-attribute-value-state
                 case TokenizerState::BEFORE_ATTRIBUTE_VALUE:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
-                    if ($c === "\x09" ||
-                        $c === "\x0A" ||
-                        $c === "\x0C" ||
-                        $c === "\x20"
+                    if ($c === "\x09"
+                        || $c === "\x0A"
+                        || $c === "\x0C"
+                        || $c === "\x20"
                     ) {
                         // Ignore the character.
                     } elseif ($c === '"') {
                         // Switch to the attribute value (double-quoted) state.
-                        $this->state->tokenizerState =
-                            TokenizerState::ATTRIBUTE_VALUE_DOUBLE_QUOTED;
+                        $this->state->tokenizerState = TokenizerState::ATTRIBUTE_VALUE_DOUBLE_QUOTED;
                     } elseif ($c === '\'') {
                         // Switch to the attribute value (single-quoted) state.
-                        $this->state->tokenizerState =
-                            TokenizerState::ATTRIBUTE_VALUE_SINGLE_QUOTED;
+                        $this->state->tokenizerState = TokenizerState::ATTRIBUTE_VALUE_SINGLE_QUOTED;
                     } elseif ($c === '>') {
                         // Parse error.
                         // Switch to the data state. Emit the current tag token.
@@ -1614,35 +1565,31 @@ class Tokenizer
                         yield $tagToken;
                     } else {
                         // Reconsume in the attribute value (unquoted) state.
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::ATTRIBUTE_VALUE_UNQUOTED;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::ATTRIBUTE_VALUE_UNQUOTED;
                     }
 
                     break;
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#attribute-value-(double-quoted)-state
                 case TokenizerState::ATTRIBUTE_VALUE_DOUBLE_QUOTED:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if ($c === '"') {
                         // Switch to the after attribute value (quoted) state.
-                        $this->state->tokenizerState =
-                            TokenizerState::AFTER_ATTRIBUTE_VALUE_QUOTED;
+                        $this->state->tokenizerState = TokenizerState::AFTER_ATTRIBUTE_VALUE_QUOTED;
                     } elseif ($c === '&') {
                         // Set the return state to the attribute value
                         // (double-quoted) state. Switch to the character
                         // reference state.
-                        $returnState =
-                            TokenizerState::ATTRIBUTE_VALUE_DOUBLE_QUOTED;
-                        $this->state->tokenizerState =
-                            TokenizerState::CHARACTER_REFERENCE;
+                        $returnState = TokenizerState::ATTRIBUTE_VALUE_DOUBLE_QUOTED;
+                        $this->state->tokenizerState = TokenizerState::CHARACTER_REFERENCE;
                     } elseif ($c === "\0") {
                         // Parse error.
                         // Append a U+FFFD REPLACEMENT CHARACTER character to
                         // the current attribute's value.
                         $attributeToken->value .= "\u{FFFD}";
-                    } elseif ($this->inputStream->isEoS()) {
+                    } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Emit an end-of-file token.
                         yield new EOFToken();
@@ -1657,7 +1604,7 @@ class Tokenizer
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#attribute-value-(single-quoted)-state
                 case TokenizerState::ATTRIBUTE_VALUE_SINGLE_QUOTED:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if ($c === '\'') {
                         // Switch to the after attribute value (quoted) state.
@@ -1669,14 +1616,13 @@ class Tokenizer
                         // reference state.
                         $returnState =
                             TokenizerState::ATTRIBUTE_VALUE_SINGLE_QUOTED;
-                        $this->state->tokenizerState =
-                            TokenizerState::CHARACTER_REFERENCE;
+                        $this->state->tokenizerState = TokenizerState::CHARACTER_REFERENCE;
                     } elseif ($c === "\0") {
                         // Parse error.
                         // Append a U+FFFD REPLACEMENT CHARACTER character to
                         // the current attribute's value.
                         $attributeToken->value .= "\u{FFFD}";
-                    } elseif ($this->inputStream->isEoS()) {
+                    } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Emit an end-of-file token.
                         yield new EOFToken();
@@ -1691,23 +1637,21 @@ class Tokenizer
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#attribute-value-(unquoted)-state
                 case TokenizerState::ATTRIBUTE_VALUE_UNQUOTED:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
-                    if ($c === "\x09" ||
-                        $c === "\x0A" ||
-                        $c === "\x0C" ||
-                        $c === "\x20"
+                    if ($c === "\x09"
+                        || $c === "\x0A"
+                        || $c === "\x0C"
+                        || $c === "\x20"
                     ) {
                         // Switch to the before attribute name state.
-                        $this->state->tokenizerState =
-                            TokenizerState::BEFORE_ATTRIBUTE_NAME;
+                        $this->state->tokenizerState = TokenizerState::BEFORE_ATTRIBUTE_NAME;
                     } elseif ($c === '&') {
                         // Set the return state to the attribute value
                         // (unquoted) state. Switch to the character reference
                         // state.
                         $returnState = TokenizerState::ATTRIBUTE_VALUE_UNQUOTED;
-                        $this->state->tokenizerState =
-                            TokenizerState::CHARACTER_REFERENCE;
+                        $this->state->tokenizerState = TokenizerState::CHARACTER_REFERENCE;
                     } elseif ($c === '>') {
                         // Switch to the data state. Emit the current tag token.
                         $this->state->tokenizerState = TokenizerState::DATA;
@@ -1717,16 +1661,16 @@ class Tokenizer
                         // Append a U+FFFD REPLACEMENT CHARACTER character to
                         // the current attribute's value.
                         $attributeToken->value .= "\u{FFFD}";
-                    } elseif ($c === '"' ||
-                        $c === '\'' ||
-                        $c === '<' ||
-                        $c === '=' ||
-                        $c === '`'
+                    } elseif ($c === '"'
+                        || $c === '\''
+                        || $c === '<'
+                        || $c === '='
+                        || $c === '`'
                     ) {
                         // Parse error.
                         // Treat it as per the "anything else" entry below.
                         $attributeToken->value .= $c;
-                    } elseif ($this->inputStream->isEoS()) {
+                    } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Emit an end-of-file token.
                         yield new EOFToken();
@@ -1741,25 +1685,23 @@ class Tokenizer
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#after-attribute-value-(quoted)-state
                 case TokenizerState::AFTER_ATTRIBUTE_VALUE_QUOTED:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
-                    if ($c === "\x09" ||
-                        $c === "\x0A" ||
-                        $c === "\x0C" ||
-                        $c === "\x20"
+                    if ($c === "\x09"
+                        || $c === "\x0A"
+                        || $c === "\x0C"
+                        || $c === "\x20"
                     ) {
                         // Switch to the before attribute name state.
-                        $this->state->tokenizerState =
-                            TokenizerState::BEFORE_ATTRIBUTE_NAME;
+                        $this->state->tokenizerState = TokenizerState::BEFORE_ATTRIBUTE_NAME;
                     } elseif ($c === '/') {
                         // Switch to the self-closing start tag state.
-                        $this->state->tokenizerState =
-                            TokenizerState::SELF_CLOSING_START_TAG;
+                        $this->state->tokenizerState = TokenizerState::SELF_CLOSING_START_TAG;
                     } elseif ($c === '>') {
                         // Switch to the data state. Emit the current tag token.
                         $this->state->tokenizerState = TokenizerState::DATA;
                         yield $tagToken;
-                    } elseif ($this->inputStream->isEoS()) {
+                    } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Emit an end-of-file token.
                         yield new EOFToken();
@@ -1767,16 +1709,15 @@ class Tokenizer
                     } else {
                         // Parse error.
                         // Reconsume in the before attribute name state.
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::BEFORE_ATTRIBUTE_NAME;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::BEFORE_ATTRIBUTE_NAME;
                     }
 
                     break;
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#self-closing-start-tag-state
                 case TokenizerState::SELF_CLOSING_START_TAG:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if ($c === '>') {
                         // Set the self-closing flag of the current tag token.
@@ -1784,7 +1725,7 @@ class Tokenizer
                         $tagToken->setSelfClosingFlag();
                         $this->state->tokenizerState = TokenizerState::DATA;
                         yield $tagToken;
-                    } elseif ($this->inputStream->isEoS()) {
+                    } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Emit an end-of-file token.
                         yield new EOFToken();
@@ -1792,23 +1733,21 @@ class Tokenizer
                     } else {
                         // Parse error.
                         // Reconsume in the before attribute name state.
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::BEFORE_ATTRIBUTE_NAME;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::BEFORE_ATTRIBUTE_NAME;
                     }
 
                     break;
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#bogus-comment-state
                 case TokenizerState::BOGUS_COMMENT:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if ($c === '>') {
                         // Switch to the data state. Emit the comment token.
-                        $this->state->tokenizerState =
-                            TokenizerState::DATA;
+                        $this->state->tokenizerState = TokenizerState::DATA;
                         yield $commentToken;
-                    } elseif ($this->inputStream->isEoS()) {
+                    } elseif ($this->input->isEoS()) {
                         // Emit the comment. Emit an end of-file token.
                         yield $commentToken;
                         yield new EOFToken();
@@ -1831,29 +1770,28 @@ class Tokenizer
                     // characters (-), consume those two characters, create a
                     // comment token whose data is the empty string, and switch
                     // to the comment start state.
-                    if ($this->inputStream->peek(2) === '--') {
-                        $this->inputStream->get(2);
+                    if ($this->input->peek(2) === '--') {
+                        $this->input->get(2);
                         $commentToken = new CommentToken('');
-                        $this->state->tokenizerState =
-                            TokenizerState::COMMENT_START;
+                        $this->state->tokenizerState = TokenizerState::COMMENT_START;
 
                         // If the next few characters are an ASCII
                         // case-insensitive match for the word "DOCTYPE"...
                     } elseif (Utils::toASCIILowercase(
-                        $this->inputStream->peek(7)
+                        $this->input->peek(7)
                     ) === Utils::toASCIILowercase('DOCTYPE')) {
                         // Consume those characters and switch to the DOCTYPE
                         // state.
-                        $this->inputStream->get(7);
+                        $this->input->get(7);
                         $this->state->tokenizerState = TokenizerState::DOCTYPE;
 
                         // If the next few characters are a case-sensitive match
                         // for the string "[CDATA[" (the five uppercase letters
                         // "CDATA" with a U+005B LEFT SQUARE BRACKET character
                         // before and after)...
-                    } elseif ($this->inputStream->peek(7) === '[CDATA[') {
+                    } elseif ($this->input->peek(7) === '[CDATA[') {
                         // Consume those characters.
-                        $this->inputStream->get(7);
+                        $this->input->get(7);
 
                         // If there is an adjusted current node and it is not an
                         // element in the HTML namespace, then switch to the
@@ -1887,12 +1825,11 @@ class Tokenizer
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#comment-start-state
                 case TokenizerState::COMMENT_START:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if ($c === '-') {
                         // Switch to the comment start dash state.
-                        $this->state->tokenizerState =
-                            TokenizerState::COMMENT_START_DASH;
+                        $this->state->tokenizerState = TokenizerState::COMMENT_START_DASH;
                     } elseif ($c === '>') {
                         // Parse error.
                         // Switch to the data state. Emit the comment token.
@@ -1900,27 +1837,25 @@ class Tokenizer
                         yield $commentToken;
                     } else {
                         // Reconsume in the comment state.
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::COMMENT;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::COMMENT;
                     }
 
                     break;
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#comment-start-dash-state
                 case TokenizerState::COMMENT_START_DASH:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if ($c === '-') {
                         // Switch to the comment end state
-                        $this->state->tokenizerState =
-                            TokenizerState::COMMENT_END;
+                        $this->state->tokenizerState = TokenizerState::COMMENT_END;
                     } elseif ($c === '>') {
                         // Parse error.
                         // Switch to the data state. Emit the comment token.
                         $this->state->tokenizerState = TokenizerState::DATA;
                         yield $commentToken;
-                    } elseif ($this->inputStream->isEoS()) {
+                    } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Emit the comment token. Emit an end-of-file token.
                         yield $commentToken;
@@ -1937,25 +1872,23 @@ class Tokenizer
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#comment
                 case TokenizerState::COMMENT:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if ($c === '<') {
                         // Append the current input character to the comment
                         // token's data. Switch to the comment less-than sign
                         // state.
                         $commentToken->data .= $c;
-                        $this->state->tokenizerState =
-                            TokenizerState::COMMENT_LESS_THAN_SIGN;
+                        $this->state->tokenizerState = TokenizerState::COMMENT_LESS_THAN_SIGN;
                     } elseif ($c === '-') {
                         // Switch to the comment end dash state
-                        $this->state->tokenizerState =
-                            TokenizerState::COMMENT_END_DASH;
+                        $this->state->tokenizerState = TokenizerState::COMMENT_END_DASH;
                     } elseif ($c === "\0") {
                         // Parse error.
                         // Append a U+FFFD REPLACEMENT CHARACTER character to
                         // the comment token's data.
                         $commentToken->data .= "\u{FFFD}";
-                    } elseif ($this->inputStream->isEoS()) {
+                    } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Emit the comment token. Emit an end-of-file token.
                         yield $commentToken;
@@ -1971,91 +1904,82 @@ class Tokenizer
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#comment-less-than-sign-state
                 case TokenizerState::COMMENT_LESS_THAN_SIGN:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if ($c === '!') {
                         // Append the current input character to the comment
                         // token's data. Switch to the comment less-than sign
                         // bang state.
                         $commentToken->data .= $c;
-                        $this->state->tokenizerState =
-                            TokenizerState::COMMENT_LESS_THAN_SIGN_BANG;
+                        $this->state->tokenizerState = TokenizerState::COMMENT_LESS_THAN_SIGN_BANG;
                     } elseif ($c === '<') {
                         // Append the current input character to the comment
                         // token's data.
                         $commentToken->data .= $c;
                     } else {
                         // Reconsume in the comment state.
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::COMMENT;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::COMMENT;
                     }
 
                     break;
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#comment-less-than-sign-bang-state
                 case TokenizerState::COMMENT_LESS_THAN_SIGN_BANG:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if ($c === '-') {
                         // Switch to the comment less-than sign bang dash state.
-                        $this->state->tokenizerState =
-                            TokenizerState::COMMENT_LESS_THAN_SIGN_BANG_DASH;
+                        $this->state->tokenizerState = TokenizerState::COMMENT_LESS_THAN_SIGN_BANG_DASH;
                     } else {
                         //Reconsume in the comment state.
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::COMMENT;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::COMMENT;
                     }
 
                     break;
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#comment-less-than-sign-bang-dash-state
                 case TokenizerState::COMMENT_LESS_THAN_SIGN_BANG_DASH:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if ($c === '-') {
                         // Switch to the comment less-than sign bang dash dash
                         // state.
-                        $this->state->tokenizerState =
-                            TokenizerState::COMMENT_LESS_THAN_SIGN_BANG_DASH_DASH;
+                        $this->state->tokenizerState = TokenizerState::COMMENT_LESS_THAN_SIGN_BANG_DASH_DASH;
                     } else {
                         // Reconsume in the comment end dash state.
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::COMMENT_END_DASH;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::COMMENT_END_DASH;
                     }
 
                     break;
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#comment-less-than-sign-bang-dash-dash-state
                 case TokenizerState::COMMENT_LESS_THAN_SIGN_BANG_DASH_DASH:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
-                    if ($c === '>' || $this->inputStream->isEoS()) {
+                    if ($c === '>' || $this->input->isEoS()) {
                         // Reconsume in the comment end state.
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::COMMENT_END;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::COMMENT_END;
                     } else {
                         // Parse error.
                         // Reconsume in the comment end state.
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::COMMENT_END;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::COMMENT_END;
                     }
 
                     break;
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#comment-end-dash-state
                 case TokenizerState::COMMENT_END_DASH:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if ($c === '-') {
                         // Switch to the comment end state
-                        $this->state->tokenizerState =
-                            TokenizerState::COMMENT_END;
-                    } elseif ($this->inputStream->isEoS()) {
+                        $this->state->tokenizerState = TokenizerState::COMMENT_END;
+                    } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Emit the comment token. Emit an end-of-file token.
                         yield $commentToken;
@@ -2065,15 +1989,14 @@ class Tokenizer
                         // Append a U+002D HYPHEN-MINUS character (-) to the
                         // comment token's data. Reconsume in the comment state.
                         $commentToken->data .= '-';
-                        $this->state->tokenizerState =
-                            TokenizerState::COMMENT;
+                        $this->state->tokenizerState = TokenizerState::COMMENT;
                     }
 
                     break;
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#comment-end-state
                 case TokenizerState::COMMENT_END:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if ($c === '>') {
                         // Switch to the data state. Emit the comment token.
@@ -2081,13 +2004,12 @@ class Tokenizer
                         yield $commentToken;
                     } elseif ($c === '!') {
                         // Switch to the comment end bang state.
-                        $this->state->tokenizerState =
-                            TokenizerState::COMMENT_END_BANG;
+                        $this->state->tokenizerState = TokenizerState::COMMENT_END_BANG;
                     } elseif ($c === '-') {
                         // Append a U+002D HYPHEN-MINUS character (-) to the
                         // comment token's data.
                         $commentToken->data .= '-';
-                    } elseif ($this->inputStream->isEoS()) {
+                    } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Emit the comment token. Emit an end-of-file token.
                         yield $commentToken;
@@ -2098,30 +2020,28 @@ class Tokenizer
                         // Append two U+002D HYPHEN-MINUS characters (-) to the
                         // comment token's data. Reconsume in the comment state.
                         $commentToken->data .= '--';
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::COMMENT;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::COMMENT;
                     }
 
                     break;
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#comment-end-bang-state
                 case TokenizerState::COMMENT_END_BANG:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if ($c === '-') {
                         // Append two U+002D HYPHEN-MINUS characters (-) and a
                         // U+0021 EXCLAMATION MARK character (!) to the comment
                         // token's data. Switch to the comment end dash state.
                         $commentToken->data .= '--!';
-                        $this->state->tokenizerState =
-                            TokenizerState::COMMENT_END_DASH;
+                        $this->state->tokenizerState = TokenizerState::COMMENT_END_DASH;
                     } elseif ($c === '>') {
                         // Parse error.
                         // Switch to the data state. Emit the comment token.
                         $this->state->tokenizerState = TokenizerState::DATA;
                         yield $commentToken;
-                    } elseif ($this->inputStream->isEoS()) {
+                    } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Emit the comment token. Emit an end-of-file token.
                         yield $commentToken;
@@ -2140,22 +2060,20 @@ class Tokenizer
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#doctype-state
                 case TokenizerState::DOCTYPE:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
-                    if ($c === "\x09" ||
-                        $c === "\x0A" ||
-                        $c === "\x0C" ||
-                        $c === "\x20"
+                    if ($c === "\x09"
+                        || $c === "\x0A"
+                        || $c === "\x0C"
+                        || $c === "\x20"
                     ) {
                         // Switch to the before DOCTYPE name state.
-                        $this->state->tokenizerState =
-                            TokenizerState::BEFORE_DOCTYPE_NAME;
+                        $this->state->tokenizerState = TokenizerState::BEFORE_DOCTYPE_NAME;
                     } elseif ($c === '>') {
                         // Reconsume in the before DOCTYPE name state.
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState
-                            = TokenizerState::BEFORE_DOCTYPE_NAME;
-                    } elseif ($this->inputStream->isEoS()) {
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::BEFORE_DOCTYPE_NAME;
+                    } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Create a new DOCTYPE token. Set its force-quirks flag
                         // to on. Emit the token. Emit an end-of-file token.
@@ -2167,21 +2085,20 @@ class Tokenizer
                     } else {
                         // Parse error.
                         // Reconsume in the before DOCTYPE name state.
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::BEFORE_DOCTYPE_NAME;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::BEFORE_DOCTYPE_NAME;
                     }
 
                     break;
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#before-doctype-name-state
                 case TokenizerState::BEFORE_DOCTYPE_NAME:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
-                    if ($c === "\x09" ||
-                        $c === "\x0A" ||
-                        $c === "\x0C" ||
-                        $c === "\x20"
+                    if ($c === "\x09"
+                        || $c === "\x0A"
+                        || $c === "\x0C"
+                        || $c === "\x20"
                     ) {
                         // Ignore the character.
                     } elseif (ctype_upper($c)) {
@@ -2191,8 +2108,7 @@ class Tokenizer
                         // the DOCTYPE name state.
                         $doctypeToken = new DoctypeToken();
                         $doctypeToken->name = strtolower($c);
-                        $this->state->tokenizerState =
-                            TokenizerState::DOCTYPE_NAME;
+                        $this->state->tokenizerState = TokenizerState::DOCTYPE_NAME;
                     } elseif ($c === "\0") {
                         // Parse error.
                         // Create a new DOCTYPE token. Set the token's name to a
@@ -2200,8 +2116,7 @@ class Tokenizer
                         // DOCTYPE name state.
                         $doctypeToken = new DoctypeToken();
                         $doctypeToken->name = "\u{FFFD}";
-                        $this->state->tokenizerState =
-                            TokenizerState::DOCTYPE_NAME;
+                        $this->state->tokenizerState = TokenizerState::DOCTYPE_NAME;
                     } elseif ($c === '>') {
                         // Parse error.
                         // Create a new DOCTYPE token. Set its force-quirks flag
@@ -2210,7 +2125,7 @@ class Tokenizer
                         $doctypeToken->setQuirksMode('on');
                         $this->state->tokenizerState = TokenizerState::DATA;
                         yield $doctypeToken;
-                    } elseif ($this->inputStream->isEoS()) {
+                    } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Create a new DOCTYPE token. Set its force-quirks flag
                         // to on. Emit the token. Emit an end-of-file token.
@@ -2225,24 +2140,22 @@ class Tokenizer
                         // name state.
                         $doctypeToken = new DoctypeToken();
                         $doctypeToken->name = $c;
-                        $this->state->tokenizerState =
-                            TokenizerState::DOCTYPE_NAME;
+                        $this->state->tokenizerState = TokenizerState::DOCTYPE_NAME;
                     }
 
                     break;
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#doctype-name-state
                 case TokenizerState::DOCTYPE_NAME:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
-                    if ($c === "\x09" ||
-                        $c === "\x0A" ||
-                        $c === "\x0C" ||
-                        $c === "\x20"
+                    if ($c === "\x09"
+                        || $c === "\x0A"
+                        || $c === "\x0C"
+                        || $c === "\x20"
                     ) {
                         // Switch to the after DOCTYPE name state.
-                        $this->state->tokenizerState =
-                            TokenizerState::AFTER_DOCTYPE_NAME;
+                        $this->state->tokenizerState = TokenizerState::AFTER_DOCTYPE_NAME;
                     } elseif ($c === '>') {
                         // Switch to the data state. Emit the current DOCTYPE
                         // token.
@@ -2258,7 +2171,7 @@ class Tokenizer
                         // Append a U+FFFD REPLACEMENT CHARACTER character to
                         // the current DOCTYPE token's name.
                         $doctypeToken->name .= "\u{FFFD}";
-                    } elseif ($this->inputStream->isEoS()) {
+                    } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Set the DOCTYPE token's force-quirks flag to on. Emit
                         // that DOCTYPE token. Emit an end-of-file token.
@@ -2276,12 +2189,12 @@ class Tokenizer
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#after-doctype-name-state
                 case TokenizerState::AFTER_DOCTYPE_NAME:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
-                    if ($c === "\x09" ||
-                        $c === "\x0A" ||
-                        $c === "\x0C" ||
-                        $c === "\x20"
+                    if ($c === "\x09"
+                        || $c === "\x0A"
+                        || $c === "\x0C"
+                        || $c === "\x20"
                     ) {
                         // Ignore the character.
                     } elseif ($c === '>') {
@@ -2289,7 +2202,7 @@ class Tokenizer
                         // token.
                         $this->state->tokenizerState = TokenizerState::DATA;
                         yield $doctypeToken;
-                    } elseif ($this->inputStream->isEoS()) {
+                    } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Set the DOCTYPE token's force-quirks flag to on. Emit
                         // that DOCTYPE token. Emit an end-of-file token.
@@ -2299,7 +2212,7 @@ class Tokenizer
                         return;
                     } else {
                         $chars = Utils::toASCIILowercase(
-                            $c . $this->inputStream->peek(5)
+                            $c . $this->input->peek(5)
                         );
 
                         // If the six characters starting from the current input
@@ -2307,9 +2220,8 @@ class Tokenizer
                         // word "PUBLIC", then consume those characters and
                         // switch to the after DOCTYPE public keyword state.
                         if ($chars = Utils::toASCIILowercase('PUBLIC')) {
-                            $this->inputStream->get(5);
-                            $this->state->tokenizerState =
-                                TokenizerState::AFTER_DOCTYPE_PUBLIC_KEYWORD;
+                            $this->input->get(5);
+                            $this->state->tokenizerState = TokenizerState::AFTER_DOCTYPE_PUBLIC_KEYWORD;
 
                             // Otherwise, if the six characters starting from
                             // the current input character are an ASCII
@@ -2317,18 +2229,16 @@ class Tokenizer
                             // then consume those characters and switch to the
                             // after DOCTYPE system keyword state.
                         } elseif ($chars === Utils::toASCIILowercase('SYSTEM')) {
-                            $this->inputStream->get(5);
-                            $this->state->tokenizerState =
-                                TokenizerState::AFTER_DOCTYPE_SYSTEM_KEYWORD;
+                            $this->input->get(5);
+                            $this->state->tokenizerState = TokenizerState::AFTER_DOCTYPE_SYSTEM_KEYWORD;
 
                             // Otherwise, this is a parse error. Set the DOCTYPE
                             // token's force-quirks flag to on. Reconsume in the
                             // bogus DOCTYPE state.
                         } else {
                             $doctypeToken->setQuirksMode('on');
-                            $this->inputStream->seek(-1);
-                            $this->state->tokenizerState =
-                                TokenizerState::BOGUS_DOCTYPE;
+                            $this->input->seek(-1);
+                            $this->state->tokenizerState = TokenizerState::BOGUS_DOCTYPE;
                         }
                     }
 
@@ -2336,32 +2246,29 @@ class Tokenizer
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#after-doctype-public-keyword-state
                 case TokenizerState::AFTER_DOCTYPE_PUBLIC_KEYWORD:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
-                    if ($c === "\x09" ||
-                        $c === "\x0A" ||
-                        $c === "\x0C" ||
-                        $c === "\x20"
+                    if ($c === "\x09"
+                        || $c === "\x0A"
+                        || $c === "\x0C"
+                        || $c === "\x20"
                     ) {
                         // Switch to the before DOCTYPE public identifier state.
-                        $this->state->tokenizerState =
-                            TokenizerState::BEFORE_DOCTYPE_PUBLIC_IDENTIFIER;
+                        $this->state->tokenizerState = TokenizerState::BEFORE_DOCTYPE_PUBLIC_IDENTIFIER;
                     } elseif ($c === '"') {
                         // Parse error.
                         // Set the DOCTYPE token's public identifier to the
                         // empty string (not missing), then switch to the
                         // DOCTYPE public identifier (double-quoted) state.
                         $doctypeToken->publicIdentifier = '';
-                        $this->state->tokenizerState =
-                            TokenizerState::DOCTYPE_PUBLIC_IDENTIFIER_DOUBLE_QUOTED;
+                        $this->state->tokenizerState = TokenizerState::DOCTYPE_PUBLIC_IDENTIFIER_DOUBLE_QUOTED;
                     } elseif ($c === '\'') {
                         // Parse error.
                         // Set the DOCTYPE token's public identifier to the
                         // empty string (not missing), then switch to the
                         // DOCTYPE public identifier (single-quoted) state.
                         $doctypeToken->publicIdentifier = '';
-                        $this->state->tokenizerState =
-                            TokenizerState::DOCTYPE_PUBLIC_IDENTIFIER_SINGLE_QUOTED;
+                        $this->state->tokenizerState = TokenizerState::DOCTYPE_PUBLIC_IDENTIFIER_SINGLE_QUOTED;
                     } elseif ($c === '>') {
                         // Parse error.
                         // Set the DOCTYPE token's force-quirks flag to on.
@@ -2369,7 +2276,7 @@ class Tokenizer
                         $doctypeToken->setQuirksMode('on');
                         $this->state->tokenizerState = TokenizerState::DATA;
                         yield $doctypeToken;
-                    } elseif ($this->inputStream->isEoS()) {
+                    } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Set the DOCTYPE token's force-quirks flag to on. Emit
                         // that DOCTYPE token. Emit an end-of-file token.
@@ -2381,21 +2288,20 @@ class Tokenizer
                         // Set the DOCTYPE token's force-quirks flag to on.
                         // Reconsume in the bogus DOCTYPE state.
                         $doctypeToken->setQuirksMode('on');
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::BOGUS_DOCTYPE;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::BOGUS_DOCTYPE;
                     }
 
                     break;
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#before-doctype-public-identifier-state
                 case TokenizerState::BEFORE_DOCTYPE_PUBLIC_IDENTIFIER:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
-                    if ($c === "\x09" ||
-                        $c === "\x0A" ||
-                        $c === "\x0C" ||
-                        $c === "\x20"
+                    if ($c === "\x09"
+                        || $c === "\x0A"
+                        || $c === "\x0C"
+                        || $c === "\x20"
                     ) {
                         // Ignore the character.
                     } elseif ($c === '"') {
@@ -2403,15 +2309,13 @@ class Tokenizer
                         // empty string (not missing), then switch to the
                         // DOCTYPE public identifier (double-quoted) state.
                         $doctypeToken->publicIdentifier = '';
-                        $this->state->tokenizerState =
-                            TokenizerState::DOCTYPE_PUBLIC_IDENTIFIER_DOUBLE_QUOTED;
+                        $this->state->tokenizerState = TokenizerState::DOCTYPE_PUBLIC_IDENTIFIER_DOUBLE_QUOTED;
                     } elseif ($c === '\'') {
                         // Set the DOCTYPE token's public identifier to the
                         // empty string (not missing), then switch to the
                         // DOCTYPE public identifier (single-quoted) state.
                         $doctypeToken->publicIdentifier = '';
-                        $this->state->tokenizerState =
-                            TokenizerState::DOCTYPE_PUBLIC_IDENTIFIER_SINGLE_QUOTED;
+                        $this->state->tokenizerState = TokenizerState::DOCTYPE_PUBLIC_IDENTIFIER_SINGLE_QUOTED;
                     } elseif ($c === '>') {
                         // Parse error.
                         // Set the DOCTYPE token's force-quirks flag to on.
@@ -2419,7 +2323,7 @@ class Tokenizer
                         $doctypeToken->setQuirksMode('on');
                         $this->state->tokenizerState = TokenizerState::DATA;
                         yield $doctypeToken;
-                    } elseif ($this->inputStream->isEoS()) {
+                    } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Set the DOCTYPE token's force-quirks flag to on. Emit
                         // that DOCTYPE token. Emit an end-of-file token.
@@ -2432,21 +2336,19 @@ class Tokenizer
                         // Set the DOCTYPE token's force-quirks flag to on.
                         // Reconsume in the bogus DOCTYPE state.
                         $doctypeToken->setQuirksMode('on');
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::BOGUS_DOCTYPE;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::BOGUS_DOCTYPE;
                     }
 
                     break;
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#doctype-public-identifier-(double-quoted)-state
                 case TokenizerState::DOCTYPE_PUBLIC_IDENTIFIER_DOUBLE_QUOTED:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if ($c === '"') {
                         // Switch to the after DOCTYPE public identifier state.
-                        $this->state->tokenizerState =
-                            TokenizerState::AFTER_DOCTYPE_PUBLIC_IDENTIFIER;
+                        $this->state->tokenizerState = TokenizerState::AFTER_DOCTYPE_PUBLIC_IDENTIFIER;
                     } elseif ($c === "\0") {
                         // Parse error.
                         // Append a U+FFFD REPLACEMENT CHARACTER character to
@@ -2459,7 +2361,7 @@ class Tokenizer
                         $doctypeToken->setQuirksMode('on');
                         $this->state->tokenizerState = TokenizerState::DATA;
                         yield $doctypeToken;
-                    } elseif ($this->inputStream->isEoS()) {
+                    } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Set the DOCTYPE token's force-quirks flag to on. Emit
                         // that DOCTYPE token. Emit an end-of-file token.
@@ -2477,7 +2379,7 @@ class Tokenizer
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#doctype-public-identifier-(single-quoted)-state
                 case TokenizerState::DOCTYPE_PUBLIC_IDENTIFIER_SINGLE_QUOTED:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if ($c === '\'') {
                         // Switch to the after DOCTYPE public identifier state.
@@ -2495,7 +2397,7 @@ class Tokenizer
                         $doctypeToken->setQuirksMode('on');
                         $this->state->tokenizerState = TokenizerState::DATA;
                         yield $doctypeToken;
-                    } elseif ($this->inputStream->isEoS()) {
+                    } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Set the DOCTYPE token's force-quirks flag to on. Emit
                         // that DOCTYPE token. Emit an end-of-file token.
@@ -2513,17 +2415,16 @@ class Tokenizer
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#after-doctype-public-identifier-state
                 case TokenizerState::AFTER_DOCTYPE_PUBLIC_IDENTIFIER:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
-                    if ($c === "\x09" ||
-                        $c === "\x0A" ||
-                        $c === "\x0C" ||
-                        $c === "\x20"
+                    if ($c === "\x09"
+                        || $c === "\x0A"
+                        || $c === "\x0C"
+                        || $c === "\x20"
                     ) {
                         // Switch to the between DOCTYPE public and system
                         // identifiers state.
-                        $this->state->tokenizerState =
-                            TokenizerState::BETWEEN_DOCTYPE_PUBLIC_AND_SYSTEM_IDENTIFIERS;
+                        $this->state->tokenizerState = TokenizerState::BETWEEN_DOCTYPE_PUBLIC_AND_SYSTEM_IDENTIFIERS;
                     } elseif ($c === '>') {
                         // Switch to the data state. Emit the current DOCTYPE
                         // token.
@@ -2535,17 +2436,15 @@ class Tokenizer
                         // empty string (not missing), then switch to the
                         // DOCTYPE system identifier (double-quoted) state
                         $doctypeToken->systemIdentifier = '';
-                        $this->state->tokenizerState =
-                            TokenizerState::DOCTYPE_SYSTEM_IDENTIFIER_DOUBLE_QUOTED;
+                        $this->state->tokenizerState = TokenizerState::DOCTYPE_SYSTEM_IDENTIFIER_DOUBLE_QUOTED;
                     } elseif ($c === '\'') {
                         // Parse error.
                         // Set the DOCTYPE token's system identifier to the
                         // empty string (not missing), then switch to the
                         // DOCTYPE system identifier (single-quoted) state.
                         $doctypeToken->systemIdentifier = '';
-                        $this->state->tokenizerState =
-                            TokenizerState::DOCTYPE_SYSTEM_IDENTIFIER_SINGLE_QUOTED;
-                    } elseif ($this->inputStream->isEoS()) {
+                        $this->state->tokenizerState = TokenizerState::DOCTYPE_SYSTEM_IDENTIFIER_SINGLE_QUOTED;
+                    } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Set the DOCTYPE token's force-quirks flag to on. Emit
                         // that DOCTYPE token. Emit an end-of-file token.
@@ -2558,21 +2457,20 @@ class Tokenizer
                         // Set the DOCTYPE token's force-quirks flag to on.
                         // Reconsume in the bogus DOCTYPE state.
                         $doctypeToken->setQuirksMode('on');
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::BOGUS_DOCTYPE;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::BOGUS_DOCTYPE;
                     }
 
                     break;
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#between-doctype-public-and-system-identifiers-state
                 case TokenizerState::BETWEEN_DOCTYPE_PUBLIC_AND_SYSTEM_IDENTIFIERS:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
-                    if ($c === "\x09" ||
-                        $c === "\x0A" ||
-                        $c === "\x0C" ||
-                        $c === "\x20"
+                    if ($c === "\x09"
+                        || $c === "\x0A"
+                        || $c === "\x0C"
+                        || $c === "\x20"
                     ) {
                         // Ignore the character.
                     } elseif ($c === '>') {
@@ -2585,16 +2483,14 @@ class Tokenizer
                         // empty string (not missing), then switch to the
                         // DOCTYPE system identifier (double-quoted) state.
                         $doctypeToken->systemIdentifier = '';
-                        $this->state->tokenizerState =
-                            TokenizerState::DOCTYPE_SYSTEM_IDENTIFIER_DOUBLE_QUOTED;
+                        $this->state->tokenizerState = TokenizerState::DOCTYPE_SYSTEM_IDENTIFIER_DOUBLE_QUOTED;
                     } elseif ($c === '\'') {
                         // Set the DOCTYPE token's system identifier to the
                         // empty string (not missing), then switch to the
                         // DOCTYPE system identifier (single-quoted) state.
                         $doctypeToken->systemIdentifier = '';
-                        $this->state->tokenizerState =
-                            TokenizerState::DOCTYPE_SYSTEM_IDENTIFIER_SINGLE_QUOTED;
-                    } elseif ($this->inputStream->isEoS()) {
+                        $this->state->tokenizerState = TokenizerState::DOCTYPE_SYSTEM_IDENTIFIER_SINGLE_QUOTED;
+                    } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Set the DOCTYPE token's force-quirks flag to on. Emit
                         // that DOCTYPE token. Emit an end-of-file token.
@@ -2607,41 +2503,37 @@ class Tokenizer
                         // Set the DOCTYPE token's force-quirks flag to on.
                         // Reconsume in the bogus DOCTYPE state.
                         $doctypeToken->setQuirksMode('on');
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::BOGUS_DOCTYPE;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::BOGUS_DOCTYPE;
                     }
 
                     break;
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#after-doctype-system-keyword-state
                 case TokenizerState::AFTER_DOCTYPE_SYSTEM_KEYWORD:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
-                    if ($c === "\x09" ||
-                        $c === "\x0A" ||
-                        $c === "\x0C" ||
-                        $c === "\x20"
+                    if ($c === "\x09"
+                        || $c === "\x0A"
+                        || $c === "\x0C"
+                        || $c === "\x20"
                     ) {
                         // Switch to the before DOCTYPE system identifier state.
-                        $this->state->tokenizerState =
-                            TokenizerState::BEFORE_DOCTYPE_SYSTEM_IDENTIFIER;
+                        $this->state->tokenizerState = TokenizerState::BEFORE_DOCTYPE_SYSTEM_IDENTIFIER;
                     } elseif ($c === '"') {
                         // Parse error.
                         // Set the DOCTYPE token's system identifier to the
                         // empty string (not missing), then switch to the
                         // DOCTYPE system identifier (double-quoted) state.
                         $doctypeToken->systemIdentifier = '';
-                        $this->state->tokenizerState =
-                            TokenizerState::DOCTYPE_SYSTEM_IDENTIFIER_DOUBLE_QUOTED;
+                        $this->state->tokenizerState = TokenizerState::DOCTYPE_SYSTEM_IDENTIFIER_DOUBLE_QUOTED;
                     } elseif ($c === '\'') {
                         // Parse error.
                         // Set the DOCTYPE token's system identifier to the
                         // empty string (not missing), then switch to the
                         // DOCTYPE system identifier (single-quoted) state.
                         $doctypeToken->systemIdentifier = '';
-                        $this->state->tokenizerState =
-                            TokenizerState::DOCTYPE_SYSTEM_IDENTIFIER_SINGLE_QUOTED;
+                        $this->state->tokenizerState = TokenizerState::DOCTYPE_SYSTEM_IDENTIFIER_SINGLE_QUOTED;
                     } elseif ($c === '>') {
                         // Parse error.
                         // Set the DOCTYPE token's force-quirks flag to on.
@@ -2649,7 +2541,7 @@ class Tokenizer
                         $doctypeToken->setQuirksMode('on');
                         $this->state->tokenizerState = TokenizerState::DATA;
                         yield $doctypeToken;
-                    } elseif ($this->inputStream->isEoS()) {
+                    } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Set the DOCTYPE token's force-quirks flag to on. Emit
                         // that DOCTYPE token. Emit an end-of-file token.
@@ -2662,21 +2554,20 @@ class Tokenizer
                         // Set the DOCTYPE token's force-quirks flag to on.
                         // Reconsume in the bogus DOCTYPE state.
                         $doctypeToken->setQuirksMode('on');
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::BOGUS_DOCTYPE;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::BOGUS_DOCTYPE;
                     }
 
                     break;
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#before-doctype-system-identifier-state
                 case TokenizerState::BEFORE_DOCTYPE_SYSTEM_IDENTIFIER:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
-                    if ($c === "\x09" ||
-                        $c === "\x0A" ||
-                        $c === "\x0C" ||
-                        $c === "\x20"
+                    if ($c === "\x09"
+                        || $c === "\x0A"
+                        || $c === "\x0C"
+                        || $c === "\x20"
                     ) {
                         // Ignore the character.
                     } elseif ($c === '"') {
@@ -2684,15 +2575,13 @@ class Tokenizer
                         // empty string (not missing), then switch to the
                         // DOCTYPE system identifier (double-quoted) state.
                         $doctypeToken->systemIdentifier = '';
-                        $this->state->tokenizerState =
-                            TokenizerState::DOCTYPE_SYSTEM_IDENTIFIER_DOUBLE_QUOTED;
+                        $this->state->tokenizerState = TokenizerState::DOCTYPE_SYSTEM_IDENTIFIER_DOUBLE_QUOTED;
                     } elseif ($c === '\'') {
                         // Set the DOCTYPE token's system identifier to the
                         // empty string (not missing), then switch to the
                         // DOCTYPE system identifier (single-quoted) state.
                         $doctypeToken->systemIdentifier = '';
-                        $this->state->tokenizerState =
-                            TokenizerState::DOCTYPE_SYSTEM_IDENTIFIER_SINGLE_QUOTED;
+                        $this->state->tokenizerState = TokenizerState::DOCTYPE_SYSTEM_IDENTIFIER_SINGLE_QUOTED;
                     } elseif ($c === '>') {
                         // Parse error.
                         // Set the DOCTYPE token's force-quirks flag to on.
@@ -2700,7 +2589,7 @@ class Tokenizer
                         $doctypeToken->setQuirksMode('on');
                         $this->state->tokenizerState = TokenizerState::DATA;
                         yield $doctypeToken;
-                    } elseif ($this->inputStream->isEoS()) {
+                    } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Set the DOCTYPE token's force-quirks flag to on. Emit
                         // that DOCTYPE token. Emit an end-of-file token.
@@ -2712,20 +2601,18 @@ class Tokenizer
                         // Parse error. Set the DOCTYPE token's force-quirks
                         // flag to on. Reconsume in the bogus DOCTYPE state.
                         $doctypeToken->setQuirksMode('on');
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::BOGUS_DOCTYPE;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::BOGUS_DOCTYPE;
                     }
 
                     break;
 
                 case TokenizerState::DOCTYPE_SYSTEM_IDENTIFIER_DOUBLE_QUOTED:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if ($c === '"') {
                         // Switch to the after DOCTYPE system identifier state.
-                        $this->state->tokenizerState =
-                            TokenizerState::AFTER_DOCTYPE_SYSTEM_IDENTIFIER;
+                        $this->state->tokenizerState = TokenizerState::AFTER_DOCTYPE_SYSTEM_IDENTIFIER;
                     } elseif ($c === "\0") {
                         // Parse error.
                         // Append a U+FFFD REPLACEMENT CHARACTER character to
@@ -2738,7 +2625,7 @@ class Tokenizer
                         $doctypeToken->setQuirksMode('on');
                         $this->state->tokenizerState = TokenizerState::DATA;
                         yield $doctypeToken;
-                    } elseif ($this->inputStream->isEoS()) {
+                    } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Set the DOCTYPE token's force-quirks flag to on. Emit
                         // that DOCTYPE token. Emit an end-of-file token.
@@ -2755,12 +2642,11 @@ class Tokenizer
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#doctype-system-identifier-(single-quoted)-state
                 case TokenizerState::DOCTYPE_SYSTEM_IDENTIFIER_SINGLE_QUOTED:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if ($c === '\'') {
                         // Switch to the after DOCTYPE system identifier state.
-                        $this->state->tokenizerState =
-                            TokenizerState::AFTER_DOCTYPE_SYSTEM_IDENTIFIER;
+                        $this->state->tokenizerState = TokenizerState::AFTER_DOCTYPE_SYSTEM_IDENTIFIER;
                     } elseif ($c === "\0") {
                         // Parse error.
                         // Append a U+FFFD REPLACEMENT CHARACTER character to
@@ -2773,7 +2659,7 @@ class Tokenizer
                         $doctypeToken->setQuirksMode('on');
                         $this->state->tokenizerState = TokenizerState::DATA;
                         yield $doctypeToken;
-                    } elseif ($this->inputStream->isEoS()) {
+                    } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Set the DOCTYPE token's force-quirks flag to on. Emit
                         // that DOCTYPE token. Emit an end-of-file token.
@@ -2791,12 +2677,12 @@ class Tokenizer
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#after-doctype-system-identifier-state
                 case TokenizerState::AFTER_DOCTYPE_SYSTEM_IDENTIFIER:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
-                    if ($c === "\x09" ||
-                        $c === "\x0A" ||
-                        $c === "\x0C" ||
-                        $c === "\x20"
+                    if ($c === "\x09"
+                        || $c === "\x0A"
+                        || $c === "\x0C"
+                        || $c === "\x20"
                     ) {
                         // Ignore the character.
                     } elseif ($c === '>') {
@@ -2804,7 +2690,7 @@ class Tokenizer
                         // token.
                         $this->state->tokenizerState = TokenizerState::DATA;
                         yield $doctypeToken;
-                    } elseif ($this->inputStream->isEoS()) {
+                    } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Set the DOCTYPE token's force-quirks flag to on. Emit
                         // that DOCTYPE token. Emit an end-of-file token.
@@ -2816,16 +2702,15 @@ class Tokenizer
                         // Parse error.
                         // Reconsume in the bogus DOCTYPE state. (This does not
                         // set the DOCTYPE token's force-quirks flag to on.)
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::BOGUS_DOCTYPE;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::BOGUS_DOCTYPE;
                     }
 
                     break;
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#bogus-doctype-state
                 case TokenizerState::BOGUS_DOCTYPE:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if ($c === '>') {
                         // Switch to the data state. Emit the DOCTYPE token.
@@ -2834,7 +2719,7 @@ class Tokenizer
                     } elseif ($c === "\0") {
                         // This is an unexpected-null-character parse error.
                         // Ignore the character.
-                    } elseif ($this->inputStream->isEoS()) {
+                    } elseif ($this->input->isEoS()) {
                         // Emit the DOCTYPE token. Emit an end-of-file token.
                         yield $doctypeToken;
                         yield new EOFToken();
@@ -2847,13 +2732,12 @@ class Tokenizer
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#cdata-section-state
                 case TokenizerState::CDATA_SECTION:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if ($c === ']') {
                         // Switch to the CDATA section bracket state.
-                        $this->state->tokenizerState =
-                            TokenizerState::CDATA_SECTION_BRACKET;
-                    } elseif ($this->inputStream->isEoS()) {
+                        $this->state->tokenizerState = TokenizerState::CDATA_SECTION_BRACKET;
+                    } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Emit an end-of-file token.
                         yield new EOFToken();
@@ -2871,7 +2755,7 @@ class Tokenizer
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#cdata-section-bracket-state
                 case TokenizerState::CDATA_SECTION_BRACKET:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if ($c === ']') {
                         // Switch to the CDATA section end state.
@@ -2881,16 +2765,15 @@ class Tokenizer
                         // Emit a U+005D RIGHT SQUARE BRACKET character token.
                         // Reconsume in the CDATA section state.
                         yield new CharacterToken(']');
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::CDATA_SECTION;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::CDATA_SECTION;
                     }
 
                     break;
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#cdata-section-end-state
                 case TokenizerState::CDATA_SECTION_END:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if ($c === ']') {
                         // Emit a U+005D RIGHT SQUARE BRACKET character token.
@@ -2903,9 +2786,8 @@ class Tokenizer
                         // tokens. Reconsume in the CDATA section state.
                         yield new CharacterToken(']');
                         yield new CharacterToken(']');
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::CDATA_SECTION;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::CDATA_SECTION;
                     }
 
                     break;
@@ -2913,23 +2795,21 @@ class Tokenizer
                 // https://html.spec.whatwg.org/multipage/syntax.html#character-reference-state
                 case TokenizerState::CHARACTER_REFERENCE:
                     $buffer = '&';
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if (ctype_alnum($c)) {
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::NAMED_CHARACTER_REFERENCE;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::NAMED_CHARACTER_REFERENCE;
                     } elseif ($c === '#') {
                         $buffer .= $c;
-                        $this->state->tokenizerState =
-                            TokenizerState::NUMERIC_CHARACTER_REFERENCE;
+                        $this->state->tokenizerState = TokenizerState::NUMERIC_CHARACTER_REFERENCE;
                     } else {
                         yield from $this->flush(
                             $buffer,
                             $attributeToken,
                             $returnState
                         );
-                        $this->inputStream->seek(-1);
+                        $this->input->seek(-1);
                         $this->state->tokenizerState = $returnState;
                     }
 
@@ -2943,9 +2823,14 @@ class Tokenizer
                     // Load the JSON file for the named character references
                     // table on demand.
                     if (!self::$namedCharacterReferences) {
-                        self::$namedCharacterReferences = json_decode(file_get_contents(
-                            self::NAMED_CHAR_REFERENCES_PATH
-                        ), true);
+                        // TODO: Handle json_decode() and file_get_contents()
+                        // failing. Maybe html_entity_decode() or
+                        // get_html_translation_table() can be used as a
+                        // fallback.
+                        self::$namedCharacterReferences = json_decode(
+                            file_get_contents(self::NAMED_CHAR_REFERENCES_PATH),
+                            true
+                        );
                     }
 
                     // Consume the maximum number of characters possible, up to
@@ -2953,7 +2838,7 @@ class Tokenizer
                     // character reference with the greatest number of
                     // characters in the named character references table.
                     for ($i = 0; $i < self::MAX_NAMED_CHAR_REFERENCE_LENGTH; $i++) {
-                        $char = $this->inputStream->get();
+                        $char = $this->input->get();
 
                         // We've reached the end of the input stream. Break out
                         // of the loop without a match.
@@ -2975,9 +2860,8 @@ class Tokenizer
                         // If the buffer is a match and the next character is
                         // not a (;), break with a match, but this is only
                         // supported for historical purposes.
-                        if (isset(self::$namedCharacterReferences[$buffer]) &&
-                            ($char === ';' ||
-                            $this->inputStream->peek() !== ';')
+                        if (isset(self::$namedCharacterReferences[$buffer])
+                            && ($char === ';' || $this->input->peek() !== ';')
                         ) {
                             $matchFound = true;
                             break;
@@ -2995,19 +2879,16 @@ class Tokenizer
                             case TokenizerState::ATTRIBUTE_VALUE_DOUBLE_QUOTED:
                             case TokenizerState::ATTRIBUTE_VALUE_SINGLE_QUOTED:
                             case TokenizerState::ATTRIBUTE_VALUE_UNQUOTED:
-                                if ($char !== ';' &&
-                                    preg_match(
-                                        '/^[=A-Za-z0-9]$/',
-                                        $this->inputStream->peek()
-                                    )
-                                ) {
+                                if ($char !== ';' && preg_match(
+                                    '/^[=A-Za-z0-9]$/',
+                                    $this->input->peek()
+                                )) {
                                     yield from $this->flush(
                                         $buffer,
                                         $attributeToken,
                                         $returnState
                                     );
-                                    $this->state->tokenizerState =
-                                        $returnState;
+                                    $this->state->tokenizerState = $returnState;
 
                                     // Leave the named character reference
                                     // state.
@@ -3047,15 +2928,14 @@ class Tokenizer
                             $attributeToken,
                             $returnState
                         );
-                        $this->state->tokenizerState =
-                            TokenizerState::AMBIGUOUS_AMPERSAND;
+                        $this->state->tokenizerState = TokenizerState::AMBIGUOUS_AMPERSAND;
                     }
 
                     break;
 
                 // https://html.spec.whatwg.org/multipage/parsing.html#ambiguous-ampersand-state
                 case TokenizerState::AMBIGUOUS_AMPERSAND:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if (ctype_alnum($c)) {
                         switch ($returnState) {
@@ -3071,11 +2951,11 @@ class Tokenizer
                         }
                     } elseif ($c === ';') {
                         // Reconsume in the return state.
-                        $this->inputStream->seek(-1);
+                        $this->input->seek(-1);
                         $this->state->tokenizerState = $returnState;
                     } else {
                         // Reconsume in the return state.
-                        $this->inputStream->seek(-1);
+                        $this->input->seek(-1);
                         $this->state->tokenizerState = $returnState;
                     }
 
@@ -3084,35 +2964,32 @@ class Tokenizer
                 // https://html.spec.whatwg.org/multipage/syntax.html#numeric-character-reference-state
                 case TokenizerState::NUMERIC_CHARACTER_REFERENCE:
                     $characterReferenceCode = 0;
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
-                    if ($c === 'x' ||$c === 'X') {
+                    if ($c === 'x' || $c === 'X') {
                         // Append the current input character to the temporary
                         // buffer. Switch to the hexademical character reference
                         // start state.
                         $buffer .= $c;
-                        $this->state->tokenizerState =
-                            TokenizerState::HEXADECIMAL_CHARACTER_REFERENCE_START;
+                        $this->state->tokenizerState = TokenizerState::HEXADECIMAL_CHARACTER_REFERENCE_START;
                     } else {
                         // Reconsume in the decimal character reference start
                         // state.
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::DECIMAL_CHARACTER_REFERENCE_START;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::DECIMAL_CHARACTER_REFERENCE_START;
                     }
 
                     break;
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#hexademical-character-reference-start-state
                 case TokenizerState::HEXADECIMAL_CHARACTER_REFERENCE_START:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if (ctype_xdigit($c)) {
                         // Reconsume in the hexademical character reference
                         // state.
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::HEXADECIMAL_CHARACTER_REFERENCE;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::HEXADECIMAL_CHARACTER_REFERENCE;
                     } else {
                         // Parse error.
                         // Reconsume in the character reference end state.
@@ -3121,7 +2998,7 @@ class Tokenizer
                             $attributeToken,
                             $returnState
                         );
-                        $this->inputStream->seek(-1);
+                        $this->input->seek(-1);
                         $this->state->tokenizerState = $returnState;
                     }
 
@@ -3129,13 +3006,12 @@ class Tokenizer
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#decimal-character-reference-start-state
                 case TokenizerState::DECIMAL_CHARACTER_REFERENCE_START:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if (ctype_digit($c)) {
                         // Reconsume in the decimal character reference state.
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::DECIMAL_CHARACTER_REFERENCE;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::DECIMAL_CHARACTER_REFERENCE;
                     } else {
                         // Parse error.
                         // Reconsume in the character reference end state.
@@ -3144,7 +3020,7 @@ class Tokenizer
                             $attributeToken,
                             $returnState
                         );
-                        $this->inputStream->seek(-1);
+                        $this->input->seek(-1);
                         $this->state->tokenizerState = $returnState;
                     }
 
@@ -3152,7 +3028,7 @@ class Tokenizer
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#hexademical-character-reference-state
                 case TokenizerState::HEXADECIMAL_CHARACTER_REFERENCE:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if (ctype_upper($c)) {
                         // Multiply the character reference code by 16. Add a
@@ -3179,22 +3055,20 @@ class Tokenizer
                         $characterReferenceCode += intval($c, 16);
                     } elseif ($c === ';') {
                         // Switch to the numeric character reference end state.
-                        $this->state->tokenizerState =
-                            TokenizerState::NUMERIC_CHARACTER_REFERENCE_END;
+                        $this->state->tokenizerState = TokenizerState::NUMERIC_CHARACTER_REFERENCE_END;
                     } else {
                         // Parse error.
                         // Reconsume in the numeric character reference end
                         // state.
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::NUMERIC_CHARACTER_REFERENCE_END;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::NUMERIC_CHARACTER_REFERENCE_END;
                     }
 
                     break;
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#decimal-character-reference-state
                 case TokenizerState::DECIMAL_CHARACTER_REFERENCE:
-                    $c = $this->inputStream->get();
+                    $c = $this->input->get();
 
                     if (ctype_digit($c)) {
                         // Multiply the character reference code by 10. Add a
@@ -3205,15 +3079,13 @@ class Tokenizer
                         $characterReferenceCode += (int) $c;
                     } elseif ($c === ';') {
                         // Switch to the numeric character reference end state.
-                        $this->state->tokenizerState =
-                            TokenizerState::NUMERIC_CHARACTER_REFERENCE_END;
+                        $this->state->tokenizerState = TokenizerState::NUMERIC_CHARACTER_REFERENCE_END;
                     } else {
                         // Parse error.
                         // Reconsume in the numeric character reference end
                         // state.
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState =
-                            TokenizerState::NUMERIC_CHARACTER_REFERENCE_END;
+                        $this->input->seek(-1);
+                        $this->state->tokenizerState = TokenizerState::NUMERIC_CHARACTER_REFERENCE_END;
                     }
 
                     break;
@@ -3241,40 +3113,40 @@ class Tokenizer
                         // If  the number is a noncharacter...
                     } elseif (($characterReferenceCode >= 0xFDD0
                         && $characterReferenceCode <= 0xFDEF)
-                        || ($characterReferenceCode == 0xFFFE
-                            || $characterReferenceCode == 0xFFFF
-                            || $characterReferenceCode == 0x1FFFE
-                            || $characterReferenceCode == 0x1FFFF
-                            || $characterReferenceCode == 0x2FFFE
-                            || $characterReferenceCode == 0x2FFFF
-                            || $characterReferenceCode == 0x3FFFE
-                            || $characterReferenceCode == 0x3FFFF
-                            || $characterReferenceCode == 0x4FFFE
-                            || $characterReferenceCode == 0x4FFFF
-                            || $characterReferenceCode == 0x5FFFE
-                            || $characterReferenceCode == 0x5FFFF
-                            || $characterReferenceCode == 0x6FFFE
-                            || $characterReferenceCode == 0x6FFFF
-                            || $characterReferenceCode == 0x7FFFE
-                            || $characterReferenceCode == 0x7FFFF
-                            || $characterReferenceCode == 0x8FFFE
-                            || $characterReferenceCode == 0x8FFFF
-                            || $characterReferenceCode == 0x9FFFE
-                            || $characterReferenceCode == 0x9FFFF
-                            || $characterReferenceCode == 0xAFFFE
-                            || $characterReferenceCode == 0xAFFFF
-                            || $characterReferenceCode == 0xBFFFE
-                            || $characterReferenceCode == 0xBFFFF
-                            || $characterReferenceCode == 0xCFFFE
-                            || $characterReferenceCode == 0xCFFFF
-                            || $characterReferenceCode == 0xDFFFE
-                            || $characterReferenceCode == 0xDFFFF
-                            || $characterReferenceCode == 0xEFFFE
-                            || $characterReferenceCode == 0xEFFFF
-                            || $characterReferenceCode == 0xFFFFE
-                            || $characterReferenceCode == 0xFFFFF
-                            || $characterReferenceCode == 0x10FFFE
-                            || $characterReferenceCode == 0x10FFFF)
+                        || ($characterReferenceCode === 0xFFFE
+                            || $characterReferenceCode === 0xFFFF
+                            || $characterReferenceCode === 0x1FFFE
+                            || $characterReferenceCode === 0x1FFFF
+                            || $characterReferenceCode === 0x2FFFE
+                            || $characterReferenceCode === 0x2FFFF
+                            || $characterReferenceCode === 0x3FFFE
+                            || $characterReferenceCode === 0x3FFFF
+                            || $characterReferenceCode === 0x4FFFE
+                            || $characterReferenceCode === 0x4FFFF
+                            || $characterReferenceCode === 0x5FFFE
+                            || $characterReferenceCode === 0x5FFFF
+                            || $characterReferenceCode === 0x6FFFE
+                            || $characterReferenceCode === 0x6FFFF
+                            || $characterReferenceCode === 0x7FFFE
+                            || $characterReferenceCode === 0x7FFFF
+                            || $characterReferenceCode === 0x8FFFE
+                            || $characterReferenceCode === 0x8FFFF
+                            || $characterReferenceCode === 0x9FFFE
+                            || $characterReferenceCode === 0x9FFFF
+                            || $characterReferenceCode === 0xAFFFE
+                            || $characterReferenceCode === 0xAFFFF
+                            || $characterReferenceCode === 0xBFFFE
+                            || $characterReferenceCode === 0xBFFFF
+                            || $characterReferenceCode === 0xCFFFE
+                            || $characterReferenceCode === 0xCFFFF
+                            || $characterReferenceCode === 0xDFFFE
+                            || $characterReferenceCode === 0xDFFFF
+                            || $characterReferenceCode === 0xEFFFE
+                            || $characterReferenceCode === 0xEFFFF
+                            || $characterReferenceCode === 0xFFFFE
+                            || $characterReferenceCode === 0xFFFFF
+                            || $characterReferenceCode === 0x10FFFE
+                            || $characterReferenceCode === 0x10FFFF)
                     ) {
                         // This is a noncharacter-character-reference parse
                         // error.
@@ -3299,12 +3171,8 @@ class Tokenizer
                         // row with that number in the first column, and set the
                         // character reference code to the number in the second
                         // column of that row.
-                        if (isset(self::CHARACTER_REFERENCE_MAP[
-                            $characterReferenceCode
-                        ])) {
-                            $characterReferenceCode = self::CHARACTER_REFERENCE_MAP[
-                                $characterReferenceCode
-                            ];
+                        if (isset(self::CHARACTER_REFERENCE_MAP[$characterReferenceCode])) {
+                            $characterReferenceCode = self::CHARACTER_REFERENCE_MAP[$characterReferenceCode];
                         }
                     }
 
@@ -3326,23 +3194,50 @@ class Tokenizer
     }
 
     /**
+     * Sets the last emitted start tag token.
+     *
+     * @param \Rowbot\DOM\Parser\Token\StartTagToken $token
+     *
+     * @return void
+     */
+    public function setLastEmittedStartTagToken(StartTagToken $token)
+    {
+        $this->lastEmittedStartTagToken = $token;
+    }
+
+    /**
+     * An appropriate end tag token is an end tag token whose tag name matches the tag name of the last start tag token
+     * to have been emitted from this tokenizer. It is possible that no start tag token has been emitted, yet, in which
+     * case, no end tag token is appropriate.
+     *
      * @see https://html.spec.whatwg.org/#appropriate-end-tag-token
      *
      * @return bool
      */
-    protected function isAppropriateEndTag(EndTagToken $aEndTag)
+    private function isAppropriateEndTag(EndTagToken $token)
     {
-        return $this->lastEmittedStartTagToken &&
-            $this->lastEmittedStartTagToken->tagName === $aEndTag->tagName;
+        return $this->lastEmittedStartTagToken !== null
+            && $this->lastEmittedStartTagToken->tagName === $token->tagName;
     }
 
-    public function setLastEmittedStartTagToken(StartTagToken $aToken)
-    {
-        $this->lastEmittedStartTagToken = $aToken;
-    }
-
-    private function flush($codepoints, ?AttributeToken $token, $returnState)
-    {
+    /**
+     * If the return state is either attribute value (double-quoted) state, attribute value (single-quoted) state, or
+     * attribute value (unquoted) state, then all the code points in the temporary buffer must be appended to the
+     * current attribute's value. Otherwise, it must emit every code point in the temporary buffer as a character token.
+     *
+     * @see https://html.spec.whatwg.org/multipage/parsing.html#flush-code-points-consumed-as-a-character-reference
+     *
+     * @param string                                       $codepoints
+     * @param \Rowbot\DOM\Parser\Token\AttributeToken|null $token
+     * @param int                                          $returnState
+     *
+     * @return iterable
+     */
+    private function flush(
+        string $codepoints,
+        ?AttributeToken $token,
+        int $returnState
+    ): iterable {
         switch ($returnState) {
             case TokenizerState::ATTRIBUTE_VALUE_DOUBLE_QUOTED:
             case TokenizerState::ATTRIBUTE_VALUE_SINGLE_QUOTED:
