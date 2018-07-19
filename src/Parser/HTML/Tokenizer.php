@@ -2830,11 +2830,14 @@ class Tokenizer
                         // Switch to the data state. Emit the DOCTYPE token.
                         $this->state->tokenizerState = TokenizerState::DATA;
                         yield $doctypeToken;
+                    } elseif ($c === "\0") {
+                        // This is an unexpected-null-character parse error.
+                        // Ignore the character.
                     } elseif ($this->inputStream->isEoS()) {
-                        // Emit the DOCTYPE token. Reconsume in the data state.
+                        // Emit the DOCTYPE token. Emit an end-of-file token.
                         yield $doctypeToken;
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState = TokenizerState::DATA;
+                        yield new EOFToken();
+                        return;
                     } else {
                         // Ignore the character.
                     }
