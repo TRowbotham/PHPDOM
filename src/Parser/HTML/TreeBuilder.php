@@ -45,7 +45,11 @@ use Rowbot\DOM\Element\HTML\{
 };
 use Rowbot\DOM\Parser\{
     Bookmark,
+    Collection\ActiveFormattingElementStack,
+    Collection\OpenElementStack,
+    HTML\ParserState,
     Marker,
+    TextBuilder,
     Token\CharacterToken,
     Token\CommentToken,
     Token\EndTagToken,
@@ -54,6 +58,8 @@ use Rowbot\DOM\Parser\{
     Token\TagToken,
     Token\Token
 };
+use SplObjectStorage;
+use SplStack;
 
 use function count;
 use function is_string;
@@ -185,7 +191,7 @@ class TreeBuilder
      * Stores the insertion mode that the TreeBuilder should return to after
      * it is done processing the current token in the current insertion mode.
      *
-     * @var ?int
+     * @var int|null
      */
     private $originalInsertionMode;
 
@@ -199,30 +205,30 @@ class TreeBuilder
     /**
      * Constructor.
      *
-     * @param \Rowbot\DOM\Document                                                $document
-     * @param \Rowbot\DOM\Parser\Collection\ActiveFormattingElementStack          $activeFormattingElements
-     * @param \Rowbot\DOM\Parser\Collection\OpenElementStack                      $openElements
-     * @param \SplStack<int>                                                      $templateInsertionModes
-     * @param \Rowbot\DOM\Parser\TextBuilder                                      $textBuilder
-     * @param \SplObjectStorage<\Rowbot\DOM\Node, \Rowbot\DOM\Parser\Token\Token> $tokenRepository
-     * @param bool                                                                $isFragmentCase
-     * @param bool                                                                $isScriptingEnabled
-     * @param \Rowbot\DOM\Element\Element                                         $contextElement
-     * @param \Rowbot\DOM\Parser\HTML\ParserState                                 $state
+     * @param \Rowbot\DOM\Document                                       $document
+     * @param \Rowbot\DOM\Parser\Collection\ActiveFormattingElementStack $activeFormattingElements
+     * @param \Rowbot\DOM\Parser\Collection\OpenElementStack             $openElements
+     * @param \SplStack                                                  $templateInsertionModes
+     * @param \Rowbot\DOM\Parser\TextBuilder                             $textBuilder
+     * @param \SplObjectStorage                                          $tokenRepository
+     * @param bool                                                       $isFragmentCase
+     * @param bool                                                       $isScriptingEnabled
+     * @param \Rowbot\DOM\Element\Element                                $contextElement
+     * @param \Rowbot\DOM\Parser\HTML\ParserState                        $state
      *
      * @return void
      */
     public function __construct(
         Document $document,
-        $activeFormattingElements,
-        $openElements,
-        $templateInsertionModes,
-        $textBuilder,
-        $tokenRepository,
+        ActiveFormattingElementStack $activeFormattingElements,
+        OpenElementStack $openElements,
+        SplStack $templateInsertionModes,
+        TextBuilder $textBuilder,
+        SplObjectStorage $tokenRepository,
         bool $isFragmentCase,
         bool $isScriptingEnabled,
-        $contextElement,
-        $state
+        ?Element $contextElement,
+        ParserState $state
     ) {
         $this->activeFormattingElements = $activeFormattingElements;
         $this->contextElement = $contextElement;
