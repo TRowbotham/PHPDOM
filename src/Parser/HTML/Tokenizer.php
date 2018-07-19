@@ -73,7 +73,6 @@ class Tokenizer
     const MAX_NAMED_CHAR_REFERENCE_LENGTH = 32;
     const NAMED_CHAR_REFERENCES_PATH = __DIR__ . DIRECTORY_SEPARATOR . '..' .
         DIRECTORY_SEPARATOR . 'entities.json';
-    const REPLACEMENT_CHAR = "\xEF\xBF\xBD"; // U+FFFD
 
     private $inputStream;
     private $lastEmittedStartTagToken;
@@ -162,7 +161,7 @@ class Tokenizer
                     } elseif ($c === "\0") {
                         // Parse error.
                         // Emit a U+FFFD REPLACEMENT CHARACTER character token.
-                        yield new CharacterToken(self::REPLACEMENT_CHAR);
+                        yield new CharacterToken("\u{FFFD}");
                     } elseif ($this->inputStream->isEoS()) {
                         // Emit an end-of-file token.
                         yield new EOFToken();
@@ -186,7 +185,7 @@ class Tokenizer
                     } elseif ($c === "\0") {
                         // Parse error.
                         // Emit a U+FFFD REPLACEMENT CHARACTER character token.
-                        yield new CharacterToken(self::REPLACEMENT_CHAR);
+                        yield new CharacterToken("\u{FFFD}");
                     } elseif ($this->inputStream->isEoS()) {
                         // Emit an end-of-file token.
                         yield new EOFToken();
@@ -210,7 +209,7 @@ class Tokenizer
                     } elseif ($c === "\0") {
                         // Parse error.
                         // Emit a U+FFFD REPLACEMENT CHARACTER character token.
-                        yield new CharacterToken(self::REPLACEMENT_CHAR);
+                        yield new CharacterToken("\u{FFFD}");
                     } elseif ($this->inputStream->isEoS()) {
                         // Emit an end-of-file token.
                         yield new EOFToken();
@@ -230,7 +229,7 @@ class Tokenizer
                     if ($c === "\0") {
                         // Parse error.
                         // Emit a U+FFFD REPLACEMENT CHARACTER character token.
-                        yield new CharacterToken(self::REPLACEMENT_CHAR);
+                        yield new CharacterToken("\u{FFFD}");
                     } elseif ($this->inputStream->isEoS()) {
                         // Emit an end-of-file token.
                         yield new EOFToken();
@@ -352,7 +351,7 @@ class Tokenizer
                         // Parse error.
                         // Append a U+FFFD REPLACEMENT CHARACTER character to
                         // the current tag token's tag name.
-                        $tagToken->tagName .= self::REPLACEMENT_CHAR;
+                        $tagToken->tagName .= "\u{FFFD}";
                     } elseif ($this->inputStream->isEoS()) {
                         // Parse error.
                         // Emit an end-of-file token.
@@ -946,7 +945,7 @@ class Tokenizer
                     } elseif ($c === "\0") {
                         // Parse error.
                         // Emit a U+FFFD REPLACEMENT CHARACTER character token.
-                        yield new CharacterToken(self::REPLACEMENT_CHAR);
+                        yield new CharacterToken("\u{FFFD}");
                     } elseif ($this->inputStream->isEoS()) {
                         // Parse error.
                         // Emit an end-of-file token.
@@ -978,7 +977,7 @@ class Tokenizer
                         // Emit a U+FFFD REPLACEMENT CHARACTER character token.
                         $this->state->tokenizerState =
                             TokenizerState::SCRIPT_DATA_ESCAPED;
-                        yield new CharacterToken(self::REPLACEMENT_CHAR);
+                        yield new CharacterToken("\u{FFFD}");
                     } elseif ($this->inputStream->isEoS()) {
                         // Parse error.
                         // Emit an end-of-file token.
@@ -1017,7 +1016,7 @@ class Tokenizer
                         // U+FFFD REPLACEMENT CHARACTER character token.
                         $this->state->tokenizerState =
                             TokenizerState::SCRIPT_DATA_ESCAPED;
-                        yield new CharacterToken(self::REPLACEMENT_CHAR);
+                        yield new CharacterToken("\u{FFFD}");
                     } elseif ($this->inputStream->isEoS()) {
                         // Parse error.
                         // Emit an end-of-file token.
@@ -1283,7 +1282,7 @@ class Tokenizer
                     } elseif ($c === "\0") {
                         // Parse error.
                         // Emit a U+FFFD REPLACEMENT CHARACTER character token.
-                        yield new CharacterToken(self::REPLACEMENT_CHAR);
+                        yield new CharacterToken("\u{FFFD}");
                     } elseif ($this->inputStream->isEoS()) {
                         // Parse error.
                         // Emit an end-of-file token.
@@ -1320,7 +1319,7 @@ class Tokenizer
                         // a U+FFFD REPLACEMENT CHARACTER character token.
                         $this->state->tokenizerState =
                             TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPED;
-                        yield new CharacterToken(self::REPLACEMENT_CHAR);
+                        yield new CharacterToken("\u{FFFD}");
                     } elseif ($this->inputStream->isEoS()) {
                         // Parse error.
                         // Emit an end-of-file token.
@@ -1362,7 +1361,7 @@ class Tokenizer
                         // a U+FFFD REPLACEMENT CHARACTER character token.
                         $this->state->tokenizerState =
                             TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPED;
-                        yield new CharacterToken(self::REPLACEMENT_CHAR);
+                        yield new CharacterToken("\u{FFFD}");
                     } elseif ($this->inputStream->isEoS()) {
                         // Parse error.
                         // Emit an end-of-file token.
@@ -1515,7 +1514,7 @@ class Tokenizer
                         // Parse error.
                         // Append a U+FFFD REPLACEMENT CHARACTER character to
                         // the current attribute's name.
-                        $attributeToken->name .= self::REPLACEMENT_CHAR;
+                        $attributeToken->name .= "\u{FFFD}";
                     } elseif ($c === '"' || $c === '\'' || $c === '<') {
                         // Parse error.
                         // Treat it as per the "anything else" entry below.
@@ -1642,7 +1641,7 @@ class Tokenizer
                         // Parse error.
                         // Append a U+FFFD REPLACEMENT CHARACTER character to
                         // the current attribute's value.
-                        $attributeToken->value .= self::REPLACEMENT_CHAR;
+                        $attributeToken->value .= "\u{FFFD}";
                     } elseif ($this->inputStream->isEoS()) {
                         // Parse error.
                         // Emit an end-of-file token.
@@ -1676,7 +1675,7 @@ class Tokenizer
                         // Parse error.
                         // Append a U+FFFD REPLACEMENT CHARACTER character to
                         // the current attribute's value.
-                        $attributeToken->value .= self::REPLACEMENT_CHAR;
+                        $attributeToken->value .= "\u{FFFD}";
                     } elseif ($this->inputStream->isEoS()) {
                         // Parse error.
                         // Emit an end-of-file token.
@@ -1717,7 +1716,7 @@ class Tokenizer
                         // Parse error.
                         // Append a U+FFFD REPLACEMENT CHARACTER character to
                         // the current attribute's value.
-                        $attributeToken->value .= self::REPLACEMENT_CHAR;
+                        $attributeToken->value .= "\u{FFFD}";
                     } elseif ($c === '"' ||
                         $c === '\'' ||
                         $c === '<' ||
@@ -1817,7 +1816,7 @@ class Tokenizer
                     } elseif ($c === "\0") {
                         // Append a U+FFFD REPLACEMENT CHARACTER character to
                         // the comment token's data.
-                        $commentToken->data .= self::REPLACEMENT_CHAR;
+                        $commentToken->data .= "\u{FFFD}";
                     } else {
                         // Append the current input character to the comment
                         // token's data.
@@ -1955,7 +1954,7 @@ class Tokenizer
                         // Parse error.
                         // Append a U+FFFD REPLACEMENT CHARACTER character to
                         // the comment token's data.
-                        $commentToken->data .= self::REPLACEMENT_CHAR;
+                        $commentToken->data .= "\u{FFFD}";
                     } elseif ($this->inputStream->isEoS()) {
                         // Parse error.
                         // Emit the comment token. Emit an end-of-file token.
@@ -2200,7 +2199,7 @@ class Tokenizer
                         // U+FFFD REPLACEMENT CHARACTER character. Switch to the
                         // DOCTYPE name state.
                         $doctypeToken = new DoctypeToken();
-                        $doctypeToken->name = self::REPLACEMENT_CHAR;
+                        $doctypeToken->name = "\u{FFFD}";
                         $this->state->tokenizerState =
                             TokenizerState::DOCTYPE_NAME;
                     } elseif ($c === '>') {
@@ -2258,7 +2257,7 @@ class Tokenizer
                         // Parse error.
                         // Append a U+FFFD REPLACEMENT CHARACTER character to
                         // the current DOCTYPE token's name.
-                        $doctypeToken->name .= self::REPLACEMENT_CHAR;
+                        $doctypeToken->name .= "\u{FFFD}";
                     } elseif ($this->inputStream->isEoS()) {
                         // Parse error.
                         // Set the DOCTYPE token's force-quirks flag to on. Emit
@@ -2452,7 +2451,7 @@ class Tokenizer
                         // Parse error.
                         // Append a U+FFFD REPLACEMENT CHARACTER character to
                         // the current DOCTYPE token's public identifier.
-                        $doctypeToken->publicIdentifier .= self::REPLACEMENT_CHAR;
+                        $doctypeToken->publicIdentifier .= "\u{FFFD}";
                     } elseif ($c === '>') {
                         // Parse error.
                         // Set the DOCTYPE token's force-quirks flag to on.
@@ -2488,7 +2487,7 @@ class Tokenizer
                         // Parse error.
                         // Append a U+FFFD REPLACEMENT CHARACTER character to
                         // the current DOCTYPE token's public identifier.
-                        $doctypeToken->publicIdentifier .= self::REPLACEMENT_CHAR;
+                        $doctypeToken->publicIdentifier .= "\u{FFFD}";
                     } elseif ($c === '>') {
                         // Parse error.
                         // Set the DOCTYPE token's force-quirks flag to on.
@@ -2731,7 +2730,7 @@ class Tokenizer
                         // Parse error.
                         // Append a U+FFFD REPLACEMENT CHARACTER character to
                         // the current DOCTYPE token's system identifier.
-                        $doctypeToken->systemIdentifier .= self::REPLACEMENT_CHAR;
+                        $doctypeToken->systemIdentifier .= "\u{FFFD}";
                     } elseif ($c === '>') {
                         // Parse error.
                         // Set the DOCTYPE token's force-quirks flag to on.
@@ -2766,7 +2765,7 @@ class Tokenizer
                         // Parse error.
                         // Append a U+FFFD REPLACEMENT CHARACTER character to
                         // the current DOCTYPE token's system identifier.
-                        $doctypeToken->systemIdentifier .= self::REPLACEMENT_CHAR;
+                        $doctypeToken->systemIdentifier .= "\u{FFFD}";
                     } elseif ($c === '>') {
                         // Parse error.
                         // Set the DOCTYPE token's force-quirks flag to on.
