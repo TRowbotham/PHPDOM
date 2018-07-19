@@ -118,7 +118,7 @@ class TreeBuilder
         'requiredextensions'  => 'requiredExtensions',
         'requiredfeatures'    => 'requiredFeatures',
         'specularconstant'    => 'specularConstant',
-        'specularexponent'    => 'specularexponent',
+        'specularexponent'    => 'specularExponent',
         'spreadmethod'        => 'spreadMethod',
         'startoffset'         => 'startOffset',
         'stddeviation'        => 'stdDeviation',
