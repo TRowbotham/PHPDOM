@@ -2736,14 +2736,14 @@ class Tokenizer
                         // Switch to the data state. Emit that DOCTYPE token.
                         $doctypeToken->setQuirksMode('on');
                         $this->state->tokenizerState = TokenizerState::DATA;
+                        yield $doctypeToken;
                     } elseif ($this->inputStream->isEoS()) {
                         // Parse error.
                         // Set the DOCTYPE token's force-quirks flag to on. Emit
-                        // that DOCTYPE token. Reconsume in the data state.
+                        // that DOCTYPE token. Emit an end-of-file token.
                         $doctypeToken->setQuirksMode('on');
                         yield $doctypeToken;
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState = TokenizerState::DATA;
+                        yield new EOFToken();
                     } else {
                         // Append the current input character to the current
                         // DOCTYPE token's system identifier.
