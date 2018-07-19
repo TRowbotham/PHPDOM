@@ -2901,6 +2901,7 @@ class Tokenizer
                         // Emit two U+005D RIGHT SQUARE BRACKET character
                         // tokens. Reconsume in the CDATA section state.
                         yield new CharacterToken(']');
+                        yield new CharacterToken(']');
                         $this->inputStream->seek(-1);
                         $this->state->tokenizerState =
                             TokenizerState::CDATA_SECTION;
