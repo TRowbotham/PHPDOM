@@ -3284,11 +3284,11 @@ class Tokenizer
                             && $characterReferenceCode <= 0x1F)
                                 || ($characterReferenceCode >= 0x7F
                                     && $characterReferenceCode <= 0x9F))
-                        && $characterReference !== 0x09
-                        && $characterReference !== 0x0A
-                        && $characterReference !== 0x0C
-                        && $characterReference !== 0x0D
-                        && $characterReference !== 0x20)
+                        && $characterReferenceCode !== 0x09
+                        && $characterReferenceCode !== 0x0A
+                        && $characterReferenceCode !== 0x0C
+                        && $characterReferenceCode !== 0x0D
+                        && $characterReferenceCode !== 0x20)
                     ) {
                         // This is a control-character-reference parse error.
 
