@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Parser\HTML;
 
+use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Encoding\EncodingUtils;
 use Rowbot\DOM\Namespaces;
 use Rowbot\DOM\Parser\Token\AttributeToken;
@@ -14,6 +15,7 @@ use Rowbot\DOM\Parser\Token\EOFToken;
 use Rowbot\DOM\Parser\Token\StartTagToken;
 use Rowbot\DOM\Parser\Token\Token;
 use Rowbot\DOM\Support\CodePointStream;
+use Rowbot\DOM\Utils;
 
 use function array_key_exists;
 use function ctype_alnum;
@@ -1834,40 +1836,51 @@ class Tokenizer
                         $commentToken = new CommentToken('');
                         $this->state->tokenizerState =
                             TokenizerState::COMMENT_START;
-                    } elseif (strcasecmp(
-                        $this->inputStream->peek(7),
-                        'DOCTYPE'
-                    ) === 0) {
-                        // Otherwise, if the next seven characters are an ASCII
-                        // case-insensitive match for the word "DOCTYPE", then
-                        // consume those characters and switch to the DOCTYPE
+
+                        // If the next few characters are an ASCII
+                        // case-insensitive match for the word "DOCTYPE"...
+                    } elseif (Utils::toASCIILowercase(
+                        $this->inputStream->peek(7)
+                    ) === Utils::toASCIILowercase('DOCTYPE')) {
+                        // Consume those characters and switch to the DOCTYPE
                         // state.
                         $this->inputStream->get(7);
-                        $this->state->tokenizerState =
-                            TokenizerState::DOCTYPE;
-                    } elseif (($n = $this->getAdjustedCurrentNode()) &&
-                        !($n->nodeType == $n::ELEMENT_NODE &&
-                            $n->namespaceURI === Namespaces::HTML) &&
-                        $this->inputStream->peek(7) === '[CDATA['
-                    ) {
-                        // Otherwise, if there is an adjusted current node and
-                        // it is not an element in the HTML namespace and the
-                        // next seven characters are a case-sensitive match for
-                        // the string "[CDATA[" (the five uppercase letters
+                        $this->state->tokenizerState = TokenizerState::DOCTYPE;
+
+                        // If the next few characters are a case-sensitive match
+                        // for the string "[CDATA[" (the five uppercase letters
                         // "CDATA" with a U+005B LEFT SQUARE BRACKET character
-                        // before and after), then consume those characters and
-                        // switch to the CDATA section state.
+                        // before and after)...
+                    } elseif ($this->inputStream->peek(7) === '[CDATA[') {
+                        // Consume those characters.
                         $this->inputStream->get(7);
-                        $this->state->tokenizerState =
-                            TokenizerState::CDATA_SECTION;
+
+                        // If there is an adjusted current node and it is not an
+                        // element in the HTML namespace, then switch to the
+                        // CDATA section state. Otherwise, this is a
+                        // cdata-in-html-content parse error. Create a comment
+                        // token whose data is the "[CDATA[" string. Switch to
+                        // the bogus comment state.
+                        $node = $this->getAdjustedCurrentNode();
+
+                        if (!($node instanceof Element
+                            && $node->namespaceURI === Namespaces::HTML
+                        )) {
+                            $this->state->tokenizerState
+                                = TokenizerState::CDATA_SECTION;
+                        } else {
+                            $commentToken = new CommentToken('[CDATA[');
+                            $this->state->tokenizerState
+                                = TokenizerState::BOGUS_COMMENT;
+                        }
                     } else {
-                        // Otherwise, this is a parse error. Create a comment
-                        // token whose data is the empty string. Switch to the
-                        // bogus comment state (don't consume anything in the
-                        // current state).
+                        // This is an incorrectly-opened-comment parse error.
+                        // Create a comment token whose data is the empty
+                        // string. Switch to the bogus comment state (don't
+                        // consume anything in the current state).
                         $commentToken = new CommentToken('');
-                        $this->state->tokenizerState =
-                            TokenizerState::BOGUS_COMMENT;
+                        $this->state->tokenizerState
+                            = TokenizerState::BOGUS_COMMENT;
                     }
 
                     break;
