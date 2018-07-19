@@ -1957,10 +1957,10 @@ class Tokenizer
                         $commentToken->data .= self::REPLACEMENT_CHAR;
                     } elseif ($this->inputStream->isEoS()) {
                         // Parse error.
-                        // Emit the comment token. Reconsume in the data state.
+                        // Emit the comment token. Emit an end-of-file token.
                         yield $commentToken;
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState = TokenizerState::DATA;
+                        yield new EOFToken();
+                        return;
                     } else {
                         // Append the current input character to the comment
                         // token's data.
