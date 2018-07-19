@@ -236,6 +236,7 @@ class TreeBuilder
         $this->fosterParenting = false;
         $this->framesetOk = 'ok';
         $this->isFragmentCase = $isFragmentCase;
+        $this->isScriptingEnabled = $isScriptingEnabled;
         $this->openElements = $openElements;
         $this->originalInsertionMode = null;
         $this->pendingTableCharacterTokens = null;
