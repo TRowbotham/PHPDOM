@@ -2150,15 +2150,20 @@ class Tokenizer
                         // Switch to the before DOCTYPE name state.
                         $this->state->tokenizerState =
                             TokenizerState::BEFORE_DOCTYPE_NAME;
+                    } elseif ($c === '>') {
+                        // Reconsume in the before DOCTYPE name state.
+                        $this->inputStream->seek(-1);
+                        $this->state->tokenizerState
+                            = TokenizerState::BEFORE_DOCTYPE_NAME;
                     } elseif ($this->inputStream->isEoS()) {
                         // Parse error.
                         // Create a new DOCTYPE token. Set its force-quirks flag
-                        // to on. Emit the token. Reconsume in the data state.
+                        // to on. Emit the token. Emit an end-of-file token.
                         $doctypeToken = new DoctypeToken();
                         $doctypeToken->setQuirksMode('on');
                         yield $doctypeToken;
-                        $this->inputStream->seek(-1);
-                        $this->state->tokenizerState = TokenizerState::DATA;
+                        yield new EOFToken();
+                        return;
                     } else {
                         // Parse error.
                         // Reconsume in the before DOCTYPE name state.
