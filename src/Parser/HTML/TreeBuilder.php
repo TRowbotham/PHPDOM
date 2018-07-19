@@ -69,8 +69,6 @@ class TreeBuilder
     const RAW_TEXT_ELEMENT_ALGORITHM = 1;
     const RCDATA_ELEMENT_ALGORITHM   = 2;
 
-    const REGEX_CHARACTERS = '/^[\x{0009}\x{000A}\x{000C}\x{000D}\x{0020}]$/';
-
     const SVG_ATTRIBUTES = [
         'attributename'       => 'attributeName',
         'attributetype'       => 'attributeType',
