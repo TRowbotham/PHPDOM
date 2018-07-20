@@ -13,12 +13,12 @@ namespace Rowbot\DOM\Parser\Token;
 class DoctypeToken implements Token
 {
     /**
-     * @var string
+     * @var string|null
      */
     public $publicIdentifier;
 
     /**
-     * @var string
+     * @var string|null
      */
     public $name;
 
@@ -28,7 +28,7 @@ class DoctypeToken implements Token
     private $forceQuirksMode;
 
     /**
-     * @var string
+     * @var string|null
      */
     public $systemIdentifier;
 
