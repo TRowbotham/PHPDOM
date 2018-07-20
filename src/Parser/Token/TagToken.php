@@ -41,14 +41,11 @@ abstract class TagToken implements Token
      *
      * @return void
      */
-    public function __construct(string $tagName = null)
+    public function __construct(string $tagName = '')
     {
         $this->attributes = new SplDoublyLinkedList();
         $this->selfClosingFlagAcknowledged = false;
-
-        if ($tagName !== null) {
-            $this->tagName = $tagName;
-        }
+        $this->tagName = $tagName;
     }
 
     /**
