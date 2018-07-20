@@ -73,15 +73,15 @@ class TreeBuilder
     use ParserOrTreeBuilder;
     use TokenizerOrTreeBuilder;
 
-    const RAW_TEXT_ELEMENT_ALGORITHM = 1;
-    const RCDATA_ELEMENT_ALGORITHM   = 2;
+    private const RAW_TEXT_ELEMENT_ALGORITHM = 1;
+    private const RCDATA_ELEMENT_ALGORITHM   = 2;
 
     /**
      * @see https://html.spec.whatwg.org/multipage/parsing.html#adjust-svg-attributes
      *
      * @var array<string, string>
      */
-    const SVG_ATTRIBUTES = [
+    private const SVG_ATTRIBUTES = [
         'attributename'       => 'attributeName',
         'attributetype'       => 'attributeType',
         'basefrequency'       => 'baseFrequency',
@@ -147,7 +147,7 @@ class TreeBuilder
      *
      * @var array<string, string>
      */
-    const SVG_ELEMENTS = [
+    private const SVG_ELEMENTS = [
         'altgraph'            => 'altGraph',
         'altglyphdef'         => 'altGlyphDef',
         'altglyphitem'        => 'altGlyphItem',
@@ -262,7 +262,7 @@ class TreeBuilder
      *
      * @return void
      */
-    protected function initialInsertionMode(Token $token)
+    private function initialInsertionMode(Token $token): void
     {
         $tokenType = $token->getType();
 
@@ -410,7 +410,7 @@ class TreeBuilder
      *
      * @return void
      */
-    protected function beforeHTMLInsertionMode(Token $token)
+    private function beforeHTMLInsertionMode(Token $token): void
     {
         $tokenType = $token->getType();
         $tagName = $token instanceof TagToken ? $token->tagName : '';
@@ -508,7 +508,7 @@ class TreeBuilder
      *
      * @return void
      */
-    protected function beforeHeadInsertionMode(Token $token)
+    private function beforeHeadInsertionMode(Token $token): void
     {
         $tokenType = $token->getType();
         $tagName = $token instanceof TagToken ? $token->tagName : '';
@@ -594,7 +594,7 @@ class TreeBuilder
      *
      * @return void
      */
-    protected function inHeadInsertionMode(Token $token)
+    private function inHeadInsertionMode(Token $token): void
     {
         $tagName = $token instanceof TagToken ? $token->tagName : '';
 
@@ -845,7 +845,7 @@ class TreeBuilder
      *
      * @return void
      */
-    protected function inHeadNoScriptInsertionMode(Token $token)
+    private function inHeadNoScriptInsertionMode(Token $token): void
     {
         $tagName = $token instanceof TagToken ? $token->tagName : '';
 
@@ -928,7 +928,7 @@ class TreeBuilder
      *
      * @return void
      */
-    protected function afterHeadInsertionMode(Token $token)
+    private function afterHeadInsertionMode(Token $token): void
     {
         $tagName = $token instanceof TagToken ? $token->tagName : '';
 
@@ -1046,7 +1046,7 @@ class TreeBuilder
      *
      * @return void
      */
-    protected function inBodyInsertionMode(Token $token)
+    private function inBodyInsertionMode(Token $token): void
     {
         $tokenType = $token->getType();
         $tagName = $token instanceof TagToken ? $token->tagName : '';
@@ -2405,12 +2405,13 @@ class TreeBuilder
     }
 
     /**
-     * @param \Rowbot\DOM\Parser\Token\Token $token
+     * @param \Rowbot\DOM\Parser\Token\EndTagToken $token
      *
      * @return void
      */
-    protected function applyAnyOtherEndTagForInBodyInsertionMode(Token $token)
-    {
+    private function applyAnyOtherEndTagForInBodyInsertionMode(
+        EndTagToken $token
+    ): void {
         // Initialise node to be the current node (the bottommost node of the
         // stack).
         $tagName = $token->tagName;
@@ -2451,7 +2452,7 @@ class TreeBuilder
      *
      * @return void
      */
-    protected function closePElement()
+    private function closePElement(): void
     {
         $this->generateImpliedEndTags('p');
 
@@ -2473,7 +2474,7 @@ class TreeBuilder
      *
      * @return void
      */
-    protected function adoptionAgency(TagToken $token)
+    private function adoptionAgency(TagToken $token): void
     {
         $subject = $token->tagName;
         $currentNode = $this->openElements->bottom();
@@ -2737,7 +2738,7 @@ class TreeBuilder
      *
      * @return void
      */
-    protected function inTextInsertionMode(Token $token)
+    private function inTextInsertionMode(Token $token): void
     {
         $tokenType = $token->getType();
 
@@ -2793,7 +2794,7 @@ class TreeBuilder
      *
      * @return void
      */
-    protected function inTableInsertionMode(Token $token)
+    private function inTableInsertionMode(Token $token): void
     {
         $tokenType = $token->getType();
         $tagName = $token instanceof TagToken ? $token->tagName : '';
@@ -3049,7 +3050,7 @@ class TreeBuilder
      *
      * @return void
      */
-    protected function inTableTextInsertionMode(Token $token)
+    private function inTableTextInsertionMode(Token $token): void
     {
         $tokenType = $token->getType();
 
@@ -3112,7 +3113,7 @@ class TreeBuilder
      *
      * @return void
      */
-    protected function inCaptionInsertionMode(Token $token)
+    private function inCaptionInsertionMode(Token $token): void
     {
         $tokenType = $token->getType();
         $tagName = $token instanceof TagToken ? $token->tagName : '';
@@ -3239,7 +3240,7 @@ class TreeBuilder
      *
      * @return void
      */
-    protected function inColumnGroupInsertionMode(Token $token)
+    private function inColumnGroupInsertionMode(Token $token): void
     {
         $tokenType = $token->getType();
         $tagName = $token instanceof TagToken ? $token->tagName : '';
@@ -3338,7 +3339,7 @@ class TreeBuilder
      *
      * @return void
      */
-    protected function inTableBodyInsertionMode(Token $token)
+    private function inTableBodyInsertionMode(Token $token): void
     {
         $tokenType = $token->getType();
         $tagName = $token instanceof TagToken ? $token->tagName : '';
@@ -3460,7 +3461,7 @@ class TreeBuilder
      *
      * @return void
      */
-    protected function inRowInsertionMode(Token $token)
+    private function inRowInsertionMode(Token $token): void
     {
         $tokenType = $token->getType();
         $tagName = $token instanceof TagToken ? $token->tagName : '';
@@ -3581,7 +3582,7 @@ class TreeBuilder
      *
      * @return void
      */
-    protected function inCellInsertionMode(Token $token)
+    private function inCellInsertionMode(Token $token): void
     {
         $tokenType = $token->getType();
         $tagName = $token instanceof TagToken ? $token->tagName : '';
@@ -3698,7 +3699,7 @@ class TreeBuilder
      *
      * @return void
      */
-    protected function closeCell()
+    private function closeCell(): void
     {
         // Generate implied end tags.
         $this->generateImpliedEndTags();
@@ -3735,7 +3736,7 @@ class TreeBuilder
      *
      * @return void
      */
-    protected function inSelectInsertionMode(Token $token)
+    private function inSelectInsertionMode(Token $token): void
     {
         $tokenType = $token->getType();
         $tagName = $token instanceof TagToken ? $token->tagName : '';
@@ -3921,7 +3922,7 @@ class TreeBuilder
      *
      * @return void
      */
-    protected function inSelectInTableInsertionMode(Token $token)
+    private function inSelectInTableInsertionMode(Token $token): void
     {
         $tokenType = $token->getType();
         $tagName = $token instanceof TagToken ? $token->tagName : '';
@@ -4001,7 +4002,7 @@ class TreeBuilder
      *
      * @return void
      */
-    protected function inTemplateInsertionMode(Token $token)
+    private function inTemplateInsertionMode(Token $token): void
     {
         $tokenType = $token->getType();
         $tagName = $token instanceof TagToken ? $token->tagName : '';
@@ -4150,7 +4151,7 @@ class TreeBuilder
      *
      * @return void
      */
-    protected function afterBodyInsertionMode(Token $token)
+    private function afterBodyInsertionMode(Token $token): void
     {
         $tokenType = $token->getType();
         $tagName = $token instanceof TagToken ? $token->tagName : '';
@@ -4210,7 +4211,7 @@ class TreeBuilder
      *
      * @return void
      */
-    protected function inFramesetInsertionMode(Token $token)
+    private function inFramesetInsertionMode(Token $token): void
     {
         $tokenType = $token->getType();
         $tagName = $token instanceof TagToken ? $token->tagName : '';
@@ -4306,7 +4307,7 @@ class TreeBuilder
      *
      * @return void
      */
-    protected function afterFramesetInsertionMode(Token $token)
+    private function afterFramesetInsertionMode(Token $token): void
     {
         $tokenType = $token->getType();
         $tagName = $token instanceof TagToken ? $token->tagName : '';
@@ -4356,7 +4357,7 @@ class TreeBuilder
      *
      * @return void
      */
-    protected function afterAfterBodyInsertionMode(Token $token)
+    private function afterAfterBodyInsertionMode(Token $token): void
     {
         $tokenType = $token->getType();
 
@@ -4396,7 +4397,7 @@ class TreeBuilder
      *
      * @return void
      */
-    protected function afterAfterFramesetInsertionMode(Token $token)
+    private function afterAfterFramesetInsertionMode(Token $token): void
     {
         $tokenType = $token->getType();
         $tagName = $token instanceof TagToken ? $token->tagName : '';
@@ -4440,7 +4441,7 @@ class TreeBuilder
      *
      * @return void
      */
-    protected function inForeignContent(Token $token)
+    private function inForeignContent(Token $token): void
     {
         $fontTokenHasAttribute = false;
         $tokenType = $token->getType();
@@ -4723,7 +4724,7 @@ class TreeBuilder
      *
      * @return void
      */
-    public function run(Token $token)
+    public function run(Token $token): void
     {
         $useCurrentInsertionMode = false;
 
@@ -4910,7 +4911,7 @@ class TreeBuilder
      *
      * @return void
      */
-    protected function adjustForeignAttributes(TagToken $token)
+    private function adjustForeignAttributes(TagToken $token): void
     {
         foreach ($token->attributes as $attr) {
             $name = $attr->name;
@@ -4945,7 +4946,7 @@ class TreeBuilder
      *
      * @return void
      */
-    protected function adjustMathMLAttributes(TagToken $token)
+    private function adjustMathMLAttributes(TagToken $token): void
     {
         foreach ($token->attributes as $attr) {
             if ($attr->name === 'definitionurl') {
@@ -4962,7 +4963,7 @@ class TreeBuilder
      *
      * @return void
      */
-    protected function adjustSVGAttributes(TagToken $token)
+    private function adjustSVGAttributes(TagToken $token): void
     {
         foreach ($token->attributes as $attr) {
             $name = $attr->name;
@@ -4979,18 +4980,18 @@ class TreeBuilder
      *
      * @see https://html.spec.whatwg.org/multipage/syntax.html#create-an-element-for-the-token
      *
-     * @param \Rowbot\DOM\Parser\Token\Token $token          The token currently being processed.
-     * @param string                         $namespace      The namespace of the element that is to be created.
-     * @param \Rowbot\DOM\Node               $intendedParent The parent not which the newely created node will be
-     *                                                       inserted in to.
+     * @param \Rowbot\DOM\Parser\Token\TagToken $token          The token currently being processed.
+     * @param string                            $namespace      The namespace of the element that is to be created.
+     * @param \Rowbot\DOM\Node                  $intendedParent The parent not which the newely created node will be
+     *                                                          inserted in to.
      *
-     * @return \Rowbot\DOM\Node
+     * @return \Rowbot\DOM\Element\Element
      */
-    protected function createElementForToken(
-        Token $token,
-        $namespace,
+    private function createElementForToken(
+        TagToken $token,
+        string $namespace,
         Node $intendedParent
-    ) {
+    ): Element {
         $document = $intendedParent->getNodeDocument();
         $localName = $token->tagName;
         $element = ElementFactory::create($document, $localName, $namespace);
@@ -5053,7 +5054,7 @@ class TreeBuilder
      *
      * @return void
      */
-    protected function generateAllImpliedEndTagsThoroughly()
+    private function generateAllImpliedEndTagsThoroughly(): void
     {
         $pattern = '/^(caption|colgroup|dd|dt|li|optgroup|option|p|rb|rp|rt';
         $pattern .= '|rtc|tbody|td|tfoot|th|thead|tr)$/';
@@ -5077,7 +5078,7 @@ class TreeBuilder
      *
      * @return void
      */
-    protected function generateImpliedEndTags($excluded = '')
+    private function generateImpliedEndTags($excluded = ''): void
     {
         $tags = [
             'dd'       => 0,
@@ -5118,7 +5119,7 @@ class TreeBuilder
      */
     private function getAppropriatePlaceForInsertingNode(
         Node $overrideTarget = null
-    ) {
+    ): array {
         // If there was an override target specified, then let target be the
         // override target. Otherwise, let target be the current node.
         $target = $overrideTarget ?: $this->openElements->bottom();
@@ -5216,7 +5217,7 @@ class TreeBuilder
      *
      * @return void
      */
-    protected function insertCharacter($data)
+    private function insertCharacter($data): void
     {
         // Let data be the characters passed to the algorithm, or, if no
         // characters were explicitly specified, the character of the character
@@ -5289,10 +5290,10 @@ class TreeBuilder
      *
      * @return void
      */
-    protected function insertComment(
+    private function insertComment(
         CommentToken $token,
         array $position = null
-    ) {
+    ): void {
         // Let data be the data given in the comment token being processed.
         $data = $token->data;
 
@@ -5327,8 +5328,10 @@ class TreeBuilder
      * @return \Rowbot\DOM\Element\Element|null The newly created element or void if the element could not be inserted
      *                                          into the intended location.
      */
-    protected function insertForeignElement(TagToken $token, $namespace)
-    {
+    private function insertForeignElement(
+        TagToken $token,
+        string $namespace
+    ): ?Element {
         // Let the adjusted insertion location be the appropriate place for
         // inserting a node.
         $adjustedInsertionLocation =
@@ -5374,7 +5377,7 @@ class TreeBuilder
      *
      * @return void
      */
-    protected function insertNode(Node $node, array $position)
+    private function insertNode(Node $node, array $position): void
     {
         $relativeNode = $position[0];
         $position = $position[1];
@@ -5399,7 +5402,7 @@ class TreeBuilder
      *
      * @return bool
      */
-    protected function isHTMLElementWithName(Node $node, $localName)
+    private function isHTMLElementWithName(Node $node, string $localName): bool
     {
         return $node instanceof Element
             && $node->namespaceURI === Namespaces::HTML
@@ -5429,7 +5432,7 @@ class TreeBuilder
      *
      * @return bool
      */
-    private function isHTMLIntegrationPoint(Node $node)
+    private function isHTMLIntegrationPoint(Node $node): bool
     {
         if (!$node instanceof Element) {
             return false;
@@ -5480,7 +5483,7 @@ class TreeBuilder
      *
      * @return bool
      */
-    protected function isMathMLTextIntegrationPoint(Node $node)
+    private function isMathMLTextIntegrationPoint(Node $node): bool
     {
         if ($node instanceof Element
             && $node->namespaceURI === Namespaces::MATHML
@@ -5506,7 +5509,7 @@ class TreeBuilder
      *
      * @return bool
      */
-    private function isSpecialNode(Node $node)
+    private function isSpecialNode(Node $node): bool
     {
         if (!$node instanceof Element) {
             return false;
@@ -5620,16 +5623,20 @@ class TreeBuilder
     }
 
     /**
+     * This algorithm is always invoked in response to a start tag token.
+     *
      * @see https://html.spec.whatwg.org/multipage/syntax.html#generic-raw-text-element-parsing-algorithm
      * @see https://html.spec.whatwg.org/multipage/syntax.html#generic-rcdata-element-parsing-algorithm
      *
-     * @param \Rowbot\DOM\Parser\Token\Token $token
-     * @param int                            $algorithm
+     * @param \Rowbot\DOM\Parser\Token\StartTagToken $token
+     * @param int                                    $algorithm
      *
      * @return void
      */
-    protected function parseGenericTextElement(Token $token, $algorithm)
-    {
+    private function parseGenericTextElement(
+        StartTagToken $token,
+        int $algorithm
+    ): void {
         // Insert an HTML element for the token.
         $node = $this->insertForeignElement($token, Namespaces::HTML);
 
@@ -5655,7 +5662,7 @@ class TreeBuilder
      *
      * @return void
      */
-    public function reconstructActiveFormattingElements()
+    private function reconstructActiveFormattingElements(): void
     {
         // If there are no entries in the list of active formatting elements,
         // then there is nothing to reconstruct; stop this algorithm.
