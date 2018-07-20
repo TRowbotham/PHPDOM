@@ -549,42 +549,39 @@ class TreeBuilder
             )
         ) {
             // Act as described in the "anything else" entry below.
-
-            // Insert an HTML element for a "head" start tag token with no
-            // attributes.
-            $node = $this->insertForeignElement(
-                new StartTagToken('head'),
-                Namespaces::HTML
-            );
-
-            // Set the head element pointer to the newly created head element.
-            $this->state->headElementPointer = $node;
-
-            // Switch the insertion mode to "in head".
-            $this->state->insertionMode = ParserInsertionMode::IN_HEAD;
-
-            // Reprocess the current token.
-            $this->run($token);
+            $this->beforeHeadInsertionModeAnythingElse($token);
         } elseif ($token instanceof EndTagToken) {
             // Parse error.
             // Ignore the token.
         } else {
-            // Insert an HTML element for a "head" start tag token with no
-            // attributes.
-            $node = $this->insertForeignElement(
-                new StartTagToken('head'),
-                Namespaces::HTML
-            );
-
-            // Set the head element pointer to the newly created head element.
-            $this->state->headElementPointer = $node;
-
-            // Switch the insertion mode to "in head".
-            $this->state->insertionMode = ParserInsertionMode::IN_HEAD;
-
-            // Reprocess the current token.
-            $this->run($token);
+            $this->beforeHeadInsertionModeAnythingElse($token);
         }
+    }
+
+    /**
+     * The "before head" insertion mode's "anything else" steps.
+     *
+     * @param \Rowbot\DOM\Parser\Token\Token $token
+     *
+     * @return void
+     */
+    private function beforeHeadInsertionModeAnythingElse(Token $token): void
+    {
+        // Insert an HTML element for a "head" start tag token with no
+        // attributes.
+        $node = $this->insertForeignElement(
+            new StartTagToken('head'),
+            Namespaces::HTML
+        );
+
+        // Set the head element pointer to the newly created head element.
+        $this->state->headElementPointer = $node;
+
+        // Switch the insertion mode to "in head".
+        $this->state->insertionMode = ParserInsertionMode::IN_HEAD;
+
+        // Reprocess the current token.
+        $this->run($token);
     }
 
     /**
