@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Parser\HTML;
 
+use Generator;
 use IntlChar;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Namespaces;
@@ -126,6 +127,8 @@ class Tokenizer
      * @param bool                                           $isFragmentCase
      * @param \Rowbot\DOM\Element\Element|null               $contextElement
      * @param \Rowbot\DOM\Parser\HTML\ParserState            $state
+     *
+     * @return void
      */
     public function __construct(
         CodePointStream $input,
@@ -141,7 +144,12 @@ class Tokenizer
         $this->state = $state;
     }
 
-    public function run()
+    /**
+     * Runs the tokenization steps.
+     *
+     * @return \Generator
+     */
+    public function run(): Generator
     {
         $returnState = null;
         $characterReferenceCode = 0;
@@ -3200,7 +3208,7 @@ class Tokenizer
      *
      * @return void
      */
-    public function setLastEmittedStartTagToken(StartTagToken $token)
+    public function setLastEmittedStartTagToken(StartTagToken $token): void
     {
         $this->lastEmittedStartTagToken = $token;
     }
@@ -3214,7 +3222,7 @@ class Tokenizer
      *
      * @return bool
      */
-    private function isAppropriateEndTag(EndTagToken $token)
+    private function isAppropriateEndTag(EndTagToken $token): bool
     {
         return $this->lastEmittedStartTagToken !== null
             && $this->lastEmittedStartTagToken->tagName === $token->tagName;
