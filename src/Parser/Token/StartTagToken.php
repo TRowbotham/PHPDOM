@@ -11,38 +11,4 @@ namespace Rowbot\DOM\Parser\Token;
  */
 class StartTagToken extends TagToken
 {
-    /**
-     * @var bool
-     */
-    private $selfClosingFlagAcknowledged;
-
-    /**
-     * {@inheritDoc}
-     */
-    public function __construct(string $tagName = null)
-    {
-        parent::__construct($tagName);
-
-        $this->selfClosingFlagAcknowledged = false;
-    }
-
-    /**
-     * Acknowledges that the self-closing flag is set.
-     *
-     * @return void
-     */
-    public function acknowledge(): void
-    {
-        $this->selfClosingFlagAcknowledged = true;
-    }
-
-    /**
-     * Determines if the self-closing flag was acknowledged.
-     *
-     * @return bool
-     */
-    public function wasAcknowledged(): bool
-    {
-        return $this->selfClosingFlagAcknowledged;
-    }
 }

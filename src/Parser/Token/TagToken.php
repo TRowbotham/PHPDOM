@@ -7,7 +7,7 @@ use SplDoublyLinkedList;
 
 /**
  * Start and end tag tokens have a tag name, a self-closing flag, and a list of attributes, each of which has a name and
- * a value. When a start or end tag token is created its self-clising flag must be unset (its other state is that it be
+ * a value. When a start or end tag token is created its self-closing flag must be unset (its other state is that it be
  * set), and its attributes list must be empty.
  *
  * {@inheritDoc}
@@ -22,7 +22,12 @@ abstract class TagToken implements Token
     /**
      * @var bool
      */
-    public $isSelfClosing;
+    private $isSelfClosing;
+
+    /**
+     * @var bool
+     */
+    private $selfClosingFlagAcknowledged;
 
     /**
      * @var string
@@ -39,6 +44,7 @@ abstract class TagToken implements Token
     public function __construct(string $tagName = null)
     {
         $this->attributes = new SplDoublyLinkedList();
+        $this->selfClosingFlagAcknowledged = false;
 
         if ($tagName !== null) {
             $this->tagName = $tagName;
@@ -69,5 +75,25 @@ abstract class TagToken implements Token
     public function setSelfClosingFlag(): void
     {
         $this->isSelfClosing = true;
+    }
+
+    /**
+     * Acknowledges that the self-closing flag is set.
+     *
+     * @return void
+     */
+    public function acknowledge(): void
+    {
+        $this->selfClosingFlagAcknowledged = true;
+    }
+
+    /**
+     * Determines if the self-closing flag was acknowledged.
+     *
+     * @return bool
+     */
+    public function wasAcknowledged(): bool
+    {
+        return $this->selfClosingFlagAcknowledged;
     }
 }
