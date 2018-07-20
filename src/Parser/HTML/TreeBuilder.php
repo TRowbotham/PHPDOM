@@ -52,6 +52,7 @@ use Rowbot\DOM\Parser\{
     TextBuilder,
     Token\CharacterToken,
     Token\CommentToken,
+    Token\DoctypeToken,
     Token\EndTagToken,
     Token\EOFToken,
     Token\StartTagToken,
@@ -75,6 +76,11 @@ class TreeBuilder
     const RAW_TEXT_ELEMENT_ALGORITHM = 1;
     const RCDATA_ELEMENT_ALGORITHM   = 2;
 
+    /**
+     * @see https://html.spec.whatwg.org/multipage/parsing.html#adjust-svg-attributes
+     *
+     * @var array<string, string>
+     */
     const SVG_ATTRIBUTES = [
         'attributename'       => 'attributeName',
         'attributetype'       => 'attributeType',
@@ -136,6 +142,11 @@ class TreeBuilder
         'zoomandpan'          => 'zoomAndPan'
     ];
 
+    /**
+     * @see https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-inforeign:svg-namespace
+     *
+     * @var array<string, string>
+     */
     const SVG_ELEMENTS = [
         'altgraph'            => 'altGraph',
         'altglyphdef'         => 'altGlyphDef',
@@ -191,7 +202,7 @@ class TreeBuilder
      * Stores the insertion mode that the TreeBuilder should return to after
      * it is done processing the current token in the current insertion mode.
      *
-     * @var int|null
+     * @var int
      */
     private $originalInsertionMode;
 
@@ -238,8 +249,6 @@ class TreeBuilder
         $this->isFragmentCase = $isFragmentCase;
         $this->isScriptingEnabled = $isScriptingEnabled;
         $this->openElements = $openElements;
-        $this->originalInsertionMode = null;
-        $this->pendingTableCharacterTokens = null;
         $this->state = $state;
         $this->templateInsertionModes = $templateInsertionModes;
         $this->textBuilder = $textBuilder;
@@ -3696,7 +3705,7 @@ class TreeBuilder
 
         // If the current node is not now a td element or a th element, then
         // this is a parse error.
-        if (!$this->openElement->bottom() instanceof HTMLTableCellElement) {
+        if (!$this->openElements->bottom() instanceof HTMLTableCellElement) {
             // Parse error.
         }
 
@@ -5615,7 +5624,7 @@ class TreeBuilder
      * @see https://html.spec.whatwg.org/multipage/syntax.html#generic-rcdata-element-parsing-algorithm
      *
      * @param \Rowbot\DOM\Parser\Token\Token $token
-     * @param int                            $algoritm
+     * @param int                            $algorithm
      *
      * @return void
      */
