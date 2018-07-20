@@ -464,50 +464,42 @@ class TreeBuilder
             )
         ) {
             // Act as described in the "anything else" entry below.
-
-            // Create an html element whose node document is the Document
-            // object. Append it to the Document object. Put this element in
-            // the stack of open elements.
-            $node = ElementFactory::create(
-                $this->document,
-                'html',
-                Namespaces::HTML
-            );
-            $this->document->appendChild($node);
-            $this->openElements->push($node);
-
-            // TODO: If the Document is being loaded as part of navigation of a
-            // browsing context, then: run the application cache selection
-            // algorithm with no manifest, passing it the Document object.
-
-            // Switch the insertion mode to "before head", then reprocess the
-            // token.
-            $this->state->insertionMode = ParserInsertionMode::BEFORE_HEAD;
-            $this->run($token);
+            $this->beforeHTMLInsertionModeAnythingElse($token);
         } elseif ($token instanceof EndTagToken) {
             // Parse error.
             // Ignore the token.
         } else {
-            // Create an html element whose node document is the Document
-            // object. Append it to the Document object. Put this element in
-            // the stack of open elements.
-            $node = ElementFactory::create(
-                $this->document,
-                'html',
-                Namespaces::HTML
-            );
-            $this->document->appendChild($node);
-            $this->openElements->push($node);
-
-            // TODO: If the Document is being loaded as part of navigation of a
-            // browsing context, then: run the application cache selection
-            // algorithm with no manifest, passing it the Document object.
-
-            // Switch the insertion mode to "before head", then reprocess the
-            // token.
-            $this->state->insertionMode = ParserInsertionMode::BEFORE_HEAD;
-            $this->run($token);
+            $this->beforeHTMLInsertionModeAnythingElse($token);
         }
+    }
+
+    /**
+     * The "before html" insertion mode's "anything else" steps.
+     *
+     * @param \Rowbot\DOM\Parser\Token\Token $token
+     *
+     * @return void
+     */
+    private function beforeHTMLInsertionModeAnythingElse(Token $token): void
+    {
+        // Create an html element whose node document is the Document
+        // object. Append it to the Document object. Put this element in
+        // the stack of open elements.
+        $node = ElementFactory::create(
+            $this->document,
+            'html',
+            Namespaces::HTML
+        );
+        $this->document->appendChild($node);
+        $this->openElements->push($node);
+
+        // TODO: If the Document is being loaded as part of navigation of a
+        // browsing context, then: run the application cache selection
+        // algorithm with no manifest, passing it the Document object.
+
+        // Switch the insertion mode to "before head", then reprocess the token.
+        $this->state->insertionMode = ParserInsertionMode::BEFORE_HEAD;
+        $this->run($token);
     }
 
     /**
