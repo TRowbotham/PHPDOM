@@ -61,12 +61,4 @@ class DoctypeToken implements Token
     {
         $this->forceQuirksMode = $mode;
     }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getType(): int
-    {
-        return self::DOCTYPE_TOKEN;
-    }
 }

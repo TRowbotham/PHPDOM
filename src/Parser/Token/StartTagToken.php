@@ -45,12 +45,4 @@ class StartTagToken extends TagToken
     {
         return $this->selfClosingFlagAcknowledged;
     }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getType(): int
-    {
-        return self::START_TAG_TOKEN;
-    }
 }

@@ -52,12 +52,4 @@ class AttributeToken implements Token
         $this->namespace = null;
         $this->prefix = null;
     }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getType(): int
-    {
-        return self::ATTRIBUTE_TOKEN;
-    }
 }

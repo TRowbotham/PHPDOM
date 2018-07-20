@@ -264,9 +264,7 @@ class TreeBuilder
      */
     private function initialInsertionMode(Token $token): void
     {
-        $tokenType = $token->getType();
-
-        if ($tokenType == Token::CHARACTER_TOKEN
+        if ($token instanceof CharacterToken
             && (($data = $token->data) === "\x09"
                 || $data === "\x0A"
                 || $data === "\x0C"
@@ -275,9 +273,9 @@ class TreeBuilder
             )
         ) {
             // Ignore the token.
-        } elseif ($tokenType == Token::COMMENT_TOKEN) {
+        } elseif ($token instanceof CommentToken) {
             $this->insertComment($token, [$this->document, 'beforeend']);
-        } elseif ($tokenType == Token::DOCTYPE_TOKEN) {
+        } elseif ($token instanceof DoctypeToken) {
             $publicId = $token->publicIdentifier;
             $systemId = $token->systemIdentifier;
             $name = $token->name;
@@ -412,16 +410,15 @@ class TreeBuilder
      */
     private function beforeHTMLInsertionMode(Token $token): void
     {
-        $tokenType = $token->getType();
         $tagName = $token instanceof TagToken ? $token->tagName : '';
 
-        if ($tokenType == Token::DOCTYPE_TOKEN) {
+        if ($token instanceof DoctypeToken) {
             // Parse error.
             // Ignore the token.
-        } elseif ($tokenType == Token::COMMENT_TOKEN) {
+        } elseif ($token instanceof CommentToken) {
             // Insert a comment as the last child of the Document object.
             $this->insertComment($token, [$this->document, 'beforeend']);
-        } elseif ($tokenType == Token::CHARACTER_TOKEN
+        } elseif ($token instanceof CharacterToken
             && (($data = $token->data) === "\x09"
                 || $data === "\x0A"
                 || $data === "\x0C"
@@ -430,7 +427,7 @@ class TreeBuilder
             )
         ) {
             // Ignore the token.
-        } elseif ($tokenType == Token::START_TAG_TOKEN && $tagName === 'html') {
+        } elseif ($token instanceof StartTagToken && $tagName === 'html') {
             // Create an element for the token in the HTML namespace, with the
             // Document as the intended parent. Append it to the Document
             // object. Put this element in the stack of open elements.
@@ -447,7 +444,7 @@ class TreeBuilder
 
             // Switch the insertion mode to "before head".
             $this->state->insertionMode = ParserInsertionMode::BEFORE_HEAD;
-        } elseif ($tokenType == Token::END_TAG_TOKEN
+        } elseif ($token instanceof EndTagToken
             && ($tagName === 'head'
                 || $tagName === 'body'
                 || $tagName === 'html'
@@ -475,7 +472,7 @@ class TreeBuilder
             // token.
             $this->state->insertionMode = ParserInsertionMode::BEFORE_HEAD;
             $this->run($token);
-        } elseif ($tokenType == Token::END_TAG_TOKEN) {
+        } elseif ($token instanceof EndTagToken) {
             // Parse error.
             // Ignore the token.
         } else {
@@ -510,10 +507,9 @@ class TreeBuilder
      */
     private function beforeHeadInsertionMode(Token $token): void
     {
-        $tokenType = $token->getType();
         $tagName = $token instanceof TagToken ? $token->tagName : '';
 
-        if ($tokenType == Token::CHARACTER_TOKEN
+        if ($token instanceof CharacterToken
             && (($data = $token->data) === "\x09"
                 || $data === "\x0A"
                 || $data === "\x0C"
@@ -522,17 +518,17 @@ class TreeBuilder
             )
         ) {
             // Ignore the token.
-        } elseif ($tokenType == Token::COMMENT_TOKEN) {
+        } elseif ($token instanceof CommentToken) {
             // Insert a comment.
             $this->insertComment($token);
-        } elseif ($tokenType == Token::DOCTYPE_TOKEN) {
+        } elseif ($token instanceof DoctypeToken) {
             // Parse error.
             // Ignore the token.
-        } elseif ($tokenType == Token::START_TAG_TOKEN && $tagName === 'html') {
+        } elseif ($token instanceof StartTagToken && $tagName === 'html') {
             // Process the token using the rules for the "in body" insertion
             // mode.
             $this->inBodyInsertionMode($token);
-        } elseif ($tokenType == Token::START_TAG_TOKEN && $tagName === 'head') {
+        } elseif ($token instanceof StartTagToken && $tagName === 'head') {
             // Insert an HTML element for the token.
             $node = $this->insertForeignElement($token, Namespaces::HTML);
 
@@ -541,7 +537,7 @@ class TreeBuilder
 
             // Switch the insertion mode to "in head".
             $this->state->insertionMode = ParserInsertionMode::IN_HEAD;
-        } elseif ($tokenType == Token::END_TAG_TOKEN
+        } elseif ($token instanceof EndTagToken
             && ($tagName === 'head'
                 || $tagName === 'body'
                 || $tagName === 'html'
@@ -565,7 +561,7 @@ class TreeBuilder
 
             // Reprocess the current token.
             $this->run($token);
-        } elseif ($tokenType == Token::END_TAG_TOKEN) {
+        } elseif ($token instanceof EndTagToken) {
             // Parse error.
             // Ignore the token.
         } else {
@@ -1048,13 +1044,12 @@ class TreeBuilder
      */
     private function inBodyInsertionMode(Token $token): void
     {
-        $tokenType = $token->getType();
         $tagName = $token instanceof TagToken ? $token->tagName : '';
 
-        if ($tokenType == Token::CHARACTER_TOKEN && $token->data === "\x00") {
+        if ($token instanceof CharacterToken && $token->data === "\x00") {
             // Parse error.
             // Ignore the token.
-        } elseif ($tokenType == Token::CHARACTER_TOKEN
+        } elseif ($token instanceof CharacterToken
             && (($data = $token->data) === "\x09"
                 || $data === "\x0A"
                 || $data === "\x0C"
@@ -1067,7 +1062,7 @@ class TreeBuilder
 
             // Insert the token's character.
             $this->insertCharacter($token);
-        } elseif ($tokenType == Token::CHARACTER_TOKEN) {
+        } elseif ($token instanceof CharacterToken) {
             // Reconstruct the active formatting elements, if any.
             $this->reconstructActiveFormattingElements();
 
@@ -1076,13 +1071,13 @@ class TreeBuilder
 
             // Set the frameset-ok flag to "not ok".
             $this->framesetOk = 'not ok';
-        } elseif ($tokenType == Token::COMMENT_TOKEN) {
+        } elseif ($token instanceof CommentToken) {
             // Insert a comment.
             $this->insertComment($token);
-        } elseif ($tokenType == Token::DOCTYPE_TOKEN) {
+        } elseif ($token instanceof DoctypeToken) {
             // Parse error.
             // Ignore the token.
-        } elseif ($tokenType == Token::START_TAG_TOKEN && $tagName === 'html') {
+        } elseif ($token instanceof StartTagToken && $tagName === 'html') {
             // Parse error.
             // If there is a template element on the stack of open elements,
             // then ignore the token.
@@ -1103,7 +1098,7 @@ class TreeBuilder
                     $firstOnStack->setAttribute($name, $attr->value);
                 }
             }
-        } elseif (($tokenType == Token::START_TAG_TOKEN
+        } elseif (($token instanceof StartTagToken
             && ($tagName === 'base'
                 || $tagName === 'basefont'
                 || $tagName === 'bgsound'
@@ -1115,12 +1110,12 @@ class TreeBuilder
                 || $tagName === 'template'
                 || $tagName === 'title'
             ))
-            || ($tokenType == Token::END_TAG_TOKEN && $tagName === 'template')
+            || ($token instanceof EndTagToken && $tagName === 'template')
         ) {
             // Process the token using the rules for the "in head" insertion
             // mode.
             $this->inHeadInsertionMode($token);
-        } elseif ($tokenType == Token::START_TAG_TOKEN && $tagName === 'body') {
+        } elseif ($token instanceof StartTagToken && $tagName === 'body') {
             // Parse error.
             // If the second element on the stack of open elements is not a body
             // element, if the stack of open elements has only one node on it,
@@ -1150,9 +1145,7 @@ class TreeBuilder
                     $body->setAttribute($name, $attr->value);
                 }
             }
-        } elseif ($tokenType == Token::START_TAG_TOKEN
-            && $tagName === 'frameset'
-        ) {
+        } elseif ($token instanceof StartTagToken && $tagName === 'frameset') {
             // Parse error.
             // If the stack of open elements has only one node on it, or if the
             // second element on the stack of open elements is not a body
@@ -1193,7 +1186,7 @@ class TreeBuilder
 
             // Switch the insertion mode to "in frameset".
             $this->state->insertionMode = ParserInsertionMode::IN_FRAMESET;
-        } elseif ($tokenType == Token::EOF_TOKEN) {
+        } elseif ($token instanceof EOFToken) {
             // If the stack of template insertion modes is not empty, then
             // process the token using the rules for the "in template"
             // insertion mode.
@@ -1224,7 +1217,7 @@ class TreeBuilder
 
             // Stop parsing.
             $this->stopParsing();
-        } elseif ($tokenType == Token::END_TAG_TOKEN && $tagName === 'body') {
+        } elseif ($token instanceof EndTagToken && $tagName === 'body') {
             // If the stack of open elements does not have a body element
             // in scope, this is a parse error; ignore the token.
             if (!$this->openElements->hasElementInScope(
@@ -1258,7 +1251,7 @@ class TreeBuilder
 
             // Switch the insertion mode to "after body".
             $this->state->insertionMode = ParserInsertionMode::AFTER_BODY;
-        } elseif ($tokenType == Token::END_TAG_TOKEN && $tagName === 'html') {
+        } elseif ($token instanceof EndTagToken && $tagName === 'html') {
             // If the stack of open elements does not have a body element in
             // scope, this is a parse error; ignore the token.
             if (!$this->openElements->hasElementInScope(
@@ -1295,7 +1288,7 @@ class TreeBuilder
 
             // Reprocess the token.
             $this->run($token);
-        } elseif ($tokenType == Token::START_TAG_TOKEN && preg_match(
+        } elseif ($token instanceof StartTagToken && preg_match(
             '/^(address|article|aside|blockquote|center|details|dialog|'
             . 'dir|div|dl|fieldset|figcaption|figure|footer|header|hgroup|'
             . 'main|menu|nav|ol|p|section|summary|ul)$/',
@@ -1312,7 +1305,7 @@ class TreeBuilder
 
             // Insert an HTML element for the token.
             $this->insertForeignElement($token, Namespaces::HTML);
-        } elseif ($tokenType == Token::START_TAG_TOKEN
+        } elseif ($token instanceof StartTagToken
             && ($tagName === 'h1'
                 || $tagName === 'h2'
                 || $tagName === 'h3'
@@ -1340,7 +1333,7 @@ class TreeBuilder
 
             // Insert an HTML element for the token.
             $this->insertForeignElement($token, Namespaces::HTML);
-        } elseif ($tokenType == Token::START_TAG_TOKEN
+        } elseif ($token instanceof StartTagToken
             && ($tagName === 'pre' || $tagName === 'listing')
         ) {
             // If the stack of open elements has a p element in button scope,
@@ -1362,7 +1355,7 @@ class TreeBuilder
 
             // Set the frameset-ok flag to "not ok".
             $this->framesetOk = 'not ok';
-        } elseif ($tokenType == Token::START_TAG_TOKEN && $tagName === 'form') {
+        } elseif ($token instanceof StartTagToken && $tagName === 'form') {
             // If the form element pointer is not null, and there is no
             // template element on the stack of open elements, then this is a
             // parse error; ignore the token.
@@ -1390,7 +1383,7 @@ class TreeBuilder
                     $this->state->formElementPointer = $node;
                 }
             }
-        } elseif ($tokenType == Token::START_TAG_TOKEN && $tagName === 'li') {
+        } elseif ($token instanceof StartTagToken && $tagName === 'li') {
             // Set the frameset-ok flag to "not ok".
             $this->framesetOk = 'not ok';
 
@@ -1452,7 +1445,7 @@ class TreeBuilder
 
             // Finally, insert an HTML element for the token.
             $this->insertForeignElement($token, Namespaces::HTML);
-        } elseif ($tokenType == Token::START_TAG_TOKEN
+        } elseif ($token instanceof StartTagToken
             && ($tagName === 'dd' || $tagName === 'dt')
         ) {
             // Set the frameset-ok flag to "not ok".
@@ -1548,7 +1541,7 @@ class TreeBuilder
 
             // Finally, insert an HTML element for the token.
             $this->insertForeignElement($token, Namespaces::HTML);
-        } elseif ($tokenType == Token::START_TAG_TOKEN
+        } elseif ($token instanceof StartTagToken
             && $tagName === 'plaintext'
         ) {
             // If the stack of open elements has a p element in button scope,
@@ -1569,9 +1562,7 @@ class TreeBuilder
             // tokens (and the end-of-file token), because there is no way to
             // switch out of the PLAINTEXT state.
             $this->state->tokenizerState = TokenizerState::PLAINTEXT;
-        } elseif ($tokenType == Token::START_TAG_TOKEN
-            && $tagName === 'button'
-        ) {
+        } elseif ($token instanceof StartTagToken && $tagName === 'button') {
             // If the stack of open elements has a button element in scope,
             // then run these substeps:
             if ($this->openElements->hasElementInScope(
@@ -1601,7 +1592,7 @@ class TreeBuilder
 
             // Set the frameset-ok flag to "not ok".
             $this->framesetOk = 'not ok';
-        } elseif ($tokenType == Token::END_TAG_TOKEN && preg_match(
+        } elseif ($token instanceof EndTagToken && preg_match(
             '/^(address|article|aside|blockquote|button|center|details|'
             . 'dialog|dir|div|dl|fieldset|figcaption|figure|footer|header|'
             . 'hgroup|listing|main|menu|nav|ol|pre|section|summary|ul)$/',
@@ -1646,7 +1637,7 @@ class TreeBuilder
                     break;
                 }
             }
-        } elseif ($tokenType == Token::END_TAG_TOKEN && $tagName === 'form') {
+        } elseif ($token instanceof EndTagToken && $tagName === 'form') {
             if (!$this->openElements->containsTemplateElement()) {
                 // Let node be the element that the form element pointer is set
                 // to, or null if it is not set to an element.
@@ -1709,7 +1700,7 @@ class TreeBuilder
                     break;
                 }
             }
-        } elseif ($tokenType == Token::END_TAG_TOKEN && $tagName === 'p') {
+        } elseif ($token instanceof EndTagToken && $tagName === 'p') {
             // If the stack of open elements does not have a p element in
             // button scope, then this is a parse error; insert an HTML element
             // for a "p" start tag token with no attributes.
@@ -1726,7 +1717,7 @@ class TreeBuilder
 
             // Close a p element.
             $this->closePElement();
-        } elseif ($tokenType == Token::END_TAG_TOKEN && $tagName === 'li') {
+        } elseif ($token instanceof EndTagToken && $tagName === 'li') {
             // If the stack of open elements does not have an li element
             // in list item scope, then this is a parse error; ignore the token.
             if (!$this->openElements->hasElementInListItemScope(
@@ -1754,7 +1745,7 @@ class TreeBuilder
                     break;
                 }
             }
-        } elseif ($tokenType == Token::END_TAG_TOKEN
+        } elseif ($token instanceof EndTagToken
             && ($tagName === 'dd' || $tagName === 'dt')
         ) {
             // If the stack of open elements does not have an element in
@@ -1797,7 +1788,7 @@ class TreeBuilder
                     break;
                 }
             }
-        } elseif ($tokenType == Token::END_TAG_TOKEN
+        } elseif ($token instanceof EndTagToken
             && ($tagName === 'h1'
                 || $tagName === 'h2'
                 || $tagName === 'h3'
@@ -1861,7 +1852,7 @@ class TreeBuilder
                     break;
                 }
             }
-        } elseif ($tokenType == Token::START_TAG_TOKEN && $tagName === 'a') {
+        } elseif ($token instanceof StartTagToken && $tagName === 'a') {
             // If the list of active formatting elements contains an a element
             // between the end of the list and the last marker on the list (or
             // the start of the list if there is no marker on the list), then
@@ -1905,7 +1896,7 @@ class TreeBuilder
             // active formatting elements that element.
             $node = $this->insertForeignElement($token, Namespaces::HTML);
             $this->activeFormattingElements->push($node);
-        } elseif ($tokenType == Token::START_TAG_TOKEN
+        } elseif ($token instanceof StartTagToken
             && ($tagName === 'b'
                 || $tagName === 'big'
                 || $tagName === 'code'
@@ -1927,7 +1918,7 @@ class TreeBuilder
             // active formatting elements that element.
             $node = $this->insertForeignElement($token, Namespaces::HTML);
             $this->activeFormattingElements->push($node);
-        } elseif ($tokenType == Token::START_TAG_TOKEN && $tagName === 'nobr') {
+        } elseif ($token instanceof StartTagToken && $tagName === 'nobr') {
             // Reconstruct the active formatting elements, if any.
             $this->reconstructActiveFormattingElements();
 
@@ -1948,7 +1939,7 @@ class TreeBuilder
             // active formatting elements that element.
             $node = $this->insertForeignElement($token, Namespaces::HTML);
             $this->activeFormattingElements->push($node);
-        } elseif ($tokenType == Token::END_TAG_TOKEN
+        } elseif ($token instanceof EndTagToken
             && ($tagName === 'a'
                 || $tagName === 'b'
                 || $tagName === 'big'
@@ -1967,7 +1958,7 @@ class TreeBuilder
         ) {
             // Run the adoption agency algorithm for the token.
             $this->adoptionAgency($token);
-        } elseif ($tokenType == Token::START_TAG_TOKEN
+        } elseif ($token instanceof StartTagToken
             && ($tagName === 'applet'
                 || $tagName === 'marquee'
                 || $tagName === 'object'
@@ -1985,7 +1976,7 @@ class TreeBuilder
 
             // Set the frameset-ok flag to "not ok".
             $this->framesetOk = 'not ok';
-        } elseif ($tokenType == Token::END_TAG_TOKEN
+        } elseif ($token instanceof EndTagToken
             && ($tagName === 'applet'
                 || $tagName === 'marquee'
                 || $tagName === 'object'
@@ -2031,9 +2022,7 @@ class TreeBuilder
             // Clear the list of active formatting elements up to the last
             // marker.
             $this->activeFormattingElements->clearUpToLastMarker();
-        } elseif ($tokenType == Token::START_TAG_TOKEN
-            && $tagName === 'table'
-        ) {
+        } elseif ($token instanceof StartTagToken && $tagName === 'table') {
             // If the Document is not set to quirks mode, and the stack of
             // open elements has a p element in button scope, then close a p
             // element.
@@ -2054,7 +2043,7 @@ class TreeBuilder
 
             // Switch the insertion mode to "in table".
             $this->state->insertionMode = ParserInsertionMode::IN_TABLE;
-        } elseif ($tokenType == Token::END_TAG_TOKEN && $tagName === 'br') {
+        } elseif ($token instanceof EndTagToken && $tagName === 'br') {
             // Parse error.
             // Drop the attributes from the token, and act as described in the
             // next entry; i.e. act as if this was a "br" start tag token with
@@ -2076,7 +2065,7 @@ class TreeBuilder
 
             // Set the frameset-ok flag to "not ok".
             $this->framesetOk = 'not ok';
-        } elseif ($tokenType == Token::START_TAG_TOKEN
+        } elseif ($token instanceof StartTagToken
             && ($tagName === 'area'
                 || $tagName === 'br'
                 || $tagName === 'img'
@@ -2100,9 +2089,7 @@ class TreeBuilder
 
             // Set the frameset-ok flag to "not ok".
             $this->framesetOk = 'not ok';
-        } elseif ($tokenType == Token::START_TAG_TOKEN
-            && $tagName === 'input'
-        ) {
+        } elseif ($token instanceof StartTagToken && $tagName === 'input') {
             // Reconstruct the active formatting elements, if any.
             $this->reconstructActiveFormattingElements();
 
@@ -2135,7 +2122,7 @@ class TreeBuilder
             ) !== 0)) {
                 $this->framesetOk = 'not ok';
             }
-        } elseif ($tokenType == Token::START_TAG_TOKEN
+        } elseif ($token instanceof StartTagToken
             && ($tagName === 'param'
                 || $tagName === 'source'
                 || $tagName === 'track'
@@ -2150,7 +2137,7 @@ class TreeBuilder
             if ($token->isSelfClosing()) {
                 $token->acknowledge();
             }
-        } elseif ($tokenType == Token::START_TAG_TOKEN && $tagName === 'hr') {
+        } elseif ($token instanceof StartTagToken && $tagName === 'hr') {
             // If the stack of open elements has a p element in button scope,
             // then close a p element.
             if ($this->openElements->hasElementInButtonScope(
@@ -2172,17 +2159,13 @@ class TreeBuilder
 
             // Set the frameset-ok flag to "not ok".
             $this->framesetOk = 'not ok';
-        } elseif ($tokenType == Token::START_TAG_TOKEN
-            && $tagName === 'image'
-        ) {
+        } elseif ($token instanceof StartTagToken && $tagName === 'image') {
             // Parse error.
             // Change the token's tag name to "img" and reprocess it. (Don't
             // ask.)
             $token->tagName = 'img';
             $this->run($token);
-        } elseif ($tokenType == Token::START_TAG_TOKEN
-            && $tagName === 'textarea'
-        ) {
+        } elseif ($token instanceof StartTagToken && $tagName === 'textarea') {
             // Insert an HTML element for the token.
             $this->insertForeignElement($token, Namespaces::HTML);
 
@@ -2202,7 +2185,7 @@ class TreeBuilder
 
             // Switch the insertion mode to "text".
             $this->state->insertionMode = ParserInsertionMode::TEXT;
-        } elseif ($tokenType == Token::START_TAG_TOKEN && $tagName === 'xmp') {
+        } elseif ($token instanceof StartTagToken && $tagName === 'xmp') {
             // If the stack of open elements has a p element in button scope,
             // then close a p element.
             if ($this->openElements->hasElementInButtonScope(
@@ -2223,9 +2206,7 @@ class TreeBuilder
                 $token,
                 self::RAW_TEXT_ELEMENT_ALGORITHM
             );
-        } elseif ($tokenType == Token::START_TAG_TOKEN
-            && $tagName === 'iframe'
-        ) {
+        } elseif ($token instanceof StartTagToken && $tagName === 'iframe') {
             // Set the frameset-ok flag to "not ok".
             $this->framesetOk = 'not ok';
 
@@ -2234,7 +2215,7 @@ class TreeBuilder
                 $token,
                 self::RAW_TEXT_ELEMENT_ALGORITHM
             );
-        } elseif ($tokenType == Token::START_TAG_TOKEN
+        } elseif ($token instanceof StartTagToken
             && ($tagName === 'noembed'
                 || ($tagName === 'noscript' && $this->isScriptingEnabled)
             )
@@ -2244,9 +2225,7 @@ class TreeBuilder
                 $token,
                 self::RAW_TEXT_ELEMENT_ALGORITHM
             );
-        } elseif ($tokenType == Token::START_TAG_TOKEN
-            && $tagName === 'select'
-        ) {
+        } elseif ($token instanceof StartTagToken && $tagName === 'select') {
             // Reconstruct the active formatting elements, if any.
             $this->reconstructActiveFormattingElements();
 
@@ -2273,7 +2252,7 @@ class TreeBuilder
                 default:
                     $this->state->insertionMode = ParserInsertionMode::IN_SELECT;
             }
-        } elseif ($tokenType == Token::START_TAG_TOKEN
+        } elseif ($token instanceof StartTagToken
             && ($tagName === 'optgroup' || $tagName === 'option')
         ) {
             // If the current node is an option element, then pop the current
@@ -2287,7 +2266,7 @@ class TreeBuilder
 
             // Insert an HTML element for the token.
             $this->insertForeignElement($token, Namespaces::HTML);
-        } elseif ($tokenType == Token::START_TAG_TOKEN
+        } elseif ($token instanceof StartTagToken
             && ($tagName === 'rb' || $tagName === 'rtc')
         ) {
             // If the stack of open elements has a ruby element in scope,
@@ -2309,7 +2288,7 @@ class TreeBuilder
 
             // Insert an HTML element for the token.
             $this->insertForeignElement($token, Namespaces::HTML);
-        } elseif ($tokenType == Token::START_TAG_TOKEN
+        } elseif ($token instanceof StartTagToken
             && ($tagName === 'rp' || $tagName === 'rt')
         ) {
             // If the stack of open elements has a ruby element in scope,
@@ -2332,7 +2311,7 @@ class TreeBuilder
 
             // Insert an HTML element for the token.
             $this->insertForeignElement($token, Namespaces::HTML);
-        } elseif ($tokenType == Token::START_TAG_TOKEN && $tagName === 'math') {
+        } elseif ($token instanceof StartTagToken && $tagName === 'math') {
             // Reconstruct the active formatting elements, if any.
             $this->reconstructActiveFormattingElements();
 
@@ -2354,7 +2333,7 @@ class TreeBuilder
                 $this->openElements->pop();
                 $token->acknowledge();
             }
-        } elseif ($tokenType == Token::START_TAG_TOKEN && $tagName === 'svg') {
+        } elseif ($token instanceof StartTagToken && $tagName === 'svg') {
             // Reconstruct the active formatting elements, if any.
             $this->reconstructActiveFormattingElements();
 
@@ -2376,7 +2355,7 @@ class TreeBuilder
                 $this->openElements->pop();
                 $token->acknowledge();
             }
-        } elseif ($tokenType == Token::START_TAG_TOKEN
+        } elseif ($token instanceof StartTagToken
             && ($tagName === 'caption'
                 || $tagName === 'col'
                 || $tagName === 'colgroup'
@@ -2392,14 +2371,14 @@ class TreeBuilder
         ) {
             // Parse error.
             // Ignore the token.
-        } elseif ($tokenType == Token::START_TAG_TOKEN) {
+        } elseif ($token instanceof StartTagToken) {
             // Reconstruct the active formatting elements, if any.
             $this->reconstructActiveFormattingElements();
 
             // Insert an HTML element for the token.
             // NOTE: This element will be an ordinary element.
             $this->insertForeignElement($token, Namespaces::HTML);
-        } elseif ($tokenType == Token::END_TAG_TOKEN) {
+        } elseif ($token instanceof EndTagToken) {
             $this->applyAnyOtherEndTagForInBodyInsertionMode($token);
         }
     }
@@ -2740,14 +2719,12 @@ class TreeBuilder
      */
     private function inTextInsertionMode(Token $token): void
     {
-        $tokenType = $token->getType();
-
-        if ($tokenType == Token::CHARACTER_TOKEN) {
+        if ($token instanceof CharacterToken) {
             // Insert the token's character.
             // NOTE: This can never be a U+0000 NULL character; the tokenizer
             // converts those to U+FFFD REPLACEMENT CHARACTER characters.
             $this->insertCharacter($token);
-        } elseif ($tokenType == Token::EOF_TOKEN) {
+        } elseif ($token instanceof EOFToken) {
             // Parse error.
             // If the current node is a script element, mark the script element
             // as "already started".
@@ -2762,7 +2739,7 @@ class TreeBuilder
             // reprocess the token.
             $this->state->insertionMode = $this->originalInsertionMode;
             $this->run($token);
-        } elseif ($tokenType == Token::END_TAG_TOKEN
+        } elseif ($token instanceof EndTagToken
             && $token->tagName === 'script'
         ) {
             // TODO: If the JavaScript execution context stack is empty, perform
@@ -2778,7 +2755,7 @@ class TreeBuilder
             $this->state->insertionMode = $this->originalInsertionMode;
 
             // TODO: More stuff that will probably never be fully supported
-        } elseif ($tokenType == Token::END_TAG_TOKEN) {
+        } elseif ($token instanceof EndTagToken) {
             // Pop the current node off the stack of open elements.
             $this->openElements->pop();
 
@@ -2796,10 +2773,9 @@ class TreeBuilder
      */
     private function inTableInsertionMode(Token $token): void
     {
-        $tokenType = $token->getType();
         $tagName = $token instanceof TagToken ? $token->tagName : '';
 
-        if ($tokenType == Token::CHARACTER_TOKEN
+        if ($token instanceof CharacterToken
             && ($currentNode = $this->openElements->bottom())
             && ($currentNode instanceof HTMLTableElement
                 || $currentNode instanceof HTMLTableSectionElement
@@ -2817,15 +2793,13 @@ class TreeBuilder
             // token.
             $this->state->insertionMode = ParserInsertionMode::IN_TABLE_TEXT;
             $this->run($token);
-        } elseif ($tokenType == Token::COMMENT_TOKEN) {
+        } elseif ($token instanceof CommentToken) {
             // Insert a comment.
             $this->insertComment($token);
-        } elseif ($tokenType == Token::DOCTYPE_TOKEN) {
+        } elseif ($token instanceof DoctypeToken) {
             // Parse error.
             // Ignore the token.
-        } elseif ($tokenType == Token::START_TAG_TOKEN
-            && $tagName === 'caption'
-        ) {
+        } elseif ($token instanceof StartTagToken && $tagName === 'caption') {
             // Clear the stack back to a table context.
             $this->openElements->clearBackToTableContext();
 
@@ -2837,9 +2811,7 @@ class TreeBuilder
             // mode to "in caption".
             $this->insertForeignElement($token, Namespaces::HTML);
             $this->state->insertionMode = ParserInsertionMode::IN_CAPTION;
-        } elseif ($tokenType == Token::START_TAG_TOKEN
-            && $tagName === 'colgroup'
-        ) {
+        } elseif ($token instanceof StartTagToken && $tagName === 'colgroup') {
             // Clear the stack back to a table context.
             $this->openElements->clearBackToTableContext();
 
@@ -2847,7 +2819,7 @@ class TreeBuilder
             // mode to "in column group".
             $this->insertForeignElement($token, Namespaces::HTML);
             $this->state->insertionMode = ParserInsertionMode::IN_COLUMN_GROUP;
-        } elseif ($tokenType == Token::START_TAG_TOKEN && $tagName === 'col') {
+        } elseif ($token instanceof StartTagToken && $tagName === 'col') {
             // Clear the stack back to a table context.
             $this->openElements->clearBackToTableContext();
 
@@ -2861,7 +2833,7 @@ class TreeBuilder
 
             // Reprocess the current token.
             $this->run($token);
-        } elseif ($tokenType == Token::START_TAG_TOKEN
+        } elseif ($token instanceof StartTagToken
             && ($tagName === 'tbody'
                 || $tagName === 'tfoot'
                 || $tagName === 'thead'
@@ -2874,7 +2846,7 @@ class TreeBuilder
             // mode to "in table body".
             $this->insertForeignElement($token, Namespaces::HTML);
             $this->state->insertionMode = ParserInsertionMode::IN_TABLE_BODY;
-        } elseif ($tokenType == Token::START_TAG_TOKEN
+        } elseif ($token instanceof StartTagToken
             && ($tagName === 'td'
                 || $tagName === 'th'
                 || $tagName === 'tr'
@@ -2893,9 +2865,7 @@ class TreeBuilder
 
             // Reprocess the current token.
             $this->run($token);
-        } elseif ($tokenType == Token::START_TAG_TOKEN
-            && $tagName === 'table'
-        ) {
+        } elseif ($token instanceof StartTagToken && $tagName === 'table') {
             // Parse error.
             // If the stack of open elements does not have a table element
             // in table scope, ignore the token.
@@ -2922,7 +2892,7 @@ class TreeBuilder
 
             // Reprocess the token.
             $this->run($token);
-        } elseif ($tokenType == Token::END_TAG_TOKEN && $tagName === 'table') {
+        } elseif ($token instanceof EndTagToken && $tagName === 'table') {
             // If the stack of open elements does not have a table element in
             // table scope, this is a parse error; ignore the token.
             if (false) {
@@ -2943,7 +2913,7 @@ class TreeBuilder
 
             // Reset the insertion mode appropriately.
             $this->resetInsertionMode();
-        } elseif ($tokenType == Token::END_TAG_TOKEN
+        } elseif ($token instanceof EndTagToken
             && ($tagName === 'body'
                 || $tagName === 'caption'
                 || $tagName === 'col'
@@ -2959,19 +2929,17 @@ class TreeBuilder
         ) {
             // Parse error.
             // Ignore the token.
-        } elseif (($tokenType == Token::START_TAG_TOKEN
+        } elseif (($token instanceof StartTagToken
             && ($tagName === 'style'
                 || $tagName === 'script'
                 || $tagName === 'template'
             ))
-            || ($tokenType == Token::END_TAG_TOKEN && $tagName === 'template')
+            || ($token instanceof EndTagToken && $tagName === 'template')
         ) {
             // Process the token using the rules for the "in head" insertion
             // mode.
             $this->inHeadInsertionMode($token);
-        } elseif ($tokenType == Token::START_TAG_TOKEN
-            && $tagName === 'input'
-        ) {
+        } elseif ($token instanceof StartTagToken && $tagName === 'input') {
             // If the token does not have an attribute with the name "type", or
             // if it does, but that attribute's value is not an ASCII
             // case-insensitive match for the string "hidden", then: act as
@@ -3009,7 +2977,7 @@ class TreeBuilder
             if ($token->isSelfClosing()) {
                 $token->acknowledge();
             }
-        } elseif ($tokenType == Token::START_TAG_TOKEN && $tagName === 'form') {
+        } elseif ($token instanceof StartTagToken && $tagName === 'form') {
             // Parse error.
             // If there is a template element on the stack of open elements, or
             // if the form element pointer is not null, ignore the token.
@@ -3029,7 +2997,7 @@ class TreeBuilder
 
             // Pop that form element off the stack of open elements.
             $this->openElements->pop();
-        } elseif ($tokenType == Token::EOF_TOKEN) {
+        } elseif ($token instanceof EOFToken) {
             // Process the token using the rules for the "in body" insertion
             // mode.
             $this->inBodyInsertionMode($token);
@@ -3052,12 +3020,10 @@ class TreeBuilder
      */
     private function inTableTextInsertionMode(Token $token): void
     {
-        $tokenType = $token->getType();
-
-        if ($tokenType == Token::CHARACTER_TOKEN && $token->data === "\x00") {
+        if ($token instanceof CharacterToken && $token->data === "\x00") {
             // Parse error.
             // Ignore the token.
-        } elseif ($tokenType == Token::CHARACTER_TOKEN) {
+        } elseif ($token instanceof CharacterToken) {
             // Append the character token to the pending table character tokens
             // list.
             $this->pendingTableCharacterTokens[] = $token;
@@ -3115,10 +3081,9 @@ class TreeBuilder
      */
     private function inCaptionInsertionMode(Token $token): void
     {
-        $tokenType = $token->getType();
         $tagName = $token instanceof TagToken ? $token->tagName : '';
 
-        if ($tokenType == Token::END_TAG_TOKEN && $tagName === 'caption') {
+        if ($token instanceof EndTagToken && $tagName === 'caption') {
             // If the stack of open elements does not have a caption element in
             // table scope, this is a parse error; ignore the token. (fragment
             // case)
@@ -3158,7 +3123,7 @@ class TreeBuilder
 
             // Switch the insertion mode to "in table".
             $this->state->insertionMode = ParserInsertionMode::IN_TABLE;
-        } elseif (($tokenType == Token::START_TAG_TOKEN
+        } elseif (($token instanceof StartTagToken
             && ($tagName === 'caption'
                 || $tagName === 'col'
                 || $tagName === 'colgroup'
@@ -3169,7 +3134,7 @@ class TreeBuilder
                 || $tagName === 'thead'
                 || $tagName === 'tr'
             ))
-            || ($tokenType == Token::END_TAG_TOKEN && $tagName === 'table')
+            || ($token instanceof EndTagToken && $tagName === 'table')
         ) {
             // If the stack of open elements does not have a caption element
             // in table scope, this is a parse error; ignore the token.
@@ -3212,7 +3177,7 @@ class TreeBuilder
                 // Reprocess the token.
                 $this->run($token);
             }
-        } elseif ($tokenType == Token::END_TAG_TOKEN
+        } elseif ($token instanceof EndTagToken
             && ($tagName === 'caption'
                 || $tagName === 'col'
                 || $tagName === 'colgroup'
@@ -3242,10 +3207,9 @@ class TreeBuilder
      */
     private function inColumnGroupInsertionMode(Token $token): void
     {
-        $tokenType = $token->getType();
         $tagName = $token instanceof TagToken ? $token->tagName : '';
 
-        if ($tokenType == Token::CHARACTER_TOKEN
+        if ($token instanceof CharacterToken
             && (($data = $token->data) === "\x09"
                 || $data === "\x0A"
                 || $data === "\x0C"
@@ -3255,17 +3219,17 @@ class TreeBuilder
         ) {
             // Insert the character.
             $this->insertCharacter($token);
-        } elseif ($tokenType == Token::COMMENT_TOKEN) {
+        } elseif ($token instanceof CommentToken) {
             // Insert a comment.
             $this->insertComment($token);
-        } elseif ($tokenType == Token::DOCTYPE_TOKEN) {
+        } elseif ($token instanceof DoctypeToken) {
             // Parse error.
             // Ignore the token.
-        } elseif ($tokenType == Token::START_TAG_TOKEN && $tagName === 'html') {
+        } elseif ($token instanceof StartTagToken && $tagName === 'html') {
             // Process the token using the rules for the "in body" insertion
             // mode.
             $this->inBodyInsertionMode($token);
-        } elseif ($tokenType == Token::START_TAG_TOKEN && $tagName === 'col') {
+        } elseif ($token instanceof StartTagToken && $tagName === 'col') {
             // Insert an HTML element for the token. Immediately pop the current
             // node off the stack of open elements.
             $this->insertForeignElement($token, Namespaces::HTML);
@@ -3275,9 +3239,7 @@ class TreeBuilder
             if ($token->isSelfClosing()) {
                 $token->acknowledge();
             }
-        } elseif ($tokenType == Token::END_TAG_TOKEN
-            && $tagName === 'colgroup'
-        ) {
+        } elseif ($token instanceof EndTagToken && $tagName === 'colgroup') {
             // If the current node is not a colgroup element, then this is a
             // parse error; ignore the token.
             $currentNode = $this->openElements->bottom();
@@ -3294,17 +3256,14 @@ class TreeBuilder
             // Switch the insertion mode to "in table".
             $this->openElements->pop();
             $this->state->insertionMode = ParserInsertionMode::IN_TABLE;
-        } elseif ($tokenType == Token::END_TAG_TOKEN && $tagName === 'col') {
+        } elseif ($token instanceof EndTagToken && $tagName === 'col') {
             // Parse error.
             // Ignore the token.
-        } elseif (($tokenType == Token::START_TAG_TOKEN
-            || $tokenType == Token::END_TAG_TOKEN)
-            && $tagName === 'template'
-        ) {
+        } elseif ($token instanceof TagToken && $tagName === 'template') {
             // Process the token using the rules for the "in head" insertion
             // mode.
             $this->inHeadInsertionMode($token);
-        } elseif ($tokenType == Token::EOF_TOKEN) {
+        } elseif ($token instanceof EOFToken) {
             // Process the token using the rules for the "in body" insertion
             // mode.
             $this->inBodyInsertionMode($token);
@@ -3341,10 +3300,9 @@ class TreeBuilder
      */
     private function inTableBodyInsertionMode(Token $token): void
     {
-        $tokenType = $token->getType();
         $tagName = $token instanceof TagToken ? $token->tagName : '';
 
-        if ($tokenType == Token::START_TAG_TOKEN && $tagName === 'tr') {
+        if ($token instanceof StartTagToken && $tagName === 'tr') {
             // Clear the stack back to a table body context.
             $this->openElements->clearBackToTableBodyContext();
 
@@ -3352,7 +3310,7 @@ class TreeBuilder
             // mode to "in row".
             $this->insertForeignElement($token, Namespaces::HTML);
             $this->state->insertionMode = ParserInsertionMode::IN_ROW;
-        } elseif ($tokenType == Token::START_TAG_TOKEN
+        } elseif ($token instanceof StartTagToken
             && ($tagName === 'th' || $tagName === 'td')
         ) {
             // Parse error.
@@ -3369,7 +3327,7 @@ class TreeBuilder
 
             // Reprocess the current token.
             $this->run($token);
-        } elseif ($tokenType == Token::END_TAG_TOKEN
+        } elseif ($token instanceof EndTagToken
             && ($tagName === 'tbody'
                 || $tagName === 'thead'
                 || $tagName === 'tfoot'
@@ -3394,7 +3352,7 @@ class TreeBuilder
             // insertion mode to "in table".
             $this->openElements->pop();
             $this->state->insertionMode = ParserInsertionMode::IN_TABLE;
-        } elseif (($tokenType == Token::START_TAG_TOKEN
+        } elseif (($token instanceof StartTagToken
             && ($tagName === 'caption'
                 || $tagName === 'col'
                 || $tagName === 'colgroup'
@@ -3402,7 +3360,7 @@ class TreeBuilder
                 || $tagName === 'tfoot'
                 || $tagName === 'thead'
             ))
-            || ($tokenType == Token::END_TAG_TOKEN && $tagName === 'table')
+            || ($token instanceof EndTagToken && $tagName === 'table')
         ) {
             // If the stack of open elements does not have a tbody, thead, or
             // tfoot element in table scope, this is a parse error; ignore the
@@ -3434,7 +3392,7 @@ class TreeBuilder
 
             // Reprocess the token.
             $this->run($token);
-        } elseif ($tokenType == Token::END_TAG_TOKEN
+        } elseif ($token instanceof EndTagToken
             && ($tagName === 'body'
                 || $tagName === 'caption'
                 || $tagName === 'col'
@@ -3463,10 +3421,9 @@ class TreeBuilder
      */
     private function inRowInsertionMode(Token $token): void
     {
-        $tokenType = $token->getType();
         $tagName = $token instanceof TagToken ? $token->tagName : '';
 
-        if ($tokenType == Token::START_TAG_TOKEN
+        if ($token instanceof StartTagToken
             && ($tagName === 'th' || $tagName === 'td')
         ) {
             // Clear the stack back to a table row context.
@@ -3480,7 +3437,7 @@ class TreeBuilder
             // Insert a marker at the end of the list of active formatting
             // elements.
             $this->activeFormattingElements->push(new Marker());
-        } elseif ($tokenType == Token::END_TAG_TOKEN && $tagName === 'tr') {
+        } elseif ($token instanceof EndTagToken && $tagName === 'tr') {
             // If the stack of open elements does not have a tr element in
             // table scope, this is a parse error; ignore the token.
             if (false) {
@@ -3496,7 +3453,7 @@ class TreeBuilder
             // of open elements. Switch the insertion mode to "in table body".
             $this->openElements->pop();
             $this->state->insertionMode = ParserInsertionMode::IN_TABLE_BODY;
-        } elseif (($tokenType == Token::START_TAG_TOKEN
+        } elseif (($token instanceof StartTagToken
             && ($tagName === 'caption'
                 || $tagName === 'col'
                 || $tagName === 'colgroup'
@@ -3505,7 +3462,7 @@ class TreeBuilder
                 || $tagName === 'thead'
                 || $tagName === 'tr'
             ))
-            || ($tokenType == Token::END_TAG_TOKEN && $tagName === 'table')
+            || ($token instanceof EndTagToken && $tagName === 'table')
         ) {
             // If the stack of open elements does not have a tr element in
             // table scope, this is a parse error; ignore the token.
@@ -3525,7 +3482,7 @@ class TreeBuilder
 
             // Reprocess the token.
             $this->run($token);
-        } elseif ($tokenType == Token::END_TAG_TOKEN
+        } elseif ($token instanceof EndTagToken
             && ($tagName === 'tbody'
                 || $tagName === 'thead'
                 || $tagName === 'tfoot'
@@ -3556,7 +3513,7 @@ class TreeBuilder
 
             // Reprocess the token.
             $this->run($token);
-        } elseif ($tokenType == Token::END_TAG_TOKEN
+        } elseif ($token instanceof EndTagToken
             && ($tagName === 'body'
                 || $tagName === 'caption'
                 || $tagName === 'col'
@@ -3584,10 +3541,9 @@ class TreeBuilder
      */
     private function inCellInsertionMode(Token $token): void
     {
-        $tokenType = $token->getType();
         $tagName = $token instanceof TagToken ? $token->tagName : '';
 
-        if ($tokenType == Token::END_TAG_TOKEN
+        if ($token instanceof EndTagToken
             && ($tagName === 'td' || $tagName === 'th')
         ) {
             // If the stack of open elements does not have an element in table
@@ -3631,7 +3587,7 @@ class TreeBuilder
 
             // Switch the insertion mode to "in row".
             $this->state->insertionMode = ParserInsertionMode::IN_ROW;
-        } elseif ($tokenType == Token::START_TAG_TOKEN
+        } elseif ($token instanceof StartTagToken
             && ($tagName === 'caption'
                 || $tagName === 'col'
                 || $tagName === 'colgroup'
@@ -3655,7 +3611,7 @@ class TreeBuilder
             // Otherwise, close the cell and reprocess the token.
             $this->closeCell();
             $this->run($token);
-        } elseif ($tokenType == Token::END_TAG_TOKEN
+        } elseif ($token instanceof EndTagToken
             && ($tagName === 'body'
                 || $tagName === 'caption'
                 || $tagName === 'col'
@@ -3665,7 +3621,7 @@ class TreeBuilder
         ) {
             // Parse error.
             // Ignore the token.
-        } elseif ($tokenType == Token::END_TAG_TOKEN
+        } elseif ($token instanceof EndTagToken
             && ($tagName === 'table'
                 || $tagName === 'tbody'
                 || $tagName === 'tfoot'
@@ -3738,28 +3694,25 @@ class TreeBuilder
      */
     private function inSelectInsertionMode(Token $token): void
     {
-        $tokenType = $token->getType();
         $tagName = $token instanceof TagToken ? $token->tagName : '';
 
-        if ($tokenType == Token::CHARACTER_TOKEN && $token->data === "\x00") {
+        if ($token instanceof CharacterToken && $token->data === "\x00") {
             // Parse error.
             // Ignore the token.
-        } elseif ($tokenType == Token::CHARACTER_TOKEN) {
+        } elseif ($token instanceof CharacterToken) {
             // Insert the token's character.
             $this->insertCharacter($token);
-        } elseif ($tokenType == Token::COMMENT_TOKEN) {
+        } elseif ($token instanceof CommentToken) {
             // Insert a comment.
             $this->insertComment($token);
-        } elseif ($tokenType == Token::DOCTYPE_TOKEN) {
+        } elseif ($token instanceof DoctypeToken) {
             // Parse error.
             // Ignore the token.
-        } elseif ($tokenType == Token::START_TAG_TOKEN && $tagName === 'html') {
+        } elseif ($token instanceof StartTagToken && $tagName === 'html') {
             // Process the token using the rules for the "in body" insertion
             // mode.
             $this->inBodyInsertionMode($token);
-        } elseif ($tokenType == Token::START_TAG_TOKEN
-            && $tagName === 'option'
-        ) {
+        } elseif ($token instanceof StartTagToken && $tagName === 'option') {
             // If the current node is an option element, pop that node from the
             // stack of open elements.
             if ($this->openElements->bottom() instanceof HTMLOptionElement) {
@@ -3768,9 +3721,7 @@ class TreeBuilder
 
             // Insert an HTML element for the token.
             $this->insertForeignElement($token, Namespaces::HTML);
-        } elseif ($tokenType == Token::START_TAG_TOKEN
-            && $tagName === 'optgroup'
-        ) {
+        } elseif ($token instanceof StartTagToken && $tagName === 'optgroup') {
             // If the current node is an option element, pop that node from the
             // stack of open elements.
             if ($this->openElements->bottom() instanceof HTMLOptionElement) {
@@ -3785,9 +3736,7 @@ class TreeBuilder
 
             // Insert an HTML element for the token.
             $this->insertForeignElement($token, Namespaces::HTML);
-        } elseif ($tokenType == Token::END_TAG_TOKEN
-            && $tagName === 'optgroup'
-        ) {
+        } elseif ($token instanceof EndTagToken && $tagName === 'optgroup') {
             // First, if the current node is an option element, and the node
             // immediately before it in the stack of open elements is an
             // optgroup element, then pop the current node from the stack of
@@ -3810,7 +3759,7 @@ class TreeBuilder
                 // Parse error.
                 // Ignore the token.
             }
-        } elseif ($tokenType == Token::END_TAG_TOKEN && $tagName === 'option') {
+        } elseif ($token instanceof EndTagToken && $tagName === 'option') {
             // If the current node is an option element, then pop that node
             // from the stack of open elements. Otherwise, this is a parse
             // error; ignore the token.
@@ -3820,7 +3769,7 @@ class TreeBuilder
                 // Parse error.
                 // Ignore the token.
             }
-        } elseif ($tokenType == Token::END_TAG_TOKEN && $tagName === 'select') {
+        } elseif ($token instanceof EndTagToken && $tagName === 'select') {
             // If the stack of open elements does not have a select element in
             // select scope, this is a parse error; ignore the token. (fragment
             // case)
@@ -3843,9 +3792,7 @@ class TreeBuilder
 
             // Reset the insertion mode appropriately.
             $this->resetInsertionMode();
-        } elseif ($tokenType == Token::START_TAG_TOKEN
-            && $tagName === 'select'
-        ) {
+        } elseif ($token instanceof StartTagToken && $tagName === 'select') {
             // Parse error
             // If the stack of open elements does not have a select
             // element in select scope, ignore the token. (fragment case)
@@ -3867,7 +3814,7 @@ class TreeBuilder
 
             // Reset the insertion mode appropriately.
             $this->resetInsertionMode();
-        } elseif ($tokenType == Token::START_TAG_TOKEN
+        } elseif ($token instanceof StartTagToken
             && ($tagName === 'input'
                 || $tagName === 'keygen'
                 || $tagName === 'textarea'
@@ -3897,15 +3844,13 @@ class TreeBuilder
 
             // Reprocess the token.
             $this->run($token);
-        } elseif (($tokenType == Token::START_TAG_TOKEN
-                && ($tagName === 'script' || $tagName === 'template')
-            )
-            || ($tokenType == Token::END_TAG_TOKEN && $tagName === 'template')
+        } elseif (($token instanceof StartTagToken && $tagName === 'script')
+            || ($token instanceof TagToken && $tagName === 'template')
         ) {
             // Process the token using the rules for the "in head" insertion
             // mode.
             $this->inHeadInsertionMode($token);
-        } elseif ($tokenType == Token::EOF_TOKEN) {
+        } elseif ($token instanceof EOFToken) {
             // Process the token using the rules for the "in body" insertion
             // mode.
             $this->inBodyInsertionMode($token);
@@ -3924,10 +3869,9 @@ class TreeBuilder
      */
     private function inSelectInTableInsertionMode(Token $token): void
     {
-        $tokenType = $token->getType();
         $tagName = $token instanceof TagToken ? $token->tagName : '';
 
-        if ($tokenType == Token::START_TAG_TOKEN
+        if ($token instanceof StartTagToken
             && ($tagName === 'caption'
                 || $tagName === 'table'
                 || $tagName === 'tbody'
@@ -3952,7 +3896,7 @@ class TreeBuilder
 
             // Reprocess the token.
             $this->run($token);
-        } elseif ($tokenType == Token::END_TAG_TOKEN
+        } elseif ($token instanceof EndTagToken
             && ($tagName === 'caption'
                 || $tagName === 'table'
                 || $tagName === 'tbody'
@@ -4004,17 +3948,16 @@ class TreeBuilder
      */
     private function inTemplateInsertionMode(Token $token): void
     {
-        $tokenType = $token->getType();
         $tagName = $token instanceof TagToken ? $token->tagName : '';
 
-        if ($tokenType == Token::CHARACTER_TOKEN
-            || $tokenType == Token::COMMENT_TOKEN
-            || $tokenType == Token::DOCTYPE_TOKEN
+        if ($token instanceof CharacterToken
+            || $token instanceof CommentToken
+            || $token instanceof DoctypeToken
         ) {
             // Process the token using the rules for the "in body" insertion
             // mode.
             $this->inBodyInsertionMode($token);
-        } elseif (($tokenType == Token::START_TAG_TOKEN
+        } elseif (($token instanceof StartTagToken
             && ($tagName === 'base'
                 || $tagName === 'basefont'
                 || $tagName === 'bgsound'
@@ -4026,12 +3969,12 @@ class TreeBuilder
                 || $tagName === 'template'
                 || $tagName === 'title'
             ))
-            || ($tokenType == Token::END_TAG_TOKEN && $tagName === 'template')
+            || ($token instanceof EndTagToken && $tagName === 'template')
         ) {
             // Process the token using the rules for the "in head" insertion
             // mode.
             $this->inHeadInsertionMode($token);
-        } elseif ($tokenType == Token::START_TAG_TOKEN
+        } elseif ($token instanceof StartTagToken
             && ($tagName === 'caption'
                 || $tagName === 'colgroup'
                 || $tagName === 'tbody'
@@ -4050,7 +3993,7 @@ class TreeBuilder
             // Switch the insertion mode to "in table", and reprocess the token.
             $this->state->insertionMode = ParserInsertionMode::IN_TABLE;
             $this->run($token);
-        } elseif ($tokenType == Token::START_TAG_TOKEN && $tagName === 'col') {
+        } elseif ($token instanceof StartTagToken && $tagName === 'col') {
             // Pop the current template insertion mode off the stack of template
             // insertion modes.
             $this->templateInsertionModes->pop();
@@ -4065,7 +4008,7 @@ class TreeBuilder
             // token.
             $this->state->insertionMode = ParserInsertionMode::IN_COLUMN_GROUP;
             $this->run($token);
-        } elseif ($tokenType == Token::START_TAG_TOKEN && $tagName === 'tr') {
+        } elseif ($token instanceof StartTagToken && $tagName === 'tr') {
             // Pop the current template insertion mode off the stack of template
             // insertion modes.
             $this->templateInsertionModes->pop();
@@ -4080,7 +4023,7 @@ class TreeBuilder
             // token.
             $this->state->insertionMode = ParserInsertionMode::IN_TABLE_BODY;
             $this->run($token);
-        } elseif ($tokenType == Token::START_TAG_TOKEN
+        } elseif ($token instanceof StartTagToken
             && ($tagName === 'td' || $tagName === 'th')
         ) {
             // Pop the current template insertion mode off the stack of template
@@ -4094,7 +4037,7 @@ class TreeBuilder
             // Switch the insertion mode to "in row", and reprocess the token.
             $this->state->insertionMode = ParserInsertionMode::IN_ROW;
             $this->run($token);
-        } elseif ($tokenType == Token::START_TAG_TOKEN) {
+        } elseif ($token instanceof StartTagToken) {
             // Pop the current template insertion mode off the stack of template
             // insertion modes.
             $this->templateInsertionModes->pop();
@@ -4106,10 +4049,10 @@ class TreeBuilder
             // Switch the insertion mode to "in body", and reprocess the token.
             $this->state->insertionMode = ParserInsertionMode::IN_BODY;
             $this->run($token);
-        } elseif ($tokenType == Token::END_TAG_TOKEN) {
+        } elseif ($token instanceof EndTagToken) {
             // Parse error.
             // Ignore the token.
-        } elseif ($tokenType == Token::EOF_TOKEN) {
+        } elseif ($token instanceof EOFToken) {
             // If there is no template element on the stack of open elements,
             // then stop parsing. (fragment case)
             if (!$this->openElements->containsTemplateElement()) {
@@ -4153,10 +4096,9 @@ class TreeBuilder
      */
     private function afterBodyInsertionMode(Token $token): void
     {
-        $tokenType = $token->getType();
         $tagName = $token instanceof TagToken ? $token->tagName : '';
 
-        if ($tokenType == Token::CHARACTER_TOKEN
+        if ($token instanceof CharacterToken
             && (($data = $token->data) === "\x09"
                 || $data === "\x0A"
                 || $data === "\x0C"
@@ -4167,21 +4109,21 @@ class TreeBuilder
             // Process the token using the rules for the "in body" insertion
             // mode.
             $this->inBodyInsertionMode($token);
-        } elseif ($tokenType == Token::COMMENT_TOKEN) {
+        } elseif ($token instanceof CommentToken) {
             // Insert a comment as the last child of the first element in the
             // stack of open elements (the html element).
             $this->insertComment(
                 $token,
                 [$this->openElements[0], 'beforeend']
             );
-        } elseif ($tokenType == Token::DOCTYPE_TOKEN) {
+        } elseif ($token instanceof DoctypeToken) {
             // Parse error.
             // Ignore the token.
-        } elseif ($tokenType == Token::START_TAG_TOKEN && $tagName === 'html') {
+        } elseif ($token instanceof StartTagToken && $tagName === 'html') {
             // Process the token using the rules for the "in body" insertion
             // mode.
             $this->inBodyInsertionMode($token);
-        } elseif ($tokenType == Token::END_TAG_TOKEN && $tagName === 'html') {
+        } elseif ($token instanceof EndTagToken && $tagName === 'html') {
             // If the parser was originally created as part of the HTML fragment
             // parsing algorithm, this is a parse error; ignore the token.
             // (fragment case)
@@ -4193,7 +4135,7 @@ class TreeBuilder
 
             // Otherwise, switch the insertion mode to "after after body".
             $this->state->insertionMode = ParserInsertionMode::AFTER_AFTER_BODY;
-        } elseif ($tokenType == Token::EOF_TOKEN) {
+        } elseif ($token instanceof EOFToken) {
             // Stop parsing.
             $this->stopParsing();
         } else {
@@ -4213,10 +4155,9 @@ class TreeBuilder
      */
     private function inFramesetInsertionMode(Token $token): void
     {
-        $tokenType = $token->getType();
         $tagName = $token instanceof TagToken ? $token->tagName : '';
 
-        if ($tokenType == Token::CHARACTER_TOKEN
+        if ($token instanceof CharacterToken
             && (($data = $token->data) === "\x09"
                 || $data === "\x0A"
                 || $data === "\x0C"
@@ -4226,24 +4167,20 @@ class TreeBuilder
         ) {
             // Insert the character.
             $this->insertCharacter($token);
-        } elseif ($tokenType == Token::COMMENT_TOKEN) {
+        } elseif ($token instanceof CommentToken) {
             // Insert a comment.
             $this->insertComment($token);
-        } elseif ($tokenType == Token::DOCTYPE_TOKEN) {
+        } elseif ($token instanceof DoctypeToken) {
             // Parse error.
             // Ignore the token.
-        } elseif ($tokenType == Token::START_TAG_TOKEN && $tagName === 'html') {
+        } elseif ($token instanceof StartTagToken && $tagName === 'html') {
             // Process the token using the rules for the "in body" insertion
             // mode.
             $this->inBodyInsertionMode($token);
-        } elseif ($tokenType == Token::START_TAG_TOKEN
-            && $tagName === 'frameset'
-        ) {
+        } elseif ($token instanceof StartTagToken && $tagName === 'frameset') {
             // Insert an HTML element for the token.
             $this->insertForeignElement($token, Namespaces::HTML);
-        } elseif ($tokenType == Token::END_TAG_TOKEN
-            && $tagName === 'frameset'
-        ) {
+        } elseif ($token instanceof EndTagToken && $tagName === 'frameset') {
             // If the current node is the root html element, then this is a
             // parse error; ignore the token. (fragment case)
             if ($this->openElements->bottom() instanceof HTMLHtmlElement) {
@@ -4264,9 +4201,7 @@ class TreeBuilder
             ) {
                 $this->state->insertionMode = ParserInsertionMode::AFTER_FRAMESET;
             }
-        } elseif ($tokenType == Token::START_TAG_TOKEN
-            && $tagName === 'frame'
-        ) {
+        } elseif ($token instanceof StartTagToken && $tagName === 'frame') {
             // Insert an HTML element for the token. Immediately pop the current
             // node off the stack of open elements.
             $this->insertForeignElement($token, Namespaces::HTML);
@@ -4276,13 +4211,11 @@ class TreeBuilder
             if ($token->isSelfClosing()) {
                 $token->acknowledge();
             }
-        } elseif ($tokenType == Token::START_TAG_TOKEN
-            && $tagName === 'noframes'
-        ) {
+        } elseif ($token instanceof StartTagToken && $tagName === 'noframes') {
             // Process the token using the rules for the "in head" insertion
             // mode.
             $this->inHeadInsertionMode($token);
-        } elseif ($tokenType == Token::EOF_TOKEN) {
+        } elseif ($token instanceof EOFToken) {
             // If the current node is not the root html element, then this is a
             // parse error.
             if (!$this->openElements->bottom() instanceof HTMLHtmlElement) {
@@ -4309,10 +4242,9 @@ class TreeBuilder
      */
     private function afterFramesetInsertionMode(Token $token): void
     {
-        $tokenType = $token->getType();
         $tagName = $token instanceof TagToken ? $token->tagName : '';
 
-        if ($tokenType == Token::CHARACTER_TOKEN
+        if ($token instanceof CharacterToken
             && (($data = $token->data) === "\x09"
                 || $data === "\x0A"
                 || $data === "\x0C"
@@ -4322,26 +4254,24 @@ class TreeBuilder
         ) {
             // Insert the character.
             $this->insertCharacter($token);
-        } elseif ($tokenType == Token::COMMENT_TOKEN) {
+        } elseif ($token instanceof CommentToken) {
             // Insert a comment.
             $this->insertComment($token);
-        } elseif ($tokenType == Token::DOCTYPE_TOKEN) {
+        } elseif ($token instanceof DoctypeToken) {
             // Parse error.
             // Ignore the token.
-        } elseif ($tokenType == Token::START_TAG_TOKEN && $tagName === 'html') {
+        } elseif ($token instanceof StartTagToken && $tagName === 'html') {
             // Process the token using the rules for the "in body" insertion
             // mode.
             $this->inBodyInsertionMode($token);
-        } elseif ($tokenType == Token::END_TAG_TOKEN && $tagName === 'html') {
+        } elseif ($token instanceof EndTagToken && $tagName === 'html') {
             // Switch the insertion mode to "after after frameset".
             $this->state->insertionMode = ParserInsertionMode::AFTER_AFTER_FRAMESET;
-        } elseif ($tokenType == Token::START_TAG_TOKEN
-            && $tagName === 'noframes'
-        ) {
+        } elseif ($token instanceof StartTagToken && $tagName === 'noframes') {
             // Process the token using the rules for the "in head" insertion
             // mode.
             $this->inHeadInsertionMode($token);
-        } elseif ($tokenType == Token::EOF_TOKEN) {
+        } elseif ($token instanceof EOFToken) {
             // Stop parsing
             $this->stopParsing();
         } else {
@@ -4359,13 +4289,11 @@ class TreeBuilder
      */
     private function afterAfterBodyInsertionMode(Token $token): void
     {
-        $tokenType = $token->getType();
-
-        if ($tokenType == Token::COMMENT_TOKEN) {
+        if ($token instanceof CommentToken) {
             // Insert a comment as the last child of the Document object.
             $this->insertComment($token, [$this->document, 'beforeend']);
-        } elseif ($tokenType == Token::DOCTYPE_TOKEN
-            || ($tokenType == Token::CHARACTER_TOKEN
+        } elseif ($token instanceof DoctypeToken
+            || ($token instanceof CharacterToken
                 && (($data = $token->data) === "\x09"
                     || $data === "\x0A"
                     || $data === "\x0C"
@@ -4373,13 +4301,13 @@ class TreeBuilder
                     || $data === "\x20"
                 )
             )
-            || ($tokenType == Token::START_TAG_TOKEN
+            || ($token instanceof StartTagToken
                 && $token->tagName === 'html'
             )
         ) {
             // Process the token using the rules for the "in body" insertion mode.
             $this->inBodyInsertionMode($token);
-        } elseif ($tokenType == Token::EOF_TOKEN) {
+        } elseif ($token instanceof EOFToken) {
             // Stop parsing
             $this->stopParsing();
         } else {
@@ -4399,14 +4327,13 @@ class TreeBuilder
      */
     private function afterAfterFramesetInsertionMode(Token $token): void
     {
-        $tokenType = $token->getType();
         $tagName = $token instanceof TagToken ? $token->tagName : '';
 
-        if ($tokenType == Token::COMMENT_TOKEN) {
+        if ($token instanceof CommentToken) {
             // Insert a comment as the last child of the Document object.
             $this->insertComment($token, [$this->document, 'beforeend']);
-        } elseif ($tokenType == Token::DOCTYPE_TOKEN
-            || ($tokenType == Token::CHARACTER_TOKEN
+        } elseif ($token instanceof DoctypeToken
+            || ($token instanceof CharacterToken
                 && (($data = $token->data) === "\x09"
                     || $data === "\x0A"
                     || $data === "\x0C"
@@ -4414,17 +4341,15 @@ class TreeBuilder
                     || $data === "\x20"
                 )
             )
-            || ($tokenType == Token::START_TAG_TOKEN && $tagName === 'html')
+            || ($token instanceof StartTagToken && $tagName === 'html')
         ) {
             // Process the token using the rules for the "in body" insertion
             // mode.
             $this->inBodyInsertionMode($token);
-        } elseif ($tokenType == Token::EOF_TOKEN) {
+        } elseif ($token instanceof EOFToken) {
             // Stop parsing.
             $this->stopParsing();
-        } elseif ($tokenType == Token::START_TAG_TOKEN
-            && $tagName === 'noframes'
-        ) {
+        } elseif ($token instanceof StartTagToken && $tagName === 'noframes') {
             // Process the token using the rules for the "in head" insertion
             // mode.
             $this->inHeadInsertionMode($token);
@@ -4444,27 +4369,24 @@ class TreeBuilder
     private function inForeignContent(Token $token): void
     {
         $fontTokenHasAttribute = false;
-        $tokenType = $token->getType();
         $tagName = $token instanceof TagToken ? $token->tagName : '';
 
-        if ($tokenType == Token::START_TAG_TOKEN && $tagName === 'font') {
+        if ($token instanceof StartTagToken && $token->tagName === 'font') {
             foreach ($token->attributes as $attr) {
-                switch ($attr->name) {
-                    case 'color':
-                    case 'face':
-                    case 'size':
-                        $fontTokenHasAttribute = true;
-
-                        break 2;
+                if ($attr->name === 'color'
+                    || $attr->name === 'face'
+                    || $attr->name === 'size'
+                ) {
+                    $fontTokenHasAttribute = true;
                 }
             }
         }
 
-        if ($tokenType == Token::CHARACTER_TOKEN && $token->data === "\x00") {
+        if ($token instanceof CharacterToken && $token->data === "\x00") {
             // Parse error.
             // Insert a U+FFFD REPLACEMENT CHARACTER character.
             $this->insertCharacter(EncodingUtils::mb_chr(0xFFFD));
-        } elseif ($tokenType == Token::CHARACTER_TOKEN
+        } elseif ($token instanceof CharacterToken
             && (($data = $token->data) === "\x09"
                 || $data === "\x0A"
                 || $data === "\x0C"
@@ -4474,25 +4396,25 @@ class TreeBuilder
         ) {
             // Insert the token's character.
             $this->insertCharacter($token);
-        } elseif ($tokenType == Token::CHARACTER_TOKEN) {
+        } elseif ($token instanceof CharacterToken) {
             // Insert the token's character.
             $this->insertCharacter($token);
 
             // Set the frameset-ok flag to "not ok".
             $this->framesetOk = 'not ok';
-        } elseif ($tokenType == Token::COMMENT_TOKEN) {
+        } elseif ($token instanceof CommentToken) {
             // Insert a comment.
             $this->insertComment($token);
-        } elseif ($tokenType == Token::DOCTYPE_TOKEN) {
+        } elseif ($token instanceof DoctypeToken) {
             // Parse error.
             // Ignore the token.
-        } elseif ($tokenType == Token::START_TAG_TOKEN && (preg_match(
+        } elseif ($token instanceof StartTagToken && (preg_match(
             '/^(b|big|blockquote|body|br|center|code|dd|div|dl|dt|em|'
             . 'embed|h[1-6]|head|hr|i|img|li|listing|menu|meta|nobr|ol|p|'
             . 'pre|ruby|s|small|span|strong|strike|sub|sup|table|tt|u|ul|'
             . 'var)$/',
             $tagName
-        ) || ($tokenType == Token::START_TAG_TOKEN
+        ) || ($token instanceof StartTagToken
                 && $tagName === 'font'
                 && $fontTokenHasAttribute
             )
@@ -4590,7 +4512,7 @@ class TreeBuilder
 
             // Then, reprocess the token.
             $this->run($token);
-        } elseif ($tokenType == Token::START_TAG_TOKEN) {
+        } elseif ($token instanceof StartTagToken) {
             $adjustedCurrentNode = $this->getAdjustedCurrentNode();
 
             // If the adjusted current node is an element in the MathML
@@ -4652,7 +4574,7 @@ class TreeBuilder
                     $token->acknowledge();
                 }
             }
-        } elseif ($tokenType == Token::END_TAG_TOKEN
+        } elseif ($token instanceof EndTagToken
             && $tagName === 'script'
             && ($currentNode = $this->openElements->bottom()) instanceof Element
             && $currentNode->localName === 'script'
@@ -4662,7 +4584,7 @@ class TreeBuilder
             $this->openElements->pop();
 
             // TODO: More stuff that will probably never be fully supported.
-        } elseif ($tokenType == Token::END_TAG_TOKEN) {
+        } elseif ($token instanceof EndTagToken) {
             // Initialise node to be the current node (the bottommost node of
             // the stack).
             $node = $this->openElements->bottom();

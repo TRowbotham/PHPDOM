@@ -10,11 +10,4 @@ namespace Rowbot\DOM\Parser\Token;
  */
 class EOFToken implements Token
 {
-    /**
-     * {@inheritDoc}
-     */
-    public function getType(): int
-    {
-        return self::EOF_TOKEN;
-    }
 }

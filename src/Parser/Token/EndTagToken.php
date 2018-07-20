@@ -11,19 +11,4 @@ namespace Rowbot\DOM\Parser\Token;
  */
 class EndTagToken extends TagToken
 {
-    /**
-     * {@inheritDoc}
-     */
-    public function __construct(string $tagName = null)
-    {
-        parent::__construct($tagName);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getType(): int
-    {
-        return self::END_TAG_TOKEN;
-    }
 }

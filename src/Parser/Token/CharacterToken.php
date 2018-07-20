@@ -28,12 +28,4 @@ class CharacterToken implements Token
             $this->data = $data;
         }
     }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getType(): int
-    {
-        return self::CHARACTER_TOKEN;
-    }
 }

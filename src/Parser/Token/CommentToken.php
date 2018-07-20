@@ -28,12 +28,4 @@ class CommentToken implements Token
             $this->data = $data;
         }
     }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getType(): int
-    {
-        return self::COMMENT_TOKEN;
-    }
 }
