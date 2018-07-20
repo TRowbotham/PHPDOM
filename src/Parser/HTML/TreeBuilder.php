@@ -209,7 +209,7 @@ class TreeBuilder
     /**
      * A list of character tokens pending insertion during table building.
      *
-     * @var \Rowbot\DOM\Parser\Token\Token[]
+     * @var \Rowbot\DOM\Parser\Token\CharacterToken[]
      */
     private $pendingTableCharacterTokens;
 
