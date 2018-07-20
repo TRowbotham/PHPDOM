@@ -64,9 +64,9 @@ use SplStack;
 
 use function count;
 use function is_string;
+use function mb_strpos;
 use function preg_match;
 use function strcasecmp;
-use function stripos;
 
 class TreeBuilder
 {
@@ -306,111 +306,97 @@ class TreeBuilder
             $doctype->setNodeDocument($this->document);
             $this->document->appendChild($doctype);
 
-            if (!$this->document->isIframeSrcdoc()
-                && ($token->getQuirksMode() === 'on'
+            // If the document is not an iframe srcdoc document...
+            if (!$this->document->isIframeSrcdoc()) {
+                // and the DOCTYPE token matches one of the conditions in the
+                // following list, the set the Document to quirks mode.
+                if ($token->getQuirksMode() === 'on'
                     || $name !== 'html'
-                    || ($publicId !== null
-                        && (strcasecmp($publicId, '-//W3O//DTD W3 HTML Strict 3.0//EN//') === 0
-                            || strcasecmp($publicId, '-/W3C/DTD HTML 4.0 Transitional/EN') === 0
-                            || strcasecmp($publicId, 'HTML') === 0
-                        )
-                    )
-                    || ($systemId !== null && strcasecmp(
-                        $systemId,
+                    || $publicId === Utils::toASCIILowercase('-//W3O//DTD W3 HTML Strict 3.0//EN//')
+                    || $publicId === Utils::toASCIILowercase('-/W3C/DTD HTML 4.0 Transitional/EN')
+                    || $publicId === Utils::toASCIILowercase('HTML')
+                    || $systemId === Utils::toASCIILowercase(
                         'http://www.ibm.com/data/dtd/v11/ibmxhtml1-transitional.dtd'
-                    ) === 0)
-                    || ($publicId !== null
-                        && (stripos($publicId, '+//Silmaril//dtd html Pro v0r11 19970101//') === 0
-                            || stripos($publicId, '-//AS//DTD HTML 3.0 asWedit + extensions//') === 0
-                            || stripos($publicId, '-//AdvaSoft Ltd//DTD HTML 3.0 asWedit + extensions//') === 0
-                            || stripos($publicId, '-//IETF//DTD HTML 2.0 Level 1//') === 0
-                            || stripos($publicId, '-//IETF//DTD HTML 2.0 Level 2//') === 0
-                            || stripos($publicId, '-//IETF//DTD HTML 2.0 Strict Level 1//') === 0
-                            || stripos($publicId, '-//IETF//DTD HTML 2.0 Strict Level 2//') === 0
-                            || stripos($publicId, '-//IETF//DTD HTML 2.0 Strict//') === 0
-                            || stripos($publicId, '-//IETF//DTD HTML 2.0//') === 0
-                            || stripos($publicId, '-//IETF//DTD HTML 2.1E//') === 0
-                            || stripos($publicId, '-//IETF//DTD HTML 3.0//') === 0
-                            || stripos($publicId, '-//IETF//DTD HTML 3.2 Final//') === 0
-                            || stripos($publicId, '-//IETF//DTD HTML 3.2//') === 0
-                            || stripos($publicId, '-//IETF//DTD HTML 3//') === 0
-                            || stripos($publicId, '-//IETF//DTD HTML Level 0//') === 0
-                            || stripos($publicId, '-//IETF//DTD HTML Level 1//') === 0
-                            || stripos($publicId, '-//IETF//DTD HTML Level 2//') === 0
-                            || stripos($publicId, '-//IETF//DTD HTML Level 3//') === 0
-                            || stripos($publicId, '-//IETF//DTD HTML Strict Level 0//') === 0
-                            || stripos($publicId, '-//IETF//DTD HTML Strict Level 1//') === 0
-                            || stripos($publicId, '-//IETF//DTD HTML Strict Level 2//') === 0
-                            || stripos($publicId, '-//IETF//DTD HTML Strict Level 3//') === 0
-                            || stripos($publicId, '-//IETF//DTD HTML Strict//') === 0
-                            || stripos($publicId, '-//IETF//DTD HTML//') === 0
-                            || stripos($publicId, '-//Metrius//DTD Metrius Presentational//') === 0
-                            || stripos($publicId, '-//Microsoft//DTD Internet Explorer 2.0 HTML Strict//') === 0
-                            || stripos($publicId, '-//Microsoft//DTD Internet Explorer 2.0 HTML//') === 0
-                            || stripos($publicId, '-//Microsoft//DTD Internet Explorer 2.0 Tables//') === 0
-                            || stripos($publicId, '-//Microsoft//DTD Internet Explorer 3.0 HTML Strict//') === 0
-                            || stripos($publicId, '-//Microsoft//DTD Internet Explorer 3.0 HTML//') === 0
-                            || stripos($publicId, '-//Microsoft//DTD Internet Explorer 3.0 Tables//') === 0
-                            || stripos($publicId, '-//Netscape Comm. Corp.//DTD HTML//') === 0
-                            || stripos($publicId, '-//Netscape Comm. Corp.//DTD Strict HTML//') === 0
-                            || stripos($publicId, '-//O\'Reilly and Associates//DTD HTML 2.0//') === 0
-                            || stripos($publicId, '-//O\'Reilly and Associates//DTD HTML Extended 1.0//') === 0
-                            || stripos($publicId, '-//O\'Reilly and Associates//DTD HTML Extended Relaxed 1.0//') === 0
-                            || stripos($publicId, '-//SQ//DTD HTML 2.0 HoTMetaL + extensions//') === 0
-                            || stripos(
-                                $publicId,
-                                '-//SoftQuad Software//DTD HoTMetaL PRO 6.0::19990601::extensions to HTML 4.0//'
-                            ) === 0
-                            || stripos(
-                                $publicId,
-                                '-//SoftQuad//DTD HoTMetaL PRO 4.0::19971010::extensions to HTML 4.0//'
-                            ) === 0
-                            || stripos($publicId, '-//Spyglass//DTD HTML 2.0 Extended//') === 0
-                            || stripos($publicId, '-//Sun Microsystems Corp.//DTD HotJava HTML//') === 0
-                            || stripos($publicId, '-//Sun Microsystems Corp.//DTD HotJava Strict HTML//') === 0
-                            || stripos($publicId, '-//W3C//DTD HTML 3 1995-03-24//') === 0
-                            || stripos($publicId, '-//W3C//DTD HTML 3.2 Draft//') === 0
-                            || stripos($publicId, '-//W3C//DTD HTML 3.2 Final//') === 0
-                            || stripos($publicId, '-//W3C//DTD HTML 3.2//') === 0
-                            || stripos($publicId, '-//W3C//DTD HTML 3.2S Draft//') === 0
-                            || stripos($publicId, '-//W3C//DTD HTML 4.0 Frameset//') === 0
-                            || stripos($publicId, '-//W3C//DTD HTML 4.0 Transitional//') === 0
-                            || stripos($publicId, '-//W3C//DTD HTML Experimental 19960712//') === 0
-                            || stripos($publicId, '-//W3C//DTD HTML Experimental 970421//') === 0
-                            || stripos($publicId, '-//W3C//DTD W3 HTML//') === 0
-                            || stripos($publicId, '-//W3O//DTD W3 HTML 3.0//') === 0
-                            || stripos($publicId, '-//WebTechs//DTD Mozilla HTML 2.0//') === 0
-                            || stripos($publicId, '-//WebTechs//DTD Mozilla HTML//') === 0
-                        )
                     )
-                    || ($systemId === null && $publicId !== null && stripos(
-                        $publicId,
-                        '-//W3C//DTD HTML 4.01 Frameset//'
-                    ) === 0)
-                    || ($systemId === null && $publicId !== null && stripos(
-                        $publicId,
-                        '-//W3C//DTD HTML 4.01 Transitional//'
-                    ) === 0)
-                )
-            ) {
-                $this->document->setMode(DocumentMode::QUIRKS);
-            } elseif (!$this->document->isIframeSrcdoc()
-                && (($publicId !== null && stripos($publicId, '-//W3C//DTD XHTML 1.0 Frameset//') === 0)
-                    || ($publicId !== null && stripos($publicId, '-//W3C//DTD XHTML 1.0 Transitional//') === 0)
-                    || ($systemId !== null && $publicId !== null && stripos(
-                        $publicId,
-                        '-//W3C//DTD HTML 4.01 Frameset//'
-                    ) === 0)
-                    || ($systemId !== null && $publicId !== null && stripos(
-                        $publicId,
-                        '-//W3C//DTD HTML 4.01 Transitional//'
-                    ) === 0)
-                )
-            ) {
-                $this->document->setMode(DocumentMode::LIMITED_QUIRKS);
+                    || $this->identifierBeginsWith($publicId, [
+                        '+//Silmaril//dtd html Pro v0r11 19970101//',
+                        '-//AS//DTD HTML 3.0 asWedit + extensions//',
+                        '-//AdvaSoft Ltd//DTD HTML 3.0 asWedit + extensions//',
+                        '-//IETF//DTD HTML 2.0 Level 1//',
+                        '-//IETF//DTD HTML 2.0 Level 2//',
+                        '-//IETF//DTD HTML 2.0 Strict Level 1//',
+                        '-//IETF//DTD HTML 2.0 Strict Level 2//',
+                        '-//IETF//DTD HTML 2.0 Strict//',
+                        '-//IETF//DTD HTML 2.0//',
+                        '-//IETF//DTD HTML 2.1E//',
+                        '-//IETF//DTD HTML 3.0//',
+                        '-//IETF//DTD HTML 3.2 Final//',
+                        '-//IETF//DTD HTML 3.2//',
+                        '-//IETF//DTD HTML 3//',
+                        '-//IETF//DTD HTML Level 0//',
+                        '-//IETF//DTD HTML Level 1//',
+                        '-//IETF//DTD HTML Level 2//',
+                        '-//IETF//DTD HTML Level 3//',
+                        '-//IETF//DTD HTML Strict Level 0//',
+                        '-//IETF//DTD HTML Strict Level 1//',
+                        '-//IETF//DTD HTML Strict Level 2//',
+                        '-//IETF//DTD HTML Strict Level 3//',
+                        '-//IETF//DTD HTML Strict//',
+                        '-//IETF//DTD HTML//',
+                        '-//Metrius//DTD Metrius Presentational//',
+                        '-//Microsoft//DTD Internet Explorer 2.0 HTML Strict//',
+                        '-//Microsoft//DTD Internet Explorer 2.0 HTML//',
+                        '-//Microsoft//DTD Internet Explorer 2.0 Tables//',
+                        '-//Microsoft//DTD Internet Explorer 3.0 HTML Strict//',
+                        '-//Microsoft//DTD Internet Explorer 3.0 HTML//',
+                        '-//Microsoft//DTD Internet Explorer 3.0 Tables//',
+                        '-//Netscape Comm. Corp.//DTD HTML//',
+                        '-//Netscape Comm. Corp.//DTD Strict HTML//',
+                        '-//O\'Reilly and Associates//DTD HTML 2.0//',
+                        '-//O\'Reilly and Associates//DTD HTML Extended 1.0//',
+                        '-//O\'Reilly and Associates//DTD HTML Extended Relaxed 1.0//',
+                        '-//SQ//DTD HTML 2.0 HoTMetaL + extensions//',
+                        '-//SoftQuad Software//DTD HoTMetaL PRO 6.0::19990601::extensions to HTML 4.0//',
+                        '-//SoftQuad//DTD HoTMetaL PRO 4.0::19971010::extensions to HTML 4.0//',
+                        '-//Spyglass//DTD HTML 2.0 Extended//',
+                        '-//Sun Microsystems Corp.//DTD HotJava HTML//',
+                        '-//Sun Microsystems Corp.//DTD HotJava Strict HTML//',
+                        '-//W3C//DTD HTML 3 1995-03-24//',
+                        '-//W3C//DTD HTML 3.2 Draft//',
+                        '-//W3C//DTD HTML 3.2 Final//',
+                        '-//W3C//DTD HTML 3.2//',
+                        '-//W3C//DTD HTML 3.2S Draft//',
+                        '-//W3C//DTD HTML 4.0 Frameset//',
+                        '-//W3C//DTD HTML 4.0 Transitional//',
+                        '-//W3C//DTD HTML Experimental 19960712//',
+                        '-//W3C//DTD HTML Experimental 970421//',
+                        '-//W3C//DTD W3 HTML//',
+                        '-//W3O//DTD W3 HTML 3.0//',
+                        '-//WebTechs//DTD Mozilla HTML 2.0//',
+                        '-//WebTechs//DTD Mozilla HTML//'
+                    ])
+                    || ($systemId === null && $this->identifierBeginsWith($publicId, [
+                            '-//W3C//DTD HTML 4.01 Frameset//',
+                            '-//W3C//DTD HTML 4.01 Transitional//'
+                    ]))
+                ) {
+                    $this->document->setMode(DocumentMode::QUIRKS);
+
+                    // Otherwise, if the DOCTYPE token matches one of the
+                    // conditions in the following list, then set the Document
+                    // to limited-quirks mode.
+                } elseif ($this->identifierBeginsWith($publicId, [
+                    '-//W3C//DTD XHTML 1.0 Frameset//',
+                    '-//W3C//DTD XHTML 1.0 Transitional//'
+                ]) || ($systemId !== null && $this->identifierBeginsWith($publicId, [
+                    '-//W3C//DTD HTML 4.01 Frameset//',
+                    '-//W3C//DTD HTML 4.01 Transitional//'
+                ]))) {
+                    $this->document->setMode(DocumentMode::LIMITED_QUIRKS);
+                }
             }
 
-            // Then, switch the insertion mode to "before html".
+            // The, switch the insertion mode to "before html".
             $this->state->insertionMode = ParserInsertionMode::BEFORE_HTML;
         } else {
             // If the document is not an iframe srcdoc document, then this
@@ -5672,5 +5658,43 @@ class TreeBuilder
         if ($newElement !== $this->activeFormattingElements->top()) {
             goto Advance;
         }
+    }
+
+    /**
+     * Performs an ASCII case-insensitive compare of a DOCTYPE token's public
+     * or system identifier to see if the identifier begins with one of the
+     * fragment strings.
+     *
+     * @param string|null        $identifier
+     * @param array<int, string> $fragments
+     *
+     * @return bool
+     */
+    private function identifierBeginsWith(
+        ?string $identifier,
+        array $fragments
+    ): bool {
+        // If the given identifier is null, this means that the DOCTYPE token's
+        // identifier was missing and it cannot possibly match anything in the
+        // list.
+        if ($identifier === null) {
+            return false;
+        }
+
+        // Make the identifier ASCII lowercased for comparison.
+        $identifier = Utils::toASCIILowercase($identifier);
+
+        foreach ($fragments as $identifierFragment) {
+            if (mb_strpos(
+                $identifier,
+                Utils::toASCIILowercase($identifierFragment),
+                0,
+                'UTF-8'
+            ) === 0) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
