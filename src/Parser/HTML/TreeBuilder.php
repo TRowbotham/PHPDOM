@@ -3017,10 +3017,13 @@ class TreeBuilder
      */
     private function inTableTextInsertionMode(Token $token): void
     {
-        if ($token instanceof CharacterToken && $token->data === "\x00") {
-            // Parse error.
-            // Ignore the token.
-        } elseif ($token instanceof CharacterToken) {
+        if ($token instanceof CharacterToken) {
+            if ($token->data === "\x00") {
+                // Parse error.
+                // Ignore the token.
+                return;
+            }
+
             // Append the character token to the pending table character tokens
             // list.
             $this->pendingTableCharacterTokens[] = $token;
@@ -3030,36 +3033,26 @@ class TreeBuilder
             // a parse error: reprocess the character tokens in the pending
             // table character tokens list using the rules given in the
             // "anything else" entry in the "in table" insertion mode.
-            $containsNonSpaceCharacters = false;
+            // Otherwise, insert the characters given by the pending table
+            // character tokens list.
+            $methodName = 'insertCharacter';
 
             foreach ($this->pendingTableCharacterTokens as $characterToken) {
                 $data = $characterToken->data;
 
-                if ($data !== "\x20"
-                    && $data !== "\x09"
+                if ($data !== "\x09"
                     && $data !== "\x0A"
                     && $data !== "\x0C"
                     && $data !== "\x0D"
+                    && $data !== "\x20"
                 ) {
-                    $containsNonSpaceCharacters = true;
+                    $methodName = 'inTableInsertionModeAnythingElse';
                     break;
                 }
             }
 
             foreach ($this->pendingTableCharacterTokens as $characterToken) {
-                if ($containsNonSpaceCharacters) {
-                    // Parse error.
-                    // Enable foster parenting, process the token using the
-                    // rules for the "in body" insertion mode, and then disable
-                    // foster parenting.
-                    $this->fosterParenting = true;
-                    $this->inBodyInsertionMode($characterToken);
-                    $this->fosterParenting = false;
-                } else {
-                    // Otherwise, insert the characters given by the pending
-                    // table character tokens list.
-                    $this->insertCharacter($characterToken);
-                }
+                $this->{$methodName}($characterToken);
             }
 
             // Switch the insertion mode to the original insertion mode and
