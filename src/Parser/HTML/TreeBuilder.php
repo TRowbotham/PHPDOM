@@ -19,6 +19,7 @@ use Rowbot\DOM\{
     Utils
 };
 use Rowbot\DOM\Element\HTML\{
+    HTMLAnchorElement,
     HTMLBodyElement,
     HTMLButtonElement,
     HTMLElement,
@@ -1061,19 +1062,6 @@ class TreeBuilder
         if ($token instanceof CharacterToken && $token->data === "\x00") {
             // Parse error.
             // Ignore the token.
-        } elseif ($token instanceof CharacterToken
-            && (($data = $token->data) === "\x09"
-                || $data === "\x0A"
-                || $data === "\x0C"
-                || $data === "\x0D"
-                || $data === "\x20"
-            )
-        ) {
-            // Reconstruct the active formatting elements, if any.
-            $this->reconstructActiveFormattingElements();
-
-            // Insert the token's character.
-            $this->insertCharacter($token);
         } elseif ($token instanceof CharacterToken) {
             // Reconstruct the active formatting elements, if any.
             $this->reconstructActiveFormattingElements();
@@ -1081,8 +1069,15 @@ class TreeBuilder
             // Insert the token's character.
             $this->insertCharacter($token);
 
-            // Set the frameset-ok flag to "not ok".
-            $this->framesetOk = 'not ok';
+            if (($data = $token->data) !== "\x09"
+                && $data !== "\x0A"
+                && $data !== "\x0C"
+                && $data !== "\x0D"
+                && $data !== "\x20"
+            ) {
+                // Set the frameset-ok flag to "not ok".
+                $this->framesetOk = 'not ok';
+            }
         } elseif ($token instanceof CommentToken) {
             // Insert a comment.
             $this->insertComment($token);
@@ -1165,7 +1160,7 @@ class TreeBuilder
             $count = count($this->openElements);
 
             if ($count == 1
-                || !$this->openElements[$count - 2] instanceof HTMLBodyElement
+                || !$this->openElements[1] instanceof HTMLBodyElement
             ) {
                 // Fragment case
                 // Ignore the token
@@ -1467,11 +1462,11 @@ class TreeBuilder
             // the stack).
             // Step "Loop".
             foreach ($this->openElements as $node) {
-                $currentNode = $this->openElements->bottom();
-
                 if ($node instanceof HTMLElement && $node->localName === 'dd') {
                     // Generate implied end tags, except for dd elements.
                     $this->generateImpliedEndTags('dd');
+
+                    $currentNode = $this->openElements->bottom();
 
                     // If the current node is not a dd element, then this is a
                     // parse error.
@@ -1500,6 +1495,8 @@ class TreeBuilder
                 if ($node instanceof HTMLElement && $node->localName === 'dt') {
                     // Generate implied end tags, except for dt elements.
                     $this->generateImpliedEndTags('dt');
+
+                    $currentNode = $this->openElements->bottom();
 
                     // If the current node is not a dt element, then this is a
                     // parse error.
@@ -1553,9 +1550,7 @@ class TreeBuilder
 
             // Finally, insert an HTML element for the token.
             $this->insertForeignElement($token, Namespaces::HTML);
-        } elseif ($token instanceof StartTagToken
-            && $tagName === 'plaintext'
-        ) {
+        } elseif ($token instanceof StartTagToken && $tagName === 'plaintext') {
             // If the stack of open elements has a p element in button scope,
             // then close a p element.
             if ($this->openElements->hasElementInButtonScope(
@@ -1627,12 +1622,10 @@ class TreeBuilder
 
             // If the current node is not an HTML element with the same tag
             // name as that of the token, then this is a parse error.
-            $isValid = $this->isHTMLElementWithName(
+            if (!$this->isHTMLElementWithName(
                 $this->openElements->bottom(),
                 $tagName
-            );
-
-            if (!$isValid) {
+            )) {
                 // Parse error.
             }
 
@@ -1640,12 +1633,10 @@ class TreeBuilder
             // element with the same tag name as the token has been popped
             // from the stack.
             while (!$this->openElements->isEmpty()) {
-                $isValid = $this->isHTMLElementWithName(
+                if ($this->isHTMLElementWithName(
                     $this->openElements->pop(),
                     $tagName
-                );
-
-                if ($isValid) {
+                )) {
                     break;
                 }
             }
@@ -1680,7 +1671,6 @@ class TreeBuilder
 
                 // Remove node from the stack of open elements.
                 $this->openElements->remove($node);
-
                 return;
             }
 
@@ -1778,12 +1768,10 @@ class TreeBuilder
 
             // If the current node is not an HTML element with the same tag
             // name as that of the token, then this is a parse error.
-            $isValid = $this->isHTMLElementWithName(
+            if (!$this->isHTMLElementWithName(
                 $this->openElements->bottom(),
                 $tagName
-            );
-
-            if (!$isValid) {
+            )) {
                 // Parse error.
             }
 
@@ -1791,12 +1779,10 @@ class TreeBuilder
             // element with the same tag name as the token has been popped from
             // the stack.
             while (!$this->openElements->isEmpty()) {
-                $isValid = $this->isHTMLElementWithName(
+                if ($this->isHTMLElementWithName(
                     $this->openElements->pop(),
                     $tagName
-                );
-
-                if ($isValid) {
+                )) {
                     break;
                 }
             }
@@ -1847,12 +1833,10 @@ class TreeBuilder
 
             // If the current node is not an HTML element with the same tag
             // name as that of the token, then this is a parse error.
-            $isValid = $this->isHTMLElementWithName(
+            if (!$this->isHTMLElementWithName(
                 $this->openElements->bottom(),
                 $tagName
-            );
-
-            if (!$isValid) {
+            )) {
                 // Parse error.
             }
 
@@ -1875,11 +1859,12 @@ class TreeBuilder
             // have if the element is not in table scope).
             if (!$this->activeFormattingElements->isEmpty()) {
                 $hasAnchorElement = false;
+                $element = null;
 
                 foreach ($this->activeFormattingElements as $element) {
                     if ($element instanceof Marker) {
                         break;
-                    } else {
+                    } elseif ($element instanceof HTMLAnchorElement) {
                         $hasAnchorElement = true;
                         break;
                     }
@@ -1887,15 +1872,10 @@ class TreeBuilder
 
                 if ($hasAnchorElement) {
                     // Parse error.
-                    $element = $this->adoptionAgency($token);
+                    $this->adoptionAgency($token);
 
-                    if ($element
-                        && $this->activeFormattingElements->contains($element)
-                    ) {
+                    if ($element !== null) {
                         $this->activeFormattingElements->remove($element);
-                    }
-
-                    if ($element && $this->openElements->contains($element)) {
                         $this->openElements->remove($element);
                     }
                 }
@@ -1997,7 +1977,10 @@ class TreeBuilder
             // If the stack of open elements does not have an element in scope
             // that is an HTML element with the same tag name as that of the
             // token, then this is a parse error; ignore the token.
-            if (false) {
+            if (!$this->openElements->hasElementInScope(
+                $tagName,
+                Namespaces::HTML
+            )) {
                 // Parse error.
                 // Ignore the token.
                 return;
@@ -2008,12 +1991,10 @@ class TreeBuilder
 
             // If the current node is not an HTML element with the same tag
             // name as that of the token, then this is a parse error.
-            $isValid = $this->isHTMLElementWithName(
+            if (!$this->isHTMLElementWithName(
                 $this->openElements->bottom(),
                 $tagName
-            );
-
-            if (!$isValid) {
+            )) {
                 // Parse error.
             }
 
@@ -2021,12 +2002,10 @@ class TreeBuilder
             // element with the same tag name as the token has been popped from
             // the stack.
             while (!$this->openElements->isEmpty()) {
-                $isValid = $this->isHTMLElementWithName(
+                if ($this->isHTMLElementWithName(
                     $this->openElements->pop(),
                     $tagName
-                );
-
-                if ($isValid) {
+                )) {
                     break;
                 }
             }
@@ -2080,8 +2059,8 @@ class TreeBuilder
         } elseif ($token instanceof StartTagToken
             && ($tagName === 'area'
                 || $tagName === 'br'
-                || $tagName === 'img'
                 || $tagName === 'embed'
+                || $tagName === 'img'
                 || $tagName === 'keygen'
                 || $tagName === 'wbr'
             )
@@ -2128,10 +2107,9 @@ class TreeBuilder
                 }
             }
 
-            if (!$typeAttribute || ($typeAttribute && strcasecmp(
-                $typeAttribute->value,
-                'hidden'
-            ) !== 0)) {
+            if ($typeAttribute === null || Utils::toASCIILowercase(
+                $typeAttribute->value
+            ) === 'hidden') {
                 $this->framesetOk = 'not ok';
             }
         } elseif ($token instanceof StartTagToken
@@ -2213,7 +2191,7 @@ class TreeBuilder
             // Set the frameset-ok flag to "not ok
             $this->framesetOk = 'not ok';
 
-            //Follow the generic raw text element parsing algorithm.
+            // Follow the generic raw text element parsing algorithm.
             $this->parseGenericTextElement(
                 $token,
                 self::RAW_TEXT_ELEMENT_ALGORITHM
@@ -2282,8 +2260,7 @@ class TreeBuilder
             && ($tagName === 'rb' || $tagName === 'rtc')
         ) {
             // If the stack of open elements has a ruby element in scope,
-            // then generate implied end tags. If the current node is not now a
-            // ruby element, this is a parse error.
+            // then generate implied end tags
             if ($this->openElements->hasElementInScope(
                 'ruby',
                 Namespaces::HTML
@@ -2291,6 +2268,8 @@ class TreeBuilder
                 $this->generateImpliedEndTags();
                 $currentNode = $this->openElements->bottom();
 
+                // If the current node is not now a ruby element, this is a
+                // parse error.
                 if (!($currentNode instanceof HTMLElement
                     && $currentNode->localName === 'ruby')
                 ) {
@@ -2304,9 +2283,7 @@ class TreeBuilder
             && ($tagName === 'rp' || $tagName === 'rt')
         ) {
             // If the stack of open elements has a ruby element in scope,
-            // then generate implied end tags, except for rtc elements. If the
-            // current node is not now a rtc element or a ruby element, this is
-            // a parse error.
+            // then generate implied end tags, except for rtc elements.
             if ($this->openElements->hasElementInScope(
                 'ruby',
                 Namespaces::HTML
@@ -2314,6 +2291,8 @@ class TreeBuilder
                 $this->generateImpliedEndTags('rtc');
                 $currentNode = $this->openElements->bottom();
 
+                // If the current node is not now a rtc element or a ruby
+                // element, this is a parse error.
                 if (!($currentNode instanceof HTMLElement
                     && $currentNode->localName === 'rtc')
                 ) {
@@ -2406,9 +2385,8 @@ class TreeBuilder
         // Initialise node to be the current node (the bottommost node of the
         // stack).
         $tagName = $token->tagName;
-        $iterator = $this->openElements->getIterator();
 
-        foreach ($iterator as $node) {
+        foreach ($this->openElements as $node) {
             if ($this->isHTMLElementWithName($node, $tagName)) {
                 // Generate implied end tags, except for HTML elements with
                 // the same tag name as the token.
@@ -2425,8 +2403,6 @@ class TreeBuilder
                     if ($this->openElements->pop() === $node) {
                         break;
                     }
-
-                    $iterator->next();
                 }
             } elseif ($this->isSpecialNode($node)) {
                 // Parse error.
