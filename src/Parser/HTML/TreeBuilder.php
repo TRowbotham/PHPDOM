@@ -895,7 +895,7 @@ class TreeBuilder
             $this->inHeadInsertionMode($token);
         } elseif ($token instanceof EndTagToken && $tagName === 'br') {
             // Act as described in the "anything else" entry below.
-            $this->inHeadNodeScriptInsertionModeAnythingElse($token);
+            $this->inHeadNoScriptInsertionModeAnythingElse($token);
         } elseif (($token instanceof StartTagToken
                 && ($tagName === 'head' || $tagName === 'noscript')
             )
@@ -904,7 +904,7 @@ class TreeBuilder
             // Parse error.
             // Ignore the token.
         } else {
-            $this->inHeadNodeScriptInsertionModeAnythingElse($token);
+            $this->inHeadNoScriptInsertionModeAnythingElse($token);
         }
     }
 
