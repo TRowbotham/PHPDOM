@@ -894,18 +894,7 @@ class TreeBuilder
             $this->inHeadInsertionMode($token);
         } elseif ($token instanceof EndTagToken && $tagName === 'br') {
             // Act as described in the "anything else" entry below.
-
-            // Parse error.
-            // Pop the current node (which will be a noscript element) from the
-            // stack of open elements; the new current node will be a head
-            // element.
-            $this->openElements->pop();
-
-            // Switch the insertion mode to "in head".
-            $this->state->insertionMode = ParserInsertionMode::IN_HEAD;
-
-            // Reprocess the token.
-            $this->run($token);
+            $this->inHeadNodeScriptInsertionModeAnythingElse($token);
         } elseif (($token instanceof StartTagToken
                 && ($tagName === 'head' || $tagName === 'noscript')
             )
@@ -914,18 +903,30 @@ class TreeBuilder
             // Parse error.
             // Ignore the token.
         } else {
-            // Parse error.
-            // Pop the current node (which will be a noscript element) from the
-            // stack of open elements; the new current node will be a head
-            // element.
-            $this->openElements->pop();
-
-            // Switch the insertion mode to "in head".
-            $this->state->insertionMode = ParserInsertionMode::IN_HEAD;
-
-            // Reprocess the token.
-            $this->run($token);
+            $this->inHeadNodeScriptInsertionModeAnythingElse($token);
         }
+    }
+
+    /**
+     * The "in head noscript" insertion mode "anything else" steps.
+     *
+     * @param \Rowbot\DOM\Parser\Token\Token $token
+     *
+     * @return void
+     */
+    private function inHeadNoScriptInsertionModeAnythingElse(Token $token): void
+    {
+        // Parse error.
+        // Pop the current node (which will be a noscript element) from the
+        // stack of open elements; the new current node will be a head
+        // element.
+        $this->openElements->pop();
+
+        // Switch the insertion mode to "in head".
+        $this->state->insertionMode = ParserInsertionMode::IN_HEAD;
+
+        // Reprocess the token.
+        $this->run($token);
     }
 
     /**
