@@ -2883,7 +2883,10 @@ class TreeBuilder
         } elseif ($token instanceof EndTagToken && $tagName === 'table') {
             // If the stack of open elements does not have a table element in
             // table scope, this is a parse error; ignore the token.
-            if (false) {
+            if (!$this->openElements->hasElementInTableScope(
+                'table',
+                Namespaces::HTML
+            )) {
                 // Parse error.
                 // Ignore the token.
                 return;
@@ -2941,16 +2944,10 @@ class TreeBuilder
                 }
             }
 
-            if (!$typeAttr
-                || ($typeAttr && strcasecmp($typeAttr->value, 'hidden') !== 0)
-            ) {
-                // Parse error.
-                // Enable foster parenting, process the token using the rules
-                // for the "in body" insertion mode, and then disable foster
-                // parenting.
-                $this->fosterParenting = true;
-                $this->inBodyInsertionMode($token);
-                $this->fosterParenting = false;
+            if ($typeAttr === null || Utils::toASCIILowercase(
+                $typeArr->value
+            ) !== 'hidden') {
+                $this->inTableInsertionModeAnythingElse($token);
                 return;
             }
 
@@ -2990,13 +2987,25 @@ class TreeBuilder
             // mode.
             $this->inBodyInsertionMode($token);
         } else {
-            // Parse error.
-            // Enable foster parenting, process the token using the rules for
-            // the "in body" insertion mode, and then disable foster parenting.
-            $this->fosterParenting = true;
-            $this->inBodyInsertionMode($token);
-            $this->fosterParenting = false;
+            $this->inTableInsertionModeAnythingElse($token);
         }
+    }
+
+    /**
+     * The "in table" insertion mode's "anything else" steps.
+     *
+     * @param \Rowbot\DOM\Parser\Token\Token $token
+     *
+     * @return void
+     */
+    private function inTableInsertionModeAnythingElse(Token $token): void
+    {
+        // Parse error.
+        // Enable foster parenting, process the token using the rules for
+        // the "in body" insertion mode, and then disable foster parenting.
+        $this->fosterParenting = true;
+        $this->inBodyInsertionMode($token);
+        $this->fosterParenting = false;
     }
 
     /**
