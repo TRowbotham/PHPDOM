@@ -1764,7 +1764,7 @@ class TreeBuilder
 
             // Generate implied end tags, except for HTML elements with the
             // same tag name as the token.
-            $this->generateImpliedEndTags($tagName, Namespaces::HTML);
+            $this->generateImpliedEndTags($tagName);
 
             // If the current node is not an HTML element with the same tag
             // name as that of the token, then this is a parse error.
