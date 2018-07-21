@@ -1013,38 +1013,38 @@ class TreeBuilder
             )
         ) {
             // Act as described in the "anything else" entry below.
-
-            // Insert an HTML element for a "body" start tag token with no
-            // attributes.
-            $this->insertForeignElement(
-                new StartTagToken('body'),
-                Namespaces::HTML
-            );
-
-            // Switch the insertion mode to "in body".
-            $this->state->insertionMode = ParserInsertionMode::IN_BODY;
-
-            // Reprocess the current token
-            $this->run($token);
+            $this->afterHeadInsertionModeAnythingElse($token);
         } elseif (($token instanceof StartTagToken && $tagName === 'head')
             || $token instanceof EndTagToken
         ) {
             // Parse error.
             // Ignore the token
         } else {
-            // Insert an HTML element for a "body" start tag token with no
-            // attributes.
-            $this->insertForeignElement(
-                new StartTagToken('body'),
-                Namespaces::HTML
-            );
-
-            // Switch the insertion mode to "in body".
-            $this->state->insertionMode = ParserInsertionMode::IN_BODY;
-
-            // Reprocess the current token
-            $this->run($token);
+            $this->afterHeadInsertionModeAnythingElse($token);
         }
+    }
+
+    /**
+     * The "after head" insertion mode's "anything else" steps.
+     *
+     * @param \Rowbot\DOM\Parser\Token\Token $token
+     *
+     * @return void
+     */
+    private function afterHeadInsertionModeAnythingElse(Token $token): void
+    {
+        // Insert an HTML element for a "body" start tag token with no
+        // attributes.
+        $this->insertForeignElement(
+            new StartTagToken('body'),
+            Namespaces::HTML
+        );
+
+        // Switch the insertion mode to "in body".
+        $this->state->insertionMode = ParserInsertionMode::IN_BODY;
+
+        // Reprocess the current token
+        $this->run($token);
     }
 
     /**
