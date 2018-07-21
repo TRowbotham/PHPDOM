@@ -659,10 +659,10 @@ class TreeBuilder
                 && $this->state->encodingConfidence == ParserState::CONFIDENCE_TENTATIVE
             ) {
                 // TODO: change the encoding to the resulting encoding
-            } elseif ($node->hasAttribute('http-equiv') && strcasecmp(
-                $node->getAttribute('http-equiv'),
-                'Content-Type'
-            ) === 0 && $node->hasAttribute('content')) {
+            } elseif (($attr = $node->getAttribute('http-equiv')) !== null
+                && Utils::toASCIILowercase($attr) === 'content-type'
+                && $node->hasAttribute('content')
+            ) {
                 // TODO
             }
         } elseif ($token instanceof StartTagToken && $tagName === 'title') {
@@ -721,6 +721,13 @@ class TreeBuilder
                 // TODO
             }
 
+            // TODO: If the parser was invoked via the document.write() or
+            // document.writeln() methods, then optionally mark the script
+            // element as "already started". (For example, the user agent might
+            // use this clause to prevent execution of cross-origin scripts
+            // inserted via document.write() under slow network conditions, or
+            // when the page has already taken a long time to load.)
+
             // Insert the newly created element at the adjusted insertion
             // location.
             $this->insertNode($node, $adjustedInsertionLocation);
@@ -751,16 +758,7 @@ class TreeBuilder
             )
         ) {
             // Act as described in the "anything else" entry below.
-
-            // Pop the current node (which will be the head element) off the
-            // stack of open elements.
-            $this->openElements->pop();
-
-            // Switch the insertion mode to "after head".
-            $this->state->insertionMode = ParserInsertionMode::AFTER_HEAD;
-
-            // Reprocess the token.
-            $this->run($token);
+            $this->inHeadInsertionModeAnythingElse($token);
         } elseif ($token instanceof StartTagToken && $tagName === 'template') {
             // Insert an HTML element for the token.
             $this->insertForeignElement($token, Namespaces::HTML);
@@ -823,16 +821,28 @@ class TreeBuilder
             // Parse error.
             // Ignore the token.
         } else {
-            // Pop the current node (which will be the head element) off the
-            // stack of open elements.
-            $this->openElements->pop();
-
-            // Switch the insertion mode to "after head".
-            $this->state->insertionMode = ParserInsertionMode::AFTER_HEAD;
-
-            // Reprocess the token.
-            $this->run($token);
+            $this->inHeadInsertionModeAnythingElse($token);
         }
+    }
+
+    /**
+     * The "in head" insertion mode "anything else" steps.
+     *
+     * @param \Rowbot\DOM\Parser\Token\Token $token
+     *
+     * @return void
+     */
+    private function inHeadInsertionModeAnythingElse(Token $token): void
+    {
+        // Pop the current node (which will be the head element) off the
+        // stack of open elements.
+        $this->openElements->pop();
+
+        // Switch the insertion mode to "after head".
+        $this->state->insertionMode = ParserInsertionMode::AFTER_HEAD;
+
+        // Reprocess the token.
+        $this->run($token);
     }
 
     /**
