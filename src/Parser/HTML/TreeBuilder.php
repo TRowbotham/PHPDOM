@@ -4315,9 +4315,7 @@ class TreeBuilder
                     || $data === "\x20"
                 )
             )
-            || ($token instanceof StartTagToken
-                && $token->tagName === 'html'
-            )
+            || ($token instanceof StartTagToken && $token->tagName === 'html')
         ) {
             // Process the token using the rules for the "in body" insertion mode.
             $this->inBodyInsertionMode($token);
