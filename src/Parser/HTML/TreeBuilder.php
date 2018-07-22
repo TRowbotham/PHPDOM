@@ -3432,7 +3432,10 @@ class TreeBuilder
         } elseif ($token instanceof EndTagToken && $tagName === 'tr') {
             // If the stack of open elements does not have a tr element in
             // table scope, this is a parse error; ignore the token.
-            if (false) {
+            if (!$this->openElements->hasElementInTableScope(
+                'tr',
+                Namespaces::HTML
+            )) {
                 // Parse error.
                 // Ignore the token.
                 return;
@@ -3458,7 +3461,10 @@ class TreeBuilder
         ) {
             // If the stack of open elements does not have a tr element in
             // table scope, this is a parse error; ignore the token.
-            if (false) {
+            if (!$this->openElements->hasElementInTableScope(
+                'tr',
+                Namespaces::HTML
+            )) {
                 // Parse error.
                 // Ignore the token.
                 return;
@@ -3483,14 +3489,20 @@ class TreeBuilder
             // If the stack of open elements does not have an element in table
             // scope that is an HTML element with the same tag name as the
             // token, this is a parse error; ignore the token.
-            if (false) {
+            if (!$this->openElements->hasElementInTableScope(
+                $tagName,
+                Namespaces::HTML
+            )) {
                 // Parse error.
                 // Ignore the token.
             }
 
             // If the stack of open elements does not have a tr element in
             // table scope, ignore the token.
-            if (false) {
+            if (!$this->openElements->hasElementInTableScope(
+                'tr',
+                Namespaces::HTML
+            )) {
                 // Ignore the token.
                 return;
             }
