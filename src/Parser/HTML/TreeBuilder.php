@@ -4397,7 +4397,7 @@ class TreeBuilder
         if ($token instanceof CharacterToken && $token->data === "\x00") {
             // Parse error.
             // Insert a U+FFFD REPLACEMENT CHARACTER character.
-            $this->insertCharacter(EncodingUtils::mb_chr(0xFFFD));
+            $this->insertCharacter("\u{FFFD}");
         } elseif ($token instanceof CharacterToken
             && (($data = $token->data) === "\x09"
                 || $data === "\x0A"
@@ -4432,75 +4432,11 @@ class TreeBuilder
             )
         )) {
             // Parse error.
-
             // If the parser was originally created for the HTML fragment
             // parsing algorithm, then act as described in the "any other start
             // tag" entry below. (fragment case)
             if ($this->isFragmentCase) {
-                $adjustedCurrentNode = $this->getAdjustedCurrentNode();
-
-                // If the adjusted current node is an element in the MathML
-                // namespace, adjust MathML attributes for the token. (This
-                // fixes the case of MathML attributes that are not all
-                // lowercase.)
-                if ($adjustedCurrentNode instanceof Element
-                    && $adjustedCurrentNode->namespaceURI === Namespaces::MATHML
-                ) {
-                    $this->adjustMathMLAttributes($token);
-                }
-
-                // If the adjusted current node is an element in the SVG
-                // namespace, and the token's tag name is one of the ones in the
-                // first column of the following table, change the tag name to
-                // the name given in the corresponding cell in the second
-                // column. (This fixes the case of SVG elements that are not all
-                // lowercase.)
-                $elementInSVGNamespace = $adjustedCurrentNode instanceof Element
-                    && $adjustedCurrentNode->namespaceURI === Namespaces::SVG;
-
-                if ($elementInSVGNamespace
-                    && self::SVG_ELEMENTS[$tagName] !== null
-                ) {
-                    $token->tagName = self::SVG_ELEMENTS[$tagName];
-                }
-
-                // If the adjusted current node is an element in the SVG
-                // namespace, adjust SVG attributes for the token. (This fixes
-                // the case of SVG attributes that are not all lowercase.)
-                if ($elementInSVGNamespace) {
-                    $this->adjustSVGAttributes($token);
-                }
-
-                // Adjust foreign attributes for the token. (This fixes the use
-                // of namespaced attributes, in particular XLink in SVG.)
-                $this->adjustForeignAttributes($token);
-
-                // Insert a foreign element for the token, in the same namespace
-                // as the adjusted current node.
-                $this->insertForeignElement(
-                    $token,
-                    $adjustedCurrentNode->namespaceURI
-                );
-
-                if ($token->isSelfClosing()) {
-                    $currentNode = $this->openElements->bottom();
-
-                    if ($tagName === 'script'
-                        && $currentNode instanceof Element
-                        && $currentNode->namespaceURI === Namespaces::SVG
-                    ) {
-                        // TODO: Acknowledge the token's self-closing flag, and
-                        // then act as described in the steps for a "script" end
-                        // tag below.
-                        $token->acknowledge();
-                    } else {
-                        // Pop the current node off the stack of open elements
-                        // and acknowledge the token's self-closing flag.
-                        $this->openElements->pop();
-                        $token->acknowledge();
-                    }
-                }
-
+                $this->inForeignContentAnyOtherStartTag($token);
                 return;
             }
 
@@ -4525,77 +4461,12 @@ class TreeBuilder
             // Then, reprocess the token.
             $this->run($token);
         } elseif ($token instanceof StartTagToken) {
-            $adjustedCurrentNode = $this->getAdjustedCurrentNode();
-
-            // If the adjusted current node is an element in the MathML
-            // namespace, adjust MathML attributes for the token. (This fixes
-            // the case of MathML attributes that are not all lowercase.)
-            if ($adjustedCurrentNode instanceof Element
-                && $adjustedCurrentNode->namespaceURI === Namespaces::MATHML
-            ) {
-                $this->adjustMathMLAttributes($token);
-            }
-
-            // If the adjusted current node is an element in the SVG namespace,
-            // and the token's tag name is one of the ones in the first column
-            // of the following table, change the tag name to the name given in
-            // the corresponding cell in the second column. (This fixes the case
-            // of SVG elements that are not all lowercase.)
-            $elementInSVGNamespace = $adjustedCurrentNode instanceof Element
-                && $adjustedCurrentNode->namespaceURI === Namespaces::SVG;
-
-            if ($elementInSVGNamespace
-                && self::SVG_ELEMENTS[$tagName] !== null
-            ) {
-                $token->tagName = self::SVG_ELEMENTS[$tagName];
-            }
-
-            // If the adjusted current node is an element in the SVG namespace,
-            // adjust SVG attributes for the token. (This fixes the case of SVG
-            // attributes that are not all lowercase.)
-            if ($elementInSVGNamespace) {
-                $this->adjustSVGAttributes($token);
-            }
-
-            // Adjust foreign attributes for the token. (This fixes the use of
-            // namespaced attributes, in particular XLink in SVG.)
-            $this->adjustForeignAttributes($token);
-
-            // Insert a foreign element for the token, in the same namespace as
-            // the adjusted current node.
-            $this->insertForeignElement(
-                $token,
-                $adjustedCurrentNode->namespaceURI
-            );
-
-            if ($token->isSelfClosing()) {
-                $currentNode = $this->openElements->bottom();
-
-                if ($tagName === 'script'
-                    && $currentNode instanceof Element
-                    && $currentNode->namespaceURI === Namespaces::SVG
-                ) {
-                    // TODO: Acknowledge the token's self-closing flag, and then
-                    // act as described in the steps for a "script" end tag
-                    // below.
-                    $token->acknowledge();
-                } else {
-                    // Pop the current node off the stack of open elements and
-                    // acknowledge the token's self-closing flag.
-                    $this->openElements->pop();
-                    $token->acknowledge();
-                }
-            }
+            $this->inForeignContentAnyOtherStartTag($token);
         } elseif ($token instanceof EndTagToken
             && $tagName === 'script'
-            && ($currentNode = $this->openElements->bottom()) instanceof Element
-            && $currentNode->localName === 'script'
-            && $currentNode->namespaceURI === Namespaces::SVG
+            && $this->openElements->bottom() instanceof SVGScriptElement
         ) {
-            // Pop the current node off the stack of open elements.
-            $this->openElements->pop();
-
-            // TODO: More stuff that will probably never be fully supported.
+            $this->inForeignContentScriptEndTag($token);
         } elseif ($token instanceof EndTagToken) {
             // Initialise node to be the current node (the bottommost node of
             // the stack).
@@ -4612,7 +4483,7 @@ class TreeBuilder
             // Step "Loop".
             while ($iterator->valid()) {
                 // If node is the topmost element in the stack of open elements,
-                // abort these steps. (fragment case)
+                // then return. (fragment case)
                 if ($node === $this->openElements[0]) {
                     return;
                 }
@@ -4620,7 +4491,7 @@ class TreeBuilder
                 // If node's tag name, converted to ASCII lowercase, is the same
                 // as the tag name of the token, pop elements from the stack of
                 // open elements until node has been popped from the stack, and
-                // then abort these steps.
+                // then return.
                 if (Utils::toASCIILowercase($node->tagName) === $tagName) {
                     while (!$this->openElements->isEmpty()) {
                         $iterator->next();
@@ -4649,6 +4520,91 @@ class TreeBuilder
                 }
             }
         }
+    }
+
+    /**
+     * The in foreign content's "any other start tag" steps.
+     *
+     * @param \Rowbot\DOM\Parser\Token\StartTagToken $token
+     *
+     * @return void
+     */
+    private function inForeignContentAnyOtherStartTag(
+        StartTagToken $token
+    ): void {
+        $adjustedCurrentNode = $this->getAdjustedCurrentNode();
+        $isElementInSVGNamespace = false;
+        $namespace = $adjustedCurrentNode->namespaceURI;
+
+        // If the adjusted current node is an element in the MathML
+        // namespace, adjust MathML attributes for the token. (This
+        // fixes the case of MathML attributes that are not all
+        // lowercase.)
+        if ($namespace === Namespaces::MATHML) {
+            $this->adjustMathMLAttributes($token);
+        }
+
+        $isElementInSVGNamespace = $namespace === Namespaces::SVG;
+
+        // If the adjusted current node is an element in the SVG namespace,
+        // and the token's tag name is one of the ones in the first column
+        // of the following table, change the tag name to the name given in
+        // the corresponding cell in the second column. (This fixes the case
+        // of SVG elements that are not all lowercase.)
+        if ($isElementInSVGNamespace
+            && isset(self::SVG_ELEMENTS[$token->tagName])
+        ) {
+            $token->tagName = self::SVG_ELEMENTS[$token->tagName];
+        }
+
+        // If the adjusted current node is an element in the SVG namespace,
+        // adjust SVG attributes for the token. (This fixes the case of SVG
+        // attributes that are not all lowercase.)
+        if ($isElementInSVGNamespace) {
+            $this->adjustSVGAttributes($token);
+        }
+
+        // Adjust foreign attributes for the token. (This fixes the use of
+        // namespaced attributes, in particular XLink in SVG.)
+        $this->adjustForeignAttributes($token);
+
+        // Insert a foreign element for the token, in the same namespace as the
+        // adjusted current node.
+        $this->insertForeignElement($token, $namespace);
+
+        // If the token has its self-closing flag set...
+        if ($token->isSelfClosing()) {
+            // If the token's tag name is "script", and the new current node is
+            // in the SVG namespace...
+            if ($token->tagName === 'script'
+                && $this->openElements->bottom()->namespaceURI === Namespaces::SVG
+            ) {
+                // Acknowledge the token's self-closing flag, and then act as
+                // described in the steps for a "script" end tag below.
+                $token->acknowledge();
+                $this->inForeignContentScriptEndTag($token);
+            } else {
+                // Pop the current node off the stack of open elements and
+                // acknowledge the token's self-closing flag.
+                $this->openElements->pop();
+                $token->acknowledge();
+            }
+        }
+    }
+
+    /**
+     * The in foreign content's "script end tag" steps.
+     *
+     * @param \Rowbot\DOM\Parser\Token\TagToken $token
+     *
+     * @return void
+     */
+    private function inForeignContentScriptEndTag(TagToken $token): void
+    {
+        // Pop the current node off the stack of open elements.
+        $this->openElements->pop();
+
+        // TODO: More stuff that will probably never be fully supported.
     }
 
     /**
