@@ -3553,7 +3553,10 @@ class TreeBuilder
             // If the stack of open elements does not have an element in table
             // scope that is an HTML element with the same tag name as that of
             // the token, then this is a parse error; ignore the token.
-            if (false) {
+            if (!$this->openElements->hasElementInTableScope(
+                $tagName,
+                Namespaces::HTML
+            )) {
                 // Parse error.
                 // Ignore the token.
                 return;
@@ -3575,12 +3578,10 @@ class TreeBuilder
             // HTML element with the same tag name as the token has been popped
             // from the stack.
             while (!$this->openElements->isEmpty()) {
-                $isValid = $this->isHTMLElementWithName(
+                if ($this->isHTMLElementWithName(
                     $this->openElements->pop(),
                     $tagName
-                );
-
-                if ($isValid) {
+                )) {
                     break;
                 }
             };
@@ -3606,7 +3607,13 @@ class TreeBuilder
             // If the stack of open elements does not have a td or th element
             // in table scope, then this is a parse error; ignore the token.
             // (fragment case)
-            if (false) {
+            if (!$this->openElements->hasElementInTableScope(
+                'td',
+                Namespaces::HTML
+            ) || !$this->openElements->hasElementInTableScope(
+                'th',
+                Namespaces::HTML
+            )) {
                 // Parse error.
                 // Ignore the token.
                 return;
@@ -3636,7 +3643,10 @@ class TreeBuilder
             // If the stack of open elements does not have an element in table
             // scope that is an HTML element with the same tag name as that of
             // the token, then this is a parse error; ignore the token.
-            if (false) {
+            if (!$this->openElements->hasElementInTableScope(
+                $tagName,
+                Namespaces::HTML
+            )) {
                 // Parse error.
                 // Ignore the token.
                 return;
