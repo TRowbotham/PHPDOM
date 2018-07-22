@@ -3168,9 +3168,10 @@ class TreeBuilder
                 $this->run($token);
             }
         } elseif ($token instanceof EndTagToken
-            && ($tagName === 'caption'
+            && ($tagName === 'body'
                 || $tagName === 'col'
                 || $tagName === 'colgroup'
+                || $tagName === 'html'
                 || $tagName === 'tbody'
                 || $tagName === 'td'
                 || $tagName === 'tfoot'
