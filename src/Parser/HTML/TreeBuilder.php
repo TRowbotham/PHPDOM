@@ -3759,7 +3759,7 @@ class TreeBuilder
             $iterator->next();
 
             if ($this->openElements->bottom() instanceof HTMLOptionElement
-                && $this->openElements->current() instanceof HTMLOptGroupElement
+                && $iterator->current() instanceof HTMLOptGroupElement
             ) {
                 $this->openElements->pop();
             }
