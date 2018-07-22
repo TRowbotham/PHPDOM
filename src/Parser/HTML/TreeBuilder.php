@@ -2945,7 +2945,7 @@ class TreeBuilder
             }
 
             if ($typeAttr === null || Utils::toASCIILowercase(
-                $typeArr->value
+                $typeAttr->value
             ) !== 'hidden') {
                 $this->inTableInsertionModeAnythingElse($token);
                 return;
