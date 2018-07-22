@@ -3268,11 +3268,12 @@ class TreeBuilder
             ) {
                 // Parse error.
                 // Ignore the token.
-            } else {
-                // Otherwise, pop the current node from the stack of open
-                // elements.
-                $this->openElements->pop();
+                return;
             }
+
+            // Otherwise, pop the current node from the stack of open
+            // elements.
+            $this->openElements->pop();
 
             // Switch the insertion mode to "in table".
             $this->state->insertionMode = ParserInsertionMode::IN_TABLE;
