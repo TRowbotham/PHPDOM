@@ -154,7 +154,7 @@ final class ElementFactory
         'feColorMatrix'       => 'SVGFEColorMatrixElement',
         'feComponentTransfer' => 'SVGFEComponentTransferElement',
         'feComposite'         => 'SVGFECompositeElement',
-        'feConvolveMatrix'    => 'SVGFEConvolveMatrix',
+        'feConvolveMatrix'    => 'SVGFEConvolveMatrixElement',
         'feDiffuseLighting'   => 'SVGFEDiffuseLightingElement',
         'feDisplacementMap'   => 'SVGFEDisplacementMapElement',
         'feDistantLight'      => 'SVGFEDistantLightElement',
