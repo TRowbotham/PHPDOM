@@ -4970,7 +4970,7 @@ class TreeBuilder
      *
      * @return void
      */
-    private function generateImpliedEndTags($excluded = ''): void
+    private function generateImpliedEndTags(string $excluded = ''): void
     {
         $tags = [
             'dd'       => 0,
