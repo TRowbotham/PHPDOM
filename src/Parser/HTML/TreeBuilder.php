@@ -44,6 +44,12 @@ use Rowbot\DOM\Element\HTML\{
     Support\FormAssociable,
     Support\Resettable
 };
+use Rowbot\DOM\Element\SVG\{
+    SVGDescElement,
+    SVGForeignObjectElement,
+    SVGScriptElement,
+    SVGTitleElement
+};
 use Rowbot\DOM\Parser\{
     Bookmark,
     Collection\ActiveFormattingElementStack,
@@ -5326,16 +5332,12 @@ class TreeBuilder
             return false;
         }
 
-        $localName = $node->localName;
-        $namespace = $node->namespaceURI;
-        $token = $this->tokenRepository[$node];
-
-        if ($namespace === Namespaces::MATHML) {
-            if ($localName !== 'annotaion-xml') {
+        if ($node->namespaceURI === Namespaces::MATHML) {
+            if ($node->localName !== 'annotaion-xml') {
                 return false;
             }
 
-            foreach ($token->attributes as $attr) {
+            foreach ($this->tokenRepository[$node]->attributes as $attr) {
                 if ($attr->name === 'encoding') {
                     $value = Utils::toASCIILowercase($attr->value);
 
@@ -5346,13 +5348,11 @@ class TreeBuilder
                     }
                 }
             }
-        } elseif ($namespace === Namespaces::SVG) {
-            if ($localName === 'foreignObject'
-                || $localName === 'desc'
-                || $localName === 'title'
-            ) {
-                return true;
-            }
+        } elseif ($node instanceof SVGForeignObjectElement
+            || $node instanceof SVGDescElement
+            || $node instanceof SVGTitleElement
+        ) {
+            return true;
         }
 
         return false;
@@ -5501,12 +5501,11 @@ class TreeBuilder
                 || $localName === 'ms'
                 || $localName === 'mtext'
                 || $localName === 'annotation-xml';
-        } elseif ($namespace === Namespaces::SVG) {
-            $localName = $node->localName;
-
-            return $localName === 'foreignObject'
-                || $localName === 'desc'
-                || $localName === 'title';
+        } elseif ($node instanceof SVGForeignObjectElement
+            || $node instanceof SVGDescElement
+            || $node instanceof SVGTitleElement
+        ) {
+            return true;
         }
 
         return false;
