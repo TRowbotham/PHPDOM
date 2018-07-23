@@ -5217,22 +5217,20 @@ class TreeBuilder
      *                                                     element.
      * @param string                            $namespace The namespace that the created element will reside in.
      *
-     * @return \Rowbot\DOM\Element\Element|null The newly created element or void if the element could not be inserted
-     *                                          into the intended location.
+     * @return \Rowbot\DOM\Element\Element The newly created element.
      */
     private function insertForeignElement(
         TagToken $token,
         string $namespace
-    ): ?Element {
+    ): Element {
         // Let the adjusted insertion location be the appropriate place for
         // inserting a node.
-        $adjustedInsertionLocation =
-            $this->getAppropriatePlaceForInsertingNode();
+        $adjustedInsertionLocation = $this->getAppropriatePlaceForInsertingNode();
 
         // Create an element for the token in the given namespace, with the
         // intended parent being the element in which the adjusted insertion
         // location finds itself.
-        $node = $this->createElementForToken(
+        $element = $this->createElementForToken(
             $token,
             $namespace,
             $adjustedInsertionLocation[0]
@@ -5241,23 +5239,22 @@ class TreeBuilder
         // If it is possible to insert an element at the adjusted insertion
         // location, then insert the newly created element at the adjusted
         // insertion location.
-        //
-        // NOTE: If the adjusted insertion location cannot accept more elements,
-        // e.g. because it's a Document that already has an element child, then
-        // the newly created element is dropped on the floor.
         try {
-            $this->insertNode($node, $adjustedInsertionLocation);
+            $this->insertNode($element, $adjustedInsertionLocation);
         } catch (DOMException $e) {
-            return null;
+            // NOTE: If the adjusted insertion location cannot accept more
+            // elements, e.g. because it's a Document that already has an
+            // element child, then the newly created element is dropped on the
+            // floor.
         }
 
         // Push the element onto the stack of open elements so that it is the
         // new current node.
-        $this->openElements->push($node);
-        $this->tokenRepository->attach($node, $token);
+        $this->openElements->push($element);
+        $this->tokenRepository->attach($element, $token);
 
         // Return the newly created element.
-        return $node;
+        return $element;
     }
 
     /**
