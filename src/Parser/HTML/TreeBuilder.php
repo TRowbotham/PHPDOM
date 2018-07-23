@@ -67,7 +67,6 @@ use function count;
 use function is_string;
 use function mb_strpos;
 use function preg_match;
-use function strcasecmp;
 
 class TreeBuilder
 {
@@ -5337,12 +5336,14 @@ class TreeBuilder
             }
 
             foreach ($token->attributes as $attr) {
-                if ($attr->name === 'encoding'
-                    && (strcasecmp($attr->value, 'text/html')
-                        || strcasecmp($attr->value, 'application/xhtml+xml')
-                    )
-                ) {
-                    return true;
+                if ($attr->name === 'encoding') {
+                    $value = Utils::toASCIILowercase($attr->value);
+
+                    if ($value === 'text/html'
+                        || $value === 'application/xhtml+xml'
+                    ) {
+                        return true;
+                    }
                 }
             }
         } elseif ($namespace === Namespaces::SVG) {
