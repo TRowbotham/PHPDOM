@@ -4847,6 +4847,8 @@ class TreeBuilder
     }
 
     /**
+     * Fixes the case of SVG attributes that are not all lowercase.
+     *
      * @see https://html.spec.whatwg.org/multipage/syntax.html#adjust-svg-attributes
      *
      * @param \Rowbot\DOM\Parser\Token\TagToken $token
@@ -4858,7 +4860,7 @@ class TreeBuilder
         foreach ($token->attributes as $attr) {
             $name = $attr->name;
 
-            if (self::SVG_ATTRIBUTES[$name] !== null) {
+            if (isset(self::SVG_ATTRIBUTES[$name])) {
                 $attr->name = self::SVG_ATTRIBUTES[$name];
             }
         }
