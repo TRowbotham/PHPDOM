@@ -4873,7 +4873,7 @@ class TreeBuilder
      * @see https://html.spec.whatwg.org/multipage/syntax.html#create-an-element-for-the-token
      *
      * @param \Rowbot\DOM\Parser\Token\TagToken $token          The token currently being processed.
-     * @param string                            $namespace      The namespace of the element that is to be created.
+     * @param string|null                       $namespace      The namespace of the element that is to be created.
      * @param \Rowbot\DOM\Node                  $intendedParent The parent not which the newely created node will be
      *                                                          inserted in to.
      *
@@ -4881,7 +4881,7 @@ class TreeBuilder
      */
     private function createElementForToken(
         TagToken $token,
-        string $namespace,
+        ?string $namespace,
         Node $intendedParent
     ): Element {
         $document = $intendedParent->getNodeDocument();
@@ -5215,13 +5215,13 @@ class TreeBuilder
      *
      * @param \Rowbot\DOM\Parser\Token\TagToken $token     The start or end tag token that will be used to create a new
      *                                                     element.
-     * @param string                            $namespace The namespace that the created element will reside in.
+     * @param string|null                       $namespace The namespace that the created element will reside in.
      *
      * @return \Rowbot\DOM\Element\Element The newly created element.
      */
     private function insertForeignElement(
         TagToken $token,
-        string $namespace
+        ?string $namespace
     ): Element {
         // Let the adjusted insertion location be the appropriate place for
         // inserting a node.
