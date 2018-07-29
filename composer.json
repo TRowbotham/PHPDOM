@@ -1,5 +1,5 @@
 {
-    "name": "PHPJS",
+    "name": "rowbot/dom",
     "description": "A modern alternative to PHP's built in DOM classes.",
     "authors": [
         {
