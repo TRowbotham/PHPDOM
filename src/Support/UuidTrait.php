@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Support;
 
-use Ramsey\Uuid\Uuid;
-use Ramsey\Uuid\UuidInterface;
+use function bin2hex;
+use function random_bytes;
 
 trait UuidTrait
 {
@@ -12,6 +12,6 @@ trait UuidTrait
 
     public function uuid(): string
     {
-        return $this->uuid ?? ($this->uuid = Uuid::uuid4()->toString());
+        return $this->uuid ?? ($this->uuid = bin2hex(random_bytes(16)));
     }
 }

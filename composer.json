@@ -11,7 +11,6 @@
     "require": {
         "php": ">=7.1",
         "ext-mbstring": "*",
-        "ramsey/uuid": "^3.7",
         "rowbot/url": "^1.0"
     },
     "require-dev": {
