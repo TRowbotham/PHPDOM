@@ -2,7 +2,6 @@
 namespace Rowbot\DOM;
 
 use Rowbot\DOM\Element\HTML\HTMLBaseElement;
-use Rowbot\DOM\Element\HTML\HTMLElement;
 use Rowbot\DOM\Element\HTML\HTMLHeadElement;
 use Rowbot\DOM\Element\HTML\HTMLHtmlElement;
 use Rowbot\DOM\Element\Element;
@@ -338,18 +337,17 @@ class Document extends Node implements Stringable
     }
 
     /**
-     * Creates an HTMLElement with the specified tag name.
+     * Creates an Element with the specified tag name.
      *
      * @see https://dom.spec.whatwg.org/#dom-document-createelement
      *
      * @param string $localName The name of the element to create.
      *
-     * @return \Rowbot\DOM\Element\HTML\HTMLElement A known \Rowbot\DOM\Element\HTML\HTMLElement or
-     *                                              \Rowbot\DOM\Element\HTML\HTMLUnknownElement.
+     * @return \Rowbot\DOM\Element\HTML\Element\Element
      *
      * @throws \Rowbot\DOM\Exception\InvalidCharacterError
      */
-    public function createElement(string $localName): HTMLElement
+    public function createElement(string $localName): Element
     {
         // If localName does not match the Name production, then throw an
         // InvalidCharacterError.
