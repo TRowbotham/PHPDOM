@@ -54,12 +54,7 @@ final class DOMTokenList implements
         $this->element = $element;
         $attrList = $this->element->getAttributeList();
         $attrList->observe($this);
-        $attr = $attrList->getAttrByNamespaceAndLocalName(
-            null,
-            $this->attrLocalName
-        );
-        $value = $attr ? $attr->getValue() : '';
-
+        $value = $attrList->getAttrValue($attrLocalName);
         $this->onAttributeChanged(
             $this->element,
             $this->attrLocalName,
