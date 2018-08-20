@@ -3,10 +3,17 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Parser\HTML;
 
-use Rowbot\DOM\Attr;
+use Rowbot\DOM\{
+    Attr,
+    Comment,
+    DocumentType,
+    Element\Element,
+    Namespaces,
+    Node,
+    ProcessingInstruction,
+    Text
+};
 use Rowbot\DOM\Element\HTML\HTMLTemplateElement;
-use Rowbot\DOM\Node;
-use Rowbot\DOM\Namespaces;
 use Rowbot\DOM\Parser\FragmentSerializerInterface;
 
 use function preg_match;
@@ -35,78 +42,65 @@ class FragmentSerializer implements FragmentSerializerInterface
         }
 
         foreach ($node->childNodes as $currentNode) {
-            switch ($currentNode->nodeType) {
-                case Node::ELEMENT_NODE:
-                    switch ($currentNode->namespaceURI) {
-                        case Namespaces::HTML:
-                        case Namespaces::MATHML:
-                        case Namespaces::SVG:
-                            $tagname = $currentNode->localName;
+            if ($currentNode instanceof Element) {
+                switch ($currentNode->namespaceURI) {
+                    case Namespaces::HTML:
+                    case Namespaces::MATHML:
+                    case Namespaces::SVG:
+                        $tagname = $currentNode->localName;
 
-                            break;
+                        break;
 
-                        default:
-                            $tagname = $currentNode->tagName;
-                    }
+                    default:
+                        $tagname = $currentNode->tagName;
+                }
 
-                    $s .= '<' . $tagname;
+                $s .= '<' . $tagname;
 
-                    foreach ($currentNode->getAttributeList() as $attr) {
-                        $s .= ' ' . $this->serializeContentAttributeName($attr);
-                        $s .= '="' . $this->escapeHTMLString(
-                            $attr->getValue(),
-                            true
-                        ) . '"';
-                    }
+                foreach ($currentNode->getAttributeList() as $attr) {
+                    $s .= ' ' . $this->serializeContentAttributeName($attr);
+                    $s .= '="' . $this->escapeHTMLString(
+                        $attr->getValue(),
+                        true
+                    ) . '"';
+                }
 
-                    $s .= '>';
-                    $localName = $currentNode->localName;
+                $s .= '>';
+                $localName = $currentNode->localName;
 
-                    // If the current node's local name is a known void element,
-                    // then move on to current node's next sibling, if any.
-                    if (preg_match(self::VOID_TAGS, $localName)) {
-                        continue 2;
-                    }
+                // If the current node's local name is a known void element,
+                // then move on to current node's next sibling, if any.
+                if (preg_match(self::VOID_TAGS, $localName)) {
+                    continue;
+                }
 
-                    $s .= $this->serializeFragment($currentNode);
-                    $s .= '</' . $tagname . '>';
+                $s .= $this->serializeFragment($currentNode);
+                $s .= '</' . $tagname . '>';
+            } elseif ($currentNode instanceof Text) {
+                $localName = $currentNode->parentNode->localName;
 
-                    break;
-
-                case Node::TEXT_NODE:
-                    $localName = $currentNode->parentNode->localName;
-
-                    if ($localName === 'style'
-                        || $localName === 'script'
-                        || $localName === 'xmp'
-                        || $localName === 'iframe'
-                        || $localName === 'noembed'
-                        || $localName === 'noframes'
-                        || $localName === 'plaintext'
-                        || $localName === 'noscript'
-                    ) {
-                        $s .= $currentNode->data;
-                    } else {
-                        $s .= $this->escapeHTMLString($currentNode->data);
-                    }
-
-                    break;
-
-                case Node::COMMENT_NODE:
-                    $s .= '<!--' . $currentNode->data . '-->';
-
-                    break;
-
-                case Node::PROCESSING_INSTRUCTION_NODE:
-                    $s .= '<?' . $currentNode->target . ' ' .
-                        $currentNode->data . '>';
-
-                    break;
-
-                case Node::DOCUMENT_TYPE_NODE:
-                    $s .= '<!DOCTYPE ' . $currentNode->name . '>';
-
-                    break;
+                if ($localName === 'style'
+                    || $localName === 'script'
+                    || $localName === 'xmp'
+                    || $localName === 'iframe'
+                    || $localName === 'noembed'
+                    || $localName === 'noframes'
+                    || $localName === 'plaintext'
+                    || $localName === 'noscript'
+                ) {
+                    $s .= $currentNode->data;
+                } else {
+                    $s .= $this->escapeHTMLString($currentNode->data);
+                }
+            } elseif ($currentNode instanceof Comment) {
+                $s .= '<!--' . $currentNode->data . '-->';
+            } elseif ($currentNode instanceof ProcessingInstruction) {
+                $s .= '<?' . $currentNode->target
+                    . ' '
+                    . $currentNode->data
+                    . '>';
+            } elseif ($currentNode instanceof DocumentType) {
+                $s .= '<!DOCTYPE ' . $currentNode->name . '>';
             }
         }
 
