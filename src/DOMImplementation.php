@@ -33,9 +33,9 @@ final class DOMImplementation
      *
      * @see https://dom.spec.whatwg.org/#dom-domimplementation-createdocument
      *
-     * @param string                        $namespace     The namespace of the element to be created, which becomes the
+     * @param string|null                   $namespace     The namespace of the element to be created, which becomes the
      *                                                     document's document element.
-     * @param string                        $qualifiedName The local name of the element that is to become the
+     * @param string|null                   $qualifiedName The local name of the element that is to become the
      *                                                     document's document element.
      * @param \Rowbot\DOM\DocumentType|null $doctype       (optional) A DocumentType object to be appended to the
      *                                                     document.
@@ -47,11 +47,15 @@ final class DOMImplementation
      */
     public function createDocument(
         ?string $namespace,
-        string $qualifiedName,
+        ?string $qualifiedName,
         DocumentType $doctype = null
     ): XMLDocument {
         $document = new XMLDocument();
         $element = null;
+
+        if ($qualifiedName === null) {
+            $qualifiedName = '';
+        }
 
         if ($qualifiedName !== '') {
             $element = ElementFactory::createNS(
