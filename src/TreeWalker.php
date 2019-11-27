@@ -159,6 +159,8 @@ final class TreeWalker
                 $sibling = $temp->nextSibling;
 
                 if ($sibling !== null) {
+                    $node = $sibling;
+
                     break;
                 }
 
