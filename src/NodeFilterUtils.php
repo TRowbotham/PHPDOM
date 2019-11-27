@@ -7,6 +7,7 @@ use Exception;
 use Rowbot\DOM\Exception\InvalidStateError;
 
 use function call_user_func;
+use function is_callable;
 
 trait NodeFilterUtils
 {
@@ -14,6 +15,37 @@ trait NodeFilterUtils
      * @var bool
      */
     private $isActive = false;
+
+    /**
+     * @param \Rowbot\DOM\NodeFilter|callable|null
+     */
+    private function getNodeFilter($filter): ?NodeFilter
+    {
+        if ($filter instanceof NodeFilter) {
+            return $filter;
+        }
+
+        if (is_callable($filter)) {
+            return new class ($filter) implements NodeFilter {
+                /** @var callable */
+                private $filter;
+
+                /**
+                 * @param callable $filter
+                 */
+                public function __construct($filter) {
+                    $this->filter = $filter;
+                }
+
+                public function acceptNode(Node $node): int
+                {
+                    return call_user_func($this->filter, $node);
+                }
+            };
+        }
+
+        return null;
+    }
 
     /**
      * Filters a node.
@@ -53,17 +85,12 @@ trait NodeFilterUtils
 
         $this->isActive = true;
 
-
         try {
             // Let $result be the return value of call a user object's operation
             // with traverser's filter, "acceptNode", and Node. If this throws
             // an exception, then unset traverser's active flag and rethrow the
             // exception.
-            if ($this->filter instanceof NodeFilter) {
-                $result = $this->filter->acceptNode($node);
-            } else {
-                $result = call_user_func($this->filter, $node);
-            }
+            $result = $this->filter->acceptNode($node);
         } catch (Exception $e) {
             $this->isActive = false;
             throw $e;

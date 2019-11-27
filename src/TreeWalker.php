@@ -3,8 +3,6 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM;
 
-use function is_callable;
-
 /**
  * @see https://dom.spec.whatwg.org/#treewalker
  * @see https://developer.mozilla.org/en-US/docs/Web/API/TreeWalker
@@ -24,7 +22,7 @@ final class TreeWalker
     private $currentNode;
 
     /**
-     * @var \Rowbot\DOM\NodeFilter|callable|null
+     * @var \Rowbot\DOM\NodeFilter|null
      */
     private $filter;
 
@@ -53,11 +51,7 @@ final class TreeWalker
         $filter = null
     ) {
         $this->currentNode = $root;
-
-        if ($filter instanceof NodeFilter || is_callable($filter)) {
-            $this->filter = $filter;
-        }
-
+        $this->filter = $this->getNodeFilter($filter);
         $this->root = $root;
         $this->whatToShow = $whatToShow;
     }

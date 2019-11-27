@@ -3,8 +3,6 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM;
 
-use function is_callable;
-
 /**
  * @see https://dom.spec.whatwg.org/#nodeiterator
  * @see https://developer.mozilla.org/en-US/docs/Web/API/NodeIterator
@@ -20,7 +18,7 @@ final class NodeIterator
     use NodeFilterUtils;
 
     /**
-     * @var \Rowbot\DOM\NodeFilter|callable|null
+     * @var \Rowbot\DOM\NodeFilter|null
      */
     private $filter;
 
@@ -58,12 +56,7 @@ final class NodeIterator
         int $whatToShow = NodeFilter::SHOW_ALL,
         $filter = null
     ) {
-        $this->filter = null;
-
-        if ($filter instanceof NodeFilter || is_callable($filter)) {
-            $this->filter = $filter;
-        }
-
+        $this->filter = $this->getNodeFilter($filter);
         $this->pointerBeforeReferenceNode = true;
         $this->referenceNode = $root;
         $this->root = $root;
