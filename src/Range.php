@@ -801,7 +801,7 @@ final class Range extends AbstractRange implements Stringable
             $referenceNode = $referenceNode->nextSibling;
         }
 
-        if (!$node->parentNode) {
+        if ($node->parentNode) {
             $node->parentNode->removeNode($node);
         }
 
