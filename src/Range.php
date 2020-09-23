@@ -760,7 +760,7 @@ final class Range extends AbstractRange implements Stringable
      *
      * @param \Rowbot\DOM\Node $node The Node to be inserted.
      *
-     * @retur void
+     * @return void
      *
      * @throws \Rowbot\DOM\Exception\HierarchyRequestError
      */
