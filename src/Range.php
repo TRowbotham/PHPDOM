@@ -794,7 +794,7 @@ final class Range extends AbstractRange implements Stringable
         $parent->ensurePreinsertionValidity($node, $referenceNode);
 
         if ($this->startNode instanceof Text) {
-            $this->startNode->splitText($this->startOffset);
+            $referenceNode = $this->startNode->splitText($this->startOffset);
         }
 
         if ($node === $referenceNode) {
