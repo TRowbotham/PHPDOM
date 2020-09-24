@@ -880,6 +880,19 @@ final class Range extends AbstractRange implements Stringable
     }
 
     /**
+     * The detach() method, when invoked, must do nothing.
+     *
+     * NOTE: Its functionality (disabling a Range object) was removed, but the method itself is preserved for
+     * compatibility.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-range-detach
+     */
+    public function detach(): void
+    {
+        // Do nothing.
+    }
+
+    /**
      * Returns a boolean indicating whether the given point is within the Range.
      *
      * @see https://dom.spec.whatwg.org/#dom-range-ispointinrange
