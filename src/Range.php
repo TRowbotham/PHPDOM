@@ -1010,14 +1010,16 @@ final class Range extends AbstractRange implements Stringable
         }
 
         $offset = $node->getTreeIndex();
-        $bp = [$parent, $offset];
+        $position1 = $this->computePosition(
+            [$parent, $offset],
+            [$this->endNode, $this->endOffset]
+        );
+        $position2 = $this->computePosition(
+            [$parent, $offset + 1],
+            [$this->startNode, $this->startOffset]
+        );
 
-        if ($this->computePosition($bp, [
-                $this->endNode, $this->endOffset
-            ]) === 'before' && $this->computePosition($bp, [
-                $this->startNode, $this->startOffset + 1
-            ]) === 'after'
-        ) {
+        if ($position1 === 'before' && $position2 === 'after') {
             return true;
         }
 
