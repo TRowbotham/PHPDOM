@@ -78,7 +78,7 @@ final class Range extends AbstractRange implements Stringable
      */
     public function setStart(Node $node, int $offset): void
     {
-        $this->setStartOrEnd('start', $node, $offset);
+        $this->setStartOrEnd('start', $node, Utils::unsignedLong($offset));
     }
 
     /**
@@ -93,7 +93,7 @@ final class Range extends AbstractRange implements Stringable
      */
     public function setEnd(Node $node, int $offset): void
     {
-        $this->setStartOrEnd('end', $node, $offset);
+        $this->setStartOrEnd('end', $node, Utils::unsignedLong($offset));
     }
 
     /**
@@ -907,6 +907,7 @@ final class Range extends AbstractRange implements Stringable
      */
     public function isPointInRange(Node $node, int $offset): bool
     {
+        $offset = Utils::unsignedLong($offset);
         $root = $this->startNode->getRootNode();
 
         if ($node->getRootNode() !== $root) {
@@ -952,6 +953,7 @@ final class Range extends AbstractRange implements Stringable
      */
     public function comparePoint(Node $node, int $offset): int
     {
+        $offset = Utils::unsignedLong($offset);
         $root = $this->startNode->getRootNode();
 
         if ($node->getRootNode() !== $root) {
@@ -1301,6 +1303,8 @@ final class Range extends AbstractRange implements Stringable
      */
     private function setStartOrEnd(string $type, Node $node, int $offset): void
     {
+        $offset = Utils::unsignedLong($offset);
+
         if ($node instanceof DocumentType) {
             throw new InvalidNodeTypeError();
         }
