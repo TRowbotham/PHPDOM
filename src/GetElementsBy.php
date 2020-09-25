@@ -69,8 +69,8 @@ trait GetElementsBy
                     && $node->localName === Utils::toASCIILowercase(
                         $qualifiedName
                     ))
-                    || ($node->namespaceURI === Namespaces::HTML
-                    && $node->localName === $localName);
+                    || ($node->namespaceURI !== Namespaces::HTML
+                    && $node->localName === $qualifiedName);
 
                 if ($shouldAccept) {
                     return NodeFilter::FILTER_ACCEPT;
