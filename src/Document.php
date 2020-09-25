@@ -26,6 +26,8 @@ use function method_exists;
 use function preg_match;
 use function strtolower;
 
+use const PHP_SAPI;
+
 /**
  * @see https://dom.spec.whatwg.org/#interface-document
  * @see https://html.spec.whatwg.org/#document
@@ -996,7 +998,13 @@ class Document extends Node implements Stringable
      */
     protected function getURL(): URLRecord
     {
-        if (!isset($this->url)) {
+        if (isset($this->url)) {
+            return $this->url;
+        }
+
+        if (PHP_SAPI === 'cli') {
+            $this->url = URLParser::parseUrl('about:blank');
+        } else {
             $ssl = isset($_SERVER['HTTPS']) && $_SERVER["HTTPS"] == 'on';
             $port = in_array($_SERVER['SERVER_PORT'], array(80, 443)) ?
                 '' : ':' . $_SERVER['SERVER_PORT'];
@@ -1005,7 +1013,6 @@ class Document extends Node implements Stringable
 
             $this->url = URLParser::parseUrl($url);
         }
-
 
         return $this->url;
     }
