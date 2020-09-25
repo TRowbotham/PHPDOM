@@ -1630,7 +1630,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                 if ($attr->namespaceURI === Namespaces::XMLNS) {
                     $localName = $attr->localName;
 
-                    if (($$attr->prefix === 'xmlns' && $localName === $prefix)
+                    if (($attr->prefix === 'xmlns' && $localName === $prefix)
                         || ($prefix === null && $localName === 'xmlns')
                     ) {
                         if ($attr->value !== '') {
