@@ -84,9 +84,9 @@ final class DOMTokenList implements
      * @param string $name
      * @param string $value
      *
-     * @return string
+     * @return void
      */
-    public function __set(string $name, string $value): string
+    public function __set(string $name, string $value)
     {
         switch ($name) {
             case 'value':
