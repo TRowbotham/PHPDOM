@@ -20,6 +20,10 @@ trait NonElementParentNode
      */
     public function getElementById(string $elementId): ?Element
     {
+        if ($elementId === '') {
+            return null;
+        }
+
         $tw = new TreeWalker(
             $this,
             NodeFilter::SHOW_ELEMENT,
