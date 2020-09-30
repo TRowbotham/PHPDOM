@@ -1595,7 +1595,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
         }
 
         foreach ($element->getAttributeList() as $attr) {
-            if ($attr->getPrefix() === 'xmlns'
+            if ($attr->prefix === 'xmlns'
                 && $attr->getValue() === $namespace
             ) {
                 return $attr->getLocalName();
@@ -1603,7 +1603,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
         }
 
         if ($element->parentElement !== null) {
-            return $this->locatePrefix($element, $namespace);
+            return $this->locatePrefix($element->parentElement, $namespace);
         }
 
         return null;
