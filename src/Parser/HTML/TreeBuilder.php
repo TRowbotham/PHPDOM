@@ -2406,7 +2406,7 @@ class TreeBuilder
                 // node, then stop these steps.
                 while (!$this->openElements->isEmpty()) {
                     if ($this->openElements->pop() === $node) {
-                        break;
+                        break 2;
                     }
                 }
             } elseif ($this->isSpecialNode($node)) {
