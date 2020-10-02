@@ -370,6 +370,8 @@ final class Range extends AbstractRange implements Stringable
                 $originalEndOffset - $originalStartOffset,
                 ''
             );
+
+            return;
         }
 
         $nodesToRemove = array();
