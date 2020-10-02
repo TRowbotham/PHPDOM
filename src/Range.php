@@ -816,14 +816,22 @@ final class Range extends AbstractRange implements Stringable
      * @throws \Rowbot\DOM\Exception\InvalidNodeTypeError
      * @throws \Rowbot\DOM\Exception\InvalidStateError
      */
-    public function surroundCountents(Node $newParent): void
+    public function surroundContents(Node $newParent): void
     {
-        if ((!($this->startNode instanceof Text)
-                && $this->isPartiallyContainedNode($this->startNode))
-            || (!($this->endNode instanceof Text)
-                && $this->isPartiallyContainedNode($this->endNode))
-        ) {
-            throw new InvalidStateError();
+        $commonAncestor = Node::getCommonAncestor($this->startNode, $this->endNode);
+
+        if ($commonAncestor) {
+            $tw = new TreeWalker($commonAncestor, NodeFilter::SHOW_ALL, function (Node $node): int {
+                if (!$node instanceof Text && $this->isPartiallyContainedNode($node)) {
+                    return NodeFilter::FILTER_ACCEPT;
+                }
+
+                return NodeFilter::FILTER_SKIP;
+            });
+
+            if ($tw->nextNode()) {
+                throw new InvalidStateError();
+            }
         }
 
         if ($newParent instanceof Document
