@@ -14,6 +14,7 @@ use Rowbot\DOM\Support\Stringable;
 
 use function array_reverse;
 use function in_array;
+use function iterator_to_array;
 use function mb_substr;
 
 /**
@@ -451,7 +452,7 @@ final class Range extends AbstractRange implements Stringable
             ->createDocumentFragment();
 
         if ($this->startNode === $this->endNode
-            && $this->startOffset == $this->endOffset
+            && $this->startOffset === $this->endOffset
         ) {
             return $fragment;
         }
@@ -499,7 +500,7 @@ final class Range extends AbstractRange implements Stringable
         $lastPartiallyContainedChild = null;
 
         if (!$originalEndNode->contains($originalStartNode)) {
-            foreach (array_reverse($commonAncestor->childNodes) as $node) {
+            foreach (array_reverse(iterator_to_array($commonAncestor->childNodes)) as $node) {
                 if ($this->isPartiallyContainedNode($node)) {
                     $lastPartiallyContainedChild = $node;
                     break;
@@ -507,30 +508,16 @@ final class Range extends AbstractRange implements Stringable
             }
         }
 
-        $tw = new TreeWalker(
-            $commonAncestor,
-            NodeFilter::SHOW_ALL,
-            function ($node) {
-                if ($this->isFullyContainedNode($node)) {
-                    return NodeFilter::FILTER_ACCEPT;
-                }
-
-                return NodeFilter::FILTER_SKIP;
-            }
-        );
-        $containsDocType = false;
         $containedChildren = [];
 
-        while (($node = $tw->nextNode())) {
-            if (!$containsDocType && $node instanceof DocumentType) {
-                $containsDocType = true;
+        foreach ($commonAncestor->childNodes as $childNode) {
+            if ($this->isFullyContainedNode($childNode)) {
+                if ($childNode instanceof DocumentType) {
+                    throw new HierarchyRequestError();
+                }
+
+                $containedChildren[] = $childNode;
             }
-
-            $containedChildren[] = $node;
-        }
-
-        if ($containsDocType) {
-            throw new HierarchyRequestError();
         }
 
         if ($originalStartNode->contains($originalEndNode)) {
@@ -538,22 +525,15 @@ final class Range extends AbstractRange implements Stringable
             $newOffset = $originalStartOffset;
         } else {
             $referenceNode = $originalStartNode;
+            $parent = $referenceNode->parentNode;
 
-            while (true) {
-                $parent = $referenceNode->parentNode;
-
-                if (!$parent || $parent->contains($originalEndNode)) {
-                    break;
-                }
-
+            while ($parent && !$parent->contains($originalEndNode)) {
                 $referenceNode = $parent;
-
-                // If reference node’s parent is null, it would be the root of
-                // range, so would be an inclusive ancestor of original end
-                // node, and we could not reach this point.
-                $newNode = $referenceNode->parentNode;
-                $newOffset = $referenceNode->getTreeIndex();
+                $parent = $referenceNode->parentNode;
             }
+
+            $newNode = $parent;
+            $newOffset = $referenceNode->getTreeIndex() + 1;
         }
 
         if ($firstPartiallyContainedChild instanceof Text
