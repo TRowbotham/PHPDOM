@@ -1104,6 +1104,7 @@ final class Range extends AbstractRange implements Stringable
     public function createContextualFragment(string $fragment)
     {
         $node = $this->startNode;
+        $element = null;
 
         if ($node instanceof Document || $node instanceof DocumentFragment) {
             $element = null;
@@ -1132,16 +1133,16 @@ final class Range extends AbstractRange implements Stringable
                 'body',
                 Namespaces::HTML
             );
-
-            // Let fragment node be the result of invoking the fragment parsing
-            // algorithm with fragment as markup, and element as the context
-            // element.
-            $fragmentNode = ParserFactory::parseFragment($fragment, $element);
-
-            // TODO: Unmark all scripts in fragment node as "already started".
-
-            return $fragmentNode;
         }
+
+        // Let fragment node be the result of invoking the fragment parsing
+        // algorithm with fragment as markup, and element as the context
+        // element.
+        $fragmentNode = ParserFactory::parseFragment($fragment, $element);
+
+        // TODO: Unmark all scripts in fragment node as "already started" and as "parser-inserted".
+
+        return $fragmentNode;
     }
 
     /**
