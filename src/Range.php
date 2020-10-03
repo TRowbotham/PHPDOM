@@ -748,10 +748,10 @@ final class Range extends AbstractRange implements Stringable
      */
     public function insertNode(Node $node): void
     {
-        if (($this->startNode instanceof ProcessingInstruction
-                || $this->startNode instanceof Comment)
-            || ($this->startNode instanceof Text
-                && $this->startNode->parentNode === null)
+        if (
+            $this->startNode instanceof ProcessingInstruction || $this->startNode instanceof Comment
+            || ($this->startNode instanceof Text && $this->startNode->parentNode === null)
+            || $this->startNode === $node
         ) {
             throw new HierarchyRequestError();
         }
@@ -761,13 +761,7 @@ final class Range extends AbstractRange implements Stringable
         if ($this->startNode instanceof Text) {
             $referenceNode = $this->startNode;
         } else {
-            if (isset($this->startNode->childNodes[$this->startOffset])) {
-                $referenceNode = $this
-                    ->startNode
-                    ->childNodes[$this->startOffset];
-            } else {
-                $referenceNode = null;
-            }
+            $referenceNode = $this->startNode->childNodes[$this->startOffset] ?? null;
         }
 
         $parent = !$referenceNode
