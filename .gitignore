@@ -47,5 +47,6 @@ Temporary Items
 *.sublime-*
 
 composer.lock
-tests/
-vendor/
+/vendor/
+/build/
+.phpunit.result.cache
