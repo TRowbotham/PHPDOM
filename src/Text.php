@@ -124,7 +124,7 @@ class Text extends CharacterData
                 $startContainer = $range->startContainer;
                 $startOffset = $range->startOffset;
 
-                if ($startContainer === $this
+                if ($startContainer === $this->parentNode
                     && $startOffset == $treeIndex + 1
                 ) {
                     $range->setStart($startContainer, $startOffset + 1);
@@ -135,7 +135,7 @@ class Text extends CharacterData
                 $endContainer = $range->endContainer;
                 $endOffset = $range->endOffset;
 
-                if ($endContainer === $this && $endOffset == $treeIndex + 1) {
+                if ($endContainer === $this->parentNode && $endOffset == $treeIndex + 1) {
                     $range->setEnd($endContainer, $endOffset + 1);
                 }
             }
