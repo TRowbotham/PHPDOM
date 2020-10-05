@@ -1045,17 +1045,22 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
     public function preinsertNode(self $node, self $child = null): self
     {
         $parent = $this;
+
+        // 1. Ensure pre-insertion validity of node into parent before child.
         $parent->ensurePreinsertionValidity($node, $child);
+
+        // 2. Let referenceChild be child.
         $referenceChild = $child;
 
+        // 3. If referenceChild is node, then set referenceChild to node’s next sibling.
         if ($referenceChild === $node) {
             $referenceChild = $node->nextSibling;
         }
 
-        // The DOM4 spec states that nodes should be implicitly adopted
-        $parent->nodeDocument->doAdoptNode($node);
+        // 4. Insert node into parent before referenceChild.
         $parent->insertNode($node, $referenceChild);
 
+        // 5. Return node.
         return $node;
     }
 
@@ -1072,116 +1077,81 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      * @param bool                  $suppressObservers (optional) If true, mutation events are ignored for this
      *                                                 operation.
      */
-    public function insertNode(
-        Node $node,
-        ?Node $child,
-        bool $suppressObservers = false
-    ) {
-        $parent = $this;
+    public function insertNode(Node $node, ?Node $child, bool $suppressObservers = false): void
+    {
         $nodeIsFragment = $node instanceof DocumentFragment;
 
-        // Let count be the number of children of node if it is a
-        // DocumentFragment, and one otherwise.
-        $count = $nodeIsFragment ? count($node->childNodes) : 1;
-
-        // If child is non-null, then...
-        if ($child !== null) {
-            $childIndex = $child->parentNode->childNodes->indexOf($child);
-
-            foreach (Range::getRangeCollection() as $range) {
-                $startContainer = $range->startContainer;
-                $startOffset = $range->startOffset;
-                $endContainer = $range->endContainer;
-                $endOffset = $range->endOffset;
-
-                // For each live range whose start node is parent and start
-                // offset is greater than child's index, increase its start
-                // offset by count.
-                if ($startContainer === $parent && $startOffset > $childIndex) {
-                    $range->setStart($startContainer, $startOffset + $count);
-                }
-
-                // For each live range whose end node is parent and end offset
-                // is greater than child's index, increase its end offset by
-                // count.
-                if ($endContainer === $parent && $endOffset > $childIndex) {
-                    $range->setEnd($endContainer, $endOffset + $count);
-                }
-            }
-        }
-
-        // Let nodes be node's children if node is a DocumentFragment node, and
-        // a list containing solely node otherwise.
+        // 1. Let nodes be node’s children, if node is a DocumentFragment node; otherwise « node ».
         $nodes = $nodeIsFragment ? $node->childNodes->all() : [$node];
 
-        // If node is a DocumentFragment node, remove its children with the
-        // suppress observers flag set.
+        // 2. Let count be nodes’s size.
+        $count = count($nodes);
+
+        // 3. If count is 0, then return.
+        if ($count === 0) {
+            return;
+        }
+
+        // 4. If node is a DocumentFragment node, then:
         if ($nodeIsFragment) {
-            foreach (clone $node->childNodes as $childNode) {
+            // 4.1. Remove its children with the suppress observers flag set.
+            foreach ($nodes as $childNode) {
                 $node->removeNode($childNode, true);
             }
         }
 
-        // TODO: If node is a DocumentFragment node, then queue a tree
-        // mutation record for node, with « », nodes, null, and null. This step
-        // intentionally does not pay attention to the suppress observers flag.
+        // 5. If child is non-null, then:
+        if ($child) {
+            $ranges = Range::getRangeCollection();
+            $index = $child->getTreeIndex();
 
-        // Let previousSibling be child's previous sibling or parent's last
-        // child if child is null.
-        $previousSibling = $child !== null
-            ? $child->previousSibling
-            : $parent->lastChild;
+            // 5.1. For each live range whose start node is parent and start offset is greater than
+            // child’s index, increase its start offset by count.
+            foreach ($ranges as $range) {
+                $startNode = $range->startContainer;
+                $startOffset = $range->startOffset;
 
-        // For each node in nodes, in tree order...
-        foreach ($nodes as $node) {
-            if ($child === null) {
-                $last = $this->childNodes->last();
-            }
-
-            // If child is null, then append node to parent's children.
-            // Otherwise, insert node into parent's children before child's
-            // index.
-            if ($child === null) {
-                $parent->childNodes->append($node);
-            } else {
-                $parent->childNodes->insertBefore($child, $node);
-            }
-
-            $node->parentNode = $parent;
-
-            // TODO: If parent is a shadow host and node is a slotable, then
-            // assign a slot for node.
-
-            // TODO: If node is a Text node, run the child text content change
-            // steps for parent.
-
-            // TODO: If parent's root is a shadow root, and parent is a slot
-            // whose assigned nodes is the empty list, then run signal a slot
-            // change for parent.
-
-            // TODO: Run assign slotables for a tree with node's root.
-
-            // TODO: For each shadow-including inclusive descendant
-            // inclusiveDescendant of node, in shadow-including tree order...
-            $iter = new NodeIterator($node);
-
-            while (($inclusiveDescendant = $iter->nextNode())) {
-                // Run the insertion steps with inclusiveDescendant.
-                if (method_exists($inclusiveDescendant, 'doInsertingSteps')) {
-                    $inclusiveDescendant->doInsertingSteps(
-                        $inclusiveDescendant
-                    );
+                if ($startNode === $this && $startOffset > $index) {
+                    $range->setStart($startNode, $startOffset + $count);
                 }
             }
 
-            if ($child !== null) {
+            // 5.2. For each live range whose end node is parent and end offset is greater than
+            // child’s index, increase its end offset by count.
+            foreach ($ranges as $range) {
+                $endNode = $range->endContainer;
+                $endOffset = $range->endOffset;
+
+                if ($endNode === $this && $endOffset > $index) {
+                    $range->setStart($endNode, $endOffset + $count);
+                }
+            }
+        }
+
+        // 6. Let previousSibling be child’s previous sibling or parent’s last child if child is null.
+        $previousSibling = $child ? $child->previousSibling : $this->lastChild;
+
+        // 7. For each node in nodes, in tree order:
+        // Overwriting $node is intentional
+        foreach ($nodes as $node) {
+            // 7.1. Adopt node into parent’s node document.
+            $this->nodeDocument->doAdoptNode($node);
+
+            // 7.2. If child is null, then append node to parent’s children.
+            if (!$child) {
+                $oldPreviousSibling = $this->childNodes->last();
+                $this->childNodes->append($node);
+                $nextSibling = null;
+
+            // 7.3. Otherwise, insert node into parent’s children before child’s index.
+            } else {
+                $this->childNodes->insertBefore($child, $node);
                 $oldPreviousSibling = $child->previousSibling;
                 $nextSibling = $child;
                 $child->previousSibling = $node;
-            } else {
-                $oldPreviousSibling = $last;
-                $nextSibling = null;
             }
+
+            $node->parentNode = $this;
 
             if ($oldPreviousSibling) {
                 $oldPreviousSibling->nextSibling = $node;
@@ -1189,11 +1159,20 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
 
             $node->previousSibling = $oldPreviousSibling;
             $node->nextSibling = $nextSibling;
+
+            $iter = new NodeIterator($node);
+
+            // 7.7 For each shadow-including inclusive descendant inclusiveDescendant of node, in
+            // shadow-including tree order:
+            while (($inclusiveDescendant = $iter->nextNode())) {
+                // 7.7.1 Run the insertion steps with inclusiveDescendant.
+                if (method_exists($inclusiveDescendant, 'doInsertingSteps')) {
+                    $inclusiveDescendant->doInsertingSteps($inclusiveDescendant);
+                }
+            }
         }
 
-        // TODO: If suppress observers flag is unset, then queue a tree
-        // mutation record for parent with nodes, « », previous sibling, and
-        // child.
+        // TODO: 9. Run the children changed steps for parent.
     }
 
     /**
@@ -1212,22 +1191,31 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
     {
         $parent = $this;
 
-        if (!$parent instanceof Document
+        // 1. If parent is not a Document, DocumentFragment, or Element node, then throw a
+        // "HierarchyRequestError" DOMException.
+        if (
+            !$parent instanceof Document
             && !$parent instanceof DocumentFragment
             && !$parent instanceof Element
         ) {
             throw new HierarchyRequestError();
         }
 
+        // 2. If node is a host-including inclusive ancestor of parent, then throw a
+        // "HierarchyRequestError" DOMException.
         if ($node->isHostIncludingInclusiveAncestorOf($parent)) {
             throw new HierarchyRequestError();
         }
 
+        // 3. If child’s parent is not parent, then throw a "NotFoundError" DOMException.
         if ($child->parentNode !== $parent) {
             throw new NotFoundError();
         }
 
-        if (!$node instanceof DocumentFragment
+        //4. If node is not a DocumentFragment, DocumentType, Element, Text, ProcessingInstruction,
+        // or Comment node, then throw a "HierarchyRequestError" DOMException.
+        if (
+            !$node instanceof DocumentFragment
             && !$node instanceof DocumentType
             && !$node instanceof Element
             && !$node instanceof Text
@@ -1237,6 +1225,8 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             throw new HierarchyRequestError();
         }
 
+        // 5. If either node is a Text node and parent is a document, or node is a doctype and
+        // parent is not a document, then throw a "HierarchyRequestError" DOMException.
         if ($node instanceof Text && $parent instanceof Document) {
             throw new HierarchyRequestError();
         }
@@ -1245,14 +1235,13 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             throw new HierarchyRequestError();
         }
 
-        // If $parent is a document, and any of the statements below, switched
-        // on $node are true, throw a HierarchyRequestError.
+        // 6. If parent is a document, and any of the statements below, switched on node, are true,
+        // then throw a "HierarchyRequestError" DOMException.
         if ($parent instanceof Document) {
             if ($node instanceof DocumentFragment) {
                 $elementChildren = 0;
 
-                // If $node has mode than one element child or has a Text node
-                // child.
+                // If node has more than one element child or has a Text node child.
                 foreach ($node->childNodes as $childNode) {
                     if ($childNode instanceof Element) {
                         ++$elementChildren;
@@ -1263,22 +1252,16 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                     }
                 }
 
-                // Otherwise, if $node has one element child and either $parent
-                // has an element child that is not $child or a doctype is
-                // following $child.
+                // Otherwise, if node has one element child and either parent has an element child
+                // that is not child or a doctype is following child.
                 if ($elementChildren === 1) {
                     foreach ($parent->childNodes as $childNode) {
-                        if ($childNode instanceof Element
-                            && $childNode !== $child
-                        ) {
+                        if ($childNode instanceof Element && $childNode !== $child) {
                             throw new HierarchyRequestError();
                         }
                     }
 
-                    $tw = new TreeWalker(
-                        $parent,
-                        NodeFilter::SHOW_DOCUMENT_TYPE
-                    );
+                    $tw = new TreeWalker($parent, NodeFilter::SHOW_DOCUMENT_TYPE);
                     $tw->currentNode = $child;
 
                     if ($tw->nextNode() !== null) {
@@ -1286,12 +1269,9 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                     }
                 }
             } elseif ($node instanceof Element) {
-                // If $parent has an element child that is not $child or a
-                // doctype is following $child.
+                // parent has an element child that is not child or a doctype is following child.
                 foreach ($parent->childNodes as $childNode) {
-                    if ($childNode instanceof Element
-                        && $childNode !== $child
-                    ) {
+                    if ($childNode instanceof Element && $childNode !== $child) {
                         throw new HierarchyRequestError();
                     }
                 }
@@ -1306,20 +1286,14 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                     throw new HierarchyRequestError();
                 }
             } elseif ($node instanceof DocumentType) {
-                // If $parent has a doctype child that is not $child, or an
-                // element is preceding $child.
+                // parent has a doctype child that is not child, or an element is preceding child.
                 foreach ($parent->childNodes as $childNode) {
-                    if ($childNode instanceof DocumentType
-                        && $childNode !== $child
-                    ) {
+                    if ($childNode instanceof DocumentType && $childNode !== $child) {
                         throw new HierarchyRequestError();
                     }
                 }
 
-                $tw = new TreeWalker(
-                    $parent,
-                    NodeFilter::SHOW_ELEMENT
-                );
+                $tw = new TreeWalker($parent, NodeFilter::SHOW_ELEMENT);
                 $tw->currentNode = $child;
 
                 if ($tw->previousNode() !== null) {
@@ -1328,30 +1302,36 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             }
         }
 
+        // 7. Let referenceChild be child’s next sibling.
         $referenceChild = $child->nextSibling;
 
+        // 8. If referenceChild is node, then set referenceChild to node’s next sibling.
         if ($referenceChild === $node) {
             $referenceChild = $node->nextSibling;
         }
 
+        // 9. Let previousSibling be child’s previous sibling.
         $previousSibling = $child->previousSibling;
-        $parent->nodeDocument->doAdoptNode($node);
+
+        // 10. Let removedNodes be the empty set.
         $removedNodes = [];
 
+        // 11. If child’s parent is non-null, then:
         if ($child->parentNode) {
-            $removedNodes[] = $child;
-            $child->parentNode->removeNode($child, true);
+            // 11.1. Set removedNodes to « child ».
+            $removedNodes = [$child];
+
+            // 11.2. Remove child with the suppress observers flag set.
+            $parent->removeNode($child, true);
         }
 
-        $nodes = $node instanceof DocumentFragment
-            ? $node->childNodes->all()
-            : [$node];
+        // 12. Let nodes be node’s children if node is a DocumentFragment node; otherwise « node ».
+        $nodes = $node instanceof DocumentFragment ? $node->childNodes->all() : [$node];
+
+        // 13. Insert node into parent before referenceChild with the suppress observers flag set.
         $parent->insertNode($node, $referenceChild, true);
 
-        // TODO: Queue a mutation record of "childList" for target parent with
-        // addedNodes nodes, removedNodes removedNodes, nextSibling reference
-        // child, and previousSibling previousSibling.
-
+        // 15. Return child
         return $child;
     }
 
@@ -1368,29 +1348,31 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      */
     public function replaceAllNodes(?self $node): void
     {
-        if ($node) {
-            $this->nodeDocument->doAdoptNode($node);
-        }
-
+        // 1. Let removedNodes be parent’s children.
         $removedNodes = $this->childNodes->all();
 
-        if (!$node) {
-            $addedNodes = [];
-        } elseif ($node instanceof DocumentFragment) {
+        // 2. Let addedNodes be the empty set.
+        $addedNodes = [];
+
+        // 3. If node is a DocumentFragment node, then set addedNodes to node’s children.
+        if ($node instanceof DocumentFragment) {
             $addedNodes = $node->childNodes->all();
-        } else {
+
+        // 4. Otherwise, if node is non-null, set addedNodes to « node ».
+        } elseif ($node) {
             $addedNodes = [$node];
         }
 
-        foreach ($removedNodes as $index => $removableNode) {
+        // 5. Remove all parent’s children, in tree order, with the suppress observers flag set.
+        foreach ($removedNodes as $removableNode) {
             $this->removeNode($removableNode, true);
         }
 
+        // 6. If node is non-null, then insert node into parent before null with the suppress
+        // observers flag set.
         if ($node) {
             $this->insertNode($node, null, true);
         }
-
-        // TODO: Queue a mutation record for "childList"
     }
 
     /**
@@ -1412,12 +1394,15 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
     {
         $parent = $this;
 
+        // 1. If child’s parent is not parent, then throw a "NotFoundError" DOMException.
         if ($child->parentNode !== $parent) {
             throw new NotFoundError();
         }
 
+        // 2. Remove child.
         $parent->removeNode($child);
 
+        // 3. Return child.
         return $child;
     }
 
@@ -1433,67 +1418,72 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @return void
      */
-    public function removeNode(
-        self $node,
-        bool $suppressObservers = false
-    ): void {
+    public function removeNode(self $node, bool $suppressObservers = false): void
+    {
         $parent = $this;
+
+        // 3. Let index be node’s index.
         $index = $parent->childNodes->indexOf($node);
         $ranges = Range::getRangeCollection();
 
+        // 4. For each live range whose start node is an inclusive descendant of node, set its start
+        // to (parent, index).
         foreach ($ranges as $range) {
-            $startContainer = $range->startContainer;
+            $startNode = $range->startContainer;
 
-            if ($startContainer === $node || $node->contains($startContainer)) {
+            if ($startNode === $node || $node->contains($startNode)) {
                 $range->setStart($parent, $index);
             }
         }
 
+        // 5. For each live range whose end node is an inclusive descendant of node, set its end to
+        // (parent, index).
         foreach ($ranges as $range) {
-            $endContainer = $range->endContainer;
+            $endNode = $range->endContainer;
 
-            if ($endContainer === $node || $node->contains($endContainer)) {
+            if ($endNode === $node || $node->contains($endNode)) {
                 $range->setEnd($parent, $index);
             }
         }
 
+        // 6. For each live range whose start node is parent and start offset is greater than index,
+        // decrease its start offset by 1.
         foreach ($ranges as $range) {
-            $startContainer = $range->startContainer;
+            $startNode = $range->startContainer;
             $startOffset = $range->startOffset;
 
-            if ($startContainer === $parent && $startOffset > $index) {
-                $range->setStart($startContainer, $startOffset - 1);
+            if ($startNode === $parent && $startOffset > $index) {
+                $range->setStart($startNode, $startOffset - 1);
             }
         }
 
+        // 7. For each live range whose end node is parent and end offset is greater than index,
+        // decrease its end offset by 1.
         foreach ($ranges as $range) {
-            $endContainer = $range->endContainer;
+            $endNode = $range->endContainer;
             $endOffset = $range->endOffset;
 
-            if ($endContainer === $parent && $endOffset > $index) {
-                $range->setEnd($endContainer, $endOffset - 1);
+            if ($endNode === $parent && $endOffset > $index) {
+                $range->setEnd($endNode, $endOffset - 1);
             }
         }
 
+        // 8. For each NodeIterator object iterator whose root’s node document is node’s node
+        // document, run the NodeIterator pre-removing steps given node and iterator.
         $iterCollection = $node->nodeDocument->getNodeIteratorCollection();
 
         foreach ($iterCollection as $iter) {
             $iter->preremoveNode($node);
         }
 
+        // 9. Let oldPreviousSibling be node’s previous sibling.
         $oldPreviousSibling = $node->previousSibling;
+
+        // 10. Let oldNextSibling be node’s next sibling.
         $oldNextSibling = $node->nextSibling;
+
+        // 11. Remove node from its parent’s children.
         $parent->childNodes->remove($node);
-
-        // For each inclusive descendant inclusiveDescendant of node, run
-        // the removing steps with inclusiveDescendant and parent.
-        $iter = new NodeIterator($node);
-
-        while (($descendant = $iter->nextNode())) {
-            if (method_exists($descendant, 'doRemovingSteps')) {
-                $descendant->doRemovingSteps($parent);
-            }
-        }
 
         if ($oldPreviousSibling) {
             $oldPreviousSibling->nextSibling = $oldNextSibling;
@@ -1507,19 +1497,20 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
         $node->previousSibling = null;
         $node->parentNode = null;
 
-        // TODO: For each inclusive ancestor inclusiveAncestor of parent, if
-        // inclusiveAncestor has any registered observers whose options' subtree
-        // is true, then for each such registered observer registered, append a
-        // transient registered observer whose observer and options are
-        // identical to those of registered and source which is registered to
-        // node’s list of registered observers.
+        // TODO: 15. Run the removing steps with node and parent.
 
-        if (!$suppressObservers) {
-            // TODO: If suppress observers flag is unset, queue a mutation
-            // record of "childList" for parent with removedNodes a list solely
-            // containing node, nextSibling oldNextSibling, and previousSibling
-            // oldPreviousSibling.
+        $iter = new NodeIterator($node);
+
+        // 18. For each shadow-including descendant descendant of node, in shadow-including tree
+        // order, then:
+        while (($descendant = $iter->nextNode())) {
+            // 19. Run the removing steps with descendant.
+            if (method_exists($descendant, 'doRemovingSteps')) {
+                $descendant->doRemovingSteps($parent);
+            }
         }
+
+        // TODO: 21. Run the children changed steps for parent.
     }
 
     /**
