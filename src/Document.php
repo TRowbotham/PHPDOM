@@ -609,6 +609,14 @@ class Document extends Node implements Stringable
 
             while (($nextNode = $iter->nextNode())) {
                 $nextNode->nodeDocument = $this;
+
+                // 3.1.2. If inclusiveDescendant is an element, then set the node document of each
+                // attribute in inclusiveDescendant’s attribute list to document.
+                if ($nextNode instanceof Element) {
+                    foreach ($nextNode->getAttributeList() as $attr) {
+                        $attr->nodeDocument = $this;
+                    }
+                }
             }
 
             // For each descendant in node’s inclusive descendants, in
