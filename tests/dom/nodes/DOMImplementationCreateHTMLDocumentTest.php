@@ -16,7 +16,7 @@ use Rowbot\DOM\Tests\TestCase;
 /**
  * @see https://github.com/web-platform-tests/wpt/blob/master/dom/nodes/DOMImplementation-createHTMLDocument.html
  */
-class DOMImplementaionCreateHTMLDocumentTest extends TestCase
+class DOMImplementationCreateHTMLDocumentTest extends TestCase
 {
     private static $document;
 

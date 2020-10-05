@@ -8,7 +8,7 @@ use Rowbot\DOM\Tests\TestCase;
 /**
  * @see https://github.com/web-platform-tests/wpt/blob/master/dom/nodes/Element-hasAttribute.html
  */
-class ElementHasAttribute extends TestCase
+class ElementHasAttributeTest extends TestCase
 {
     private static $document;
 
