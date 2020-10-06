@@ -18,6 +18,7 @@ use Rowbot\DOM\Support\Stringable;
 use Rowbot\DOM\URL\URLParser;
 use Rowbot\URL\URLRecord;
 
+use function array_filter;
 use function count;
 use function in_array;
 use function is_string;
@@ -105,7 +106,7 @@ class Document extends Node implements Stringable
     /**
      * \Rowbot\DOM\NodeIterator[]
      */
-    private $nodeIteratorList;
+    private static $nodeIteratorList = [];
 
     /**
      * \Rowbot\URL\URLRecord
@@ -143,7 +144,6 @@ class Document extends Node implements Stringable
         $this->inertTemplateDocument = null;
         $this->mode = DocumentMode::NO_QUIRKS;
         $this->nodeDocument = $this; // Documents own themselves.
-        $this->nodeIteratorList = [];
         $this->nodeType = self::DOCUMENT_NODE;
         $this->url = null;
 
@@ -154,6 +154,17 @@ class Document extends Node implements Stringable
         $this->readyState = DocumentReadyState::COMPLETE;
 
         $this->source = DocumentSource::NOT_FROM_PARSER;
+    }
+
+    public function __destruct()
+    {
+        // Filter out any NodeIterators where root's node document is this document.
+        self::$nodeIteratorList = array_filter(
+            self::$nodeIteratorList,
+            function (NodeIterator $iter): bool {
+                return $iter->root->nodeDocument !== $this;
+            }
+        );
     }
 
     public function __get(string $name)
@@ -462,7 +473,7 @@ class Document extends Node implements Stringable
         $filter = null
     ): NodeIterator {
         $iter = new NodeIterator($root, $whatToShow, $filter);
-        $this->nodeIteratorList[] = $iter;
+        self::$nodeIteratorList[] = $iter;
 
         return $iter;
     }
@@ -840,9 +851,9 @@ class Document extends Node implements Stringable
      *
      * @return \Rowbot\DOM\NodeIterator[]
      */
-    public function getNodeIteratorCollection(): array
+    public static function getNodeIteratorCollection(): array
     {
-        return $this->nodeIteratorList;
+        return self::$nodeIteratorList;
     }
 
     /**

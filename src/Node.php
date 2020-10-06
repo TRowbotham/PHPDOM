@@ -1470,9 +1470,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
 
         // 8. For each NodeIterator object iterator whose root’s node document is node’s node
         // document, run the NodeIterator pre-removing steps given node and iterator.
-        $iterCollection = $node->nodeDocument->getNodeIteratorCollection();
-
-        foreach ($iterCollection as $iter) {
+        foreach (Document::getNodeIteratorCollection() as $iter) {
             $iter->preremoveNode($node);
         }
 
