@@ -324,7 +324,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             // If length is zero, then remove node and continue with the next
             // exclusive Text node, if any.
             if ($length == 0) {
-                $node->parentNode->removeNode($node);
+                $node->removeNode();
                 continue;
             }
 
@@ -413,7 +413,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             // Remove node’s contiguous exclusive Text nodes (excluding itself),
             // in tree order.
             foreach ($contingiousTextNodes as $textNode) {
-                $textNode->parentNode->removeNode($textNode);
+                $textNode->removeNode();
             }
         }
     }
@@ -1096,7 +1096,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
         if ($nodeIsFragment) {
             // 4.1. Remove its children with the suppress observers flag set.
             foreach ($nodes as $childNode) {
-                $node->removeNode($childNode, true);
+                $childNode->removeNode(true);
             }
         }
 
@@ -1322,7 +1322,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             $removedNodes = [$child];
 
             // 11.2. Remove child with the suppress observers flag set.
-            $parent->removeNode($child, true);
+            $child->removeNode(true);
         }
 
         // 12. Let nodes be node’s children if node is a DocumentFragment node; otherwise « node ».
@@ -1365,7 +1365,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
 
         // 5. Remove all parent’s children, in tree order, with the suppress observers flag set.
         foreach ($removedNodes as $removableNode) {
-            $this->removeNode($removableNode, true);
+            $removableNode->removeNode(true);
         }
 
         // 6. If node is non-null, then insert node into parent before null with the suppress
@@ -1400,7 +1400,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
         }
 
         // 2. Remove child.
-        $parent->removeNode($child);
+        $child->removeNode();
 
         // 3. Return child.
         return $child;
@@ -1413,17 +1413,20 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @see https://dom.spec.whatwg.org/#concept-node-remove
      *
-     * @param self $node              The Node to be removed from the document tree.
      * @param bool $suppressObservers (optional) If true, mutation events are ignored for this operation.
      *
      * @return void
      */
-    public function removeNode(self $node, bool $suppressObservers = false): void
+    public function removeNode(bool $suppressObservers = false): void
     {
-        $parent = $this;
+        // Let parent be node’s parent
+        $parent = $this->parentNode;
+
+        // 2. Assert: parent is non-null.
+        assert($parent);
 
         // 3. Let index be node’s index.
-        $index = $parent->childNodes->indexOf($node);
+        $index = $parent->childNodes->indexOf($this);
         $ranges = Range::getRangeCollection();
 
         // 4. For each live range whose start node is an inclusive descendant of node, set its start
@@ -1431,7 +1434,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
         foreach ($ranges as $range) {
             $startNode = $range->startContainer;
 
-            if ($startNode === $node || $node->contains($startNode)) {
+            if ($startNode === $this || $this->contains($startNode)) {
                 $range->setStart($parent, $index);
             }
         }
@@ -1441,7 +1444,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
         foreach ($ranges as $range) {
             $endNode = $range->endContainer;
 
-            if ($endNode === $node || $node->contains($endNode)) {
+            if ($endNode === $this || $this->contains($endNode)) {
                 $range->setEnd($parent, $index);
             }
         }
@@ -1471,17 +1474,19 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
         // 8. For each NodeIterator object iterator whose root’s node document is node’s node
         // document, run the NodeIterator pre-removing steps given node and iterator.
         foreach (Document::getNodeIteratorCollection() as $iter) {
-            $iter->preremoveNode($node);
+            if ($iter->root->nodeDocument === $this->nodeDocument) {
+                $iter->preremoveNode($this);
+            }
         }
 
         // 9. Let oldPreviousSibling be node’s previous sibling.
-        $oldPreviousSibling = $node->previousSibling;
+        $oldPreviousSibling = $this->previousSibling;
 
         // 10. Let oldNextSibling be node’s next sibling.
-        $oldNextSibling = $node->nextSibling;
+        $oldNextSibling = $this->nextSibling;
 
         // 11. Remove node from its parent’s children.
-        $parent->childNodes->remove($node);
+        $parent->childNodes->remove($this);
 
         if ($oldPreviousSibling) {
             $oldPreviousSibling->nextSibling = $oldNextSibling;
@@ -1491,20 +1496,23 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             $oldNextSibling->previousSibling = $oldPreviousSibling;
         }
 
-        $node->nextSibling = null;
-        $node->previousSibling = null;
-        $node->parentNode = null;
+        $this->nextSibling = null;
+        $this->previousSibling = null;
+        $this->parentNode = null;
 
-        // TODO: 15. Run the removing steps with node and parent.
+        // 15. Run the removing steps with node and parent.
+        if (method_exists($this, 'doRemovingSteps')) {
+            $this->doRemovingSteps($parent);
+        }
 
-        $iter = new NodeIterator($node);
+        $iter = new NodeIterator($this);
 
         // 18. For each shadow-including descendant descendant of node, in shadow-including tree
         // order, then:
         while (($descendant = $iter->nextNode())) {
             // 19. Run the removing steps with descendant.
             if (method_exists($descendant, 'doRemovingSteps')) {
-                $descendant->doRemovingSteps($parent);
+                $descendant->doRemovingSteps();
             }
         }
 

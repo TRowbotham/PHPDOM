@@ -424,7 +424,7 @@ final class Range extends AbstractRange implements Stringable
         }
 
         foreach ($nodesToRemove as $node) {
-            $node->parentNode->removeNode($node);
+            $node->removeNode();
         }
 
         if ($originalEndNode instanceof Text
@@ -778,7 +778,7 @@ final class Range extends AbstractRange implements Stringable
         }
 
         if ($node->parentNode) {
-            $node->parentNode->removeNode($node);
+            $node->removeNode();
         }
 
         $newOffset = !$referenceNode

@@ -612,7 +612,7 @@ class Document extends Node implements Stringable
         $oldDocument = $node->nodeDocument;
 
         if ($node->parentNode) {
-            $node->parentNode->removeNode($node);
+            $node->removeNode();
         }
 
         if ($this !== $oldDocument) {

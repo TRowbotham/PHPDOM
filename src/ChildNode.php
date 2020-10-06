@@ -93,7 +93,7 @@ trait ChildNode
             return;
         }
 
-        $this->parentNode->removeNode($this);
+        $this->removeNode();
     }
 
     /**
