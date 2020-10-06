@@ -43,4 +43,9 @@ abstract class TestCase extends DOMTestCase
         $prop->setAccessible(true);
         $this->assertSame($filter, $prop->getValue($iter->filter));
     }
+
+    public static function getHtmlBaseDir(): string
+    {
+        return __DIR__ . DIRECTORY_SEPARATOR . 'html';
+    }
 }

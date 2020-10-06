@@ -2,33 +2,28 @@
 
 namespace Rowbot\DOM\Tests\dom\ranges;
 
-use Rowbot\DOM\Document;
-use Rowbot\DOM\DOMParser;
-use Rowbot\DOM\Tests\dom\Common;
-use Rowbot\DOM\Tests\TestCase;
+use Generator;
+use Rowbot\DOM\Tests\dom\Window;
+use Rowbot\DOM\Tests\dom\WindowTrait;
 
 use function array_unshift;
 
 /**
  * @see https://github.com/web-platform-tests/wpt/blob/master/dom/ranges/Range-commonAncestorContainer.html
  */
-class RangeCommonAncestorContainerTest extends TestCase
+class RangeCommonAncestorContainerTest extends RangeTestCase
 {
-    use Common;
+    use WindowTrait;
 
-    public function rangeProvider(): array
+    public function rangeProvider(): Generator
     {
-        global $document, $testRanges;
+        $window = self::getWindow();
+        $window->setupRangeTests();
+        array_unshift($window->testRanges, '[detached]');
 
-        $document = $this->getDocument();
-        self::setupRangeTests($document);
-        array_unshift($testRanges, '[detached]');
-
-        foreach ($testRanges as $i => $range) {
-            $tests[] = [$i, $range, $document];
+        foreach ($window->testRanges as $i => $range) {
+            yield [$i, $range];
         }
-
-        return $tests;
     }
 
     /**
@@ -36,13 +31,13 @@ class RangeCommonAncestorContainerTest extends TestCase
      */
     public function testRanges(int $i, string $endpoints): void
     {
-        global $document;
+        $window = self::getWindow();
 
         if ($i === 0) {
-            $range = $document->createRange();
+            $range = $window->document->createRange();
             $range->detach();
         } else {
-            $range = $this->rangeFromEndpoints($this->eval($endpoints, $document));
+            $range = Window::rangeFromEndpoints($window->eval($endpoints));
         }
 
         // "Let container be start node."
@@ -50,60 +45,15 @@ class RangeCommonAncestorContainerTest extends TestCase
 
         // "While container is not an inclusive ancestor of end node, let
         // container be container's parent."
-        while ($container !== $range->endContainer && !$this->isAncestor($container, $range->endContainer)) {
+        while ($container !== $range->endContainer && !Window::isAncestor($container, $range->endContainer)) {
             $container = $container->parentNode;
         }
 
         $this->assertSame($container, $range->commonAncestorContainer);
     }
 
-    public function getDocument(): Document
+    public static function getDocumentName(): string
     {
-        $html = <<<'TEST_HTML'
-<!doctype html>
-<title>Range.commonAncestorContainer tests</title>
-<link rel="author" title="Aryeh Gregor" href=ayg@aryeh.name>
-<meta name=timeout content=long>
-<div id=log></div>
-<script src=/resources/testharness.js></script>
-<script src=/resources/testharnessreport.js></script>
-<script src=../common.js></script>
-<script>
-"use strict";
-
-testRanges.unshift("[detached]");
-
-for (var i = 0; i < testRanges.length; i++) {
-    test(function() {
-    var range;
-    if (i == 0) {
-        range = document.createRange();
-        range.detach();
-    } else {
-        range = rangeFromEndpoints(eval(testRanges[i]));
-    }
-
-    // "Let container be start node."
-    var container = range.startContainer;
-
-    // "While container is not an inclusive ancestor of end node, let
-    // container be container's parent."
-    while (container != range.endContainer
-    && !isAncestor(container, range.endContainer)) {
-        container = container.parentNode;
-    }
-
-    // "Return container."
-    assert_equals(range.commonAncestorContainer, container);
-    }, i + ": range " + testRanges[i]);
-}
-
-testDiv.style.display = "none";
-</script>
-TEST_HTML;
-
-        $p = new DOMParser();
-
-        return $p->parseFromString($html, 'text/html');
+        return 'Range-commonAncestorContainer.html';
     }
 }

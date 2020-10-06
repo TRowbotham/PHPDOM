@@ -1,33 +1,27 @@
 <?php
+
 namespace Rowbot\DOM\Tests\dom\nodes;
 
-use Rowbot\DOM\Tests\dom\Common;
-use Rowbot\DOM\Tests\dom\DocumentGetter;
-use Rowbot\DOM\Tests\TestCase;
+use Generator;
+use Rowbot\DOM\Tests\dom\WindowTrait;
 
-class NodeContainsTest extends TestCase
+/**
+ * @see https://github.com/web-platform-tests/wpt/blob/master/dom/nodes/Node-contains.html
+ */
+class NodeContainsTest extends NodeTestCase
 {
-    use Common;
-    use DocumentGetter;
-
-    public function rangeTestNodesProvider()
-    {
-        $document = $this->getHTMLDocument();
-        self::setupRangeTests($document);
-
-        return $this->getTestNodes();
-    }
+    use WindowTrait;
 
     /**
      * @dataProvider rangeTestNodesProvider
      */
     public function testContains($referenceName, $otherName)
     {
-        $document = $this->getHTMLDocument();
-        $reference = $this->eval($referenceName, $document);
+        $window = self::getWindow();
+        $reference = $window->eval($referenceName);
         $this->assertFalse($reference->contains(null));
 
-        $other = $this->eval($otherName, $document);
+        $other = $window->eval($otherName);
         $ancestor = $other;
 
         while ($ancestor && $ancestor !== $reference) {
@@ -38,5 +32,22 @@ class NodeContainsTest extends TestCase
             $ancestor === $reference,
             $reference->contains($other)
         );
+    }
+
+    public function rangeTestNodesProvider(): Generator
+    {
+        $window = self::getWindow();
+        $window->setupRangeTests();
+
+        foreach ($window->testNodes as $referenceName) {
+            foreach ($window->testNodes as $otherName) {
+                yield [$referenceName, $otherName];
+            }
+        }
+    }
+
+    public static function getDocumentName(): string
+    {
+        return 'Node-contains.html';
     }
 }

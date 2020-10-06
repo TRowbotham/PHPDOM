@@ -1,35 +1,26 @@
 <?php
 namespace Rowbot\DOM\Tests\dom\nodes;
 
+use Generator;
 use Rowbot\DOM\Node;
-use Rowbot\DOM\Tests\dom\Common;
-use Rowbot\DOM\Tests\dom\DocumentGetter;
-use Rowbot\DOM\Tests\TestCase;
+use Rowbot\DOM\Tests\dom\Window;
+use Rowbot\DOM\Tests\dom\WindowTrait;
 
 /**
  * @see https://github.com/w3c/web-platform-tests/blob/master/dom/nodes/Node-compareDocumentPosition.html
  */
-class NodeCompareDocumentPositionTest extends TestCase
+class NodeCompareDocumentPositionTest extends NodeTestCase
 {
-    use Common;
-    use DocumentGetter;
-
-    public function rangeTestNodesProvider()
-    {
-        $document = $this->getHTMLDocument();
-        self::setupRangeTests($document);
-
-        return $this->getTestNodes($document);
-    }
+    use WindowTrait;
 
     /**
      * @dataProvider rangeTestNodesProvider
      */
     public function test($referenceName, $otherName)
     {
-        $document = $this->getHTMLDocument();
-        $reference = $this->eval($referenceName, $document);
-        $other = $this->eval($otherName, $document);
+        $window = self::getWindow();
+        $reference = $window->eval($referenceName);
+        $other = $window->eval($otherName);
 
         $result = $reference->compareDocumentPosition($other);
 
@@ -84,10 +75,10 @@ class NodeCompareDocumentPositionTest extends TestCase
 
         // "If other is preceding reference return DOCUMENT_POSITION_PRECEDING
         // and terminate these steps."
-        $prev = self::previousNode($reference);
+        $prev = Window::previousNode($reference);
 
         while ($prev && $prev !== $other) {
-            $prev = self::previousNode($prev);
+            $prev = Window::previousNode($prev);
         }
 
         if ($prev === $other) {
@@ -97,5 +88,22 @@ class NodeCompareDocumentPositionTest extends TestCase
 
         // "Return DOCUMENT_POSITION_FOLLOWING."
         $this->assertEquals($result, Node::DOCUMENT_POSITION_FOLLOWING);
+    }
+
+    public function rangeTestNodesProvider(): Generator
+    {
+        $window = self::getWindow();
+        $window->setupRangeTests();
+
+        foreach ($window->testNodes as $referenceName) {
+            foreach ($window->testNodes as $otherName) {
+                yield [$referenceName, $otherName];
+            }
+        }
+    }
+
+    public static function getDocumentName(): string
+    {
+        return 'Node-compareDocumentPosition.html';
     }
 }

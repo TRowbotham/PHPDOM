@@ -77,6 +77,7 @@ class Window
         if ($this->testDiv) {
             $this->testDiv->parentNode->removeChild($this->testDiv);
         }
+
         $this->testDiv = $this->document->createElement("div");
         $this->testDiv->id = "test";
         $this->document->body->insertBefore($this->testDiv, $this->document->body->firstChild);

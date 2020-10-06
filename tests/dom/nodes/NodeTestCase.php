@@ -1,10 +1,10 @@
 <?php
 
-namespace Rowbot\DOM\Tests\dom\ranges;
+namespace Rowbot\DOM\Tests\dom\nodes;
 
 use Rowbot\DOM\Tests\TestCase;
 
-abstract class RangeTestCase extends TestCase
+abstract class NodeTestCase extends TestCase
 {
     public static function getHtmlBaseDir(): string
     {
