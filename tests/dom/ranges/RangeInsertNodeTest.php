@@ -151,7 +151,7 @@ class RangeInsertNodeTest extends TestCase
 
         array_unshift($window->testRanges, '"detached"');
 
-        $file = __DIR__ . DS . 'resources' . DS . 'Range-test-iframe.html';
+        $file = __DIR__ . DS . 'html' . DS . 'Range-test-iframe.html';
         self::$actualIframe = FakeIframe::load($file);
         self::$expectedIframe = FakeIframe::load($file);
 
@@ -211,7 +211,7 @@ class RangeInsertNodeTest extends TestCase
 
         $parser = new DOMParser();
         $document = $parser->parseFromString(
-            file_get_contents(__DIR__ . DS . 'resources' . DS . 'Range-insertNode.html'),
+            file_get_contents(__DIR__ . DS . 'html' . DS . 'Range-insertNode.html'),
             'text/html'
         );
         self::$window = new Window($document);

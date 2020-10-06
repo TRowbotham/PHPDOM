@@ -166,7 +166,7 @@ class RangeExtractContentsTest extends TestCase
         $window->setupRangeTests();
         $window->testDiv->parentNode->removeChild($window->testDiv);
 
-        $file = __DIR__ . DS . 'resources' . DS . 'Range-test-iframe.html';
+        $file = __DIR__ . DS . 'html' . DS . 'Range-test-iframe.html';
         self::$actualIframe = FakeIframe::load($file);
         self::$expectedIframe = FakeIframe::load($file);
 
@@ -222,7 +222,7 @@ class RangeExtractContentsTest extends TestCase
 
         $parser = new DOMParser();
         $document = $parser->parseFromString(
-            file_get_contents(__DIR__ . DS . 'resources' . DS . 'Range-extractContents.html'),
+            file_get_contents(__DIR__ . DS . 'html' . DS . 'Range-extractContents.html'),
             'text/html'
         );
         self::$window = new Window($document);
