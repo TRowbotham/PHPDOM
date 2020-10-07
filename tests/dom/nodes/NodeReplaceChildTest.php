@@ -4,15 +4,15 @@ namespace Rowbot\DOM\Tests\dom\nodes;
 use Rowbot\DOM\Exception\HierarchyRequestError;
 use Rowbot\DOM\Exception\NotFoundError;
 use Rowbot\DOM\Tests\dom\DocumentGetter;
-use Rowbot\DOM\Tests\TestCase;
 use TypeError;
 
 /**
  * @see https://github.com/w3c/web-platform-tests/blob/master/dom/nodes/Node-replaceChild.html
  */
-class NodeReplaceChildTest extends TestCase
+class NodeReplaceChildTest extends NodeTestCase
 {
     use DocumentGetter;
+    use PreinsertionValidationNotFoundTrait;
 
     /**
      * Passing null to replaceChild() should throw a TypeError.
@@ -562,5 +562,15 @@ class NodeReplaceChildTest extends TestCase
         $fragChild->setAttribute('id', $TEST_ID);
         $parent->replaceChild($df, $child);
         $this->assertSame($fragChild, $document->getElementById($TEST_ID));
+    }
+
+    public static function getDocumentName(): string
+    {
+        return 'Node-replaceChild.html';
+    }
+
+    public function getMethodName(): string
+    {
+        return 'replaceChild';
     }
 }

@@ -2,14 +2,14 @@
 namespace Rowbot\DOM\Tests\dom\nodes;
 
 use Rowbot\DOM\Tests\dom\DocumentGetter;
-use Rowbot\DOM\Tests\TestCase;
 
 /**
  * @see https://github.com/w3c/web-platform-tests/blob/master/dom/nodes/ParentNode-prepend.html
  */
-class ParentNodePrependTest extends TestCase
+class ParentNodePrependTest extends NodeTestCase
 {
     use DocumentGetter;
+    use PreinsertionValidationHierarchyTrait;
 
     protected $tests;
 
@@ -108,5 +108,15 @@ class ParentNodePrependTest extends TestCase
         $this->assertSame($x, $parent->childNodes[0]);
         $this->assertEquals('text', $parent->childNodes[1]->textContent);
         $this->assertSame($child, $parent->childNodes[2]);
+    }
+
+    public static function getDocumentName(): string
+    {
+        return 'ParentNode-prepend.html';
+    }
+
+    public function getMethodName(): string
+    {
+        return 'prepend';
     }
 }

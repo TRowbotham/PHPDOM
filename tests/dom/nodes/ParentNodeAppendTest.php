@@ -2,14 +2,14 @@
 namespace Rowbot\DOM\Tests\dom\nodes;
 
 use Rowbot\DOM\Tests\dom\DocumentGetter;
-use Rowbot\DOM\Tests\TestCase;
 
 /**
  * @see https://github.com/w3c/web-platform-tests/blob/master/dom/nodes/ParentNode-append.html
  */
-class ParentNodeAppendTest extends TestCase
+class ParentNodeAppendTest extends NodeTestCase
 {
     use DocumentGetter;
+    use PreinsertionValidationHierarchyTrait;
 
     protected $tests;
 
@@ -108,5 +108,15 @@ class ParentNodeAppendTest extends TestCase
         $this->assertSame($child, $parent->childNodes[0]);
         $this->assertSame($x, $parent->childNodes[1]);
         $this->assertEquals('text', $parent->childNodes[2]->textContent);
+    }
+
+    public static function getDocumentName(): string
+    {
+        return 'ParentNode-append.html';
+    }
+
+    public function getMethodName(): string
+    {
+        return 'append';
     }
 }

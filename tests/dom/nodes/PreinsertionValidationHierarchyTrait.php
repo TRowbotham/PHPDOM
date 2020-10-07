@@ -133,9 +133,4 @@ trait PreinsertionValidationHierarchyTrait
             $this->insert($doc, $doctype);
         }, HierarchyRequestError::class);
     }
-
-    public static function getHtmlBaseDir(): string
-    {
-        return __DIR__ . DIRECTORY_SEPARATOR . 'html';
-    }
 }

@@ -4,16 +4,17 @@ namespace Rowbot\DOM\Tests\dom\nodes;
 use Rowbot\DOM\Exception\HierarchyRequestError;
 use Rowbot\DOM\Exception\NotFoundError;
 use Rowbot\DOM\Tests\dom\DocumentGetter;
-use Rowbot\DOM\Tests\TestCase;
 use stdClass;
 use TypeError;
 
 /**
  * @see https://github.com/w3c/web-platform-tests/blob/master/dom/nodes/Node-insertBefore.html
  */
-class NodeInsertBeforeTest extends TestCase
+class NodeInsertBeforeTest extends NodeTestCase
 {
     use DocumentGetter;
+    use PreinsertionValidationNotFoundTrait;
+    use PreinsertionValidationHierarchyTrait;
 
     /**
      * Calling insertBefore() with a non-Node first argument must throw
@@ -524,5 +525,15 @@ class NodeInsertBeforeTest extends TestCase
         $this->assertSame([$b, $c], iterator_to_array($a->childNodes));
         $this->assertSame($c, $a->insertBefore($c, $c));
         $this->assertSame([$b, $c], iterator_to_array($a->childNodes));
+    }
+
+    public static function getDocumentName(): string
+    {
+        return 'Node-insertBefore.html';
+    }
+
+    public function getMethodName(): string
+    {
+        return 'insertBefore';
     }
 }

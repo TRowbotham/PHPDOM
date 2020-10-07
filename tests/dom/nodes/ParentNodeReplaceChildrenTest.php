@@ -5,14 +5,13 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Tests\dom\nodes;
 
 use Rowbot\DOM\Node;
-use Rowbot\DOM\Tests\TestCase;
 
 use function iterator_to_array;
 
 /**
  * @see https://github.com/web-platform-tests/wpt/blob/master/dom/nodes/ParentNode-replaceChildren.html
  */
-class ParentNodeReplaceChildrenTest extends TestCase
+class ParentNodeReplaceChildrenTest extends NodeTestCase
 {
     use PreinsertionValidationHierarchyTrait;
 
