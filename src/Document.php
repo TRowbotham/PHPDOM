@@ -520,8 +520,8 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
     public function createRange(): Range
     {
         $range = new Range();
-        $range->setStart($this, 0);
-        $range->setEnd($this, 0);
+        $range->setStartInternal($this, 0);
+        $range->setEndInternal($this, 0);
 
         return $range;
     }

@@ -1146,6 +1146,24 @@ final class Range extends AbstractRange implements Stringable
     }
 
     /**
+     * @internal
+     */
+    public function setStartInternal(Node $node, int $offset): void
+    {
+        $this->startNode = $node;
+        $this->startOffset = $offset;
+    }
+
+    /**
+     * @internal
+     */
+    public function setEndInternal(Node $node, int $offset): void
+    {
+        $this->endNode = $node;
+        $this->endOffset = $offset;
+    }
+
+    /**
      * Compares the position of two boundary points.
      *
      * @internal

@@ -108,7 +108,7 @@ class Text extends CharacterData
                 if ($range->startContainer === $this
                     && $startOffset > $offset
                 ) {
-                    $range->setStart($newNode, $startOffset - $offset);
+                    $range->setStartInternal($newNode, $startOffset - $offset);
                 }
             }
 
@@ -116,7 +116,7 @@ class Text extends CharacterData
                 $endOffset = $range->endOffset;
 
                 if ($range->endContainer === $this && $endOffset > $offset) {
-                    $range->setEnd($newNode, $endOffset - $offset);
+                    $range->setEndInternal($newNode, $endOffset - $offset);
                 }
             }
 
@@ -127,7 +127,7 @@ class Text extends CharacterData
                 if ($startContainer === $this->parentNode
                     && $startOffset == $treeIndex + 1
                 ) {
-                    $range->setStart($startContainer, $startOffset + 1);
+                    $range->setStartInternal($startContainer, $startOffset + 1);
                 }
             }
 
@@ -136,7 +136,7 @@ class Text extends CharacterData
                 $endOffset = $range->endOffset;
 
                 if ($endContainer === $this->parentNode && $endOffset == $treeIndex + 1) {
-                    $range->setEnd($endContainer, $endOffset + 1);
+                    $range->setEndInternal($endContainer, $endOffset + 1);
                 }
             }
         }

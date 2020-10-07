@@ -219,7 +219,7 @@ abstract class CharacterData extends Node implements ChildNode
                 && $startOffset > $offset
                 && $startOffset <= $offset + $count
             ) {
-                $range->setStart($startContainer, $offset);
+                $range->setStartInternal($startContainer, $offset);
             }
         }
 
@@ -231,7 +231,7 @@ abstract class CharacterData extends Node implements ChildNode
                 && $endOffset > $offset
                 && $endOffset <= $offset + $count
             ) {
-                $range->setEnd($endContainer, $offset);
+                $range->setEndInternal($endContainer, $offset);
             }
         }
 
@@ -240,10 +240,7 @@ abstract class CharacterData extends Node implements ChildNode
             $startOffset = $range->startOffset;
 
             if ($startContainer === $this && $startOffset > $offset + $count) {
-                $range->setStart(
-                    $startContainer,
-                    $startOffset + $newDataLen - $count
-                );
+                $range->setStartInternal($startContainer, $startOffset + $newDataLen - $count);
             }
         }
 
@@ -252,10 +249,7 @@ abstract class CharacterData extends Node implements ChildNode
             $endOffset = $range->endOffset;
 
             if ($endContainer === $this && $endOffset > $offset + $count) {
-                $range->setEnd(
-                    $endContainer,
-                    $endOffset + $newDataLen - $count
-                );
+                $range->setEndInternal($endContainer, $endOffset + $newDataLen - $count);
             }
         }
     }

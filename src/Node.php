@@ -372,7 +372,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                 // its start offset and set its start node to node.
                 foreach ($ranges as $range) {
                     if ($range->startContainer === $currentNode) {
-                        $range->setStart($node, $range->startOffset + $length);
+                        $range->setStartInternal($node, $range->startOffset + $length);
                     }
                 }
 
@@ -380,7 +380,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                 // its end offset and set its end node to node.
                 foreach ($ranges as $range) {
                     if ($range->endContainer === $currentNode) {
-                        $range->setEnd($node, $range->endOffset + $length);
+                        $range->setEndInternal($node, $range->endOffset + $length);
                     }
                 }
 
@@ -391,7 +391,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                     if ($range->startContainer === $currentNode->parentNode
                         && $range->startOffset == $treeIndex
                     ) {
-                        $range->setStart($node, $length);
+                        $range->setStartInternal($node, $length);
                     }
                 }
 
@@ -402,7 +402,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                     if ($range->endContainer === $currentNode->parentNode
                         && $range->endOffset == $treeIndex
                     ) {
-                        $range->setEnd($node, $length);
+                        $range->setEndInternal($node, $length);
                     }
                 }
 
@@ -1112,7 +1112,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                 $startOffset = $range->startOffset;
 
                 if ($startNode === $this && $startOffset > $index) {
-                    $range->setStart($startNode, $startOffset + $count);
+                    $range->setStartInternal($startNode, $startOffset + $count);
                 }
             }
 
@@ -1123,7 +1123,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                 $endOffset = $range->endOffset;
 
                 if ($endNode === $this && $endOffset > $index) {
-                    $range->setStart($endNode, $endOffset + $count);
+                    $range->setEndInternal($endNode, $endOffset + $count);
                 }
             }
         }
@@ -1435,7 +1435,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             $startNode = $range->startContainer;
 
             if ($startNode === $this || $this->contains($startNode)) {
-                $range->setStart($parent, $index);
+                $range->setStartInternal($parent, $index);
             }
         }
 
@@ -1445,7 +1445,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             $endNode = $range->endContainer;
 
             if ($endNode === $this || $this->contains($endNode)) {
-                $range->setEnd($parent, $index);
+                $range->setEndInternal($parent, $index);
             }
         }
 
@@ -1456,7 +1456,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             $startOffset = $range->startOffset;
 
             if ($startNode === $parent && $startOffset > $index) {
-                $range->setStart($startNode, $startOffset - 1);
+                $range->setStartInternal($startNode, $startOffset - 1);
             }
         }
 
@@ -1467,7 +1467,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             $endOffset = $range->endOffset;
 
             if ($endNode === $parent && $endOffset > $index) {
-                $range->setEnd($endNode, $endOffset - 1);
+                $range->setEndInternal($endNode, $endOffset - 1);
             }
         }
 
