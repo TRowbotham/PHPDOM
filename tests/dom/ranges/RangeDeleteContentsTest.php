@@ -2,14 +2,13 @@
 
 namespace Rowbot\DOM\Tests\dom\ranges;
 
-use Rowbot\DOM\DOMParser;
 use Rowbot\DOM\Node;
 use Rowbot\DOM\Range;
 use Rowbot\DOM\Tests\dom\Window;
+use Rowbot\DOM\Tests\dom\WindowTrait;
 use Rowbot\DOM\Tests\TestCase;
 
 use function count;
-use function file_get_contents;
 use function substr;
 
 use const DIRECTORY_SEPARATOR as DS;
@@ -19,10 +18,11 @@ use const DIRECTORY_SEPARATOR as DS;
  */
 class RangeDeleteContentsTest extends TestCase
 {
+    use WindowTrait;
+
     private static $actualIframe;
     private static $expectedIframe;
     private static $referenceDoc;
-    private static $window;
 
     /**
      * @dataProvider rangesProvider
@@ -282,24 +282,8 @@ class RangeDeleteContentsTest extends TestCase
         $iframe->contentWindow->run();
     }
 
-    public static function getWindow(): Window
+    public static function getDocumentName(): string
     {
-        if (self::$window) {
-            return self::$window;
-        }
-
-        $parser = new DOMParser();
-        $document = $parser->parseFromString(
-            file_get_contents(__DIR__ . DS . 'html' . DS . 'Range-deleteContents.html'),
-            'text/html'
-        );
-        self::$window = new Window($document);
-
-        return self::$window;
-    }
-
-    public static function tearDownAfterClass(): void
-    {
-        self::$window = null;
+        return 'Range-deleteContents.html';
     }
 }

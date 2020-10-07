@@ -3,17 +3,15 @@
 namespace Rowbot\DOM\Tests\dom\ranges;
 
 use Generator;
-use Rowbot\DOM\DOMParser;
 use Rowbot\DOM\Exception\DOMException;
 use Rowbot\DOM\Exception\InvalidNodeTypeError;
 use Rowbot\DOM\Exception\InvalidStateError;
 use Rowbot\DOM\Node;
 use Rowbot\DOM\Range;
 use Rowbot\DOM\Tests\dom\Window;
-use Rowbot\DOM\Tests\TestCase;
+use Rowbot\DOM\Tests\dom\WindowTrait;
 
 use function count;
-use function file_get_contents;
 use function get_class;
 use function is_string;
 use function substr;
@@ -23,12 +21,13 @@ use const DIRECTORY_SEPARATOR as DS;
 /**
  * @see https://github.com/web-platform-tests/wpt/blob/master/dom/ranges/Range-surroundContents.html
  */
-class RangeSurroundContentsTest extends TestCase
+class RangeSurroundContentsTest extends RangeTestCase
 {
+    use WindowTrait;
+
     private static $actualIframe;
     private static $expectedIframe;
     private static $referenceDoc;
-    private static $window;
 
     /**
      * @dataProvider rangesProvider
@@ -281,24 +280,8 @@ class RangeSurroundContentsTest extends TestCase
         }
     }
 
-    public static function getWindow(): Window
+    public static function getDocumentName(): string
     {
-        if (self::$window) {
-            return self::$window;
-        }
-
-        $parser = new DOMParser();
-        $document = $parser->parseFromString(
-            file_get_contents(__DIR__ . DS . 'html' . DS . 'Range-surroundContents.html'),
-            'text/html'
-        );
-        self::$window = new Window($document);
-
-        return self::$window;
-    }
-
-    public static function tearDownAfterClass(): void
-    {
-        self::$window = null;
+        return 'Range-surroundContents.html';
     }
 }

@@ -3,14 +3,12 @@
 namespace Rowbot\DOM\Tests\dom\ranges;
 
 use Generator;
-use Rowbot\DOM\DOMParser;
 use Rowbot\DOM\Node;
 use Rowbot\DOM\Range;
 use Rowbot\DOM\Tests\dom\Window;
-use Rowbot\DOM\Tests\TestCase;
+use Rowbot\DOM\Tests\dom\WindowTrait;
 
 use function count;
-use function file_get_contents;
 use function is_string;
 use function substr;
 
@@ -19,12 +17,13 @@ use const DIRECTORY_SEPARATOR as DS;
 /**
  * @see https://github.com/web-platform-tests/wpt/blob/master/dom/ranges/Range-extractContents.html
  */
-class RangeExtractContentsTest extends TestCase
+class RangeExtractContentsTest extends RangeTestCase
 {
+    use WindowTrait;
+
     private static $actualIframe;
     private static $expectedIframe;
     private static $referenceDoc;
-    private static $window;
 
     /**
      * @dataProvider rangesProvider
@@ -214,24 +213,8 @@ class RangeExtractContentsTest extends TestCase
         $iframe->contentWindow->run();
     }
 
-    public static function getWindow(): Window
+    public static function getDocumentName(): string
     {
-        if (self::$window) {
-            return self::$window;
-        }
-
-        $parser = new DOMParser();
-        $document = $parser->parseFromString(
-            file_get_contents(__DIR__ . DS . 'html' . DS . 'Range-extractContents.html'),
-            'text/html'
-        );
-        self::$window = new Window($document);
-
-        return self::$window;
-    }
-
-    public static function tearDownAfterClass(): void
-    {
-        self::$window = null;
+        return 'Range-extractContentsTest.php';
     }
 }

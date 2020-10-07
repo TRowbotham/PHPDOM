@@ -5,10 +5,8 @@ namespace Rowbot\DOM\Tests\dom\nodes;
 use Generator;
 use ReflectionObject;
 use ReflectionProperty;
-use Rowbot\DOM\DOMParser;
 use Rowbot\DOM\Node;
-use Rowbot\DOM\Tests\dom\Window;
-use Rowbot\DOM\Tests\TestCase;
+use Rowbot\DOM\Tests\dom\WindowTrait;
 
 use function count;
 use function extract;
@@ -20,12 +18,12 @@ use const DIRECTORY_SEPARATOR as DS;
 /**
  * @see https://github.com/web-platform-tests/wpt/blob/master/dom/nodes/Node-properties.html
  */
-class NodePropertiesTest extends TestCase
+class NodePropertiesTest extends NodeTestCase
 {
+    use WindowTrait;
+
     // Mostly deprecated or irrelevant properties
     private const IGNORE = ['compatMode', 'URL', 'documentURI', 'inputEncoding', 'charset'];
-
-    private static $window;
 
     /**
      * @dataProvider nodePropertiesProvider
@@ -745,24 +743,8 @@ class NodePropertiesTest extends TestCase
         }
     }
 
-    public static function getWindow(): Window
+    public static function getDocumentName(): string
     {
-        if (self::$window) {
-            return self::$window;
-        }
-
-        $parser = new DOMParser();
-        $document = $parser->parseFromString(
-            file_get_contents(__DIR__ . DS . 'html' . DS . 'Node-properties.html'),
-            'text/html'
-        );
-        self::$window = new Window($document);
-
-        return self::$window;
-    }
-
-    public static function tearDownAfterClass(): void
-    {
-        self::$window = null;
+        return 'Node-properties.html';
     }
 }

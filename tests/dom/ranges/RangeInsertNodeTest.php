@@ -3,26 +3,25 @@
 namespace Rowbot\DOM\Tests\dom\ranges;
 
 use Exception;
-use Rowbot\DOM\DOMParser;
 use Rowbot\DOM\Exception\DOMException;
 use Rowbot\DOM\Node;
 use Rowbot\DOM\Range;
 use Rowbot\DOM\Tests\dom\ranges\FakeIframe;
-use Rowbot\DOM\Tests\dom\traversal\TestCase;
 use Rowbot\DOM\Tests\dom\Window;
+use Rowbot\DOM\Tests\dom\WindowTrait;
 
 use function array_unshift;
-use function file_get_contents;
 use function is_string;
 
 use const DIRECTORY_SEPARATOR as DS;
 
-class RangeInsertNodeTest extends TestCase
+class RangeInsertNodeTest extends RangeTestCase
 {
+    use WindowTrait;
+
     private static $referenceDoc;
     private static $actualIframe;
     private static $expectedIframe;
-    private static $window;
 
     /**
      * @dataProvider rangesProvider
@@ -203,24 +202,8 @@ class RangeInsertNodeTest extends TestCase
         $iframe->contentWindow->run();
     }
 
-    public static function getWindow(): Window
+    public static function getDocumentName(): string
     {
-        if (self::$window) {
-            return self::$window;
-        }
-
-        $parser = new DOMParser();
-        $document = $parser->parseFromString(
-            file_get_contents(__DIR__ . DS . 'html' . DS . 'Range-insertNode.html'),
-            'text/html'
-        );
-        self::$window = new Window($document);
-
-        return self::$window;
-    }
-
-    public static function tearDownAfterClass(): void
-    {
-        self::$window = null;
+        return 'Range-insertNodeTest.php';
     }
 }
