@@ -9,9 +9,9 @@ namespace Rowbot\DOM;
  * @property-read string $publicId
  * @property-read string $systemId
  */
-class DocumentType extends Node
+class DocumentType extends Node implements ChildNode
 {
-    use ChildNode;
+    use ChildNodeTrait;
 
     /**
      * @var string

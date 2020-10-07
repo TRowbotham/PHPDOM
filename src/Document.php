@@ -45,11 +45,11 @@ use const PHP_SAPI;
  * @property-read \Rowbot\DOM\Element\Element|null $documentElement
  * @property-read string                           $readyState
  */
-class Document extends Node implements Stringable
+class Document extends Node implements NonElementParentNode, ParentNode, Stringable
 {
     use GetElementsBy;
-    use NonElementParentNode;
-    use ParentNode;
+    use NonElementParentNodeTrait;
+    use ParentNodeTrait;
 
     const INERT_TEMPLATE_DOCUMENT = 0x1;
 

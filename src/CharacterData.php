@@ -22,9 +22,9 @@ use function sprintf;
  * @property-read \Rowbot\DOM\Element\Element|null $previousElementSibling Returns the previous sibling that is an
  *                                                                         Element, if any.
  */
-abstract class CharacterData extends Node
+abstract class CharacterData extends Node implements ChildNode
 {
-    use ChildNode;
+    use ChildNodeTrait;
     use NonDocumentTypeChildNode;
 
     protected $data;

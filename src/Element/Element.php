@@ -6,6 +6,7 @@ use Rowbot\DOM\{
     AttributeChangeObserver,
     AttributeList,
     ChildNode,
+    ChildNodeTrait,
     Document,
     DocumentFragment,
     DOMTokenList,
@@ -23,6 +24,7 @@ use Rowbot\DOM\{
     NodeFilter,
     NonDocumentTypeChildNode,
     ParentNode,
+    ParentNodeTrait,
     Parser\MarkupFactory,
     Parser\ParserFactory,
     Text,
@@ -51,10 +53,10 @@ use function strtoupper;
  * @property      string                   $innerHTML
  * @property      string                   $outerHTML
  */
-class Element extends Node implements AttributeChangeObserver
+class Element extends Node implements AttributeChangeObserver, ChildNode, ParentNode
 {
-    use ChildNode, ParentNode {
-        ChildNode::convertNodesToNode insteadof ParentNode;
+    use ChildNodeTrait, ParentNodeTrait {
+        ChildNodeTrait::convertNodesToNode insteadof ParentNodeTrait;
     }
     use GetElementsBy;
     use NonDocumentTypeChildNode;

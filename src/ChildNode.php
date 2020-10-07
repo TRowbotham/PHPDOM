@@ -1,137 +1,53 @@
 <?php
-namespace Rowbot\DOM;
 
-use function in_array;
+declare(strict_types=1);
+
+namespace Rowbot\DOM;
 
 /**
  * @see https://dom.spec.whatwg.org/#interface-childnode
  * @see https://developer.mozilla.org/en-US/docs/Web/API/ChildNode
  */
-trait ChildNode
+interface ChildNode
 {
-    use ChildOrParentNode;
-
     /**
-     * Inserts any number of Node objects or strings after this ChildNode.
-     *
-     * @see https://dom.spec.whatwg.org/#dom-childnode-after
-     *
-     * @param \Rowbot\DOM\Node|string ...$nodes A set of Node objects or strings to be inserted.
-     *
-     * @return void
-     *
-     * @throws \Rowbot\DOM\Exception\HierarchyRequestError
-     */
-    public function after(...$nodes): void
-    {
-        $parent = $this->parentNode;
-
-        if (!$parent) {
-            return;
-        }
-
-        $viableNextSibling = $this->nextSibling;
-
-        while ($viableNextSibling) {
-            if (!in_array($viableNextSibling, $nodes, true)) {
-                break;
-            }
-
-            $viableNextSibling = $viableNextSibling->nextSibling;
-        }
-
-        $node = $this->convertNodesToNode($nodes, $this->nodeDocument);
-        $parent->preinsertNode($node, $viableNextSibling);
-    }
-
-    /**
-     * Inserts any number of Node objects or strings before this ChildNode.
+     * Inserts nodes just before node, while replacing strings in nodes with equivalent Text nodes.
      *
      * @see https://dom.spec.whatwg.org/#dom-childnode-before
      *
-     * @param \Rowbot\DOM\Node|string ...$nodes A set of Node objects or strings to be inserted.
-     *
-     * @return void
+     * @param \Rowbot\DOM\Node|string $nodes A set of Node objects or strings to be inserted.
      *
      * @throws \Rowbot\DOM\Exception\HierarchyRequestError
      */
-    public function before(...$nodes): void
-    {
-        $parent = $this->parentNode;
-
-        if (!$parent) {
-            return;
-        }
-
-        $viablePreviousSibling = $this->previousSibling;
-
-        while ($viablePreviousSibling) {
-            if (!in_array($viablePreviousSibling, $nodes, true)) {
-                break;
-            }
-
-            $viablePreviousSibling = $viablePreviousSibling->previousSibling;
-        }
-
-        $node = $this->convertNodesToNode($nodes, $this->nodeDocument);
-        $viablePreviousSibling = $viablePreviousSibling
-            ? $viablePreviousSibling->nextSibling
-            : $parent->firstChild;
-        $parent->preinsertNode($node, $viablePreviousSibling);
-    }
+    public function before(...$nodes): void;
 
     /**
-     * Removes this ChildNode from its ParentNode.
+     * Inserts nodes just after node, while replacing strings in nodes with equivalent Text nodes.
      *
-     * @see https://dom.spec.whatwg.org/#dom-childnode-remove
+     * @see https://dom.spec.whatwg.org/#dom-childnode-after
      *
-     * @return void
+     * @param \Rowbot\DOM\Node|string $nodes A set of Node objects or strings to be inserted.
+     *
+     * @throws \Rowbot\DOM\Exception\HierarchyRequestError
      */
-    public function remove(): void
-    {
-        if (!$this->parentNode) {
-            return;
-        }
-
-        $this->removeNode();
-    }
+    public function after(...$nodes): void;
 
     /**
-     * Replaces this ChildNode with any number of Node objects or strings.
+     * Replaces node with nodes, while replacing strings in nodes with equivalent Text nodes.
      *
      * @see https://dom.spec.whatwg.org/#dom-childnode-replacewith
      *
-     * @param \Rowbot\DOM\Node|string ...$nodes A set of Node objects or strings to be inserted in place of this ChildNode.
-     *
-     * @return void
+     * @param \Rowbot\DOM\Node|string $nodes A set of Node objects or strings to be inserted in
+     *                                       place of this ChildNode.
      *
      * @throws \Rowbot\DOM\Exception\HierarchyRequestError
      */
-    public function replaceWith(...$nodes): void
-    {
-        $parent = $this->parentNode;
+    public function replaceWith(...$nodes): void;
 
-        if (!$parent) {
-            return;
-        }
-
-        $viableNextSibling = $this->nextSibling;
-
-        while ($viableNextSibling) {
-            if (!in_array($viableNextSibling, $nodes, true)) {
-                break;
-            }
-
-            $viableNextSibling = $viableNextSibling->nextSibling;
-        }
-
-        $node = $this->convertNodesToNode($nodes, $this->nodeDocument);
-
-        if ($this->parentNode === $parent) {
-            $parent->replaceNode($node, $this);
-            return;
-        }
-
-        $parent->preinsertNode($node, $viableNextSibling);
-    }
+    /**
+     * Removes this node from its parent node.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-childnode-remove
+     */
+    public function remove(): void;
 }

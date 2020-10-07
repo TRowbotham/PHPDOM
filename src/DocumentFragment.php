@@ -11,10 +11,10 @@ use function count;
  * @see https://dom.spec.whatwg.org/#interface-documentfragment
  * @see https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
  */
-class DocumentFragment extends Node
+class DocumentFragment extends Node implements NonElementParentNode, ParentNode
 {
-    use NonElementParentNode;
-    use ParentNode;
+    use NonElementParentNodeTrait;
+    use ParentNodeTrait;
 
     /**
      * @var \Rowbot\DOM\Element\Element|null
