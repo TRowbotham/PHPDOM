@@ -173,6 +173,12 @@ class RangeExtractContentsTest extends RangeTestCase
         self::$referenceDoc->removeChild(self::$referenceDoc->documentElement);
         self::$referenceDoc->appendChild(self::$actualIframe->contentDocument->documentElement->cloneNode(true));
 
+        self::registerCleanup(static function (): void {
+            self::$actualIframe = null;
+            self::$expectedIframe = null;
+            self::$referenceDoc = null;
+        });
+
         foreach ($window->testRanges as $i => $range) {
             yield [$i];
         }
@@ -215,6 +221,6 @@ class RangeExtractContentsTest extends RangeTestCase
 
     public static function getDocumentName(): string
     {
-        return 'Range-extractContentsTest.php';
+        return 'Range-extractContents.html';
     }
 }

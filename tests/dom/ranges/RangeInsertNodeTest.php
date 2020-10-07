@@ -158,6 +158,12 @@ class RangeInsertNodeTest extends RangeTestCase
         self::$referenceDoc->removeChild(self::$referenceDoc->documentElement);
         self::$referenceDoc->appendChild(self::$actualIframe->contentDocument->documentElement->cloneNode(true));
 
+        self::registerCleanup(static function (): void {
+            self::$actualIframe = null;
+            self::$expectedIframe = null;
+            self::$referenceDoc = null;
+        });
+
         foreach ($window->testRangesShort as $i => $range) {
             foreach ($window->testNodesShort as $j => $node) {
                 yield [$i, $j];
@@ -204,6 +210,6 @@ class RangeInsertNodeTest extends RangeTestCase
 
     public static function getDocumentName(): string
     {
-        return 'Range-insertNodeTest.php';
+        return 'Range-insertNode.html';
     }
 }

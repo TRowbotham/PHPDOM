@@ -6,7 +6,6 @@ use Rowbot\DOM\Node;
 use Rowbot\DOM\Range;
 use Rowbot\DOM\Tests\dom\Window;
 use Rowbot\DOM\Tests\dom\WindowTrait;
-use Rowbot\DOM\Tests\TestCase;
 
 use function count;
 use function substr;
@@ -16,7 +15,7 @@ use const DIRECTORY_SEPARATOR as DS;
 /**
  * @see https://github.com/web-platform-tests/wpt/blob/master/dom/ranges/Range-deleteContents.html
  */
-class RangeDeleteContentsTest extends TestCase
+class RangeDeleteContentsTest extends RangeTestCase
 {
     use WindowTrait;
 
@@ -123,6 +122,12 @@ class RangeDeleteContentsTest extends TestCase
         self::$referenceDoc = $document->implementation->createHTMLDocument('');
         self::$referenceDoc->removeChild(self::$referenceDoc->documentElement);
         self::$referenceDoc->appendChild(self::$actualIframe->contentDocument->documentElement->cloneNode(true));
+
+        self::registerCleanup(static function (): void {
+            self::$actualIframe = null;
+            self::$expectedIframe = null;
+            self::$referenceDoc = null;
+        });
 
         foreach ($window->testRanges as $i => $range) {
             yield [$i];
