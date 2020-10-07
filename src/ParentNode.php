@@ -52,6 +52,27 @@ trait ParentNode
     }
 
     /**
+     * Replaces all children of node with nodes, while replacing strings in nodes with equivilant
+     * Text nodes.
+     *
+     * @see https://dom.spec.whatwg.org/#dom-parentnode-replacechildren
+     *
+     * @param \Rowbot\DOM\Node|string $nodes One or more Nodes or strings to replace
+     */
+    public function replaceChildren(...$nodes): void
+    {
+        // 1. Let node be the result of converting nodes into a node given nodes and this’s node
+        // document.
+        $node = $this->convertNodesToNode($nodes, $this->nodeDocument);
+
+        // 2. Ensure pre-insertion validity of node into this before null.
+        $this->ensurePreinsertionValidity($node, null);
+
+        // 3. Replace all with node within this.
+        $this->replaceAllNodes($node);
+    }
+
+    /**
      * @internal
      *
      * @see https://dom.spec.whatwg.org/#dom-parentnode-children
