@@ -13,8 +13,11 @@ use TypeError;
 class NodeInsertBeforeTest extends NodeTestCase
 {
     use DocumentGetter;
-    use PreinsertionValidationNotFoundTrait;
-    use PreinsertionValidationHierarchyTrait;
+    use PreinsertionValidationNotFoundTrait, PreinsertionValidationHierarchyTrait {
+        PreinsertionValidationNotFoundTrait::getWindow insteadof PreinsertionValidationHierarchyTrait;
+        PreinsertionValidationNotFoundTrait::registerCleanup insteadof PreinsertionValidationHierarchyTrait;
+        PreinsertionValidationNotFoundTrait::tearDownAfterClass insteadof PreinsertionValidationHierarchyTrait;
+    }
 
     /**
      * Calling insertBefore() with a non-Node first argument must throw
