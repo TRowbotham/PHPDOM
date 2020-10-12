@@ -52,7 +52,7 @@ class HTMLLinkElement extends HTMLElement
     {
         switch ($name) {
             case 'crossOrigin':
-                return $this->getAttributeStateEnumeratedString(
+                return $this->reflectEnumeratedStringAttributeValue(
                     'crossorigin',
                     'anonymous',
                     'no-cors',
