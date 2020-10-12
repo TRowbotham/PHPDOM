@@ -7,20 +7,11 @@ namespace Rowbot\DOM\Element\HTML;
  */
 class HTMLTableColElement extends HTMLElement
 {
-    private $span;
-
-    protected function __construct()
-    {
-        parent::__construct();
-
-        $this->span = 0;
-    }
-
     public function __get(string $name)
     {
         switch ($name) {
             case 'span':
-                return $this->span;
+                return $this->reflectClampedUnsignedLongAttributeValue('span', 1, 1000, 1);
 
             default:
                 return parent::__get($name);
@@ -31,8 +22,7 @@ class HTMLTableColElement extends HTMLElement
     {
         switch ($name) {
             case 'span':
-                $this->span = $value;
-                $this->_updateAttributeOnPropertyChange($name, $value);
+                $this->setLongAttributeValue('span', $value, self::UNSIGNED_LONG);
 
                 break;
 

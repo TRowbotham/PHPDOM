@@ -3,8 +3,6 @@ namespace Rowbot\DOM\Element\HTML;
 
 use Rowbot\DOM\DOMTokenList;
 
-use function is_int;
-
 /**
  * Represents the HTML <td> and <th> elements respectively.
  *
@@ -27,17 +25,13 @@ use function is_int;
  */
 class HTMLTableCellElement extends HTMLElement
 {
-    private $colSpan;
     private $headers;
-    private $rowSpan;
 
     protected function __construct()
     {
         parent::__construct();
 
-        $this->colSpan = 1;
         $this->headers = new DOMTokenList($this, 'headers');
-        $this->rowSpan = 1;
     }
 
     public function __get(string $name)
@@ -59,13 +53,13 @@ class HTMLTableCellElement extends HTMLElement
                 return -1;
 
             case 'colSpan':
-                return $this->colSpan;
+                return $this->reflectClampedUnsignedLongAttributeValue('colspan', 1, 1000, 1);
 
             case 'headers':
                 return $this->headers->value;
 
             case 'rowSpan':
-                return $this->rowSpan;
+                return $this->reflectClampedUnsignedLongAttributeValue('rowspan', 0, 65534, 1);
 
             default:
                 return parent::__get($name);
@@ -75,23 +69,13 @@ class HTMLTableCellElement extends HTMLElement
     public function __set(string $name, $value)
     {
         switch ($name) {
-            case 'colspan':
-                if (!is_int((int)$value)) {
-                    break;
-                }
-
-                $this->colSpan = (int)$value;
-                $this->updateAttributeOnPropertyChange($name, $value);
+            case 'colSpan':
+                $this->setLongAttributeValue('colspan', $value, self::UNSIGNED_LONG);
 
                 break;
 
-            case 'rowspan':
-                if (!is_int((int)$value)) {
-                    break;
-                }
-
-                $this->rowSpan = (int)$value;
-                $this->updateAttributeOnPropertyChange($name, $value);
+            case 'rowSpan':
+                $this->setLongAttributeValue('rowspan', $value, self::UNSIGNED_LONG);
 
                 break;
 

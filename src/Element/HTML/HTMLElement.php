@@ -179,11 +179,7 @@ class HTMLElement extends Element
                 $value = mb_strtolower($value);
 
                 if ($value === 'inherit') {
-                    $this->removeAttrByNamespaceAndLocalName(
-                        null,
-                        $name,
-                        $this
-                    );
+                    $this->attributeList->removeAttrByNamespaceAndLocalName(null, $name, $this);
                 } elseif ($value === 'true' || $value === 'false') {
                     $this->attributeList->setAttrValue($name, $value);
                 } else {

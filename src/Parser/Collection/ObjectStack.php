@@ -87,12 +87,12 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
         UniquelyIdentifiable $oldItem = null
     ) {
         if ($oldItem === null || $this->size == 0) {
-            $this->append($newItem);
+            $this->push($newItem);
             return;
         }
 
         if ($oldItem === $this->collection[0]) {
-            $this->prepend($newItem);
+            $this->insertBefore($newItem, null);
             return;
         }
 
@@ -130,7 +130,7 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
         UniquelyIdentifiable $oldItem
     ) {
         if ($this->collection[$this->size - 1] === $oldItem) {
-            $this->append($newItem);
+            $this->push($newItem);
             return;
         }
 
