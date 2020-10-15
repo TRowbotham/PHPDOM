@@ -139,6 +139,7 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
                 return $this->attributeList->getAttrValue($name);
 
             case 'innerHTML':
+                // https://w3c.github.io/DOM-Parsing/#the-innerhtml-mixin
                 // On getting, return the result of invoking the fragment
                 // serializing algorithm on the context object providing true
                 // for the require well-formed flag (this might throw an
@@ -204,26 +205,24 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
                 break;
 
             case 'innerHTML':
+                // https://w3c.github.io/DOM-Parsing/#the-innerhtml-mixin
                 if ($value === null) {
                     $value = '';
                 }
 
-                // Let fragment be the result of invoking the fragment parsing
-                // algorithm with the new value as markup, and the context
-                // object as the context element.
+                // 2. Let fragment be the result of invoking the fragment parsing algorithm with the
+                // new value as markup, and with context element.
                 $fragment = ParserFactory::parseFragment($value, $this);
 
-                // If the context object is a template element, then let context
-                // object be the template's template contents (a
-                // DocumentFragment).
+                // 3. If the context object is a template element, then let context object be the
+                // template's template contents (a DocumentFragment).
                 $context = $this instanceof HTMLTemplateElement ? $this->content : $this;
 
-                // NOTE: Setting innerHTML on a template element will replace
-                // all the nodes in its template contents (template.content)
-                // rather than its children.
+                // NOTE: Setting innerHTML on a template element will replace all the nodes in its
+                // template contents (template.content) rather than its children.
 
-                // Replace all with fragment within the context object.
-                $this->replaceAllNodes($fragment);
+                // 4. Replace all with fragment within the context object.
+                $context->replaceAllNodes($fragment);
 
                 break;
 
