@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM;
 
 use Rowbot\DOM\Element\ElementFactory;
+use Rowbot\DOM\Exception\TypeError;
 use Rowbot\DOM\Parser\HTML\HTMLParser;
 use Throwable;
 
@@ -103,5 +104,10 @@ final class DOMParser
                 // Return the value of document.
                 return $document;
         }
+
+        throw new TypeError(
+            'The second paramter "$type" must be one of: "text/html", "text/xml", "application/xml"'
+            . ', "application/xhtml+xml", or "image/svg+xml".'
+        );
     }
 }
