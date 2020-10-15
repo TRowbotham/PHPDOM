@@ -644,7 +644,7 @@ final class Range extends AbstractRange implements Stringable
                 $firstPartiallyContainedChild,
                 $firstPartiallyContainedChild->getLength()
             );
-            $subfragment = $subrange->cloneRange();
+            $subfragment = $subrange->cloneContents();
             $clone->appendChild($subfragment);
         }
 
