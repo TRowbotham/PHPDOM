@@ -481,7 +481,7 @@ class HTMLElement extends Element
         ?string $namespace = null
     ): void {
         if (!$newValue) {
-            $this->attributeList->removeAttrByNamespaceAndLocalName($name, $namespace);
+            $this->attributeList->removeAttrByNamespaceAndLocalName($namespace, $name);
 
             return;
         }
