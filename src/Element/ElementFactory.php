@@ -109,6 +109,7 @@ final class ElementFactory
         'script'     => 'HTMLScriptElement',
         'section'    => 'HTMLElement',
         'select'     => 'HTMLSelectElement',
+        'slot'       => 'HTMLSlotElement',
         'small'      => 'HTMLElement',
         'source'     => 'HTMLSourceElement',
         'span'       => 'HTMLSpanElement',

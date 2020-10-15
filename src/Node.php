@@ -1663,7 +1663,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @param \Rowbot\DOM\Event\Event $event An Event object.
      *
-     * @return (\Rowbot\DOM\HTMLSlotElement&\Rowbot\DOM\Event\EventTarget)|null
+     * @return (\Rowbot\DOM\Element\HTML\HTMLSlotElement&\Rowbot\DOM\Event\EventTarget)|null
      */
     protected function getTheParent(Event $event): ?EventTarget
     {
