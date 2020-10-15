@@ -16,9 +16,9 @@ class HTMLTemplateElement extends HTMLElement
      */
     protected $content;
 
-    protected function __construct()
+    protected function __construct(Document $document)
     {
-        parent::__construct();
+        parent::__construct($document);
 
         $doc = $this->nodeDocument->getAppropriateTemplateContentsOwnerDocument();
         $this->content = $doc->createDocumentFragment();

@@ -40,9 +40,9 @@ abstract class CharacterData extends Node implements ChildNode
      */
     protected $length;
 
-    public function __construct(string $data)
+    public function __construct(Document $document, string $data)
     {
-        parent::__construct();
+        parent::__construct($document);
 
         $this->data = $data;
         $this->length = mb_strlen($data, $this->nodeDocument->characterSet);

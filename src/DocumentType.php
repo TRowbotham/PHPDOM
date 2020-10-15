@@ -31,9 +31,13 @@ class DocumentType extends Node implements ChildNode
      */
     private $systemId;
 
-    public function __construct(string $name, string $publicId = '', string $systemId = '')
-    {
-        parent::__construct();
+    public function __construct(
+        Document $document,
+        string $name,
+        string $publicId = '',
+        string $systemId = ''
+    ) {
+        parent::__construct($document);
 
         $this->name = $name;
         $this->nodeType = self::DOCUMENT_TYPE_NODE;
@@ -60,8 +64,8 @@ class DocumentType extends Node implements ChildNode
 
     public function cloneNodeInternal(Document $document = null, bool $cloneChildren = false): Node
     {
-        $document = $document ?: $this->getNodeDocument();
-        $copy = new static($this->name);
+        $document = $document ?? $this->nodeDocument;
+        $copy = new static($document, $this->name);
         $copy->name = $this->name;
         $copy->publicId = $this->publicId;
         $copy->systemId = $this->systemId;

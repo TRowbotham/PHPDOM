@@ -98,13 +98,13 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      */
     protected $previousSibling;
 
-    protected function __construct()
+    protected function __construct(Document $document)
     {
         parent::__construct();
 
+        $this->nodeDocument = $document;
         $this->childNodes = new NodeSet();
         $this->nodeList = new NodeList($this->childNodes);
-        $this->nodeDocument = Document::getDefaultDocument();
     }
 
     /**

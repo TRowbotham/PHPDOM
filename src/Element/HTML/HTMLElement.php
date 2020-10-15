@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Element\HTML;
 
+use Rowbot\DOM\Document;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Exception\DOMException;
 use Rowbot\DOM\Exception\IndexSizeError;
@@ -68,9 +69,9 @@ class HTMLElement extends Element
 
     protected $dataset;
 
-    protected function __construct()
+    protected function __construct(Document $document)
     {
-        parent::__construct();
+        parent::__construct($document);
 
         $this->dataset;
     }

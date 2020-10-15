@@ -92,14 +92,9 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
      */
     protected $prefix;
 
-    /**
-     * Constructor.
-     *
-     * @return void
-     */
-    protected function __construct()
+    protected function __construct(Document $document)
     {
-        parent::__construct();
+        parent::__construct($document);
 
         $this->attributeList = new AttributeList($this);
         $this->classList = new DOMTokenList($this, 'class');
@@ -290,10 +285,9 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
         ?string $namespace,
         ?string $prefix = null
     ) {
-        $element = new static();
+        $element = new static($document);
         $element->localName = $localName;
         $element->namespaceURI = $namespace;
-        $element->nodeDocument = $document;
         $element->prefix = $prefix;
 
         return $element;
@@ -391,8 +385,7 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
         }
 
         if ($attribute === null) {
-            $attribute = new Attr($qualifiedName, $value);
-            $attribute->setNodeDocument($this->nodeDocument);
+            $attribute = new Attr($this->nodeDocument, $qualifiedName, $value);
             $this->attributeList->append($attribute);
 
             return;
@@ -470,8 +463,7 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
 
         if ($attribute === null) {
             if ($forceIsGiven === false || $force === true) {
-                $attribute = new Attr($qualifiedName, '');
-                $attribute->setNodeDocument($this->nodeDocument);
+                $attribute = new Attr($this->nodeDocument, $qualifiedName, '');
                 $this->attributeList->append($attribute);
 
                 return true;
@@ -621,8 +613,7 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
      */
     public function insertAdjacentText(string $where, string $data): void
     {
-        $text = new Text($data);
-        $text->setNodeDocument($this->nodeDocument);
+        $text = new Text($this->nodeDocument, $data);
         $this->insertAdjacent($this, $where, $text);
     }
 
@@ -936,8 +927,7 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
         $node = null;
 
         if ($value !== '') {
-            $node = new Text($value);
-            $node->nodeDocument = $this->nodeDocument;
+            $node = new Text($this->nodeDocument, $value);
         }
 
         $this->replaceAllNodes($node);

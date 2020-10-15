@@ -15,7 +15,7 @@ class RangeIntersectsNode2Test extends RangeTestCase
     public function testIntersectsNode(): void
     {
         $document = self::getWindow()->document;
-        $range = new Range();
+        $range = new Range($document);
         $div = $document->getElementById('div');
         $s0 = $document->getElementById('s0');
         $s1 = $document->getElementById('s1');

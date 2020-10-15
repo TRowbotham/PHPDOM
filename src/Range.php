@@ -41,13 +41,13 @@ final class Range extends AbstractRange implements Stringable
      */
     private static $collection = [];
 
-    public function __construct()
+    public function __construct(Document $document)
     {
         self::$collection[] = $this;
-        $this->endNode = Document::getDefaultDocument();
-        $this->endOffset = 0;
-        $this->startNode = Document::getDefaultDocument();
+        $this->startNode = $document;
         $this->startOffset = 0;
+        $this->endNode = $document;
+        $this->endOffset = 0;
     }
 
     public function __get(string $name)
@@ -504,7 +504,7 @@ final class Range extends AbstractRange implements Stringable
         } elseif ($firstPartiallyContainedChild) {
             $clone = $firstPartiallyContainedChild->cloneNodeInternal();
             $fragment->appendChild($clone);
-            $subrange = new Range();
+            $subrange = clone $this;
             $subrange->startNode = $originalStartNode;
             $subrange->startOffset = $originalStartOffset;
             $subrange->endNode = $firstPartiallyContainedChild;
@@ -530,7 +530,7 @@ final class Range extends AbstractRange implements Stringable
         } elseif ($lastPartiallyContainedChild) {
             $clone = $lastPartiallyContainedChild->cloneNodeInternal();
             $fragment->appendChild($clone);
-            $subrange = new Range();
+            $subrange = clone $this;
             $subrange->startNode = $lastPartiallyContainedChild;
             $subrange->startOffset = 0;
             $subrange->endNode = $originalEndNode;
@@ -638,7 +638,7 @@ final class Range extends AbstractRange implements Stringable
         } elseif ($firstPartiallyContainedChild) {
             $clone = $firstPartiallyContainedChild->cloneNodeInternal();
             $fragment->appendChild($clone);
-            $subrange = new Range();
+            $subrange = clone $this;
             $subrange->setStart($originalStartNode, $originalStartOffset);
             $subrange->setEnd(
                 $firstPartiallyContainedChild,
@@ -667,7 +667,7 @@ final class Range extends AbstractRange implements Stringable
         } elseif ($lastPartiallyContainedChild) {
             $clone = $lastPartiallyContainedChild->cloneNodeInternal();
             $fragment->appendChild($clone);
-            $subrange = new Range();
+            $subrange = clone $this;
             $subrange->setStart($lastPartiallyContainedChild, 0);
             $subrange->setEnd($originalEndNode, $originalEndOffset);
             $subfragment = $subrange->cloneContents();
@@ -787,11 +787,7 @@ final class Range extends AbstractRange implements Stringable
      */
     public function cloneRange(): self
     {
-        $range = new Range();
-        $range->setStart($this->startNode, $this->startOffset);
-        $range->setEnd($this->endNode, $this->endOffset);
-
-        return $range;
+        return clone $this;
     }
 
     /**

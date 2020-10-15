@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Element\HTML;
 
+use Rowbot\DOM\Document;
 use Rowbot\DOM\DOMTokenList;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Element\HTMLHyperlinkElementUtils;
@@ -55,9 +56,9 @@ class HTMLAnchorElement extends HTMLElement
      */
     private $relList;
 
-    protected function __construct()
+    protected function __construct(Document $document)
     {
-        parent::__construct();
+        parent::__construct($document);
 
         $this->ping = new DOMTokenList($this, 'ping');
         $this->relList = new DOMTokenList($this, 'rel');

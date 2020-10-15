@@ -10,18 +10,17 @@ namespace Rowbot\DOM;
  */
 class Comment extends CharacterData
 {
-    public function __construct(string $data = '')
+    public function __construct(Document $document, string $data = '')
     {
-        parent::__construct($data);
+        parent::__construct($document, $data);
 
         $this->nodeType = Node::COMMENT_NODE;
     }
 
     public function cloneNodeInternal(Document $document = null, bool $cloneChildren = false): Node
     {
-        $document = $document ?: $this->getNodeDocument();
-        $copy = new static();
-        $copy->data = $this->data;
+        $document = $document ?? $this->getNodeDocument();
+        $copy = new static($document, $this->data);
         $this->postCloneNode($copy, $document, $cloneChildren);
 
         return $copy;

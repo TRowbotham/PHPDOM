@@ -255,8 +255,13 @@ class AttributeList implements ArrayAccess, Countable, Iterator
         );
 
         if ($attribute === null) {
-            $attribute = new Attr($localName, $value, $namespace, $prefix);
-            $attribute->setNodeDocument($this->element->getNodeDocument());
+            $attribute = new Attr(
+                $this->element->getNodeDocument(),
+                $localName,
+                $value,
+                $namespace,
+                $prefix
+            );
             $this->append($attribute);
 
             return;

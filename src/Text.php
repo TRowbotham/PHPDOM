@@ -17,9 +17,9 @@ use Rowbot\DOM\Exception\IndexSizeError;
  */
 class Text extends CharacterData
 {
-    public function __construct(string $data = '')
+    public function __construct(Document $document, string $data = '')
     {
-        parent::__construct($data);
+        parent::__construct($document, $data);
 
         $this->nodeType = Node::TEXT_NODE;
     }
@@ -53,9 +53,8 @@ class Text extends CharacterData
 
     public function cloneNodeInternal(Document $document = null, bool $cloneChildren = false): Node
     {
-        $document = $document ?: $this->getNodeDocument();
-        $copy = new static();
-        $copy->data = $this->data;
+        $document = $document ?? $this->getNodeDocument();
+        $copy = new static($document, $this->data);
         $this->postCloneNode($copy, $document, $cloneChildren);
 
         return $copy;
@@ -78,8 +77,7 @@ class Text extends CharacterData
 
         $count = $length - $offset;
         $newData = $this->substringData($offset, $count);
-        $newNode = new Text($newData);
-        $newNode->nodeDocument = $this->nodeDocument;
+        $newNode = new Text($this->nodeDocument, $newData);
         $ranges = Range::getRangeCollection();
 
         if ($this->parentNode) {

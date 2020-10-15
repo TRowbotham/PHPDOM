@@ -277,8 +277,12 @@ class TreeBuilder
             // null and empty lists as appropriate. Associate the DocumentType
             // node with the Document object so that it is returned as the value
             // of the doctype attribute of the Document object.
-            $doctype = new DocumentType($name ?? '', $publicId ?? '', $systemId ?? '');
-            $doctype->setNodeDocument($this->document);
+            $doctype = new DocumentType(
+                $this->document,
+                $name ?? '',
+                $publicId ?? '',
+                $systemId ?? ''
+            );
             $this->document->appendChild($doctype);
 
             // If the document is not an iframe srcdoc document...
@@ -4590,8 +4594,7 @@ class TreeBuilder
 
         // Append each attribute in the given token to element
         foreach ($token->attributes as $attr) {
-            $a = new Attr($attr->name, $attr->value, $attr->namespace, $attr->prefix);
-            $a->setNodeDocument($document);
+            $a = new Attr($document, $attr->name, $attr->value, $attr->namespace, $attr->prefix);
             $attributes->append($a);
         }
 
@@ -4839,8 +4842,7 @@ class TreeBuilder
         }
 
         $this->textBuilder->flushText();
-        $node = new Text();
-        $node->setNodeDocument($adjustedInsertionLocation[0]->getNodeDocument());
+        $node = new Text($adjustedInsertionLocation[0]->getNodeDocument());
         $this->textBuilder->setNode($node);
         $this->textBuilder->append($data);
         $this->insertNode($node, $adjustedInsertionLocation);
@@ -4874,8 +4876,7 @@ class TreeBuilder
         // node document is the same as that of the node in which the adjusted
         // insertion location finds itself.
         $ownerDocument = $adjustedInsertionLocation[0]->getNodeDocument();
-        $node = new Comment($data);
-        $node->setNodeDocument($ownerDocument);
+        $node = new Comment($ownerDocument, $data);
 
         // Insert the newly created node at the adjusted insertion location.
         $this->insertNode($node, $adjustedInsertionLocation);

@@ -30,8 +30,7 @@ trait ChildOrParentNode
         // string and node document is document.
         foreach ($nodes as &$potentialNode) {
             if (!$potentialNode instanceof Node) {
-                $potentialNode = new Text((string) $potentialNode);
-                $potentialNode->setNodeDocument($document);
+                $potentialNode = new Text($document, (string) $potentialNode);
             }
         }
 
@@ -45,8 +44,7 @@ trait ChildOrParentNode
             return $nodes[0];
         }
 
-        $node = new DocumentFragment();
-        $node->setNodeDocument($document);
+        $node = new DocumentFragment($document);
 
         foreach ($nodes as $child) {
             $node->appendChild($child);

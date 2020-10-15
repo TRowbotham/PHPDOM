@@ -99,10 +99,7 @@ final class DOMImplementation
     ): DocumentType {
         Namespaces::validate($qualifiedName);
 
-        $docType = new DocumentType($qualifiedName, $publicId, $systemId);
-        $docType->setNodeDocument($this->document);
-
-        return $docType;
+        return new DocumentType($this->document, $qualifiedName, $publicId, $systemId);
     }
 
     /**
@@ -114,8 +111,7 @@ final class DOMImplementation
     {
         $doc = new HTMLDocument();
         $doc->setContentType('text/html');
-        $docType = new DocumentType('html', '', '');
-        $docType->setNodeDocument($doc);
+        $docType = new DocumentType($doc, 'html', '', '');
         $doc->appendChild($docType);
 
         $html = ElementFactory::create($doc, 'html', Namespaces::HTML);
@@ -127,9 +123,7 @@ final class DOMImplementation
         if (func_num_args() > 0) {
             $titleNode = ElementFactory::create($doc, 'title', Namespaces::HTML);
             $head->appendChild($titleNode);
-            $text = new Text($title);
-            $text->setNodeDocument($doc);
-            $titleNode->appendChild($text);
+            $titleNode->appendChild(new Text($doc, $title));
         }
 
         $html->appendChild(ElementFactory::create($doc, 'body', Namespaces::HTML));

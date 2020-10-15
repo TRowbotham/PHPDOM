@@ -55,11 +55,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
     protected const INERT_TEMPLATE_DOCUMENT = 0x1;
 
     /**
-     * @var static|null
-     */
-    protected static $defaultDocument = null;
-
-    /**
      * @var string
      */
     protected $characterSet;
@@ -126,11 +121,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
 
     public function __construct()
     {
-        parent::__construct();
-
-        if (!self::$defaultDocument) {
-            self::$defaultDocument = $this;
-        }
+        parent::__construct($this);
 
         $this->characterSet = 'UTF-8';
         $this->contentType = 'application/xml';
@@ -139,7 +130,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
         $this->isIframeSrcDoc = false;
         $this->inertTemplateDocument = null;
         $this->mode = DocumentMode::NO_QUIRKS;
-        $this->nodeDocument = $this; // Documents own themselves.
         $this->nodeType = self::DOCUMENT_NODE;
         $this->url = null;
 
@@ -269,10 +259,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
             $localName = Utils::toASCIILowercase($localName);
         }
 
-        $attribute = new Attr($localName, '');
-        $attribute->setNodeDocument($this);
-
-        return $attribute;
+        return new Attr($this, $localName, '');
     }
 
     /**
@@ -290,10 +277,8 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
             $namespace,
             $qualifiedName
         );
-        $attribute = new Attr($localName, '', $namespace, $prefix);
-        $attribute->setNodeDocument($this);
 
-        return $attribute;
+        return new Attr($this, $localName, '', $namespace, $prefix);
     }
 
     /**
@@ -303,10 +288,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      */
     public function createComment(string $data): Comment
     {
-        $node = new Comment($data);
-        $node->nodeDocument = $this;
-
-        return $node;
+        return new Comment($this, $data);
     }
 
     /**
@@ -316,10 +298,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      */
     public function createDocumentFragment(): DocumentFragment
     {
-        $node = new DocumentFragment();
-        $node->nodeDocument = $this;
-
-        return $node;
+        return new DocumentFragment($this);
     }
 
     /**
@@ -448,10 +427,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
             throw new InvalidCharacterError();
         }
 
-        $pi = new ProcessingInstruction($target, $data);
-        $pi->nodeDocument = $this;
-
-        return $pi;
+        return new ProcessingInstruction($this, $target, $data);
     }
 
     /**
@@ -461,11 +437,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      */
     public function createRange(): Range
     {
-        $range = new Range();
-        $range->setStartInternal($this, 0);
-        $range->setEndInternal($this, 0);
-
-        return $range;
+        return new Range($this);
     }
 
     /**
@@ -473,10 +445,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      */
     public function createTextNode(string $data): Text
     {
-        $node = new Text($data);
-        $node->nodeDocument = $this;
-
-        return $node;
+        return new Text($this, $data);
     }
 
     /**
@@ -503,8 +472,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
 
         // Return a new CDATASection node with its data set to data and node
         // document set to the context object.
-        $node = new CDATASection($data);
-        $node->setNodeDocument($this);
+        $node = new CDATASection($this, $data);
 
         return $node;
     }
@@ -638,24 +606,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
         }
 
         return $base->getFrozenBaseURL();
-    }
-
-    /**
-     * Returns the first document created, which is assumed to be the global
-     * document. This global document is the owning document for objects
-     * instantiated using its constructor.  These objects are DocumentFragment,
-     * Text, Comment, and ProcessingInstruction.
-     *
-     * @internal
-     *
-     * @return self|null Returns the global document. If null is returned, then no document existed before the user
-     *                   attempted to instantiate an object that has an owning document.
-     *
-     * @todo Returning null here is probably a bug. Look into it.
-     */
-    public static function getDefaultDocument(): ?self
-    {
-        return self::$defaultDocument;
     }
 
     public function getFallbackBaseURL(): URLRecord

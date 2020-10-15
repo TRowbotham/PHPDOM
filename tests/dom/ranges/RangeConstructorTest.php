@@ -15,7 +15,7 @@ class RangeConstructorTest extends TestCase
     public function testConstructorFoo(): void
     {
         $document = $this->getDocument();
-        $range = new Range();
+        $range = new Range($document);
 
         $this->assertSame($document, $range->startContainer);
         $this->assertSame($document, $range->endContainer);

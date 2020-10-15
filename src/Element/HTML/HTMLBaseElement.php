@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Element\HTML;
 
+use Rowbot\DOM\Document;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\URL\URLParser;
 use Rowbot\URL\URLRecord;
@@ -18,9 +19,9 @@ class HTMLBaseElement extends HTMLElement
      */
     private $frozenBaseUrl;
 
-    protected function __construct()
+    protected function __construct(Document $document)
     {
-        parent::__construct();
+        parent::__construct($document);
     }
 
     public function __get(string $name)

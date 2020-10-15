@@ -22,9 +22,9 @@ class DocumentFragment extends Node implements NonElementParentNode, ParentNode
      */
     protected $host;
 
-    public function __construct()
+    public function __construct(Document $document)
     {
-        parent::__construct();
+        parent::__construct($document);
 
         $this->host = null;
         $this->nodeType = Node::DOCUMENT_FRAGMENT_NODE;
@@ -55,8 +55,8 @@ class DocumentFragment extends Node implements NonElementParentNode, ParentNode
      */
     public function cloneNodeInternal(Document $document = null, bool $cloneChildren = false): Node
     {
-        $document = $document ?: $this->getNodeDocument();
-        $copy = new static();
+        $document = $document ?? $this->getNodeDocument();
+        $copy = new static($document);
         $this->postCloneNode($copy, $document, $cloneChildren);
 
         return $copy;
@@ -128,8 +128,7 @@ class DocumentFragment extends Node implements NonElementParentNode, ParentNode
         $node = null;
 
         if ($value !== '') {
-            $node = new Text($value);
-            $node->nodeDocument = $this->nodeDocument;
+            $node = new Text($this->nodeDocument, $value);
         }
 
         $this->replaceAllNodes($node);

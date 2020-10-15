@@ -16,9 +16,9 @@ class ProcessingInstruction extends CharacterData
      */
     protected $target;
 
-    public function __construct(string $target, string $data)
+    public function __construct(Document $document, string $target, string $data)
     {
-        parent::__construct($data);
+        parent::__construct($document, $data);
 
         $this->nodeType = Node::PROCESSING_INSTRUCTION_NODE;
         $this->target = $target;
@@ -37,8 +37,8 @@ class ProcessingInstruction extends CharacterData
 
     public function cloneNodeInternal(Document $document = null, bool $cloneChildren = false): Node
     {
-        $document = $document ?: $this->getNodeDocument();
-        $copy = new static($this->target, $this->data);
+        $document = $document ?? $this->nodeDocument;
+        $copy = new static($document, $this->target, $this->data);
         $copy->data = $this->data;
         $copy->target = $this->target;
         $this->postCloneNode($copy, $document, $cloneChildren);

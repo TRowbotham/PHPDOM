@@ -52,12 +52,13 @@ class Attr extends Node
     private $value;
 
     public function __construct(
+        Document $document,
         string $localName,
         string $value,
         ?string $namespace = null,
         ?string $prefix = null
     ) {
-        parent::__construct();
+        parent::__construct($document);
 
         $this->localName = $localName;
         $this->nodeType = self::ATTRIBUTE_NODE;
@@ -203,8 +204,9 @@ class Attr extends Node
 
     public function cloneNodeInternal(Document $document = null, bool $cloneChildren = false): Node
     {
-        $document = $document ?: $this->getNodeDocument();
+        $document = $document ?? $this->getNodeDocument();
         $copy = new static(
+            $document,
             $this->localName,
             $this->value,
             $this->namespaceURI,
