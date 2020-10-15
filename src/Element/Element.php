@@ -158,7 +158,7 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
                 // the context object providing true for the require well-formed
                 // flag (this might throw an exception instead of returning a
                 // string).
-                $fakeNode = self::create($this->ownerDocument, 'fake', Namespaces::HTML);
+                $fakeNode = self::create($this->nodeDocument, 'fake', Namespaces::HTML);
                 $fakeNode->childNodes->append($this);
 
                 return MarkupFactory::serializeFragment($fakeNode, true);
@@ -252,7 +252,7 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
                 // namespace, and the context object's node document as its node
                 // document.
                 if ($parent instanceof DocumentFragment) {
-                    $parent = self::create($this->ownerDocument, 'body', Namespaces::HTML);
+                    $parent = self::create($this->nodeDocument, 'body', Namespaces::HTML);
                 }
 
                 // Let fragment be the result of invoking the fragment parsing
