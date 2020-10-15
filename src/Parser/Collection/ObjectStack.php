@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Rowbot\DOM\Parser\Collection;
@@ -15,10 +16,25 @@ use function array_pop;
 use function array_search;
 use function array_splice;
 
+/**
+ * @implements \ArrayAccess<int, \Rowbot\DOM\Support\UniquelyIdentifiable>
+ * @implements \IteratorAggregate<int, \Rowbot\DOM\Support\UniquelyIdentifiable>
+ */
 abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
 {
+    /**
+     * @var array<string, true>
+     */
     protected $cache;
+
+    /**
+     * @var list<\Rowbot\DOM\Support\UniquelyIdentifiable>
+     */
     protected $collection;
+
+    /**
+     * @var int
+     */
     protected $size;
 
     /**
@@ -35,18 +51,11 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
      * Replaces an object with a different object. Trying to replace an object
      * with the same object will do nothing.
      *
-     * @param  UniquelyIdentifiable $newItem
-     * @param  UniquelyIdentifiable $oldItem
-     *
-     * @throws NotInCollectionException
-     * @throws DuplicateItemException
-     *
-     * @return void
+     * @throws \Rowbot\DOM\Parser\Collection\Exception\NotInCollectionException
+     * @throws \Rowbot\DOM\Parser\Collection\Exception\DuplicateItemException
      */
-    public function replace(
-        UniquelyIdentifiable $newItem,
-        UniquelyIdentifiable $oldItem
-    ) {
+    public function replace(UniquelyIdentifiable $newItem, UniquelyIdentifiable $oldItem): void
+    {
         if ($newItem === $oldItem) {
             return;
         }
@@ -55,14 +64,12 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
 
         if (!isset($this->cache[$oldHash])) {
             throw new NotInCollectionException();
-            return;
         }
 
         $newHash = $newItem->uuid();
 
         if (isset($this->cache[$newHash])) {
             throw new DuplicateItemException();
-            return;
         }
 
         $index = array_search($oldItem, $this->collection, true);
@@ -74,38 +81,33 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
     /**
      * Inserts an object before an existing object in the stack.
      *
-     * @param  UniquelyIdentifiable  $newItem
-     * @param  ?UniquelyIdentifiable $oldItem
-     *
-     * @throws NotInCollectionException
-     * @throws DuplicateItemException
-     *
-     * @return void
+     * @throws \Rowbot\DOM\Parser\Collection\Exception\NotInCollectionException
+     * @throws \Rowbot\DOM\Parser\Collection\Exception\DuplicateItemException
      */
     public function insertBefore(
         UniquelyIdentifiable $newItem,
-        UniquelyIdentifiable $oldItem = null
-    ) {
-        if ($oldItem === null || $this->size == 0) {
+        ?UniquelyIdentifiable $oldItem = null
+    ): void {
+        if ($oldItem === null || $this->size === 0) {
             $this->push($newItem);
+
             return;
         }
 
         if ($oldItem === $this->collection[0]) {
             $this->insertBefore($newItem, null);
+
             return;
         }
 
         if (!isset($this->cache[$oldItem->uuid()])) {
             throw new NotInCollectionException();
-            return;
         }
 
         $newHash = $newItem->uuid();
 
         if (isset($this->cache[$newHash])) {
             throw new DuplicateItemException();
-            return;
         }
 
         $index = array_search($oldItem, $this->collection, true);
@@ -117,33 +119,25 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
     /**
      * Inserts an object after an existing object in the stack.
      *
-     * @param  UniquelyIdentifiable $newItem
-     * @param  UniquelyIdentifiable $oldItem
-     *
-     * @throws NotInCollectionException
-     * @throws DuplicateItemException
-     *
-     * @return void
+     * @throws \Rowbot\DOM\Parser\Collection\Exception\NotInCollectionException
+     * @throws \Rowbot\DOM\Parser\Collection\Exception\DuplicateItemException
      */
-    public function insertAfter(
-        UniquelyIdentifiable $newItem,
-        UniquelyIdentifiable $oldItem
-    ) {
+    public function insertAfter(UniquelyIdentifiable $newItem, UniquelyIdentifiable $oldItem): void
+    {
         if ($this->collection[$this->size - 1] === $oldItem) {
             $this->push($newItem);
+
             return;
         }
 
         if (!isset($this->cache[$oldItem->uuid()])) {
             throw new NotInCollectionException();
-            return;
         }
 
         $newHash = $newItem->uuid();
 
         if (isset($this->cache[$newHash])) {
             throw new DuplicateItemException();
-            return;
         }
 
         $index = array_search($oldItem, $this->collection, true);
@@ -155,19 +149,14 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
     /**
      * Removes the given object from the stack.
      *
-     * @param  UniquelyIdentifiable $item
-     *
-     * @throws NotInCollectionException
-     *
-     * @return void
+     * @throws \Rowbot\DOM\Parser\Collection\Exception\NotInCollectionException
      */
-    public function remove(UniquelyIdentifiable $item)
+    public function remove(UniquelyIdentifiable $item): void
     {
         $hash = $item->uuid();
 
         if (!isset($this->cache[$hash])) {
             throw new NotInCollectionException();
-            return;
         }
 
         unset($this->cache[$hash]);
@@ -175,6 +164,7 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
 
         if ($this->collection[$this->size] === $item) {
             array_pop($this->collection);
+
             return;
         }
 
@@ -184,10 +174,8 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
 
     /**
      * Empties the stack.
-     *
-     * @return void
      */
-    public function clear()
+    public function clear(): void
     {
         $this->collection = [];
         $this->cache = [];
@@ -196,10 +184,6 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
 
     /**
      * Returns true if the given object is in the stack, false otherwise.
-     *
-     * @param  UniquelyIdentifiable $item
-     *
-     * @return bool
      */
     public function contains(UniquelyIdentifiable $item): bool
     {
@@ -208,8 +192,6 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
 
     /**
      * Returns the number of objects in the stack.
-     *
-     * @return int
      */
     public function count(): int
     {
@@ -218,28 +200,23 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
 
     /**
      * Returns true if the stack is empty, false otherwise.
-     *
-     * @return bool
      */
     public function isEmpty(): bool
     {
-        return $this->size == 0;
+        return $this->size === 0;
     }
 
     /**
      * Returns the numerical index of the given object, or -1 if the object
      * does not exist in the stack.
      *
-     * @param  UniquelyIdentifiable $item
-     *
-     * @throws NotInCollectionException
-     *
-     * @return int
+     * @throws \Rowbot\DOM\Parser\Collection\Exception\NotInCollectionException
      */
     public function indexOf(UniquelyIdentifiable $item): int
     {
         if (!isset($this->cache[$item->uuid()])) {
             throw new NotInCollectionException();
+
             return -1;
         }
 
@@ -249,19 +226,14 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
     /**
      * Pushes the given object onto the end of the stack.
      *
-     * @param  UniquelyIdentifiable $item
-     *
-     * @throws DuplicateItemException
-     *
-     * @return void
+     * @throws \Rowbot\DOM\Parser\Collection\Exception\DuplicateItemException
      */
-    public function push(UniquelyIdentifiable $item)
+    public function push(UniquelyIdentifiable $item): void
     {
         $hash = $item->uuid();
 
         if (isset($this->cache[$hash])) {
             throw new DuplicateItemException();
-            return;
         }
 
         $this->collection[] = $item;
@@ -272,35 +244,30 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
     /**
      * Pops an object off the end of the stack.
      *
-     * @throws EmptyStackException
-     *
-     * @return ?UniquelyIdentifiable
+     * @throws \Rowbot\DOM\Parser\Collection\Exception\EmptyStackException
      */
-    public function pop()
+    public function pop(): UniquelyIdentifiable
     {
-        if ($this->size == 0) {
+        if ($this->size === 0) {
             throw new EmptyStackException();
-            return;
         }
 
         $item = array_pop($this->collection);
         unset($this->cache[$item->uuid()]);
         --$this->size;
+
         return $item;
     }
 
     /**
      * Returns the last object in the stack.
      *
-     * @throws EmptyStackException
-     *
-     * @return ?UniquelyIdentifiable
+     * @throws \Rowbot\DOM\Parser\Collection\Exception\EmptyStackException
      */
-    public function top()
+    public function top(): UniquelyIdentifiable
     {
-        if ($this->size == 0) {
+        if ($this->size === 0) {
             throw new EmptyStackException();
-            return;
         }
 
         return $this->collection[$this->size - 1];
@@ -309,15 +276,12 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
     /**
      * Returns the first object in the stack.
      *
-     * @throws EmptyStackException
-     *
-     * @return ?UniquelyIdentifiable
+     * @throws \Rowbot\DOM\Parser\Collection\Exception\EmptyStackException
      */
-    public function bottom()
+    public function bottom(): UniquelyIdentifiable
     {
-        if ($this->size == 0) {
+        if ($this->size === 0) {
             throw new EmptyStackException();
-            return;
         }
 
         return $this->collection[0];
@@ -327,9 +291,9 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
      * Returns an iterator that iterates from the end of the stack to the
      * beginning of the stack.
      *
-     * @return ReverseArrayIterator
+     * @return \Rowbot\DOM\Parser\Collection\ReverseArrayIterator<\Rowbot\DOM\Support\UniquelyIdentifiable>
      */
-    public function getIterator()
+    public function getIterator(): ReverseArrayIterator
     {
         return new ReverseArrayIterator($this->collection);
     }
@@ -338,10 +302,8 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
      * Returns true if the numerical index exists, false otherwise.
      *
      * @param  int $index
-     *
-     * @return bool
      */
-    public function offsetExists($index)
+    public function offsetExists($index): bool
     {
         return isset($this->collection[$index]);
     }
@@ -351,10 +313,8 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
      * index is not valid.
      *
      * @param  int $index
-     *
-     * @return ?UniquelyIdentifiable
      */
-    public function offsetGet($index)
+    public function offsetGet($index): ?UniquelyIdentifiable
     {
         return $this->collection[$index] ?? null;
     }
@@ -362,24 +322,21 @@ abstract class ObjectStack implements ArrayAccess, Countable, IteratorAggregate
     /**
      * Noop.
      *
-     * @param  int                  $index
-     * @param  UniquelyIdentifiable $value
-     *
-     * @return void
+     * @param  int                                      $index
+     * @param  \Rowbot\DOM\Support\UniquelyIdentifiable $value
      */
-    public function offsetSet($index, $value)
+    public function offsetSet($index, $value): void
     {
+        // Do nothing.
     }
 
     /**
      * Noop.
      *
      * @param  int                  $index
-     * @param  UniquelyIdentifiable $value
-     *
-     * @return void
      */
-    public function offsetUnset($index)
+    public function offsetUnset($index): void
     {
+        // Do nothing.
     }
 }

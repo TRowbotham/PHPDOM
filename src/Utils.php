@@ -1,27 +1,24 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Rowbot\DOM;
 
 use function mb_strlen;
-use function mb_substr;
 use function mb_strtolower;
 use function mb_strtoupper;
+use function mb_substr;
 use function pow;
 
 final class Utils
 {
     /**
      * @see https://infra.spec.whatwg.org/#ascii-whitespace
-     *
-     * @var string
      */
     public const ASCII_WHITESPACE = '/[\x09\x0A\x0C\x0D\x20]+/u';
 
     /**
-     * Constructor.
-     *
-     * @return void
+     * @codeCoverageIgnore
      */
     private function __construct()
     {
@@ -32,10 +29,6 @@ final class Utils
      * the corresponding characters in the range U+0061 to U+007A, inclusive.
      *
      * @see https://dom.spec.whatwg.org/#converted-to-ascii-uppercase
-     *
-     * @param string $value A string.
-     *
-     * @return string
      */
     public static function toASCIILowercase(string $value): string
     {
@@ -60,10 +53,6 @@ final class Utils
      * the corresponding characters in the range U+0041 to U+005A, inclusive.
      *
      * @see https://dom.spec.whatwg.org/#converted-to-ascii-lowercase
-     *
-     * @param string $value A string.
-     *
-     * @return string
      */
     public static function toASCIIUppercase(string $value): string
     {
@@ -83,11 +72,6 @@ final class Utils
         return $output;
     }
 
-    /**
-     * @param int $offset
-     *
-     * @return int
-     */
     public static function unsignedLong(int $offset): int
     {
         $normalizedOffset = $offset % pow(2, 32);
@@ -101,18 +85,14 @@ final class Utils
 
     /**
      * @see https://dom.spec.whatwg.org/#retarget
-     *
-     * @param \Rowbot\DOM\Node $objectA
-     * @param \Rowbot\DOM\Node $objectB
-     *
-     * @return \Rowbot\DOM\Node
      */
     public static function retargetObject(Node $objectA, Node $objectB): Node
     {
         while (true) {
             $root = $objectA->getRootNode();
 
-            if (!$root instanceof ShadowRoot
+            if (
+                !$root instanceof ShadowRoot
                 || $root->isShadowIncludingInclusiveAncestorOf($objectB)
             ) {
                 return $objectA;

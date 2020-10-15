@@ -1,27 +1,21 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Element\HTML;
 
 /**
  * Represents the HTML <meta> element.
  *
- * @see https://html.spec.whatwg.org/#the-meta-element
+ * @see https://html.spec.whatwg.org/multipage/semantics.html#the-meta-element
  *
- * @property string $content Reflects the value of the HTML content attribute.
- *     Contains the value part of a name => value pair when the name attribute
- *     is present.
- *
- * @property string $httpEquiv Reflects the value of the HTML http-equiv
- *     attribute.
- *
- * @property string $name Reflects the value of the HTML name attribute.
+ * @property string $content   Reflects the value of the HTML content attribute. Contains the value part of a name =>
+ *                             value pair when the name attribute is present.
+ * @property string $httpEquiv Reflects the value of the HTML http-equiv attribute.
+ * @property string $name      Reflects the value of the HTML name attribute.
  */
 class HTMLMetaElement extends HTMLElement
 {
-    protected function __construct()
-    {
-        parent::__construct();
-    }
-
     public function __get(string $name)
     {
         switch ($name) {
@@ -39,7 +33,7 @@ class HTMLMetaElement extends HTMLElement
         }
     }
 
-    public function __set(string $name, $value)
+    public function __set(string $name, $value): void
     {
         switch ($name) {
             case 'content':

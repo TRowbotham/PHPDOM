@@ -1,11 +1,11 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Rowbot\DOM\Parser\Collection;
 
-use Rowbot\DOM\Element\Element;
-use Rowbot\DOM\Parser\Collection\Exception\CollectionException;
 use Rowbot\DOM\Parser\Bookmark;
+use Rowbot\DOM\Parser\Collection\Exception\CollectionException;
 use Rowbot\DOM\Parser\Marker;
 use Rowbot\DOM\Support\UniquelyIdentifiable;
 
@@ -14,10 +14,11 @@ use function count;
 class ActiveFormattingElementStack extends ObjectStack
 {
     /**
-     * {@inheritDoc}
      * @see https://html.spec.whatwg.org/multipage/syntax.html#push-onto-the-list-of-active-formatting-elements
+     *
+     * @return (\Rowbot\DOM\Element\Element&\Rowbot\DOM\Support\UniquelyIdentifiable)|\Rowbot\DOM\Parser\Marker
      */
-    public function push(UniquelyIdentifiable $element)
+    public function push(UniquelyIdentifiable $element): void
     {
         $count = 0;
 
@@ -34,16 +35,14 @@ class ActiveFormattingElementStack extends ObjectStack
             $namespace = $element->namespaceURI;
             $tagName = $element->tagName;
 
-            if ($namespace !== $item->namespaceURI ||
-                $tagName !== $item->tagName
-            ) {
+            if ($namespace !== $item->namespaceURI || $tagName !== $item->tagName) {
                 continue;
             }
 
             $elementAttributes = $element->getAttributeList();
             $itemAttributes = $item->getAttributeList();
 
-            if (count($elementAttributes) != count($itemAttributes)) {
+            if (count($elementAttributes) !== count($itemAttributes)) {
                 continue;
             }
 
@@ -55,24 +54,27 @@ class ActiveFormattingElementStack extends ObjectStack
                     $attr->getLocalName()
                 );
 
-                if ($itemAttr === null ||
-                    $attrName !== $itemAttr->getQualifiedName() ||
-                    $attrNamespace !== $itemAttr->getNamespace() ||
-                    $attr->getValue() !== $itemAttr->getValue()
+                if (
+                    $itemAttr === null
+                    || $attrName !== $itemAttr->getQualifiedName()
+                    || $attrNamespace !== $itemAttr->getNamespace()
+                    || $attr->getValue() !== $itemAttr->getValue()
                 ) {
                     continue 2;
                 }
             }
 
-            if (++$count == 3) {
+            if (++$count === 3) {
                 try {
                     parent::push($element);
                 } catch (CollectionException $e) {
                     throw $e;
+
                     return;
                 }
 
                 parent::remove($this->collection[$i]);
+
                 return;
             }
         }
@@ -85,10 +87,8 @@ class ActiveFormattingElementStack extends ObjectStack
      * next marker.
      *
      * @see https://html.spec.whatwg.org/multipage/#clear-the-list-of-active-formatting-elements-up-to-the-last-marker
-     *
-     * @return void
      */
-    public function clearUpToLastMarker()
+    public function clearUpToLastMarker(): void
     {
         $size = $this->size;
 

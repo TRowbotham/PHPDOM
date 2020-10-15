@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Element\HTML;
 
 /**
@@ -17,7 +20,7 @@ class HTMLTimeElement extends HTMLElement
         }
     }
 
-    public function __set(string $name, $value)
+    public function __set(string $name, $value): void
     {
         switch ($name) {
             case 'dateTime':

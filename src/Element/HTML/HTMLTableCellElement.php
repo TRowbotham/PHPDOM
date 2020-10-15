@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Element\HTML;
 
 use Rowbot\DOM\DOMTokenList;
@@ -11,20 +14,21 @@ use Rowbot\DOM\DOMTokenList;
  * @see https://html.spec.whatwg.org/multipage/tables.html#the-td-element
  * @see https://html.spec.whatwg.org/multipage/tables.html#the-th-element
  *
- * @property int $colSpan Represents the number of columns this row must span.
- *     Default value is 1.  Reflects the value of the colspan attribute.
+ * @property int $colSpan Represents the number of columns this row must span. Default value is 1. Reflects the value of
+ *                        the colspan attribute.
+ * @property int $rowSpan Represents the number of rows this column must span. Default value is 1. Reflects the value of
+ *                        the rowspan attribute.
  *
- * @property int $rowSpan Represents the number of rows this column must span.
- *     Default value is 1.  Reflects the value of the rowspan attribute.
- *
- * @property-read int $cellIndex Returns the position of the cell in the row's
- *     cells list.  Returns -1 if the element isn't in a row.
- *
- * @property-read string $headers A list of ids of th elements that represents
- *     th elements associated with this cell.
+ * @property-read int    $cellIndex Returns the position of the cell in the row's cells list. Returns -1 if the element
+ *                                  isn't in a row.
+ * @property-read string $headers   A list of ids of th elements that represents <th> elements associated with this
+ *                                  cell.
  */
 class HTMLTableCellElement extends HTMLElement
 {
+    /**
+     * @var \Rowbot\DOM\DOMTokenList
+     */
     private $headers;
 
     protected function __construct()
@@ -40,10 +44,10 @@ class HTMLTableCellElement extends HTMLElement
             case 'cellIndex':
                 if ($this->parentNode instanceof HTMLTableRowElement) {
                     $node = $this;
-                    $index = 0;
+                    $count = 0;
 
                     while ($node) {
-                        $count++;
+                        ++$count;
                         $node = $node->previousSibling;
                     }
 
@@ -66,7 +70,7 @@ class HTMLTableCellElement extends HTMLElement
         }
     }
 
-    public function __set(string $name, $value)
+    public function __set(string $name, $value): void
     {
         switch ($name) {
             case 'colSpan':

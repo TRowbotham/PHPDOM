@@ -1,9 +1,9 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Rowbot\DOM\Parser\HTML;
 
-use Rowbot\DOM\Attr;
 use Rowbot\DOM\Document;
 use Rowbot\DOM\DocumentReadyState;
 use Rowbot\DOM\Element\Element;
@@ -12,7 +12,6 @@ use Rowbot\DOM\Element\HTML\HTMLFormElement;
 use Rowbot\DOM\Element\HTML\HTMLTemplateElement;
 use Rowbot\DOM\HTMLDocument;
 use Rowbot\DOM\Namespaces;
-use Rowbot\DOM\Node;
 use Rowbot\DOM\NodeList;
 use Rowbot\DOM\Parser\Collection\ActiveFormattingElementStack;
 use Rowbot\DOM\Parser\Collection\OpenElementStack;
@@ -21,8 +20,8 @@ use Rowbot\DOM\Parser\TextBuilder;
 use Rowbot\DOM\Parser\Token\AttributeToken;
 use Rowbot\DOM\Parser\Token\EndTagToken;
 use Rowbot\DOM\Parser\Token\StartTagToken;
-use SplStack;
 use SplObjectStorage;
+use SplStack;
 
 use function mb_check_encoding;
 use function mb_convert_encoding;
@@ -47,15 +46,6 @@ class HTMLParser extends Parser
      */
     private $treeBuilder;
 
-    /**
-     * Constructor.
-     *
-     * @param \Rowbot\DOM\Document             $document
-     * @param bool                             $isFragmentCase (optional)
-     * @param \Rowbot\DOM\Element\Element|null $contextElement (optional)
-     *
-     * @return void
-     */
     public function __construct(
         Document $document,
         bool $isFragmentCase = false,
@@ -96,8 +86,6 @@ class HTMLParser extends Parser
 
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#abort-a-parser
-     *
-     * @return void
      */
     public function abort(): void
     {
@@ -117,16 +105,9 @@ class HTMLParser extends Parser
 
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#parsing-html-fragments
-     *
-     * @param string                      $input The markup string to parse
-     * @param \Rowbot\DOM\Element\Element $contextElement The context for the parser.
-     *
-     * @return \Rowbot\DOM\NodeList
      */
-    public static function parseHTMLFragment(
-        string $input,
-        Element $contextElement
-    ): NodeList {
+    public static function parseHTMLFragment(string $input, Element $contextElement): NodeList
+    {
         // Create a new Document node, and mark it as being an HTML document.
         $doc = new HTMLDocument();
         $mode = $contextElement->getNodeDocument()->getMode();
@@ -234,6 +215,7 @@ class HTMLParser extends Parser
         while ($node) {
             if ($node instanceof HTMLFormElement) {
                 $parser->state->formElementPointer = $node;
+
                 break;
             }
 
@@ -252,9 +234,6 @@ class HTMLParser extends Parser
         return $root->childNodes;
     }
 
-    /**
-     * @return void
-     */
     public function run(): void
     {
         $gen = $this->tokenizer->run();
@@ -281,9 +260,7 @@ class HTMLParser extends Parser
             // When a start tag token is emitted with its self-closing flag set,
             // if the flag is not acknowledged when it is processed by the tree
             // construction stage, that is a parse error.
-            if ($token instanceof StartTagToken &&
-                !$token->wasAcknowledged()
-            ) {
+            if ($token instanceof StartTagToken && !$token->wasAcknowledged()) {
                 // Parse error.
             }
         }
@@ -293,36 +270,34 @@ class HTMLParser extends Parser
 
     /**
      * Preprocesses the input stream.
-     *
-     * @param string $input
-     *
-     * @return void
      */
     public function preprocessInputStream(string $input): void
     {
         $input = mb_convert_encoding($input, 'UTF-8');
 
-        if (preg_match(
-            '/[\x01-\x08\x0E-\x1F\x7F-\x9F\x{FDD0}-\x{FDEF}\x0B' .
-            '\x{FFFE}\x{FFFF}' .
-            '\x{1FFFE}\x{1FFFF}' .
-            '\x{2FFFE}\x{2FFFF}' .
-            '\x{3FFFE}\x{3FFFF}' .
-            '\x{4FFFE}\x{4FFFF}' .
-            '\x{5FFFE}\x{5FFFF}' .
-            '\x{6FFFE}\x{6FFFF}' .
-            '\x{7FFFE}\x{7FFFF}' .
-            '\x{8FFFE}\x{8FFFF}' .
-            '\x{9FFFE}\x{9FFFF}' .
-            '\x{AFFFE}\x{AFFFF}' .
-            '\x{BFFFE}\x{BFFFF}' .
-            '\x{CFFFE}\x{CFFFF}' .
-            '\x{DFFFE}\x{DFFFF}' .
-            '\x{EFFFE}\x{EFFFF}' .
-            '\x{FFFFE}\x{FFFFF}' .
-            '\x{10FFFE}\x{10FFFF}]/u',
-            $input
-        )) {
+        if (
+            preg_match(
+                '/[\x01-\x08\x0E-\x1F\x7F-\x9F\x{FDD0}-\x{FDEF}\x0B'
+                . '\x{FFFE}\x{FFFF}'
+                . '\x{1FFFE}\x{1FFFF}'
+                . '\x{2FFFE}\x{2FFFF}'
+                . '\x{3FFFE}\x{3FFFF}'
+                . '\x{4FFFE}\x{4FFFF}'
+                . '\x{5FFFE}\x{5FFFF}'
+                . '\x{6FFFE}\x{6FFFF}'
+                . '\x{7FFFE}\x{7FFFF}'
+                . '\x{8FFFE}\x{8FFFF}'
+                . '\x{9FFFE}\x{9FFFF}'
+                . '\x{AFFFE}\x{AFFFF}'
+                . '\x{BFFFE}\x{BFFFF}'
+                . '\x{CFFFE}\x{CFFFF}'
+                . '\x{DFFFE}\x{DFFFF}'
+                . '\x{EFFFE}\x{EFFFF}'
+                . '\x{FFFFE}\x{FFFFF}'
+                . '\x{10FFFE}\x{10FFFF}]/u',
+                $input
+            )
+        ) {
             // Parse error
         }
 
@@ -339,8 +314,6 @@ class HTMLParser extends Parser
         // then be converted to LF characters. Thus, newlines in HTML DOMs are
         // represented by LF characters, and there are never any CR characters
         // in the input to the tokenization stage.
-        $this->inputStream->append(
-            preg_replace(['/\x0D\x0A/u', '/\x0D/u'], "\x0A", $input)
-        );
+        $this->inputStream->append(preg_replace(['/\x0D\x0A/u', '/\x0D/u'], "\x0A", $input));
     }
 }

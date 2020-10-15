@@ -1,7 +1,8 @@
 <?php
-namespace Rowbot\DOM;
 
-use Rowbot\DOM\Exception\DOMException;
+declare(strict_types=1);
+
+namespace Rowbot\DOM;
 
 use function count;
 
@@ -16,8 +17,7 @@ trait ChildOrParentNode
      *
      * @see https://dom.spec.whatwg.org/#converting-nodes-into-a-node
      *
-     * @param (\Rowbot\DOM\Node|string)[] $nodes    An array of Nodes and strings.
-     * @param \Rowbot\DOM\Document        $document Context object's node document.
+     * @param list<\Rowbot\DOM\Node|string> $nodes
      *
      * @return \Rowbot\DOM\DocumentFragment|\Rowbot\DOM\Node If $nodes > 1, then a DocumentFragment is returned,
      *                                                       otherwise a single Node is returned.
@@ -41,7 +41,7 @@ trait ChildOrParentNode
         // node to a new DocumentFragment whose node document is document, and
         // then append each node in nodes, if any, to it. Rethrow any
         // exceptions.
-        if (count($nodes) == 1) {
+        if (count($nodes) === 1) {
             return $nodes[0];
         }
 

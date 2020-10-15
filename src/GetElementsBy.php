@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Rowbot\DOM;
 
 use Rowbot\DOM\Support\Collection\StringSet;
@@ -10,9 +13,9 @@ trait GetElementsBy
      *
      * @see https://dom.spec.whatwg.org/#dom-element-getelementsbyclassname
      *
-     * @param string $className A space delimited string containing the classNames to search for.
+     * @param string $classNames A space delimited string containing the classNames to search for.
      *
-     * @return \Rowbot\DOM\Element\Element[]
+     * @return list<\Rowbot\DOM\Element\Element>
      */
     public function getElementsByClassName(string $classNames): array
     {
@@ -23,7 +26,7 @@ trait GetElementsBy
             return $collection;
         }
 
-        $nodeFilter = function ($node) use ($classes) {
+        $nodeFilter = static function (Node $node) use ($classes): int {
             $hasClasses = false;
 
             foreach ($classes as $className) {
@@ -55,7 +58,7 @@ trait GetElementsBy
      * @param string $qualifiedName The element's local name to search for. If given '*', all element decendants will be
      *                              returned.
      *
-     * @return \Rowbot\DOM\Element\Element[] A list of Elements with the specified local name.
+     * @return list<\Rowbot\DOM\Element\Element> A list of Elements with the specified local name.
      */
     public function getElementsByTagName(string $qualifiedName): array
     {
@@ -64,7 +67,7 @@ trait GetElementsBy
         if ($qualifiedName === '*') {
             $nodeFilter = null;
         } elseif ($this instanceof Document) {
-            $nodeFilter = function ($node) use ($qualifiedName) {
+            $nodeFilter = static function (Node $node) use ($qualifiedName): int {
                 $shouldAccept = ($node->namespaceURI === Namespaces::HTML
                     && $node->localName === Utils::toASCIILowercase(
                         $qualifiedName
@@ -79,7 +82,7 @@ trait GetElementsBy
                 return NodeFilter::FILTER_SKIP;
             };
         } else {
-            $nodeFilter = function ($node) use ($qualifiedName) {
+            $nodeFilter = static function (Node $node) use ($qualifiedName): int {
                 if ($node->localName === $qualifiedName) {
                     return NodeFilter::FILTER_ACCEPT;
                 }
@@ -110,7 +113,7 @@ trait GetElementsBy
      *                          all element decendants will be returned.  If only local name is given '*' all element
      *                          decendants matching only namespace will be returned.
      *
-     * @return \Rowbot\DOM\Element\Element[]
+     * @return list<\Rowbot\DOM\Element\Element>
      */
     public function getElementsByTagNameNS(
         ?string $namespace,
@@ -125,7 +128,7 @@ trait GetElementsBy
         if ($namespace === '*' && $localName === '*') {
             $nodeFilter = null;
         } elseif ($namespace === '*') {
-            $nodeFilter = function ($node) use ($localName) {
+            $nodeFilter = static function (Node $node) use ($localName): int {
                 if ($node->localName === $localName) {
                     return NodeFilter::FILTER_ACCEPT;
                 }
@@ -133,7 +136,7 @@ trait GetElementsBy
                 return NodeFilter::FILTER_SKIP;
             };
         } elseif ($localName === '*') {
-            $nodeFilter =  function ($node) use ($namespace) {
+            $nodeFilter =  static function (Node $node) use ($namespace): int {
                 if ($node->namespaceURI === $namespace) {
                     return NodeFilter::FILTER_ACCEPT;
                 }

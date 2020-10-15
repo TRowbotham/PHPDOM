@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Rowbot\DOM;
 
 use ArrayAccess;
@@ -15,8 +18,12 @@ use function preg_match;
 /**
  * @see https://dom.spec.whatwg.org/#interface-domtokenlist
  *
- * @property-read int    $length Returns the number of tokens in the list.
- * @property      string $value
+ * @property string $value
+ *
+ * @property-read int $length Returns the number of tokens in the list.
+ *
+ * @implements \ArrayAccess<int, string>
+ * @implements \Iterator<int, string>
  */
 final class DOMTokenList implements
     ArrayAccess,
@@ -40,14 +47,6 @@ final class DOMTokenList implements
      */
     private $tokens;
 
-    /**
-     * Constructor.
-     *
-     * @param \Rowbot\DOM\Element\Element $element
-     * @param string                      $attrLocalName
-     *
-     * @return void
-     */
     public function __construct(Element $element, string $attrLocalName)
     {
         $this->attrLocalName = $attrLocalName;
@@ -55,19 +54,11 @@ final class DOMTokenList implements
         $attrList = $this->element->getAttributeList();
         $attrList->observe($this);
         $value = $attrList->getAttrValue($attrLocalName);
-        $this->onAttributeChanged(
-            $this->element,
-            $this->attrLocalName,
-            $value,
-            $value,
-            null
-        );
+        $this->onAttributeChanged($this->element, $this->attrLocalName, $value, $value, null);
     }
 
     /**
-     * @param string $name
-     *
-     * @return string|int
+     * @return int|string
      */
     public function __get(string $name)
     {
@@ -80,20 +71,11 @@ final class DOMTokenList implements
         }
     }
 
-    /**
-     * @param string $name
-     * @param string $value
-     *
-     * @return void
-     */
-    public function __set(string $name, string $value)
+    public function __set(string $name, string $value): void
     {
         switch ($name) {
             case 'value':
-                $this->element->getAttributeList()->setAttrValue(
-                    $this->attrLocalName,
-                    $value
-                );
+                $this->element->getAttributeList()->setAttrValue($this->attrLocalName, $value);
         }
     }
 
@@ -101,10 +83,6 @@ final class DOMTokenList implements
      * Gets the token at the given index.
      *
      * @see https://dom.spec.whatwg.org/#dom-domtokenlist-item
-     *
-     * @param int $index An integer index.
-     *
-     * @return string|null The token at the specified index or null if the index does not exist.
      */
     public function item(int $index): ?string
     {
@@ -117,12 +95,8 @@ final class DOMTokenList implements
      *
      * @see https://dom.spec.whatwg.org/#dom-domtokenlist-add
      *
-     * @param string ...$tokens One or more tokens to be added to the token list.
-     *
      * @throws \Rowbot\DOM\Exception\SyntaxError           If the token is an empty string.
      * @throws \Rowbot\DOM\Exception\InvalidCharacterError If the token contains ASCII whitespace.
-     *
-     * @return void
      */
     public function add(string ...$tokens): void
     {
@@ -147,10 +121,6 @@ final class DOMTokenList implements
      * Checks if the given token is contained in the list.
      *
      * @see https://dom.spec.whatwg.org/#dom-domtokenlist-contains
-     *
-     * @param string $token A token to check against the token list.
-     *
-     * @return bool Returns true if the token is present, and false otherwise.
      */
     public function contains(string $token): bool
     {
@@ -162,12 +132,8 @@ final class DOMTokenList implements
      *
      * @see https://dom.spec.whatwg.org/#dom-domtokenlist-remove
      *
-     * @param string ...$tokens One or more tokens to be removed.
-     *
      * @throws \Rowbot\DOM\Exception\SyntaxError           If the token is an empty string.
      * @throws \Rowbot\DOM\Exception\InvalidCharacterError If the token contains ASCII whitespace.
-     *
-     * @return void
      */
     public function remove(string ...$tokens): void
     {
@@ -194,10 +160,6 @@ final class DOMTokenList implements
      * force is false.
      *
      * @see https://dom.spec.whatwg.org/#dom-domtokenlist-toggle
-     *
-     * @param string $token The token to be toggled.
-     * @param bool   $force (optional) Whether or not the token should be
-     *                                 forcefully added or removed.
      *
      * @return bool Returns true if the token is present, and false otherwise.
      *
@@ -242,13 +204,8 @@ final class DOMTokenList implements
      *
      * @see https://dom.spec.whatwg.org/#dom-domtokenlist-replace
      *
-     * @param string $token    The token to be replaced.
-     * @param string $newToken The token to be inserted.
-     *
      * @throws \Rowbot\DOM\Exception\SyntaxError           If either token is an empty string.
      * @throws \Rowbot\DOM\Exception\InvalidCharacterError If either token contains ASCII whitespace.
-     *
-     * @return bool
      */
     public function replace(string $token, string $newToken): bool
     {
@@ -256,7 +213,8 @@ final class DOMTokenList implements
             throw new SyntaxError();
         }
 
-        if (preg_match(Utils::ASCII_WHITESPACE, $token)
+        if (
+            preg_match(Utils::ASCII_WHITESPACE, $token)
             || preg_match(Utils::ASCII_WHITESPACE, $newToken)
         ) {
             throw new InvalidCharacterError();
@@ -278,10 +236,6 @@ final class DOMTokenList implements
      *
      * @see https://dom.spec.whatwg.org/#dom-domtokenlist-supports
      *
-     * @param string $token The token to check.
-     *
-     * @return bool
-     *
      * @throws \Rowbot\DOM\Exception\TypeError If the associated attribute's local name does not define a list of
      *                                         supported tokens.
      */
@@ -301,10 +255,8 @@ final class DOMTokenList implements
      * Runs the token list's update steps.
      *
      * @see https://dom.spec.whatwg.org/#concept-dtl-update
-     *
-     * @return void
      */
-    private function update()
+    private function update(): void
     {
         $attrList = $this->element->getAttributeList();
         $attr = $attrList->getAttrByNamespaceAndLocalName(
@@ -317,10 +269,7 @@ final class DOMTokenList implements
             return;
         }
 
-        $attrList->setAttrValue(
-            $this->attrLocalName,
-            $this->tokens->toString()
-        );
+        $attrList->setAttrValue($this->attrLocalName, $this->tokens->toString());
     }
 
     /**
@@ -328,19 +277,12 @@ final class DOMTokenList implements
      * attribute's local name.
      *
      * @see https://dom.spec.whatwg.org/#concept-dtl-serialize
-     *
-     * @return string
      */
     public function toString(): string
     {
-        return $this->element->getAttributeList()->getAttrValue(
-            $this->attrLocalName
-        );
+        return $this->element->getAttributeList()->getAttrValue($this->attrLocalName);
     }
 
-    /**
-     * @return string
-     */
     public function __toString(): string
     {
         return $this->toString();
@@ -350,8 +292,6 @@ final class DOMTokenList implements
      * Checks if the given index offset exists in the list of tokens.
      *
      * @param int $index The integer index to check.
-     *
-     * @return bool
      */
     public function offsetExists($index): bool
     {
@@ -361,9 +301,7 @@ final class DOMTokenList implements
     /**
      * Gets the token at the given index.
      *
-     * @param int $index An integer index.
-     *
-     * @return string|null The token at the specified index or null if the index does not exist.
+     * @param int $index
      */
     public function offsetGet($index): ?string
     {
@@ -375,8 +313,6 @@ final class DOMTokenList implements
      *
      * @param int    $index
      * @param string $token
-     *
-     * @return void
      */
     public function offsetSet($index, $token): void
     {
@@ -386,8 +322,6 @@ final class DOMTokenList implements
      * Unsetting a token using array notation is not permitted.  Use the remove() or toggle() methods instead.
      *
      * @param int $index
-     *
-     * @return void
      */
     public function offsetUnset($index): void
     {
@@ -395,8 +329,6 @@ final class DOMTokenList implements
 
     /**
      * Gets the number of tokens in the list.
-     *
-     * @return int
      */
     public function count(): int
     {
@@ -405,8 +337,6 @@ final class DOMTokenList implements
 
     /**
      * Gets the current token that the iterator is pointing to.
-     *
-     * @return string
      */
     public function current(): string
     {
@@ -415,8 +345,6 @@ final class DOMTokenList implements
 
     /**
      * Gets the current position of the iterator.
-     *
-     * @return int
      */
     public function key(): int
     {
@@ -425,8 +353,6 @@ final class DOMTokenList implements
 
     /**
      * Advances the iterator to the next item.
-     *
-     * @return void
      */
     public function next(): void
     {
@@ -435,8 +361,6 @@ final class DOMTokenList implements
 
     /**
      * Rewinds the iterator to the beginning.
-     *
-     * @return void
      */
     public function rewind(): void
     {
@@ -445,17 +369,12 @@ final class DOMTokenList implements
 
     /**
      * Checks if the iterator's position is valid.
-     *
-     * @return bool
      */
     public function valid(): bool
     {
         return $this->tokens->valid();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function onAttributeChanged(
         Element $element,
         string $localName,

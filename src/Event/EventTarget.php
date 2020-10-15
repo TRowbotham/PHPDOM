@@ -1,10 +1,12 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Rowbot\DOM\Event;
 
 use Rowbot\DOM\Exception\InvalidStateError;
 use Rowbot\DOM\Utils;
+use SplDoublyLinkedList;
 
 use function array_splice;
 use function call_user_func;
@@ -19,6 +21,9 @@ use function is_object;
  */
 abstract class EventTarget
 {
+    /**
+     * @var array<int, \Rowbot\DOM\Event\Listener>
+     */
     private $listeners;
 
     protected function __construct()
@@ -29,36 +34,17 @@ abstract class EventTarget
     /**
      * Registers a callback for a specified event on the current node.
      *
-     * @param string $type The name of the event to listen for.
-     *
-     * @param callable|EventListener $callback A callback that will be executed
-     *     when the event occurs.  If an object that inherits from the
-     *     EventListener interface is given, it will use the handleEvent method
-     *     on the object as the callback.
-     *
-     * @param bool|bool[] $options Optional. If a boolean is give, it specifies
-     *     whether or not the event should be handled during the capturing or
-     *     bubbling phase. If an array is given, the following keys and values
-     *     are accepted:
-     *
-     *         [
-     *             capture => boolean
-     *             passive => boolean
-     *             once    => boolean
-     *         ]
-     *
+     * @param \Rowbot\DOM\Event\EventListener|callable(\Rowbot\DOM\Event\Event): void|null $callback
+     * @param bool|array{capture?: bool, passive?: bool, once?: bool}                      $options
      */
-    public function addEventListener(
-        string $type,
-        $callback,
-        $options = false
-    ) {
+    public function addEventListener(string $type, $callback, $options = false): void
+    {
         // If callback is null, terminate these steps.
         if ($callback === null) {
             return;
         }
 
-        list($capture, $passive, $once) = $this->flattenMoreOptions($options);
+        [$capture, $passive, $once] = $this->flattenMoreOptions($options);
 
         if (is_object($callback) && $callback instanceof EventListener) {
             $callback = [$callback, 'handleEvent'];
@@ -74,6 +60,7 @@ abstract class EventTarget
         foreach ($this->listeners as $l) {
             if ($l->isEqual($listener)) {
                 $found = true;
+
                 break;
             }
         }
@@ -86,27 +73,11 @@ abstract class EventTarget
     /**
      * Unregisters a callback for a specified event on the current node.
      *
-     * @param string $type The name of the event to listen for.
-     *
-     * @param callable|EventListener $callback A callback that will be executed
-     *     when the event occurs.  If an object that inherits from the
-     *     EventListener interface is given, it will use the handleEvent method
-     *     on the object as the callback.
-     *
-     * @param bool|bool[] $options Optional. If a boolean is give, it specifies
-     *     whether or not the event should be handled during the capturing or
-     *     bubbling phase. If an array is given, the following keys and values
-     *     are accepted:
-     *
-     *          [
-     *              capture => boolean
-     *          ]
+     * @param \Rowbot\DOM\Event\EventListener|callable(\Rowbot\DOM\Event\Event): void|null $callback
+     * @param bool|array{capture?: bool}                                                   $options
      */
-    public function removeEventListener(
-        string $type,
-        $callback,
-        $options = false
-    ) {
+    public function removeEventListener(string $type, $callback, $options = false): void
+    {
         // If callback is null, terminate these steps.
         if ($callback === null) {
             return;
@@ -128,6 +99,7 @@ abstract class EventTarget
             if ($eventListener->isEqual($listener)) {
                 $eventListener->setRemoved(true);
                 array_splice($this->listeners, $index, 1);
+
                 break;
             }
         }
@@ -136,20 +108,12 @@ abstract class EventTarget
     /**
      * Dispatches an event at the current EventTarget, which will then invoke
      * any event listeners on the node and its ancestors.
-     *
-     * @param Event $event An object representing the specific event dispatched
-     *     with information regarding that event.
-     *
-     * @return boolean Returns true if the event is not cancelable or if the
-     *     preventDefault() method is not invoked, otherwise it returns false.
      */
-    public function dispatchEvent(Event $event)
+    public function dispatchEvent(Event $event): bool
     {
         $flags = $event->getFlags();
 
-        if ($flags & EventFlags::DISPATCH
-            || !($flags & EventFlags::INITIALIZED)
-        ) {
+        if ($flags & EventFlags::DISPATCH || !($flags & EventFlags::INITIALIZED)) {
             throw new InvalidStateError();
         }
 
@@ -162,22 +126,12 @@ abstract class EventTarget
      * @internal
      *
      * @see https://dom.spec.whatwg.org/#concept-event-dispatch
-     *
-     * @param Event $event The event object for the event.
-     *
-     * @param EventTarget $target The object that is the target of the event.
-     *
-     * @param bool $legacyTargetOverride A flag indicating that the
-     *     event's target should be overridden. Only useful for HTML.
-     *
-     * @return bool Returns false if the event's default action was canceled,
-     *     and true otherwise.
      */
     private function doDispatchEvent(
-        $event,
-        $target,
-        $legacyTargetOverride = false
-    ) {
+        Event $event,
+        EventTarget $target,
+        bool $legacyTargetOverride = false
+    ): bool {
         $event->setFlag(EventFlags::DISPATCH);
 
         // Let targetOverride be target, if legacy target override flag is not
@@ -202,9 +156,7 @@ abstract class EventTarget
 
         // If target is relatedTarget and target is not event’s relatedTarget,
         // then return true.
-        if ($target === $relatedTarget
-            && $target !== $event->getRelatedTarget()
-        ) {
+        if ($target === $relatedTarget && $target !== $event->getRelatedTarget()) {
             return true;
         }
 
@@ -213,7 +165,7 @@ abstract class EventTarget
         $path->push([
             'item'          => $target,
             'target'        => $targetOverride,
-            'relatedTarget' => $relatedTarget
+            'relatedTarget' => $relatedTarget,
         ]);
 
         // Let isActivationEvent be true, if event is a MouseEvent object and
@@ -255,7 +207,8 @@ abstract class EventTarget
                 // If isActivationEvent is true, event’s bubbles attribute is
                 // true, activationTarget is null, and parent has activation
                 // behavior, then set activationTarget to parent.
-                if ($isActivationEvent
+                if (
+                    $isActivationEvent
                     && $event->bubbles
                     && $activationTarget === null
                     && $parent->hasActivationBehavior()
@@ -267,7 +220,7 @@ abstract class EventTarget
                 $path->push([
                     'item'          => $parent,
                     'target'        => null,
-                    'relatedTarget' => $relatedTarget
+                    'relatedTarget' => $relatedTarget,
                 ]);
             } elseif ($parent === $relatedTarget) {
                 $parent = null;
@@ -277,7 +230,8 @@ abstract class EventTarget
                 // If isActivationEvent is true, activationTarget is null, and
                 // target has activation behavior, then set activationTarget to
                 // target.
-                if ($isActivationEvent
+                if (
+                    $isActivationEvent
                     && $activationTarget === null
                     && $target->hasActivationBehavior()
                 ) {
@@ -288,7 +242,7 @@ abstract class EventTarget
                 $path->push([
                     'item'          => $parent,
                     'target'        => $target,
-                    'relatedTarget' => $relatedTarget
+                    'relatedTarget' => $relatedTarget,
                 ]);
             }
 
@@ -304,17 +258,14 @@ abstract class EventTarget
         // If activationTarget is non-null and activationTarget has
         // legacy-pre-activation behavior, then run activationTarget’s
         // legacy-pre-activation behavior.
-        if ($activationTarget !== null
-            && $activationTarget->hasLegacyPreActivationBehavior()
-        ) {
+        if ($activationTarget !== null && $activationTarget->hasLegacyPreActivationBehavior()) {
             $activationTarget->legacyPreActivationBehavior();
         }
 
         // Set path's iterator mode so that it iterates in the reverse
         // direction.
         $path->setIteratorMode(
-            \SplDoublyLinkedList::IT_MODE_LIFO |
-            \SplDoublyLinkedList::IT_MODE_KEEP
+            SplDoublyLinkedList::IT_MODE_LIFO | SplDoublyLinkedList::IT_MODE_KEEP
         );
 
         foreach ($path as $index => $tuple) {
@@ -323,9 +274,10 @@ abstract class EventTarget
             // Set event's target attribute to the target of the last tuple in
             // event's path, that is either tuple or preceding tuple, whose
             // target is non-null.
-            for ($i = $path->count() - 1; $i >= 0; $i--) {
+            for ($i = $path->count() - 1; $i >= 0; --$i) {
                 if ($path[$i]['target'] !== null) {
                     $target = $path[$i]['target'];
+
                     break;
                 }
             }
@@ -346,8 +298,7 @@ abstract class EventTarget
 
         // Set path's iterator mode back to the default.
         $path->setIteratorMode(
-            \SplDoublyLinkedList::IT_MODE_FIFO |
-            \SplDoublyLinkedList::IT_MODE_KEEP
+            SplDoublyLinkedList::IT_MODE_FIFO | SplDoublyLinkedList::IT_MODE_KEEP
         );
 
         foreach ($path as $index => $tuple) {
@@ -356,9 +307,10 @@ abstract class EventTarget
             // Set event's target attribute to the target of the last tuple in
             // event's path, that is either tuple or preceding tuple, whose
             // target is non-null.
-            for ($i = $index; $i >= 0; $i--) {
+            for ($i = $index; $i >= 0; --$i) {
                 if ($path[$i]['target'] !== null) {
                     $target = $path[$i]['target'];
+
                     break;
                 }
             }
@@ -384,8 +336,8 @@ abstract class EventTarget
             // event’s bubbles attribute is true or event’s eventPhase attribute
             // is AT_TARGET, then invoke tuple’s item with event.
             $phase = $event->eventPhase;
-            $shouldInvoke = ($phase == Event::BUBBLING_PHASE
-                && $event->bubbles) || $phase == Event::AT_TARGET;
+            $shouldInvoke = ($phase === Event::BUBBLING_PHASE && $event->bubbles)
+                || $phase === Event::AT_TARGET;
 
             if ($shouldInvoke) {
                 $this->invokeEventListener($tuple['item'], $event);
@@ -433,12 +385,8 @@ abstract class EventTarget
      * @internal
      *
      * @see https://dom.spec.whatwg.org/#concept-event-listener-invoke
-     *
-     * @param EventTarget $object The target of the event being dispatched.
-     *
-     * @param Event $event The event currently being dispatched.
      */
-    private function invokeEventListener($object, $event)
+    private function invokeEventListener(EventTarget $object, Event $event): void
     {
         if ($event->getFlags() & EventFlags::STOP_PROPAGATION) {
             return;
@@ -495,21 +443,18 @@ abstract class EventTarget
      *
      * @see https://dom.spec.whatwg.org/#concept-event-listener-inner-invoke
      *
-     * @param EventTarget $object The event target.
-     *
-     * @param Event $event The event object.
-     *
-     * @param callable[] $listeners A copy of the object's event listeners.
-     *
-     * @return bool
+     * @param list<\Rowbot\DOM\Event\Listener> $listeners A copy of the object's event listeners.
      */
-    private function innerInvokeEventListener($object, $event, $listeners)
-    {
+    private function innerInvokeEventListener(
+        EventTarget $object,
+        Event $event,
+        array $listeners
+    ): bool {
         $found = false;
         $indexOffset = 0;
 
         foreach ($listeners as $index => $listener) {
-            if ($listener->getRemoved() == false) {
+            if ($listener->getRemoved() === false) {
                 // If event’s type attribute value is not listener’s type,
                 // terminate these substeps (and run them for the next event
                 // listener).
@@ -523,29 +468,21 @@ abstract class EventTarget
                 // If event’s eventPhase attribute value is CAPTURING_PHASE and
                 // listener’s capture is false, terminate these substeps (and
                 // run them for the next event listener).
-                if ($phase == Event::CAPTURING_PHASE
-                    && !$listener->getCapture()
-                ) {
+                if ($phase === Event::CAPTURING_PHASE && !$listener->getCapture()) {
                     continue;
                 }
 
                 // If event’s eventPhase attribute value is BUBBLING_PHASE and
                 // listener’s capture is true, terminate these substeps (and
                 // run them for the next event listener).
-                if ($phase == Event::BUBBLING_PHASE
-                    && $listener->getCapture()
-                ) {
+                if ($phase === Event::BUBBLING_PHASE && $listener->getCapture()) {
                     continue;
                 }
 
                 // If listener’s once is true, then remove listener from
                 // object’s associated list of event listeners.
                 if ($listener->getOnce()) {
-                    array_splice(
-                        $object->listeners,
-                        $index - $indexOffset,
-                        1
-                    );
+                    array_splice($object->listeners, $index - $indexOffset, 1);
                     ++$indexOffset;
                 }
 
@@ -566,9 +503,7 @@ abstract class EventTarget
 
                 // If event’s stop immediate propagation flag is set, return
                 // found.
-                if ($event->getFlags()
-                    & EventFlags::STOP_IMMEDIATE_PROPAGATION
-                ) {
+                if ($event->getFlags() & EventFlags::STOP_IMMEDIATE_PROPAGATION) {
                     return $found;
                 }
             }
@@ -584,10 +519,6 @@ abstract class EventTarget
      * @internal
      *
      * @see https://dom.spec.whatwg.org/#get-the-parent
-     *
-     * @param \Rowbot\DOM\Event\Event $event The Event object
-     *
-     * @return \Rowbot\DOM\Event\EventTarget|null
      */
     protected function getTheParent(Event $event): ?self
     {
@@ -600,10 +531,8 @@ abstract class EventTarget
      * @see https://dom.spec.whatwg.org/#concept-flatten-options
      *
      * @param bool|bool[] $options A boolean or array of booleans.
-     *
-     * @return bool
      */
-    private function flattenOptions($options)
+    private function flattenOptions($options): bool
     {
         if (is_bool($options)) {
             return $options;
@@ -621,11 +550,11 @@ abstract class EventTarget
      *
      * @see https://dom.spec.whatwg.org/#event-flatten-more
      *
-     * @param bool|bool[] $options A boolean or array of booleans.
+     * @param bool|array{capture?: bool, passive?: bool, once?: bool} $options
      *
-     * @return bool[]
+     * @return list<bool>
      */
-    private function flattenMoreOptions($options)
+    private function flattenMoreOptions($options): array
     {
         $capture = $this->flattenOptions($options);
         $once = false;
@@ -644,17 +573,17 @@ abstract class EventTarget
         return [$capture, $passive, $once];
     }
 
-    protected function hasActivationBehavior()
+    protected function hasActivationBehavior(): bool
     {
         return false;
     }
 
-    protected function hasLegacyPreActivationBehavior()
+    protected function hasLegacyPreActivationBehavior(): bool
     {
         return false;
     }
 
-    protected function hasLegacyCanceledActivationBehavior()
+    protected function hasLegacyCanceledActivationBehavior(): bool
     {
         return false;
     }

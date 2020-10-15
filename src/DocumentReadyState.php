@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Rowbot\DOM;
@@ -6,9 +7,9 @@ namespace Rowbot\DOM;
 /**
  * @see https://html.spec.whatwg.org/multipage/dom.html#documentreadystate
  */
-abstract class DocumentReadyState
+final class DocumentReadyState
 {
-    const LOADING     = 'loading';
-    const INTERACTIVE = 'interactive';
-    const COMPLETE    = 'complete';
+    public const LOADING     = 'loading';
+    public const INTERACTIVE = 'interactive';
+    public const COMPLETE    = 'complete';
 }

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Rowbot\DOM\Support;
@@ -10,8 +11,8 @@ use function preg_split;
 
 class CodePointStream
 {
-    const SEEK_RELATIVE = 1;
-    const SEEK_ABSOLUTE = 2;
+    public const SEEK_RELATIVE = 1;
+    public const SEEK_ABSOLUTE = 2;
 
     /**
      * @var string[]
@@ -28,13 +29,6 @@ class CodePointStream
      */
     private $nextChar;
 
-    /**
-     * Constructor.
-     *
-     * @param string $data
-     *
-     * @return void
-     */
     public function __construct(string $data = '')
     {
         $this->currentChar = 0;
@@ -42,6 +36,7 @@ class CodePointStream
 
         if ($data) {
             $this->data = preg_split('//u', $data, -1, PREG_SPLIT_NO_EMPTY);
+
             return;
         }
 
@@ -50,16 +45,12 @@ class CodePointStream
 
     /**
      * Appends data to the stream.
-     *
-     * @param string $data
-     *
-     * @return void
      */
     public function append(string $data): void
     {
         $data = preg_split('//u', $data, -1, PREG_SPLIT_NO_EMPTY);
 
-        if (empty($data)) {
+        if ($data === [] || $data === false) {
             return;
         }
 
@@ -68,16 +59,12 @@ class CodePointStream
 
     /**
      * Appends data to the stream.
-     *
-     * @param string $data
-     *
-     * @return void
      */
     public function prepend(string $data): void
     {
         $data = preg_split('//u', $data, -1, PREG_SPLIT_NO_EMPTY);
 
-        if (empty($data)) {
+        if ($data === [] || $data === false) {
             return;
         }
 
@@ -86,10 +73,6 @@ class CodePointStream
 
     /**
      * Returns $count characters starting from the next character.
-     *
-     * @param int $count
-     *
-     * @return string
      */
     public function get(int $count = 1): string
     {
@@ -97,11 +80,13 @@ class CodePointStream
 
         if (!isset($this->data[$this->currentChar])) {
             ++$this->nextChar;
+
             return '';
         }
 
-        if ($count == 1) {
+        if ($count === 1) {
             ++$this->nextChar;
+
             return $this->data[$this->currentChar];
         }
 
@@ -120,10 +105,6 @@ class CodePointStream
 
     /**
      * Gets $count characters starting from the next character without advancing the iterator.
-     *
-     * @param int $count
-     *
-     * @return string
      */
     public function peek(int $count = 1): string
     {
@@ -131,7 +112,7 @@ class CodePointStream
             return '';
         }
 
-        if ($count == 1) {
+        if ($count === 1) {
             return $this->data[$this->nextChar];
         }
 
@@ -151,8 +132,6 @@ class CodePointStream
 
     /**
      * Returns whether the stream has reached the end.
-     *
-     * @return bool
      */
     public function isEoS(): bool
     {
@@ -161,8 +140,6 @@ class CodePointStream
 
     /**
      * Returns the number of characters in the stream.
-     *
-     * @return int
      */
     public function length(): int
     {
@@ -171,8 +148,6 @@ class CodePointStream
 
     /**
      * Empties the stream.
-     *
-     * @return void
      */
     public function discard(): void
     {
@@ -181,10 +156,6 @@ class CodePointStream
 
     /**
      * Seeks to the given position in the stream.
-     *
-     * @param int $count The count
-     *
-     * @return void
      */
     public function seek(int $count): void
     {
@@ -194,8 +165,6 @@ class CodePointStream
 
     /**
      * Rewinds the steam to the beginning.
-     *
-     * @return void
      */
     public function rewind(): void
     {

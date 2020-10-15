@@ -1,13 +1,14 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Rowbot\DOM\Parser\HTML;
 
 class ParserState
 {
-    const CONFIDENCE_TENTATIVE  = 1;
-    const CONFIDENCE_CERTAIN    = 2;
-    const CONFIDENCE_IRRELEVANT = 4;
+    public const CONFIDENCE_TENTATIVE  = 1;
+    public const CONFIDENCE_CERTAIN    = 2;
+    public const CONFIDENCE_IRRELEVANT = 4;
 
     /**
      * How confident the parser is about the detected text encoding. It can be

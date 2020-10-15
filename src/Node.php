@@ -1,11 +1,12 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Rowbot\DOM;
 
 use Rowbot\DOM\Element\Element;
-use Rowbot\DOM\Element\ElementFactory;
 use Rowbot\DOM\Event\Event;
 use Rowbot\DOM\Event\EventTarget;
-use Rowbot\DOM\Exception\DOMException;
 use Rowbot\DOM\Exception\HierarchyRequestError;
 use Rowbot\DOM\Exception\NotFoundError;
 use Rowbot\DOM\Exception\NotSupportedError;
@@ -22,6 +23,9 @@ use function strcmp;
  * @see https://dom.spec.whatwg.org/#node
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Node
  *
+ * @property string|null $nodeValue
+ * @property string|null $textContent
+ *
  * @property-read string                           $baseURI
  * @property-read \Rowbot\DOM\NodeList             $childNodes
  * @property-read \Rowbot\DOM\Node|null            $firstChild
@@ -29,40 +33,38 @@ use function strcmp;
  * @property-read \Rowbot\DOM\Node|null            $nextSibling
  * @property-read string                           $nodeName
  * @property-read int                              $nodeType
- * @property      ?string                          $nodeValue
  * @property-read bool                             $isConnected
  * @property-read \Rowbot\DOM\Document|null        $ownerDocument
  * @property-read \Rowbot\DOM\Node|null            $parentNode
  * @property-read \Rowbot\DOM\Element\Element|null $parentElement
  * @property-read \Rowbot\DOM\Node|null            $previousSibling
- * @property      ?string                          $textContent
  */
 abstract class Node extends EventTarget implements UniquelyIdentifiable
 {
     use UuidTrait;
 
-    const ELEMENT_NODE                = 1;
-    const ATTRIBUTE_NODE              = 2;
-    const TEXT_NODE                   = 3;
-    const CDATA_SECTION_NODE          = 4;
-    const ENTITY_REFERENCE_NODE       = 5;
-    const ENTITY_NODE                 = 6;
-    const PROCESSING_INSTRUCTION_NODE = 7;
-    const COMMENT_NODE                = 8;
-    const DOCUMENT_NODE               = 9;
-    const DOCUMENT_TYPE_NODE          = 10;
-    const DOCUMENT_FRAGMENT_NODE      = 11;
-    const NOTATION_NODE               = 12;
+    public const ELEMENT_NODE                = 1;
+    public const ATTRIBUTE_NODE              = 2;
+    public const TEXT_NODE                   = 3;
+    public const CDATA_SECTION_NODE          = 4;
+    public const ENTITY_REFERENCE_NODE       = 5;
+    public const ENTITY_NODE                 = 6;
+    public const PROCESSING_INSTRUCTION_NODE = 7;
+    public const COMMENT_NODE                = 8;
+    public const DOCUMENT_NODE               = 9;
+    public const DOCUMENT_TYPE_NODE          = 10;
+    public const DOCUMENT_FRAGMENT_NODE      = 11;
+    public const NOTATION_NODE               = 12;
 
-    const DOCUMENT_POSITION_DISCONNECTED            = 0x01;
-    const DOCUMENT_POSITION_PRECEDING               = 0x02;
-    const DOCUMENT_POSITION_FOLLOWING               = 0x04;
-    const DOCUMENT_POSITION_CONTAINS                = 0x08;
-    const DOCUMENT_POSITION_CONTAINED_BY            = 0x10;
-    const DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC = 0x20;
+    public const DOCUMENT_POSITION_DISCONNECTED            = 0x01;
+    public const DOCUMENT_POSITION_PRECEDING               = 0x02;
+    public const DOCUMENT_POSITION_FOLLOWING               = 0x04;
+    public const DOCUMENT_POSITION_CONTAINS                = 0x08;
+    public const DOCUMENT_POSITION_CONTAINED_BY            = 0x10;
+    public const DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC = 0x20;
 
     /**
-     * @var \Rowbot\DOM\Support\Collection\NodeSet
+     * @var \Rowbot\DOM\Support\Collection\NodeSet<\Rowbot\DOM\Node>
      */
     protected $childNodes;
 
@@ -72,12 +74,12 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
     protected $nodeType;
 
     /**
-     * @var ?self
+     * @var self|null
      */
     protected $parentNode;
 
     /**
-     * @var ?self
+     * @var self|null
      */
     protected $nextSibling;
 
@@ -92,15 +94,10 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
     protected $nodeList;
 
     /**
-     * @var ?self
+     * @var self|null
      */
     protected $previousSibling;
 
-    /**
-     * Constructor.
-     *
-     * @return void
-     */
     protected function __construct()
     {
         parent::__construct();
@@ -111,8 +108,6 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
     }
 
     /**
-     * @param string $name
-     *
      * @return mixed
      */
     public function __get(string $name)
@@ -148,7 +143,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                 return $this->getNodeValue();
 
             case 'ownerDocument':
-                return static::ownerDocument();
+                return $this->ownerDocument();
 
             case 'parentElement':
                 return $this->parentElement();
@@ -165,10 +160,9 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
     }
 
     /**
-     * @param string $name
-     * @param mixed  $value
+     * @param mixed $value
      */
-    public function __set(string $name, $value)
+    public function __set(string $name, $value): void
     {
         switch ($name) {
             case 'nodeValue':
@@ -177,7 +171,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                 break;
 
             case 'textContent':
-                $this->setTextContent($value);
+                $this->setTextContent($value === null ? $value : (string) $value);
         }
     }
 
@@ -187,15 +181,11 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      * @internal
      *
      * @see https://dom.spec.whatwg.org/#dom-node-nodename
-     *
-     * @return string
      */
     abstract protected function getNodeName(): string;
 
     /**
      * Returns null if the node is a document, and the node's node document otherwise.
-     *
-     * @return \Rowbot\DOM\Document|null
      */
     public function ownerDocument(): ?Document
     {
@@ -207,8 +197,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @see https://dom.spec.whatwg.org/#concept-tree-root
      *
-     * @param array<string, bool> $options (optional) The only valid argument is a key named "composed" with a bool
-     *                                     value.
+     * @param array{composed?: bool} $options
      *
      * @return self If the value of the "composed" key is true, then theshadow-including root will be returned,
      *              otherwise, the root will be returned.
@@ -221,7 +210,8 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             $root = $root->parentNode;
         }
 
-        if (isset($options['composed'])
+        if (
+            isset($options['composed'])
             && $options['composed'] === true
             && $root instanceof ShadowRoot
         ) {
@@ -235,20 +225,14 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      * Returns the node's parent element.
      *
      * @internal
-     *
-     * @return \Rowbot\DOM\Element\Element|null
      */
     public function parentElement(): ?Element
     {
-        return $this->parentNode instanceof Element
-            ? $this->parentNode
-            : null;
+        return $this->parentNode instanceof Element ? $this->parentNode : null;
     }
 
     /**
      * Returns a boolean indicating whether or not the current node contains any nodes.
-     *
-     * @return bool Returns true if at least one child node is present, otherwise false.
      */
     public function hasChildNodes(): bool
     {
@@ -261,8 +245,6 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      * @internal
      *
      * @see https://dom.spec.whatwg.org/#dom-node-nodevalue
-     *
-     * @return string|null
      */
     abstract protected function getNodeValue(): ?string;
 
@@ -272,10 +254,6 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      * @internal
      *
      * @see https://dom.spec.whatwg.org/#dom-node-nodevalue
-     *
-     * @param ?string $newValue The node's new value.
-     *
-     * @return void
      */
     abstract protected function setNodeValue(?string $value): void;
 
@@ -285,8 +263,6 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      * @internal
      *
      * @see https://dom.spec.whatwg.org/#dom-node-textcontent
-     *
-     * @return string|null
      */
     abstract protected function getTextContent(): ?string;
 
@@ -296,10 +272,6 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      * @internal
      *
      * @see https://dom.spec.whatwg.org/#dom-node-textcontent
-     *
-     * @param ?string $newValue The new text to be inserted into the node.
-     *
-     * @return void
      */
     abstract protected function setTextContent(?string $value): void;
 
@@ -308,23 +280,19 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      * nodes present and there are no text nodes that appear consecutively.
      *
      * @see https://dom.spec.whatwg.org/#dom-node-normalize
-     *
-     * @return void
      */
     public function normalize(): void
     {
-        $iter = $this->nodeDocument->createNodeIterator(
-            $this,
-            NodeFilter::SHOW_TEXT
-        );
+        $iter = $this->nodeDocument->createNodeIterator($this, NodeFilter::SHOW_TEXT);
 
         while ($node = $iter->nextNode()) {
             $length = $node->getLength();
 
             // If length is zero, then remove node and continue with the next
             // exclusive Text node, if any.
-            if ($length == 0) {
+            if ($length === 0) {
                 $node->removeNode();
+
                 continue;
             }
 
@@ -335,7 +303,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             $startNode = $node->previousSibling;
 
             while ($startNode) {
-                if ($startNode->nodeType != self::TEXT_NODE) {
+                if ($startNode->nodeType !== self::TEXT_NODE) {
                     break;
                 }
 
@@ -347,7 +315,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             $startNode = $node->nextSibling;
 
             while ($startNode) {
-                if ($startNode->nodeType != self::TEXT_NODE) {
+                if ($startNode->nodeType !== self::TEXT_NODE) {
                     break;
                 }
 
@@ -362,7 +330,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             $ranges = Range::getRangeCollection();
 
             foreach (clone $node->childNodes as $currentNode) {
-                if ($currentNode->nodeType != self::TEXT_NODE) {
+                if ($currentNode->nodeType !== self::TEXT_NODE) {
                     break;
                 }
 
@@ -388,8 +356,9 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                 // start offset is currentNode’s index, set its start node to
                 // node and its start offset to length.
                 foreach ($ranges as $range) {
-                    if ($range->startContainer === $currentNode->parentNode
-                        && $range->startOffset == $treeIndex
+                    if (
+                        $range->startContainer === $currentNode->parentNode
+                        && $range->startOffset === $treeIndex
                     ) {
                         $range->setStartInternal($node, $length);
                     }
@@ -399,8 +368,9 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                 // offset is currentNode’s index, set its end node to node and
                 // its end offset to length.
                 foreach ($ranges as $range) {
-                    if ($range->endContainer === $currentNode->parentNode
-                        && $range->endOffset == $treeIndex
+                    if (
+                        $range->endContainer === $currentNode->parentNode
+                        && $range->endOffset === $treeIndex
                     ) {
                         $range->setEndInternal($node, $length);
                     }
@@ -425,7 +395,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @param bool $deep (optional) If true, all child nodes and event listeners should be cloned as well.
      *
-     * @return \Rowbot\DOM\Node The copy of the node.
+     * @return static
      *
      * @throws \Rowbot\DOM\Exception\NotSupportedError If the node being cloned is a ShadowRoot.
      */
@@ -450,19 +420,21 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      */
     public function isEqualNode(?self $otherNode): bool
     {
-        if (!$otherNode || $this->nodeType != $otherNode->nodeType) {
+        if (!$otherNode || $this->nodeType !== $otherNode->nodeType) {
             return false;
         }
 
         if ($this instanceof DocumentType) {
-            if ($this->name !== $otherNode->name
+            if (
+                $this->name !== $otherNode->name
                 || $this->publicId !== $otherNode->publicId
                 || $this->systemId !== $otherNode->systemId
             ) {
                 return false;
             }
         } elseif ($this instanceof Element) {
-            if ($this->namespaceURI !== $otherNode->namespaceURI
+            if (
+                $this->namespaceURI !== $otherNode->namespaceURI
                 || $this->prefix !== $otherNode->prefix
                 || $this->localName !== $otherNode->localName
                 || $this->attributeList->count() !==
@@ -471,16 +443,15 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                 return false;
             }
         } elseif ($this instanceof Attr) {
-            if ($this->namespaceURI !== $otherNode->getNamespace()
+            if (
+                $this->namespaceURI !== $otherNode->getNamespace()
                 || $this->localName !== $otherNode->getLocalName()
                 || $this->value !== $otherNode->getValue()
             ) {
                 return false;
             }
         } elseif ($this instanceof ProcessingInstruction) {
-            if ($this->target !== $otherNode->target
-                || $this->data !== $otherNode->data
-            ) {
+            if ($this->target !== $otherNode->target || $this->data !== $otherNode->data) {
                 return false;
             }
         } elseif ($this instanceof Text || $this instanceof Comment) {
@@ -491,9 +462,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
 
         if ($this instanceof Element) {
             foreach ($this->attributeList as $i => $attribute) {
-                $isEqual = $attribute->isEqualNode(
-                    $otherNode->attributeList[$i]
-                );
+                $isEqual = $attribute->isEqualNode($otherNode->attributeList[$i]);
 
                 if (!$isEqual) {
                     return false;
@@ -508,9 +477,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
         }
 
         for ($i = 0; $i < $childNodeCount; $i++) {
-            if (!$this->childNodes[$i]->isEqualNode(
-                $otherNode->childNodes[$i]
-            )) {
+            if (!$this->childNodes[$i]->isEqualNode($otherNode->childNodes[$i])) {
                 return false;
             }
         }
@@ -523,10 +490,6 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      * to using the strict equality operator (===).
      *
      * @see https://dom.spec.whatwg.org/#dom-node-issamenode
-     *
-     * @param ?self $otherNode The node whose equality is to be checked.
-     *
-     * @return bool
      */
     public function isSameNode(?self $otherNode): bool
     {
@@ -538,15 +501,13 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @see https://dom.spec.whatwg.org/#dom-node-comparedocumentpositionother
      *
-     * @param self $otherNode Node to compare position against.
-     *
      * @return int A bitmask representing the nodes position. Possible values are as follows:
-     *         Node::DOCUMENT_POSITION_DISCONNECTED
-     *         Node::DOCUMENT_POSITION_PRECEDING
-     *         Node::DOCUMENT_POSITION_FOLLOWING
-     *         Node::DOCUMENT_POSITION_CONTAINS
-     *         Node::DOCUMENT_POSITION_CONTAINED_BY
-     *         Node::DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC
+     *                 - Node::DOCUMENT_POSITION_DISCONNECTED
+     *                 - Node::DOCUMENT_POSITION_PRECEDING
+     *                 - Node::DOCUMENT_POSITION_FOLLOWING
+     *                 - Node::DOCUMENT_POSITION_CONTAINS
+     *                 - Node::DOCUMENT_POSITION_CONTAINED_BY
+     *                 - Node::DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC
      */
     public function compareDocumentPosition(self $otherNode): int
     {
@@ -601,15 +562,10 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
         // DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC, and either
         // DOCUMENT_POSITION_PRECEDING or DOCUMENT_POSITION_FOLLOWING, with the
         // constraint that this is to be consistent, together.
-        if ($node1 === null || $node2 === null
-            || $node1->getRootNode() !== $node2Root
-        ) {
+        if ($node1 === null || $node2 === null || $node1->getRootNode() !== $node2Root) {
             $ret = self::DOCUMENT_POSITION_DISCONNECTED
                 | self::DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC;
-            $position = strcmp(
-                spl_object_hash($node2),
-                spl_object_hash($node1)
-            );
+            $position = strcmp(spl_object_hash($node2), spl_object_hash($node1));
 
             // Pointer comparison is supposed to be used to determine whether
             // a node is following or preceding another node in this case,
@@ -629,27 +585,21 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
         // If node1 is an ancestor of node2 and attr1 is null, or node1 is node2
         // and attr2 is non-null, then return the result of adding
         // DOCUMENT_POSITION_CONTAINS to DOCUMENT_POSITION_PRECEDING.
-        if (($node1->isAncestorOf($node2) && $attr1 === null)
-            || ($node1 === $node2 && $attr1)
-        ) {
-            return self::DOCUMENT_POSITION_CONTAINS |
-                self::DOCUMENT_POSITION_PRECEDING;
+        if (($node1->isAncestorOf($node2) && $attr1 === null) || ($node1 === $node2 && $attr1)) {
+            return self::DOCUMENT_POSITION_CONTAINS | self::DOCUMENT_POSITION_PRECEDING;
         }
 
         // If node1 is a descendant of node2 and attr2 is null, or node1 is
         // node2 and attr1 is non-null, then return the result of adding
         // DOCUMENT_POSITION_CONTAINED_BY to DOCUMENT_POSITION_FOLLOWING.
-        if (($node1->isDescendantOf($node2) && $attr2 === null)
-            || ($node1 === $node2 && $attr1)
-        ) {
-            return self::DOCUMENT_POSITION_CONTAINED_BY |
-                self::DOCUMENT_POSITION_FOLLOWING;
+        if (($node1->isDescendantOf($node2) && $attr2 === null) || ($node1 === $node2 && $attr1)) {
+            return self::DOCUMENT_POSITION_CONTAINED_BY | self::DOCUMENT_POSITION_FOLLOWING;
         }
 
         $tw = new TreeWalker(
             $node2Root,
             NodeFilter::SHOW_ALL,
-            function ($node) use ($node1) {
+            static function (self $node) use ($node1): int {
                 if ($node === $node1) {
                     return NodeFilter::FILTER_ACCEPT;
                 }
@@ -696,10 +646,6 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      * Locates the prefix associated with the given namespace on the given node.
      *
      * @see https://dom.spec.whatwg.org/#dom-node-lookupprefix
-     *
-     * @param ?string $namespace The namespace of the prefix to be found.
-     *
-     * @return ?string
      */
     public function lookupPrefix(?string $namespace): ?string
     {
@@ -721,9 +667,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             return null;
         }
 
-        if ($this instanceof DocumentType
-            || $this instanceof DocumentFragment
-        ) {
+        if ($this instanceof DocumentType || $this instanceof DocumentFragment) {
             return null;
         }
 
@@ -750,10 +694,6 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      * Finds the namespace associated with the given prefix.
      *
      * @see https://dom.spec.whatwg.org/#dom-node-lookupnamespaceuri
-     *
-     * @param ?string $prefix The prefix of the namespace to be found.
-     *
-     * @return ?string
      */
     public function lookupNamespaceURI(?string $prefix): ?string
     {
@@ -769,10 +709,6 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      * namespace.
      *
      * @see https://dom.spec.whatwg.org/#dom-node-isdefaultnamespace
-     *
-     * @param string|null $namespace A namespaceURI to check against.
-     *
-     * @return bool
      */
     public function isDefaultNamespace(?string $namespace): bool
     {
@@ -835,8 +771,6 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
     /**
      * Removes the specified node from the current node.
      *
-     * @param self $child The node to be removed from the DOM.
-     *
      * @return self The node that was removed from the DOM.
      */
     public function removeChild(self $child): self
@@ -855,8 +789,6 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      * @param ?self                                         $child The reference node for where the new nodes should be
      *                                                             inserted.
      *
-     * @return void
-     *
      * @throws \Rowbot\DOM\Exception\HierarchyRequestError
      * @throws \Rowbot\DOM\Exception\NotFoundError
      */
@@ -866,9 +798,10 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
 
         // Only Documents, DocumentFragments, and Elements can be parent nodes.
         // Throw a HierarchyRequestError if parent is not one of these types.
-        if (!($parent instanceof Document)
-            && !($parent instanceof DocumentFragment)
-            && !($parent instanceof Element)
+        if (
+            !$parent instanceof Document
+            && !$parent instanceof DocumentFragment
+            && !$parent instanceof Element
         ) {
             throw new HierarchyRequestError();
         }
@@ -888,25 +821,27 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
         // If node is not a DocumentFragment, DocumentType, Element, Text,
         // ProcessingInstruction, or Comment node, throw a
         // HierarchyRequestError.
-        if (!($node instanceof DocumentFragment)
-            && !($node instanceof DocumentType)
-            && !($node instanceof Element)
-            && !($node instanceof Text)
-            && !($node instanceof ProcessingInstruction)
-            && !($node instanceof Comment)
+        if (
+            !$node instanceof DocumentFragment
+            && !$node instanceof DocumentType
+            && !$node instanceof Element
+            && !$node instanceof Text
+            && !$node instanceof ProcessingInstruction
+            && !$node instanceof Comment
         ) {
             throw new HierarchyRequestError();
         }
 
         // If either node is a Text node and parent is a document, or node is a
         // doctype and parent is not a document, throw a HierarchyRequestError.
-        if (($node instanceof Text && $parent instanceof Document)
-            || ($node instanceof DocumentType && !($parent instanceof Document))
+        if (
+            ($node instanceof Text && $parent instanceof Document)
+            || ($node instanceof DocumentType && !$parent instanceof Document)
         ) {
             throw new HierarchyRequestError();
         }
 
-        if (!($parent instanceof Document)) {
+        if (!$parent instanceof Document) {
             return;
         }
 
@@ -930,7 +865,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                 }
             }
 
-            if ($elementChildren == 0) {
+            if ($elementChildren === 0) {
                 return;
             }
 
@@ -1343,8 +1278,6 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      * @see https://dom.spec.whatwg.org/#concept-node-replace-all
      *
      * @param ?self $node The node that is to be inserted.
-     *
-     * @return void
      */
     public function replaceAllNodes(?self $node): void
     {
@@ -1414,8 +1347,6 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      * @see https://dom.spec.whatwg.org/#concept-node-remove
      *
      * @param bool $suppressObservers (optional) If true, mutation events are ignored for this operation.
-     *
-     * @return void
      */
     public function removeNode(bool $suppressObservers = false): void
     {
@@ -1523,8 +1454,6 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      * Gets the node's node document.
      *
      * @internal
-     *
-     * @return \Rowbot\DOM\Document
      */
     public function getNodeDocument(): Document
     {
@@ -1535,10 +1464,6 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      * Sets the node's node document.
      *
      * @internal
-     *
-     * @param \Rowbot\DOM\Document $document The Document object that owns this Node.
-     *
-     * @return void
      */
     public function setNodeDocument(Document $document): void
     {
@@ -1553,8 +1478,6 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      * @internal
      *
      * @see https://dom.spec.whatwg.org/#concept-node-length
-     *
-     * @return int
      */
     abstract public function getLength(): int;
 
@@ -1564,8 +1487,6 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      * @internal
      *
      * @see https://dom.spec.whatwg.org/#concept-tree-index
-     *
-     * @return int
      */
     public function getTreeIndex(): int
     {
@@ -1577,24 +1498,15 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      * element.
      *
      * @see https://dom.spec.whatwg.org/#locate-a-namespace-prefix
-     *
-     * @param \Rowbot\DOM\Element\Element $element
-     * @param ?string                     $namespace
-     *
-     * @return ?string
      */
     private function locatePrefix(Element $element, ?string $namespace): ?string
     {
-        if ($element->namespaceURI === $namespace
-            && $element->prefix !== null
-        ) {
+        if ($element->namespaceURI === $namespace && $element->prefix !== null) {
             return $element->prefix;
         }
 
         foreach ($element->getAttributeList() as $attr) {
-            if ($attr->prefix === 'xmlns'
-                && $attr->getValue() === $namespace
-            ) {
+            if ($attr->prefix === 'xmlns' && $attr->getValue() === $namespace) {
                 return $attr->getLocalName();
             }
         }
@@ -1610,11 +1522,6 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      * Finds the namespace associated with the given prefix on the given node.
      *
      * @see https://dom.spec.whatwg.org/#locate-a-namespace
-     *
-     * @param self    $node
-     * @param ?string $prefix
-     *
-     * @return ?string
      */
     private function locateNamespace(self $node, ?string $prefix): ?string
     {
@@ -1627,7 +1534,8 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
                 if ($attr->namespaceURI === Namespaces::XMLNS) {
                     $localName = $attr->localName;
 
-                    if (($attr->prefix === 'xmlns' && $localName === $prefix)
+                    if (
+                        ($attr->prefix === 'xmlns' && $localName === $prefix)
                         || ($prefix === null && $localName === 'xmlns')
                     ) {
                         if ($attr->value !== '') {
@@ -1654,9 +1562,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             return $this->locateNamespace($node->documentElement, $prefix);
         }
 
-        if ($node instanceof DocumentType
-            || $node instanceof DocumentFragment
-        ) {
+        if ($node instanceof DocumentType || $node instanceof DocumentFragment) {
             return null;
         }
 
@@ -1683,11 +1589,11 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @see https://dom.spec.whatwg.org/#concept-node-clone
      *
-     * @param \Rowbot\DOM\Document|null $document      (optional) The document that will own thecloned node.
+     * @param \Rowbot\DOM\Document|null $document      (optional) The document that will own the cloned node.
      * @param bool                      $cloneChildren (optional) If set, all children of the cloned node will also be
      *                                                 cloned.
      *
-     * @return self The newly created node.
+     * @return static The newly created node.
      */
     abstract public function cloneNodeInternal(
         Document $document = null,
@@ -1700,12 +1606,6 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      * @internal
      *
      * @see https://dom.spec.whatwg.org/#concept-node-clone
-     *
-     * @param \Rowbot\DOM\Node     $copy
-     * @param \Rowbot\DOM\Document $document
-     * @param bool                 $cloneChildren
-     *
-     * @return void
      */
     protected function postCloneNode(
         Node $copy,
@@ -1736,8 +1636,6 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      * common ancestor.
      *
      * @internal
-     *
-     * @return self
      */
     public static function getCommonAncestor(Node $nodeA, Node $nodeB): self
     {
@@ -1765,7 +1663,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      *
      * @param \Rowbot\DOM\Event\Event $event An Event object.
      *
-     * @return \Rowbot\DOM\HTMLSlotElement|null
+     * @return (\Rowbot\DOM\HTMLSlotElement&\Rowbot\DOM\Event\EventTarget)|null
      */
     protected function getTheParent(Event $event): ?EventTarget
     {
@@ -1778,10 +1676,6 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      * @internal
      *
      * @see https://dom.spec.whatwg.org/#concept-tree-ancestor
-     *
-     * @param ?self $otherNode A Node.
-     *
-     * @return bool
      */
     public function isAncestorOf(?self $otherNode): bool
     {
@@ -1800,10 +1694,6 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      * @internal
      *
      * @see https://dom.spec.whatwg.org/#concept-tree-inclusive-ancestor
-     *
-     * @param ?self $otherNode A Node.
-     *
-     * @return bool
      */
     public function isInclusiveAncestorOf(?self $otherNode): bool
     {
@@ -1814,10 +1704,6 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      * @internal
      *
      * @see https://dom.spec.whatwg.org/#concept-tree-descendant
-     *
-     * @param ?self $otherNode A Node.
-     *
-     * @return bool
      */
     public function isDescendantOf(?self $otherNode): bool
     {
@@ -1828,10 +1714,6 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      * @internal
      *
      * @see https://dom.spec.whatwg.org/#concept-tree-inclusive-descendant
-     *
-     * @param ?self $otherNode A Node.
-     *
-     * @return bool
      */
     public function isInclusiveDescendantOf(?self $otherNode): bool
     {
@@ -1845,10 +1727,6 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      * @internal
      *
      * @see https://dom.spec.whatwg.org/#concept-tree-host-including-inclusive-ancestor
-     *
-     * @param ?self $node The potential descendant node.
-     *
-     * @return bool Whether the node is an inclusive ancestor or not.
      */
     protected function isHostIncludingInclusiveAncestorOf(?self $node): bool
     {
@@ -1864,18 +1742,14 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             }
         }
 
-        return $isInclusiveAncestor || ($root && $host
-            && $this->isHostIncludingInclusiveAncestorOf($host));
+        return $isInclusiveAncestor
+            || ($root && $host && $this->isHostIncludingInclusiveAncestorOf($host));
     }
 
     /**
      * @internal
      *
      * @see https://dom.spec.whatwg.org/#concept-shadow-including-descendant
-     *
-     * @param ?self $otherNode A Node.
-     *
-     * @return bool
      */
     public function isShadowIncludingDescendantOf(?self $otherNode): bool
     {
@@ -1886,34 +1760,27 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
             $root = $this->getRootNode();
         }
 
-        return $isDescendant || ($root && $root instanceof ShadowRoot
-            && $root->host->isShadowIncludingInclusiveDescendantOf($otherNode));
+        return $isDescendant
+            || ($root
+                && $root instanceof ShadowRoot
+                && $root->host->isShadowIncludingInclusiveDescendantOf($otherNode)
+            );
     }
 
     /**
      * @internal
      *
      * @see https://dom.spec.whatwg.org/#concept-shadow-including-inclusive-descendant
-     *
-     * @param ?self $otherNode A Node.
-     *
-     * @return bool
      */
-    public function isShadowIncludingInclusiveDescendantOf(
-        ?self $otherNode
-    ): bool {
-        return $this === $otherNode
-            || $this->isShadowIncludingDescendantOf($otherNode);
+    public function isShadowIncludingInclusiveDescendantOf(?self $otherNode): bool
+    {
+        return $this === $otherNode || $this->isShadowIncludingDescendantOf($otherNode);
     }
 
     /**
      * @internal
      *
      * @see https://dom.spec.whatwg.org/#concept-shadow-including-ancestor
-     *
-     * @param ?self $otherNode A Node.
-     *
-     * @return bool
      */
     public function isShadowIncludingAncestorOf(?self $otherNode): bool
     {
@@ -1924,40 +1791,23 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
      * @internal
      *
      * @see https://dom.spec.whatwg.org/#concept-shadow-including-inclusive-ancestor
-     *
-     * @param ?self $otherNode A Node.
-     *
-     * @return bool
      */
     public function isShadowIncludingInclusiveAncestorOf(?self $otherNode): bool
     {
-        return $this === $otherNode
-            || $this->isShadowIncludingAncestorOf($otherNode);
+        return $this === $otherNode || $this->isShadowIncludingAncestorOf($otherNode);
     }
 
     /**
      * @internal
      *
      * @see https://dom.spec.whatwg.org/#concept-closed-shadow-hidden
-     *
-     * @param ?self $otherNode A Node.
-     *
-     * @return bool
      */
     public function isClosedShadowHiddenFrom(?self $otherNode): bool
     {
         $root = $this->getRootNode();
 
-        if ($root instanceof ShadowRoot
+        return $root instanceof ShadowRoot
             && !$root->isShadowIncludingInclusiveAncestorOf($otherNode)
-            && ($root->mode === 'closed'
-            || $root->host->isClosedShadowHiddenFrom(
-                $otherNode
-            ))
-        ) {
-            return true;
-        }
-
-        return false;
+            && ($root->mode === 'closed' || $root->host->isClosedShadowHiddenFrom($otherNode));
     }
 }

@@ -1,30 +1,25 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Rowbot\DOM\Parser;
 
-use Rowbot\DOM\HTMLDocument;
+use Rowbot\DOM\DocumentFragment;
 use Rowbot\DOM\Element\Element;
+use Rowbot\DOM\HTMLDocument;
 use Rowbot\DOM\Parser\HTML\HTMLParser;
 use Rowbot\DOM\Parser\XML\XMLParser;
 
 final class ParserFactory
 {
     /**
-     * Constructor.
-     *
-     * @return void
+     * @codeCoverageIgnore
      */
     private function __construct()
     {
     }
 
-    /**
-     * @param string $markup
-     *
-     * @return \Rowbot\DOM\HTMLDocument
-     */
-    public static function parseHTMLDocument(string $markup)
+    public static function parseHTMLDocument(string $markup): HTMLDocument
     {
         $doc = new HTMLDocument();
         $parser = new HTMLParser($doc);
@@ -36,16 +31,9 @@ final class ParserFactory
 
     /**
      * @see https://w3c.github.io/DOM-Parsing/#dfn-fragment-parsing-algorithm
-     *
-     * @param string                      $markup
-     * @param \Rowbot\DOM\Element\Element $contextElement
-     *
-     * @return \Rowbot\DOM\DocumentFragment
      */
-    public static function parseFragment(
-        string $markup,
-        Element $contextElement
-    ) {
+    public static function parseFragment(string $markup, Element $contextElement): DocumentFragment
+    {
         $ownerDocument = $contextElement->getNodeDocument();
 
         if ($ownerDocument instanceof HTMLDocument) {

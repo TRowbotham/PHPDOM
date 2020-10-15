@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Rowbot\DOM\URL;
@@ -8,6 +9,9 @@ use Rowbot\URL\URLRecord;
 
 final class URLParser
 {
+    /**
+     * @codeCoverageIgnore
+     */
     private function __construct()
     {
     }
@@ -16,10 +20,6 @@ final class URLParser
      * Parses a url string.
      *
      * @see https://url.spec.whatwg.org/#concept-url-parser
-     *
-     * @param string                $input
-     * @param \Rowbot\URL\URLRecord $base             (optional)
-     * @param string                $encodingOverride (optional)
      *
      * @return \Rowbot\URL\URLRecord|false
      */

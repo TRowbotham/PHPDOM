@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Rowbot\DOM\Encoding;
@@ -6,8 +7,15 @@ namespace Rowbot\DOM\Encoding;
 use function mb_strtolower;
 use function trim;
 
-abstract class EncodingUtils
+final class EncodingUtils
 {
+    /**
+     * @codeCoverageIgnore
+     */
+    private function __construct()
+    {
+    }
+
     /**
      * Takes an encoding label and chooses the correct normalized encoding that
      * it represents.

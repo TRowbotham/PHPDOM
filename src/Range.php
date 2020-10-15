@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Rowbot\DOM;
 
 use Rowbot\DOM\Element\Element;
@@ -38,11 +41,6 @@ final class Range extends AbstractRange implements Stringable
      */
     private static $collection = [];
 
-    /**
-     * Constructor.
-     *
-     * @return void
-     */
     public function __construct()
     {
         self::$collection[] = $this;
@@ -52,16 +50,10 @@ final class Range extends AbstractRange implements Stringable
         $this->startOffset = 0;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function __get(string $name)
     {
         if ($name === 'commonAncestorContainer') {
-            return Node::getCommonAncestor(
-                $this->startNode,
-                $this->endNode
-            );
+            return Node::getCommonAncestor($this->startNode, $this->endNode);
         }
 
         return parent::__get($name);
@@ -74,8 +66,6 @@ final class Range extends AbstractRange implements Stringable
      *
      * @param \Rowbot\DOM\Node $node   The Node where the Range will start.
      * @param int              $offset The offset within the given node where the Range starts.
-     *
-     * @return void
      */
     public function setStart(Node $node, int $offset): void
     {
@@ -87,10 +77,8 @@ final class Range extends AbstractRange implements Stringable
      *
      * @see https://dom.spec.whatwg.org/#dom-range-setend
      *
-     * @param \Rowbot\DOM\Node $node The Node where the Range ends.
-     * @param int $offset The offset within the given node where the Range ends.
-     *
-     * @return void
+     * @param \Rowbot\DOM\Node $node   The Node where the Range ends.
+     * @param int              $offset The offset within the given node where the Range ends.
      */
     public function setEnd(Node $node, int $offset): void
     {
@@ -101,10 +89,6 @@ final class Range extends AbstractRange implements Stringable
      * Sets the Range's start boundary relative to the given Node.
      *
      * @see https://dom.spec.whatwg.org/#dom-range-setstartbefore
-     *
-     * @param \Rowbot\DOM\Node $node The Node where the Range will start.
-     *
-     * @return void
      *
      * @throws \Rowbot\DOM\Exception\InvalidNodeTypeError
      */
@@ -124,10 +108,6 @@ final class Range extends AbstractRange implements Stringable
      *
      * @see https://dom.spec.whatwg.org/#dom-range-setstartafter
      *
-     * @param \Rowbot\DOM\Node $node The Node where the Range will start.
-     *
-     * @return void
-     *
      * @throws \Rowbot\DOM\Exception\InvalidNodeTypeError
      */
     public function setStartAfter(Node $node): void
@@ -146,10 +126,6 @@ final class Range extends AbstractRange implements Stringable
      *
      * @see https://dom.spec.whatwg.org/#dom-range-setendbefore
      *
-     * @param \Rowbot\DOM\Node $node The Node where the Range will end.
-     *
-     * @return void
-     *
      * @throws \Rowbot\DOM\Exception\InvalidNodeTypeError
      */
     public function setEndBefore(Node $node): void
@@ -167,10 +143,6 @@ final class Range extends AbstractRange implements Stringable
      * Sets the Range's end boundary relative to the given Node.
      *
      * @see https://dom.spec.whatwg.org/#dom-range-setendafter
-     *
-     * @param \Rowbot\DOM\Node $node The Node where the Range will end.
-     *
-     * @return void
      *
      * @throws \Rowbot\DOM\Exception\InvalidNodeTypeError
      */
@@ -192,8 +164,6 @@ final class Range extends AbstractRange implements Stringable
      *
      * @param bool $toStart (optional) If true is passed, the Range will collapse on its starting boundary, otherwise it
      *                      will collapse on its ending boundary.
-     *
-     * @return void
      */
     public function collapse(bool $toStart = false): void
     {
@@ -210,10 +180,6 @@ final class Range extends AbstractRange implements Stringable
      * Selects the given Node and its contents.
      *
      * @see https://dom.spec.whatwg.org/#concept-range-select
-     *
-     * @param \Rowbot\DOM\Node $node The node and its contents to be selected.
-     *
-     * @return void
      *
      * @throws \Rowbot\DOM\Exception\InvalidNodeTypeError
      */
@@ -237,10 +203,6 @@ final class Range extends AbstractRange implements Stringable
      * Selects the contents of the given Node.
      *
      * @see https://dom.spec.whatwg.org/#dom-range-selectnodecontents
-     *
-     * @param \Rowbot\DOM\Node $node The Node whose content is to be selected.
-     *
-     * @return void
      *
      * @throws \Rowbot\DOM\Exception\InvalidNodeTypeError
      */
@@ -295,37 +257,25 @@ final class Range extends AbstractRange implements Stringable
         switch ($how) {
             case self::START_TO_START:
                 $thisPoint = [$this->startNode, $this->startOffset];
-                $otherPoint = [
-                    $sourceRange->startNode,
-                    $sourceRange->startOffset
-                ];
+                $otherPoint = [$sourceRange->startNode, $sourceRange->startOffset];
 
                 break;
 
             case self::START_TO_END:
                 $thisPoint = [$this->endNode, $this->endOffset];
-                $otherPoint = [
-                    $sourceRange->startNode,
-                    $sourceRange->startOffset
-                ];
+                $otherPoint = [$sourceRange->startNode, $sourceRange->startOffset];
 
                 break;
 
             case self::END_TO_END:
                 $thisPoint = [$this->endNode, $this->endOffset];
-                $otherPoint = [
-                    $sourceRange->endNode,
-                    $sourceRange->endOffset
-                ];
+                $otherPoint = [$sourceRange->endNode, $sourceRange->endOffset];
 
                 break;
 
             case self::END_TO_START:
                 $thisPoint = [$this->startNode, $this->startOffset];
-                $otherPoint = [
-                    $sourceRange->endNode,
-                    $sourceRange->endOffset
-                ];
+                $otherPoint = [$sourceRange->endNode, $sourceRange->endOffset];
 
                 break;
         }
@@ -346,13 +296,10 @@ final class Range extends AbstractRange implements Stringable
      * Removes the contents of the Range from the Document.
      *
      * @see https://dom.spec.whatwg.org/#dom-range-deletecontents
-     *
-     * @return void
      */
     public function deleteContents(): void
     {
-        if ($this->startNode === $this->endNode &&
-            $this->startOffset == $this->endOffset) {
+        if ($this->startNode === $this->endNode && $this->startOffset === $this->endOffset) {
             return;
         }
 
@@ -361,7 +308,8 @@ final class Range extends AbstractRange implements Stringable
         $originalEndNode = $this->endNode;
         $originalEndOffset = $this->endOffset;
 
-        if ($originalStartNode === $originalEndNode
+        if (
+            $originalStartNode === $originalEndNode
             && ($originalStartNode instanceof Text
                 || $originalStartNode instanceof ProcessingInstruction
                 || $originalStartNode instanceof Comment)
@@ -379,8 +327,9 @@ final class Range extends AbstractRange implements Stringable
         $tw = new TreeWalker(
             $originalStartNode,
             NodeFilter::SHOW_ALL,
-            function ($node) {
-                if ($this->isFullyContainedNode($node)
+            function (Node $node) {
+                if (
+                    $this->isFullyContainedNode($node)
                     && !$this->isFullyContainedNode($node->parentNode)
                 ) {
                     return NodeFilter::FILTER_ACCEPT;
@@ -412,7 +361,8 @@ final class Range extends AbstractRange implements Stringable
             $newOffset = $referenceNode->getTreeIndex() + 1;
         }
 
-        if ($originalStartNode instanceof Text
+        if (
+            $originalStartNode instanceof Text
             || $originalStartNode instanceof ProcessingInstruction
             || $originalStartNode instanceof Comment
         ) {
@@ -427,7 +377,8 @@ final class Range extends AbstractRange implements Stringable
             $node->removeNode();
         }
 
-        if ($originalEndNode instanceof Text
+        if (
+            $originalEndNode instanceof Text
             || $originalEndNode instanceof ProcessingInstruction
             || $originalEndNode instanceof Comment
         ) {
@@ -443,17 +394,12 @@ final class Range extends AbstractRange implements Stringable
      * DocumentFragment.
      *
      * @see https://dom.spec.whatwg.org/#dom-range-extractcontents
-     *
-     * @return \Rowbot\DOM\DocumentFragment
      */
     public function extractContents(): DocumentFragment
     {
-        $fragment = $this->startNode->getNodeDocument()
-            ->createDocumentFragment();
+        $fragment = $this->startNode->getNodeDocument()->createDocumentFragment();
 
-        if ($this->startNode === $this->endNode
-            && $this->startOffset === $this->endOffset
-        ) {
+        if ($this->startNode === $this->endNode && $this->startOffset === $this->endOffset) {
             return $fragment;
         }
 
@@ -462,7 +408,8 @@ final class Range extends AbstractRange implements Stringable
         $originalEndNode = $this->endNode;
         $originalEndOffset = $this->endOffset;
 
-        if ($originalStartNode === $originalEndNode
+        if (
+            $originalStartNode === $originalEndNode
             && ($originalStartNode instanceof Text
                 || $originalStartNode instanceof ProcessingInstruction
                 || $originalStartNode instanceof Comment)
@@ -492,6 +439,7 @@ final class Range extends AbstractRange implements Stringable
             foreach ($commonAncestor->childNodes as $node) {
                 if ($this->isPartiallyContainedNode($node)) {
                     $firstPartiallyContainedChild = $node;
+
                     break;
                 }
             }
@@ -503,6 +451,7 @@ final class Range extends AbstractRange implements Stringable
             foreach (array_reverse(iterator_to_array($commonAncestor->childNodes)) as $node) {
                 if ($this->isPartiallyContainedNode($node)) {
                     $lastPartiallyContainedChild = $node;
+
                     break;
                 }
             }
@@ -536,7 +485,8 @@ final class Range extends AbstractRange implements Stringable
             $newOffset = $referenceNode->getTreeIndex() + 1;
         }
 
-        if ($firstPartiallyContainedChild instanceof Text
+        if (
+            $firstPartiallyContainedChild instanceof Text
             || $firstPartiallyContainedChild instanceof ProcessingInstruction
             || $firstPartiallyContainedChild instanceof Comment
         ) {
@@ -567,22 +517,16 @@ final class Range extends AbstractRange implements Stringable
             $fragment->appendChild($child);
         }
 
-        if ($lastPartiallyContainedChild instanceof Text
+        if (
+            $lastPartiallyContainedChild instanceof Text
             || $lastPartiallyContainedChild instanceof ProcessingInstruction
             || $lastPartiallyContainedChild instanceof Comment
         ) {
             // In this case, last partially contained child is original end node
             $clone = $originalEndNode->cloneNodeInternal();
-            $clone->data = $originalEndNode->substringData(
-                0,
-                $originalEndOffset
-            );
+            $clone->data = $originalEndNode->substringData(0, $originalEndOffset);
             $fragment->appendChild($clone);
-            $originalEndNode->doReplaceData(
-                0,
-                $originalEndOffset,
-                ''
-            );
+            $originalEndNode->doReplaceData(0, $originalEndOffset, '');
         } elseif ($lastPartiallyContainedChild) {
             $clone = $lastPartiallyContainedChild->cloneNodeInternal();
             $fragment->appendChild($clone);
@@ -606,8 +550,6 @@ final class Range extends AbstractRange implements Stringable
     /**
      * @see https://dom.spec.whatwg.org/#dom-range-clonecontents
      *
-     * @return \Rowbot\DOM\DocumentFragment
-     *
      * @throws \Rowbot\DOM\Exception\HierarchyRequestError
      */
     public function cloneContents(): DocumentFragment
@@ -615,9 +557,7 @@ final class Range extends AbstractRange implements Stringable
         $nodeDocument = $this->startNode->getNodeDocument();
         $fragment = $nodeDocument->createDocumentFragment();
 
-        if ($this->startNode === $this->endNode
-            && $this->startOffset == $this->endOffset
-        ) {
+        if ($this->startNode === $this->endNode && $this->startOffset === $this->endOffset) {
             return $fragment;
         }
 
@@ -626,7 +566,8 @@ final class Range extends AbstractRange implements Stringable
         $originalEndNode = $this->endNode;
         $originalEndOffset = $this->endOffset;
 
-        if ($originalStartNode === $originalEndNode
+        if (
+            $originalStartNode === $originalEndNode
             && ($originalStartNode instanceof Text
                 || $originalStartNode instanceof ProcessingInstruction
                 || $originalStartNode instanceof Comment)
@@ -651,6 +592,7 @@ final class Range extends AbstractRange implements Stringable
             foreach ($commonAncestor->childNodes as $node) {
                 if ($this->isPartiallyContainedNode($node)) {
                     $firstPartiallyContainedChild = $node;
+
                     break;
                 }
             }
@@ -659,14 +601,12 @@ final class Range extends AbstractRange implements Stringable
         $lastPartiallyContainedChild = null;
 
         if (!$originalEndNode->contains($originalStartNode)) {
-            $childNodes = $commonAncestor
-                ->childNodes
-                ->getIterator()
-                ->getArrayCopy();
+            $childNodes = $commonAncestor->childNodes->getIterator()->getArrayCopy();
 
             foreach (array_reverse($childNodes) as $node) {
                 if ($this->isPartiallyContainedNode($node)) {
                     $lastPartiallyContainedChild = $node;
+
                     break;
                 }
             }
@@ -684,7 +624,8 @@ final class Range extends AbstractRange implements Stringable
             }
         }
 
-        if ($firstPartiallyContainedChild instanceof Text
+        if (
+            $firstPartiallyContainedChild instanceof Text
             || $firstPartiallyContainedChild instanceof ProcessingInstruction
             || $firstPartiallyContainedChild instanceof Comment
         ) {
@@ -712,7 +653,8 @@ final class Range extends AbstractRange implements Stringable
             $fragment->appendChild($clone);
         }
 
-        if ($lastPartiallyContainedChild instanceof Text
+        if (
+            $lastPartiallyContainedChild instanceof Text
             || $lastPartiallyContainedChild instanceof ProcessingInstruction
             || $lastPartiallyContainedChild instanceof Comment
         ) {
@@ -739,10 +681,6 @@ final class Range extends AbstractRange implements Stringable
      * Inserts a new Node into at the start of the Range.
      *
      * @see https://dom.spec.whatwg.org/#dom-range-insertnode
-     *
-     * @param \Rowbot\DOM\Node $node The Node to be inserted.
-     *
-     * @return void
      *
      * @throws \Rowbot\DOM\Exception\HierarchyRequestError
      */
@@ -790,9 +728,7 @@ final class Range extends AbstractRange implements Stringable
 
         $parent->preinsertNode($node, $referenceNode);
 
-        if ($this->startNode === $this->endNode
-            && $this->startOffset == $this->endOffset
-        ) {
+        if ($this->startNode === $this->endNode && $this->startOffset === $this->endOffset) {
             $this->endNode = $parent;
             $this->endOffset = $newOffset;
         }
@@ -802,10 +738,6 @@ final class Range extends AbstractRange implements Stringable
      * Wraps the content of Range in a new Node and inserts it in to the Document.
      *
      * @see https://dom.spec.whatwg.org/#dom-range-surroundcontents
-     *
-     * @param Node $newParent The node that will surround the Range's content.
-     *
-     * @return void
      *
      * @throws \Rowbot\DOM\Exception\InvalidNodeTypeError
      * @throws \Rowbot\DOM\Exception\InvalidStateError
@@ -828,7 +760,8 @@ final class Range extends AbstractRange implements Stringable
             }
         }
 
-        if ($newParent instanceof Document
+        if (
+            $newParent instanceof Document
             || $newParent instanceof DocumentType
             || $newParent instanceof DocumentFragment
         ) {
@@ -851,8 +784,6 @@ final class Range extends AbstractRange implements Stringable
      * as well as identical starting and ending offsets.
      *
      * @see https://dom.spec.whatwg.org/#dom-range-clonerange
-     *
-     * @return self
      */
     public function cloneRange(): self
     {
@@ -881,11 +812,6 @@ final class Range extends AbstractRange implements Stringable
      *
      * @see https://dom.spec.whatwg.org/#dom-range-ispointinrange
      *
-     * @param \Rowbot\DOM\Node $node   The Node whose position is to be checked.
-     * @param int              $offset The offset within the given node.
-     *
-     * @return bool
-     *
      * @throws \Rowbot\DOM\Exception\IndexSizeError
      * @throws \Rowbot\DOM\Exception\InvalidNodeTypeError
      */
@@ -908,11 +834,9 @@ final class Range extends AbstractRange implements Stringable
 
         $bp = array($node, $offset);
 
-        if ($this->computePosition($bp, [
-                $this->startNode, $this->startOffset
-            ]) === 'before' || $this->computePosition($bp, [
-                $this->endNode, $this->endOffset
-            ]) === 'after'
+        if (
+            $this->computePosition($bp, [$this->startNode, $this->startOffset]) === 'before'
+            || $this->computePosition($bp, [$this->endNode, $this->endOffset]) === 'after'
         ) {
             return false;
         }
@@ -924,9 +848,6 @@ final class Range extends AbstractRange implements Stringable
      * Checks to see if a node comes before, after, or within the range.
      *
      * @see https://dom.spec.whatwg.org/#dom-range-comparepoint
-     *
-     * @param \Rowbot\DOM\Node $node   The node to compare with.
-     * @param int              $offset The offset position within the node.
      *
      * @return int Returns -1, 0, or 1 to indicated whether the node lies before, after, or within the range,
      *             respectively.
@@ -954,17 +875,11 @@ final class Range extends AbstractRange implements Stringable
 
         $bp = [$node, $offset];
 
-        if ($this->computePosition($bp, [
-            $this->startNode,
-            $this->startOffset
-        ]) === 'before') {
+        if ($this->computePosition($bp, [$this->startNode, $this->startOffset]) === 'before') {
             return -1;
         }
 
-        if ($this->computePosition($bp, [
-            $this->endNode,
-            $this->endOffset
-        ]) === 'after') {
+        if ($this->computePosition($bp, [$this->endNode, $this->endOffset]) === 'after') {
             return 1;
         }
 
@@ -976,10 +891,6 @@ final class Range extends AbstractRange implements Stringable
      * Range.
      *
      * @see https://dom.spec.whatwg.org/#dom-range-intersectsnode
-     *
-     * @param \Rowbot\DOM\Node $node The Node to be checked for intersection.
-     *
-     * @return bool
      */
     public function intersectsNode(Node $node): bool
     {
@@ -996,25 +907,15 @@ final class Range extends AbstractRange implements Stringable
         }
 
         $offset = $node->getTreeIndex();
-        $position1 = $this->computePosition(
-            [$parent, $offset],
-            [$this->endNode, $this->endOffset]
-        );
+        $position1 = $this->computePosition([$parent, $offset], [$this->endNode, $this->endOffset]);
         $position2 = $this->computePosition(
             [$parent, $offset + 1],
             [$this->startNode, $this->startOffset]
         );
 
-        if ($position1 === 'before' && $position2 === 'after') {
-            return true;
-        }
-
-        return false;
+        return $position1 === 'before' && $position2 === 'after';
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function __toString(): string
     {
         return $this->toString();
@@ -1022,8 +923,6 @@ final class Range extends AbstractRange implements Stringable
 
     /**
      * Concatenates the contents of the Range in to a string.
-     *
-     * {@inheritDoc}
      *
      * @see https://dom.spec.whatwg.org/#dom-range-stringifier
      */
@@ -1033,9 +932,7 @@ final class Range extends AbstractRange implements Stringable
         $owner = $this->startNode->getNodeDocument();
         $encoding = $owner->characterSet;
 
-        if ($this->startNode === $this->endNode &&
-            $this->startNode instanceof Text
-        ) {
+        if ($this->startNode === $this->endNode && $this->startNode instanceof Text) {
             return mb_substr(
                 $this->startNode->data,
                 $this->startOffset,
@@ -1096,12 +993,8 @@ final class Range extends AbstractRange implements Stringable
 
     /**
      * @see https://w3c.github.io/DOM-Parsing/#dfn-createcontextualfragment-fragment
-     *
-     * @param string $fragment
-     *
-     * @return \Rowbot\DOM\DocumentFragment
      */
-    public function createContextualFragment(string $fragment)
+    public function createContextualFragment(string $fragment): DocumentFragment
     {
         $node = $this->startNode;
         $element = null;
@@ -1112,9 +1005,7 @@ final class Range extends AbstractRange implements Stringable
             $element = $node;
         } elseif ($node instanceof Text || $node instanceof Comment) {
             $element = $node->parentElement;
-        } elseif ($node instanceof DocumentType
-            || $node instanceof ProcessingInstruction
-        ) {
+        } elseif ($node instanceof DocumentType || $node instanceof ProcessingInstruction) {
             // DOM4 prevents this case.
         }
 
@@ -1123,7 +1014,8 @@ final class Range extends AbstractRange implements Stringable
         // is the HTML namespace, then let element be a new Element with "body"
         // as its local name, the HTML namespace as its namespace, and the
         // context object's node document as its node document.
-        if ($element === null
+        if (
+            $element === null
             || ($element->getNodeDocument() instanceof HTMLDocument
                 && $element->localName === 'html'
                 && $element->namespaceURI === Namespaces::HTML)
@@ -1170,18 +1062,18 @@ final class Range extends AbstractRange implements Stringable
      *
      * @see https://dom.spec.whatwg.org/#concept-range-bp-position
      *
-     * @param mixed[] $boundaryPointA An array containing a Node and an offset within that Node representing a boundary.
-     * @param mixed[] $boundaryPointB An array containing a Node and an offset within that Node representing a boundary.
+     * @param array{0: \Rowbot\DOM\Node, 1: int} $boundaryPointA An array containing a Node and an offset within that
+     *                                                           Node representing a boundary.
+     * @param array{0: \Rowbot\DOM\Node, 1: int} $boundaryPointB An array containing a Node and an offset within that
+     *                                                           Node representing a boundary.
      *
      * @return string Returns before, equal, or after based on the position of the first boundary relative to the second
      *                boundary.
      */
-    private function computePosition(
-        array $boundaryPointA,
-        array $boundaryPointB
-    ): string {
+    private function computePosition(array $boundaryPointA, array $boundaryPointB): string
+    {
         if ($boundaryPointA[0] === $boundaryPointB[0]) {
-            if ($boundaryPointA[1] == $boundaryPointB[1]) {
+            if ($boundaryPointA[1] === $boundaryPointB[1]) {
                 return 'equal';
             } elseif ($boundaryPointA[1] < $boundaryPointB[1]) {
                 return 'before';
@@ -1193,7 +1085,7 @@ final class Range extends AbstractRange implements Stringable
         $tw = new TreeWalker(
             $boundaryPointB[0]->getRootNode(),
             NodeFilter::SHOW_ALL,
-            function ($node) use ($boundaryPointA) {
+            static function (Node $node) use ($boundaryPointA): int {
                 if ($node === $boundaryPointA[0]) {
                     return NodeFilter::FILTER_ACCEPT;
                 }
@@ -1209,6 +1101,7 @@ final class Range extends AbstractRange implements Stringable
             switch ($this->computePosition($boundaryPointB, $boundaryPointA)) {
                 case 'after':
                     return 'before';
+
                 case 'before':
                     return 'after';
             }
@@ -1247,10 +1140,6 @@ final class Range extends AbstractRange implements Stringable
      * Returns true if the entire Node is within the Range, otherwise false.
      *
      * @see https://dom.spec.whatwg.org/#contained
-     *
-     * @param \Rowbot\DOM\Node $node The Node to check against.
-     *
-     * @return bool
      */
     private function isFullyContainedNode(Node $node): bool
     {
@@ -1260,20 +1149,13 @@ final class Range extends AbstractRange implements Stringable
 
         return $node->getRootNode() === $root
             && $this->computePosition([$node, 0], $startBP) === 'after'
-            && $this->computePosition(
-                [$node, $node->getLength()],
-                $endBP
-            ) === 'before';
+            && $this->computePosition([$node, $node->getLength()], $endBP) === 'before';
     }
 
     /**
      * Returns true if only a portion of the Node is contained within the Range.
      *
      * @see https://dom.spec.whatwg.org/#partially-contained
-     *
-     * @param \Rowbot\DOM\Node $node The Node to check against.
-     *
-     * @return bool
      */
     private function isPartiallyContainedNode(Node $node): bool
     {
@@ -1295,8 +1177,6 @@ final class Range extends AbstractRange implements Stringable
      * @param \Rowbot\DOM\Node $node   The Node that will become the boundary.
      * @param int              $offset The offset within the given Node that will be the boundary.
      *
-     * @return void
-     *
      * @throws \Rowbot\DOM\Exception\IndexSizeError
      * @throws \Rowbot\DOM\Exception\InvalidNodeTypeError
      */
@@ -1316,11 +1196,9 @@ final class Range extends AbstractRange implements Stringable
 
         switch ($type) {
             case 'start':
-                if ($this->computePosition($bp, [
-                        $this->endNode, $this->endOffset
-                    ]) === 'after'
-                    || $this->startNode->getRootNode() !==
-                    $node->getRootNode()
+                if (
+                    $this->computePosition($bp, [$this->endNode, $this->endOffset]) === 'after'
+                    || $this->startNode->getRootNode() !== $node->getRootNode()
                 ) {
                     $this->endNode = $node;
                     $this->endOffset = $offset;
@@ -1332,11 +1210,9 @@ final class Range extends AbstractRange implements Stringable
                 break;
 
             case 'end':
-                if ($this->computePosition($bp, [
-                        $this->startNode, $this->startOffset
-                    ]) === 'before'
-                    || $this->startNode->getRootNode() !==
-                    $node->getRootNode()
+                if (
+                    $this->computePosition($bp, [$this->startNode, $this->startOffset]) === 'before'
+                    || $this->startNode->getRootNode() !== $node->getRootNode()
                 ) {
                     $this->startNode = $node;
                     $this->startOffset = $offset;

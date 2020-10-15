@@ -1,13 +1,15 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Rowbot\DOM\Parser\XML;
 
-use Exception;
 use Rowbot\DOM\Document;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Exception\SyntaxError;
+use Rowbot\DOM\NodeList;
 use Rowbot\DOM\Parser\Parser;
+use Throwable;
 
 class XMLParser extends Parser
 {
@@ -16,13 +18,6 @@ class XMLParser extends Parser
      */
     private $document;
 
-    /**
-     * Constructor.
-     *
-     * @param \Rowbot\DOM\Document $document
-     *
-     * @return void
-     */
     public function __construct(Document $document)
     {
         parent::__construct();
@@ -30,9 +25,6 @@ class XMLParser extends Parser
         $this->document = $document;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function abort(): void
     {
     }
@@ -42,32 +34,25 @@ class XMLParser extends Parser
      *
      * @see https://html.spec.whatwg.org/multipage/xhtml.html#xml-fragment-parsing-algorithm
      *
-     * @param string                      $input
-     * @param \Rowbot\DOM\Element\Element $contextElement
-     *
-     * @return \Rowbot\DOM\Node[]
-     *
      * @throws \Rowbot\DOM\Exception\SyntaxError
      */
-    public static function parseXMLFragment(
-        string $input,
-        Element $contextElement
-    ): array {
+    public static function parseXMLFragment(string $input, Element $contextElement): NodeList
+    {
         $document = new Document();
         $parser = new XMLParser($document);
         $parser->inputStream->append($input);
 
         try {
             $parser->run();
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             throw new SyntaxError('', $e);
         }
 
         $docElement = $document->documentElement;
 
-        if ($docElement !== null
-            && ($docElement->previousSibling !== null
-                || $docElement->nextSibling !== null)
+        if (
+            $docElement !== null
+            && ($docElement->previousSibling !== null || $docElement->nextSibling !== null)
         ) {
             throw new SyntaxError();
         }
@@ -75,9 +60,6 @@ class XMLParser extends Parser
         return $document->childNodes;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function preprocessInputStream(string $input): void
     {
         $this->inputStream->append($input);
@@ -85,8 +67,6 @@ class XMLParser extends Parser
 
     /**
      * Executes the parsing steps.
-     *
-     * @return void
      */
     public function run()
     {

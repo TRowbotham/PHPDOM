@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Rowbot\DOM;
@@ -20,8 +21,6 @@ use Rowbot\DOM\Element\Element;
  * @param ?string                     $value     The new value of the content attribute. This can be null if the content
  *                                               attribtue is being removed from the Element.
  * @param ?string                     $namespace The namespace of the content attribute.
- *
- * @return void
  */
 interface AttributeChangeObserver
 {

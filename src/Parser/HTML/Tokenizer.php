@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Rowbot\DOM\Parser\HTML;
@@ -8,7 +9,6 @@ use IntlChar;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Namespaces;
 use Rowbot\DOM\Parser\Collection\OpenElementStack;
-use Rowbot\DOM\Parser\HTML\ParserState;
 use Rowbot\DOM\Parser\Token\AttributeToken;
 use Rowbot\DOM\Parser\Token\CharacterToken;
 use Rowbot\DOM\Parser\Token\CommentToken;
@@ -16,7 +16,6 @@ use Rowbot\DOM\Parser\Token\DoctypeToken;
 use Rowbot\DOM\Parser\Token\EndTagToken;
 use Rowbot\DOM\Parser\Token\EOFToken;
 use Rowbot\DOM\Parser\Token\StartTagToken;
-use Rowbot\DOM\Parser\Token\Token;
 use Rowbot\DOM\Support\CodePointStream;
 use Rowbot\DOM\Utils;
 
@@ -41,8 +40,6 @@ class Tokenizer
 
     /**
      * @see https://html.spec.whatwg.org/multipage/parsing.html#table-charref-overrides
-     *
-     * @var array<int, int>
      */
     private const CHARACTER_REFERENCE_MAP = [
         0x80 => 0x20AC, // EURO SIGN (€)
@@ -71,15 +68,13 @@ class Tokenizer
         0x9B => 0x203A, // SINGLE RIGHT-POINTING ANGLE QUOTATION MARK (›)
         0x9C => 0x0153, // LATIN SMALL LIGATURE OE (œ)
         0x9E => 0x017E, // LATIN SMALL LETTER Z WITH CARON (ž)
-        0x9F => 0x0178  // LATIN CAPITAL LETTER Y WITH DIAERESIS (Ÿ)
+        0x9F => 0x0178,  // LATIN CAPITAL LETTER Y WITH DIAERESIS (Ÿ)
     ];
 
     /**
      * Currrently, the longest named character reference, from the named
      * character references table, consists of 33 characters, however, because
      * the ampersand (&) is already in the temporary buffer, subtract 1.
-     *
-     * @var int
      */
     private const MAX_NAMED_CHAR_REFERENCE_LENGTH = 32;
 
@@ -88,8 +83,6 @@ class Tokenizer
      *
      * @see https://html.spec.whatwg.org/multipage/named-characters.html#named-character-references
      * @see https://html.spec.whatwg.org/entities.json
-     *
-     * @var string
      */
     private const NAMED_CHAR_REFERENCES_PATH = __DIR__
         . DIRECTORY_SEPARATOR
@@ -119,17 +112,6 @@ class Tokenizer
      */
     private static $namedCharacterReferences;
 
-    /**
-     * Constructor.
-     *
-     * @param \Rowbot\DOM\Support\CodePointStream            $input
-     * @param \Rowbot\DOM\Parser\Collection\OpenElementStack $openElements
-     * @param bool                                           $isFragmentCase
-     * @param \Rowbot\DOM\Element\Element|null               $contextElement
-     * @param \Rowbot\DOM\Parser\HTML\ParserState            $state
-     *
-     * @return void
-     */
     public function __construct(
         CodePointStream $input,
         OpenElementStack $openElements,
@@ -146,8 +128,6 @@ class Tokenizer
 
     /**
      * Runs the tokenization steps.
-     *
-     * @return \Generator
      */
     public function run(): Generator
     {
@@ -189,6 +169,7 @@ class Tokenizer
                     } elseif ($this->input->isEoS()) {
                         // Emit an end-of-file token.
                         yield new EOFToken();
+
                         return;
                     } else {
                         // Emit the current input character as a character
@@ -217,6 +198,7 @@ class Tokenizer
                     } elseif ($this->input->isEoS()) {
                         // Emit an end-of-file token.
                         yield new EOFToken();
+
                         return;
                     } else {
                         // Emit the current input character as a character
@@ -240,6 +222,7 @@ class Tokenizer
                     } elseif ($this->input->isEoS()) {
                         // Emit an end-of-file token.
                         yield new EOFToken();
+
                         return;
                     } else {
                         // Emit the current input character as a character
@@ -263,6 +246,7 @@ class Tokenizer
                     } elseif ($this->input->isEoS()) {
                         // Emit an end-of-file token.
                         yield new EOFToken();
+
                         return;
                     } else {
                         // Emit the current input character as a character
@@ -283,6 +267,7 @@ class Tokenizer
                     } elseif ($this->input->isEoS()) {
                         // Emit an end-of-file token.
                         yield new EOFToken();
+
                         return;
                     } else {
                         // Emit the current input character as a character token.
@@ -320,12 +305,14 @@ class Tokenizer
                         // end-of-file token.
                         yield new CharacterToken('<');
                         yield new EOFToken();
+
                         return;
                     } else {
                         // Parse error.
                         // Emit a U+003C LESS-THAN SIGN character token.
                         // Reconsume in the data state.
                         yield new CharacterToken('<');
+
                         $this->input->seek(-1);
                         $this->state->tokenizerState = TokenizerState::DATA;
                     }
@@ -354,6 +341,7 @@ class Tokenizer
                         yield new CharacterToken('<');
                         yield new CharacterToken('/');
                         yield new EOFToken();
+
                         return;
                     } else {
                         // Parse error.
@@ -370,11 +358,7 @@ class Tokenizer
                 case TokenizerState::TAG_NAME:
                     $c = $this->input->get();
 
-                    if ($c === "\x09"
-                        || $c === "\x0A"
-                        || $c === "\x0C"
-                        || $c === "\x20"
-                    ) {
+                    if ($c === "\x09" || $c === "\x0A" || $c === "\x0C" || $c === "\x20") {
                         // Switch to the before attribute name state.
                         $this->state->tokenizerState = TokenizerState::BEFORE_ATTRIBUTE_NAME;
                     } elseif ($c === '/') {
@@ -383,6 +367,7 @@ class Tokenizer
                     } elseif ($c === '>') {
                         // Switch to the data state. Emit the current tag token.
                         $this->state->tokenizerState = TokenizerState::DATA;
+
                         yield $tagToken;
                     } elseif (ctype_upper($c)) {
                         // Append the lowercase version of the current input
@@ -398,6 +383,7 @@ class Tokenizer
                         // Parse error.
                         // Emit an end-of-file token.
                         yield new EOFToken();
+
                         return;
                     } else {
                         // Append the current input character to the current tag
@@ -420,6 +406,7 @@ class Tokenizer
                         // Emit a U+003C LESS-THAN SIGN character token.
                         // Reconsume in the RCDATA state.
                         yield new CharacterToken('<');
+
                         $this->input->seek(-1);
                         $this->state->tokenizerState = TokenizerState::RCDATA;
                     }
@@ -443,6 +430,7 @@ class Tokenizer
                         // RCDATA state.
                         yield new CharacterToken('<');
                         yield new CharacterToken('/');
+
                         $this->input->seek(-1);
                         $this->state->tokenizerState = TokenizerState::RCDATA;
                     }
@@ -453,24 +441,19 @@ class Tokenizer
                 case TokenizerState::RCDATA_END_TAG_NAME:
                     $c = $this->input->get();
 
-                    if ($c === "\x09"
-                        || $c === "\x0A"
-                        || $c === "\x0C"
-                        || $c === "\x20"
-                    ) {
+                    if ($c === "\x09" || $c === "\x0A" || $c === "\x0C" || $c === "\x20") {
                         // If the current end tag token is an appropriate end
                         // tag token, then switch to the before attribute name
                         // state. Otherwise, treat it as per the "anything else"
                         // entry below.
-                        $isAppropriateEndTag = $this->isAppropriateEndTag(
-                            $tagToken
-                        );
+                        $isAppropriateEndTag = $this->isAppropriateEndTag($tagToken);
 
                         if ($isAppropriateEndTag) {
                             $this->state->tokenizerState = TokenizerState::BEFORE_ATTRIBUTE_NAME;
                         } else {
                             yield new CharacterToken('<');
                             yield new CharacterToken('/');
+
                             $streamBuffer = new CodePointStream($buffer);
 
                             while (!$streamBuffer->isEoS()) {
@@ -487,15 +470,14 @@ class Tokenizer
                         // tag token, then switch to the self-closing start tag
                         // state. Otherwise, treat it as per the "anything else"
                         // entry below.
-                        $isAppropriateEndTag = $this->isAppropriateEndTag(
-                            $tagToken
-                        );
+                        $isAppropriateEndTag = $this->isAppropriateEndTag($tagToken);
 
                         if ($isAppropriateEndTag) {
                             $this->state->tokenizerState = TokenizerState::SELF_CLOSING_START_TAG;
                         } else {
                             yield new CharacterToken('<');
                             yield new CharacterToken('/');
+
                             $streamBuffer = new CodePointStream($buffer);
 
                             while (!$streamBuffer->isEoS()) {
@@ -512,16 +494,16 @@ class Tokenizer
                         // tag token, then switch to the data state and emit the
                         // current tag token. Otherwise, treat it as per the
                         // "anything else" entry below.
-                        $isAppropriateEndTag = $this->isAppropriateEndTag(
-                            $tagToken
-                        );
+                        $isAppropriateEndTag = $this->isAppropriateEndTag($tagToken);
 
                         if ($isAppropriateEndTag) {
                             $this->state->tokenizerState = TokenizerState::DATA;
+
                             yield $tagToken;
                         } else {
                             yield new CharacterToken('<');
                             yield new CharacterToken('/');
+
                             $streamBuffer = new CodePointStream($buffer);
 
                             while (!$streamBuffer->isEoS()) {
@@ -554,6 +536,7 @@ class Tokenizer
                         // Reconsume in the RCDATA state.
                         yield new CharacterToken('<');
                         yield new CharacterToken('/');
+
                         $streamBuffer = new CodePointStream($buffer);
 
                         while (!$streamBuffer->isEoS()) {
@@ -579,6 +562,7 @@ class Tokenizer
                         // Emit a U+003C LESS-THAN SIGN character token.
                         // Reconsume in the RAWTEXT state.
                         yield new CharacterToken('<');
+
                         $this->input->seek(-1);
                         $this->state->tokenizerState = TokenizerState::RAWTEXT;
                     }
@@ -602,6 +586,7 @@ class Tokenizer
                         // RAWTEXT state.
                         yield new CharacterToken('<');
                         yield new CharacterToken('/');
+
                         $this->input->seek(-1);
                         $this->state->tokenizerState = TokenizerState::RAWTEXT;
                     }
@@ -612,18 +597,12 @@ class Tokenizer
                 case TokenizerState::RAWTEXT_END_TAG_NAME:
                     $c = $this->input->get();
 
-                    if ($c === "\x09"
-                        || $c === "\x0A"
-                        || $c === "\x0C"
-                        || $c === "\x20"
-                    ) {
+                    if ($c === "\x09" || $c === "\x0A" || $c === "\x0C" || $c === "\x20") {
                         // If the current end tag token is an appropriate end
                         // tag token, then switch to the before attribute name
                         // state. Otherwise, treat it as per the "anything else"
                         // entry below.
-                        $isAppropriateEndTag = $this->isAppropriateEndTag(
-                            $tagToken
-                        );
+                        $isAppropriateEndTag = $this->isAppropriateEndTag($tagToken);
 
                         if ($isAppropriateEndTag) {
                             $this->state->tokenizerState = TokenizerState::BEFORE_ATTRIBUTE_NAME;
@@ -647,9 +626,7 @@ class Tokenizer
                         // tag token, then switch to the self-closing start tag
                         // state. Otherwise, treat it as per the "anything else"
                         // entry below.
-                        $isAppropriateEndTag = $this->isAppropriateEndTag(
-                            $tagToken
-                        );
+                        $isAppropriateEndTag = $this->isAppropriateEndTag($tagToken);
 
                         if ($isAppropriateEndTag) {
                             $this->state->tokenizerState = TokenizerState::SELF_CLOSING_START_TAG;
@@ -673,12 +650,11 @@ class Tokenizer
                         // tag token, then switch to the data state and emit the
                         // current tag token. Otherwise, treat it as per the
                         // "anything else" entry below.
-                        $isAppropriateEndTag = $this->isAppropriateEndTag(
-                            $tagToken
-                        );
+                        $isAppropriateEndTag = $this->isAppropriateEndTag($tagToken);
 
                         if ($isAppropriateEndTag) {
                             $this->state->tokenizerState = TokenizerState::DATA;
+
                             yield $tagToken;
                         } else {
                             yield new CharacterToken('<');
@@ -743,12 +719,14 @@ class Tokenizer
                         // U+003C LESS-THAN SIGN character token and a U+0021
                         // EXCLAMATION MARK character token.
                         $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_ESCAPE_START;
+
                         yield new CharacterToken('<');
                         yield new CharacterToken('!');
                     } else {
                         // Emit a U+003C LESS-THAN SIGN character token.
                         // Reconsume in the script data state.
                         yield new CharacterToken('<');
+
                         $this->input->seek(-1);
                         $this->state->tokenizerState = TokenizerState::SCRIPT_DATA;
                     }
@@ -772,6 +750,7 @@ class Tokenizer
                         // script data state.
                         yield new CharacterToken('<');
                         yield new CharacterToken('/');
+
                         $this->input->seek(-1);
                         $this->state->tokenizerState = TokenizerState::SCRIPT_DATA;
                     }
@@ -782,18 +761,12 @@ class Tokenizer
                 case TokenizerState::SCRIPT_DATA_END_TAG_NAME:
                     $c = $this->input->get();
 
-                    if ($c === "\x09"
-                        || $c === "\x0A"
-                        || $c === "\x0C"
-                        || $c === "\x20"
-                    ) {
+                    if ($c === "\x09" || $c === "\x0A" || $c === "\x0C" || $c === "\x20") {
                         // If the current end tag token is an appropriate end
                         // tag token, then switch to the before attribute name
                         // state. Otherwise, treat it as per the "anything else"
                         // entry below.
-                        $isAppropriateEndTag = $this->isAppropriateEndTag(
-                            $tagToken
-                        );
+                        $isAppropriateEndTag = $this->isAppropriateEndTag($tagToken);
 
                         if ($isAppropriateEndTag) {
                             $this->state->tokenizerState = TokenizerState::BEFORE_ATTRIBUTE_NAME;
@@ -817,9 +790,7 @@ class Tokenizer
                         // tag token, then switch to the self-closing start tag
                         // state. Otherwise, treat it as per the "anything else"
                         // entry below.
-                        $isAppropriateEndTag = $this->isAppropriateEndTag(
-                            $tagToken
-                        );
+                        $isAppropriateEndTag = $this->isAppropriateEndTag($tagToken);
 
                         if ($isAppropriateEndTag) {
                             $this->state->tokenizerState = TokenizerState::SELF_CLOSING_START_TAG;
@@ -843,12 +814,11 @@ class Tokenizer
                         // tag token, then switch to the data state and emit the
                         // current tag token. Otherwise, treat it as per the
                         // "anything else" entry below.
-                        $isAppropriateEndTag = $this->isAppropriateEndTag(
-                            $tagToken
-                        );
+                        $isAppropriateEndTag = $this->isAppropriateEndTag($tagToken);
 
                         if ($isAppropriateEndTag) {
                             $this->state->tokenizerState = TokenizerState::DATA;
+
                             yield $tagToken;
                         } else {
                             yield new CharacterToken('<');
@@ -857,9 +827,7 @@ class Tokenizer
                             $bufferStream = new CodePointStream($buffer);
 
                             while (!$bufferStream->isEoS()) {
-                                yield new CharacterToken(
-                                    $bufferStream->get()
-                                );
+                                yield new CharacterToken($bufferStream->get());
                             }
 
                             $this->input->seek(-1);
@@ -908,6 +876,7 @@ class Tokenizer
                         // Switch to the script data escape start dash state.
                         // Emit a U+002D HYPHEN-MINUS character token.
                         $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_ESCAPE_START_DASH;
+
                         yield new CharacterToken('-');
                     } else {
                         // Reconsume in the script data state.
@@ -925,6 +894,7 @@ class Tokenizer
                         // Switch to the script data escaped dash dash state.
                         // Emit a U+002D HYPHEN-MINUS character token.
                         $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_ESCAPED_DASH_DASH;
+
                         yield new CharacterToken('-');
                     } else {
                         // Reconsume in the script data state.
@@ -942,6 +912,7 @@ class Tokenizer
                         // Switch to the script data escaped dash state. Emit a
                         // U+002D HYPHEN-MINUS character token.
                         $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_ESCAPED_DASH;
+
                         yield new CharacterToken('-');
                     } elseif ($c === '<') {
                         $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_ESCAPED_LESS_THAN_SIGN;
@@ -953,6 +924,7 @@ class Tokenizer
                         // Parse error.
                         // Emit an end-of-file token.
                         yield new EOFToken();
+
                         return;
                     } else {
                         // Emit the current input character as a character token.
@@ -969,6 +941,7 @@ class Tokenizer
                         // Switch to the script data escaped dash state. Emit a
                         // U+002D HYPHEN-MINUS character token.
                         $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_ESCAPED_DASH_DASH;
+
                         yield new CharacterToken('-');
                     } elseif ($c === '<') {
                         // Switch to the script data escaped less-than sign state.
@@ -977,16 +950,19 @@ class Tokenizer
                         // Parse error.
                         // Emit a U+FFFD REPLACEMENT CHARACTER character token.
                         $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_ESCAPED;
+
                         yield new CharacterToken("\u{FFFD}");
                     } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Emit an end-of-file token.
                         yield new EOFToken();
+
                         return;
                     } else {
                         // Switch to the script data escaped state. Emit the
                         // current input character as a character token.
                         $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_ESCAPED;
+
                         yield new CharacterToken($c);
                     }
 
@@ -1006,22 +982,26 @@ class Tokenizer
                         // Switch to the script data state. Emit a
                         // U+003E GREATER-THAN SIGN character token.
                         $this->state->tokenizerState = TokenizerState::SCRIPT_DATA;
+
                         yield new CharacterToken('>');
                     } elseif ($c === "\0") {
                         // Parse error.
                         // Switch to the script data escaped state. Emit a
                         // U+FFFD REPLACEMENT CHARACTER character token.
                         $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_ESCAPED;
+
                         yield new CharacterToken("\u{FFFD}");
                     } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Emit an end-of-file token.
                         yield new EOFToken();
+
                         return;
                     } else {
                         // Switch to the script data escaped state. Emit the
                         // current input character as a character token.
                         $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_ESCAPED;
+
                         yield new CharacterToken($c);
                     }
 
@@ -1041,13 +1021,16 @@ class Tokenizer
                         // U+003C LESS-THAN SIGN character token. Reconsume in
                         // the script data double escape start state.
                         $buffer = '';
+
                         yield new CharacterToken('<');
+
                         $this->input->seek(-1);
                         $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPE_START;
                     } else {
                         // Emit a U+003C LESS-THAN SIGN character token.
                         // Reconsume in the script data escaped state.
                         yield new CharacterToken('<');
+
                         $this->input->seek(-1);
                         $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_ESCAPED;
                     }
@@ -1072,6 +1055,7 @@ class Tokenizer
                         // script data escaped state.
                         yield new CharacterToken('<');
                         yield new CharacterToken('/');
+
                         $this->input->seek(-1);
                         $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_ESCAPED;
                     }
@@ -1082,18 +1066,12 @@ class Tokenizer
                 case TokenizerState::SCRIPT_DATA_ESCAPED_END_TAG_NAME:
                     $c = $this->input->get();
 
-                    if ($c === "\x09"
-                        || $c === "\x0A"
-                        || $c === "\x0C"
-                        || $c === "\x20"
-                    ) {
+                    if ($c === "\x09" || $c === "\x0A" || $c === "\x0C" || $c === "\x20") {
                         // If the current end tag token is an appropriate end
                         // tag token, then switch to the before attribute name
                         // state. Otherwise, treat it as per the "anything else"
                         // entry below.
-                        $isAppropriateEndTag = $this->isAppropriateEndTag(
-                            $tagToken
-                        );
+                        $isAppropriateEndTag = $this->isAppropriateEndTag($tagToken);
 
                         if ($isAppropriateEndTag) {
                             $this->state->tokenizerState = TokenizerState::BEFORE_ATTRIBUTE_NAME;
@@ -1117,9 +1095,7 @@ class Tokenizer
                         // tag token, then switch to the self-closing start tag
                         // state. Otherwise, treat it as per the "anything else"
                         // entry below.
-                        $isAppropriateEndTag = $this->isAppropriateEndTag(
-                            $tagToken
-                        );
+                        $isAppropriateEndTag = $this->isAppropriateEndTag($tagToken);
 
                         if ($isAppropriateEndTag) {
                             $this->state->tokenizerState = TokenizerState::SELF_CLOSING_START_TAG;
@@ -1143,12 +1119,11 @@ class Tokenizer
                         // tag token, then switch to the data state and emit the
                         // current tag token. Otherwise, treat it as per the
                         // "anything else" entry below.
-                        $isAppropriateEndTag = $this->isAppropriateEndTag(
-                            $tagToken
-                        );
+                        $isAppropriateEndTag = $this->isAppropriateEndTag($tagToken);
 
                         if ($isAppropriateEndTag) {
                             $this->state->tokenizerState = TokenizerState::DATA;
+
                             yield $tagToken;
                         } else {
                             yield new CharacterToken('<');
@@ -1203,7 +1178,8 @@ class Tokenizer
                 case TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPE_START:
                     $c = $this->input->get();
 
-                    if ($c === "\x09"
+                    if (
+                        $c === "\x09"
                         || $c === "\x0A"
                         || $c === "\x0C"
                         || $c === "\x20"
@@ -1227,12 +1203,14 @@ class Tokenizer
                         // to the temporary buffer. Emit the current input
                         // character as a character token.
                         $buffer .= strtolower($c);
+
                         yield new CharacterToken($c);
                     } elseif (ctype_lower($c)) {
                         // Append the current input character to the temporary
                         // buffer. Emit the current input character as a
                         // character token.
                         $buffer .= $c;
+
                         yield new CharacterToken($c);
                     } else {
                         // Reconsume in the script data escaped state.
@@ -1250,12 +1228,14 @@ class Tokenizer
                         // Switch to the script data double escaped dash state.
                         // Emit a U+002D HYPHEN-MINUS character token.
                         $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPED_DASH;
+
                         yield new CharacterToken('-');
                     } elseif ($c === '<') {
                         // Switch to the script data double escaped less-than
                         // sign state. Emit a U+003C LESS-THAN SIGN character
                         // token.
                         $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPED_LESS_THAN_SIGN;
+
                         yield new CharacterToken('<');
                     } elseif ($c === "\0") {
                         // Parse error.
@@ -1265,6 +1245,7 @@ class Tokenizer
                         // Parse error.
                         // Emit an end-of-file token.
                         yield new EOFToken();
+
                         return;
                     } else {
                         // Emit the current input character as a character
@@ -1282,28 +1263,33 @@ class Tokenizer
                         // Switch to the script data double escaped dash dash
                         // state. Emit a U+002D HYPHEN-MINUS character token.
                         $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPED_DASH_DASH;
+
                         yield new CharacterToken('-');
                     } elseif ($c === '<') {
                         // Switch to the script data double escaped less-than
                         // sign state. Emit a U+003C LESS-THAN SIGN character
                         // token.
                         $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPED_LESS_THAN_SIGN;
+
                         yield new CharacterToken('<');
                     } elseif ($c === "\0") {
                         // Parse error.
                         // Switch to the script data double escaped state. Emit
                         // a U+FFFD REPLACEMENT CHARACTER character token.
                         $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPED;
+
                         yield new CharacterToken("\u{FFFD}");
                     } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Emit an end-of-file token.
                         yield new EOFToken();
+
                         return;
                     } else {
                         // Switch to the script data double escaped state. Emit
                         // the current input character as a character token.
                         $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPED;
+
                         yield new CharacterToken($c);
                     }
 
@@ -1321,27 +1307,32 @@ class Tokenizer
                         // sign state. Emit a U+003C LESS-THAN SIGN character
                         // token.
                         $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPED_LESS_THAN_SIGN;
+
                         yield new CharacterToken('<');
                     } elseif ($c === '>') {
                         // Switch to the script data state. Emit a U+003E
                         // GREATER-THAN SIGN character token.
                         $this->state->tokenizerState = TokenizerState::SCRIPT_DATA;
+
                         yield new CharacterToken('>');
                     } elseif ($c === "\0") {
                         // Parse error.
                         // Switch to the script data double escaped state. Emit
                         // a U+FFFD REPLACEMENT CHARACTER character token.
                         $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPED;
+
                         yield new CharacterToken("\u{FFFD}");
                     } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Emit an end-of-file token.
                         yield new EOFToken();
+
                         return;
                     } else {
                         // Switch to the script data double escaped state. Emit
                         // the current input character as a character token.
                         $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPED;
+
                         yield new CharacterToken($c);
                     }
 
@@ -1357,6 +1348,7 @@ class Tokenizer
                         // U+002F SOLIDUS character token.
                         $buffer = '';
                         $this->state->tokenizerState = TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPE_END;
+
                         yield new CharacterToken('/');
                     } else {
                         // Reconsume in the script data double escaped state.
@@ -1370,7 +1362,8 @@ class Tokenizer
                 case TokenizerState::SCRIPT_DATA_DOUBLE_ESCAPE_END:
                     $c = $this->input->get();
 
-                    if ($c === "\x09"
+                    if (
+                        $c === "\x09"
                         || $c === "\x0A"
                         || $c === "\x0C"
                         || $c === "\x20"
@@ -1394,12 +1387,14 @@ class Tokenizer
                         // to the temporary buffer. Emit the current input
                         // character as a character token.
                         $buffer .= strtolower($c);
+
                         yield new CharacterToken($c);
                     } elseif (ctype_lower($c)) {
                         // Append the current input character to the temporary
                         // buffer. Emit the current input character as a
                         // character token.
                         $buffer .= $c;
+
                         yield new CharacterToken($c);
                     } else {
                         // Reconsume in the script data double escaped state.
@@ -1413,16 +1408,9 @@ class Tokenizer
                 case TokenizerState::BEFORE_ATTRIBUTE_NAME:
                     $c = $this->input->get();
 
-                    if ($c === "\x09"
-                        || $c === "\x0A"
-                        || $c === "\x0C"
-                        || $c === "\x20"
-                    ) {
+                    if ($c === "\x09" || $c === "\x0A" || $c === "\x0C" || $c === "\x20") {
                         // Ignore the character.
-                    } elseif ($c === '/'
-                        || $c === '>'
-                        || $this->input->isEoS()
-                    ) {
+                    } elseif ($c === '/' || $c === '>' || $this->input->isEoS()) {
                         // Reconsume in the after attribute name state.
                         $this->input->seek(-1);
                         $this->state->tokenizerState = TokenizerState::AFTER_ATTRIBUTE_NAME;
@@ -1452,7 +1440,8 @@ class Tokenizer
                     $c = $this->input->get();
                     $state = TokenizerState::ATTRIBUTE_NAME;
 
-                    if ($c === "\x09"
+                    if (
+                        $c === "\x09"
                         || $c === "\x0A"
                         || $c === "\x0C"
                         || $c === "\x20"
@@ -1501,11 +1490,10 @@ class Tokenizer
                         $attrName = $attributeToken->name;
 
                         foreach ($attributes as $attr) {
-                            if ($attr->name === $attrName
-                                && $attr !== $attributeToken
-                            ) {
+                            if ($attr->name === $attrName && $attr !== $attributeToken) {
                                 // Parse error.
                                 $attributes->pop();
+
                                 break;
                             }
                         }
@@ -1517,11 +1505,7 @@ class Tokenizer
                 case TokenizerState::AFTER_ATTRIBUTE_NAME:
                     $c = $this->input->get();
 
-                    if ($c === "\x09"
-                        || $c === "\x0A"
-                        || $c === "\x0C"
-                        || $c === "\x20"
-                    ) {
+                    if ($c === "\x09" || $c === "\x0A" || $c === "\x0C" || $c === "\x20") {
                         // Ignore the character.
                     } elseif ($c === '/') {
                         // Switch to the self-closing start tag state.
@@ -1532,11 +1516,13 @@ class Tokenizer
                     } elseif ($c === '>') {
                         // Switch to the data state. Emit the current tag token.
                         $this->state->tokenizerState = TokenizerState::DATA;
+
                         yield $tagToken;
                     } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Emit an end-of-file token.
                         yield new EOFToken();
+
                         return;
                     } else {
                         // Start a new attribute in the current tag token. Set
@@ -1554,11 +1540,7 @@ class Tokenizer
                 case TokenizerState::BEFORE_ATTRIBUTE_VALUE:
                     $c = $this->input->get();
 
-                    if ($c === "\x09"
-                        || $c === "\x0A"
-                        || $c === "\x0C"
-                        || $c === "\x20"
-                    ) {
+                    if ($c === "\x09" || $c === "\x0A" || $c === "\x0C" || $c === "\x20") {
                         // Ignore the character.
                     } elseif ($c === '"') {
                         // Switch to the attribute value (double-quoted) state.
@@ -1570,6 +1552,7 @@ class Tokenizer
                         // Parse error.
                         // Switch to the data state. Emit the current tag token.
                         $this->state->tokenizerState = TokenizerState::DATA;
+
                         yield $tagToken;
                     } else {
                         // Reconsume in the attribute value (unquoted) state.
@@ -1601,6 +1584,7 @@ class Tokenizer
                         // Parse error.
                         // Emit an end-of-file token.
                         yield new EOFToken();
+
                         return;
                     } else {
                         // Append the current input character to the current
@@ -1634,6 +1618,7 @@ class Tokenizer
                         // Parse error.
                         // Emit an end-of-file token.
                         yield new EOFToken();
+
                         return;
                     } else {
                         // Append the current input character to the current
@@ -1647,11 +1632,7 @@ class Tokenizer
                 case TokenizerState::ATTRIBUTE_VALUE_UNQUOTED:
                     $c = $this->input->get();
 
-                    if ($c === "\x09"
-                        || $c === "\x0A"
-                        || $c === "\x0C"
-                        || $c === "\x20"
-                    ) {
+                    if ($c === "\x09" || $c === "\x0A" || $c === "\x0C" || $c === "\x20") {
                         // Switch to the before attribute name state.
                         $this->state->tokenizerState = TokenizerState::BEFORE_ATTRIBUTE_NAME;
                     } elseif ($c === '&') {
@@ -1663,18 +1644,14 @@ class Tokenizer
                     } elseif ($c === '>') {
                         // Switch to the data state. Emit the current tag token.
                         $this->state->tokenizerState = TokenizerState::DATA;
+
                         yield $tagToken;
                     } elseif ($c === "\0") {
                         // Parse error.
                         // Append a U+FFFD REPLACEMENT CHARACTER character to
                         // the current attribute's value.
                         $attributeToken->value .= "\u{FFFD}";
-                    } elseif ($c === '"'
-                        || $c === '\''
-                        || $c === '<'
-                        || $c === '='
-                        || $c === '`'
-                    ) {
+                    } elseif ($c === '"' || $c === '\'' || $c === '<' || $c === '=' || $c === '`') {
                         // Parse error.
                         // Treat it as per the "anything else" entry below.
                         $attributeToken->value .= $c;
@@ -1682,6 +1659,7 @@ class Tokenizer
                         // Parse error.
                         // Emit an end-of-file token.
                         yield new EOFToken();
+
                         return;
                     } else {
                         // Append the current input character to the current
@@ -1695,11 +1673,7 @@ class Tokenizer
                 case TokenizerState::AFTER_ATTRIBUTE_VALUE_QUOTED:
                     $c = $this->input->get();
 
-                    if ($c === "\x09"
-                        || $c === "\x0A"
-                        || $c === "\x0C"
-                        || $c === "\x20"
-                    ) {
+                    if ($c === "\x09" || $c === "\x0A" || $c === "\x0C" || $c === "\x20") {
                         // Switch to the before attribute name state.
                         $this->state->tokenizerState = TokenizerState::BEFORE_ATTRIBUTE_NAME;
                     } elseif ($c === '/') {
@@ -1708,11 +1682,13 @@ class Tokenizer
                     } elseif ($c === '>') {
                         // Switch to the data state. Emit the current tag token.
                         $this->state->tokenizerState = TokenizerState::DATA;
+
                         yield $tagToken;
                     } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Emit an end-of-file token.
                         yield new EOFToken();
+
                         return;
                     } else {
                         // Parse error.
@@ -1732,11 +1708,13 @@ class Tokenizer
                         // Switch to the data state. Emit the current tag token.
                         $tagToken->setSelfClosingFlag();
                         $this->state->tokenizerState = TokenizerState::DATA;
+
                         yield $tagToken;
                     } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Emit an end-of-file token.
                         yield new EOFToken();
+
                         return;
                     } else {
                         // Parse error.
@@ -1754,11 +1732,13 @@ class Tokenizer
                     if ($c === '>') {
                         // Switch to the data state. Emit the comment token.
                         $this->state->tokenizerState = TokenizerState::DATA;
+
                         yield $commentToken;
                     } elseif ($this->input->isEoS()) {
                         // Emit the comment. Emit an end of-file token.
                         yield $commentToken;
                         yield new EOFToken();
+
                         return;
                     } elseif ($c === "\0") {
                         // Append a U+FFFD REPLACEMENT CHARACTER character to
@@ -1785,9 +1765,11 @@ class Tokenizer
 
                         // If the next few characters are an ASCII
                         // case-insensitive match for the word "DOCTYPE"...
-                    } elseif (Utils::toASCIILowercase(
-                        $this->input->peek(7)
-                    ) === Utils::toASCIILowercase('DOCTYPE')) {
+                    } elseif (
+                        Utils::toASCIILowercase($this->input->peek(7)) === Utils::toASCIILowercase(
+                            'DOCTYPE'
+                        )
+                    ) {
                         // Consume those characters and switch to the DOCTYPE
                         // state.
                         $this->input->get(7);
@@ -1809,9 +1791,10 @@ class Tokenizer
                         // the bogus comment state.
                         $node = $this->getAdjustedCurrentNode();
 
-                        if (!($node instanceof Element
-                            && $node->namespaceURI === Namespaces::HTML
-                        )) {
+                        if (
+                            !($node instanceof Element
+                                && $node->namespaceURI === Namespaces::HTML)
+                        ) {
                             $this->state->tokenizerState
                                 = TokenizerState::CDATA_SECTION;
                         } else {
@@ -1842,6 +1825,7 @@ class Tokenizer
                         // Parse error.
                         // Switch to the data state. Emit the comment token.
                         $this->state->tokenizerState = TokenizerState::DATA;
+
                         yield $commentToken;
                     } else {
                         // Reconsume in the comment state.
@@ -1862,12 +1846,14 @@ class Tokenizer
                         // Parse error.
                         // Switch to the data state. Emit the comment token.
                         $this->state->tokenizerState = TokenizerState::DATA;
+
                         yield $commentToken;
                     } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Emit the comment token. Emit an end-of-file token.
                         yield $commentToken;
                         yield new EOFToken();
+
                         return;
                     } else {
                         // Append a U+002D HYPHEN-MINUS character (-) to the
@@ -1901,6 +1887,7 @@ class Tokenizer
                         // Emit the comment token. Emit an end-of-file token.
                         yield $commentToken;
                         yield new EOFToken();
+
                         return;
                     } else {
                         // Append the current input character to the comment
@@ -1992,6 +1979,7 @@ class Tokenizer
                         // Emit the comment token. Emit an end-of-file token.
                         yield $commentToken;
                         yield new EOFToken();
+
                         return;
                     } else {
                         // Append a U+002D HYPHEN-MINUS character (-) to the
@@ -2009,6 +1997,7 @@ class Tokenizer
                     if ($c === '>') {
                         // Switch to the data state. Emit the comment token.
                         $this->state->tokenizerState = TokenizerState::DATA;
+
                         yield $commentToken;
                     } elseif ($c === '!') {
                         // Switch to the comment end bang state.
@@ -2022,6 +2011,7 @@ class Tokenizer
                         // Emit the comment token. Emit an end-of-file token.
                         yield $commentToken;
                         yield new EOFToken();
+
                         return;
                     } else {
                         // Parse error.
@@ -2048,12 +2038,14 @@ class Tokenizer
                         // Parse error.
                         // Switch to the data state. Emit the comment token.
                         $this->state->tokenizerState = TokenizerState::DATA;
+
                         yield $commentToken;
                     } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Emit the comment token. Emit an end-of-file token.
                         yield $commentToken;
                         yield new EOFToken();
+
                         return;
                     } else {
                         // Append two U+002D HYPHEN-MINUS characters (-),
@@ -2070,11 +2062,7 @@ class Tokenizer
                 case TokenizerState::DOCTYPE:
                     $c = $this->input->get();
 
-                    if ($c === "\x09"
-                        || $c === "\x0A"
-                        || $c === "\x0C"
-                        || $c === "\x20"
-                    ) {
+                    if ($c === "\x09" || $c === "\x0A" || $c === "\x0C" || $c === "\x20") {
                         // Switch to the before DOCTYPE name state.
                         $this->state->tokenizerState = TokenizerState::BEFORE_DOCTYPE_NAME;
                     } elseif ($c === '>') {
@@ -2087,8 +2075,10 @@ class Tokenizer
                         // to on. Emit the token. Emit an end-of-file token.
                         $doctypeToken = new DoctypeToken();
                         $doctypeToken->setQuirksMode('on');
+
                         yield $doctypeToken;
                         yield new EOFToken();
+
                         return;
                     } else {
                         // Parse error.
@@ -2103,11 +2093,7 @@ class Tokenizer
                 case TokenizerState::BEFORE_DOCTYPE_NAME:
                     $c = $this->input->get();
 
-                    if ($c === "\x09"
-                        || $c === "\x0A"
-                        || $c === "\x0C"
-                        || $c === "\x20"
-                    ) {
+                    if ($c === "\x09" || $c === "\x0A" || $c === "\x0C" || $c === "\x20") {
                         // Ignore the character.
                     } elseif (ctype_upper($c)) {
                         // Create a new DOCTYPE token. Set the token's name to
@@ -2132,6 +2118,7 @@ class Tokenizer
                         $doctypeToken = new DoctypeToken();
                         $doctypeToken->setQuirksMode('on');
                         $this->state->tokenizerState = TokenizerState::DATA;
+
                         yield $doctypeToken;
                     } elseif ($this->input->isEoS()) {
                         // Parse error.
@@ -2139,8 +2126,10 @@ class Tokenizer
                         // to on. Emit the token. Emit an end-of-file token.
                         $doctypeToken = new DoctypeToken();
                         $doctypeToken->setQuirksMode('on');
+
                         yield $doctypeToken;
                         yield new EOFToken();
+
                         return;
                     } else {
                         // Create a new DOCTYPE token. Set the token's name to
@@ -2157,17 +2146,14 @@ class Tokenizer
                 case TokenizerState::DOCTYPE_NAME:
                     $c = $this->input->get();
 
-                    if ($c === "\x09"
-                        || $c === "\x0A"
-                        || $c === "\x0C"
-                        || $c === "\x20"
-                    ) {
+                    if ($c === "\x09" || $c === "\x0A" || $c === "\x0C" || $c === "\x20") {
                         // Switch to the after DOCTYPE name state.
                         $this->state->tokenizerState = TokenizerState::AFTER_DOCTYPE_NAME;
                     } elseif ($c === '>') {
                         // Switch to the data state. Emit the current DOCTYPE
                         // token.
                         $this->state->tokenizerState = TokenizerState::DATA;
+
                         yield $doctypeToken;
                     } elseif (ctype_upper($c)) {
                         // Append the lowercase version of the current input
@@ -2184,8 +2170,10 @@ class Tokenizer
                         // Set the DOCTYPE token's force-quirks flag to on. Emit
                         // that DOCTYPE token. Emit an end-of-file token.
                         $doctypeToken->setQuirksMode('on');
+
                         yield $doctypeToken;
                         yield new EOFToken();
+
                         return;
                     } else {
                         // Append the current input character to the current
@@ -2199,24 +2187,23 @@ class Tokenizer
                 case TokenizerState::AFTER_DOCTYPE_NAME:
                     $c = $this->input->get();
 
-                    if ($c === "\x09"
-                        || $c === "\x0A"
-                        || $c === "\x0C"
-                        || $c === "\x20"
-                    ) {
+                    if ($c === "\x09" || $c === "\x0A" || $c === "\x0C" || $c === "\x20") {
                         // Ignore the character.
                     } elseif ($c === '>') {
                         // Switch to the data state. Emit the current DOCTYPE
                         // token.
                         $this->state->tokenizerState = TokenizerState::DATA;
+
                         yield $doctypeToken;
                     } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Set the DOCTYPE token's force-quirks flag to on. Emit
                         // that DOCTYPE token. Emit an end-of-file token.
                         $doctypeToken->setQuirksMode('on');
+
                         yield $doctypeToken;
                         yield new EOFToken();
+
                         return;
                     } else {
                         $chars = Utils::toASCIILowercase(
@@ -2256,11 +2243,7 @@ class Tokenizer
                 case TokenizerState::AFTER_DOCTYPE_PUBLIC_KEYWORD:
                     $c = $this->input->get();
 
-                    if ($c === "\x09"
-                        || $c === "\x0A"
-                        || $c === "\x0C"
-                        || $c === "\x20"
-                    ) {
+                    if ($c === "\x09" || $c === "\x0A" || $c === "\x0C" || $c === "\x20") {
                         // Switch to the before DOCTYPE public identifier state.
                         $this->state->tokenizerState = TokenizerState::BEFORE_DOCTYPE_PUBLIC_IDENTIFIER;
                     } elseif ($c === '"') {
@@ -2283,6 +2266,7 @@ class Tokenizer
                         // Switch to the data state. Emit that DOCTYPE token.
                         $doctypeToken->setQuirksMode('on');
                         $this->state->tokenizerState = TokenizerState::DATA;
+
                         yield $doctypeToken;
                     } elseif ($this->input->isEoS()) {
                         // Parse error.
@@ -2290,6 +2274,7 @@ class Tokenizer
                         // that DOCTYPE token. Emit an end-of-file token.
                         yield $doctypeToken;
                         yield new EOFToken();
+
                         return;
                     } else {
                         // Parse error.
@@ -2306,11 +2291,7 @@ class Tokenizer
                 case TokenizerState::BEFORE_DOCTYPE_PUBLIC_IDENTIFIER:
                     $c = $this->input->get();
 
-                    if ($c === "\x09"
-                        || $c === "\x0A"
-                        || $c === "\x0C"
-                        || $c === "\x20"
-                    ) {
+                    if ($c === "\x09" || $c === "\x0A" || $c === "\x0C" || $c === "\x20") {
                         // Ignore the character.
                     } elseif ($c === '"') {
                         // Set the DOCTYPE token's public identifier to the
@@ -2330,14 +2311,17 @@ class Tokenizer
                         // Switch to the data state. Emit that DOCTYPE token.
                         $doctypeToken->setQuirksMode('on');
                         $this->state->tokenizerState = TokenizerState::DATA;
+
                         yield $doctypeToken;
                     } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Set the DOCTYPE token's force-quirks flag to on. Emit
                         // that DOCTYPE token. Emit an end-of-file token.
                         $doctypeToken->setQuirksMode('on');
+
                         yield $doctypeToken;
                         yield new EOFToken();
+
                         return;
                     } else {
                         // Parse error.
@@ -2368,14 +2352,17 @@ class Tokenizer
                         // Switch to the data state. Emit that DOCTYPE token.
                         $doctypeToken->setQuirksMode('on');
                         $this->state->tokenizerState = TokenizerState::DATA;
+
                         yield $doctypeToken;
                     } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Set the DOCTYPE token's force-quirks flag to on. Emit
                         // that DOCTYPE token. Emit an end-of-file token.
                         $doctypeToken->setQuirksMode('on');
+
                         yield $doctypeToken;
                         yield new EOFToken();
+
                         return;
                     } else {
                         // Append the current input character to the current
@@ -2404,14 +2391,17 @@ class Tokenizer
                         // Switch to the data state. Emit that DOCTYPE token.
                         $doctypeToken->setQuirksMode('on');
                         $this->state->tokenizerState = TokenizerState::DATA;
+
                         yield $doctypeToken;
                     } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Set the DOCTYPE token's force-quirks flag to on. Emit
                         // that DOCTYPE token. Emit an end-of-file token.
                         $doctypeToken->setQuirksMode('on');
+
                         yield $doctypeToken;
                         yield new EOFToken();
+
                         return;
                     } else {
                         // Append the current input character to the current
@@ -2425,11 +2415,7 @@ class Tokenizer
                 case TokenizerState::AFTER_DOCTYPE_PUBLIC_IDENTIFIER:
                     $c = $this->input->get();
 
-                    if ($c === "\x09"
-                        || $c === "\x0A"
-                        || $c === "\x0C"
-                        || $c === "\x20"
-                    ) {
+                    if ($c === "\x09" || $c === "\x0A" || $c === "\x0C" || $c === "\x20") {
                         // Switch to the between DOCTYPE public and system
                         // identifiers state.
                         $this->state->tokenizerState = TokenizerState::BETWEEN_DOCTYPE_PUBLIC_AND_SYSTEM_IDENTIFIERS;
@@ -2437,6 +2423,7 @@ class Tokenizer
                         // Switch to the data state. Emit the current DOCTYPE
                         // token.
                         $this->state->tokenizerState = TokenizerState::DATA;
+
                         yield $doctypeToken;
                     } elseif ($c === '"') {
                         // Parse error.
@@ -2457,8 +2444,10 @@ class Tokenizer
                         // Set the DOCTYPE token's force-quirks flag to on. Emit
                         // that DOCTYPE token. Emit an end-of-file token.
                         $doctypeToken->setQuirksMode('on');
+
                         yield $doctypeToken;
                         yield new EOFToken();
+
                         return;
                     } else {
                         // Parse error.
@@ -2475,16 +2464,13 @@ class Tokenizer
                 case TokenizerState::BETWEEN_DOCTYPE_PUBLIC_AND_SYSTEM_IDENTIFIERS:
                     $c = $this->input->get();
 
-                    if ($c === "\x09"
-                        || $c === "\x0A"
-                        || $c === "\x0C"
-                        || $c === "\x20"
-                    ) {
+                    if ($c === "\x09" || $c === "\x0A" || $c === "\x0C" || $c === "\x20") {
                         // Ignore the character.
                     } elseif ($c === '>') {
                         // Switch to the data state. Emit the current DOCTYPE
                         // token.
                         $this->state->tokenizerState = TokenizerState::DATA;
+
                         yield $doctypeToken;
                     } elseif ($c === '"') {
                         // Set the DOCTYPE token's system identifier to the
@@ -2503,8 +2489,10 @@ class Tokenizer
                         // Set the DOCTYPE token's force-quirks flag to on. Emit
                         // that DOCTYPE token. Emit an end-of-file token.
                         $doctypeToken->setQuirksMode('on');
+
                         yield $doctypeToken;
                         yield new EOFToken();
+
                         return;
                     } else {
                         // Parse error.
@@ -2521,11 +2509,7 @@ class Tokenizer
                 case TokenizerState::AFTER_DOCTYPE_SYSTEM_KEYWORD:
                     $c = $this->input->get();
 
-                    if ($c === "\x09"
-                        || $c === "\x0A"
-                        || $c === "\x0C"
-                        || $c === "\x20"
-                    ) {
+                    if ($c === "\x09" || $c === "\x0A" || $c === "\x0C" || $c === "\x20") {
                         // Switch to the before DOCTYPE system identifier state.
                         $this->state->tokenizerState = TokenizerState::BEFORE_DOCTYPE_SYSTEM_IDENTIFIER;
                     } elseif ($c === '"') {
@@ -2548,14 +2532,17 @@ class Tokenizer
                         // Switch to the data state. Emit that DOCTYPE token.
                         $doctypeToken->setQuirksMode('on');
                         $this->state->tokenizerState = TokenizerState::DATA;
+
                         yield $doctypeToken;
                     } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Set the DOCTYPE token's force-quirks flag to on. Emit
                         // that DOCTYPE token. Emit an end-of-file token.
                         $doctypeToken->setQuirksMode('on');
+
                         yield $doctypeToken;
                         yield new EOFToken();
+
                         return;
                     } else {
                         // Parse error.
@@ -2572,11 +2559,7 @@ class Tokenizer
                 case TokenizerState::BEFORE_DOCTYPE_SYSTEM_IDENTIFIER:
                     $c = $this->input->get();
 
-                    if ($c === "\x09"
-                        || $c === "\x0A"
-                        || $c === "\x0C"
-                        || $c === "\x20"
-                    ) {
+                    if ($c === "\x09" || $c === "\x0A" || $c === "\x0C" || $c === "\x20") {
                         // Ignore the character.
                     } elseif ($c === '"') {
                         // Set the DOCTYPE token's system identifier to the
@@ -2596,14 +2579,17 @@ class Tokenizer
                         // Switch to the data state. Emit that DOCTYPE token.
                         $doctypeToken->setQuirksMode('on');
                         $this->state->tokenizerState = TokenizerState::DATA;
+
                         yield $doctypeToken;
                     } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Set the DOCTYPE token's force-quirks flag to on. Emit
                         // that DOCTYPE token. Emit an end-of-file token.
                         $doctypeToken->setQuirksMode('on');
+
                         yield $doctypeToken;
                         yield new EOFToken();
+
                         return;
                     } else {
                         // Parse error. Set the DOCTYPE token's force-quirks
@@ -2632,12 +2618,14 @@ class Tokenizer
                         // Switch to the data state. Emit that DOCTYPE token.
                         $doctypeToken->setQuirksMode('on');
                         $this->state->tokenizerState = TokenizerState::DATA;
+
                         yield $doctypeToken;
                     } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Set the DOCTYPE token's force-quirks flag to on. Emit
                         // that DOCTYPE token. Emit an end-of-file token.
                         $doctypeToken->setQuirksMode('on');
+
                         yield $doctypeToken;
                         yield new EOFToken();
                     } else {
@@ -2666,14 +2654,17 @@ class Tokenizer
                         // Switch to the data state. Emit that DOCTYPE token.
                         $doctypeToken->setQuirksMode('on');
                         $this->state->tokenizerState = TokenizerState::DATA;
+
                         yield $doctypeToken;
                     } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Set the DOCTYPE token's force-quirks flag to on. Emit
                         // that DOCTYPE token. Emit an end-of-file token.
                         $doctypeToken->setQuirksMode('on');
+
                         yield $doctypeToken;
                         yield new EOFToken();
+
                         return;
                     } else {
                         // Append the current input character to the current
@@ -2687,24 +2678,23 @@ class Tokenizer
                 case TokenizerState::AFTER_DOCTYPE_SYSTEM_IDENTIFIER:
                     $c = $this->input->get();
 
-                    if ($c === "\x09"
-                        || $c === "\x0A"
-                        || $c === "\x0C"
-                        || $c === "\x20"
-                    ) {
+                    if ($c === "\x09" || $c === "\x0A" || $c === "\x0C" || $c === "\x20") {
                         // Ignore the character.
                     } elseif ($c === '>') {
                         // Switch to the data state. Emit the current DOCTYPE
                         // token.
                         $this->state->tokenizerState = TokenizerState::DATA;
+
                         yield $doctypeToken;
                     } elseif ($this->input->isEoS()) {
                         // Parse error.
                         // Set the DOCTYPE token's force-quirks flag to on. Emit
                         // that DOCTYPE token. Emit an end-of-file token.
                         $doctypeToken->setQuirksMode('on');
+
                         yield $doctypeToken;
                         yield new EOFToken();
+
                         return;
                     } else {
                         // Parse error.
@@ -2723,6 +2713,7 @@ class Tokenizer
                     if ($c === '>') {
                         // Switch to the data state. Emit the DOCTYPE token.
                         $this->state->tokenizerState = TokenizerState::DATA;
+
                         yield $doctypeToken;
                     } elseif ($c === "\0") {
                         // This is an unexpected-null-character parse error.
@@ -2731,6 +2722,7 @@ class Tokenizer
                         // Emit the DOCTYPE token. Emit an end-of-file token.
                         yield $doctypeToken;
                         yield new EOFToken();
+
                         return;
                     } else {
                         // Ignore the character.
@@ -2749,6 +2741,7 @@ class Tokenizer
                         // Parse error.
                         // Emit an end-of-file token.
                         yield new EOFToken();
+
                         return;
                     } else {
                         // Emit the current input character as a character token.
@@ -2773,6 +2766,7 @@ class Tokenizer
                         // Emit a U+005D RIGHT SQUARE BRACKET character token.
                         // Reconsume in the CDATA section state.
                         yield new CharacterToken(']');
+
                         $this->input->seek(-1);
                         $this->state->tokenizerState = TokenizerState::CDATA_SECTION;
                     }
@@ -2794,6 +2788,7 @@ class Tokenizer
                         // tokens. Reconsume in the CDATA section state.
                         yield new CharacterToken(']');
                         yield new CharacterToken(']');
+
                         $this->input->seek(-1);
                         $this->state->tokenizerState = TokenizerState::CDATA_SECTION;
                     }
@@ -2812,11 +2807,8 @@ class Tokenizer
                         $buffer .= $c;
                         $this->state->tokenizerState = TokenizerState::NUMERIC_CHARACTER_REFERENCE;
                     } else {
-                        yield from $this->flush(
-                            $buffer,
-                            $attributeToken,
-                            $returnState
-                        );
+                        yield from $this->flush($buffer, $attributeToken, $returnState);
+
                         $this->input->seek(-1);
                         $this->state->tokenizerState = $returnState;
                     }
@@ -2868,10 +2860,12 @@ class Tokenizer
                         // If the buffer is a match and the next character is
                         // not a (;), break with a match, but this is only
                         // supported for historical purposes.
-                        if (isset(self::$namedCharacterReferences[$buffer])
+                        if (
+                            isset(self::$namedCharacterReferences[$buffer])
                             && ($char === ';' || $this->input->peek() !== ';')
                         ) {
                             $matchFound = true;
+
                             break;
                         }
                     }
@@ -2887,15 +2881,12 @@ class Tokenizer
                             case TokenizerState::ATTRIBUTE_VALUE_DOUBLE_QUOTED:
                             case TokenizerState::ATTRIBUTE_VALUE_SINGLE_QUOTED:
                             case TokenizerState::ATTRIBUTE_VALUE_UNQUOTED:
-                                if ($char !== ';' && preg_match(
-                                    '/^[=A-Za-z0-9]$/',
-                                    $this->input->peek()
-                                )) {
-                                    yield from $this->flush(
-                                        $buffer,
-                                        $attributeToken,
-                                        $returnState
-                                    );
+                                if (
+                                    $char !== ';'
+                                    && preg_match('/^[=A-Za-z0-9]$/', $this->input->peek())
+                                ) {
+                                    yield from $this->flush($buffer, $attributeToken, $returnState);
+
                                     $this->state->tokenizerState = $returnState;
 
                                     // Leave the named character reference
@@ -2920,22 +2911,16 @@ class Tokenizer
                         // reference name to the temporary buffer.
                         $buffer .= $namedRef['characters'];
 
-                        yield from $this->flush(
-                            $buffer,
-                            $attributeToken,
-                            $returnState
-                        );
+                        yield from $this->flush($buffer, $attributeToken, $returnState);
+
                         $this->state->tokenizerState = $returnState;
 
                         // If no match was found, but the buffer contains an
                         // ampersand (&) followed by one or more ASCII
                         // alphanumerics, then this is a parse error.
                     } else {
-                        yield from $this->flush(
-                            $buffer,
-                            $attributeToken,
-                            $returnState
-                        );
+                        yield from $this->flush($buffer, $attributeToken, $returnState);
+
                         $this->state->tokenizerState = TokenizerState::AMBIGUOUS_AMPERSAND;
                     }
 
@@ -3001,11 +2986,8 @@ class Tokenizer
                     } else {
                         // Parse error.
                         // Reconsume in the character reference end state.
-                        yield from $this->flush(
-                            $buffer,
-                            $attributeToken,
-                            $returnState
-                        );
+                        yield from $this->flush($buffer, $attributeToken, $returnState);
+
                         $this->input->seek(-1);
                         $this->state->tokenizerState = $returnState;
                     }
@@ -3023,11 +3005,8 @@ class Tokenizer
                     } else {
                         // Parse error.
                         // Reconsume in the character reference end state.
-                        yield from $this->flush(
-                            $buffer,
-                            $attributeToken,
-                            $returnState
-                        );
+                        yield from $this->flush($buffer, $attributeToken, $returnState);
+
                         $this->input->seek(-1);
                         $this->state->tokenizerState = $returnState;
                     }
@@ -3111,7 +3090,8 @@ class Tokenizer
                         $characterReferenceCode = 0xFFFD;
 
                         // If the number is a surrogate...
-                    } elseif ($characterReferenceCode >= 0xD800
+                    } elseif (
+                        $characterReferenceCode >= 0xD800
                         && $characterReferenceCode <= 0xDFFF
                     ) {
                         // This is a surrogate-character-reference parse error.
@@ -3119,8 +3099,8 @@ class Tokenizer
                         $characterReferenceCode = 0xFFFD;
 
                         // If  the number is a noncharacter...
-                    } elseif (($characterReferenceCode >= 0xFDD0
-                        && $characterReferenceCode <= 0xFDEF)
+                    } elseif (
+                        ($characterReferenceCode >= 0xFDD0 && $characterReferenceCode <= 0xFDEF)
                         || ($characterReferenceCode === 0xFFFE
                             || $characterReferenceCode === 0xFFFF
                             || $characterReferenceCode === 0x1FFFE
@@ -3161,11 +3141,10 @@ class Tokenizer
 
                         // If the number is 0x0D, or a control that's not ASCII
                         // whitespace...
-                    } elseif ($characterReferenceCode === 0x0D
-                        || ((($characterReferenceCode >= 0x00
-                            && $characterReferenceCode <= 0x1F)
-                                || ($characterReferenceCode >= 0x7F
-                                    && $characterReferenceCode <= 0x9F))
+                    } elseif (
+                        $characterReferenceCode === 0x0D
+                        || ((($characterReferenceCode >= 0x00 && $characterReferenceCode <= 0x1F)
+                            || ($characterReferenceCode >= 0x7F && $characterReferenceCode <= 0x9F))
                         && $characterReferenceCode !== 0x09
                         && $characterReferenceCode !== 0x0A
                         && $characterReferenceCode !== 0x0C
@@ -3180,7 +3159,9 @@ class Tokenizer
                         // character reference code to the number in the second
                         // column of that row.
                         if (isset(self::CHARACTER_REFERENCE_MAP[$characterReferenceCode])) {
-                            $characterReferenceCode = self::CHARACTER_REFERENCE_MAP[$characterReferenceCode];
+                            $characterReferenceCode = self::CHARACTER_REFERENCE_MAP[
+                                $characterReferenceCode
+                            ];
                         }
                     }
 
@@ -3189,11 +3170,9 @@ class Tokenizer
                     // temporary buffer. Flush code points consumed as a
                     // character reference. Switch to the return state.
                     $buffer = IntlChar::chr($characterReferenceCode);
-                    yield from $this->flush(
-                        $buffer,
-                        $attributeToken,
-                        $returnState
-                    );
+
+                    yield from $this->flush($buffer, $attributeToken, $returnState);
+
                     $this->state->tokenizerState = $returnState;
 
                     break;
@@ -3203,10 +3182,6 @@ class Tokenizer
 
     /**
      * Sets the last emitted start tag token.
-     *
-     * @param \Rowbot\DOM\Parser\Token\StartTagToken $token
-     *
-     * @return void
      */
     public function setLastEmittedStartTagToken(StartTagToken $token): void
     {
@@ -3219,8 +3194,6 @@ class Tokenizer
      * case, no end tag token is appropriate.
      *
      * @see https://html.spec.whatwg.org/#appropriate-end-tag-token
-     *
-     * @return bool
      */
     private function isAppropriateEndTag(EndTagToken $token): bool
     {
@@ -3235,17 +3208,10 @@ class Tokenizer
      *
      * @see https://html.spec.whatwg.org/multipage/parsing.html#flush-code-points-consumed-as-a-character-reference
      *
-     * @param string                                       $codepoints
-     * @param \Rowbot\DOM\Parser\Token\AttributeToken|null $token
-     * @param int                                          $returnState
-     *
-     * @return iterable
+     * @return iterable<int, \Rowbot\DOM\Parser\Token\CharacterToken>
      */
-    private function flush(
-        string $codepoints,
-        ?AttributeToken $token,
-        int $returnState
-    ): iterable {
+    private function flush(string $codepoints, ?AttributeToken $token, int $returnState): iterable
+    {
         switch ($returnState) {
             case TokenizerState::ATTRIBUTE_VALUE_DOUBLE_QUOTED:
             case TokenizerState::ATTRIBUTE_VALUE_SINGLE_QUOTED:

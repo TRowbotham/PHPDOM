@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Rowbot\DOM;
 
 /**
@@ -13,14 +16,6 @@ class ProcessingInstruction extends CharacterData
      */
     protected $target;
 
-    /**
-     * Constructor.
-     *
-     * @param string $target
-     * @param string $data
-     *
-     * @return void
-     */
     public function __construct(string $target, string $data)
     {
         parent::__construct($data);
@@ -29,9 +24,6 @@ class ProcessingInstruction extends CharacterData
         $this->target = $target;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function __get(string $name)
     {
         switch ($name) {
@@ -43,13 +35,8 @@ class ProcessingInstruction extends CharacterData
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function cloneNodeInternal(
-        Document $document = null,
-        bool $cloneChildren = false
-    ): Node {
+    public function cloneNodeInternal(Document $document = null, bool $cloneChildren = false): Node
+    {
         $document = $document ?: $this->getNodeDocument();
         $copy = new static($this->target, $this->data);
         $copy->data = $this->data;
@@ -59,9 +46,6 @@ class ProcessingInstruction extends CharacterData
         return $copy;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function getNodeName(): string
     {
         return $this->target;

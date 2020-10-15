@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Rowbot\DOM;
 
 use Rowbot\DOM\Element\Element;
@@ -48,16 +51,6 @@ class Attr extends Node
      */
     private $value;
 
-    /**
-     * Constructor.
-     *
-     * @param string  $localName
-     * @param string  $value
-     * @param ?string $namespace (optional)
-     * @param ?string $prefix    (optional)
-     *
-     * @return void
-     */
     public function __construct(
         string $localName,
         string $value,
@@ -74,9 +67,6 @@ class Attr extends Node
         $this->value = $value;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function __get(string $name)
     {
         switch ($name) {
@@ -107,9 +97,6 @@ class Attr extends Node
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function __set(string $name, $value): void
     {
         switch ($name) {
@@ -127,8 +114,6 @@ class Attr extends Node
      * Returns the attribute's namespace.
      *
      * @internal
-     *
-     * @return ?string
      */
     public function getNamespace(): ?string
     {
@@ -139,8 +124,6 @@ class Attr extends Node
      * Returns the attribute's local name.
      *
      * @internal
-     *
-     * @return string
      */
     public function getLocalName(): string
     {
@@ -151,8 +134,6 @@ class Attr extends Node
      * Returns the attribute's qualified name.
      *
      * @internal
-     *
-     * @return string
      */
     public function getQualifiedName(): string
     {
@@ -165,8 +146,6 @@ class Attr extends Node
 
     /**
      * Returns the attribute's owner element.
-     *
-     * @return \Rowbot\DOM\Element\Element|null
      */
     public function getOwnerElement(): ?Element
     {
@@ -177,10 +156,6 @@ class Attr extends Node
      * Set the attribute's owning element.
      *
      * @internal
-     *
-     * @param \Rowbot\DOM\Element\Element|null $element The Element that this attribute belongs to.
-     *
-     * @return void
      */
     public function setOwnerElement(?Element $element): void
     {
@@ -191,8 +166,6 @@ class Attr extends Node
      * Returns the attribute's value.
      *
      * @internal
-     *
-     * @return string
      */
     public function getValue(): string
     {
@@ -204,10 +177,6 @@ class Attr extends Node
      * owning element is present.
      *
      * @internal
-     *
-     * @param string $value The attribute's value.
-     *
-     * @return void
      */
     public function setValue(string $value): void
     {
@@ -220,28 +189,20 @@ class Attr extends Node
      * @internal
      *
      * @see https://dom.spec.whatwg.org/#set-an-existing-attribute-value
-     *
-     * @param string $value The attribute's value.
-     *
-     * @return void
      */
     protected function setExistingAttributeValue(string $value): void
     {
         if (!$this->ownerElement) {
             $this->value = $value;
+
             return;
         }
 
         $this->ownerElement->getAttributeList()->change($this, $value);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function cloneNodeInternal(
-        Document $document = null,
-        bool $cloneChildren = false
-    ): Node {
+    public function cloneNodeInternal(Document $document = null, bool $cloneChildren = false): Node
+    {
         $document = $document ?: $this->getNodeDocument();
         $copy = new static(
             $this->localName,
@@ -254,9 +215,6 @@ class Attr extends Node
         return $copy;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function getNodeName(): string
     {
         if ($this->prefix) {
@@ -266,26 +224,17 @@ class Attr extends Node
         return $this->localName;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getLength(): int
     {
         // Attr nodes cannot contain children, so just return 0.
         return 0;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function getNodeValue(): string
     {
         return $this->value;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function setNodeValue(?string $value): void
     {
         if ($value === null) {
@@ -295,17 +244,11 @@ class Attr extends Node
         $this->setExistingAttributeValue($value);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function getTextContent(): string
     {
         return $this->value;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function setTextContent(?string $value): void
     {
         if ($value === null) {

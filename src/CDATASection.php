@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Rowbot\DOM;
 
 /**
@@ -6,13 +9,6 @@ namespace Rowbot\DOM;
  */
 class CDATASection extends Text
 {
-    /**
-     * Constructor.
-     *
-     * @param string $data
-     *
-     * @return void
-     */
     public function __construct(string $data)
     {
         parent::__construct($data);
@@ -20,9 +16,6 @@ class CDATASection extends Text
         $this->nodeType = self::CDATA_SECTION_NODE;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function getNodeName(): string
     {
         return '#cdata-section';

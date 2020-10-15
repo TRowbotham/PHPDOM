@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Rowbot\DOM\Parser;
@@ -12,16 +13,9 @@ class MarkupFactory
 {
     /**
      * @see https://w3c.github.io/DOM-Parsing/#dfn-fragment-serializing-algorithm
-     *
-     * @param \Rowbot\DOM\Node $node
-     * @param bool             $requireWellFormed
-     *
-     * @return string
      */
-    public static function serializeFragment(
-        Node $node,
-        bool $requireWellFormed
-    ): string {
+    public static function serializeFragment(Node $node, bool $requireWellFormed): string
+    {
         if ($node->getNodeDocument() instanceof HTMLDocument) {
             $serializer = new HTMLFragmentSerializer();
 

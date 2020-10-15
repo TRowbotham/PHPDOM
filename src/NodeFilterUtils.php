@@ -1,10 +1,11 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Rowbot\DOM;
 
-use Exception;
 use Rowbot\DOM\Exception\InvalidStateError;
+use Throwable;
 
 use function call_user_func;
 use function is_callable;
@@ -17,7 +18,7 @@ trait NodeFilterUtils
     private $isActive = false;
 
     /**
-     * @param \Rowbot\DOM\NodeFilter|callable|null
+     * @param \Rowbot\DOM\NodeFilter|callable|null $filter
      */
     private function getNodeFilter($filter): ?NodeFilter
     {
@@ -30,10 +31,8 @@ trait NodeFilterUtils
                 /** @var callable */
                 private $filter;
 
-                /**
-                 * @param callable $filter
-                 */
-                public function __construct($filter) {
+                public function __construct(callable $filter)
+                {
                     $this->filter = $filter;
                 }
 
@@ -91,8 +90,9 @@ trait NodeFilterUtils
             // an exception, then unset traverser's active flag and rethrow the
             // exception.
             $result = $this->filter->acceptNode($node);
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             $this->isActive = false;
+
             throw $e;
         }
 

@@ -1,10 +1,11 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Rowbot\DOM;
 
-abstract class DocumentSource
+final class DocumentSource
 {
-    const FROM_PARSER     = 1;
-    const NOT_FROM_PARSER = 2;
+    public const FROM_PARSER     = 1;
+    public const NOT_FROM_PARSER = 2;
 }

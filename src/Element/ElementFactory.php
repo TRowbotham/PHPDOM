@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Rowbot\DOM\Element;
@@ -135,7 +136,7 @@ final class ElementFactory
         'var'        => 'HTMLElement',
         'video'      => 'HTMLVideoElement',
         'wbr'        => 'HTMLElement',
-        'xmp'        => 'HTMLElement' // Obsolete
+        'xmp'        => 'HTMLElement', // Obsolete
     ];
 
     /**
@@ -203,13 +204,11 @@ final class ElementFactory
         'title'               => 'SVGTitleElement',
         'tspan'               => 'SVGTSpanElement',
         'use'                 => 'SVGUseElement',
-        'view'                => 'SVGViewElement'
+        'view'                => 'SVGViewElement',
     ];
 
     /**
-     * Constructor.
-     *
-     * @return void
+     * @codeCoverageIgnore
      */
     private function __construct()
     {
@@ -224,8 +223,6 @@ final class ElementFactory
      * @param string               $localName The element's local name that you are creating.
      * @param ?string              $namespace The namespace that the element belongs to.
      * @param ?string              $prefix    (optional) The namespace prefix of the element.
-     *
-     * @return \Rowbot\DOM\Element\Element
      */
     public static function create(
         Document $document,
@@ -265,28 +262,17 @@ final class ElementFactory
      * @param \Rowbot\DOM\Document $document      The Element's owner document.
      * @param ?string              $namespace     The Element's namespace.
      * @param string               $qualifiedName The Element's fully qualified name.
-     *
-     * @return \Rowbot\DOM\Element\Element
      */
     public static function createNS(
         Document $document,
         ?string $namespace,
         string $qualifiedName
     ): Element {
-        list(
-            $namespace,
-            $prefix,
-            $localName
-        ) = Namespaces::validateAndExtract(
+        [$namespace, $prefix, $localName] = Namespaces::validateAndExtract(
             $namespace,
             $qualifiedName
         );
 
-        return self::create(
-            $document,
-            $localName,
-            $namespace,
-            $prefix
-        );
+        return self::create($document, $localName, $namespace, $prefix);
     }
 }

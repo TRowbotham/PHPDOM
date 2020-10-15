@@ -1,15 +1,14 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Element\HTML;
 
 /**
  * Represents the HTML picture element <picture>.
  *
- * @link https://html.spec.whatwg.org/#htmlpictureelement
+ * @see https://html.spec.whatwg.org/multipage/embedded-content.html#the-picture-element
  */
 class HTMLPictureElement extends HTMLElement
 {
-    protected function __construct()
-    {
-        parent::__construct();
-    }
 }

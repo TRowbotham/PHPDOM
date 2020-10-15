@@ -1,12 +1,15 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Rowbot\DOM;
 
-use Exception;
 use Rowbot\DOM\Element\ElementFactory;
 use Rowbot\DOM\Parser\HTML\HTMLParser;
+use Throwable;
 
 /**
- * @see https://w3c.github.io/DOM-Parsing/#the-domparser-interface
+ * @see https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#domparser
  */
 final class DOMParser
 {
@@ -19,17 +22,15 @@ final class DOMParser
      *
      * NOTE: The returned Document's encoding is the default, UTF-8.
      *
-     * @see https://w3c.github.io/DOM-Parsing/#dom-domparser-parsefromstring
+     * @see https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-domparser-parsefromstring
      *
      * @param string $str  A string of markup consiting of unicode characters.
      * @param string $type The MIME type of the markup string. Valid types are:
-     *     - "text/html"
-     *     - "text/xml"
-     *     - "application/xml"
-     *     - "application/xhtml+xml"
-     *     - "image/svg+xml"
-     *
-     * @return \Rowbot\DOM\Document
+     *                         - "text/html"
+     *                         - "text/xml"
+     *                         - "application/xml"
+     *                         - "application/xhtml+xml"
+     *                         - "image/svg+xml"
      */
     public function parseFromString(string $str, string $type): Document
     {
@@ -68,7 +69,7 @@ final class DOMParser
                     $parser = new XMLParser($document);
                     $parser->preprocessInputStream($str);
                     $parser->run();
-                } catch (Exception $e) {
+                } catch (Throwable $e) {
                     $parserError = true;
                 }
 

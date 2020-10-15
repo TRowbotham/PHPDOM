@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Rowbot\DOM;
@@ -11,10 +12,14 @@ use Rowbot\DOM\Exception\InUseAttributeError;
 use Rowbot\DOM\Support\Collection\NodeSet;
 use SplObjectStorage;
 
+/**
+ * @implements \ArrayAccess<int, \Rowbot\DOM\Attr>
+ * @implements \Iterator<int, \Rowbot\DOM\Attr>
+ */
 class AttributeList implements ArrayAccess, Countable, Iterator
 {
     /**
-     * @var \Rowbot\DOM\Support\Collection\NodeSet
+     * @var \Rowbot\DOM\Support\Collection\NodeSet<\Rowbot\DOM\Attr>
      */
     private $list;
 
@@ -28,13 +33,6 @@ class AttributeList implements ArrayAccess, Countable, Iterator
      */
     private $observers;
 
-    /**
-     * Constructor.
-     *
-     * @param \Rowbot\DOM\Element\Element $element
-     *
-     * @return void
-     */
     public function __construct(Element $element)
     {
         $this->list = new NodeSet();
@@ -49,8 +47,6 @@ class AttributeList implements ArrayAccess, Countable, Iterator
      *
      * @param \Rowbot\DOM\Attr $attribute The attribute whose value is to be changed.
      * @param string           $value     The attribute's new value.
-     *
-     * @return void
      */
     public function change(Attr $attribute, string $value): void
     {
@@ -75,10 +71,6 @@ class AttributeList implements ArrayAccess, Countable, Iterator
      * Appends an attribute to the list of attributes.
      *
      * @see https://dom.spec.whatwg.org/#concept-element-attributes-append
-     *
-     * @param \Rowbot\DOM\Attr $attribute The attribute to be appended.
-     *
-     * @return void
      */
     public function append(Attr $attribute): void
     {
@@ -104,10 +96,6 @@ class AttributeList implements ArrayAccess, Countable, Iterator
      * Removes an attribute from the list.
      *
      * @see https://dom.spec.whatwg.org/#concept-element-attributes-remove
-     *
-     * @param \Rowbot\DOM\Attr $attribute The attribute to be removed from the list.
-     *
-     * @return void
      */
     public function remove(Attr $attribute): void
     {
@@ -133,11 +121,6 @@ class AttributeList implements ArrayAccess, Countable, Iterator
      * Replaces and attribute with another attribute.
      *
      * @see https://dom.spec.whatwg.org/#concept-element-attributes-replace
-     *
-     * @param \Rowbot\DOM\Attr $oldAttr The attribute being removed from the list.
-     * @param \Rowbot\DOM\Attr $newAttr The attribute being inserted into the list.
-     *
-     * @return void
      */
     public function replace(Attr $oldAttr, Attr $newAttr): void
     {
@@ -164,14 +147,11 @@ class AttributeList implements ArrayAccess, Countable, Iterator
      * Gets an attribute using a fully qualified name.
      *
      * @see https://dom.spec.whatwg.org/#concept-element-attributes-get-by-name
-     *
-     * @param string $qualifiedName The fully qualified name of the attribute to find.
-     *
-     * @return \Rowbot\DOM\Attr|null
      */
     public function getAttrByName(string $qualifiedName): ?Attr
     {
-        if ($this->element->namespaceURI === Namespaces::HTML
+        if (
+            $this->element->namespaceURI === Namespaces::HTML
             && $this->element->getNodeDocument() instanceof HTMLDocument
         ) {
             $qualifiedName = Utils::toASCIILowercase($qualifiedName);
@@ -190,22 +170,16 @@ class AttributeList implements ArrayAccess, Countable, Iterator
      * Gets an attribute using a namespace and local name.
      *
      * @see https://dom.spec.whatwg.org/#concept-element-attributes-get-by-namespace
-     *
-     * @param ?string $namespace The namespace of the attribute to find.
-     * @param string  $localName The local name of the attribute to find.
-     *
-     * @return \Rowbot\DOM\Attr|null
      */
-    public function getAttrByNamespaceAndLocalName(
-        ?string $namespace,
-        string $localName
-    ): ?Attr {
+    public function getAttrByNamespaceAndLocalName(?string $namespace, string $localName): ?Attr
+    {
         if ($namespace === '') {
             $namespace = null;
         }
 
         foreach ($this->list as $attribute) {
-            if ($attribute->getNamespace() === $namespace
+            if (
+                $attribute->getNamespace() === $namespace
                 && $attribute->getLocalName() === $localName
             ) {
                 return $attribute;
@@ -219,20 +193,10 @@ class AttributeList implements ArrayAccess, Countable, Iterator
      * Gets an attribute's value.
      *
      * @see https://dom.spec.whatwg.org/#concept-element-attributes-get-value
-     *
-     * @param string  $localName The local name of the attribute whose value is to be returned.
-     * @param ?string $namespace (optional) The namespace of the attribute whose value is to be returned.
-     *
-     * @return string
      */
-    public function getAttrValue(
-        string $localName,
-        ?string $namespace = null
-    ): string {
-        $attr = $this->getAttrByNamespaceAndLocalName(
-            $namespace,
-            $localName
-        );
+    public function getAttrValue(string $localName, ?string $namespace = null): string
+    {
+        $attr = $this->getAttrByNamespaceAndLocalName($namespace, $localName);
 
         if ($attr === null) {
             return '';
@@ -246,10 +210,6 @@ class AttributeList implements ArrayAccess, Countable, Iterator
      *
      * @see https://dom.spec.whatwg.org/#concept-element-attributes-set
      *
-     * @param \Rowbot\DOM\Attr $attr The attribute to be set on an element.
-     *
-     * @return \Rowbot\DOM\Attr|null
-     *
      * @throws \Rowbot\DOM\Exception\InUseAttributeError If the attribute's owning element is not null and not an
      *                                                   element.
      */
@@ -261,10 +221,7 @@ class AttributeList implements ArrayAccess, Countable, Iterator
             throw new InUseAttributeError();
         }
 
-        $oldAttr = $this->getAttrByNamespaceAndLocalName(
-            $attr->namespaceURI,
-            $attr->localName
-        );
+        $oldAttr = $this->getAttrByNamespaceAndLocalName($attr->namespaceURI, $attr->localName);
 
         if ($oldAttr === $attr) {
             return $attr;
@@ -285,13 +242,6 @@ class AttributeList implements ArrayAccess, Countable, Iterator
      * Sets the attributes value.
      *
      * @see https://dom.spec.whatwg.org/#concept-element-attributes-set-value
-     *
-     * @param string  $localName The local name of the attribute whose value is to be set.
-     * @param string  $value     The value of the attribute whose value is to be set.
-     * @param ?string $prefix    (optional) The namespace prefix of the attribute whose value is to be set.
-     * @param ?string $namespace (optional) The namespace of the attribute whose value is to be set.
-     *
-     * @return void
      */
     public function setAttrValue(
         string $localName,
@@ -308,6 +258,7 @@ class AttributeList implements ArrayAccess, Countable, Iterator
             $attribute = new Attr($localName, $value, $namespace, $prefix);
             $attribute->setNodeDocument($this->element->getNodeDocument());
             $this->append($attribute);
+
             return;
         }
 
@@ -319,10 +270,6 @@ class AttributeList implements ArrayAccess, Countable, Iterator
      * name.
      *
      * @see https://dom.spec.whatwg.org/#concept-element-attributes-remove-by-name
-     *
-     * @param string $qualifiedName The fully qualified name of the attribute to be removed.
-     *
-     * @return \Rowbot\DOM\Attr|null
      */
     public function removeAttrByName(string $qualifiedName): ?Attr
     {
@@ -339,16 +286,9 @@ class AttributeList implements ArrayAccess, Countable, Iterator
      * Remove an attribute from the list using a namespace and local name.
      *
      * @see https://dom.spec.whatwg.org/#concept-element-attributes-remove-by-namespace
-     *
-     * @param ?string $namespace The namespace of the attribute to be removed.
-     * @param string  $localName The local name of the attribute to be removed.
-     *
-     * @return \Rowbot\DOM\Attr|null
      */
-    public function removeAttrByNamespaceAndLocalName(
-        ?string $namespace,
-        string $localName
-    ): ?Attr {
+    public function removeAttrByNamespaceAndLocalName(?string $namespace, string $localName): ?Attr
+    {
         $attr = $this->getAttrByNamespaceAndLocalName($namespace, $localName);
 
         if ($attr !== null) {
@@ -358,11 +298,6 @@ class AttributeList implements ArrayAccess, Countable, Iterator
         return $attr;
     }
 
-    /**
-     * @param \Rowbot\DOM\AttributeChangeObserver $observer
-     *
-     * @return void
-     */
     public function observe(AttributeChangeObserver $observer): void
     {
         if (!$this->observers->contains($observer)) {
@@ -370,11 +305,6 @@ class AttributeList implements ArrayAccess, Countable, Iterator
         }
     }
 
-    /**
-     * @param \Rowbot\DOM\AttributeChangeObserver $observer
-     *
-     * @return void
-     */
     public function unobserve(AttributeChangeObserver $observer): void
     {
         $this->observers->detach($observer);
@@ -390,20 +320,33 @@ class AttributeList implements ArrayAccess, Countable, Iterator
         return $this->list->isEmpty();
     }
 
+    /**
+     * @param int $offset
+     */
     public function offsetExists($offset): bool
     {
         return $this->list->offsetExists($offset);
     }
 
+    /**
+     * @param int $offset
+     */
     public function offsetGet($offset): ?Attr
     {
         return $this->list->offsetGet($offset);
     }
 
+    /**
+     * @param int              $offset
+     * @param \Rowbot\DOM\Attr $value
+     */
     public function offsetSet($offset, $value): void
     {
     }
 
+    /**
+     * @param int $offset
+     */
     public function offsetUnset($offset): void
     {
     }

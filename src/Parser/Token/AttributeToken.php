@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Rowbot\DOM\Parser\Token;
@@ -6,8 +7,6 @@ namespace Rowbot\DOM\Parser\Token;
 /**
  * The spec does not specifically define an attribute token, however, we use it here to store the data for attributes
  * that are then added to the attributes list of start and end tokens.
- *
- * {@inheirtDoc}
  */
 class AttributeToken implements Token
 {
@@ -31,14 +30,6 @@ class AttributeToken implements Token
      */
     public $value;
 
-    /**
-     * Constructor.
-     *
-     * @param string $name
-     * @param string $value
-     *
-     * @return void
-     */
     public function __construct(string $name = null, string $value = null)
     {
         if ($name !== null) {

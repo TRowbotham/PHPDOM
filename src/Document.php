@@ -1,15 +1,17 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Rowbot\DOM;
 
+use Rowbot\DOM\Element\Element;
+use Rowbot\DOM\Element\ElementFactory;
 use Rowbot\DOM\Element\HTML\HTMLBaseElement;
 use Rowbot\DOM\Element\HTML\HTMLHeadElement;
 use Rowbot\DOM\Element\HTML\HTMLHtmlElement;
-use Rowbot\DOM\Element\Element;
-use Rowbot\DOM\Element\ElementFactory;
 use Rowbot\DOM\Event\Event;
 use Rowbot\DOM\Event\EventFlags;
 use Rowbot\DOM\Event\EventTarget;
-use Rowbot\DOM\Exception\DOMException;
 use Rowbot\DOM\Exception\HierarchyRequestError;
 use Rowbot\DOM\Exception\InvalidCharacterError;
 use Rowbot\DOM\Exception\NotSupportedError;
@@ -21,7 +23,6 @@ use Rowbot\URL\URLRecord;
 use function array_filter;
 use function count;
 use function in_array;
-use function is_string;
 use function mb_strpos;
 use function method_exists;
 use function preg_match;
@@ -51,10 +52,10 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
     use NonElementParentNodeTrait;
     use ParentNodeTrait;
 
-    const INERT_TEMPLATE_DOCUMENT = 0x1;
+    protected const INERT_TEMPLATE_DOCUMENT = 0x1;
 
     /**
-     * @var ?self
+     * @var static|null
      */
     protected static $defaultDocument = null;
 
@@ -74,7 +75,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
     protected $flags;
 
     /**
-     * @var ?self
+     * @var static|null
      */
     protected $inertTemplateDocument;
 
@@ -104,12 +105,12 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
     private $isHTMLDocument;
 
     /**
-     * \Rowbot\DOM\NodeIterator[]
+     * @var \Rowbot\DOM\NodeIterator[]
      */
     private static $nodeIteratorList = [];
 
     /**
-     * \Rowbot\URL\URLRecord
+     * @var \Rowbot\URL\URLRecord|null
      */
     private $url;
 
@@ -123,11 +124,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      */
     private $source;
 
-    /**
-     * Constructor.
-     *
-     * @return void
-     */
     public function __construct()
     {
         parent::__construct();
@@ -172,12 +168,16 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
         switch ($name) {
             case 'characterSet':
                 return $this->characterSet;
+
             case 'childElementCount':
                 return $this->getChildElementCount();
+
             case 'children':
                 return $this->getChildren();
+
             case 'contentType':
                 return $this->contentType;
+
             case 'doctype':
                 foreach ($this->childNodes as $child) {
                     if ($child instanceof DocumentType) {
@@ -186,34 +186,37 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
                 }
 
                 return null;
+
             case 'documentElement':
                 return $this->getFirstElementChild();
+
             case 'documentURI':
             case 'URL':
                 return $this->getURL()->serializeURL();
+
             case 'firstElementChild':
                 return $this->getFirstElementChild();
+
             case 'implementation':
                 return $this->implementation;
+
             case 'lastElementChild':
                 return $this->getLastElementChild();
+
             case 'origin':
                 return (string) $this->getURL()->getOrigin();
+
             case 'readyState':
                 return $this->readyState;
+
             default:
                 return parent::__get($name);
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function cloneNodeInternal(
-        Document $document = null,
-        bool $cloneChildren = false
-    ): Node {
-        $document = $document ?: $this->getNodeDocument();
+    public function cloneNodeInternal(Document $document = null, bool $cloneChildren = false): Node
+    {
+        $document = $document ?? $this->getNodeDocument();
         $copy = new static();
         $copy->characterSet = $this->characterSet;
         $copy->contentType = $this->contentType;
@@ -228,10 +231,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      * the node to be used in this Document.
      *
      * @see https://dom.spec.whatwg.org/#dom-document-adoptnode
-     *
-     * @param \Rowbot\DOM\Node $node The Node to be adopted.
-     *
-     * @return \Rowbot\DOM\Node The newly adopted Node.
      *
      * @throws \Rowbot\DOM\Exception\NotSupportedError
      * @throws \Rowbot\DOM\Exception\HierarchyRequestError
@@ -255,10 +254,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      * Creates a new Attr object that with the given name.
      *
      * @see https://dom.spec.whatwg.org/#dom-document-createattribute
-     *
-     * @param string $localName The name of the attribute.
-     *
-     * @return \Rowbot\DOM\Attr
      *
      * @throws \Rowbot\DOM\Exception\InvalidCharacterError
      */
@@ -286,31 +281,15 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      *
      * @see https://dom.spec.whatwg.org/#dom-document-createattributens
      *
-     * @param string|null $namespace     The attribute's namespace.
-     * @param string      $qualifiedName The attribute's qualified name.
-     *
-     * @return \Rowbot\DOM\Attr
-     *
      * @throws \Rowbot\DOM\Exception\NamespaceError
      * @throws \Rowbot\DOM\Exception\InvalidCharacterError
      */
-    public function createAttributeNS(
-        ?string $namespace,
-        string $qualifiedName
-    ): Attr {
-        try {
-            list(
-                $namespace,
-                $prefix,
-                $localName
-            ) = Namespaces::validateAndExtract(
-                $namespace,
-                $qualifiedName
-            );
-        } catch (DOMException $e) {
-            throw $e;
-        }
-
+    public function createAttributeNS(?string $namespace, string $qualifiedName): Attr
+    {
+        [$namespace, $prefix, $localName] = Namespaces::validateAndExtract(
+            $namespace,
+            $qualifiedName
+        );
         $attribute = new Attr($localName, '', $namespace, $prefix);
         $attribute->setNodeDocument($this);
 
@@ -321,10 +300,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      * Creates a comment node.
      *
      * @see https://dom.spec.whatwg.org/#dom-document-createcomment
-     *
-     * @param string $data
-     *
-     * @return \Rowbot\DOM\Comment
      */
     public function createComment(string $data): Comment
     {
@@ -338,8 +313,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      * Creates a document fragment node.
      *
      * @see https://dom.spec.whatwg.org/#dom-document-createdocumentfragment
-     *
-     * @return \Rowbot\DOM\DocumentFragment
      */
     public function createDocumentFragment(): DocumentFragment
     {
@@ -353,10 +326,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      * Creates an Element with the specified tag name.
      *
      * @see https://dom.spec.whatwg.org/#dom-document-createelement
-     *
-     * @param string $localName The name of the element to create.
-     *
-     * @return \Rowbot\DOM\Element\HTML\Element\Element
      *
      * @throws \Rowbot\DOM\Exception\InvalidCharacterError
      */
@@ -387,12 +356,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
                 $namespace = null;
         }
 
-        $element = ElementFactory::create(
-            $this,
-            $localName,
-            $namespace,
-            null
-        );
+        $element = ElementFactory::create($this, $localName, $namespace, null);
 
         return $element;
     }
@@ -402,18 +366,11 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      *
      * @see https://dom.spec.whatwg.org/#dom-document-createelementns
      *
-     * @param ?string $namespace     The element's namespace.
-     * @param string  $qualifiedName The element's qualified name.
-     *
-     * @return \Rowbot\DOM\Element\Element
-     *
      * @throws \Rowbot\DOM\Exception\InvalidCharacterError
      * @throws \Rowbot\DOM\Exception\NamespaceError
      */
-    public function createElementNS(
-        ?string $namespace,
-        string $qualifiedName
-    ): Element {
+    public function createElementNS(?string $namespace, string $qualifiedName): Element
+    {
         return ElementFactory::createNS($this, $namespace, $qualifiedName);
     }
 
@@ -421,10 +378,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      * Creates a new Event of the specified type and returns it.
      *
      * @see https://dom.spec.whatwg.org/#dom-document-createevent
-     *
-     * @param string $interface The type of event interface to be created.
-     *
-     * @return \Rowbot\DOM\Event\Event
      *
      * @throws \Rowbot\DOM\Exception\NotSupportedError
      */
@@ -464,8 +417,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      *                                                         user to filter for specific node types.
      * @param \Rowbot\DOM\NodeFilter|callable|null $filter     A user defined function to determine whether or not to
      *                                                         accept a node that has passed the whatToShow check.
-     *
-     * @return \Rowbot\DOM\NodeIterator
      */
     public function createNodeIterator(
         Node $root,
@@ -483,17 +434,10 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      *
      * @see https://dom.spec.whatwg.org/#dom-document-createprocessinginstruction
      *
-     * @param string $target
-     * @param string $data
-     *
      * @throws \Rowbot\DOM\Exception\InvalidCharacterError
-     *
-     * @return \Rowbot\DOM\ProcessingInstruction
      */
-    public function createProcessingInstruction(
-        string $target,
-        string $data
-    ): ProcessingInstruction {
+    public function createProcessingInstruction(string $target, string $data): ProcessingInstruction
+    {
         // If target does not match the Name production, then throw an
         // InvalidCharacterError.
         if (!preg_match(Namespaces::NAME_PRODUCTION, $target)) {
@@ -514,8 +458,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      * Creates a range.
      *
      * @see https://dom.spec.whatwg.org/#dom-document-createrange
-     *
-     * @return \Rowbot\DOM\Range
      */
     public function createRange(): Range
     {
@@ -528,10 +470,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
 
     /**
      * Creates a text node.
-     *
-     * @param string $data
-     *
-     * @return \Rowbot\DOM\Text
      */
     public function createTextNode(string $data): Text
     {
@@ -545,10 +483,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      * Creates a new CDATA Section node, with data as its data.
      *
      * @see https://dom.spec.whatwg.org/#dom-document-createcdatasection
-     *
-     * @param string $data The node's content.
-     *
-     * @return \Rowbot\DOM\CDATASection A CDATASection node.
      *
      * @throws \Rowbot\DOM\Exception\InvalidCharacterError
      * @throws \Rowbot\DOM\Exception\NotSupportedError
@@ -585,8 +519,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      * @param \Rowbot\DOM\NodeFilter|callable|null $filter     (optional) A user defined function to determine whether
      *                                                         or not to accept a node that has passed the whatToShow
      *                                                         check.
-     *
-     * @return \Rowbot\DOM\TreeWalker
      */
     public function createTreeWalker(
         Node $root,
@@ -602,10 +534,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      * @internal
      *
      * @see https://dom.spec.whatwg.org/#concept-node-adopt
-     *
-     * @param \Rowbot\DOM\Node $node The node being adopted.
-     *
-     * @return void
      */
     public function doAdoptNode(Node $node): void
     {
@@ -643,17 +571,11 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function ownerDocument(): ?self
     {
         return null;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getLength(): int
     {
         return count($this->childNodes);
@@ -666,8 +588,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      * @internal
      *
      * @see https://html.spec.whatwg.org/multipage/scripting.html#appropriate-template-contents-owner-document
-     *
-     * @return self
      */
     public function getAppropriateTemplateContentsOwnerDocument(): self
     {
@@ -693,8 +613,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      * @internal
      *
      * @see https://html.spec.whatwg.org/multipage/infrastructure.html#document-base-url
-     *
-     * @return \Rowbot\URL\URLRecord
      */
     public function getBaseURL(): URLRecord
     {
@@ -705,11 +623,9 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
             // A base element is only valid if it is the first base element
             // within the head element.
             foreach ($head->childNodes as $child) {
-                $isValidBase = $child instanceof HTMLBaseElement
-                    && $child->hasAttribute('href');
-
-                if ($isValidBase) {
+                if ($child instanceof HTMLBaseElement && $child->hasAttribute('href')) {
                     $base = $child;
+
                     break;
                 }
             }
@@ -732,9 +648,8 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      *
      * @internal
      *
-     * @return self|null Returns the global document. If null is returned,
-     *     then no document existed before the user attempted to instantiate an
-     *     object that has an owning document.
+     * @return self|null Returns the global document. If null is returned, then no document existed before the user
+     *                   attempted to instantiate an object that has an owning document.
      *
      * @todo Returning null here is probably a bug. Look into it.
      */
@@ -760,8 +675,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      * Gets the flags set on the document.
      *
      * @internal
-     *
-     * @return int
      */
     public function getFlags(): int
     {
@@ -772,10 +685,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      * Sets the document's ready state.
      *
      * @internal
-     *
-     * @param string $readyState
-     *
-     * @return void
      */
     public function setReadyState(string $readyState): void
     {
@@ -784,10 +693,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
 
     /**
      * Gets the value of the document's mode.
-     *
-     * @internal
-     *
-     * @return int The document's current mode.
      */
     public function getMode(): int
     {
@@ -798,10 +703,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      * Sets the document's mode.
      *
      * @internal
-     *
-     * @param int $mode An integer representing the current mode.
-     *
-     * @return void
      */
     public function setMode(int $mode): void
     {
@@ -812,8 +713,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      * Indicates whether the document is an HTML document or not.
      *
      * @internal
-     *
-     * @return bool
      */
     public function isHTMLDocument(): bool
     {
@@ -824,8 +723,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      * Indicates whether the document is an iframe src document.
      *
      * @internal
-     *
-     * @return bool
      */
     public function isIframeSrcdoc(): bool
     {
@@ -836,8 +733,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      * Marks the document as being an iframe src document.
      *
      * @internal
-     *
-     * @return void
      */
     public function markAsIframeSrcdoc(): void
     {
@@ -849,7 +744,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      *
      * @internal
      *
-     * @return \Rowbot\DOM\NodeIterator[]
+     * @return array<int, \Rowbot\DOM\NodeIterator>
      */
     public static function getNodeIteratorCollection(): array
     {
@@ -861,12 +756,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      *
      * @see https://dom.spec.whatwg.org/#dom-document-importnode
      *
-     * @param \Rowbot\DOM\Node $node
-     * @param bool             $deep (optional)
-     *
      * @throws \Rowbot\DOM\Exception\NotSupportedError
-     *
-     * @return \Rowbot\DOM\Node
      */
     public function importNode(Node $node, bool $deep = false): Node
     {
@@ -881,17 +771,9 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      * Sets the document's character set.
      *
      * @internal
-     *
-     * @param string $characterSet The document's character set
-     *
-     * @return void
      */
     public function setCharacterSet(string $characterSet): void
     {
-        if (!is_string($characterSet)) {
-            return;
-        }
-
         $this->characterSet = $characterSet;
     }
 
@@ -899,10 +781,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      * Sets the document's content type.
      *
      * @internal
-     *
-     * @param string $type The MIME content type of the document.
-     *
-     * @return void
      */
     public function setContentType(string $type): void
     {
@@ -913,10 +791,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      * Sets flags on the document.
      *
      * @internal
-     *
-     * @param int $flag Bitwise flags.
-     *
-     * @return void
      */
     public function setFlags(int $flag): void
     {
@@ -927,10 +801,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      * Unsets bitwise flags on the document.
      *
      * @internal
-     *
-     * @param int $flag Bitwise flags.
-     *
-     * @return void
      */
     public function unsetFlags(int $flag): void
     {
@@ -944,8 +814,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      * @internal
      *
      * @see https://html.spec.whatwg.org/multipage/dom.html#dom-document-head
-     *
-     * @return \Rowbot\DOM\Element\HTML\HTMLHeadElement|null
      */
     protected function getHeadElement(): ?HTMLHeadElement
     {
@@ -964,25 +832,16 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
         return null;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function getNodeName(): string
     {
         return '#document';
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function getNodeValue(): ?string
     {
         return null;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function getTextContent(): ?string
     {
         return null;
@@ -994,10 +853,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      * object otherwise.
      *
      * @see \Rowbot\DOM\Event\EventTarget::getTheParent
-     *
-     * @param \Rowbot\DOM\Event\Event $event An Event object
-     *
-     * @return ?self
      */
     protected function getTheParent(Event $event): ?EventTarget
     {
@@ -1012,8 +867,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      * @internal
      *
      * @see https://dom.spec.whatwg.org/#concept-document-url
-     *
-     * @return \Rowbot\URL\URLRecord
      */
     protected function getURL(): URLRecord
     {
@@ -1024,11 +877,15 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
         if (PHP_SAPI === 'cli') {
             $this->url = URLParser::parseUrl('about:blank');
         } else {
-            $ssl = isset($_SERVER['HTTPS']) && $_SERVER["HTTPS"] == 'on';
-            $port = in_array($_SERVER['SERVER_PORT'], array(80, 443)) ?
-                '' : ':' . $_SERVER['SERVER_PORT'];
-            $url = ($ssl ? 'https' : 'http') . '://' . $_SERVER['SERVER_NAME'] .
-                $port . $_SERVER['REQUEST_URI'];
+            $ssl = isset($_SERVER['HTTPS']) && $_SERVER["HTTPS"] === 'on';
+            $port = in_array($_SERVER['SERVER_PORT'], ['80', '443'], true)
+                ? ''
+                : ':' . $_SERVER['SERVER_PORT'];
+            $url = ($ssl ? 'https' : 'http')
+                . '://'
+                . $_SERVER['SERVER_NAME']
+                . $port
+                . $_SERVER['REQUEST_URI'];
 
             $this->url = URLParser::parseUrl($url);
         }
@@ -1036,33 +893,21 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
         return $this->url;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function setNodeValue(?string $value): void
     {
         // Do nothing.
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function setTextContent(?string $value): void
     {
         // Do nothing.
     }
 
-    /**
-     * {@inheirtDoc}
-     */
     public function toString(): string
     {
         return MarkupFactory::serializeFragment($this, true);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function __toString(): string
     {
         return MarkupFactory::serializeFragment($this, true);

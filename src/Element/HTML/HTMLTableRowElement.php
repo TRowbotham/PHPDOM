@@ -1,35 +1,29 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Element\HTML;
 
+use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Element\ElementFactory;
 use Rowbot\DOM\Exception\IndexSizeError;
 use Rowbot\DOM\Namespaces;
 use Rowbot\DOM\NodeFilter;
+use Rowbot\DOM\TreeWalker;
 
 use function count;
 
 /**
  * Represents the HTML table row element <tr>.
  *
- * @link https://html.spec.whatwg.org/#the-tr-element
+ * @see https://html.spec.whatwg.org/multipage/tables.html#the-tr-element
  *
- * @property-read HTMLTableCellElement[] $cells Returns a collection of all <td>
- *     and <th> elements in a row.
- *
- * @property-read int $rowIndex Returns the position of the row relative to it's
- *     containing table.  Returns -1 if the row isn't in a table.
- *
- * @property-read int $sectionRowIndex Returns the position of the row relative
- *     to it's containing table section element. Returns -1 if the row isn't in
- *     a table section.
+ * @property-read list<\Rowbot\DOM\Element\HTML\HTMLTableCellElement> $cells
+ * @property-read int                                                 $rowIndex
+ * @property-read int                                                 $sectionRowIndex
  */
 class HTMLTableRowElement extends HTMLElement
 {
-    protected function __construct()
-    {
-        parent::__construct();
-    }
-
     public function __get(string $name)
     {
         switch ($name) {
@@ -63,7 +57,7 @@ class HTMLTableRowElement extends HTMLElement
                 $tw = new TreeWalker(
                     $parentTable,
                     NodeFilter::SHOW_ELEMENT,
-                    function ($node) {
+                    static function (Element $node): int {
                         if ($node instanceof HTMLTableRowElement) {
                             return NodeFilter::FILTER_ACCEPT;
                         }
@@ -93,7 +87,7 @@ class HTMLTableRowElement extends HTMLElement
                 $tw = new TreeWalker(
                     $parent,
                     NodeFilter::SHOW_ELEMENT,
-                    function ($node) {
+                    static function (Element $node): int {
                         if ($node instanceof HTMLTableRowElement) {
                             return NodeFilter::FILTER_ACCEPT;
                         }
@@ -120,15 +114,9 @@ class HTMLTableRowElement extends HTMLElement
     /**
      * Inserts a new cell at the given index.
      *
-     * @param int $index A positive integer of the index position where the
-     *     cell should be inserted.
-     *
-     * @return HTMLTableCellElement
-     *
-     * @throws IndexSizeError If $index < -1 or >= the number of cells in the
-     *     collection.
+     * @throws \Rowbot\DOM\Exception\IndexSizeError If $index < -1 or >= the number of cells in the collection.
      */
-    public function insertCell($index = -1)
+    public function insertCell(int $index = -1): HTMLTableCellElement
     {
         $cells = $this->cells;
         $numCells = count($cells);
@@ -143,7 +131,7 @@ class HTMLTableRowElement extends HTMLElement
             Namespaces::HTML
         );
 
-        if ($index == -1 || $index == $numCells) {
+        if ($index === -1 || $index === $numCells) {
             $this->appendChild($td);
         } else {
             $cells[$index]->before($td);
@@ -155,12 +143,9 @@ class HTMLTableRowElement extends HTMLElement
     /**
      * Removes the cell at the given index from its parent.
      *
-     * @param int $index The index of the cell to be removed.
-     *
-     * @throws IndexSizeError If $index < 0 or >= the number of cells in the
-     *     collection.
+     * @throws \Rowbot\DOM\Exception\IndexSizeError If $index < 0 or >= the number of cells in the collection.
      */
-    public function deleteCell($index)
+    public function deleteCell(int $index): void
     {
         $cells = [];
 

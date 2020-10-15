@@ -1,23 +1,47 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Rowbot\DOM\Event;
 
 class Listener
 {
+    /**
+     * @var string
+     */
     private $type;
+
+    /**
+     * @var callable
+     */
     private $callback;
+
+    /**
+     * @var bool
+     */
     private $capture;
+
+    /**
+     * @var bool
+     */
     private $passive;
+
+    /**
+     * @var bool
+     */
     private $once;
+
+    /**
+     * @var bool
+     */
     private $removed;
 
     public function __construct(
-        $type,
-        $callback,
-        $capture,
-        $once = false,
-        $passive = false
+        string $type,
+        callable $callback,
+        bool $capture,
+        bool $once = false,
+        bool $passive = false
     ) {
         $this->type = $type;
         $this->callback = $callback;
@@ -27,50 +51,45 @@ class Listener
         $this->removed = false;
     }
 
-    public function getType()
+    public function getType(): string
     {
         return $this->type;
     }
 
-    public function getCallback()
+    public function getCallback(): callable
     {
         return $this->callback;
     }
 
-    public function getCapture()
+    public function getCapture(): bool
     {
         return $this->capture;
     }
 
-    public function getPassive()
+    public function getPassive(): bool
     {
         return $this->passive;
     }
 
-    public function getOnce()
+    public function getOnce(): bool
     {
         return $this->once;
     }
 
-    public function getRemoved()
+    public function getRemoved(): bool
     {
         return $this->removed;
     }
 
-    public function setRemoved($removed)
+    public function setRemoved(bool $removed): void
     {
         $this->removed = $removed;
     }
 
-    public function isEqual($other)
+    public function isEqual(self $other): bool
     {
-        if ($other->type === $this->type
+        return $other->type === $this->type
             && $other->callback === $this->callback
-            && $other->capture === $this->capture
-        ) {
-            return true;
-        }
-
-        return false;
+            && $other->capture === $this->capture;
     }
 }

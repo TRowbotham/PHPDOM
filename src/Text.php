@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Rowbot\DOM;
 
 use Rowbot\DOM\Exception\IndexSizeError;
@@ -14,13 +17,6 @@ use Rowbot\DOM\Exception\IndexSizeError;
  */
 class Text extends CharacterData
 {
-    /**
-     * Constructor.
-     *
-     * @param string $data
-     *
-     * @return void
-     */
     public function __construct(string $data = '')
     {
         parent::__construct($data);
@@ -28,9 +24,6 @@ class Text extends CharacterData
         $this->nodeType = Node::TEXT_NODE;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function __get(string $name)
     {
         switch ($name) {
@@ -58,13 +51,8 @@ class Text extends CharacterData
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function cloneNodeInternal(
-        Document $document = null,
-        bool $cloneChildren = false
-    ): Node {
+    public function cloneNodeInternal(Document $document = null, bool $cloneChildren = false): Node
+    {
         $document = $document ?: $this->getNodeDocument();
         $copy = new static();
         $copy->data = $this->data;
@@ -77,10 +65,6 @@ class Text extends CharacterData
      * Splits the text at the given offset.
      *
      * @see https://dom.spec.whatwg.org/#dom-text-splittext
-     *
-     * @param int $offset
-     *
-     * @return self
      *
      * @throws \Rowbot\DOM\Exception\IndexSizeError
      */
@@ -102,17 +86,15 @@ class Text extends CharacterData
             $this->parentNode->insertNode($newNode, $this->nextSibling);
             $treeIndex = $this->getTreeIndex();
 
-            foreach ($ranges as $index => $range) {
+            foreach ($ranges as $range) {
                 $startOffset = $range->startOffset;
 
-                if ($range->startContainer === $this
-                    && $startOffset > $offset
-                ) {
+                if ($range->startContainer === $this && $startOffset > $offset) {
                     $range->setStartInternal($newNode, $startOffset - $offset);
                 }
             }
 
-            foreach ($ranges as $index => $range) {
+            foreach ($ranges as $range) {
                 $endOffset = $range->endOffset;
 
                 if ($range->endContainer === $this && $endOffset > $offset) {
@@ -120,22 +102,20 @@ class Text extends CharacterData
                 }
             }
 
-            foreach ($ranges as $index => $range) {
+            foreach ($ranges as $range) {
                 $startContainer = $range->startContainer;
                 $startOffset = $range->startOffset;
 
-                if ($startContainer === $this->parentNode
-                    && $startOffset == $treeIndex + 1
-                ) {
+                if ($startContainer === $this->parentNode && $startOffset === $treeIndex + 1) {
                     $range->setStartInternal($startContainer, $startOffset + 1);
                 }
             }
 
-            foreach ($ranges as $index => $range) {
+            foreach ($ranges as $range) {
                 $endContainer = $range->endContainer;
                 $endOffset = $range->endOffset;
 
-                if ($endContainer === $this->parentNode && $endOffset == $treeIndex + 1) {
+                if ($endContainer === $this->parentNode && $endOffset === $treeIndex + 1) {
                     $range->setEndInternal($endContainer, $endOffset + 1);
                 }
             }
@@ -146,9 +126,6 @@ class Text extends CharacterData
         return $newNode;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function getNodeName(): string
     {
         return '#text';

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Rowbot\DOM\Support\Collection;
@@ -17,11 +18,16 @@ use function array_unshift;
 
 /**
  * NodeSet is a collection of node objects that does not allow for duplicate items.
+ *
+ * @template TValue of \Rowbot\DOM\Node
+ *
+ * @implements \ArrayAccess<int, TValue>
+ * @implements \Iterator<int, TValue>
  */
 final class NodeSet implements ArrayAccess, Countable, Iterator
 {
     /**
-     * @var array<\Rowbot\DOM\Node>
+     * @var list<TValue>
      */
     private $list;
 
@@ -40,11 +46,6 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
      */
     private $cursor;
 
-    /**
-     * Constructor.
-     *
-     * @return void
-     */
     public function __construct()
     {
         $this->list = [];
@@ -56,9 +57,7 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
     /**
      * Appends an item to the set if it doesn't already exsist in the set.
      *
-     * @param \Rowbot\DOM\Node $item
-     *
-     * @return void
+     * @param TValue $item
      */
     public function append(Node $item): void
     {
@@ -76,9 +75,7 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
     /**
      * Prepends an item to the set if it doesn't already exist in the set.
      *
-     * @param \Rowbot\DOM\Node $item
-     *
-     * @return void
+     * @param TValue $item
      */
     public function prepend(Node $item): void
     {
@@ -97,10 +94,8 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
      * Replaces the first occurance of either item or the replacement item in
      * the set if they exist and removes all other occurances.
      *
-     * @param \Rowbot\DOM\Node $item
-     * @param \Rowbot\DOM\Node $newItem
-     *
-     * @return void
+     * @param TValue $item
+     * @param TValue $newItem
      */
     public function replace(Node $item, Node $newItem): void
     {
@@ -135,6 +130,7 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
             // the list and came before item.
             if ($this->list[$this->length] === $item) {
                 array_pop($this->list);
+
                 return;
             }
 
@@ -159,6 +155,7 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
                 // first instance of the two in this case.
                 if ($itemIndex > $newItemIndex) {
                     array_splice($this->list, $itemIndex, 1);
+
                     return;
                 }
 
@@ -171,6 +168,7 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
             // We removed the existing instance of replacement item from the
             // list above and now we will replace item with replacement item.
             $this->list[$itemIndex] = $newItem;
+
             return;
         }
 
@@ -184,6 +182,7 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
         if ($this->list[$this->length - 1] === $item) {
             array_pop($this->list);
             $this->list[] = $newItem;
+
             return;
         }
 
@@ -194,10 +193,8 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
     /**
      * Inserts an item before another item in the set.
      *
-     * @param \Rowbot\DOM\Node $item
-     * @param \Rowbot\DOM\Node $newItem
-     *
-     * @return void
+     * @param TValue $item
+     * @param TValue $newItem
      */
     public function insertBefore(Node $item, Node $newItem): void
     {
@@ -219,6 +216,7 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
         // value in as unshifting is faster.
         if ($this->list[0] === $item) {
             array_unshift($this->list, $newItem);
+
             return;
         }
 
@@ -229,9 +227,7 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
     /**
      * Removes the given item from the set.
      *
-     * @param \Rowbot\DOM\Node $item
-     *
-     * @return void
+     * @param TValue $item
      */
     public function remove(Node $item): void
     {
@@ -248,6 +244,7 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
         // rather than searching the array and splicing the value out.
         if ($this->list[--$this->length] === $item) {
             array_pop($this->list);
+
             return;
         }
 
@@ -255,6 +252,7 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
         // is faster than searching the array and then splicing out the value.
         if ($this->list[0] === $item) {
             array_shift($this->list);
+
             return;
         }
 
@@ -264,8 +262,6 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
 
     /**
      * Empties the set.
-     *
-     * @return void
      */
     public function clear(): void
     {
@@ -276,8 +272,6 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
 
     /**
      * Determines if the set is empty.
-     *
-     * @return bool
      */
     public function isEmpty(): bool
     {
@@ -287,9 +281,7 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
     /**
      * Determines if the set contains the given item.
      *
-     * @param \Rowbot\DOM\Node $item
-     *
-     * @return bool
+     * @param TValue $item
      */
     public function contains(Node $item): bool
     {
@@ -298,8 +290,6 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
 
     /**
      * Returns the number of items in the set.
-     *
-     * @return int
      */
     public function count(): int
     {
@@ -309,9 +299,7 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
     /**
      * Returns the position of the given item in the set.
      *
-     * @param \Rowbot\DOM\Node $item
-     *
-     * @return int
+     * @param TValue $item
      */
     public function indexOf(Node $item): int
     {
@@ -325,9 +313,9 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
     /**
      * Filters the set.
      *
-     * @param \Closure $callback
+     * @param \Closure(TValue): bool $callback
      *
-     * @return self
+     * @return self<TValue>
      */
     public function filter(Closure $callback): self
     {
@@ -345,9 +333,9 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
     /**
      * Returns the first item in the set.
      *
-     * @param \Closure|null $callback (optional)
+     * @param \Closure(TValue): ?TValue|null $callback
      *
-     * @return \Rowbot\DOM\Node|null
+     * @return TValue|null
      */
     public function first(Closure $callback = null): ?Node
     {
@@ -367,9 +355,9 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
     /**
      * Returns the last item in the set.
      *
-     * @param \Closure|null $callback (optional)
+     * @param \Closure(TValue): ?TValue|null $callback
      *
-     * @return \Rowbot\DOM\Node|null
+     * @return TValue|null
      */
     public function last(Closure $callback = null): ?Node
     {
@@ -389,7 +377,7 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
     /**
      * Returns the entire set as an array.
      *
-     * @return array<\Rowbot\DOM\Node>
+     * @return list<TValue>
      */
     public function all(): array
     {
@@ -398,8 +386,6 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
 
     /**
      * @param int $offset
-     *
-     * @return bool
      */
     public function offsetExists($offset): bool
     {
@@ -408,8 +394,6 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
 
     /**
      * @param int $offset
-     *
-     * @return \Rowbot\DOM\Node|null
      */
     public function offsetGet($offset): ?Node
     {
@@ -421,8 +405,6 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
      *
      * @param int              $offset
      * @param \Rowbot\DOM\Node $value
-     *
-     * @return void
      */
     public function offsetSet($offset, $value): void
     {
@@ -432,48 +414,34 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
      * Noop.
      *
      * @param int $offset
-     *
-     * @return void
      */
     public function offsetUnset($offset): void
     {
     }
 
     /**
-     * @return \Rowbot\DOM\Node
+     * @return TValue
      */
     public function current(): Node
     {
         return $this->list[$this->cursor];
     }
 
-    /**
-     * @return int
-     */
     public function key(): int
     {
         return $this->cursor;
     }
 
-    /**
-     * @return void
-     */
     public function next(): void
     {
         ++$this->cursor;
     }
 
-    /**
-     * @return void
-     */
     public function rewind(): void
     {
         $this->cursor = 0;
     }
 
-    /**
-     * @return bool
-     */
     public function valid(): bool
     {
         return isset($this->list[$this->cursor]);

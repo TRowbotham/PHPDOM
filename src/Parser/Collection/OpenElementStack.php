@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Rowbot\DOM\Parser\Collection;
@@ -9,8 +10,6 @@ use Rowbot\DOM\Element\HTML\HTMLTableRowElement;
 use Rowbot\DOM\Element\HTML\HTMLTableSectionElement;
 use Rowbot\DOM\Element\HTML\HTMLTemplateElement;
 use Rowbot\DOM\Namespaces;
-use Rowbot\DOM\Node;
-use Rowbot\DOM\Parser\Collection\Exception\CollectionException;
 use Rowbot\DOM\Parser\Collection\Exception\EmptyStackException;
 use Rowbot\DOM\Support\UniquelyIdentifiable;
 
@@ -18,7 +17,7 @@ use function array_merge_recursive;
 
 class OpenElementStack extends ObjectStack
 {
-    const SPECIFIC_SCOPE = [
+    protected const SPECIFIC_SCOPE = [
         Namespaces::HTML => [
             'applet',
             'caption',
@@ -36,18 +35,18 @@ class OpenElementStack extends ObjectStack
             'mn',
             'ms',
             'mtext',
-            'annotation-xml'
+            'annotation-xml',
         ],
         Namespaces::SVG => [
             'foreignObject',
             'desc',
-            'title'
-        ]
+            'title',
+        ],
     ];
-    const LIST_ITEM_SCOPE = [Namespaces::HTML => ['ol', 'ul']];
-    const BUTTON_SCOPE    = [Namespaces::HTML => ['button']];
-    const TABLE_SCOPE     = [Namespaces::HTML => ['html', 'table', 'template']];
-    const SELECT_SCOPE    = [Namespaces::HTML => ['optgroup', 'option']];
+    protected const LIST_ITEM_SCOPE = [Namespaces::HTML => ['ol', 'ul']];
+    protected const BUTTON_SCOPE    = [Namespaces::HTML => ['button']];
+    protected const TABLE_SCOPE     = [Namespaces::HTML => ['html', 'table', 'template']];
+    protected const SELECT_SCOPE    = [Namespaces::HTML => ['optgroup', 'option']];
 
     /**
      * The number of HTMLTemplateElements on the stack.
@@ -56,9 +55,6 @@ class OpenElementStack extends ObjectStack
      */
     private $templateElementCount;
 
-    /**
-     * {@inheritDoc}
-     */
     public function __construct()
     {
         parent::__construct();
@@ -66,13 +62,8 @@ class OpenElementStack extends ObjectStack
         $this->templateElementCount = 0;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function replace(
-        UniquelyIdentifiable $newItem,
-        UniquelyIdentifiable $oldItem
-    ) {
+    public function replace(UniquelyIdentifiable $newItem, UniquelyIdentifiable $oldItem): void
+    {
         parent::replace($newItem, $oldItem);
 
         if ($newItem instanceof HTMLTemplateElement) {
@@ -84,13 +75,10 @@ class OpenElementStack extends ObjectStack
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function insertBefore(
         UniquelyIdentifiable $newItem,
         UniquelyIdentifiable $oldItem = null
-    ) {
+    ): void {
         parent::insertBefore($newItem, $oldItem);
 
         if ($newItem instanceof HTMLTemplateElement) {
@@ -98,13 +86,8 @@ class OpenElementStack extends ObjectStack
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function insertAfter(
-        UniquelyIdentifiable $newItem,
-        UniquelyIdentifiable $oldItem
-    ) {
+    public function insertAfter(UniquelyIdentifiable $newItem, UniquelyIdentifiable $oldItem): void
+    {
         parent::insertAfter($newItem, $oldItem);
 
         if ($newItem instanceof HTMLTemplateElement) {
@@ -112,10 +95,7 @@ class OpenElementStack extends ObjectStack
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function remove(UniquelyIdentifiable $item)
+    public function remove(UniquelyIdentifiable $item): void
     {
         parent::remove($item);
 
@@ -124,10 +104,7 @@ class OpenElementStack extends ObjectStack
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function push(UniquelyIdentifiable $item)
+    public function push(UniquelyIdentifiable $item): void
     {
         parent::push($item);
 
@@ -136,10 +113,7 @@ class OpenElementStack extends ObjectStack
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function pop()
+    public function pop(): UniquelyIdentifiable
     {
         $popped = parent::pop();
 
@@ -150,24 +124,18 @@ class OpenElementStack extends ObjectStack
         return $popped;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function top()
+    public function top(): UniquelyIdentifiable
     {
-        if ($this->size == 0) {
+        if ($this->size === 0) {
             throw new EmptyStackException();
         }
 
         return $this->collection[0];
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function bottom()
+    public function bottom(): UniquelyIdentifiable
     {
-        if ($this->size == 0) {
+        if ($this->size === 0) {
             throw new EmptyStackException();
         }
 
@@ -176,8 +144,6 @@ class OpenElementStack extends ObjectStack
 
     /**
      * Returns true if the stack contains a template element, false otherwise.
-     *
-     * @return bool
      */
     public function containsTemplateElement(): bool
     {
@@ -189,19 +155,18 @@ class OpenElementStack extends ObjectStack
      * tbody, template, or html element.
      *
      * @see https://html.spec.whatwg.org/multipage/syntax.html#clear-the-stack-back-to-a-table-body-context
-     *
-     * @return void
      */
-    public function clearBackToTableBodyContext()
+    public function clearBackToTableBodyContext(): void
     {
         $size = $this->size;
 
         while ($size--) {
             $currentNode = $this->collection[$size];
 
-            if ($currentNode instanceof HTMLTableSectionElement ||
-                $currentNode instanceof HTMLTemplateElement ||
-                $currentNode instanceof HTMLHtmlElement
+            if (
+                $currentNode instanceof HTMLTableSectionElement
+                || $currentNode instanceof HTMLTemplateElement
+                || $currentNode instanceof HTMLHtmlElement
             ) {
                 break;
             }
@@ -215,19 +180,18 @@ class OpenElementStack extends ObjectStack
      * template, or html element.
      *
      * @see https://html.spec.whatwg.org/multipage/syntax.html#clear-the-stack-back-to-a-table-context
-     *
-     * @return void
      */
-    public function clearBackToTableContext()
+    public function clearBackToTableContext(): void
     {
         $size = $this->size;
 
         while ($size--) {
             $currentNode = $this->collection[$size];
 
-            if ($currentNode instanceof HTMLTableElement ||
-                $currentNode instanceof HTMLTemplateElement ||
-                $currentNode instanceof HTMLHtmlElement
+            if (
+                $currentNode instanceof HTMLTableElement
+                || $currentNode instanceof HTMLTemplateElement
+                || $currentNode instanceof HTMLHtmlElement
             ) {
                 break;
             }
@@ -241,19 +205,18 @@ class OpenElementStack extends ObjectStack
      * or html element.
      *
      * @see https://html.spec.whatwg.org/multipage/syntax.html#clear-the-stack-back-to-a-table-row-context
-     *
-     * @return void
      */
-    public function clearBackToTableRowContext()
+    public function clearBackToTableRowContext(): void
     {
         $size = $this->size;
 
         while ($size--) {
             $currentNode = $this->collection[$size];
 
-            if ($currentNode instanceof HTMLTableRowElement ||
-                $currentNode instanceof HTMLTemplateElement ||
-                $currentNode instanceof HTMLHtmlElement
+            if (
+                $currentNode instanceof HTMLTableRowElement
+                || $currentNode instanceof HTMLTemplateElement
+                || $currentNode instanceof HTMLHtmlElement
             ) {
                 break;
             }
@@ -265,16 +228,12 @@ class OpenElementStack extends ObjectStack
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#has-an-element-in-the-specific-scope
      *
-     * @param  string $tagName
-     * @param  string $aNamespace
-     * @param  array  $list
-     *
-     * @return bool
+     * @param array<string, list<string>> $list
      */
     private function hasElementInSpecificScope(
-        $tagName,
-        $aNamespace,
-        ...$list
+        string $tagName,
+        string $aNamespace,
+        array ...$list
     ): bool {
         $list = array_merge_recursive(...$list);
         $size = $this->size;
@@ -303,30 +262,16 @@ class OpenElementStack extends ObjectStack
 
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#has-an-element-in-scope
-     *
-     * @param  string $tagName
-     * @param  string $namespace
-     *
-     * @return bool
      */
-    public function hasElementInScope($tagName, $namespace): bool
+    public function hasElementInScope(string $tagName, string $namespace): bool
     {
-        return $this->hasElementInSpecificScope(
-            $tagName,
-            $namespace,
-            self::SPECIFIC_SCOPE
-        );
+        return $this->hasElementInSpecificScope($tagName, $namespace, self::SPECIFIC_SCOPE);
     }
 
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#has-an-element-in-list-item-scope
-     *
-     * @param  string $tagName
-     * @param  string $namespace
-     *
-     * @return bool
      */
-    public function hasElementInListItemScope($tagName, $namespace): bool
+    public function hasElementInListItemScope(string $tagName, string $namespace): bool
     {
         return $this->hasElementInSpecificScope(
             $tagName,
@@ -338,13 +283,8 @@ class OpenElementStack extends ObjectStack
 
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#has-an-element-in-button-scope
-     *
-     * @param  string $tagName
-     * @param  string $namespace
-     *
-     * @return bool
      */
-    public function hasElementInButtonScope($tagName, $namespace): bool
+    public function hasElementInButtonScope(string $tagName, string $namespace): bool
     {
         return $this->hasElementInSpecificScope(
             $tagName,
@@ -356,30 +296,16 @@ class OpenElementStack extends ObjectStack
 
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#has-an-element-in-table-scope
-     *
-     * @param  string $tagName
-     * @param  string $namespace
-     *
-     * @return bool
      */
-    public function hasElementInTableScope($tagName, $namespace): bool
+    public function hasElementInTableScope(string $tagName, string $namespace): bool
     {
-        return $this->hasElementInSpecificScope(
-            $tagName,
-            $namespace,
-            self::TABLE_SCOPE
-        );
+        return $this->hasElementInSpecificScope($tagName, $namespace, self::TABLE_SCOPE);
     }
 
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#has-an-element-in-select-scope
-     *
-     * @param  string $tagName
-     * @param  string $namespace
-     *
-     * @return bool
      */
-    public function hasElementInSelectScope($tagName, $namespace): bool
+    public function hasElementInSelectScope(string $tagName, string $namespace): bool
     {
         $size = $this->size;
 
@@ -392,8 +318,9 @@ class OpenElementStack extends ObjectStack
                 return true;
             }
 
-            if (!($namespace === Namespaces::HTML &&
-                ($localName === 'optgroup' || $localName === 'option'))
+            if (
+                !($namespace === Namespaces::HTML
+                && ($localName === 'optgroup' || $localName === 'option'))
             ) {
                 return false;
             }

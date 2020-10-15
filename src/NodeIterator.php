@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Rowbot\DOM;
@@ -43,19 +44,10 @@ final class NodeIterator
     private $whatToShow;
 
     /**
-     * Constructor.
-     *
-     * @param \Rowbot\DOM\Node                     $root
-     * @param int                                  $whatToShow
      * @param \Rowbot\DOM\NodeFilter|callable|null $filter
-     *
-     * @return void
      */
-    public function __construct(
-        Node $root,
-        int $whatToShow = NodeFilter::SHOW_ALL,
-        $filter = null
-    ) {
+    public function __construct(Node $root, int $whatToShow = NodeFilter::SHOW_ALL, $filter = null)
+    {
         $this->filter = $this->getNodeFilter($filter);
         $this->pointerBeforeReferenceNode = true;
         $this->referenceNode = $root;
@@ -64,8 +56,6 @@ final class NodeIterator
     }
 
     /**
-     * @param string $name
-     *
      * @return mixed
      */
     public function __get(string $name)
@@ -92,8 +82,6 @@ final class NodeIterator
      * Returns the next node in the iterator.
      *
      * @see https://dom.spec.whatwg.org/#dom-nodeiterator-nextnode
-     *
-     * @return \Rowbot\DOM\Node|null
      */
     public function nextNode(): ?Node
     {
@@ -104,8 +92,6 @@ final class NodeIterator
      * Returns the previous node in the iterator.
      *
      * @see https://dom.spec.whatwg.org/#dom-nodeiterator-previousnode
-     *
-     * @return \Rowbot\DOM\Node|null
      */
     public function previousNode(): ?Node
     {
@@ -116,16 +102,10 @@ final class NodeIterator
      * @internal
      *
      * @see https://dom.spec.whatwg.org/#nodeiterator-pre-removing-steps
-     *
-     * @param \Rowbot\DOM\Node $nodeToBeRemoved
-     *
-     * @return void
      */
     public function preremoveNode(Node $nodeToBeRemoved): void
     {
-        if (!$nodeToBeRemoved->contains($this->referenceNode)
-            || $nodeToBeRemoved === $this->root
-        ) {
+        if (!$nodeToBeRemoved->contains($this->referenceNode) || $nodeToBeRemoved === $this->root) {
             return;
         }
 
@@ -133,8 +113,8 @@ final class NodeIterator
             $iter = new self(
                 $this->root,
                 NodeFilter::SHOW_ALL,
-                function ($aNode) use ($nodeToBeRemoved) {
-                    return !$aNode->isInclusiveDescendantOf($nodeToBeRemoved)
+                static function (Node $node) use ($nodeToBeRemoved): int {
+                    return !$node->isInclusiveDescendantOf($nodeToBeRemoved)
                         ? NodeFilter::FILTER_ACCEPT
                         : NodeFilter::FILTER_REJECT;
                 }
@@ -143,6 +123,7 @@ final class NodeIterator
 
             if ($next) {
                 $this->referenceNode = $next;
+
                 return;
             }
 
@@ -153,6 +134,7 @@ final class NodeIterator
 
         if (!$node) {
             $this->referenceNode = $nodeToBeRemoved->parentNode;
+
             return;
         }
 
@@ -167,10 +149,6 @@ final class NodeIterator
      * @internal
      *
      * @see https://dom.spec.whatwg.org/#concept-nodeiterator-traverse
-     *
-     * @param string $direction
-     *
-     * @return \Rowbot\DOM\Node|null
      */
     private function traverse(string $direction): ?Node
     {
@@ -185,6 +163,7 @@ final class NodeIterator
 
                         if ($firstChild) {
                             $node = $firstChild;
+
                             break;
                         }
 
@@ -228,9 +207,7 @@ final class NodeIterator
                             }
                         }
 
-                        if ($this->referenceNode === $this->root
-                            || !($node = $node->parentNode)
-                        ) {
+                        if ($this->referenceNode === $this->root || !($node = $node->parentNode)) {
                             return null;
                         }
                     } else {
@@ -240,7 +217,7 @@ final class NodeIterator
 
             $result = $this->filterNode($node);
 
-            if ($result == NodeFilter::FILTER_ACCEPT) {
+            if ($result === NodeFilter::FILTER_ACCEPT) {
                 break;
             }
         }

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Rowbot\DOM;
 
 /**
@@ -28,20 +31,8 @@ class DocumentType extends Node implements ChildNode
      */
     private $systemId;
 
-    /**
-     * Constructor.
-     *
-     * @param string $name
-     * @param string $publicId
-     * @param string $systemId
-     *
-     * @return void
-     */
-    public function __construct(
-        string $name,
-        string $publicId = '',
-        string $systemId = ''
-    ) {
+    public function __construct(string $name, string $publicId = '', string $systemId = '')
+    {
         parent::__construct();
 
         $this->name = $name;
@@ -50,30 +41,25 @@ class DocumentType extends Node implements ChildNode
         $this->systemId = $systemId;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function __get(string $name)
     {
         switch ($name) {
             case 'name':
                 return $this->name;
+
             case 'publicId':
                 return $this->publicId;
+
             case 'systemId':
                 return $this->systemId;
+
             default:
                 return parent::__get($name);
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function cloneNodeInternal(
-        Document $document = null,
-        bool $cloneChildren = false
-    ): Node {
+    public function cloneNodeInternal(Document $document = null, bool $cloneChildren = false): Node
+    {
         $document = $document ?: $this->getNodeDocument();
         $copy = new static($this->name);
         $copy->name = $this->name;
@@ -84,50 +70,32 @@ class DocumentType extends Node implements ChildNode
         return $copy;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getLength(): int
     {
         // Return 0 since a DocumentType cannot have any children.
         return 0;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function getNodeName(): string
     {
         return $this->name;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function getNodeValue(): ?string
     {
         return null;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function getTextContent(): ?string
     {
         return null;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function setNodeValue(?string $value): void
     {
         // Do nothing.
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function setTextContent(?string $value): void
     {
         // Do nothing.

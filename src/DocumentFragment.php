@@ -1,9 +1,10 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Rowbot\DOM;
 
 use Rowbot\DOM\Element\Element;
-use Rowbot\DOM\NodeFilter;
-use Rowbot\DOM\TreeWalker;
 
 use function count;
 
@@ -21,11 +22,6 @@ class DocumentFragment extends Node implements NonElementParentNode, ParentNode
      */
     protected $host;
 
-    /**
-     * Constructor.
-     *
-     * @return void
-     */
     public function __construct()
     {
         parent::__construct();
@@ -34,9 +30,6 @@ class DocumentFragment extends Node implements NonElementParentNode, ParentNode
         $this->nodeType = Node::DOCUMENT_FRAGMENT_NODE;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function __get(string $name)
     {
         switch ($name) {
@@ -58,12 +51,10 @@ class DocumentFragment extends Node implements NonElementParentNode, ParentNode
     }
 
     /**
-     * {@inheritDoc}
+     * @return static
      */
-    public function cloneNodeInternal(
-        Document $document = null,
-        bool $cloneChildren = false
-    ): Node {
+    public function cloneNodeInternal(Document $document = null, bool $cloneChildren = false): Node
+    {
         $document = $document ?: $this->getNodeDocument();
         $copy = new static();
         $this->postCloneNode($copy, $document, $cloneChildren);
@@ -75,8 +66,6 @@ class DocumentFragment extends Node implements NonElementParentNode, ParentNode
      * Gets a DocumentFragment's host object.
      *
      * @internal
-     *
-     * @return \Rowbot\DOM\Element\Element|null
      */
     public function getHost(): ?Element
     {
@@ -92,41 +81,27 @@ class DocumentFragment extends Node implements NonElementParentNode, ParentNode
      *
      * @param \Rowbot\DOM\Element\Element|null $host The element that is hosting the DocumentFragment such as a template
      *                                         element or shadow root.
-     *
-     * @return void
      */
     public function setHost(?Element $host): void
     {
         $this->host = $host;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getLength(): int
     {
         return count($this->childNodes);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function getNodeName(): string
     {
         return '#document-fragment';
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function getNodeValue(): ?string
     {
         return null;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function getTextContent(): string
     {
         $tw = new TreeWalker($this, NodeFilter::SHOW_TEXT);
@@ -139,17 +114,11 @@ class DocumentFragment extends Node implements NonElementParentNode, ParentNode
         return $data;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function setNodeValue(?string $value): void
     {
         // Do nothing.
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function setTextContent(?string $value): void
     {
         if ($value === null) {

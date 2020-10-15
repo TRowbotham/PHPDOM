@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Element\HTML;
 
 use Rowbot\DOM\Element\HTML\Support\Listable;
@@ -8,8 +11,4 @@ use Rowbot\DOM\Element\HTML\Support\Listable;
  */
 class HTMLFieldSetElement extends HTMLElement implements Listable
 {
-    protected function __construct()
-    {
-        parent::__construct();
-    }
 }

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Rowbot\DOM;
@@ -37,8 +38,6 @@ abstract class AbstractRange
     protected $endOffset;
 
     /**
-     * @param string $name
-     *
      * @return mixed
      */
     public function __get(string $name)
@@ -68,12 +67,9 @@ abstract class AbstractRange
      * Determines if a range is collapsed.
      *
      * @see https://dom.spec.whatwg.org/#range-collapsed
-     *
-     * @return bool True if collapsed, False otherwise.
      */
     protected function isCollapsed(): bool
     {
-        return $this->startNode === $this->endNode
-            && $this->startOffset === $this->endOffset;
+        return $this->startNode === $this->endNode && $this->startOffset === $this->endOffset;
     }
 }

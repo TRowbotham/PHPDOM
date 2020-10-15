@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Element\HTML;
 
 use Rowbot\DOM\Element\Element;
@@ -17,41 +20,41 @@ use const FILTER_VALIDATE_INT;
  * @see https://html.spec.whatwg.org/multipage/dom.html#htmlelement
  * @see https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement
  *
- * @property string       $title
- * @property string       $lang
- * @property bool         $translate
- * @property string       $dir
- * @property DOMStringMap $dataset
- * @property bool         $hidden
- * @property int          $tabIndex
- * @property string       $accessKey
- * @property string       $accessKeyLabel
- * @property bool         $draggable
- * @property bool         $spellcheck
- * @property string       $contentEditable
- * @property bool         $isContentEditable
+ * @property string                   $title
+ * @property string                   $lang
+ * @property bool                     $translate
+ * @property string                   $dir
+ * @property \Rowbot\DOM\DOMStringMap $dataset
+ * @property bool                     $hidden
+ * @property int                      $tabIndex
+ * @property string                   $accessKey
+ * @property string                   $accessKeyLabel
+ * @property bool                     $draggable
+ * @property bool                     $spellcheck
+ * @property string                   $contentEditable
+ * @property bool                     $isContentEditable
  */
 class HTMLElement extends Element
 {
     // state => array(keyword[, keyword, ...])
     protected const CONTENT_EDITABLE_STATE_MAP = [
         'true' => ['', 'true'],
-        'false' => ['false']
+        'false' => ['false'],
     ];
     protected const CORS_STATE_MAP = [
         'Anonymous' => ['', 'canonical' => 'anonymous'],
-        'Use Credentials' => ['use-credentials']
+        'Use Credentials' => ['use-credentials'],
     ];
     protected const DIR_STATE_MAP = [
         'ltr' => ['ltr'],
         'rtl' => ['rtl'],
-        'auto' => ['auto']
+        'auto' => ['auto'],
     ];
     protected const DRAGGABLE_STATE_MAP = ['true' => ['true'], 'false' => ['false']];
     protected const LANG_STATE_MAP = [];
     protected const SPELL_CHECK_STATE_MAP = [
         'true' => ['', 'true'],
-        'false' => ['false']
+        'false' => ['false'],
     ];
     protected const TRANSLATE_STATE_MAP = ['yes' => ['', 'yes'], 'no' => ['no']];
 
@@ -80,6 +83,7 @@ class HTMLElement extends Element
                 // For the time being, have accessKeyLabel return the same value
                 // as accessKey
                 return $this->reflectStringAttributeValue('accessKey');
+
             case 'contentEditable':
                 $state = $this->reflectEnumeratedStringAttributeValue(
                     $name,
@@ -87,11 +91,14 @@ class HTMLElement extends Element
                     'inherit',
                     self::CONTENT_EDITABLE_STATE_MAP
                 );
+
                 // TODO: Check the contentEditable state of all parent elements
                 // if state == inherit to get a more accurate answer
                 return $state;
+
             case 'dataset':
                 return $this->dataset;
+
             case 'dir':
                 return $this->reflectEnumeratedStringAttributeValue(
                     $name,
@@ -99,6 +106,7 @@ class HTMLElement extends Element
                     null,
                     self::DIR_STATE_MAP
                 );
+
             case 'draggable':
                 $state = $this->reflectEnumeratedStringAttributeValue(
                     $name,
@@ -107,11 +115,14 @@ class HTMLElement extends Element
                     self::DRAGGABLE_STATE_MAP
                 );
 
-                return $state == 'true' ? true : false;
+                return $state === 'true' ? true : false;
+
             case 'dropzone':
                 return $this->reflectStringAttributeValue($name);
+
             case 'hidden':
                 return $this->reflectBooleanAttributeValue($name);
+
             case 'isContentEditable':
                 $state = $this->reflectEnumeratedStringAttributeValue(
                     $name,
@@ -119,11 +130,14 @@ class HTMLElement extends Element
                     'inherit',
                     self::CONTENT_EDITABLE_STATE_MAP
                 );
+
                 // TODO: Check the contentEditable state of all parent elements
                 // if state == inherit to get a more accurate answer
-                return $state == 'true' ? true : false;
+                return $state === 'true' ? true : false;
+
             case 'lang':
                 return $this->reflectStringAttributeValue($name);
+
             case 'spellcheck':
                 $state = $this->reflectEnumeratedStringAttributeValue(
                     $name,
@@ -132,9 +146,9 @@ class HTMLElement extends Element
                     self::SPELL_CHECK_STATE_MAP
                 );
 
-                if ($state == 'true') {
+                if ($state === 'true') {
                     $value = true;
-                } elseif ($state == 'false') {
+                } elseif ($state === 'false') {
                     $value = false;
                 } else {
                     // TODO: Handle default states
@@ -142,6 +156,7 @@ class HTMLElement extends Element
                 }
 
                 return $value;
+
             case 'tabIndex':
                 $index = filter_var(
                     $this->reflectStringAttributeValue('tabindex'),
@@ -150,8 +165,10 @@ class HTMLElement extends Element
                 );
 
                 return $index;
+
             case 'title':
                 return $this->reflectStringAttributeValue($name);
+
             case 'translate':
                 $state = $this->reflectEnumeratedStringAttributeValue(
                     $name,
@@ -159,15 +176,17 @@ class HTMLElement extends Element
                     'inherit',
                     self::TRANSLATE_STATE_MAP
                 );
+
                 // TODO: Check the translate state of all parent elements to get
                 // a more accurate answer
-                return $state == 'yes' ? true : false;
+                return $state === 'yes' ? true : false;
+
             default:
                 return parent::__get($name);
         }
     }
 
-    public function __set(string $name, $value)
+    public function __set(string $name, $value): void
     {
         switch ($name) {
             case 'accessKey':
@@ -184,8 +203,7 @@ class HTMLElement extends Element
                     $this->attributeList->setAttrValue($name, $value);
                 } else {
                     throw new SyntaxError(
-                        'The value must be one of "true", "false", or
-                        "inherit".'
+                        'The value must be one of "true", "false", or "inherit".'
                     );
                 }
 
@@ -217,18 +235,12 @@ class HTMLElement extends Element
                 break;
 
             case 'spellcheck':
-                $this->attributeList->setAttrValue(
-                    $name,
-                    ($value === true ? 'true' : 'false')
-                );
+                $this->attributeList->setAttrValue($name, ($value === true ? 'true' : 'false'));
 
                 break;
 
             case 'tabIndex':
-                $this->attributeList->setAttrValue(
-                    'tabindex',
-                    $value
-                );
+                $this->attributeList->setAttrValue('tabindex', $value);
 
                 break;
 
@@ -238,10 +250,7 @@ class HTMLElement extends Element
                 break;
 
             case 'translate':
-                $this->attributeList->setAttrValue(
-                    $name,
-                    ($value === true ? 'yes' : 'no')
-                );
+                $this->attributeList->setAttrValue($name, ($value === true ? 'yes' : 'no'));
 
                 break;
 
@@ -419,6 +428,8 @@ class HTMLElement extends Element
      *
      * @see https://html.spec.whatwg.org/multipage/common-dom-interfaces.html#reflecting-content-attributes-in-idl-attributes:enumerated-attribute
      * @see https://html.spec.whatwg.org/multipage/common-dom-interfaces.html#limited-to-only-known-values
+     *
+     * @param array<string, array<int|string, string>> $stateMap
      */
     protected function reflectEnumeratedStringAttributeValue(
         string $name,

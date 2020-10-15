@@ -1,9 +1,12 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Element\HTML;
 
 /**
- * @see https://html.spec.whatwg.org/#the-colgroup-element
- * @see https://html.spec.whatwg.org/#the-col-element
+ * @see https://html.spec.whatwg.org/multipage/tables.html#the-colgroup-element
+ * @see https://html.spec.whatwg.org/multipage/tables.html#the-col-element
  */
 class HTMLTableColElement extends HTMLElement
 {
@@ -18,7 +21,7 @@ class HTMLTableColElement extends HTMLElement
         }
     }
 
-    public function __set(string $name, $value)
+    public function __set(string $name, $value): void
     {
         switch ($name) {
             case 'span':

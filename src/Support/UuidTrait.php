@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Rowbot\DOM\Support;
@@ -8,6 +9,9 @@ use function random_bytes;
 
 trait UuidTrait
 {
+    /**
+     * @var string
+     */
     private $uuid;
 
     public function uuid(): string

@@ -50,3 +50,4 @@ composer.lock
 /vendor/
 /build/
 .phpunit.result.cache
+.php_cs.cache

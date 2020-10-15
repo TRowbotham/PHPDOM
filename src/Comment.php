@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Rowbot\DOM;
 
 /**
@@ -7,13 +10,6 @@ namespace Rowbot\DOM;
  */
 class Comment extends CharacterData
 {
-    /**
-     * Constructor.
-     *
-     * @param string $data (optional)
-     *
-     * @return void
-     */
     public function __construct(string $data = '')
     {
         parent::__construct($data);
@@ -21,13 +17,8 @@ class Comment extends CharacterData
         $this->nodeType = Node::COMMENT_NODE;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function cloneNodeInternal(
-        Document $document = null,
-        bool $cloneChildren = false
-    ): Node {
+    public function cloneNodeInternal(Document $document = null, bool $cloneChildren = false): Node
+    {
         $document = $document ?: $this->getNodeDocument();
         $copy = new static();
         $copy->data = $this->data;
@@ -36,9 +27,6 @@ class Comment extends CharacterData
         return $copy;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function getNodeName(): string
     {
         return '#comment';

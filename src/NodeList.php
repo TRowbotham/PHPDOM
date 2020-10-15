@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Rowbot\DOM;
 
 use ArrayAccess;
@@ -10,32 +13,26 @@ use Rowbot\DOM\Support\Collection\NodeSet;
 /**
  * @see https://dom.spec.whatwg.org/#interface-nodelist
  * @see https://developer.mozilla.org/en-US/docs/Web/API/NodeList
+ *
+ * @implements \ArrayAccess<int, \Rowbot\DOM\Node>
+ * @implements \IteratorAggregate<int, \Rowbot\DOM\Node>
  */
 class NodeList implements ArrayAccess, Countable, IteratorAggregate
 {
     /**
-     * @var \Rowbot\DOM\Support\Collection\NodeSet
+     * @var \Rowbot\DOM\Support\Collection\NodeSet<\Rowbot\DOM\Node>
      */
     private $nodes;
 
     /**
-     * Constructor.
-     *
-     * @param \Rowbot\DOM\Support\Collection\NodeSet $nodes
-     *
-     * @return void
+     * @param \Rowbot\DOM\Support\Collection\NodeSet<\Rowbot\DOM\Node> $nodes
      */
     public function __construct(NodeSet $nodes)
     {
         $this->nodes = $nodes;
     }
 
-    /**
-     * @param string $name
-     *
-     * @return int
-     */
-    public function __get(string $name)
+    public function __get(string $name): int
     {
         switch ($name) {
             case 'length':
@@ -45,10 +42,6 @@ class NodeList implements ArrayAccess, Countable, IteratorAggregate
 
     /**
      * Returns the node at the given index.
-     *
-     * @param int $index
-     *
-     * @return \Rowbot\DOM\Node|null
      */
     public function item(int $index): ?Node
     {
@@ -59,8 +52,6 @@ class NodeList implements ArrayAccess, Countable, IteratorAggregate
      * Indicates whether a node at the given offset exists.
      *
      * @param int $offset
-     *
-     * @return bool
      */
     public function offsetExists($offset): bool
     {
@@ -71,8 +62,6 @@ class NodeList implements ArrayAccess, Countable, IteratorAggregate
      * Gets the node at the given offset.
      *
      * @param int $offset
-     *
-     * @return \Rowbot\DOM\Node|null
      */
     public function offsetGet($offset): ?Node
     {
@@ -84,8 +73,6 @@ class NodeList implements ArrayAccess, Countable, IteratorAggregate
      *
      * @param int $offset
      * @param \Rowbot\DOM\Node $value
-     *
-     * @return void
      */
     public function offsetSet($offset, $value): void
     {
@@ -96,8 +83,6 @@ class NodeList implements ArrayAccess, Countable, IteratorAggregate
      * Noop
      *
      * @param int $offset
-     *
-     * @return void
      */
     public function offsetUnset($offset): void
     {
@@ -106,8 +91,6 @@ class NodeList implements ArrayAccess, Countable, IteratorAggregate
 
     /**
      * Returns the number of nodes in the list.
-     *
-     * @return int
      */
     public function count(): int
     {
@@ -117,7 +100,7 @@ class NodeList implements ArrayAccess, Countable, IteratorAggregate
     /**
      * Returns the iterator object for the list.
      *
-     * @return \ArrayIterator
+     * @return \ArrayIterator<\Rowbot\DOM\Node>
      */
     public function getIterator(): ArrayIterator
     {

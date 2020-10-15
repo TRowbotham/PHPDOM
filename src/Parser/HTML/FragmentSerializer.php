@@ -1,20 +1,19 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Rowbot\DOM\Parser\HTML;
 
-use Rowbot\DOM\{
-    Attr,
-    Comment,
-    DocumentType,
-    Element\Element,
-    Namespaces,
-    Node,
-    ProcessingInstruction,
-    Text
-};
+use Rowbot\DOM\Attr;
+use Rowbot\DOM\Comment;
+use Rowbot\DOM\DocumentType;
+use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Element\HTML\HTMLTemplateElement;
+use Rowbot\DOM\Namespaces;
+use Rowbot\DOM\Node;
 use Rowbot\DOM\Parser\FragmentSerializerInterface;
+use Rowbot\DOM\ProcessingInstruction;
+use Rowbot\DOM\Text;
 
 use function preg_match;
 use function str_replace;
@@ -25,14 +24,9 @@ class FragmentSerializer implements FragmentSerializerInterface
      * @see https://html.spec.whatwg.org/multipage/syntax.html#serialising-html-fragments
      *
      * @param \Rowbot\DOM\Element\Element|\Rowbot\DOM\Document|\Rowbot\DOM\DocumentFragment $node
-     * @param bool                                                                          $requireWellFormed
-     *
-     * @return string
      */
-    public function serializeFragment(
-        Node $node,
-        bool $requireWellFormed = false
-    ): string {
+    public function serializeFragment(Node $node, bool $requireWellFormed = false): string
+    {
         $s = '';
 
         // If the node is a template element, then let the node instead be the
@@ -59,10 +53,7 @@ class FragmentSerializer implements FragmentSerializerInterface
 
                 foreach ($currentNode->getAttributeList() as $attr) {
                     $s .= ' ' . $this->serializeContentAttributeName($attr);
-                    $s .= '="' . $this->escapeHTMLString(
-                        $attr->getValue(),
-                        true
-                    ) . '"';
+                    $s .= '="' . $this->escapeHTMLString($attr->getValue(), true) . '"';
                 }
 
                 $s .= '>';
@@ -79,7 +70,8 @@ class FragmentSerializer implements FragmentSerializerInterface
             } elseif ($currentNode instanceof Text) {
                 $localName = $currentNode->parentNode->localName;
 
-                if ($localName === 'style'
+                if (
+                    $localName === 'style'
                     || $localName === 'script'
                     || $localName === 'xmp'
                     || $localName === 'iframe'

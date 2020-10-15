@@ -1,9 +1,8 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Rowbot\DOM\Parser\XML;
-
-use function count;
 
 /**
  * @see https://w3c.github.io/DOM-Parsing/#the-namespace-prefix-map
@@ -15,11 +14,6 @@ class NamespacePrefixMap
      */
     private $map;
 
-    /**
-     * Constructor.
-     *
-     * @return void
-     */
     public function __construct()
     {
         $this->map = [];
@@ -29,13 +23,8 @@ class NamespacePrefixMap
      * Retrieves the preferred prefix string.
      *
      * @see https://w3c.github.io/DOM-Parsing/#dfn-retrieving-a-preferred-prefix-string
-     *
-     * @param ?string $namespace
-     * @param string  $preferredPrefix
-     *
-     * @return ?string
      */
-    public function preferredPrefix($namespace, $preferredPrefix): ?string
+    public function preferredPrefix(?string $namespace, string $preferredPrefix): ?string
     {
         if (!isset($this->map[$namespace])) {
             return null;
@@ -54,13 +43,8 @@ class NamespacePrefixMap
      * Checks if the given prefix exists in the given namespace.
      *
      * @see https://w3c.github.io/DOM-Parsing/#dfn-found
-     *
-     * @param ?string $namespace
-     * @param string  $prefix
-     *
-     * @return bool
      */
-    public function hasPrefix($namespace, $prefix)
+    public function hasPrefix(?string $namespace, string $prefix): bool
     {
         return isset($this->map[$namespace][$prefix]);
     }
@@ -69,13 +53,8 @@ class NamespacePrefixMap
      * Associates the given prefix with the given namespace.
      *
      * @see https://w3c.github.io/DOM-Parsing/#dfn-add
-     *
-     * @param ?string $namespace
-     * @param string  $prefix
-     *
-     * @return void
      */
-    public function add($namespace, $prefix)
+    public function add(?string $namespace, string $prefix): void
     {
         if (!isset($this->map[$namespace])) {
             $this->map[$namespace] = [];

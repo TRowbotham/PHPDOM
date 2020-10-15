@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Element\HTML;
 
 /**
@@ -6,8 +9,4 @@ namespace Rowbot\DOM\Element\HTML;
  */
 class HTMLCanvasElement extends HTMLElement
 {
-    protected function __construct()
-    {
-        parent::__construct();
-    }
 }

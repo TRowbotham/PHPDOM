@@ -1,14 +1,21 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Element\HTML;
 
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\URL\URLParser;
+use Rowbot\URL\URLRecord;
 
 /**
  * @see https://html.spec.whatwg.org/multipage/semantics.html#the-base-element
  */
 class HTMLBaseElement extends HTMLElement
 {
+    /**
+     * @var \Rowbot\URL\URLRecord
+     */
     private $frozenBaseUrl;
 
     protected function __construct()
@@ -42,7 +49,7 @@ class HTMLBaseElement extends HTMLElement
         }
     }
 
-    public function __set(string $name, $value)
+    public function __set(string $name, $value): void
     {
         switch ($name) {
             case 'href':
@@ -60,16 +67,14 @@ class HTMLBaseElement extends HTMLElement
      * Gets the Element's frozen base URL.
      *
      * @internal
-     *
-     * @return URLRecord
      */
-    public function getFrozenBaseURL()
+    public function getFrozenBaseURL(): URLRecord
     {
         return $this->frozenBaseUrl;
     }
 
     /**
-     * @see AttributeChangeObserver
+     * @see \Rowbot\DOM\AttributeChangeObserver
      */
     public function onAttributeChanged(
         Element $element,
@@ -78,19 +83,13 @@ class HTMLBaseElement extends HTMLElement
         ?string $value,
         ?string $namespace
     ): void {
-        if ($localName === 'href' &&
-            $namespace === null
-        ) {
+        if ($localName === 'href' && $namespace === null) {
             $this->setFrozenBaseURL($value);
-        } else {
-            parent::onAttributeChanged(
-                $element,
-                $localName,
-                $oldValue,
-                $value,
-                $namespace
-            );
+
+            return;
         }
+
+        parent::onAttributeChanged($element, $localName, $oldValue, $value, $namespace);
     }
 
     /**
@@ -100,22 +99,18 @@ class HTMLBaseElement extends HTMLElement
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#set-the-frozen-base-url
      *
-     * @param string|null $href This value can only be non-null if the method
-     *     is called from the onAttributeChanged method since, in the case of
-     *     a content attribute being added to the element, the content attribute
-     *     has not yet been placed in the element's content attribute list.
+     * @param string|null $href This value can only be non-null if the method is called from the onAttributeChanged
+     *                          method since, in the case of a content attribute being added to the element, the content
+     *                          attribute has not yet been placed in the element's content attribute list.
      */
-    public function setFrozenBaseURL(?string $href = null)
+    public function setFrozenBaseURL(?string $href = null): void
     {
         $document = $this->nodeDocument;
         $fallbackBaseURL = $document->getFallbackBaseURL();
         $urlRecord = false;
 
         if ($href !== null) {
-            $hrefAttr = $this->attributeList->getAttrByNamespaceAndLocalName(
-                null,
-                'href'
-            );
+            $hrefAttr = $this->attributeList->getAttrByNamespaceAndLocalName(null, 'href');
 
             if ($hrefAttr !== null) {
                 // Parse the Element's href attribute.
@@ -137,27 +132,26 @@ class HTMLBaseElement extends HTMLElement
         }
     }
 
-    protected function doInsertingSteps()
+    protected function doInsertingSteps(): void
     {
-        if ($this->parentNode instanceof HTMLHeadElement) {
-            $node = $this;
+        if (!$this->parentNode instanceof HTMLHeadElement) {
+            return;
+        }
 
-            while ($node) {
-                $node = $node->previousSibling;
-                $isValid = $node instanceof HTMLBaseElement &&
-                    $this->attributeList->getAttrByNamespaceAndLocalName(
-                        null,
-                        'href'
-                    );
+        $node = $this;
 
-                if ($isValid) {
-                    break;
-                }
+        while ($node) {
+            $node = $node->previousSibling;
+            $isValid = $node instanceof HTMLBaseElement &&
+                $this->attributeList->getAttrByNamespaceAndLocalName(null, 'href');
+
+            if ($isValid) {
+                break;
             }
+        }
 
-            if (!$node) {
-                $this->setFrozenBaseURL();
-            }
+        if (!$node) {
+            $this->setFrozenBaseURL();
         }
     }
 }

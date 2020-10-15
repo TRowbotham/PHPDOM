@@ -1,15 +1,13 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Element\HTML;
 
 use Rowbot\DOM\Text;
 
 class HTMLTitleElement extends HTMLElement
 {
-    protected function __construct()
-    {
-        parent::__construct();
-    }
-
     public function __get(string $name)
     {
         switch ($name) {
@@ -29,7 +27,7 @@ class HTMLTitleElement extends HTMLElement
         }
     }
 
-    public function __set(string $name, $value)
+    public function __set(string $name, $value): void
     {
         switch ($name) {
             case 'text':

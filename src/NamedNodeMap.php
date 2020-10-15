@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Rowbot\DOM;
 
 use ArrayAccess;
@@ -14,6 +17,9 @@ use Rowbot\DOM\Exception\NotFoundError;
  * @see https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap
  *
  * @property-read int $length Returns the number of attributes in the list.
+ *
+ * @implements \ArrayAccess<int, \Rowbot\DOM\Attr>
+ * @implements \Iterator<int, \Rowbot\DOM\Attr>
  */
 class NamedNodeMap implements ArrayAccess, Countable, Iterator
 {
@@ -22,21 +28,11 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
      */
     private $element;
 
-    /**
-     * Constructor.
-     *
-     * @param \Rowbot\DOM\Element\Element $element
-     */
     public function __construct(Element $element)
     {
         $this->element = $element;
     }
 
-    /**
-     * @param string $name
-     *
-     * @return int
-     */
     public function __get(string $name): int
     {
         switch ($name) {
@@ -49,10 +45,6 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
      * Finds the Attr node at the given index.
      *
      * @see https://dom.spec.whatwg.org/#dom-namednodemap-item
-     *
-     * @param int $index
-     *
-     * @return \Rowbot\DOM\Attr|null
      */
     public function item(int $index): ?Attr
     {
@@ -63,44 +55,29 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
      * Finds an Attr node with the given qualified name.
      *
      * @see https://dom.spec.whatwg.org/#dom-namednodemap-getnameditem
-     *
-     * @param string $qualifiedName
-     *
-     * @return \Rowbot\DOM\Attr|null
      */
     public function getNamedItem(string $qualifiedName): ?Attr
     {
-        return $this->element->getAttributeList()->getAttrByName(
-            $qualifiedName
-        );
+        return $this->element->getAttributeList()->getAttrByName($qualifiedName);
     }
 
     /**
      * Finds the Attr node with the given namespace and localname.
      *
      * @see https://dom.spec.whatwg.org/#dom-namednodemap-getnameditemns
-     *
-     * @param ?string $namespace
-     * @param string  $localName
-     *
-     * @return \Rowbot\DOM\Attr|null
      */
     public function getNamedItemNS(?string $namespace, string $localName): ?Attr
     {
-        return $this
-            ->element
-            ->getAttributeList()
-            ->getAttrByNamespaceAndLocalName($namespace, $localName);
+        return $this->element->getAttributeList()->getAttrByNamespaceAndLocalName(
+            $namespace,
+            $localName
+        );
     }
 
     /**
      * Adds the given attribute to the element's attribute list.
      *
      * @see https://dom.spec.whatwg.org/#dom-namednodemap-setnameditem
-     *
-     * @param \Rowbot\DOM\Attr $attr
-     *
-     * @return \Rowbot\DOM\Attr|null
      */
     public function setNamedItem(Attr $attr): ?Attr
     {
@@ -111,10 +88,6 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
      * Adds the given attribute to the element's attribute list.
      *
      * @see https://dom.spec.whatwg.org/#dom-namednodemap-setnameditemns
-     *
-     * @param \Rowbot\DOM\Attr $attr
-     *
-     * @return \Rowbot\DOM\Attr|null
      */
     public function setNamedItemNS(Attr $attr): ?Attr
     {
@@ -126,17 +99,11 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
      *
      * @see https://dom.spec.whatwg.org/#dom-namednodemap-removenameditem
      *
-     * @param string $qualifiedName
-     *
-     * @return \Rowbot\DOM\Attr
-     *
      * @throws \Rowbot\DOM\Exception\NotFoundError
      */
     public function removeNamedItem(string $qualifiedName): Attr
     {
-        $attr = $this->element->getAttributeList()->removeAttrByName(
-            $qualifiedName
-        );
+        $attr = $this->element->getAttributeList()->removeAttrByName($qualifiedName);
 
         if (!$attr) {
             throw new NotFoundError();
@@ -150,21 +117,16 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
      *
      * @see https://dom.spec.whatwg.org/#dom-namednodemap-removenameditemns
      *
-     * @param ?string $namespace
-     * @param string  $localName
-     *
-     * @return \Rowbot\DOM\Attr
-     *
      * @throws \Rowbot\DOM\Exception\NotFoundError
      */
     public function removeNamedItemNS(
         ?string $namespace,
         string $localName
     ): Attr {
-        $attr = $this
-            ->element
-            ->getAttributeList()
-            ->removeAttrByNamespaceAndLocalName($namespace, $localName);
+        $attr = $this->element->getAttributeList()->removeAttrByNamespaceAndLocalName(
+            $namespace,
+            $localName
+        );
 
         if (!$attr) {
             throw new NotFoundError();
@@ -177,8 +139,6 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
      * Indicates whether an attribute node exists at the given offset.
      *
      * @param int $offset
-     *
-     * @return bool
      */
     public function offsetExists($offset): bool
     {
@@ -189,8 +149,6 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
      * Returns the attribute node at the given offset.
      *
      * @param int $offset
-     *
-     * @return \Rowbot\DOM\Attr|null
      */
     public function offsetGet($offset): ?Attr
     {
@@ -202,8 +160,6 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
      *
      * @param int $offset
      * @param \Rowbot\DOM\Attr $attr
-     *
-     * @return void
      */
     public function offsetSet($offset, $attr): void
     {
@@ -214,8 +170,6 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
      * Noop.
      *
      * @param int $offset
-     *
-     * @return void
      */
     public function offsetUnset($offset): void
     {
@@ -224,8 +178,6 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
 
     /**
      * Returns the number of attribute nodes in the list.
-     *
-     * @return int
      */
     public function count(): int
     {
@@ -234,8 +186,6 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
 
     /**
      * Returns the current attribute node.
-     *
-     * @return \Rowbot\DOM\Attr
      */
     public function current(): Attr
     {
@@ -244,8 +194,6 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
 
     /**
      * Returns the current iterator key.
-     *
-     * @return int
      */
     public function key(): int
     {
@@ -254,8 +202,6 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
 
     /**
      * Advances the iterator to the next item.
-     *
-     * @return void
      */
     public function next(): void
     {
@@ -264,8 +210,6 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
 
     /**
      * Rewinds the iterator to the beginning.
-     *
-     * @return void
      */
     public function rewind(): void
     {
@@ -274,8 +218,6 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
 
     /**
      * Indicates if the iterator is still valid.
-     *
-     * @return bool
      */
     public function valid(): bool
     {

@@ -63,12 +63,12 @@ trait ParentNodeTrait
      *
      * @see https://dom.spec.whatwg.org/#dom-parentnode-children
      *
-     * @return \Rowbot\DOM\Element\Element[]
+     * @return list<\Rowbot\DOM\Element\Element>
      */
     protected function getChildren(): array
     {
-        return $this->childNodes->filter(function ($node) {
-            return $node->nodeType == Node::ELEMENT_NODE;
+        return $this->childNodes->filter(static function (Node $node): bool {
+            return $node->nodeType === Node::ELEMENT_NODE;
         })->all();
     }
 
@@ -78,8 +78,6 @@ trait ParentNodeTrait
      * @internal
      *
      * @see https://dom.spec.whatwg.org/#dom-parentnode-firstelementchild
-     *
-     * @return \Rowbot\DOM\Element\Element|null
      */
     protected function getFirstElementChild(): ?Element
     {
@@ -102,8 +100,6 @@ trait ParentNodeTrait
      * @internal
      *
      * @see https://dom.spec.whatwg.org/#dom-parentnode-lastelementchild
-     *
-     * @return \Rowbot\DOM\Element\Element|null
      */
     protected function getLastElementChild(): ?Element
     {
@@ -126,8 +122,6 @@ trait ParentNodeTrait
      * @internal
      *
      * @see https://dom.spec.whatwg.org/#dom-parentnode-childelementcount
-     *
-     * @return int
      */
     protected function getChildElementCount(): int
     {

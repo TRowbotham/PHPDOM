@@ -1,38 +1,37 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Element;
 
-use Rowbot\DOM\{
-    Attr,
-    AttributeChangeObserver,
-    AttributeList,
-    ChildNode,
-    ChildNodeTrait,
-    Document,
-    DocumentFragment,
-    DOMTokenList,
-    Exception\DOMException,
-    Exception\InUseAttributeError,
-    Exception\InvalidCharacterError,
-    Exception\NoModificationAllowedError,
-    Exception\NotFoundError,
-    Exception\SyntaxError,
-    GetElementsBy,
-    HTMLDocument,
-    NamedNodeMap,
-    Namespaces,
-    Node,
-    NodeFilter,
-    NonDocumentTypeChildNode,
-    ParentNode,
-    ParentNodeTrait,
-    Parser\MarkupFactory,
-    Parser\ParserFactory,
-    Text,
-    TreeWalker,
-    URL\URLParser,
-    Utils
-};
+use Rowbot\DOM\Attr;
+use Rowbot\DOM\AttributeChangeObserver;
+use Rowbot\DOM\AttributeList;
+use Rowbot\DOM\ChildNode;
+use Rowbot\DOM\ChildNodeTrait;
+use Rowbot\DOM\Document;
+use Rowbot\DOM\DocumentFragment;
+use Rowbot\DOM\DOMTokenList;
 use Rowbot\DOM\Element\HTML\HTMLTemplateElement;
+use Rowbot\DOM\Exception\InvalidCharacterError;
+use Rowbot\DOM\Exception\NoModificationAllowedError;
+use Rowbot\DOM\Exception\NotFoundError;
+use Rowbot\DOM\Exception\SyntaxError;
+use Rowbot\DOM\GetElementsBy;
+use Rowbot\DOM\HTMLDocument;
+use Rowbot\DOM\NamedNodeMap;
+use Rowbot\DOM\Namespaces;
+use Rowbot\DOM\Node;
+use Rowbot\DOM\NodeFilter;
+use Rowbot\DOM\NonDocumentTypeChildNode;
+use Rowbot\DOM\ParentNode;
+use Rowbot\DOM\ParentNodeTrait;
+use Rowbot\DOM\Parser\MarkupFactory;
+use Rowbot\DOM\Parser\ParserFactory;
+use Rowbot\DOM\Text;
+use Rowbot\DOM\TreeWalker;
+use Rowbot\DOM\URL\URLParser;
+use Rowbot\DOM\Utils;
 
 use function count;
 use function preg_match;
@@ -42,24 +41,26 @@ use function strtoupper;
  * @see https://dom.spec.whatwg.org/#element
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Element
  *
+ * @property string $className
+ * @property string $id
+ * @property string $innerHTML
+ * @property string $outerHTML
+ *
+ * @property-read \Rowbot\DOM\DOMTokenList $classList
+ * @property-read \Rowbot\DOM\NamedNodeMap $attributes
  * @property-read ?string                  $namespaceURI
  * @property-read ?string                  $prefix
  * @property-read string                   $localName
  * @property-read string                   $tagName
- * @property      string                   $id
- * @property      string                   $className
- * @property-read \Rowbot\DOM\DOMTokenList $classList
- * @property-read \Rowbot\DOM\NamedNodeMap $attributes
- * @property      string                   $innerHTML
- * @property      string                   $outerHTML
  */
 class Element extends Node implements AttributeChangeObserver, ChildNode, ParentNode
 {
-    use ChildNodeTrait, ParentNodeTrait {
+    use ChildNodeTrait {
         ChildNodeTrait::convertNodesToNode insteadof ParentNodeTrait;
     }
     use GetElementsBy;
     use NonDocumentTypeChildNode;
+    use ParentNodeTrait;
 
     /**
      * @var \Rowbot\DOM\NamedNodeMap
@@ -156,11 +157,7 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
                 // the context object providing true for the require well-formed
                 // flag (this might throw an exception instead of returning a
                 // string).
-                $fakeNode = self::create(
-                    $this->ownerDocument,
-                    'fake',
-                    Namespaces::HTML
-                );
+                $fakeNode = self::create($this->ownerDocument, 'fake', Namespaces::HTML);
                 $fakeNode->childNodes->append($this);
 
                 return MarkupFactory::serializeFragment($fakeNode, true);
@@ -188,7 +185,7 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
     /**
      * {@inheritDoc}
      */
-    public function __set(string $name, $value)
+    public function __set(string $name, $value): void
     {
         switch ($name) {
             case 'classList':
@@ -219,9 +216,7 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
                 // If the context object is a template element, then let context
                 // object be the template's template contents (a
                 // DocumentFragment).
-                $context = $this instanceof HTMLTemplateElement
-                    ? $this->content
-                    : $this;
+                $context = $this instanceof HTMLTemplateElement ? $this->content : $this;
 
                 // NOTE: Setting innerHTML on a template element will replace
                 // all the nodes in its template contents (template.content)
@@ -258,11 +253,7 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
                 // namespace, and the context object's node document as its node
                 // document.
                 if ($parent instanceof DocumentFragment) {
-                    $parent = self::create(
-                        $this->ownerDocument,
-                        'body',
-                        Namespaces::HTML
-                    );
+                    $parent = self::create($this->ownerDocument, 'body', Namespaces::HTML);
                 }
 
                 // Let fragment be the result of invoking the fragment parsing
@@ -292,7 +283,7 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
      * @param ?string                   $namespace The namespace that the element belongs to.
      * @param ?string                   $prefix    (optional) The namespace prefix of the element.
      *
-     * @return self
+     * @return static
      */
     public static function create(
         Document $document,
@@ -312,8 +303,6 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
     /**
      * Returns true if there are attributes present in the Element's attribute
      * list, otherwise false.
-     *
-     * @return bool
      */
     public function hasAttributes(): bool
     {
@@ -325,7 +314,7 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
      *
      * @see https://dom.spec.whatwg.org/#dom-element-getattributenames
      *
-     * @return string[]
+     * @return list<string>
      */
     public function getAttributeNames(): array
     {
@@ -342,10 +331,6 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
      * Retrieves the value of the attribute with the given qualifiedName, if any.
      *
      * @see https://dom.spec.whatwg.org/#dom-element-getattribute
-     *
-     * @param string $qualifiedName The qualifiedName of the attribute whose value is to be retrieved.
-     *
-     * @return ?string
      */
     public function getAttribute(string $qualifiedName): ?string
     {
@@ -362,20 +347,10 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
      * Retrieves the value of the attribute with the given namespace and local name, if any.
      *
      * @see https://dom.spec.whatwg.org/#dom-element-getattributens
-     *
-     * @param ?string $namespace The namespaceURI of the attribute whose value is to be retrieved.
-     * @param string  $localName The localName of the attribute whose value is to be retrieved.
-     *
-     * @return ?string
      */
-    public function getAttributeNS(
-        ?string $namespace,
-        string $localName
-    ): ?string {
-        $attr = $this->attributeList->getAttrByNamespaceAndLocalName(
-            $namespace,
-            $localName
-        );
+    public function getAttributeNS(?string $namespace, string $localName): ?string
+    {
+        $attr = $this->attributeList->getAttrByNamespaceAndLocalName($namespace, $localName);
 
         if ($attr === null) {
             return null;
@@ -390,11 +365,6 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
      * name.
      *
      * @see https://dom.spec.whatwg.org/#dom-element-setattribute
-     *
-     * @param string $qualifiedName The name of the attribute.
-     * @param string $value         The value of the attribute.
-     *
-     * @return void
      */
     public function setAttribute(string $qualifiedName, string $value): void
     {
@@ -404,7 +374,8 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
             throw new InvalidCharacterError();
         }
 
-        if ($this->namespaceURI === Namespaces::HTML
+        if (
+            $this->namespaceURI === Namespaces::HTML
             && $this->nodeDocument instanceof HTMLDocument
         ) {
             $qualifiedName = Utils::toASCIILowercase($qualifiedName);
@@ -415,6 +386,7 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
         foreach ($this->attributeList as $attr) {
             if ($attr->getQualifiedName() === $qualifiedName) {
                 $attribute = $attr;
+
                 break;
             }
         }
@@ -423,6 +395,7 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
             $attribute = new Attr($qualifiedName, $value);
             $attribute->setNodeDocument($this->nodeDocument);
             $this->attributeList->append($attribute);
+
             return;
         }
 
@@ -432,33 +405,15 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
     /**
      * Either appends a new attribute or modifies the value of an existing
      * attribute with the given namespace and qualifiedName.
-     *
-     * @param ?string $namespace     The namespaceURI of the attribute.
-     * @param string  $qualifiedName The qualifiedName of the attribute.
-     * @param string  $value         The value of the attribute.
-     *
-     * @return void
      */
-    public function setAttributeNS(
-        ?string $namespace,
-        string $qualifiedName,
-        string $value
-    ): void {
-        list(
-            $namespace,
-            $prefix,
-            $localName
-        ) = Namespaces::validateAndExtract(
+    public function setAttributeNS(?string $namespace, string $qualifiedName, string $value): void
+    {
+        [$namespace, $prefix, $localName] = Namespaces::validateAndExtract(
             $namespace,
             $qualifiedName
         );
 
-        $this->attributeList->setAttrValue(
-            $localName,
-            $value,
-            $prefix,
-            $namespace
-        );
+        $this->attributeList->setAttrValue($localName, $value, $prefix, $namespace);
     }
 
     /**
@@ -466,10 +421,6 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
      * list.
      *
      * @see https://dom.spec.whatwg.org/#dom-element-removeattribute
-     *
-     * @param string $qualifiedName The attributes qualifiedName.
-     *
-     * @return void
      */
     public function removeAttribute(string $qualifiedName): void
     {
@@ -481,20 +432,10 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
      * Element's attribute list.
      *
      * @see https://dom.spec.whatwg.org/#dom-element-hasattributens
-     *
-     * @param ?string $namespace The namespaceURI of the attribute to be removed.
-     * @param string  $localName The localName of the attribute to be removed.
-     *
-     * @return void
      */
-    public function removeAttributeNS(
-        ?string $namespace,
-        string $localName
-    ): void {
-        $this->attributeList->removeAttrByNamespaceAndLocalName(
-            $namespace,
-            $localName
-        );
+    public function removeAttributeNS(?string $namespace, string $localName): void
+    {
+        $this->attributeList->removeAttrByNamespaceAndLocalName($namespace, $localName);
     }
 
     /**
@@ -502,22 +443,16 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
      * removing it if it is present and adding it if it is not present. If force is true, it adds an attribute with
      * qualifiedName. If force is false, it removes the attribute with qualifiedName.
      *
-     * @param string $qualifiedName
-     * @param bool   $force         (optional)
-     *
-     * @return bool
-     *
      * @throws \Rowbot\DOM\Exception\InvalidCharacterError
      */
-    public function toggleAttribute(
-        string $qualifiedName,
-        bool $force = false
-    ): bool {
+    public function toggleAttribute(string $qualifiedName, bool $force = false): bool
+    {
         if (!preg_match(Namespaces::NAME_PRODUCTION, $qualifiedName)) {
             throw new InvalidCharacterError();
         }
 
-        if ($this->namespaceURI === Namespaces::HTML
+        if (
+            $this->namespaceURI === Namespaces::HTML
             && $this->nodeDocument instanceof HTMLDocument
         ) {
             $qualifiedName = Utils::toASCIILowercase($qualifiedName);
@@ -529,6 +464,7 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
         foreach ($this->attributeList as $attr) {
             if ($attr->getQualifiedName() === $qualifiedName) {
                 $attribute = $attr;
+
                 break;
             }
         }
@@ -559,14 +495,11 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
      * Element's attribute list, otherwise false.
      *
      * @see https://dom.spec.whatwg.org/#dom-element-hasattribute
-     *
-     * @param string $qualifiedName The name of the attribute to find.
-     *
-     * @return bool
      */
     public function hasAttribute(string $qualifiedName): bool
     {
-        if ($this->namespaceURI === Namespaces::HTML
+        if (
+            $this->namespaceURI === Namespaces::HTML
             && $this->nodeDocument instanceof HTMLDocument
         ) {
             $qualifiedName = Utils::toASCIILowercase($qualifiedName);
@@ -580,11 +513,6 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
      * is present in the Element's attribute list, otherwise false.
      *
      * @see https://dom.spec.whatwg.org/#dom-element-hasattributens
-     *
-     * @param ?string $namespace The namespace of the attribute to find.
-     * @param string  $localName The localName of the attribute to find.
-     *
-     * @return bool
      */
     public function hasAttributeNS(?string $namespace, string $localName): bool
     {
@@ -598,10 +526,6 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
      * Retrieves the attribute node with the given qualifiedName, if any.
      *
      * @see https://dom.spec.whatwg.org/#dom-element-getattributenode
-     *
-     * @param string $qualifiedName The qualifiedName of the attribute that is to be retrieved.
-     *
-     * @return \Rowbot\DOM\Attr|null
      */
     public function getAttributeNode(string $qualifiedName): ?Attr
     {
@@ -613,30 +537,16 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
      * any.
      *
      * @see https://dom.spec.whatwg.org/#dom-element-getattributenodens
-     *
-     * @param ?string $namespace The namespaceURI of the attribute node to be retrieved.
-     * @param string  $localName The localName of the attribute node to be retrieved.
-     *
-     * @return \Rowbot\DOM\Attr|null
      */
-    public function getAttributeNodeNS(
-        ?string $namespace,
-        string $localName
-    ): ?Attr {
-        return $this->attributeList->getAttrByNamespaceAndLocalName(
-            $namespace,
-            $localName
-        );
+    public function getAttributeNodeNS(?string $namespace, string $localName): ?Attr
+    {
+        return $this->attributeList->getAttrByNamespaceAndLocalName($namespace, $localName);
     }
 
     /**
      * Appends the given attribute to the Element's attribute list.
      *
      * @see https://dom.spec.whatwg.org/#dom-element-setattributenode
-     *
-     * @param \Rowbot\DOM\Attr $attr The attribute to be appended.
-     *
-     * @return \Rowbot\DOM\Attr|null
      */
     public function setAttributeNode(Attr $attr): ?Attr
     {
@@ -647,10 +557,6 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
      * Appends the given namespaced attribute to the Element's attribute list.
      *
      * @see https://dom.spec.whatwg.org/#dom-element-setattributenodens
-     *
-     * @param \Rowbot\DOM\Attr $attr The namespaced attribute to be appended.
-     *
-     * @return \Rowbot\DOM\Attr|null
      */
     public function setAttributeNodeNS(Attr $attr): ?Attr
     {
@@ -661,10 +567,6 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
      * Removes the given attribute from the Element's attribute list.
      *
      * @see https://dom.spec.whatwg.org/#dom-element-removeattributenode
-     *
-     * @param \Rowbot\DOM\Attr $attr The attribute to be removed.
-     *
-     * @return \Rowbot\DOM\Attr The Attr node that was removed.
      *
      * @throws \Rowbot\DOM\Exception\NotFoundError
      */
@@ -679,14 +581,16 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
         return $attr;
     }
 
-    public function closest(string $selectorRule)
+    public function closest(string $selectorRule): ?self
     {
         // TODO
+        return null;
     }
 
-    public function matches(string $selectorRule)
+    public function matches(string $selectorRule): bool
     {
         // TODO
+        return false;
     }
 
     /**
@@ -694,14 +598,11 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
      *
      * @see https://dom.spec.whatwg.org/#dom-element-insertadjacentelement
      *
-     * @param string $where  The position relative to this node. Possible values are:
+     * @param string $where The position relative to this node. Possible values are:
      *                          - beforebegin - Inserts an element as this element's previous sibling.
      *                          - afterend - Inserts an element as this element's next sibling.
      *                          - afterbegin - Inserts an element as this element's first child.
      *                          - beforeend - Inserts an element as this element's last child.
-     * @param self   $element The element to be inserted.
-     *
-     * @return ?self
      */
     public function insertAdjacentElement(string $where, self $element): ?self
     {
@@ -718,10 +619,6 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
      *                          - afterend - Inserts an element as this element's next sibling.
      *                          - afterbegin - Inserts an element as this element's first child.
      *                          - beforeend - Inserts an element as this element's last child.
-     *
-     * @param string $data  The text to be inserted.
-     *
-     * @return void
      */
     public function insertAdjacentText(string $where, string $data): void
     {
@@ -750,8 +647,6 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
      *
      * @param string $position One of the types listed above.
      * @param string $text     The markup text to parse and subsequently, insert relative to this element.
-     *
-     * @return void
      *
      * @throws \Rowbot\DOM\Exception\SyntaxError                If the arguments contain invalid values, such as an XML
      *                                                          string that is not well-formed, when in an XML Document.
@@ -785,16 +680,13 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
         // namespace is the HTML namespace. Let context be a new Element with
         // "body" as its local name, the HTML namespace as its namespace, and
         // the context object's node document as its node document.
-        if (!$context instanceof self
+        if (
+            !$context instanceof self
             || ($context->getNodeDocument() instanceof HTMLDocument
                 && $context->localName === 'html'
                 && $context->namespaceURI === Namespaces::HTML)
         ) {
-            $context = self::create(
-                $this->nodeDocument,
-                'body',
-                Namespaces::HTML
-            );
+            $context = self::create($this->nodeDocument, 'body', Namespaces::HTML);
         }
 
         // Let fragment be the result of invoking the fragment parsing algorithm
@@ -822,10 +714,8 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
      * Returns the element's internal attribute list.
      *
      * @internal
-     *
-     * @return \Rowbot\DOM\AttributeList
      */
-    public function getAttributeList()
+    public function getAttributeList(): AttributeList
     {
         return $this->attributeList;
     }
@@ -836,8 +726,6 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
      * @internal
      *
      * @see https://dom.spec.whatwg.org/#element-html-uppercased-qualified-name
-     *
-     * @return string
      */
     protected function getTagName(): string
     {
@@ -845,7 +733,8 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
             ? $this->localName
             : $this->prefix . ':' . $this->localName;
 
-        if ($this->namespaceURI === Namespaces::HTML
+        if (
+            $this->namespaceURI === Namespaces::HTML
             && $this->nodeDocument instanceof HTMLDocument
         ) {
             return Utils::toASCIIUppercase($qualifiedName);
@@ -867,15 +756,10 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
      *                                      - beforeend - Inserts an element as this element's last child.
      * @param \Rowbot\DOM\Node $node    The node to be inserted adjacent to the element.
      *
-     * @return \Rowbot\DOM\Node|null
-     *
      * @throws \Rowbot\DOM\Exception\SyntaxError If an invalid value for "where" is given.
      */
-    private function insertAdjacent(
-        Element $element,
-        string $where,
-        Node $node
-    ): ?Node {
+    private function insertAdjacent(Element $element, string $where, Node $node): ?Node
+    {
         $where = Utils::toASCIILowercase($where);
 
         if ($where === 'beforebegin') {
@@ -887,10 +771,7 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
         }
 
         if ($where === 'afterbegin') {
-            return $element->preinsertNode(
-                $node,
-                $element->childNodes->first()
-            );
+            return $element->preinsertNode($node, $element->childNodes->first());
         }
 
         if ($where === 'beforeend') {
@@ -902,10 +783,7 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
                 return null;
             }
 
-            return $element->parentNode->preinsertNode(
-                $node,
-                $element->nextSibling
-            );
+            return $element->parentNode->preinsertNode($node, $element->nextSibling);
         }
 
         throw new SyntaxError();
@@ -915,9 +793,7 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
      * Returns an array of Elements with the specified tagName that are
      * immediate children of the parent.
      *
-     * @param string $tagName The tagName to search for.
-     *
-     * @return \Rowbot\DOM\Element\Element[] A list of Elements with the specified tagName.
+     * @return list<\Rowbot\DOM\Element\Element>
      */
     protected function shallowGetElementsByTagName(string $tagName)
     {
@@ -961,20 +837,13 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
             // object's API base URL.
         }
 
-        $urlRecord = URLParser::parseUrl(
-            $url,
-            $baseURL,
-            $encoding
-        );
+        $urlRecord = URLParser::parseUrl($url, $baseURL, $encoding);
 
         if ($urlRecord === false) {
             return false;
         }
 
-        return [
-            'urlRecord' => $urlRecord,
-            'urlString' => $urlRecord->serializeURL()
-        ];
+        return ['urlRecord' => $urlRecord, 'urlString' => $urlRecord->serializeURL()];
     }
 
     /**
@@ -982,24 +851,15 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
      * property.
      *
      * @see https://dom.spec.whatwg.org/#concept-reflect
-     *
-     * @param string $name The name of the attribute that is to be reflected.
-     *
-     * @return string
      */
-    protected function reflectStringAttributeValue(string $name)
+    protected function reflectStringAttributeValue(string $name): string
     {
         return $this->attributeList->getAttrValue($name);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function cloneNodeInternal(
-        Document $document = null,
-        bool $cloneChildren = false
-    ): Node {
-        $document = $document ?: $this->getNodeDocument();
+    public function cloneNodeInternal(Document $document = null, bool $cloneChildren = false): Node
+    {
+        $document = $document ?? $this->getNodeDocument();
         $copy = ElementFactory::create(
             $document,
             $this->localName,
@@ -1017,9 +877,6 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
         return $copy;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function onAttributeChanged(
         Element $element,
         string $localName,
@@ -1028,7 +885,8 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
         ?string $namespace
     ): void {
         // We currently don't do anything special with the element's ID.
-        if ($localName === 'id'
+        if (
+            $localName === 'id'
             && $namespace === null
             && ($value === null || $value === '')
         ) {
@@ -1038,33 +896,21 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getLength(): int
     {
         return count($this->childNodes);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function getNodeName(): string
     {
         return $this->getTagName();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function getNodeValue(): ?string
     {
         return null;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function getTextContent(): string
     {
         $tw = new TreeWalker($this, NodeFilter::SHOW_TEXT);
@@ -1077,17 +923,11 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
         return $data;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function setNodeValue(?string $value): void
     {
         // Do nothing.
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function setTextContent(?string $value): void
     {
         if ($value === null) {

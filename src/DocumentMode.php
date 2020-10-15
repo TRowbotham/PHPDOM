@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Rowbot\DOM;
@@ -6,9 +7,9 @@ namespace Rowbot\DOM;
 /**
  * @see https://dom.spec.whatwg.org/#concept-document-mode
  */
-abstract class DocumentMode
+final class DocumentMode
 {
-    const NO_QUIRKS      = 1;
-    const LIMITED_QUIRKS = 2;
-    const QUIRKS         = 3;
+    public const NO_QUIRKS      = 1;
+    public const LIMITED_QUIRKS = 2;
+    public const QUIRKS         = 3;
 }

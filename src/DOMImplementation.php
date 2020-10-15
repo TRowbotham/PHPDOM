@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Rowbot\DOM;
 
 use Rowbot\DOM\Element\ElementFactory;
@@ -16,13 +19,6 @@ final class DOMImplementation
      */
     private $document;
 
-    /**
-     * Constructor.
-     *
-     * @param \Rowbot\DOM\Document $document
-     *
-     * @return void
-     */
     public function __construct(Document $document)
     {
         $this->document = $document;
@@ -40,8 +36,6 @@ final class DOMImplementation
      * @param \Rowbot\DOM\DocumentType|null $doctype       (optional) A DocumentType object to be appended to the
      *                                                     document.
      *
-     * @return \Rowbot\DOM\XMLDocument
-     *
      * @throws \Rowbot\DOM\Exception\InvalidCharacterError
      * @throws \Rowbot\DOM\Exception\NamespaceError
      */
@@ -58,11 +52,7 @@ final class DOMImplementation
         }
 
         if ($qualifiedName !== '') {
-            $element = ElementFactory::createNS(
-                $document,
-                $namespace,
-                $qualifiedName
-            );
+            $element = ElementFactory::createNS($document, $namespace, $qualifiedName);
         }
 
         if ($doctype !== null) {
@@ -99,12 +89,6 @@ final class DOMImplementation
      *
      * @see https://dom.spec.whatwg.org/#dom-domimplementation-createdocumenttype
      *
-     * @param string $qualifiedName The document type's name.
-     * @param string $publicId      The document type's public identifier.
-     * @param string $systemId      The document type's system identifier.
-     *
-     * @return \Rowbot\DOM\DocumentType
-     *
      * @throws \Rowbot\DOM\Exception\InvalidCharacterError If the qualified name does not match the Name production.
      * @throws \Rowbot\DOM\Exception\NamespaceError        If the qualified name does not match the QName production.
      */
@@ -125,10 +109,6 @@ final class DOMImplementation
      * Creates a HTML document.
      *
      * @see https://dom.spec.whatwg.org/#dom-domimplementation-createhtmldocument
-     *
-     * @param string $title (optional) The title of the document.
-     *
-     * @return \Rowbot\DOM\HTMLDocument
      */
     public function createHTMLDocument(string $title = ''): HTMLDocument
     {
@@ -145,22 +125,14 @@ final class DOMImplementation
         // Only create a HTMLTitleElement if the user actually provided us with
         // a title to use.
         if (func_num_args() > 0) {
-            $titleNode = ElementFactory::create(
-                $doc,
-                'title',
-                Namespaces::HTML
-            );
+            $titleNode = ElementFactory::create($doc, 'title', Namespaces::HTML);
             $head->appendChild($titleNode);
             $text = new Text($title);
             $text->setNodeDocument($doc);
             $titleNode->appendChild($text);
         }
 
-        $html->appendChild(ElementFactory::create(
-            $doc,
-            'body',
-            Namespaces::HTML
-        ));
+        $html->appendChild(ElementFactory::create($doc, 'body', Namespaces::HTML));
 
         // TODO: doc's origin is the origin of the context object's associated
         // document

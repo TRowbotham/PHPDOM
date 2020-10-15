@@ -21,7 +21,7 @@ interface ParentNode
      *
      * @see https://dom.spec.whatwg.org/#dom-parentnode-prepend
      *
-     * @param Node|string $nodes One or more Nodes or strings to be prepended to this node
+     * @param \Rowbot\DOM\Node|string $nodes One or more Nodes or strings to be prepended to this node
      *
      * @throws \Rowbot\DOM\Exception\HierarchyRequestError
      */

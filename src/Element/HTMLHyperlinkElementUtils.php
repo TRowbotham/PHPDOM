@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Rowbot\DOM\Element;
@@ -24,8 +25,6 @@ trait HTMLHyperlinkElementUtils
      * @internal
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#dom-hyperlink-href
-     *
-     * @return string
      */
     protected function getHref(): string
     {
@@ -53,10 +52,6 @@ trait HTMLHyperlinkElementUtils
      * @internal
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#dom-hyperlink-href
-     *
-     * @param string $value A URL.
-     *
-     * @return void
      */
     protected function setHref(string $value): void
     {
@@ -69,8 +64,6 @@ trait HTMLHyperlinkElementUtils
      * @internal
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#dom-hyperlink-origin
-     *
-     * @return string
      */
     protected function getOrigin(): string
     {
@@ -89,8 +82,6 @@ trait HTMLHyperlinkElementUtils
      * @internal
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#dom-hyperlink-protocol
-     *
-     * @return string
      */
     protected function getProtocol(): string
     {
@@ -110,10 +101,6 @@ trait HTMLHyperlinkElementUtils
      * @internal
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#dom-hyperlink-protocol
-     *
-     * @param string $value A URL scheme.
-     *
-     * @return void
      */
     protected function setProtocol(string $value): void
     {
@@ -130,10 +117,7 @@ trait HTMLHyperlinkElementUtils
             $this->url,
             BasicURLParser::SCHEME_START_STATE
         );
-        $this->attributeList->setAttrValue(
-            'href',
-            $this->url->serializeURL()
-        );
+        $this->attributeList->setAttrValue('href', $this->url->serializeURL());
     }
 
     /**
@@ -142,8 +126,6 @@ trait HTMLHyperlinkElementUtils
      * @internal
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#dom-hyperlink-username
-     *
-     * @return string
      */
     protected function getUsername(): string
     {
@@ -161,26 +143,17 @@ trait HTMLHyperlinkElementUtils
      * attribute.
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#dom-hyperlink-username
-     *
-     * @param string $value A username.
-     *
-     * @return void
      */
     protected function setUsername(string $value): void
     {
         $this->reinitialiseUrl();
 
-        if ($this->url === null ||
-            $this->url->cannotHaveUsernamePasswordPort()
-        ) {
+        if ($this->url === null || $this->url->cannotHaveUsernamePasswordPort()) {
             return;
         }
 
         $this->url->setUsername($value);
-        $this->attributeList->setAttrValue(
-            'href',
-            $this->url->serializeURL()
-        );
+        $this->attributeList->setAttrValue('href', $this->url->serializeURL());
     }
 
     /**
@@ -189,8 +162,6 @@ trait HTMLHyperlinkElementUtils
      * @internal
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#dom-hyperlink-password
-     *
-     * @return string
      */
     protected function getPassword(): string
     {
@@ -208,26 +179,17 @@ trait HTMLHyperlinkElementUtils
      * attribute.
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#dom-hyperlink-password
-     *
-     * @param string $value A password.
-     *
-     * @return void
      */
     protected function setPassword(string $value): void
     {
         $this->reinitialiseUrl();
 
-        if ($this->url === null ||
-            $this->url->cannotHaveUsernamePasswordPort()
-        ) {
+        if ($this->url === null || $this->url->cannotHaveUsernamePasswordPort()) {
             return;
         }
 
         $this->url->setPassword($value);
-        $this->attributeList->setAttrValue(
-            'href',
-            $this->url->serializeURL()
-        );
+        $this->attributeList->setAttrValue('href', $this->url->serializeURL());
     }
 
     /**
@@ -236,8 +198,6 @@ trait HTMLHyperlinkElementUtils
      * @internal
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#dom-hyperlink-host
-     *
-     * @return string
      */
     protected function getHost(): string
     {
@@ -259,10 +219,6 @@ trait HTMLHyperlinkElementUtils
      * attribute.
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#dom-hyperlink-host
-     *
-     * @param string $value A host.
-     *
-     * @return void
      */
     protected function setHost(string $value): void
     {
@@ -279,10 +235,7 @@ trait HTMLHyperlinkElementUtils
             $this->url,
             BasicURLParser::HOST_STATE
         );
-        $this->attributeList->setAttrValue(
-            'href',
-            $this->url->serializeURL()
-        );
+        $this->attributeList->setAttrValue('href', $this->url->serializeURL());
     }
 
     /**
@@ -291,8 +244,6 @@ trait HTMLHyperlinkElementUtils
      * @internal
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#dom-hyperlink-hostname
-     *
-     * @return string
      */
     protected function getHostname(): string
     {
@@ -310,10 +261,6 @@ trait HTMLHyperlinkElementUtils
      * attribute.
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#dom-hyperlink-hostname
-     *
-     * @param string $value A hostname.
-     *
-     * @return void
      */
     protected function setHostname(string $value): void
     {
@@ -330,10 +277,7 @@ trait HTMLHyperlinkElementUtils
             $this->url,
             BasicURLParser::HOSTNAME_STATE
         );
-        $this->attributeList->setAttrValue(
-            'href',
-            $this->url->serializeURL()
-        );
+        $this->attributeList->setAttrValue('href', $this->url->serializeURL());
     }
 
     /**
@@ -342,8 +286,6 @@ trait HTMLHyperlinkElementUtils
      * @internal
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#dom-hyperlink-port
-     *
-     * @return string
      */
     protected function getPort(): string
     {
@@ -361,18 +303,12 @@ trait HTMLHyperlinkElementUtils
      * attribute.
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#dom-hyperlink-port
-     *
-     * @param string $value A port.
-     *
-     * @return void
      */
     protected function setPort(string $value): void
     {
         $this->reinitialiseUrl();
 
-        if ($this->url === null ||
-            $this->url->cannotHaveUsernamePasswordPort()
-        ) {
+        if ($this->url === null || $this->url->cannotHaveUsernamePasswordPort()) {
             return;
         }
 
@@ -388,10 +324,7 @@ trait HTMLHyperlinkElementUtils
             );
         }
 
-        $this->attributeList->setAttrValue(
-            'href',
-            $this->url->serializeURL()
-        );
+        $this->attributeList->setAttrValue('href', $this->url->serializeURL());
     }
 
     /**
@@ -400,8 +333,6 @@ trait HTMLHyperlinkElementUtils
      * @internal
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#dom-hyperlink-pathname
-     *
-     * @return string
      */
     protected function getPathname(): string
     {
@@ -415,7 +346,7 @@ trait HTMLHyperlinkElementUtils
             return $this->url->path[0];
         }
 
-        if (empty($this->url->path)) {
+        if ($this->url->path === []) {
             return '';
         }
 
@@ -427,10 +358,6 @@ trait HTMLHyperlinkElementUtils
      * attribute.
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#dom-hyperlink-pathname
-     *
-     * @param string $value A path.
-     *
-     * @return void
      */
     protected function setPathname(string $value): void
     {
@@ -448,10 +375,7 @@ trait HTMLHyperlinkElementUtils
             $this->url,
             BasicURLParser::PATH_START_STATE
         );
-        $this->attributeList->setAttrValue(
-            'href',
-            $this->url->serializeURL()
-        );
+        $this->attributeList->setAttrValue('href', $this->url->serializeURL());
     }
 
     /**
@@ -460,17 +384,12 @@ trait HTMLHyperlinkElementUtils
      * @internal
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#dom-hyperlink-search
-     *
-     * @return string
      */
     protected function getSearch(): string
     {
         $this->reinitialiseURL();
 
-        if ($this->url === null
-            || $this->url->query === null
-            || $this->url->query === ''
-        ) {
+        if ($this->url === null || $this->url->query === null || $this->url->query === '') {
             return '';
         }
 
@@ -482,10 +401,6 @@ trait HTMLHyperlinkElementUtils
      * attribute.
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#dom-hyperlink-search
-     *
-     * @param string $value A URL query.
-     *
-     * @return void
      */
     protected function setSearch(string $value): void
     {
@@ -514,10 +429,7 @@ trait HTMLHyperlinkElementUtils
             );
         }
 
-        $this->attributeList->setAttrValue(
-            'href',
-            $this->url->serializeURL()
-        );
+        $this->attributeList->setAttrValue('href', $this->url->serializeURL());
     }
 
     /**
@@ -526,17 +438,12 @@ trait HTMLHyperlinkElementUtils
      * @internal
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#dom-hyperlink-hash
-     *
-     * @return string
      */
     protected function getHash(): string
     {
         $this->reinitialiseURL();
 
-        if ($this->url === null
-            || $this->url->fragment === null
-            || $this->url->fragment === ''
-        ) {
+        if ($this->url === null || $this->url->fragment === null || $this->url->fragment === '') {
             return '';
         }
 
@@ -548,10 +455,6 @@ trait HTMLHyperlinkElementUtils
      * attribute.
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#dom-hyperlink-hash
-     *
-     * @param string $value A URL fragment.
-     *
-     * @return void
      */
     protected function setHash(string $value): void
     {
@@ -580,10 +483,7 @@ trait HTMLHyperlinkElementUtils
             );
         }
 
-        $this->attributeList->setAttrValue(
-            'href',
-            $this->url->serializeURL()
-        );
+        $this->attributeList->setAttrValue('href', $this->url->serializeURL());
     }
 
     /**
@@ -592,15 +492,10 @@ trait HTMLHyperlinkElementUtils
      * @internal
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#reinitialise-url
-     *
-     * @return void
      */
     protected function reinitialiseUrl(): void
     {
-        if ($this->url
-            && $this->url->scheme === 'blob'
-            && $this->url->cannotBeABaseUrl
-        ) {
+        if ($this->url && $this->url->scheme === 'blob' && $this->url->cannotBeABaseUrl) {
             // Terminate these steps
             return;
         }
@@ -617,20 +512,16 @@ trait HTMLHyperlinkElementUtils
      * @internal
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#concept-hyperlink-url-set
-     *
-     * @return void
      */
     protected function setURL(): void
     {
-        $href = $this->attributeList->getAttrByNamespaceAndLocalName(
-            null,
-            'href'
-        );
+        $href = $this->attributeList->getAttrByNamespaceAndLocalName(null, 'href');
 
         // If this element's href content attribute is absent, set this
         // element's url to null.
         if (!$href) {
             $this->url = null;
+
             return;
         }
 

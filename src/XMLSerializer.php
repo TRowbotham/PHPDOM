@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Rowbot\DOM;
@@ -14,10 +15,6 @@ final class XMLSerializer
      * Serializes the node as an XML string.
      *
      * @see https://w3c.github.io/DOM-Parsing/#dfn-serializetostring
-     *
-     * @param \Rowbot\DOM\Node $root
-     *
-     * @return string
      */
     public function serializeToString(Node $root): string
     {

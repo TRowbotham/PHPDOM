@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Rowbot\DOM;
 
 use Rowbot\DOM\Element\Element;
@@ -23,11 +26,6 @@ use function preg_replace;
  */
 class HTMLDocument extends Document
 {
-    /**
-     * Constructor.
-     *
-     * @return void
-     */
     public function __construct()
     {
         parent::__construct();
@@ -35,9 +33,6 @@ class HTMLDocument extends Document
         $this->contentType = 'text/html';
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function __get(string $name)
     {
         switch ($name) {
@@ -55,10 +50,7 @@ class HTMLDocument extends Document
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function __set(string $name, $value)
+    public function __set(string $name, $value): void
     {
         switch ($name) {
             case 'body':
@@ -84,8 +76,6 @@ class HTMLDocument extends Document
      * @internal
      *
      * @see https://html.spec.whatwg.org/multipage/dom.html#dom-document-body
-     *
-     * @return \Rowbot\DOM\Element\HTML\HTMLElement|null
      */
     protected function getBodyElement(): ?HTMLElement
     {
@@ -95,10 +85,7 @@ class HTMLDocument extends Document
             // Get the first element in the document element that is a body or
             // frameset element.
             foreach ($docElement->childNodes as $child) {
-                $isValidBody = $child instanceof HTMLBodyElement
-                    || $child instanceof HTMLFrameSetElement;
-
-                if ($isValidBody) {
+                if ($child instanceof HTMLBodyElement || $child instanceof HTMLFrameSetElement) {
                     return $child;
                 }
             }
@@ -113,8 +100,6 @@ class HTMLDocument extends Document
      * @internal
      *
      * @see https://html.spec.whatwg.org/multipage/dom.html#document.title
-     *
-     * @return string
      */
     protected function getTitle(): string
     {
@@ -133,7 +118,7 @@ class HTMLDocument extends Document
 
         // Trim whitespace and replace consecutive whitespace with a single
         // space.
-        if (!empty($value)) {
+        if ($value !== '') {
             return preg_replace(
                 ['/^\s+/', '/\s+$/', '/\s+/'],
                 ['', '', ' '],
@@ -153,7 +138,7 @@ class HTMLDocument extends Document
      *
      * @see https://html.spec.whatwg.org/multipage/dom.html#document.title
      *
-     * @return \Rowbot\DOM\Element\Element|null
+     * @return \Rowbot\DOM\Element\HTML\HTMLTitleElement|\Rowbot\DOM\Element\SVG\SVGTitleElement|null
      */
     protected function getTitleElement(): ?Element
     {
@@ -172,7 +157,7 @@ class HTMLDocument extends Document
             $tw = new TreeWalker(
                 $this,
                 NodeFilter::SHOW_ELEMENT,
-                function ($node) {
+                static function (Node $node): int {
                     if ($node instanceof HTMLTitleElement) {
                         return NodeFilter::FILTER_ACCEPT;
                     }
@@ -193,12 +178,8 @@ class HTMLDocument extends Document
      * @internal
      *
      * @see https://html.spec.whatwg.org/multipage/dom.html#dom-document-body
-     *
-     * @param \Rowbot\DOM\Element\HTML\HTMLElement $newBody The new body element.
-     *
-     * @return void
      */
-    protected function setBodyElement(HTMLElement $newBody)
+    protected function setBodyElement(HTMLElement $newBody): void
     {
         // The document's body can only be a body or frameset element. If the
         // new value being passed is not one of these, then throw an exception
@@ -221,6 +202,7 @@ class HTMLDocument extends Document
         // new body element.
         if ($oldBody) {
             $oldBody->parentNode->replaceNode($newBody, $oldBody);
+
             return;
         }
 
@@ -244,10 +226,6 @@ class HTMLDocument extends Document
      * @internal
      *
      * @see https://html.spec.whatwg.org/multipage/dom.html#document.title
-     *
-     * @param string $newTitle The new title.
-     *
-     * @return void
      */
     protected function setTitle(string $newTitle): void
     {
@@ -260,6 +238,7 @@ class HTMLDocument extends Document
             foreach ($docElement->childNodes as $child) {
                 if ($child instanceof SVGTitleElement) {
                     $element = $child;
+
                     break;
                 }
             }
@@ -272,16 +251,11 @@ class HTMLDocument extends Document
                     'title',
                     Namespaces::SVG
                 );
-                $docElement->insertNode(
-                    $element,
-                    $docElement->childNodes->first()
-                );
+                $docElement->insertNode($element, $docElement->childNodes->first());
             }
 
             $element->textContent = $newTitle;
-        } elseif ($docElement
-            && $docElement->namespaceURI === Namespaces::HTML
-        ) {
+        } elseif ($docElement && $docElement->namespaceURI === Namespaces::HTML) {
             $element = $this->getTitleElement();
             $head = $this->getHeadElement();
 

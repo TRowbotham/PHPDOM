@@ -20,7 +20,7 @@ trait NonElementParentNodeTrait
         $tw = new TreeWalker(
             $this,
             NodeFilter::SHOW_ELEMENT,
-            function ($node) use ($elementId) {
+            static function (Node $node) use ($elementId): int {
                 if ($node->id === $elementId) {
                     return NodeFilter::FILTER_ACCEPT;
                 }

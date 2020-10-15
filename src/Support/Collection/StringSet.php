@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Rowbot\DOM\Support\Collection;
@@ -8,8 +9,6 @@ use Countable;
 use Iterator;
 use Rowbot\DOM\Utils;
 
-use const PREG_SPLIT_NO_EMPTY;
-
 use function array_pop;
 use function array_search;
 use function array_shift;
@@ -18,13 +17,18 @@ use function array_unshift;
 use function implode;
 use function preg_split;
 
+use const PREG_SPLIT_NO_EMPTY;
+
 /**
  * StringSet is a collection of strings that does not allow for duplicate items.
+ *
+ * @implements \ArrayAccess<int, string>
+ * @implements \Iterator<int, string>
  */
 final class StringSet implements ArrayAccess, Countable, Iterator
 {
     /**
-     * @var array<string>
+     * @var list<string>
      */
     private $list;
 
@@ -43,11 +47,6 @@ final class StringSet implements ArrayAccess, Countable, Iterator
      */
     private $cursor;
 
-    /**
-     * Constructor.
-     *
-     * @return void
-     */
     private function __construct()
     {
         $this->list = [];
@@ -58,19 +57,10 @@ final class StringSet implements ArrayAccess, Countable, Iterator
 
     /**
      * Creates a set from a string of tokens.
-     *
-     * @param string $input
-     *
-     * @return self
      */
     public static function createFromString(string $input): self
     {
-        $inputTokens = preg_split(
-            Utils::ASCII_WHITESPACE,
-            $input,
-            -1,
-            PREG_SPLIT_NO_EMPTY
-        );
+        $inputTokens = preg_split(Utils::ASCII_WHITESPACE, $input, -1, PREG_SPLIT_NO_EMPTY);
         $tokens = new self();
 
         foreach ($inputTokens as $token) {
@@ -82,10 +72,6 @@ final class StringSet implements ArrayAccess, Countable, Iterator
 
     /**
      * Appends an item to the set if it doesn't already exsist in the set.
-     *
-     * @param string $item
-     *
-     * @return void
      */
     public function append(string $item): void
     {
@@ -100,10 +86,6 @@ final class StringSet implements ArrayAccess, Countable, Iterator
 
     /**
      * Prepends an item to the set if it doesn't already exist in the set.
-     *
-     * @param string $item
-     *
-     * @return void
      */
     public function prepend(string $item): void
     {
@@ -119,11 +101,6 @@ final class StringSet implements ArrayAccess, Countable, Iterator
     /**
      * Replaces the first occurance of either item or the replacement item in
      * the set if they exist and removes all other occurances.
-     *
-     * @param string $item
-     * @param string $newItem
-     *
-     * @return void
      */
     public function replace(string $item, string $newItem): void
     {
@@ -156,6 +133,7 @@ final class StringSet implements ArrayAccess, Countable, Iterator
             // the list and came before item.
             if ($this->list[$this->length] === $item) {
                 array_pop($this->list);
+
                 return;
             }
 
@@ -180,6 +158,7 @@ final class StringSet implements ArrayAccess, Countable, Iterator
                 // first instance of the two in this case.
                 if ($itemIndex > $newItemIndex) {
                     array_splice($this->list, $itemIndex, 1);
+
                     return;
                 }
 
@@ -192,6 +171,7 @@ final class StringSet implements ArrayAccess, Countable, Iterator
             // We removed the existing instance of replacement item from the
             // list above and now we will replace item with replacement item.
             $this->list[$itemIndex] = $newItem;
+
             return;
         }
 
@@ -205,6 +185,7 @@ final class StringSet implements ArrayAccess, Countable, Iterator
         if ($this->list[$this->length - 1] === $item) {
             array_pop($this->list);
             $this->list[] = $newItem;
+
             return;
         }
 
@@ -214,11 +195,6 @@ final class StringSet implements ArrayAccess, Countable, Iterator
 
     /**
      * Inserts an item before another item in the set.
-     *
-     * @param string $item
-     * @param string $newItem
-     *
-     * @return void
      */
     public function insertBefore(string $item, string $newItem): void
     {
@@ -238,6 +214,7 @@ final class StringSet implements ArrayAccess, Countable, Iterator
         // value in as unshifting is faster.
         if ($this->list[0] === $item) {
             array_unshift($this->list, $newItem);
+
             return;
         }
 
@@ -247,10 +224,6 @@ final class StringSet implements ArrayAccess, Countable, Iterator
 
     /**
      * Removes the given item from the set.
-     *
-     * @param string $item
-     *
-     * @return void
      */
     public function remove(string $item): void
     {
@@ -265,6 +238,7 @@ final class StringSet implements ArrayAccess, Countable, Iterator
         // rather than searching the array and splicing the value out.
         if ($this->list[--$this->length] === $item) {
             array_pop($this->list);
+
             return;
         }
 
@@ -272,6 +246,7 @@ final class StringSet implements ArrayAccess, Countable, Iterator
         // is faster than searching the array and then splicing out the value.
         if ($this->list[0] === $item) {
             array_shift($this->list);
+
             return;
         }
 
@@ -281,8 +256,6 @@ final class StringSet implements ArrayAccess, Countable, Iterator
 
     /**
      * Empties the set.
-     *
-     * @return void
      */
     public function clear(): void
     {
@@ -293,8 +266,6 @@ final class StringSet implements ArrayAccess, Countable, Iterator
 
     /**
      * Determines if the set is empty.
-     *
-     * @return bool
      */
     public function isEmpty(): bool
     {
@@ -303,10 +274,6 @@ final class StringSet implements ArrayAccess, Countable, Iterator
 
     /**
      * Determines if the set contains the given item.
-     *
-     * @param string $item
-     *
-     * @return bool
      */
     public function contains(string $item): bool
     {
@@ -315,8 +282,6 @@ final class StringSet implements ArrayAccess, Countable, Iterator
 
     /**
      * Returns the number of items in the set.
-     *
-     * @return int
      */
     public function count(): int
     {
@@ -327,10 +292,8 @@ final class StringSet implements ArrayAccess, Countable, Iterator
      * Returns a string representation of the object.
      *
      * @see https://dom.spec.whatwg.org/#ref-for-concept-ordered-set-serializer
-     *
-     * @return string
      */
-    public function toString()
+    public function toString(): string
     {
         return implode("\x20", $this->list);
     }
@@ -338,7 +301,7 @@ final class StringSet implements ArrayAccess, Countable, Iterator
     /**
      * Returns the entire set as an array.
      *
-     * @return array<string>
+     * @return list<string>
      */
     public function all(): array
     {
@@ -347,8 +310,6 @@ final class StringSet implements ArrayAccess, Countable, Iterator
 
     /**
      * @param int $offset
-     *
-     * @return bool
      */
     public function offsetExists($offset): bool
     {
@@ -357,8 +318,6 @@ final class StringSet implements ArrayAccess, Countable, Iterator
 
     /**
      * @param int $offset
-     *
-     * @return string|null
      */
     public function offsetGet($offset): ?string
     {
@@ -368,10 +327,8 @@ final class StringSet implements ArrayAccess, Countable, Iterator
     /**
      * Noop.
      *
-     * @param int              $offset
+     * @param int    $offset
      * @param string $value
-     *
-     * @return void
      */
     public function offsetSet($offset, $value): void
     {
@@ -381,48 +338,31 @@ final class StringSet implements ArrayAccess, Countable, Iterator
      * Noop.
      *
      * @param int $offset
-     *
-     * @return void
      */
     public function offsetUnset($offset): void
     {
     }
 
-    /**
-     * @return string
-     */
     public function current(): string
     {
         return $this->list[$this->cursor];
     }
 
-    /**
-     * @return int
-     */
     public function key(): int
     {
         return $this->cursor;
     }
 
-    /**
-     * @return void
-     */
     public function next(): void
     {
         ++$this->cursor;
     }
 
-    /**
-     * @return void
-     */
     public function rewind(): void
     {
         $this->cursor = 0;
     }
 
-    /**
-     * @return bool
-     */
     public function valid(): bool
     {
         return isset($this->list[$this->cursor]);
