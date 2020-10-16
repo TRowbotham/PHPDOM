@@ -8,8 +8,25 @@ use Rowbot\DOM\Node;
 
 interface FragmentSerializerInterface
 {
-    public const VOID_TAGS = '/^(area|base|basefont|bgsound|br|col|embed|frame'
-        . '|hr|img|input|keygen|link|menuitem|meta|param|source|track|wbr)$/';
+    /**
+     * @see https://html.spec.whatwg.org/multipage/syntax.html#void-elements
+     */
+    public const VOID_ELEMENTS = [
+        'area'   => true,
+        'base'   => true,
+        'br'     => true,
+        'col'    => true,
+        'embed'  => true,
+        'hr'     => true,
+        'img'    => true,
+        'input'  => true,
+        'link'   => true,
+        'meta'   => true,
+        'param'  => true,
+        'source' => true,
+        'track'  => true,
+        'wbr'    => true,
+    ];
 
     public function serializeFragment(Node $node, bool $requireWellFormed): string;
 }

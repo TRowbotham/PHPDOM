@@ -15,7 +15,6 @@ use Rowbot\DOM\Parser\FragmentSerializerInterface;
 use Rowbot\DOM\ProcessingInstruction;
 use Rowbot\DOM\Text;
 
-use function preg_match;
 use function str_replace;
 
 class FragmentSerializer implements FragmentSerializerInterface
@@ -27,6 +26,10 @@ class FragmentSerializer implements FragmentSerializerInterface
      */
     public function serializeFragment(Node $node, bool $requireWellFormed = false): string
     {
+        if ($this->serializesAsVoid($node)) {
+            return '';
+        }
+
         $s = '';
 
         // If the node is a template element, then let the node instead be the
@@ -61,7 +64,7 @@ class FragmentSerializer implements FragmentSerializerInterface
 
                 // If the current node's local name is a known void element,
                 // then move on to current node's next sibling, if any.
-                if (preg_match(self::VOID_TAGS, $localName)) {
+                if ($this->serializesAsVoid($currentNode)) {
                     continue;
                 }
 
@@ -163,5 +166,24 @@ class FragmentSerializer implements FragmentSerializerInterface
         }
 
         return $attr->getQualifiedName();
+    }
+
+    /**
+     * @see https://html.spec.whatwg.org/multipage/parsing.html#serializes-as-void
+     */
+    private function serializesAsVoid(Node $node): bool
+    {
+        if (!$node instanceof Element) {
+            return false;
+        }
+
+        $voidElements = self::VOID_ELEMENTS + [
+            'basefont' => true,
+            'bgsound'  => true,
+            'frame'    => true,
+            'keygen'   => true,
+        ];
+
+        return $voidElements[$node->localName] ?? false;
     }
 }
