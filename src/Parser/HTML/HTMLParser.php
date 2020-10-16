@@ -273,7 +273,7 @@ class HTMLParser extends Parser
      */
     public function preprocessInputStream(string $input): void
     {
-        $input = mb_convert_encoding($input, 'UTF-8');
+        $input = mb_convert_encoding($input, 'utf-8', 'utf-8');
 
         if (
             preg_match(
@@ -304,7 +304,7 @@ class HTMLParser extends Parser
         // Any character that is a not a Unicode character, i.e. any isolated
         // surrogate, is a parse error. (These can only find their way into the
         // input stream via script APIs such as document.write().)
-        if (!mb_check_encoding($input, 'UTF-8')) {
+        if (!mb_check_encoding($input, 'utf-8')) {
             // Parse error
         }
 

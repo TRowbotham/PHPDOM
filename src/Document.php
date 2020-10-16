@@ -423,7 +423,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
             throw new InvalidCharacterError();
         }
 
-        if (mb_strpos($data, '?>') !== false) {
+        if (mb_strpos($data, '?>', 0, 'utf-8') !== false) {
             throw new InvalidCharacterError();
         }
 
@@ -466,7 +466,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
 
         // If data contains the string "]]>", then throw an
         // InvalidCharacterError.
-        if (mb_strpos($data, ']]>') !== false) {
+        if (mb_strpos($data, ']]>', 0, 'utf-8') !== false) {
             throw new InvalidCharacterError();
         }
 

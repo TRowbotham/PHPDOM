@@ -145,7 +145,7 @@ class FragmentSerializer implements FragmentSerializerInterface
         if (
             $requireWellFormed
             && (
-                mb_strpos($localName, ':') !== false
+                mb_strpos($localName, ':', 0, 'utf-8') !== false
                 || !preg_match(Namespaces::NAME_PRODUCTION, $localName)
             )
         ) {
@@ -456,7 +456,7 @@ class FragmentSerializer implements FragmentSerializerInterface
             if (
                 $requireWellFormed
                 && (
-                    mb_strpos($localName, ':') !== false
+                    mb_strpos($localName, ':', 0, 'utf-8') !== false
                     || $localName !== Namespaces::XMLNS
                     || ($localName === 'xmlns' && $attributeNamespace === null)
                 )
@@ -537,9 +537,9 @@ class FragmentSerializer implements FragmentSerializerInterface
             $requireWellFormed
             && (
                 preg_match('/^((?!' . Namespaces::CHAR . ').)*/u', $data)
-                || mb_strpos($data, '--') !== false
+                || mb_strpos($data, '--', 0, 'utf-8') !== false
             )
-            || mb_substr($data, -1, 1) === '-'
+            || mb_substr($data, -1, 1, 'utf-8') === '-'
         ) {
             throw new ParserException();
         }
@@ -627,7 +627,10 @@ class FragmentSerializer implements FragmentSerializerInterface
 
             if (
                 preg_match('/^((?!' . Namespaces::CHAR . ').)*/u', $systemId)
-                || (mb_strpos($systemId, '"') !== false && mb_strpos($systemId, '\'') !== false)
+                || (
+                    mb_strpos($systemId, '"', 0, 'utf-8') !== false
+                    && mb_strpos($systemId, '\'', 0, 'utf-8') !== false
+                )
             ) {
                 throw new ParserException();
             }
@@ -678,12 +681,13 @@ class FragmentSerializer implements FragmentSerializerInterface
         $data = $node->data;
 
         if ($requireWellFormed) {
-            if (mb_strpos($target, ':') !== false || strcasecmp($target, 'xml') === 0) {
+            if (mb_strpos($target, ':', 0, 'utf-8') !== false || strcasecmp($target, 'xml') === 0) {
                 throw new ParserException();
             }
 
             if (
-                preg_match('/^((?!' . Namespaces::CHAR . ').)*/u', $data) || mb_strpos($data, '?>')
+                preg_match('/^((?!' . Namespaces::CHAR . ').)*/u', $data)
+                || mb_strpos($data, '?>', 0, 'utf-8')
             ) {
                 throw new ParserException();
             }

@@ -5267,7 +5267,7 @@ class TreeBuilder
                     $identifier,
                     Utils::toASCIILowercase($identifierFragment),
                     0,
-                    'UTF-8'
+                    'utf-8'
                 ) === 0
             ) {
                 return true;

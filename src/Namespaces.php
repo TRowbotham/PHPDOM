@@ -89,7 +89,7 @@ final class Namespaces
         $prefix = null;
         $localName = $qualifiedName;
 
-        if (mb_strpos($qualifiedName, ':') !== false) {
+        if (mb_strpos($qualifiedName, ':', 0, 'utf-8') !== false) {
             [$prefix, $localName] = explode(':', $qualifiedName, 2);
         }
 

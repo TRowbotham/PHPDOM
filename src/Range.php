@@ -925,15 +925,13 @@ final class Range extends AbstractRange implements Stringable
     public function toString(): string
     {
         $s = '';
-        $owner = $this->startNode->getNodeDocument();
-        $encoding = $owner->characterSet;
 
         if ($this->startNode === $this->endNode && $this->startNode instanceof Text) {
             return mb_substr(
                 $this->startNode->data,
                 $this->startOffset,
                 $this->endOffset - $this->startOffset,
-                $encoding
+                'utf-8'
             );
         }
 
@@ -942,7 +940,7 @@ final class Range extends AbstractRange implements Stringable
                 $this->startNode->data,
                 $this->startOffset,
                 null,
-                $encoding
+                'utf-8'
             );
         }
 
@@ -968,7 +966,7 @@ final class Range extends AbstractRange implements Stringable
                 $this->endNode->data,
                 0,
                 $this->endOffset,
-                $encoding
+                'utf-8'
             );
         }
 

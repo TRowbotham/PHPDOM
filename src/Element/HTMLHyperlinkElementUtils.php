@@ -415,8 +415,8 @@ trait HTMLHyperlinkElementUtils
         } else {
             $input = $value;
 
-            if (mb_substr($value, 0, 1) === '?') {
-                $input = mb_substr($value, 1);
+            if (mb_substr($value, 0, 1, 'utf-8') === '?') {
+                $input = mb_substr($value, 1, null, 'utf-8');
             }
 
             $this->url->query = '';
@@ -469,8 +469,8 @@ trait HTMLHyperlinkElementUtils
         } else {
             $input = $value;
 
-            if (mb_substr($value, 0, 1) === '#') {
-                $input = mb_substr($value, 1);
+            if (mb_substr($value, 0, 1, 'utf-8') === '#') {
+                $input = mb_substr($value, 1, null, 'utf-8');
             }
 
             $this->url->fragment = '';

@@ -32,14 +32,14 @@ final class Utils
      */
     public static function toASCIILowercase(string $value): string
     {
-        $len = mb_strlen($value);
+        $len = mb_strlen($value, 'utf-8');
         $output = '';
 
         for ($i = 0; $i < $len; $i++) {
-            $codePoint = mb_substr($value, $i, 1);
+            $codePoint = mb_substr($value, $i, 1, 'utf-8');
 
             if ($codePoint >= "\x41" && $codePoint <= "\x5A") {
-                $output .= mb_strtolower($codePoint);
+                $output .= mb_strtolower($codePoint, 'utf-8');
             } else {
                 $output .= $codePoint;
             }
@@ -56,14 +56,14 @@ final class Utils
      */
     public static function toASCIIUppercase(string $value): string
     {
-        $len = mb_strlen($value);
+        $len = mb_strlen($value, 'utf-8');
         $output = '';
 
         for ($i = 0; $i < $len; $i++) {
-            $codePoint = mb_substr($value, $i, 1);
+            $codePoint = mb_substr($value, $i, 1, 'utf-8');
 
             if ($codePoint >= "\x61" && $codePoint <= "\x7A") {
-                $output .= mb_strtoupper($codePoint);
+                $output .= mb_strtoupper($codePoint, 'utf-8');
             } else {
                 $output .= $codePoint;
             }

@@ -45,7 +45,7 @@ abstract class CharacterData extends Node implements ChildNode
         parent::__construct($document);
 
         $this->data = $data;
-        $this->length = mb_strlen($data, $this->nodeDocument->characterSet);
+        $this->length = mb_strlen($data, 'utf-8');
     }
 
     public function __get(string $name)
@@ -160,11 +160,10 @@ abstract class CharacterData extends Node implements ChildNode
         // TODO: Queue a mutation record of "characterData" for node with
         // oldValue node’s data.
 
-        $encoding = $this->nodeDocument->characterSet;
-        $this->data = mb_substr($this->data, 0, $offset, $encoding)
+        $this->data = mb_substr($this->data, 0, $offset, 'utf-8')
             . $data
-            . mb_substr($this->data, $offset + $count, $length - $offset, $encoding);
-        $newDataLen = mb_strlen($data, $encoding);
+            . mb_substr($this->data, $offset + $count, $length - $offset, 'utf-8');
+        $newDataLen = mb_strlen($data, 'utf-8');
         $this->length += $newDataLen - $count;
 
         $ranges = Range::getRangeCollection();

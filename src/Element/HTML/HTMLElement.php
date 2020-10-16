@@ -196,7 +196,7 @@ class HTMLElement extends Element
                 break;
 
             case 'contentEditable':
-                $value = mb_strtolower($value);
+                $value = mb_strtolower($value, 'utf-8');
 
                 if ($value === 'inherit') {
                     $this->attributeList->removeAttrByNamespaceAndLocalName(null, $name);
