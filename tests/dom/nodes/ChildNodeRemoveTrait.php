@@ -2,14 +2,23 @@
 
 namespace Rowbot\DOM\Tests\dom\nodes;
 
+use Rowbot\DOM\Document;
 use Rowbot\DOM\Node;
 
 use function iterator_to_array;
 use function method_exists;
 
-class ChildNodeRemoveTrait
+/**
+ * @see https://github.com/web-platform-tests/wpt/blob/master/dom/nodes/ChildNode-remove.js
+ */
+trait ChildNodeRemoveTrait
 {
-    public function testRemove(Node $node, Node $parent, $type): void
+    abstract public function childNodeRemoveNodesProvider(): iterable;
+
+    /**
+     * @dataProvider childNodeRemoveNodesProvider
+     */
+    public function testRemove(Document $document, Node $node, Node $parent): void
     {
         $this->assertTrue(method_exists($node, 'remove'));
         $this->assertNull($node->parentNode);
