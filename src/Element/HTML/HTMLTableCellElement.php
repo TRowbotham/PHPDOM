@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Element\HTML;
 
-use Rowbot\DOM\Document;
-use Rowbot\DOM\DOMTokenList;
-
 /**
  * Represents the HTML <td> and <th> elements respectively.
  *
@@ -27,18 +24,6 @@ use Rowbot\DOM\DOMTokenList;
  */
 class HTMLTableCellElement extends HTMLElement
 {
-    /**
-     * @var \Rowbot\DOM\DOMTokenList
-     */
-    private $headers;
-
-    protected function __construct(Document $document)
-    {
-        parent::__construct($document);
-
-        $this->headers = new DOMTokenList($this, 'headers');
-    }
-
     public function __get(string $name)
     {
         switch ($name) {
@@ -67,7 +52,7 @@ class HTMLTableCellElement extends HTMLElement
                 return $this->reflectClampedUnsignedLongAttributeValue('colspan', 1, 1000, 1);
 
             case 'headers':
-                return $this->headers->value;
+                return $this->reflectStringAttributeValue('headers');
 
             case 'rowSpan':
                 return $this->reflectClampedUnsignedLongAttributeValue('rowspan', 0, 65534, 1);
