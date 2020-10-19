@@ -8,6 +8,7 @@ use Closure;
 use Generator;
 use Rowbot\DOM\Exception\HierarchyRequestError;
 use Rowbot\DOM\Exception\IndexSizeError;
+use Rowbot\DOM\Exception\TypeError;
 use Rowbot\DOM\HTMLCollection;
 
 use function count;
@@ -76,9 +77,19 @@ class HTMLTableElement extends HTMLElement
     {
         switch ($name) {
             case 'caption':
-                $caption = $this->shallowGetElementsByTagName('caption');
+                // The caption IDL attribute must return, on getting, the first caption element
+                // child of the table element, if any, or null otherwise.
+                $node = $this->childNodes->first();
 
-                return count($caption) ? $caption[0] : null;
+                while ($node) {
+                    if ($node instanceof HTMLTableCaptionElement) {
+                        return $node;
+                    }
+
+                    $node = $node->nextSibling;
+                }
+
+                return null;
 
             case 'rows':
                 if ($this->rowsCollection === null) {
@@ -129,14 +140,32 @@ class HTMLTableElement extends HTMLElement
     {
         switch ($name) {
             case 'caption':
-                $caption = $this->shallowGetElementsByTagName('caption');
-
-                if (isset($caption[0])) {
-                    $caption->remove();
+                // On setting, the first caption element child of the table element, if any, must be
+                // removed, and the new value, if not null, must be inserted as the first node of
+                // the table element.
+                if ($value !== null && !$value instanceof HTMLTableCaptionElement) {
+                    throw new TypeError();
                 }
 
-                if ($value !== null && $value instanceof HTMLTableCaptionElement) {
-                    $this->insertBefore($value, $this->childNodes->first());
+                $node = $this->childNodes->first();
+                $caption = null;
+
+                while ($node) {
+                    if ($node instanceof HTMLTableCaptionElement) {
+                        $caption = $node;
+
+                        break;
+                    }
+
+                    $node = $node->nextSibling;
+                }
+
+                if ($caption) {
+                    $caption->removeNode();
+                }
+
+                if ($value) {
+                    $this->preinsertNode($value, $this->childNodes->first());
                 }
 
                 break;
