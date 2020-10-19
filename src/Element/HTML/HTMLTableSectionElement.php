@@ -10,8 +10,6 @@ use Rowbot\DOM\Exception\IndexSizeError;
 use Rowbot\DOM\HTMLCollection;
 use Rowbot\DOM\Namespaces;
 
-use function count;
-
 /**
  * Represents the HTML table sectioning elements <thead>, <tfoot>, and <tbody>.
  *
@@ -62,41 +60,108 @@ class HTMLTableSectionElement extends HTMLElement
      * Creates a new tr element and inserts it into the table section at
      * the specified location. The newely created tr element is then returned.
      *
+     * @see https://html.spec.whatwg.org/multipage/tables.html#dom-tbody-insertrow
+     *
      * @throws \Rowbot\DOM\Exception\IndexSizeError
      */
     public function insertRow(int $index = -1): HTMLTableRowElement
     {
-        $rows = $this->shallowGetElementsByTagName('tr');
-        $numRows = count($rows);
-
-        if ($index < -1 || $index > $numRows) {
+        // 1. If index is less than −1 or greater than the number of elements in the rows
+        // collection, throw an "IndexSizeError" DOMException.
+        if ($index < -1) {
             throw new IndexSizeError();
         }
 
-        $tr = ElementFactory::create($this->nodeDocument, 'tr', Namespaces::HTML);
+        $indexedRow = null;
+        $node = $this->childNodes->first();
+        $numRows = 0;
 
-        if ($index === -1 || $index === $numRows) {
-            $this->appendChild($tr);
-        } else {
-            $rows[$index]->before($tr);
+        while ($node) {
+            if ($node instanceof HTMLTableRowElement) {
+                if ($numRows === $index) {
+                    $indexedRow = $node;
+                }
+
+                ++$numRows;
+            }
+
+            $node = $node->nextSibling;
         }
 
-        return $tr;
+        if ($index > $numRows) {
+            throw new IndexSizeError();
+        }
+
+        // 2. Let table row be the result of creating an element given this element's node document,
+        // tr, and the HTML namespace.
+        $tableRow = ElementFactory::create($this->nodeDocument, 'tr', Namespaces::HTML);
+
+        // 3. If index is −1 or equal to the number of items in the rows collection, then append
+        // table row to this element.
+        if ($index === -1 || $index === $numRows) {
+            // 5. Return table row.
+            return $this->preinsertNode($tableRow);
+        }
+
+        // 4. Otherwise, insert table row as a child of this element, immediately before the indexth
+        // tr element in the rows collection.
+        $this->insertNode($tableRow, $indexedRow);
+
+        // 5. Return table row.
+        return $tableRow;
     }
 
     /**
      * Deletes the table row at the specified location.
      *
-     * @throws \Rowbot\DOM\Exception\IndexSizeError If $index < 0 or $index >= number of table rows.
+     * @see https://html.spec.whatwg.org/multipage/tables.html#dom-tbody-deleterow
+     *
+     * @throws \Rowbot\DOM\Exception\IndexSizeError If $index < -1 or $index >= number of table rows.
      */
     public function deleteRow(int $index): void
     {
-        $rows = $this->shallowGetElementsByTagName('tr');
-
-        if ($index < 0 || $index >= count($rows)) {
+        // 1. If index is less than −1 or greater than or equal to the number of elements in the
+        // rows collection, then throw an "IndexSizeError" DOMException.
+        if ($index < -1) {
             throw new IndexSizeError();
         }
 
-        $rows[$index]->remove();
+        $node = $this->childNodes->first();
+        $numRows = 0;
+        $indexedRow = null;
+        $lastRow = null;
+
+        while ($node) {
+            if ($node instanceof HTMLTableRowElement) {
+                if ($numRows === $index) {
+                    $indexedRow = $node;
+                }
+
+                ++$numRows;
+                $lastRow = $node;
+            }
+
+            $node = $node->nextSibling;
+        }
+
+        if ($index >= $numRows) {
+            throw new IndexSizeError();
+        }
+
+        // 2. If index is −1, then remove the last element in the rows collection from this element,
+        // or do nothing if the rows collection is empty.
+        if ($lastRow === null) {
+            return;
+        }
+
+        if ($index === -1) {
+            $lastRow->removeNode();
+
+            return;
+        }
+
+        // 3. Otherwise, remove the indexth element in the rows collection from this element.
+        assert($indexedRow !== null);
+        $indexedRow->removeNode();
     }
 }
