@@ -95,34 +95,32 @@ class HTMLTableRowElement extends HTMLElement
                 return $count;
 
             case 'sectionRowIndex':
-                $parent = $this->parentNode;
-                $count = 0;
-
-                if (!($parent instanceof HTMLTableSectionElement)) {
+                // The sectionRowIndex attribute must, if this element has a parent table, tbody,
+                // thead, or tfoot element, return the index of the tr element in the parent
+                // element's rows collection (for tables, that's HTMLTableElement's rows collection;
+                // for table sections, that's HTMLTableSectionElement's rows collection). If there
+                // is no such parent element, then the attribute must return −1.
+                if (
+                    !$this->parentNode instanceof HTMLTableElement
+                    && !$this->parentNode instanceof HTMLTableSectionElement
+                ) {
                     return -1;
                 }
 
-                $tw = new TreeWalker(
-                    $parent,
-                    NodeFilter::SHOW_ELEMENT,
-                    static function (Element $node): int {
-                        if ($node instanceof HTMLTableRowElement) {
-                            return NodeFilter::FILTER_ACCEPT;
-                        }
+                $index = 0;
+                $rows = $this->parentNode->rows->getIterator();
+                $rows->rewind();
 
-                        return NodeFilter::FILTER_SKIP;
-                    }
-                );
-
-                while ($row = $tw->nextNode()) {
-                    if ($row === $this) {
+                while ($rows->valid()) {
+                    if ($rows->current() === $this) {
                         break;
                     }
 
-                    $count++;
+                    ++$index;
+                    $rows->next();
                 }
 
-                return $count;
+                return $index;
 
             default:
                 return parent::__get($name);
