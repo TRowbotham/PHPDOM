@@ -43,19 +43,25 @@ class HTMLTableCellElement extends HTMLElement
     {
         switch ($name) {
             case 'cellIndex':
-                if ($this->parentNode instanceof HTMLTableRowElement) {
-                    $node = $this;
-                    $count = 0;
-
-                    while ($node) {
-                        ++$count;
-                        $node = $node->previousSibling;
-                    }
-
-                    return $count;
+                // The cellIndex IDL attribute must, if the element has a parent tr element, return
+                // the index of the cell's element in the parent element's cells collection. If
+                // there is no such parent element, then the attribute must return −1.
+                if (!$this->parentNode instanceof HTMLTableRowElement) {
+                    return -1;
                 }
 
-                return -1;
+                $node = $this->previousSibling;
+                $index = 0;
+
+                while ($node) {
+                    if ($node instanceof self) {
+                        ++$index;
+                    }
+
+                    $node = $node->previousSibling;
+                }
+
+                return $index;
 
             case 'colSpan':
                 return $this->reflectClampedUnsignedLongAttributeValue('colspan', 1, 1000, 1);
