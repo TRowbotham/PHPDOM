@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Element\HTML;
 
+use Closure;
+use Generator;
 use Rowbot\DOM\Exception\HierarchyRequestError;
 use Rowbot\DOM\Exception\IndexSizeError;
+use Rowbot\DOM\HTMLCollection;
 
-use function array_merge;
 use function count;
 
 /**
@@ -51,15 +53,25 @@ use function count;
  *                                                                          not null or HTMLTableSectionElement with a
  *                                                                          tagName of TFOOT.
  *
- * @property-read list<\Rowbot\DOM\Element\HTML\HTMLTableRowElement>     $rows    Returns a list of all the <tr>
+ * @property-read \Rowbot\DOM\HTMLCollection<\Rowbot\DOM\Element\HTML\HTMLTableRowElement>     $rows    Returns a list of all the <tr>
  *                                                                                elements, in order, that are in the
  *                                                                                table.
- * @property-read list<\Rowbot\DOM\Element\HTML\HTMLTableSectionElement> $tBodies Returns a list of all the <tbody>
+ * @property-read \Rowbot\DOM\HTMLCollection<\Rowbot\DOM\Element\HTML\HTMLTableSectionElement> $tBodies Returns a list of all the <tbody>
  *                                                                                elements, in order, that are in the
  *                                                                                table.
  */
 class HTMLTableElement extends HTMLElement
 {
+    /**
+     * @var \Rowbot\DOM\HTMLCollection<\Rowbot\DOM\Element\HTML\HTMLTableRowElement>|null
+     */
+    private $rowsCollection;
+
+    /**
+     * @var \Rowbot\DOM\HTMLCollection<\Rowbot\DOM\Element\HTML\HTMLTableSectionElement>|null
+     */
+    private $tBodyCollection;
+
     public function __get(string $name)
     {
         switch ($name) {
@@ -69,42 +81,34 @@ class HTMLTableElement extends HTMLElement
                 return count($caption) ? $caption[0] : null;
 
             case 'rows':
-                $thead = $this->shallowGetElementsByTagName('thead');
-                $tfoot = $this->shallowGetElementsByTagName('tfoot');
-                $collection = [];
-
-                if (count($thead)) {
-                    $collection = array_merge(
-                        $collection,
-                        $thead[0]->shallowGetElementsByTagName('tr')
-                    );
+                if ($this->rowsCollection === null) {
+                    $this->rowsCollection = new HTMLCollection($this, $this->getRowsFilter());
                 }
 
-                foreach ($this->childNodes as $node) {
-                    if ($node instanceof HTMLTableRowElement) {
-                        $collection[] = $node;
-                    } elseif (
-                        $node instanceof HTMLTableSectionElement
-                        && $node->tagName === 'TBODY'
-                    ) {
-                        $collection = array_merge(
-                            $collection,
-                            $node->shallowGetElementsByTagName('tr')
-                        );
-                    }
-                }
-
-                if (count($tfoot)) {
-                    array_merge(
-                        $collection,
-                        $tfoot[0]->shallowGetElementsByTagName('tr')
-                    );
-                }
-
-                return $collection;
+                return $this->rowsCollection;
 
             case 'tBodies':
-                return $this->shallowGetElementsByTagName('tbody');
+                if ($this->tBodyCollection === null) {
+                    $this->tBodyCollection = new HTMLCollection(
+                        $this,
+                        static function (self $root) {
+                            $node = $root->firstChild;
+
+                            while ($node !== null) {
+                                if (
+                                    $node instanceof HTMLTableSectionElement
+                                    && $node->localName === 'tbody'
+                                ) {
+                                    yield $node;
+                                }
+
+                                $node = $node->nextSibling;
+                            }
+                        }
+                    );
+                }
+
+                return $this->tBodyCollection;
 
             case 'tFoot':
                 $tfoot = $this->shallowGetElementsByTagName('tfoot');
@@ -391,5 +395,72 @@ class HTMLTableElement extends HTMLElement
         if (isset($node[0])) {
             $node->remove();
         }
+    }
+
+    private function getRowsFilter(): Closure
+    {
+        return static function (self $root): Generator {
+            $node = $root->firstChild;
+            $bodyOrRow = [];
+            $footers = [];
+
+            while ($node) {
+                if ($node instanceof HTMLTableSectionElement) {
+                    $name = $node->localName;
+
+                    if ($name === 'tbody') {
+                        // Save the section for later, in order.
+                        $bodyOrRow[] = $node;
+                    } elseif ($name === 'tfoot') {
+                        $footers[] = $node;
+                    } elseif ($name === 'thead') {
+                        // We're in a thead, so we can emit the rows as we find them.
+                        $child = $node->firstChild;
+
+                        while ($child) {
+                            if ($child instanceof HTMLTableRowElement) {
+                                yield $child;
+                            }
+
+                            $child = $child->nextSibling;
+                        }
+                    }
+                } elseif ($node instanceof HTMLTableRowElement) {
+                    $bodyOrRow[] = $node;
+                }
+
+                $node = $node->nextSibling;
+            }
+
+            foreach ($bodyOrRow as $potenialRow) {
+                if ($potenialRow instanceof HTMLTableRowElement) {
+                    yield $potenialRow;
+
+                    continue;
+                }
+
+                $node = $potenialRow->firstChild;
+
+                while ($node) {
+                    if ($node instanceof HTMLTableRowElement) {
+                        yield $node;
+                    }
+
+                    $node = $node->nextSibling;
+                }
+            }
+
+            foreach ($footers as $footer) {
+                $node = $footer->firstChild;
+
+                while ($node) {
+                    if ($node instanceof HTMLTableRowElement) {
+                        yield $node;
+                    }
+
+                    $node = $node->nextSibling;
+                }
+            }
+        };
     }
 }

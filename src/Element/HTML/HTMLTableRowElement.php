@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Element\HTML;
 
+use Generator;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Element\ElementFactory;
 use Rowbot\DOM\Exception\IndexSizeError;
+use Rowbot\DOM\HTMLCollection;
 use Rowbot\DOM\Namespaces;
 use Rowbot\DOM\NodeFilter;
 use Rowbot\DOM\TreeWalker;
@@ -18,25 +20,41 @@ use function count;
  *
  * @see https://html.spec.whatwg.org/multipage/tables.html#the-tr-element
  *
- * @property-read list<\Rowbot\DOM\Element\HTML\HTMLTableCellElement> $cells
- * @property-read int                                                 $rowIndex
- * @property-read int                                                 $sectionRowIndex
+ * @property-read \Rowbot\DOM\HTMLCollection<\Rowbot\DOM\Element\HTML\HTMLTableCellElement> $cells
+ * @property-read int                                                                       $rowIndex
+ * @property-read int                                                                       $sectionRowIndex
  */
 class HTMLTableRowElement extends HTMLElement
 {
+    /**
+     * @var \Rowbot\DOM\HTMLCollection<\Rowbot\DOM\Element\HTML\HTMLTableCellElement>|null
+     */
+    private $cellsCollection;
+
     public function __get(string $name)
     {
         switch ($name) {
             case 'cells':
-                $cells = [];
-
-                foreach ($this->childNodes as $cell) {
-                    if ($cell instanceof HTMLTableCellElement) {
-                        $cells[] = $cell;
-                    }
+                if ($this->cellsCollection !== null) {
+                    return $this->cellsCollection;
                 }
 
-                return $cells;
+                $this->cellsCollection = new HTMLCollection(
+                    $this,
+                    static function (self $root): Generator {
+                        $node = $root->firstChild;
+
+                        while ($node) {
+                            if ($node instanceof HTMLTableCellElement) {
+                                yield $node;
+                            }
+
+                            $node = $node->nextSibling;
+                        }
+                    }
+                );
+
+                return $this->cellsCollection;
 
             case 'rowIndex':
                 $parentTable = $this->parentNode;

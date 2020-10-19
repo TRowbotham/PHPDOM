@@ -4,7 +4,12 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM;
 
+use Generator;
+use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Support\Collection\StringSet;
+
+use function array_map;
+use function in_array;
 
 trait GetElementsBy
 {
@@ -15,39 +20,70 @@ trait GetElementsBy
      *
      * @param string $classNames A space delimited string containing the classNames to search for.
      *
-     * @return list<\Rowbot\DOM\Element\Element>
+     * @return \Rowbot\DOM\HTMLCollection<\Rowbot\DOM\Element\Element>
      */
-    public function getElementsByClassName(string $classNames): array
+    public function getElementsByClassName(string $classNames): HTMLCollection
     {
+        // 1. Let classes be the result of running the ordered set parser on classNames.
         $classes = StringSet::createFromString($classNames);
-        $collection = [];
 
-        if ($classes->isEmpty()) {
-            return $collection;
-        }
+        // NOTE: When invoked with the same argument, the same HTMLCollection object may be returned
+        // as returned by an earlier call.
+        return new HTMLCollection($this, static function (self $root) use ($classes): Generator {
+            // 2. If classes is the empty set, return an empty HTMLCollection.
+            if ($classes->isEmpty()) {
+                return;
+            }
 
-        $nodeFilter = static function (Node $node) use ($classes): int {
-            $hasClasses = false;
+            $isQuirksMode = $root->nodeDocument->getMode() === DocumentMode::QUIRKS;
+            $mapToASCIILowercase = static function (string $className): string {
+                return Utils::toASCIILowercase($className);
+            };
 
-            foreach ($classes as $className) {
-                if (!($hasClasses = $node->classList->contains($className))) {
-                    break;
+            if ($isQuirksMode) {
+                $classes = array_map($mapToASCIILowercase, $classes->all());
+            }
+
+            // 3. Return a HTMLCollection rooted at root, whose filter matches descendant elements
+            // that have all their classes in classes.
+            $walker = new TreeWalker(
+                $root,
+                NodeFilter::SHOW_ELEMENT,
+                static function (Element $node) use (
+                    $isQuirksMode,
+                    $mapToASCIILowercase,
+                    $classes
+                ): int {
+                    // NOTE: The comparisons for the classes must be done in an ASCII
+                    // case-insensitive manner if root’s node document’s mode is "quirks", and in an
+                    // identical to manner otherwise.
+                    if ($isQuirksMode) {
+                        $nodeClasses = array_map(
+                            $mapToASCIILowercase,
+                            StringSet::createFromString($node->className)->all()
+                        );
+
+                        foreach ($classes as $className) {
+                            if (!in_array($className, $nodeClasses, true)) {
+                                return NodeFilter::FILTER_SKIP;
+                            }
+                        }
+                    } else {
+                        foreach ($classes as $className) {
+                            if (!$node->classList->contains($className)) {
+                                return NodeFilter::FILTER_SKIP;
+                            }
+                        }
+                    }
+
+                    return NodeFilter::FILTER_ACCEPT;
                 }
+            );
+
+            while (($element = $walker->nextNode()) !== null) {
+                yield $element;
             }
-
-            if ($hasClasses) {
-                return NodeFilter::FILTER_ACCEPT;
-            }
-
-            return NodeFilter::FILTER_SKIP;
-        };
-        $tw = new TreeWalker($this, NodeFilter::SHOW_ELEMENT, $nodeFilter);
-
-        while ($node = $tw->nextNode()) {
-            $collection[] = $node;
-        }
-
-        return $collection;
+        });
     }
 
     /**
@@ -58,32 +94,38 @@ trait GetElementsBy
      * @param string $qualifiedName The element's local name to search for. If given '*', all element decendants will be
      *                              returned.
      *
-     * @return list<\Rowbot\DOM\Element\Element> A list of Elements with the specified local name.
+     * @return \Rowbot\DOM\HTMLCollection<\Rowbot\DOM\Element\Element> A list of Elements with the specified local name.
      */
-    public function getElementsByTagName(string $qualifiedName): array
+    public function getElementsByTagName(string $qualifiedName): HTMLCollection
     {
-        $collection = [];
+        // 3. Otherwise, return a HTMLCollection rooted at root, whose filter matches descendant
+        // elements whose qualified name is qualifiedName.
+        $filter = static function (Element $element) use ($qualifiedName): int {
+            return $qualifiedName === $element->getQualifiedName()
+                ? NodeFilter::FILTER_ACCEPT
+                : NodeFilter::FILTER_SKIP;
+        };
 
+        // 1. If qualifiedName is "*" (U+002A), return a HTMLCollection rooted at root, whose filter
+        // matches only descendant elements.
         if ($qualifiedName === '*') {
-            $nodeFilter = null;
-        } elseif ($this instanceof Document) {
-            $nodeFilter = static function (Node $node) use ($qualifiedName): int {
-                $shouldAccept = ($node->namespaceURI === Namespaces::HTML
-                    && $node->localName === Utils::toASCIILowercase(
-                        $qualifiedName
-                    ))
-                    || ($node->namespaceURI !== Namespaces::HTML
-                    && $node->localName === $qualifiedName);
+            $filter = null;
 
-                if ($shouldAccept) {
-                    return NodeFilter::FILTER_ACCEPT;
-                }
+        //Otherwise, if root’s node document is an HTML document, return a HTMLCollection rooted
+        // at root, whose filter matches the following descendant elements:
+        } elseif ($this->nodeDocument instanceof HTMLDocument) {
+            $filter = static function (Element $element) use ($qualifiedName): int {
+                $isHTMLNamespace = $element->namespaceURI === Namespaces::HTML;
+                $qName = $element->getQualifiedName();
 
-                return NodeFilter::FILTER_SKIP;
-            };
-        } else {
-            $nodeFilter = static function (Node $node) use ($qualifiedName): int {
-                if ($node->localName === $qualifiedName) {
+                // - Whose namespace is the HTML namespace and whose qualified name is
+                //   qualifiedName, in ASCII lowercase.
+                // - Whose namespace is not the HTML namespace and whose qualified name is
+                //   qualifiedName.
+                if (
+                    ($isHTMLNamespace && $qName === Utils::toASCIILowercase($qualifiedName))
+                    || (!$isHTMLNamespace && $qName === $qualifiedName)
+                ) {
                     return NodeFilter::FILTER_ACCEPT;
                 }
 
@@ -91,13 +133,16 @@ trait GetElementsBy
             };
         }
 
-        $tw = new TreeWalker($this, NodeFilter::SHOW_ELEMENT, $nodeFilter);
+        // NOTE: When invoked with the same argument, and as long as root’s node document’s type has
+        // not changed, the same HTMLCollection object may be returned as returned by an earlier
+        // call.
+        return new HTMLCollection($this, static function (self $root) use ($filter): Generator {
+            $walker = new TreeWalker($root, NodeFilter::SHOW_ELEMENT, $filter);
 
-        while ($node = $tw->nextNode()) {
-            $collection[] = $node;
-        }
-
-        return $collection;
+            while (($element = $walker->nextNode()) !== null) {
+                yield $element;
+            }
+        });
     }
 
     /**
@@ -113,44 +158,55 @@ trait GetElementsBy
      *                          all element decendants will be returned.  If only local name is given '*' all element
      *                          decendants matching only namespace will be returned.
      *
-     * @return list<\Rowbot\DOM\Element\Element>
+     * @return \Rowbot\DOM\HTMLCollection<\Rowbot\DOM\Element\Element>
      */
-    public function getElementsByTagNameNS(
-        ?string $namespace,
-        string $localName
-    ): array {
+    public function getElementsByTagNameNS(?string $namespace, string $localName): HTMLCollection
+    {
+        // 1. If namespace is the empty string, set it to null.
         if ($namespace === '') {
             $namespace = null;
         }
 
-        $collection = [];
+        // 5. Otherwise, return a HTMLCollection rooted at root, whose filter matches descendant
+        // elements whose namespace is namespace and local name is localName.
+        $filter = static function (Element $element) use ($namespace, $localName): int {
+            return $element->namespaceURI === $namespace && $element->localName === $localName
+                ? NodeFilter::FILTER_ACCEPT
+                : NodeFilter::FILTER_SKIP;
+        };
 
+        // 2. If both namespace and localName are "*" (U+002A), return a HTMLCollection rooted at
+        // root, whose filter matches descendant elements.
         if ($namespace === '*' && $localName === '*') {
-            $nodeFilter = null;
+            $filter = null;
+
+        // 3. Otherwise, if namespace is "*" (U+002A), return a HTMLCollection rooted at root, whose
+        // filter matches descendant elements whose local name is localName.
         } elseif ($namespace === '*') {
-            $nodeFilter = static function (Node $node) use ($localName): int {
-                if ($node->localName === $localName) {
-                    return NodeFilter::FILTER_ACCEPT;
-                }
-
-                return NodeFilter::FILTER_SKIP;
+            $filter = static function (Element $element) use ($localName): int {
+                return $element->localName === $localName
+                    ? NodeFilter::FILTER_ACCEPT
+                    : NodeFilter::FILTER_SKIP;
             };
+
+        // 4. Otherwise, if localName is "*" (U+002A), return a HTMLCollection rooted at root, whose
+        // filter matches descendant elements whose namespace is namespace.
         } elseif ($localName === '*') {
-            $nodeFilter =  static function (Node $node) use ($namespace): int {
-                if ($node->namespaceURI === $namespace) {
-                    return NodeFilter::FILTER_ACCEPT;
-                }
-
-                return NodeFilter::FILTER_SKIP;
+            $filter = static function (Element $element) use ($namespace): int {
+                return $element->namespaceURI === $namespace
+                    ? NodeFilter::FILTER_ACCEPT
+                    : NodeFilter::FILTER_SKIP;
             };
         }
 
-        $tw = new TreeWalker($this, NodeFilter::SHOW_ELEMENT, $nodeFilter);
+        // NOTE: When invoked with the same arguments, the same HTMLCollection object may be
+        // returned as returned by an earlier call.
+        return new HTMLCollection($this, static function (self $root) use ($filter): Generator {
+            $walker = new TreeWalker($root, NodeFilter::SHOW_ELEMENT, $filter);
 
-        while ($node = $tw->nextNode()) {
-            $collection[] = $node;
-        }
-
-        return $collection;
+            while (($element = $walker->nextNode()) !== null) {
+                yield $element;
+            }
+        });
     }
 }

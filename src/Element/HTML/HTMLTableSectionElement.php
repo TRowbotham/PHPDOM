@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Element\HTML;
 
+use Generator;
 use Rowbot\DOM\Element\ElementFactory;
 use Rowbot\DOM\Exception\IndexSizeError;
+use Rowbot\DOM\HTMLCollection;
 use Rowbot\DOM\Namespaces;
 
 use function count;
@@ -17,16 +19,39 @@ use function count;
  * @see https://html.spec.whatwg.org/multipage/tables.html#the-thead-element
  * @see https://html.spec.whatwg.org/multipage/tables.html#the-tfoot-element
  *
- * @property list<\Rowbot\DOM\Element\HTML\HTMLTableRowElement> $rows Returns all of the <tr> elements within this
- *                                                                    section element.
+ * @property-read \Rowbot\DOM\HTMLCollection<\Rowbot\DOM\Element\HTML\HTMLTableRowElement> $rows
  */
 class HTMLTableSectionElement extends HTMLElement
 {
+    /**
+     * @var \Rowbot\DOM\HTMLCollection<\Rowbot\DOM\Element\HTML\HTMLTableRowElement>|null
+     */
+    private $rowsCollection;
+
     public function __get(string $name)
     {
         switch ($name) {
             case 'rows':
-                return $this->shallowGetElementsByTagName('tr');
+                if ($this->rowsCollection !== null) {
+                    return $this->rowsCollection;
+                }
+
+                $this->rowsCollection = new HTMLCollection(
+                    $this,
+                    static function (self $root): Generator {
+                        $node = $root->firstChild;
+
+                        while ($node) {
+                            if ($node instanceof HTMLTableRowElement) {
+                                yield $node;
+                            }
+
+                            $node = $node->nextSibling;
+                        }
+                    }
+                );
+
+                return $this->rowsCollection;
 
             default:
                 return parent::__get($name);

@@ -711,6 +711,18 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
     }
 
     /**
+     * @see https://dom.spec.whatwg.org/#concept-element-qualified-name
+     *
+     * @internal
+     */
+    public function getQualifiedName(): string
+    {
+        return $this->prefix === null
+            ? $this->localName
+            : $this->prefix . ':' . $this->localName;
+    }
+
+    /**
      * Gets the element's tag name.
      *
      * @internal
@@ -719,9 +731,7 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
      */
     protected function getTagName(): string
     {
-        $qualifiedName = $this->prefix === null
-            ? $this->localName
-            : $this->prefix . ':' . $this->localName;
+        $qualifiedName = $this->getQualifiedName();
 
         if (
             $this->namespaceURI === Namespaces::HTML

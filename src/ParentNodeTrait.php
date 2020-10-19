@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM;
 
+use Generator;
 use Rowbot\DOM\Element\Element;
-
-use function count;
 
 /**
  * This trait is meant to be used to fullfill the requirements of the ParentNode interface in the
@@ -15,6 +14,11 @@ use function count;
 trait ParentNodeTrait
 {
     use ChildOrParentNode;
+
+    /**
+     * @var \Rowbot\DOM\HTMLCollection<\Rowbot\DOM\Element\Element>|null
+     */
+    private $childElements;
 
     /**
      * @see https://dom.spec.whatwg.org/#dom-parentnode-append
@@ -63,13 +67,27 @@ trait ParentNodeTrait
      *
      * @see https://dom.spec.whatwg.org/#dom-parentnode-children
      *
-     * @return list<\Rowbot\DOM\Element\Element>
+     * @return \Rowbot\DOM\HTMLCollection<\Rowbot\DOM\Element\Element>
      */
-    protected function getChildren(): array
+    protected function getChildren(): HTMLCollection
     {
-        return $this->childNodes->filter(static function (Node $node): bool {
-            return $node->nodeType === Node::ELEMENT_NODE;
-        })->all();
+        if ($this->childElements !== null) {
+            return $this->childElements;
+        }
+
+        $this->childElements = new HTMLCollection($this, static function (self $root): Generator {
+            $node = $root->firstChild;
+
+            while ($node !== null) {
+                if ($node instanceof Element) {
+                    yield $node;
+                }
+
+                $node = $node->nextSibling;
+            }
+        });
+
+        return $this->childElements;
     }
 
     /**
@@ -125,6 +143,6 @@ trait ParentNodeTrait
      */
     protected function getChildElementCount(): int
     {
-        return count($this->getChildren());
+        return $this->getChildren()->count();
     }
 }
