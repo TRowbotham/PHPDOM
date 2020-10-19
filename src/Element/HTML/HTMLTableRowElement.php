@@ -124,30 +124,54 @@ class HTMLTableRowElement extends HTMLElement
     /**
      * Inserts a new cell at the given index.
      *
+     * @see https://html.spec.whatwg.org/multipage/tables.html#dom-tr-insertcell
+     *
      * @throws \Rowbot\DOM\Exception\IndexSizeError If $index < -1 or >= the number of cells in the collection.
      */
     public function insertCell(int $index = -1): HTMLTableCellElement
     {
-        $cells = $this->cells;
-        $numCells = count($cells);
-
-        if ($index < -1 || $index > $numCells) {
+        // 1. If index is less than −1 or greater than the number of elements in the cells
+        // collection, then throw an "IndexSizeError" DOMException.
+        if ($index < -1) {
             throw new IndexSizeError();
         }
 
-        $td = ElementFactory::create(
-            $this->nodeDocument,
-            'td',
-            Namespaces::HTML
-        );
+        $node = $this->childNodes->first();
+        $numCells = 0;
+        $indexedCell = null;
 
-        if ($index === -1 || $index === $numCells) {
-            $this->appendChild($td);
-        } else {
-            $cells[$index]->before($td);
+        while ($node) {
+            if ($node instanceof HTMLTableCellElement) {
+                if ($numCells === $index) {
+                    $indexedCell = $node;
+                }
+
+                ++$numCells;
+            }
+
+            $node = $node->nextSibling;
         }
 
-        return $td;
+        if ($index > $numCells) {
+            throw new IndexSizeError();
+        }
+
+        // 2. Let table cell be the result of creating an element given this tr element's node
+        // document, td, and the HTML namespace.
+        $tableCell = ElementFactory::create($this->nodeDocument, 'td', Namespaces::HTML);
+
+        // 3. If index is equal to −1 or equal to the number of items in cells collection, then
+        // append table cell to this tr element.
+        if ($index === -1 || $index === $numCells) {
+            // 5. Return table cell.
+            return $this->preinsertNode($tableCell);
+        }
+
+        // 4. Otherwise, insert table cell as a child of this tr element, immediately before the
+        // indexth td or th element in the cells collection.
+        $this->insertNode($tableCell, $indexedCell);
+
+        return $tableCell;
     }
 
     /**
