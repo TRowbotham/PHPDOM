@@ -10,8 +10,6 @@ use Rowbot\DOM\Exception\IndexSizeError;
 use Rowbot\DOM\HTMLCollection;
 use Rowbot\DOM\Namespaces;
 
-use function count;
-
 /**
  * Represents the HTML table row element <tr>.
  *
@@ -177,22 +175,54 @@ class HTMLTableRowElement extends HTMLElement
     /**
      * Removes the cell at the given index from its parent.
      *
+     * @see https://html.spec.whatwg.org/multipage/tables.html#dom-tr-deletecell
+     *
      * @throws \Rowbot\DOM\Exception\IndexSizeError If $index < 0 or >= the number of cells in the collection.
      */
     public function deleteCell(int $index): void
     {
-        $cells = [];
-
-        foreach ($this->childNodes as $cell) {
-            if ($cell instanceof HTMLTableCellElement) {
-                $cells[] = $cell;
-            }
-        }
-
-        if ($index < 0 || $index >= count($cells)) {
+        // 1. If index is less than −1 or greater than or equal to the number of elements in the
+        // cells collection, then throw an "IndexSizeError" DOMException.
+        if ($index < -1) {
             throw new IndexSizeError();
         }
 
-        $cells[$index]->remove();
+        $node = $this->childNodes->first();
+        $indexedCell = null;
+        $lastCell = null;
+        $numCells = 0;
+
+        while ($node) {
+            if ($node instanceof HTMLTableCellElement) {
+                if ($index === $numCells) {
+                    $indexedCell = $node;
+                }
+
+                $lastCell = $node;
+                ++$numCells;
+            }
+
+            $node = $node->nextSibling;
+        }
+
+        if ($index >= $numCells) {
+            throw new IndexSizeError();
+        }
+
+        // 2. If index is −1, then remove the last element in the cells collection from its parent,
+        // or do nothing if the cells collection is empty.
+        if ($lastCell === null) {
+            return;
+        }
+
+        if ($index === -1) {
+            $lastCell->removeNode();
+
+            return;
+        }
+
+        // 3. Otherwise, remove the indexth element in the cells collection from its parent.
+        assert($indexedCell !== null);
+        $indexedCell->removeNode();
     }
 }
