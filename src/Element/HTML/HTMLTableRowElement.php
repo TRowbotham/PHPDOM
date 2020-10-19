@@ -5,13 +5,10 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Element\HTML;
 
 use Generator;
-use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Element\ElementFactory;
 use Rowbot\DOM\Exception\IndexSizeError;
 use Rowbot\DOM\HTMLCollection;
 use Rowbot\DOM\Namespaces;
-use Rowbot\DOM\NodeFilter;
-use Rowbot\DOM\TreeWalker;
 
 use function count;
 
@@ -57,42 +54,39 @@ class HTMLTableRowElement extends HTMLElement
                 return $this->cellsCollection;
 
             case 'rowIndex':
-                $parentTable = $this->parentNode;
-                $count = 0;
+                // The rowIndex attribute must, if this element has a parent table element, or a
+                // parent tbody, thead, or tfoot element and a grandparent table element, return the
+                // index of this tr element in that table element's rows collection. If there is no
+                // such table element, then the attribute must return −1.
+                $parentIsTable = $this->parentNode instanceof HTMLTableElement;
 
-                while ($parentTable) {
-                    if ($parentTable instanceof HTMLTableElement) {
-                        break;
-                    }
-
-                    $parentTable = $parentTable->parentNode;
-                }
-
-                if (!$parentTable) {
+                if (
+                    !$parentIsTable
+                    && (
+                        !$this->parentNode instanceof HTMLTableSectionElement
+                        || !$this->parentNode->parentNode instanceof HTMLTableElement
+                    )
+                ) {
                     return -1;
                 }
 
-                $tw = new TreeWalker(
-                    $parentTable,
-                    NodeFilter::SHOW_ELEMENT,
-                    static function (Element $node): int {
-                        if ($node instanceof HTMLTableRowElement) {
-                            return NodeFilter::FILTER_ACCEPT;
-                        }
+                $parentTable = $parentIsTable
+                    ? $this->parentNode
+                    : $this->parentNode->parentNode;
+                $rows = $parentTable->rows->getIterator();
+                $rows->rewind();
+                $index = 0;
 
-                        return NodeFilter::FILTER_SKIP;
-                    }
-                );
-
-                while ($row = $tw->nextNode()) {
-                    if ($row === $this) {
+                while ($rows->valid()) {
+                    if ($rows->current() === $this) {
                         break;
                     }
 
-                    $count++;
+                    ++$index;
+                    $rows->next();
                 }
 
-                return $count;
+                return $index;
 
             case 'sectionRowIndex':
                 // The sectionRowIndex attribute must, if this element has a parent table, tbody,
