@@ -58,24 +58,24 @@ class THeadTest extends TableTestCase
         }, HierarchyRequestError::class);
     }
 
-    // public function test2(): void
-    // {
-    //     $document = self::getWindow()->document;
-    //     $t2 = $document->getElementById('t2');
-    //     $t2thead = $document->getElementById('t2thead');
-    //     $this->expectException(HierarchyRequestError::class);
-    //     $t2->tHead = $t2thead;
-    // }
+    public function test2(): void
+    {
+        $document = self::getWindow()->document;
+        $t2 = $document->getElementById('t2');
+        $t2thead = $document->getElementById('t2thead');
+        $this->expectException(HierarchyRequestError::class);
+        $t2->tHead = $t2thead;
+    }
 
-    // public function test3(): void
-    // {
-    //     $document = self::getWindow()->document;
-    //     $table = $document->createElementNS("http://www.w3.org/1999/xhtml", "foo:table");
-    //     $thead = $table->createTHead();
+    public function test3(): void
+    {
+        $document = self::getWindow()->document;
+        $table = $document->createElementNS("http://www.w3.org/1999/xhtml", "foo:table");
+        $thead = $table->createTHead();
 
-    //     self::assertSame($thead, $table->tHead);
-    //     self::assertNull($thead->prefix);
-    // }
+        self::assertSame($thead, $table->tHead);
+        self::assertNull($thead->prefix);
+    }
 
     public static function getDocumentName(): string
     {
