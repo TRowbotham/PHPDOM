@@ -507,24 +507,53 @@ class HTMLTableElement extends HTMLElement
     /**
      * Removes the tr element at the given position.
      *
-     * @param int $index A value of -1 will remove the last tr element in the table.
+     * @see https://html.spec.whatwg.org/multipage/tables.html#dom-table-deleterow
      *
      * @throws \Rowbot\DOM\Exception\IndexSizeError If $index < -1 or >= the number of tr elements in the table.
      */
     public function deleteRow(int $index): void
     {
-        $rows = $this->rows;
-        $numRows = count($rows);
-
-        if ($index === -1) {
-            $index = $numRows - 1;
-        }
-
-        if ($index < 0 || $index >= $numRows) {
+        // 1. If index is less than −1 or greater than or equal to the number of elements in the
+        // rows collection, then throw an "IndexSizeError" DOMException.
+        if ($index < -1) {
             throw new IndexSizeError();
         }
 
-        $rows[$index]->remove();
+        $numRows = 0;
+        $indexedRow = null;
+        $lastRow = null;
+        $rows = $this->getRowsFilter()($this);
+        $rows->rewind();
+
+        while ($rows->valid()) {
+            $lastRow = $rows->current();
+
+            if ($numRows === $index) {
+                $indexedRow = $lastRow;
+            }
+
+            ++$numRows;
+            $rows->next();
+        }
+
+        if ($index >= $numRows) {
+            throw new IndexSizeError();
+        }
+
+        // 2. If index is −1, then remove the last element in the rows collection from its parent,
+        // or do nothing if the rows collection is empty.
+        if ($lastRow === null) {
+            return;
+        }
+
+        if ($index === -1) {
+            $lastRow->removeNode();
+
+            return;
+        }
+
+        // 3. Otherwise, remove the indexth element in the rows collection from its parent.
+        $indexedRow->removeNode();
     }
 
     private function getRowsFilter(): Closure
