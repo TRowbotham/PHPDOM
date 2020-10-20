@@ -126,10 +126,6 @@ class HTMLTableElement extends HTMLElement
                 return $this->tBodyCollection;
 
             case 'tFoot':
-                $tfoot = $this->shallowGetElementsByTagName('tfoot');
-
-                return $tfoot[0] ?? null;
-
             case 'tHead':
                 $name = strtolower($name);
 
@@ -187,32 +183,36 @@ class HTMLTableElement extends HTMLElement
                 break;
 
             case 'tFoot':
-                $isValid = $value === null
-                    || ($value instanceof HTMLTableSectionElement && $value->tagName === 'TFOOT');
+                if ($value !== null && !$value instanceof HTMLTableSectionElement) {
+                    throw new TypeError();
+                }
 
-                if (!$isValid) {
+                // If the new value is neither null nor a tfoot element, then a
+                // "HierarchyRequestError" DOMException must be thrown instead.
+                if ($value && $value->localName !== 'tfoot') {
                     throw new HierarchyRequestError();
                 }
 
-                $tfoot = $this->shallowGetElementsByTagName('tfoot');
+                // On setting, if the new value is null or a tfoot element, the first tfoot element
+                // child of the table element, if any, must be removed,
+                $node = $this->childNodes->first();
 
-                if (isset($tfoot[0])) {
-                    $tFoot[0]->remove();
-                }
+                while ($node) {
+                    if ($node instanceof HTMLTableSectionElement && $node->localName === 'tfoot') {
+                        $node->removeNode();
 
-                if ($value !== null) {
-                    foreach ($this->childNodes as $node) {
-                        if (
-                            !$node instanceof HTMLTableCaptionElement
-                            && !$node instanceof HTMLTableColElement
-                            && $node->tagName === 'THEAD'
-                        ) {
-                            break;
-                        }
+                        break;
                     }
 
-                    $tfoot->insertBefore($value, $node);
+                    $node = $node->nextSibling;
                 }
+
+                // and the new value, if not null, must be inserted at the end of the table.
+                if (!$value) {
+                    return;
+                }
+
+                $this->preinsertNode($value);
 
                 break;
 
@@ -384,32 +384,48 @@ class HTMLTableElement extends HTMLElement
     }
 
     /**
-     * Returns the first tfoot element in the table, if one exists.  Otherwise,
-     * it creates a new HTMLTableSectionElement and inserts it before the first
-     * element that is not a caption, colgroup, or thead element in the table
-     * and returns the newly created tfoot element.
+     * Returns the first tfoot element child of the table element, if any; otherwise a new tfoot
+     * element must be table-created and inserted at the end of the table, and then that new
+     * element must be returned.
+     *
+     * @see https://html.spec.whatwg.org/multipage/tables.html#dom-table-createtfoot
      */
     public function createTFoot(): HTMLTableSectionElement
     {
-        foreach ($this->childNodes as $node) {
-            if (
-                !$node instanceof HTMLTableCaptionElement
-                && !$node instanceof HTMLTableColElement
-                && $node->tagName !== 'THEAD'
-            ) {
-                break;
+        $node = $this->childNodes->first();
+
+        while ($node) {
+            if ($node instanceof HTMLTableSectionElement && $node->localName === 'tfoot') {
+                return $node;
             }
+
+            $node = $node->nextSibling;
         }
 
-        return $this->createTableChildElement('tfoot', $node);
+        $tfoot = ElementFactory::create($this->nodeDocument, 'tfoot', Namespaces::HTML);
+        $this->insertNode($tfoot, null);
+
+        return $tfoot;
     }
 
     /**
      * Removes the first tfoot element in the table, if one exists.
+     *
+     * @see https://html.spec.whatwg.org/multipage/tables.html#dom-table-deletetfoot
      */
     public function deleteTFoot(): void
     {
-        $this->deleteTableChildElement('tfoot');
+        $node = $this->childNodes->first();
+
+        while ($node) {
+            if ($node instanceof HTMLTableSectionElement && $node->localName === 'tfoot') {
+                $node->removeNode();
+
+                return;
+            }
+
+            $node = $node->nextSibling;
+        }
     }
 
     /**
@@ -491,42 +507,6 @@ class HTMLTableElement extends HTMLElement
         }
 
         $rows[$index]->remove();
-    }
-
-    /**
-     * Checks if an element with the specified tag name exists.  If one does not
-     * exist, create a new element of the specified type, and insert it before
-     * the specified element.  Then return the newely created element.
-     *
-     * @param string $element The tag name of the element to check against.
-     *
-     * @param \Rowbot\DOM\Element\HTML\HTMLElement $insertBefore The element to insert against. Null will append the
-     *                                                           element to the end of the table.
-     */
-    private function createTableChildElement(string $element, ?HTMLElement $insertBefore): HTMLElement
-    {
-        $nodes = $this->shallowGetElementsByTagName($element);
-
-        if (!isset($nodes[0])) {
-            $node = $this->nodeDocument->createElement($element);
-            $this->insertBefore($node, $insertBefore);
-        } else {
-            $node = $nodes[0];
-        }
-
-        return $node;
-    }
-
-    /**
-     * Removes the first specified element found, if any.
-     */
-    private function deleteTableChildElement(string $element): void
-    {
-        $node = $this->shallowGetElementsByTagName($element);
-
-        if (isset($node[0])) {
-            $node[0]->remove();
-        }
     }
 
     private function getRowsFilter(): Closure
