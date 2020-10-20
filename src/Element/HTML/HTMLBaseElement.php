@@ -111,16 +111,8 @@ class HTMLBaseElement extends HTMLElement
         $urlRecord = false;
 
         if ($href !== null) {
-            $hrefAttr = $this->attributeList->getAttrByNamespaceAndLocalName(null, 'href');
-
-            if ($hrefAttr !== null) {
-                // Parse the Element's href attribute.
-                $urlRecord = URLParser::parseUrl(
-                    $hrefAttr->value,
-                    $fallbackBaseURL,
-                    $document->characterSet
-                );
-            }
+            // Parse the Element's href attribute.
+            $urlRecord = URLParser::parseUrl($href, $fallbackBaseURL, $document->characterSet);
         }
 
         // TODO: Set element's frozen base URL to document's fallback base URL
