@@ -6,10 +6,13 @@ namespace Rowbot\DOM\Element\HTML;
 
 use Closure;
 use Generator;
+use Rowbot\DOM\Element\Element;
+use Rowbot\DOM\Element\ElementFactory;
 use Rowbot\DOM\Exception\HierarchyRequestError;
 use Rowbot\DOM\Exception\IndexSizeError;
 use Rowbot\DOM\Exception\TypeError;
 use Rowbot\DOM\HTMLCollection;
+use Rowbot\DOM\Namespaces;
 
 use function count;
 
@@ -127,9 +130,19 @@ class HTMLTableElement extends HTMLElement
                 return $tfoot[0] ?? null;
 
             case 'tHead':
-                $thead = $this->shallowGetElementsByTagName('thead');
+                // The tHead IDL attribute must return, on getting, the first thead element child of
+                // the table element, if any, or null otherwise.
+                $node = $this->childNodes->first();
 
-                return $thead[0] ?? null;
+                while ($node) {
+                    if ($node instanceof HTMLTableSectionElement && $node->localName === 'thead') {
+                        return $node;
+                    }
+
+                    $node = $node->nextSibling;
+                }
+
+                return null;
 
             default:
                 return parent::__get($name);
@@ -201,31 +214,55 @@ class HTMLTableElement extends HTMLElement
                 break;
 
             case 'tHead':
-                $isValid = $value === null
-                    || ($value instanceof HTMLTableSectionElement && $value->tagName === 'THEAD');
+                if ($value !== null && !$value instanceof HTMLTableSectionElement) {
+                    throw new TypeError();
+                }
 
-                if (!$isValid) {
+                // If the new value is neither null nor a thead element, then a
+                // "HierarchyRequestError" DOMException must be thrown instead.
+                if ($value && $value->localName !== 'thead') {
                     throw new HierarchyRequestError();
                 }
 
-                $thead = $this->shallowGetElementsByTagName('thead');
+                // On setting, if the new value is null or a thead element, the first thead element
+                // child of the table element, if any, must be removed,
+                $node = $this->childNodes->first();
 
-                if (isset($thead[0])) {
-                    $thead[0]->remove();
-                }
+                while ($node) {
+                    if ($node instanceof HTMLTableSectionElement && $node->localName === 'thead') {
+                        $node->removeNode();
 
-                if ($value !== null) {
-                    foreach ($this->childNodes as $node) {
-                        if (
-                            !$node instanceof HTMLTableCaptionElement
-                            && !$node instanceof HTMLTableColElement
-                        ) {
-                            break;
-                        }
+                        break;
                     }
 
-                    $thead->insertBefore($value, $node);
+                    $node = $node->nextSibling;
                 }
+
+                // and the new value, if not null, must be inserted immediately before the first
+                // element in the table element that is neither a caption element nor a colgroup
+                // element, if any,
+                if (!$value) {
+                    return;
+                }
+
+                $node = $this->childNodes->first();
+
+                while ($node) {
+                    if (
+                        $node instanceof Element
+                        && !$node instanceof HTMLTableColElement
+                        && !$node instanceof HTMLTableCaptionElement
+                    ) {
+                        $this->preinsertNode($value, $node);
+
+                        return;
+                    }
+
+                    $node = $node->nextSibling;
+                }
+
+                // or at the end of the table if there are no such elements.
+                $this->preinsertNode($value);
 
                 break;
 
@@ -285,27 +322,62 @@ class HTMLTableElement extends HTMLElement
      * it creates a new HTMLTableSectionElement and inserts it before the first
      * element that is not a caption or colgroup element in the table and
      * returns the newly created tfoot element.
+     *
+     * @see https://html.spec.whatwg.org/multipage/tables.html#dom-table-createthead
      */
     public function createTHead(): HTMLTableSectionElement
     {
-        foreach ($this->childNodes as $node) {
-            if (
-                !$node instanceof HTMLTableCaptionElement
-                && !$node instanceof HTMLTableColElement
-            ) {
-                break;
+        $firstChild = $this->childNodes->first();
+        $node = $firstChild;
+
+        while ($node) {
+            if ($node instanceof HTMLTableSectionElement && $node->localName === 'thead') {
+                return $node;
             }
+
+            $node = $node->nextSibling;
         }
 
-        return $this->createTableChildElement('thead', $node);
+        $thead = ElementFactory::create($this->nodeDocument, 'thead', Namespaces::HTML);
+        $node = $firstChild;
+
+        while ($node) {
+            if (
+                $node instanceof Element
+                && !$node instanceof HTMLTableColElement
+                && !$node instanceof HTMLTableCaptionElement
+            ) {
+                $this->preinsertNode($thead, $node);
+
+                return $thead;
+            }
+
+            $node = $node->nextSibling;
+        }
+
+        $this->preinsertNode($thead);
+
+        return $thead;
     }
 
     /**
      * Removes the first thead element in the table, if one exists.
+     *
+     * @see https://html.spec.whatwg.org/multipage/tables.html#dom-table-deletethead
      */
     public function deleteTHead(): void
     {
-        $this->deleteTableChildElement('thead');
+        $node = $this->childNodes->first();
+
+        while ($node) {
+            if ($node instanceof HTMLTableSectionElement && $node->localName === 'thead') {
+                $node->removeNode();
+
+                return;
+            }
+
+            $node = $node->nextSibling;
+        }
     }
 
     /**
@@ -450,7 +522,7 @@ class HTMLTableElement extends HTMLElement
         $node = $this->shallowGetElementsByTagName($element);
 
         if (isset($node[0])) {
-            $node->remove();
+            $node[0]->remove();
         }
     }
 
