@@ -15,6 +15,7 @@ use Rowbot\DOM\HTMLCollection;
 use Rowbot\DOM\Namespaces;
 
 use function count;
+use function strtolower;
 
 /**
  * Represents the HTML table element <table>.
@@ -130,12 +131,14 @@ class HTMLTableElement extends HTMLElement
                 return $tfoot[0] ?? null;
 
             case 'tHead':
+                $name = strtolower($name);
+
                 // The tHead IDL attribute must return, on getting, the first thead element child of
                 // the table element, if any, or null otherwise.
                 $node = $this->childNodes->first();
 
                 while ($node) {
-                    if ($node instanceof HTMLTableSectionElement && $node->localName === 'thead') {
+                    if ($node instanceof HTMLTableSectionElement && $node->localName === $name) {
                         return $node;
                     }
 
