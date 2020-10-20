@@ -432,16 +432,34 @@ class HTMLTableElement extends HTMLElement
      * Creates a new HTMLTableSectionElement and inserts it after the last tbody
      * element, if one exists, otherwise it is appended to the table and returns
      * the newly created tbody element.
+     *
+     * @see https://html.spec.whatwg.org/multipage/tables.html#dom-table-createtbody
      */
     public function createTBody(): HTMLTableSectionElement
     {
-        $tbodies = $this->shallowGetElementsByTagName('tbody');
-        $len = count($tbodies);
-        $lastTbody = $len ? $tbodies[$len - 1]->nextSibling : null;
-        $node = $this->nodeDocument->createElement('tbody');
-        $this->insertBefore($node, $lastTbody);
+        $node = $this->childNodes->last();
+        $lastTbody = null;
 
-        return $node;
+        while ($node) {
+            if ($node instanceof HTMLTableSectionElement && $node->localName === 'tbody') {
+                $lastTbody = $node;
+
+                break;
+            }
+
+            $node = $node->previousSibling;
+        }
+
+        $tbody = ElementFactory::create($this->nodeDocument, 'tbody', Namespaces::HTML);
+        $child = null;
+
+        if ($lastTbody) {
+            $child = $lastTbody->nextSibling;
+        }
+
+        $this->insertNode($tbody, $child);
+
+        return $tbody;
     }
 
     /**
