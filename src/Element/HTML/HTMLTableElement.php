@@ -14,7 +14,6 @@ use Rowbot\DOM\Exception\TypeError;
 use Rowbot\DOM\HTMLCollection;
 use Rowbot\DOM\Namespaces;
 
-use function count;
 use function strtolower;
 
 /**
@@ -468,40 +467,86 @@ class HTMLTableElement extends HTMLElement
      * tr element at the specified location. It returns the newly created tr
      * element.
      *
-     * @param int $index (optional) A value of -1, which is the default, is equvilant to appending the new row to the
-     *                   end of the table.
+     * @see https://html.spec.whatwg.org/multipage/tables.html#dom-table-insertrow
      *
      * @throws \Rowbot\DOM\Exception\IndexSizeError If $index is < -1 or > the number of rows in the table.
      */
     public function insertRow(int $index = -1): HTMLTableRowElement
     {
-        $rows = $this->rows;
-        $numRows = count($rows);
-
-        if ($index < -1 || $index > $numRows) {
+        // If index is less than −1 or greater than the number of elements in rows collection:
+        //    The method must throw an "IndexSizeError" DOMException.
+        if ($index < -1) {
             throw new IndexSizeError();
         }
 
-        $tr = $this->nodeDocument->createElement('tr');
+        $rows = $this->getRowsFilter()($this);
+        $indexedRow = null;
+        $lastRow = null;
+        $numRows = 0;
 
-        if (!$numRows) {
-            $tbodies = $this->shallowGetElementsByTagName('tbody');
-            $numTbodies = count($tbodies);
+        while ($rows->valid()) {
+            $lastRow = $rows->current();
 
-            if (!$tbodies) {
-                $tbody = $this->nodeDocument->createElement('tbody');
-                $tbody->appendChild($tr);
-                $this->appendChild($tbody);
-            } else {
-                $tbodies[$numTbodies - 1]->appendChild($tr);
+            if ($index === $numRows) {
+                $indexedRow = $lastRow;
             }
-        } elseif ($index === -1 || $index === $numRows) {
-            $rows[$numRows - 1]->parentNode->appendChild($tr);
-        } else {
-            $rows[$index]->before($tr);
+
+            ++$numRows;
+            $rows->next();
         }
 
-        return $tr;
+        if ($index > $numRows) {
+            throw new IndexSizeError();
+        }
+
+        $tableRow = ElementFactory::create($this->nodeDocument, 'tr', Namespaces::HTML);
+        $node = $this->childNodes->last();
+        $lastTbody = null;
+
+        while ($node) {
+            if ($node instanceof HTMLTableSectionElement && $node->localName === 'tbody') {
+                $lastTbody = $node;
+            }
+
+            $node = $node->previousSibling;
+        }
+
+        // If the rows collection has zero elements in it, and the table has no tbody elements in it:
+        if ($numRows === 0 && $lastTbody === null) {
+            // The method must table-create a tbody element, then table-create a tr element, then
+            // append the tr element to the tbody element, then append the tbody element to the
+            // table element, and finally return the tr element.
+            $tableBody = ElementFactory::create($this->nodeDocument, 'tbody', Namespaces::HTML);
+            $tableBody->insertNode($tableRow, null);
+            $this->insertNode($tableBody, null);
+
+            return $tableRow;
+        }
+
+        // If the rows collection has zero elements in it:
+        if ($numRows === 0) {
+            // The method must table-create a tr element, append it to the last tbody element in the
+            // table, and return the tr element.
+            $lastTbody->insertNode($tableRow, null);
+
+            return $tableRow;
+        }
+
+        // If index is −1 or equal to the number of items in rows collection:
+        if ($index === -1 || $index === $numRows) {
+            // The method must table-create a tr element, and append it to the parent of the last tr
+            // element in the rows collection. Then, the newly created tr element must be returned.
+            $lastRow->parentNode->insertNode($tableRow, null);
+
+            return $tableRow;
+        }
+
+        // Otherwise:
+        // The method must table-create a tr element, insert it immediately before the indexth tr element in the rows
+        // collection, in the same parent, and finally must return the newly created tr element.
+        $indexedRow->parentNode->insertNode($tableRow, $indexedRow);
+
+        return $tableRow;
     }
 
     /**

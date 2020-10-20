@@ -35,7 +35,6 @@ use Rowbot\DOM\Utils;
 
 use function count;
 use function preg_match;
-use function strtoupper;
 
 /**
  * @see https://dom.spec.whatwg.org/#element
@@ -787,29 +786,6 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
         }
 
         throw new SyntaxError();
-    }
-
-    /**
-     * Returns an array of Elements with the specified tagName that are
-     * immediate children of the parent.
-     *
-     * @return list<\Rowbot\DOM\Element\Element>
-     */
-    protected function shallowGetElementsByTagName(string $tagName)
-    {
-        $collection = [];
-        $node = $this->childNodes->first();
-        $tagName = strtoupper($tagName);
-
-        while ($node) {
-            if ($node->tagName === $tagName) {
-                $collection[] = $node;
-            }
-
-            $node = $node->nextElementSibling;
-        }
-
-        return $collection;
     }
 
     /**
