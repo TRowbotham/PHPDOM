@@ -238,18 +238,46 @@ class HTMLTableElement extends HTMLElement
      * Returns the first caption element in the table, if one exists.
      * Otherwise, it creates a new HTMLTableCaptionElement and inserts it before
      * the table's first child and returns the newly created caption element.
+     *
+     * @see https://html.spec.whatwg.org/multipage/tables.html#dom-table-createcaption
      */
     public function createCaption(): HTMLTableCaptionElement
     {
-        return $this->createTableChildElement('caption', $this->childNodes->first());
+        $firstChild = $this->childNodes->first();
+        $node = $firstChild;
+
+        while ($node) {
+            if ($node instanceof HTMLTableCaptionElement) {
+                return $node;
+            }
+
+            $node = $node->nextSibling;
+        }
+
+        $caption = ElementFactory::create($this->nodeDocument, 'caption', Namespaces::HTML);
+        $this->insertNode($caption, $firstChild);
+
+        return $caption;
     }
 
     /**
      * Removes the first caption element in the table, if one exists.
+     *
+     * @see https://html.spec.whatwg.org/multipage/tables.html#dom-table-deletecaption
      */
     public function deleteCaption(): void
     {
-        $this->deleteTableChildElement('caption');
+        $node = $this->childNodes->first();
+
+        while ($node) {
+            if ($node instanceof HTMLTableCaptionElement) {
+                $node->removeNode();
+
+                return;
+            }
+
+            $node = $node->nextSibling;
+        }
     }
 
     /**
