@@ -16,6 +16,7 @@ use Rowbot\DOM\Element\SVG\SVGTitleElement;
 use Rowbot\DOM\Exception\HierarchyRequestError;
 
 use function preg_replace;
+use function trim;
 
 /**
  * HTMLDocument represents an HTML document.
@@ -119,11 +120,7 @@ class HTMLDocument extends Document
         // Trim whitespace and replace consecutive whitespace with a single
         // space.
         if ($value !== '') {
-            return preg_replace(
-                ['/^\s+/', '/\s+$/', '/\s+/'],
-                ['', '', ' '],
-                $value
-            );
+            return preg_replace('/[\t\n\f\r\x20]+/', ' ', trim($value, "\t\n\f\r\x20"));
         }
 
         return $value;
