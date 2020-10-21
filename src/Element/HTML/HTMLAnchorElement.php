@@ -140,22 +140,22 @@ class HTMLAnchorElement extends HTMLElement
                 break;
 
             case 'hash':
-                $this->setHash($value);
+                $this->setHash((string) $value);
 
                 break;
 
             case 'host':
-                $this->setHost($value);
+                $this->setHost((string) $value);
 
                 break;
 
             case 'hostname':
-                $this->setHostname($value);
+                $this->setHostname((string) $value);
 
                 break;
 
             case 'href':
-                $this->setHref($value);
+                $this->setHref((string) $value);
 
                 break;
 
@@ -165,12 +165,12 @@ class HTMLAnchorElement extends HTMLElement
                 break;
 
             case 'password':
-                $this->setPassword($value);
+                $this->setPassword((string) $value);
 
                 break;
 
             case 'pathname':
-                $this->setPathname($value);
+                $this->setPathname((string) $value);
 
                 break;
 
@@ -180,12 +180,12 @@ class HTMLAnchorElement extends HTMLElement
                 break;
 
             case 'port':
-                $this->setPort($value);
+                $this->setPort((string) $value);
 
                 break;
 
             case 'protocol':
-                $this->setProtocol($value);
+                $this->setProtocol((string) $value);
 
                 break;
 
@@ -195,7 +195,7 @@ class HTMLAnchorElement extends HTMLElement
                 break;
 
             case 'search':
-                $this->setSearch($value);
+                $this->setSearch((string) $value);
 
                 break;
 
@@ -215,7 +215,7 @@ class HTMLAnchorElement extends HTMLElement
                 break;
 
             case 'username':
-                $this->setUsername($value);
+                $this->setUsername((string) $value);
 
                 break;
 

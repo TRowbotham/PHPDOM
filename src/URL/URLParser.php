@@ -6,6 +6,7 @@ namespace Rowbot\DOM\URL;
 
 use Rowbot\URL\BasicURLParser;
 use Rowbot\URL\URLRecord;
+use Rowbot\URL\String\Utf8String;
 
 final class URLParser
 {
@@ -28,13 +29,14 @@ final class URLParser
         URLRecord $base = null,
         string $encodingOverride = null
     ) {
-        $url = BasicURLParser::parseBasicUrl($input, $base, $encodingOverride);
+        $parser = new BasicURLParser();
+        $url = $parser->parse(new Utf8String($input), $base, $encodingOverride);
 
         if ($url === false) {
             return false;
         }
 
-        if ($url->scheme !== 'blob') {
+        if ($url->scheme->isBlob()) {
             return $url;
         }
 
