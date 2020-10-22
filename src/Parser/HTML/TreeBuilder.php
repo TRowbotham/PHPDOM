@@ -2394,7 +2394,7 @@ class TreeBuilder
 
             // Let inner loop counter be zero.
             $innerLoopCounter = 0;
-            $iterator = $this->openElements->getIterator();
+            $clonedStack = clone $this->openElements;
 
             // Inner loop
             while (true) {
@@ -2406,9 +2406,10 @@ class TreeBuilder
                 // open elements (e.g. because it got removed by this
                 // algorithm), the element that was immediately above node in
                 // the stack of open elements before node was removed.
-                //if (!$this->openElements->contains($node)) {
-                    $node = $this->openElements[$iterator->indexOf($node) - 1];
-                //}
+                $targetStack = !$this->openElements->contains($node)
+                    ? $clonedStack
+                    : $this->openElements;
+                $node = $targetStack[$targetStack->indexOf($node) - 1];
 
                 // If node is formatting element, then go to the next step in
                 // the overall algorithm.
