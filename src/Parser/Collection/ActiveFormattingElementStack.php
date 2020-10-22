@@ -22,6 +22,12 @@ class ActiveFormattingElementStack extends ObjectStack
     {
         $count = 0;
 
+        if ($element instanceof Bookmark || $element instanceof Marker) {
+            parent::push($element);
+
+            return;
+        }
+
         for ($i = $this->size - 1; $i >= 0; $i--) {
             if ($this->collection[$i] instanceof Marker) {
                 break;
