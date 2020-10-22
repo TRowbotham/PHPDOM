@@ -1226,13 +1226,9 @@ final class Range extends AbstractRange implements Stringable
 
         if ($ancestor) {
             $child = $boundaryPointB[0];
-            $childNodes = $boundaryPointA[0]
-                ->childNodes
-                ->getIterator()
-                ->getArrayCopy();
 
             while ($child) {
-                if (in_array($child, $childNodes, true)) {
+                if ($child->parentNode === $boundaryPointA[0]) {
                     break;
                 }
 
