@@ -986,7 +986,7 @@ final class Range extends AbstractRange implements Stringable
     }
 
     /**
-     * @see https://w3c.github.io/DOM-Parsing/#dfn-createcontextualfragment-fragment
+     * @see https://w3c.github.io/DOM-Parsing/#dom-range-createcontextualfragment
      */
     public function createContextualFragment(string $fragment): DocumentFragment
     {
