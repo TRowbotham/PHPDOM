@@ -110,23 +110,30 @@ class FragmentSerializer implements FragmentSerializerInterface
      *
      * @return string The escaped input string.
      */
-    private function escapeHTMLString(
-        string $string,
-        bool $inAttributeMode = false
-    ): string {
+    private function escapeHTMLString(string $string, bool $inAttributeMode = false): string
+    {
         if ($string === '') {
             return '';
         }
 
-        $search = ['&', "\xC2\xA0"];
+        // 1. Replace any occurrence of the "&" character by the string "&amp;".
+        // 2. Replace any occurrences of the U+00A0 NO-BREAK SPACE character by the string "&nbsp;".
+        $search = ['&', "\xA0"];
         $replace = ['&amp;', '&nbsp;'];
 
+        // 3. If the algorithm was invoked in the attribute mode, replace any occurrences of the """
+        // character by the string "&quot;".
         if ($inAttributeMode) {
             $search[] = '"';
             $replace[] = '&quot;';
         } else {
-            $search += ['<', '>'];
-            $replace += ['&lt;', '&gt;'];
+            // 4. If the algorithm was not invoked in the attribute mode, replace any occurrences of
+            // the "<" character by the string "&lt;", and any occurrences of the ">" character by
+            // the string "&gt;".
+            $search[] = '<';
+            $search[] = '>';
+            $replace[] = '&lt;';
+            $replace[] = '&gt;';
         }
 
         return str_replace($search, $replace, $string);
