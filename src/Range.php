@@ -385,8 +385,10 @@ final class Range extends AbstractRange implements Stringable
             $originalEndNode->doReplaceData(0, $originalEndOffset, '');
         }
 
-        $this->setStartOrEnd('start', $newNode, $newOffset);
-        $this->setStartOrEnd('end', $newNode, $newOffset);
+        $this->startNode = $newNode;
+        $this->startOffset = $newOffset;
+        $this->endNode = $newNode;
+        $this->endOffset = $newOffset;
     }
 
     /**
@@ -639,11 +641,10 @@ final class Range extends AbstractRange implements Stringable
             $clone = $firstPartiallyContainedChild->cloneNodeInternal();
             $fragment->appendChild($clone);
             $subrange = clone $this;
-            $subrange->setStart($originalStartNode, $originalStartOffset);
-            $subrange->setEnd(
-                $firstPartiallyContainedChild,
-                $firstPartiallyContainedChild->getLength()
-            );
+            $subrange->startNode = $originalStartNode;
+            $subrange->startOffset = $originalStartOffset;
+            $subrange->endNode = $firstPartiallyContainedChild;
+            $subrange->endOffset = $firstPartiallyContainedChild->getLength();
             $subfragment = $subrange->cloneContents();
             $clone->appendChild($subfragment);
         }
@@ -668,8 +669,10 @@ final class Range extends AbstractRange implements Stringable
             $clone = $lastPartiallyContainedChild->cloneNodeInternal();
             $fragment->appendChild($clone);
             $subrange = clone $this;
-            $subrange->setStart($lastPartiallyContainedChild, 0);
-            $subrange->setEnd($originalEndNode, $originalEndOffset);
+            $subrange->startNode = $lastPartiallyContainedChild;
+            $subrange->startOffset = 0;
+            $subrange->endNode = $originalEndNode;
+            $subrange->endOffset = $originalEndOffset;
             $subfragment = $subrange->cloneContents();
             $clone->appendChild($subfragment);
         }
