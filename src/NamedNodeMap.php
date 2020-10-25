@@ -33,12 +33,17 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
         $this->element = $element;
     }
 
-    public function __get(string $name): int
+    /**
+     * @return \Rowbot\DOM\Attr|int|null
+     */
+    public function __get(string $name)
     {
         switch ($name) {
             case 'length':
                 return $this->element->getAttributeList()->count();
         }
+
+        return $this->element->getAttributeList()->getAttrByName($name);
     }
 
     /**
