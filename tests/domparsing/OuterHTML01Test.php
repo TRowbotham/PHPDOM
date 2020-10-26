@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Tests\domparsing;
 
 use Rowbot\DOM\Exception\NoModificationAllowedError;
-use Rowbot\DOM\HTMLDocument;
+use Rowbot\DOM\Tests\dom\DocumentGetter;
 use Rowbot\DOM\Tests\TestCase;
 
 /**
@@ -13,11 +13,12 @@ use Rowbot\DOM\Tests\TestCase;
  */
 class OuterHTML01Test extends TestCase
 {
+    use DocumentGetter;
+
     public function testOuterHTMLAndStringConversionNull(): void
     {
-        $document = new HTMLDocument();
-        $p = $document->createElement('p');
+        $document = $this->getHTMLDocument();
         $this->expectException(NoModificationAllowedError::class);
-        $p->outerHTML = '<html><p>FAIL: Should have thrown an error<\/p><\/html>';
+        $document->documentElement->outerHTML = '<html><p>FAIL: Should have thrown an error<\/p><\/html>';
     }
 }

@@ -18,8 +18,8 @@ class OuterHTML02Test extends TestCase
         $div = $document->createElement('div');
         $p = $div->appendChild($document->createElement('p'));
         $p->outerHTML = null;
-        self::assertSame('', $p->innerHTML);
-        self::assertSame('', $p->textContent);
+        self::assertSame('', $div->innerHTML);
+        self::assertSame('', $div->textContent);
     }
 
     public function testOuterHTMLAndStringConversionNumber(): void
@@ -28,8 +28,8 @@ class OuterHTML02Test extends TestCase
         $div = $document->createElement('div');
         $p = $div->appendChild($document->createElement('p'));
         $p->outerHTML = 42;
-        self::assertSame('42', $p->innerHTML);
-        self::assertSame('42', $p->textContent);
+        self::assertSame('42', $div->innerHTML);
+        self::assertSame('42', $div->textContent);
     }
 
     public function testOuterHTMLAndStringConversionToString(): void
@@ -43,7 +43,7 @@ class OuterHTML02Test extends TestCase
                 return 'pass';
             }
         };
-        self::assertSame('pass', $p->innerHTML);
-        self::assertSame('pass', $p->textContent);
+        self::assertSame('pass', $div->innerHTML);
+        self::assertSame('pass', $div->textContent);
     }
 }
