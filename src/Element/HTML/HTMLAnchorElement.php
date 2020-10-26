@@ -135,7 +135,7 @@ class HTMLAnchorElement extends HTMLElement
     {
         switch ($name) {
             case 'download':
-                $this->attributeList->setAttrValue($name, $value);
+                $this->attributeList->setAttrValue($name, (string) $value);
 
                 break;
 
@@ -160,7 +160,7 @@ class HTMLAnchorElement extends HTMLElement
                 break;
 
             case 'hrefLang':
-                $this->attributeList->setAttrValue($name, $value);
+                $this->attributeList->setAttrValue($name, (string) $value);
 
                 break;
 
@@ -175,7 +175,7 @@ class HTMLAnchorElement extends HTMLElement
                 break;
 
             case 'ping':
-                $this->ping->value = $value;
+                $this->ping->value = (string) $value;
 
                 break;
 
@@ -190,7 +190,7 @@ class HTMLAnchorElement extends HTMLElement
                 break;
 
             case 'rel':
-                $this->attributeList->setAttrValue($name, $value);
+                $this->attributeList->setAttrValue($name, (string) $value);
 
                 break;
 
@@ -200,17 +200,17 @@ class HTMLAnchorElement extends HTMLElement
                 break;
 
             case 'target':
-                $this->attributeList->setAttrValue($name, $value);
+                $this->attributeList->setAttrValue($name, (string) $value);
 
                 break;
 
             case 'text':
-                $this->setTextContent($value);
+                $this->setTextContent((string) $value);
 
                 break;
 
             case 'type':
-                $this->attributeList->setAttrValue($name, $value);
+                $this->attributeList->setAttrValue($name, (string) $value);
 
                 break;
 

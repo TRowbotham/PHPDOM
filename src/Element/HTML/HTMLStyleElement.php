@@ -41,17 +41,17 @@ class HTMLStyleElement extends HTMLElement
     {
         switch ($name) {
             case 'media':
-                $this->attributeList->setAttrValue($name, $value);
+                $this->attributeList->setAttrValue($name, (string) $value);
 
                 break;
 
             case 'scoped':
-                $this->attributeList->setAttrValue($name, $value);
+                $this->attributeList->setAttrValue($name, (string) $value);
 
                 break;
 
             case 'type':
-                $this->attributeList->setAttrValue($name, $value);
+                $this->attributeList->setAttrValue($name, (string) $value);
 
                 break;
 

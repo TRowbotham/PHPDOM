@@ -184,17 +184,17 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
     {
         switch ($name) {
             case 'classList':
-                $this->classList->value = $value;
+                $this->classList->value = (string) $value;
 
                 break;
 
             case 'className':
-                $this->attributeList->setAttrValue('class', $value);
+                $this->attributeList->setAttrValue('class', (string) $value);
 
                 break;
 
             case 'id':
-                $this->attributeList->setAttrValue($name, $value);
+                $this->attributeList->setAttrValue($name, (string) $value);
 
                 break;
 
@@ -206,7 +206,7 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
 
                 // 2. Let fragment be the result of invoking the fragment parsing algorithm with the
                 // new value as markup, and with context element.
-                $fragment = ParserFactory::parseFragment($value, $this);
+                $fragment = ParserFactory::parseFragment((string) $value, $this);
 
                 // 3. If the context object is a template element, then let context object be the
                 // template's template contents (a DocumentFragment).
@@ -252,7 +252,7 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
                 // Let fragment be the result of invoking the fragment parsing
                 // algorithm with the new value as markup, and parent as the
                 // context element.
-                $fragment = ParserFactory::parseFragment($value, $parent);
+                $fragment = ParserFactory::parseFragment((string) $value, $parent);
 
                 // Replace the context object with fragment within the context
                 // object's parent.

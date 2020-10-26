@@ -60,7 +60,7 @@ class HTMLDocument extends Document
                 break;
 
             case 'title':
-                $this->setTitle($value);
+                $this->setTitle((string) $value);
 
                 break;
 

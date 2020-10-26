@@ -55,7 +55,7 @@ class HTMLBaseElement extends HTMLElement
         switch ($name) {
             case 'href':
             case 'target':
-                $this->attributeList->setAttrValue($name, $value);
+                $this->attributeList->setAttrValue($name, (string) $value);
 
                 break;
 

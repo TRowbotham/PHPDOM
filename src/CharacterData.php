@@ -76,7 +76,7 @@ abstract class CharacterData extends Node implements ChildNode
                     $value = '';
                 }
 
-                $this->doReplaceData(0, $this->length, $value);
+                $this->doReplaceData(0, $this->length, (string) $value);
 
                 break;
 

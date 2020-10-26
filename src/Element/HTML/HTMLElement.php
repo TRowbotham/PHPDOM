@@ -191,12 +191,12 @@ class HTMLElement extends Element
     {
         switch ($name) {
             case 'accessKey':
-                $this->attributeList->setAttrValue($name, $value);
+                $this->attributeList->setAttrValue($name, (string) $value);
 
                 break;
 
             case 'contentEditable':
-                $value = mb_strtolower($value, 'utf-8');
+                $value = mb_strtolower((string) $value, 'utf-8');
 
                 if ($value === 'inherit') {
                     $this->attributeList->removeAttrByNamespaceAndLocalName(null, $name);
@@ -211,27 +211,27 @@ class HTMLElement extends Element
                 break;
 
             case 'dir':
-                $this->attributeList->setAttrValue($name, $value);
+                $this->attributeList->setAttrValue($name, (string) $value);
 
                 break;
 
             case 'draggable':
-                $this->attributeList->setAttrValue($name, $value);
+                $this->attributeList->setAttrValue($name, (string) $value);
 
                 break;
 
             case 'dropzone':
-                $this->attributeList->setAttrValue($name, $value);
+                $this->attributeList->setAttrValue($name, (string) $value);
 
                 break;
 
             case 'hidden':
-                $this->attributeList->setAttrValue($name, $value);
+                $this->attributeList->setAttrValue($name, (string) $value);
 
                 break;
 
             case 'lang':
-                $this->attributeList->setAttrValue($name, $value);
+                $this->attributeList->setAttrValue($name, (string) $value);
 
                 break;
 
@@ -241,12 +241,12 @@ class HTMLElement extends Element
                 break;
 
             case 'tabIndex':
-                $this->attributeList->setAttrValue('tabindex', $value);
+                $this->attributeList->setAttrValue('tabindex', (string) $value);
 
                 break;
 
             case 'title':
-                $this->attributeList->setAttrValue($name, $value);
+                $this->attributeList->setAttrValue($name, (string) $value);
 
                 break;
 

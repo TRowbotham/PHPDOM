@@ -88,37 +88,37 @@ class HTMLLinkElement extends HTMLElement
     {
         switch ($name) {
             case 'crossOrigin':
-                $this->attributeList->setAttrValue('crossorigin', $value);
+                $this->attributeList->setAttrValue('crossorigin', (string) $value);
 
                 break;
 
             case 'href':
-                $this->attributeList->setAttrValue($name, $value);
+                $this->attributeList->setAttrValue($name, (string) $value);
 
                 break;
 
             case 'hrefLang':
-                $this->attributeList->setAttrValue('hreflang', $value);
+                $this->attributeList->setAttrValue('hreflang', (string) $value);
 
                 break;
 
             case 'media':
-                $this->attributeList->setAttrValue($name, $value);
+                $this->attributeList->setAttrValue($name, (string) $value);
 
                 break;
 
             case 'rel':
-                $this->attributeList->setAttrValue($name, $value);
+                $this->attributeList->setAttrValue($name, (string) $value);
 
                 break;
 
             case 'sizes':
-                $this->attributeList->setAttrValue($name, $value);
+                $this->attributeList->setAttrValue($name, (string) $value);
 
                 break;
 
             case 'type':
-                $this->attributeList->setAttrValue($name, $value);
+                $this->attributeList->setAttrValue($name, (string) $value);
 
                 break;
 

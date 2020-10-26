@@ -102,7 +102,7 @@ class Attr extends Node
     {
         switch ($name) {
             case 'value':
-                $this->setExistingAttributeValue($value);
+                $this->setExistingAttributeValue((string) $value);
 
                 break;
 

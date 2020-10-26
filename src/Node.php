@@ -166,7 +166,7 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
     {
         switch ($name) {
             case 'nodeValue':
-                $this->setNodeValue($value);
+                $this->setNodeValue($value === null ? $value : (string) $value);
 
                 break;
 
