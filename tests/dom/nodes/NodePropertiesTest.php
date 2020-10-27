@@ -21,7 +21,7 @@ class NodePropertiesTest extends NodeTestCase
     use WindowTrait;
 
     // Mostly deprecated or irrelevant properties
-    private const IGNORE = ['compatMode', 'URL', 'documentURI'];
+    private const IGNORE = ['compatMode'];
 
     /**
      * @dataProvider nodePropertiesProvider
@@ -33,12 +33,6 @@ class NodePropertiesTest extends NodeTestCase
         foreach ($nodeData as $prop => $expected) {
             if (in_array($prop, self::IGNORE, true)) {
                 continue;
-            }
-
-            // TODO: Stop overriding this when we return a collection for Node::children
-            // instead of the current array.
-            if ($prop === 'children->length') {
-                $prop = 'childElementCount';
             }
 
             $this->assertSame($window->eval("{$node}->{$prop}"), $expected);
