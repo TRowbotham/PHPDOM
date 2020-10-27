@@ -123,9 +123,8 @@ class DOMImplementationCreateDocumentTest extends TestCase
         $document = $this->getHTMLDocument();
         $doc = $document->implementation->createDocument($namespace, $qualifiedName, $doctype);
         $this->assertSame('UTF-8', $doc->characterSet, 'characterSet');
-        // TODO: Should we support these aliases?
-        //$this->assertSame('UTF-8', $doc->charset, 'charset');
-        //$this->assertSame('UTF-8', $doc->inputEncoding, 'inputEncoding');
+        $this->assertSame('UTF-8', $doc->charset, 'charset');
+        $this->assertSame('UTF-8', $doc->inputEncoding, 'inputEncoding');
     }
 
     public function testCreateDocumentWithMissingArgsShouldThrow(): void

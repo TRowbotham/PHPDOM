@@ -157,6 +157,8 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
     {
         switch ($name) {
             case 'characterSet':
+            case 'charset':
+            case 'inputEncoding':
                 return $this->characterSet;
 
             case 'childElementCount':

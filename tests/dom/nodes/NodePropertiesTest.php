@@ -13,8 +13,6 @@ use function extract;
 use function in_array;
 use function mb_strlen;
 
-use const DIRECTORY_SEPARATOR as DS;
-
 /**
  * @see https://github.com/web-platform-tests/wpt/blob/master/dom/nodes/Node-properties.html
  */
@@ -23,7 +21,7 @@ class NodePropertiesTest extends NodeTestCase
     use WindowTrait;
 
     // Mostly deprecated or irrelevant properties
-    private const IGNORE = ['compatMode', 'URL', 'documentURI', 'inputEncoding', 'charset'];
+    private const IGNORE = ['compatMode', 'URL', 'documentURI'];
 
     /**
      * @dataProvider nodePropertiesProvider
