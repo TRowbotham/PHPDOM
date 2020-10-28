@@ -2214,7 +2214,7 @@ class Tokenizer
                         // character are an ASCII case-insensitive match for the
                         // word "PUBLIC", then consume those characters and
                         // switch to the after DOCTYPE public keyword state.
-                        if ($chars = Utils::toASCIILowercase('PUBLIC')) {
+                        if ($chars === Utils::toASCIILowercase('PUBLIC')) {
                             $this->input->get(5);
                             $this->state->tokenizerState = TokenizerState::AFTER_DOCTYPE_PUBLIC_KEYWORD;
 
