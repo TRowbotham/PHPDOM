@@ -19,6 +19,7 @@ use Rowbot\DOM\Parser\Token\StartTagToken;
 use Rowbot\DOM\Support\CodePointStream;
 use Rowbot\DOM\Utils;
 
+use function array_pop;
 use function ctype_alnum;
 use function ctype_alpha;
 use function ctype_digit;
@@ -2818,7 +2819,7 @@ class Tokenizer
                 // https://html.spec.whatwg.org/multipage/syntax.html#named-character-reference-state
                 case TokenizerState::NAMED_CHARACTER_REFERENCE:
                     $char = '';
-                    $matchFound = false;
+                    $matches = [];
 
                     // Load the JSON file for the named character references
                     // table on demand.
@@ -2834,9 +2835,9 @@ class Tokenizer
                     }
 
                     // Consume the maximum number of characters possible, up to
-                    // MAX_NAMED_CHAR_REFERENCE_LENGTH, which defines the named
-                    // character reference with the greatest number of
-                    // characters in the named character references table.
+                    // MAX_NAMED_CHAR_REFERENCE_LENGTH, where the consumed characters are one of the
+                    // identifiers in the first column of the named character references table.
+                    // Append each character to the temporary buffer when it's consumed.
                     for ($i = 0; $i < self::MAX_NAMED_CHAR_REFERENCE_LENGTH; $i++) {
                         $char = $this->input->get();
 
@@ -2850,27 +2851,45 @@ class Tokenizer
                         // temporary buffer.
                         $buffer .= $char;
 
-                        // Check if the buffer exists in the named character
-                        // references table. If the last character consumed was
-                        // a (;), then the named reference matched is standards
-                        // conforming, yay! Break out of the loop with a match.
-                        // If the buffer matches a named reference and the next
-                        // character in the input stream is an (;), let the loop
-                        // continue to consume the (;), then break with a match.
-                        // If the buffer is a match and the next character is
-                        // not a (;), break with a match, but this is only
-                        // supported for historical purposes.
-                        if (
-                            isset(self::$namedCharacterReferences[$buffer])
-                            && ($char === ';' || $this->input->peek() !== ';')
-                        ) {
-                            $matchFound = true;
+                        $conformingMatch = isset(self::$namedCharacterReferences[$buffer . ';']);
+                        $nonConformingMatch = isset(self::$namedCharacterReferences[$buffer]);
+
+                        if ($nonConformingMatch || $conformingMatch) {
+                            if ($conformingMatch && $this->input->peek() === ';') {
+                                // we found a full match
+                                $char = $this->input->get();
+                                $buffer .= $char;
+                                $matches[] = [$buffer, $i];
+
+                                break;
+                            }
+
+                            // we found a potential match as it is possible to match a shorter
+                            // non-semi-colon terminated entity before a longer one.
+                            if ($nonConformingMatch) {
+                                $matches[] = [$buffer, $i];
+                            }
+
+                            // dont't break as there could be a longer entity to match
+
+                            // If we find a semi-colon that wasn't consumed as a full match above
+                            // or we encounter a non-alphanumeric character then, that indicates
+                            // that we should stop consuming characters for that entity.
+                        } elseif ($char === ';' || !ctype_alnum($char)) {
+                            if ($matches !== []) {
+                                // partial match, rewind the input stream by the difference between
+                                // the number of characters consumed and the number of characters
+                                // consumed by the last match.
+                                $this->input->seek(end($matches)[1] - $i);
+                            }
 
                             break;
                         }
                     }
 
-                    if ($matchFound) {
+                    if ($matches !== []) {
+                        $buffer = array_pop($matches)[0];
+
                         // If the character reference was consumed as part of an
                         // attribute, and the last character is not a semi-colon
                         // (;), and the next character in the input stream is
