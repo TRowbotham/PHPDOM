@@ -2049,12 +2049,12 @@ class Tokenizer
 
                         return;
                     } else {
-                        // Append two U+002D HYPHEN-MINUS characters (-),
-                        // a U+0021 EXCLAMATION MARK character (!), and the
-                        // current input character to the comment token's data.
-                        // Switch to the comment state
+                        // Append two U+002D HYPHEN-MINUS characters (-) and a U+0021 EXCLAMATION
+                        // MARK character (!) to the comment token's data. Reconsume in the comment
+                        // state.
                         $commentToken->data .= '--!';
                         $this->state->tokenizerState = TokenizerState::COMMENT;
+                        $this->input->seek(-1);
                     }
 
                     break;
