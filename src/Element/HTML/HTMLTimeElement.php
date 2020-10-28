@@ -6,6 +6,8 @@ namespace Rowbot\DOM\Element\HTML;
 
 /**
  * @see https://html.spec.whatwg.org/multipage/semantics.html#the-time-element
+ *
+ * @property string $dateTime
  */
 class HTMLTimeElement extends HTMLElement
 {
