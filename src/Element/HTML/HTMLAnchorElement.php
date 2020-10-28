@@ -37,6 +37,7 @@ use Rowbot\DOM\Element\HTMLHyperlinkElementUtils;
  * @property string $target   Reflects the target HTML attribute, which indicates where to display the linked resource.
  * @property string $type     Reflects the type HTML attribute, which indicates the MIME type of the linked resource.
  * @property string $username Represents the username specified, if any, of theURL.
+ * @property string $text
  *
  * @property-read string                   $origin  Represents the URL's origin which is composed of the scheme, domain,
  *                                                  and port.
