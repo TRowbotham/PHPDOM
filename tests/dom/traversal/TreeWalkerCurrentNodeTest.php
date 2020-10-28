@@ -16,7 +16,11 @@ class TreeWalkerCurrentNodeTest extends TestCase
 
     public function testTreeWalkerParentDoesntSetTheCurrentNodeToANodeNotUnderTheRoot(): void
     {
-        $w = self::$document->createTreeWalker(self::$subTree, NodeFilter::SHOW_ELEMENT, 'self::all');
+        $w = self::$document->createTreeWalker(
+            self::$subTree,
+            NodeFilter::SHOW_ELEMENT,
+            self::class . '::all'
+        );
 
         $this->assertNode(['type' => Element::class, 'id' => 'subTree'], $w->currentNode);
         $this->assertNull($w->parentNode());
@@ -28,7 +32,7 @@ class TreeWalkerCurrentNodeTest extends TestCase
         $w = self::$document->createTreeWalker(
             self::$subTree,
             NodeFilter::SHOW_ELEMENT | NodeFilter::SHOW_COMMENT,
-            'self::all'
+            self::class . '::all'
         );
         $w->currentNode = self::$document->documentElement;
 
@@ -71,7 +75,7 @@ class TreeWalkerCurrentNodeTest extends TestCase
         $w = self::$document->createTreeWalker(
             self::$subTree,
             NodeFilter::SHOW_ELEMENT,
-            'self::all'
+            self::class . '::all'
         );
         $w->currentNode = self::$subTree->previousSibling;
         $this->assertSame(self::$subTree, $w->nextNode());

@@ -19,11 +19,6 @@ final class NodeIterator
     use NodeFilterUtils;
 
     /**
-     * @var \Rowbot\DOM\NodeFilter|null
-     */
-    private $filter;
-
-    /**
      * @var bool
      */
     private $pointerBeforeReferenceNode;
@@ -48,7 +43,7 @@ final class NodeIterator
      */
     public function __construct(Node $root, int $whatToShow = NodeFilter::SHOW_ALL, $filter = null)
     {
-        $this->filter = $this->getNodeFilter($filter);
+        $this->setFilter($filter);
         $this->pointerBeforeReferenceNode = true;
         $this->referenceNode = $root;
         $this->root = $root;

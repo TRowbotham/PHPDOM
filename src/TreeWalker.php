@@ -24,11 +24,6 @@ final class TreeWalker
     private $currentNode;
 
     /**
-     * @var \Rowbot\DOM\NodeFilter|null
-     */
-    private $filter;
-
-    /**
      * @var \Rowbot\DOM\Node
      */
     private $root;
@@ -47,7 +42,7 @@ final class TreeWalker
         $filter = null
     ) {
         $this->currentNode = $root;
-        $this->filter = $this->getNodeFilter($filter);
+        $this->setFilter($filter);
         $this->root = $root;
         $this->whatToShow = $whatToShow;
     }

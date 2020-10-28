@@ -72,7 +72,7 @@ class TreeWalkerTest extends TestCase
 
         $this->assertSame($root, $walker->root);
         $this->assertSame($whatToShow, $walker->whatToShow);
-        $this->assertSameFilter($walker, $filter);
+        $this->assertSame($filter, $walker->filter);
         $this->assertSame($root, $walker->currentNode);
 
         $expectedReturn = null;

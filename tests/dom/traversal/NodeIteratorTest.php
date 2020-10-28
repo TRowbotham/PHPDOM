@@ -96,7 +96,7 @@ class NodeIteratorTest extends TestCase
         $this->assertSame($root, $iter->referenceNode);
         $this->assertTrue($iter->pointerBeforeReferenceNode);
         $this->assertSame($whatToShow, $iter->whatToShow);
-        $this->assertSameFilter($iter, $filter);
+        $this->assertSame($filter, $iter->filter);
 
         $expectedReferenceNode = $root;
         $expectedBeforeNode = true;

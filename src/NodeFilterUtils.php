@@ -6,12 +6,17 @@ namespace Rowbot\DOM;
 
 use Rowbot\DOM\Exception\InvalidStateError;
 use Throwable;
+use TypeError;
 
-use function call_user_func;
 use function is_callable;
 
 trait NodeFilterUtils
 {
+    /**
+     * @var \Rowbot\DOM\NodeFilter|callable|null
+     */
+    private $filter;
+
     /**
      * @var bool
      */
@@ -20,30 +25,13 @@ trait NodeFilterUtils
     /**
      * @param \Rowbot\DOM\NodeFilter|callable|null $filter
      */
-    private function getNodeFilter($filter): ?NodeFilter
+    private function setFilter($filter): void
     {
-        if ($filter instanceof NodeFilter) {
-            return $filter;
+        if ($filter !== null && !$filter instanceof NodeFilter && !is_callable($filter)) {
+            throw new TypeError();
         }
 
-        if (is_callable($filter)) {
-            return new class ($filter) implements NodeFilter {
-                /** @var callable */
-                private $filter;
-
-                public function __construct(callable $filter)
-                {
-                    $this->filter = $filter;
-                }
-
-                public function acceptNode(Node $node): int
-                {
-                    return call_user_func($this->filter, $node);
-                }
-            };
-        }
-
-        return null;
+        $this->filter = $filter;
     }
 
     /**
@@ -89,7 +77,9 @@ trait NodeFilterUtils
             // with traverser's filter, "acceptNode", and Node. If this throws
             // an exception, then unset traverser's active flag and rethrow the
             // exception.
-            $result = $this->filter->acceptNode($node);
+            $result = $this->filter instanceof NodeFilter
+                ? $this->filter->acceptNode($node)
+                : ($this->filter)($node);
         } catch (Throwable $e) {
             $this->isActive = false;
 
