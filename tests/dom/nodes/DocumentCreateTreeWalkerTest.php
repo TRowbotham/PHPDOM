@@ -50,7 +50,7 @@ class DocumentCreateTreeWalkerTest extends TestCase
         $this->assertSame(self::$document->body, $tw->root);
         $this->assertSame(self::$document->body, $tw->currentNode);
         $this->assertSame(42, $tw->whatToShow);
-        $this->assertSameFilter($tw, $fn);
+        $this->assertSame($fn, $tw->filter);
     }
 
     public static function setUpBeforeClass(): void
