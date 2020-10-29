@@ -1860,6 +1860,7 @@ class Tokenizer
                     } else {
                         // Append a U+002D HYPHEN-MINUS character (-) to the
                         // comment token's data. Reconsume in the comment state.
+                        $this->input->seek(-1);
                         $commentToken->data .= '-';
                         $this->state->tokenizerState = TokenizerState::COMMENT;
                     }
