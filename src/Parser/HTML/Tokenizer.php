@@ -2276,6 +2276,8 @@ class Tokenizer
                         // Parse error.
                         // Set the DOCTYPE token's force-quirks flag to on. Emit
                         // that DOCTYPE token. Emit an end-of-file token.
+                        $doctypeToken->setQuirksMode('on');
+
                         yield $doctypeToken;
                         yield new EOFToken();
 
