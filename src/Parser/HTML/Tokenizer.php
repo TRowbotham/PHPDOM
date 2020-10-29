@@ -1793,15 +1793,16 @@ class Tokenizer
                         $node = $this->getAdjustedCurrentNode();
 
                         if (
-                            !($node instanceof Element
-                                && $node->namespaceURI === Namespaces::HTML)
+                            $node !== null
+                            && (
+                                !$node instanceof Element
+                                || $node->namespaceURI !== Namespaces::HTML
+                            )
                         ) {
-                            $this->state->tokenizerState
-                                = TokenizerState::CDATA_SECTION;
+                            $this->state->tokenizerState = TokenizerState::CDATA_SECTION;
                         } else {
                             $commentToken = new CommentToken('[CDATA[');
-                            $this->state->tokenizerState
-                                = TokenizerState::BOGUS_COMMENT;
+                            $this->state->tokenizerState = TokenizerState::BOGUS_COMMENT;
                         }
                     } else {
                         // This is an incorrectly-opened-comment parse error.
