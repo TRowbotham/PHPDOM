@@ -34,7 +34,7 @@ class CodePointStream
         $this->currentChar = 0;
         $this->nextChar = 0;
 
-        if ($data) {
+        if ($data !== '') {
             $this->data = preg_split('//u', $data, -1, PREG_SPLIT_NO_EMPTY);
 
             return;
