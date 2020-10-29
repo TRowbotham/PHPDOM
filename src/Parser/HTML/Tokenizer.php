@@ -27,8 +27,8 @@ use function ctype_lower;
 use function ctype_upper;
 use function ctype_xdigit;
 use function file_get_contents;
-use function intval;
 use function json_decode;
+use function ord;
 use function preg_match;
 use function strtolower;
 
@@ -3042,14 +3042,21 @@ class Tokenizer
                 case TokenizerState::HEXADECIMAL_CHARACTER_REFERENCE:
                     $c = $this->input->get();
 
-                    if (ctype_upper($c)) {
+                    if (ctype_digit($c)) {
+                        // Multiply the character reference code by 16.
+                        // Add a numeric version of the current input character
+                        // (subtract 0x0030 from the character's code point) to
+                        // the character reference code.
+                        $characterReferenceCode *= 16;
+                        $characterReferenceCode += ord($c) - 0x0030;
+                    } elseif (ctype_upper($c)) {
                         // Multiply the character reference code by 16. Add a
                         // numeric version of the current input character as a
                         // hexademical digit (subtract 0x0037 from the
                         // character's code point) to the character reference
                         // code.
                         $characterReferenceCode *= 16;
-                        $characterReferenceCode += intval($c, 16);
+                        $characterReferenceCode += ord($c) - 0x0037;
                     } elseif (ctype_lower($c)) {
                         // Multiply the character reference code by 16. Add a
                         // numeric version of the current input character as a
@@ -3057,14 +3064,7 @@ class Tokenizer
                         // character's code point) to the character reference
                         // code.
                         $characterReferenceCode *= 16;
-                        $characterReferenceCode += intval($c, 16);
-                    } elseif (ctype_digit($c)) {
-                        // Multiply the character reference code by 16.
-                        // Add a numeric version of the current input character
-                        // (subtract 0x0030 from the character's code point) to
-                        // the character reference code.
-                        $characterReferenceCode *= 16;
-                        $characterReferenceCode += intval($c, 16);
+                        $characterReferenceCode += ord($c) - 0x0057;
                     } elseif ($c === ';') {
                         // Switch to the numeric character reference end state.
                         $this->state->tokenizerState = TokenizerState::NUMERIC_CHARACTER_REFERENCE_END;
