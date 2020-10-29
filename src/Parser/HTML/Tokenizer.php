@@ -2878,10 +2878,7 @@ class Tokenizer
                             // that we should stop consuming characters for that entity.
                         } elseif ($char === ';' || !ctype_alnum($char)) {
                             if ($matches !== []) {
-                                // partial match, rewind the input stream by the difference between
-                                // the number of characters consumed and the number of characters
-                                // consumed by the last match.
-                                $this->input->seek(end($matches)[1] - $i);
+                                // partial match
                             }
 
                             break;
@@ -2889,6 +2886,10 @@ class Tokenizer
                     }
 
                     if ($matches !== []) {
+                        // rewind the input stream by the difference between the number of
+                        // characters consumed and the number of characters consumed by the last
+                        // match.
+                        $this->input->seek(end($matches)[1] - $i);
                         $buffer = array_pop($matches)[0];
 
                         // If the character reference was consumed as part of an
