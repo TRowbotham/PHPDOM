@@ -30,16 +30,10 @@ class AttributeToken implements Token
      */
     public $value;
 
-    public function __construct(string $name = null, string $value = null)
+    public function __construct(string $name = '', string $value = '')
     {
-        if ($name !== null) {
-            $this->name = $name;
-        }
-
-        if ($value !== null) {
-            $this->value = $value;
-        }
-
+        $this->name = $name;
+        $this->value = $value;
         $this->namespace = null;
         $this->prefix = null;
     }
