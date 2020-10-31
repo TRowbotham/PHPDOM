@@ -4189,55 +4189,55 @@ class TreeBuilder
         ) {
             $this->inForeignContentScriptEndTag($token);
         } elseif ($token instanceof EndTagToken) {
-            // Initialise node to be the current node (the bottommost node of
-            // the stack).
+            // 1. Initialize node to be the current node (the bottommost node of the stack).
             $node = $this->openElements->bottom();
 
-            // If node's tag name, converted to ASCII lowercase, is not the
-            // same as the tag name of the token, then this is a parse error.
+            // 2. If node's tag name, converted to ASCII lowercase, is not the same as the tag name
+            // of the token, then this is a parse error.
             if (Utils::toASCIILowercase($node->tagName) !== $tagName) {
                 // Parse error.
             }
 
-            $iterator = $this->openElements->getIterator();
+            $iter = $this->openElements->getIterator();
+            $iter->rewind();
 
-            // Step "Loop".
-            while ($iterator->valid()) {
-                // If node is the topmost element in the stack of open elements,
-                // then return. (fragment case)
-                if ($node === $this->openElements[0]) {
+            // 3. Loop: If node is the topmost element in the stack of open elements, then return.
+            // (fragment case)
+            while ($iter->valid()) {
+                if ($node === $this->openElements->top()) {
                     return;
                 }
 
-                // If node's tag name, converted to ASCII lowercase, is the same
-                // as the tag name of the token, pop elements from the stack of
-                // open elements until node has been popped from the stack, and
-                // then return.
+                // 4. If node's tag name, converted to ASCII lowercase, is the same as the tag name
+                // of the token, pop elements from the stack of open elements until node has been
+                // popped from the stack, and then return.
                 if (Utils::toASCIILowercase($node->tagName) === $tagName) {
                     while (!$this->openElements->isEmpty()) {
-                        $iterator->next();
+                        $iter->next();
 
                         if ($this->openElements->pop() === $node) {
                             return;
                         }
                     }
+
+                    $iter = $this->openElements->getIterator();
+                    $iter->rewind();
+                } else {
+                    $iter->next();
                 }
 
-                // Set node to the previous entry in the stack of open elements.
-                $iterator->next();
-                $node = $iterator->current();
+                // 5. Set node to the previous entry in the stack of open elements.
+                $node = $iter->current();
 
-                // If node is not an element in the HTML namespace, return to
-                // the step labeled loop.
-                if (!($node instanceof Element && $node->namespaceURI === Namespaces::HTML)) {
-                    // Return to the step labled loop.
-                } else {
-                    // Otherwise, process the token according to the rules given
-                    // in the section corresponding to the current insertion
-                    // mode in HTML content.
-                    $this->run($token);
+                // 6. If node is not an element in the HTML namespace, return to the step labeled loop.
+                if ($node instanceof Element && $node->namespaceURI === Namespaces::HTML) {
+                    break;
                 }
             }
+
+            // 7. Otherwise, process the token according to the rules given in the section
+            // corresponding to the current insertion mode in HTML content.
+            $this->processWithCurrentInsertionMode($token);
         }
     }
 
@@ -4393,6 +4393,11 @@ class TreeBuilder
             return;
         }
 
+        $this->processWithCurrentInsertionMode($token);
+    }
+
+    public function processWithCurrentInsertionMode(Token $token): void
+    {
         switch ($this->state->insertionMode) {
             case ParserInsertionMode::INITIAL:
                 $this->initialInsertionMode($token);
