@@ -1737,7 +1737,7 @@ class TreeBuilder
                     // Parse error.
                     $this->adoptionAgency($token);
 
-                    if ($element !== null) {
+                    if ($element !== null && $this->activeFormattingElements->contains($element)) {
                         $this->activeFormattingElements->remove($element);
                         $this->openElements->remove($element);
                     }
