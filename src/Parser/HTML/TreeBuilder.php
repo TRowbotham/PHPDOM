@@ -1961,7 +1961,7 @@ class TreeBuilder
 
             if (
                 $typeAttribute === null
-                || Utils::toASCIILowercase($typeAttribute->value) === 'hidden'
+                || Utils::toASCIILowercase($typeAttribute->value) !== 'hidden'
             ) {
                 $this->framesetOk = 'not ok';
             }
