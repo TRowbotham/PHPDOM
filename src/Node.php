@@ -16,6 +16,7 @@ use Rowbot\DOM\Support\UuidTrait;
 
 use function count;
 use function method_exists;
+use function range;
 use function spl_object_hash;
 use function strcmp;
 
@@ -461,10 +462,27 @@ abstract class Node extends EventTarget implements UniquelyIdentifiable
         }
 
         if ($this instanceof Element) {
-            foreach ($this->attributeList as $i => $attribute) {
-                $isEqual = $attribute->isEqualNode($otherNode->attributeList[$i]);
+            $attributeCount = $this->attributeList->count();
 
-                if (!$isEqual) {
+            if (count($otherNode->attributeList) < $attributeCount) {
+                return false;
+            }
+
+            $indexes = range(0, $attributeCount - 1);
+
+            foreach ($this->attributeList as $attribute) {
+                $match = false;
+
+                foreach ($indexes as $i) {
+                    if ($attribute->isEqualNode($otherNode->attributeList[$i])) {
+                        $match = true;
+                        unset($indexes[$i]);
+
+                        break;
+                    }
+                }
+
+                if (!$match) {
                     return false;
                 }
             }
