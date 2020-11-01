@@ -3353,7 +3353,7 @@ class TreeBuilder
             // (fragment case)
             if (
                 !$this->openElements->hasElementInTableScope('td', Namespaces::HTML)
-                || !$this->openElements->hasElementInTableScope('th', Namespaces::HTML)
+                && !$this->openElements->hasElementInTableScope('th', Namespaces::HTML)
             ) {
                 // Parse error.
                 // Ignore the token.
