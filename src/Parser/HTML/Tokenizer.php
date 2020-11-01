@@ -3049,15 +3049,19 @@ class Tokenizer
                         // the character reference code.
                         $characterReferenceCode *= 16;
                         $characterReferenceCode += ord($c) - 0x0030;
-                    } elseif (ctype_upper($c)) {
-                        // Multiply the character reference code by 16. Add a
-                        // numeric version of the current input character as a
-                        // hexademical digit (subtract 0x0037 from the
-                        // character's code point) to the character reference
-                        // code.
-                        $characterReferenceCode *= 16;
-                        $characterReferenceCode += ord($c) - 0x0037;
-                    } elseif (ctype_lower($c)) {
+                    } elseif (ctype_xdigit($c)) {
+                        if (ctype_upper($c)) {
+                            // Multiply the character reference code by 16. Add a
+                            // numeric version of the current input character as a
+                            // hexademical digit (subtract 0x0037 from the
+                            // character's code point) to the character reference
+                            // code.
+                            $characterReferenceCode *= 16;
+                            $characterReferenceCode += ord($c) - 0x0037;
+
+                            break;
+                        }
+
                         // Multiply the character reference code by 16. Add a
                         // numeric version of the current input character as a
                         // hexademical digit (subtract 0x0057 from the
