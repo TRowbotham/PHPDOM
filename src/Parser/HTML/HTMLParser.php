@@ -73,7 +73,8 @@ class HTMLParser extends Parser
             $this->isFragmentCase,
             $this->isScriptingEnabled,
             $this->contextElement,
-            $this->state
+            $this->state,
+            $this->inputStream
         );
         $this->tokenizer = new Tokenizer(
             $this->inputStream,

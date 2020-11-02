@@ -55,6 +55,7 @@ use Rowbot\DOM\Parser\Token\EOFToken;
 use Rowbot\DOM\Parser\Token\StartTagToken;
 use Rowbot\DOM\Parser\Token\TagToken;
 use Rowbot\DOM\Parser\Token\Token;
+use Rowbot\DOM\Support\CodePointStream;
 use Rowbot\DOM\Text;
 use Rowbot\DOM\Utils;
 use SplObjectStorage;
@@ -193,6 +194,11 @@ class TreeBuilder
     private $framesetOk;
 
     /**
+     * @var \Rowbot\Support\CodePointStream
+     */
+    private $inputStream;
+
+    /**
      * Stores the insertion mode that the TreeBuilder should return to after
      * it is done processing the current token in the current insertion mode.
      *
@@ -220,13 +226,15 @@ class TreeBuilder
         bool $isFragmentCase,
         bool $isScriptingEnabled,
         ?Element $contextElement,
-        ParserState $state
+        ParserState $state,
+        CodePointStream $inputStream
     ) {
         $this->activeFormattingElements = $activeFormattingElements;
         $this->contextElement = $contextElement;
         $this->document = $document;
         $this->fosterParenting = false;
         $this->framesetOk = 'ok';
+        $this->inputStream = $inputStream;
         $this->isFragmentCase = $isFragmentCase;
         $this->isScriptingEnabled = $isScriptingEnabled;
         $this->openElements = $openElements;
@@ -1284,10 +1292,22 @@ class TreeBuilder
             // Insert an HTML element for the token.
             $this->insertForeignElement($token, Namespaces::HTML);
 
-            // TODO: If the next token is a U+000A LINE FEED (LF) character
+            // If the next token is a U+000A LINE FEED (LF) character
             // token, then ignore that token and move on to the next one.
             // (Newlines at the start of pre blocks are ignored as an authoring
             // convenience.)
+            $peeked = $this->inputStream->peek();
+
+            if ($peeked === "\n") {
+                $this->inputStream->get();
+            } elseif ($peeked === '&') {
+                // need to account for numeric character reference as well
+                $peeked = $this->inputStream->peek(6);
+
+                if ($peeked === '&#x0a;' || $peeked === '&#x0A;') {
+                    $this->inputStream->get(6);
+                }
+            }
 
             // Set the frameset-ok flag to "not ok".
             $this->framesetOk = 'not ok';
