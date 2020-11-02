@@ -3494,6 +3494,7 @@ class TreeBuilder
             // optgroup element, then pop the current node from the stack of
             // open elements.
             $iterator = $this->openElements->getIterator();
+            $iterator->rewind();
             $iterator->next();
 
             if (
