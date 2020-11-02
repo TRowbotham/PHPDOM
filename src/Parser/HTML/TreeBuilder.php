@@ -141,7 +141,7 @@ class TreeBuilder
      * @see https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-inforeign:svg-namespace
      */
     private const SVG_ELEMENTS = [
-        'altgraph'            => 'altGraph',
+        'altglyph'            => 'altGlyph',
         'altglyphdef'         => 'altGlyphDef',
         'altglyphitem'        => 'altGlyphItem',
         'animatecolor'        => 'animateColor',
@@ -167,13 +167,14 @@ class TreeBuilder
         'femerge'             => 'feMerge',
         'femergenode'         => 'feMergeNode',
         'femorphology'        => 'feMorphology',
-        'feOffset'            => 'feOffset',
+        'feoffset'            => 'feOffset',
         'fepointlight'        => 'fePointLight',
         'fespecularlighting'  => 'feSpecularLighting',
         'fespotlight'         => 'feSpotLight',
         'fetile'              => 'feTile',
         'feturbulence'        => 'feTurbulence',
         'foreignobject'       => 'foreignObject',
+        'glyphref'            => 'glyphRef',
         'lineargradient'      => 'linearGradient',
         'radialgradient'      => 'radialGradient',
         'textpath'            => 'textPath',
