@@ -4360,7 +4360,7 @@ class TreeBuilder
             if (
                 $adjustedCurrentNode instanceof Element
                 && $adjustedCurrentNode->namespaceURI === Namespaces::MATHML
-                && $adjustedCurrentNode->localName === 'annotaion-xml'
+                && $adjustedCurrentNode->localName === 'annotation-xml'
                 && $token instanceof StartTagToken
                 && $token->tagName === 'svg'
             ) {
@@ -4994,7 +4994,7 @@ class TreeBuilder
         }
 
         if ($node->namespaceURI === Namespaces::MATHML) {
-            if ($node->localName !== 'annotaion-xml') {
+            if ($node->localName !== 'annotation-xml') {
                 return false;
             }
 
