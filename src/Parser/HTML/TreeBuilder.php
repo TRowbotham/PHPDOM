@@ -1043,7 +1043,11 @@ class TreeBuilder
                 $name = $attr->name;
 
                 if (!$firstOnStack->hasAttribute($name)) {
-                    $firstOnStack->setAttribute($name, $attr->value);
+                    $firstOnStack->setAttributeNode(new Attr(
+                        $firstOnStack->getNodeDocument(),
+                        $name,
+                        $attr->value
+                    ));
                 }
             }
         } elseif (
