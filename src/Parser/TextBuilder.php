@@ -31,6 +31,11 @@ class TextBuilder
         $this->data .= $text;
     }
 
+    public function getNode(): ?CharacterData
+    {
+        return $this->node;
+    }
+
     /**
      * Sets the text node that the text builder is operating on.
      */
@@ -48,7 +53,7 @@ class TextBuilder
             return;
         }
 
-        $this->node->data = $this->data;
+        $this->node->data .= $this->data;
         $this->data = '';
         $this->node = null;
     }

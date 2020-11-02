@@ -4842,6 +4842,11 @@ class TreeBuilder
         }
 
         if ($node instanceof Text) {
+            if ($node !== $this->textBuilder->getNode()) {
+                $this->textBuilder->flushText();
+                $this->textBuilder->setNode($node);
+            }
+
             $this->textBuilder->append($data);
 
             return;
