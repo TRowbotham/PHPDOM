@@ -4529,12 +4529,12 @@ class TreeBuilder
                     $matches
                 )
             ) {
-                $attr->prefix = $matches[0][1];
-                $attr->name = $matches[0][2];
+                $attr->prefix = $matches[1];
+                $attr->name = $matches[2];
                 $attr->namespace = Namespaces::XLINK;
             } elseif (preg_match('/^(xml):(lang|space)$/', $name, $matches)) {
-                $attr->prefix = $matches[0][1];
-                $attr->name = $matches[0][2];
+                $attr->prefix = $matches[1];
+                $attr->name = $matches[2];
                 $attr->namespace = Namespaces::XML;
             } elseif ($name === 'xmlns' || $name === 'xmlns:xlink') {
                 if ($name === 'xmlns:xlink') {
