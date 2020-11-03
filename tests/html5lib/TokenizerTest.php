@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Rowbot\DOM\Tests\html5lib\tokenizer;
+namespace Rowbot\DOM\Tests\html5lib;
 
 use DirectoryIterator;
 use Generator;
@@ -53,6 +53,8 @@ class TokenizerTest extends TestCase
         'Comment'   => CommentToken::class,
         'Character' => CharacterToken::class,
     ];
+
+    private const TEST_FILES_DIR = __DIR__ . DS . 'test_data' . DS . 'tokenizer';
 
     /**
      * @dataProvider tokenizerTestProvider
@@ -149,8 +151,8 @@ class TokenizerTest extends TestCase
 
     public function tokenizerTestProvider(): Generator
     {
-        foreach (new DirectoryIterator(__DIR__ . DS . 'test_data') as $file) {
-            if ($file->isDir() || $file->isDot()) {
+        foreach (new DirectoryIterator(self::TEST_FILES_DIR) as $file) {
+            if ($file->isDir() || $file->isDot() || $file->getFilename() === 'README.md') {
                 continue;
             }
 
