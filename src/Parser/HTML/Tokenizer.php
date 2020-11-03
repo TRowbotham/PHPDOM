@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Parser\HTML;
 
 use Generator;
-use IntlChar;
 use Rowbot\DOM\Element\Element;
+use Rowbot\DOM\Encoding\EncodingUtils;
 use Rowbot\DOM\Namespaces;
 use Rowbot\DOM\Parser\Collection\OpenElementStack;
 use Rowbot\DOM\Parser\Token\AttributeToken;
@@ -3198,7 +3198,7 @@ class Tokenizer
                     // code point equal to the character reference code to the
                     // temporary buffer. Flush code points consumed as a
                     // character reference. Switch to the return state.
-                    $buffer = IntlChar::chr($characterReferenceCode);
+                    $buffer = EncodingUtils::encodeCodePoint($characterReferenceCode);
 
                     yield from $this->flush($buffer, $attributeToken, $returnState);
 
