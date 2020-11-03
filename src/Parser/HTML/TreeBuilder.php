@@ -2501,6 +2501,7 @@ class TreeBuilder
                 Namespaces::HTML,
                 $furthestBlock
             );
+            $this->tokenRepository->attach($element, $this->tokenRepository[$formattingElement]);
 
             // Take all of the child nodes of furthest block and append them to
             // the element created in the last step.
