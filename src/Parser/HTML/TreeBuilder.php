@@ -1296,18 +1296,7 @@ class TreeBuilder
             // token, then ignore that token and move on to the next one.
             // (Newlines at the start of pre blocks are ignored as an authoring
             // convenience.)
-            $peeked = $this->inputStream->peek();
-
-            if ($peeked === "\n") {
-                $this->inputStream->get();
-            } elseif ($peeked === '&') {
-                // need to account for numeric character reference as well
-                $peeked = $this->inputStream->peek(6);
-
-                if ($peeked === '&#x0a;' || $peeked === '&#x0A;') {
-                    $this->inputStream->get(6);
-                }
-            }
+            $this->ignoreNextLineFeed();
 
             // Set the frameset-ok flag to "not ok".
             $this->framesetOk = 'not ok';
@@ -2032,10 +2021,11 @@ class TreeBuilder
             // Insert an HTML element for the token.
             $this->insertForeignElement($token, Namespaces::HTML);
 
-            // TODO: If the next token is a U+000A LINE FEED (LF) character
+            // If the next token is a U+000A LINE FEED (LF) character
             // token, then ignore that token and move on to the next one.
             // (Newlines at the start of textarea elements are ignored as an
             // authoring convenience.)
+            $this->ignoreNextLineFeed();
 
             // Switch the tokenizer to the RCDATA state.
             $this->state->tokenizerState = TokenizerState::RCDATA;
@@ -5312,5 +5302,27 @@ class TreeBuilder
         }
 
         return false;
+    }
+
+    /**
+     * Ignore the next line feed character in the input stream, if any.
+     *
+     * This is a bit hacky doing it with the input stream instead of looking at the next token, but
+     * it seems to work.
+     */
+    private function ignoreNextLineFeed(): void
+    {
+        $peeked = $this->inputStream->peek();
+
+        if ($peeked === "\n") {
+            $this->inputStream->get();
+        } elseif ($peeked === '&') {
+            // need to account for numeric character reference as well
+            $peeked = $this->inputStream->peek(6);
+
+            if ($peeked === '&#x0a;' || $peeked === '&#x0A;') {
+                $this->inputStream->get(6);
+            }
+        }
     }
 }
