@@ -102,22 +102,30 @@ class NodeIteratorRemovalTest extends TestCase
         $oldParent = $node->parentNode;
         $oldSibling = $node->nextSibling;
         $oldParent->removeChild($node);
+        $actualReferenceNodes = [];
+        $actualPointers = [];
 
+        foreach ($iters as $iter) {
+            $actualReferenceNodes[] = $iter->referenceNode;
+            $actualPointers[] = $iter->pointerBeforeReferenceNode;
+        }
+
+        $oldParent->insertBefore($node, $oldSibling);
+
+        // Do assertions afterwards so that a failing assertion doesn't prevent us from restoring
+        // the node back to its original position in the tree.
         for ($j = 0, $length = count($iters); $j < $length; $j++) {
-            $iter = $iters[$j];
             $this->assertSame(
                 $expectedReferenceNodes[$j],
-                $iter->referenceNode,
+                $actualReferenceNodes[$j],
                 sprintf('.referenceNode of %s', $descs[$j])
             );
             $this->assertSame(
                 $expectedPointers[$j],
-                $iter->pointerBeforeReferenceNode,
+                $actualPointers[$j],
                 sprintf('.pointerBeforeReferenceNode of %s', $descs[$j])
             );
         }
-
-        $oldParent->insertBefore($node, $oldSibling);
     }
 
     public function nodesProvider(): Generator
