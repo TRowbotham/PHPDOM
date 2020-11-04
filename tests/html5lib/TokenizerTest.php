@@ -162,7 +162,11 @@ class TokenizerTest extends TestCase
                 throw new RuntimeException();
             }
 
-            foreach ($json['tests'] as $test) {
+            $key = $file->getFilename() === 'xmlViolation.test'
+                ? 'xmlViolationTests'
+                : 'tests';
+
+            foreach ($json[$key] as $test) {
                 if (isset($test['doubleEscaped'])) {
                     $test['input'] = preg_replace_callback(
                         '/\\\u([[:xdigit:]]{4})/',
