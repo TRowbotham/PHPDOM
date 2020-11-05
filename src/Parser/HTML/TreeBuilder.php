@@ -193,7 +193,7 @@ class TreeBuilder
     private $framesetOk;
 
     /**
-     * @var \Rowbot\Support\CodePointStream
+     * @var \Rowbot\DOM\Support\CodePointStream
      */
     private $inputStream;
 
