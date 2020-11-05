@@ -10,11 +10,18 @@ use Rowbot\DOM\Element\HTML\HTMLTableRowElement;
 use Rowbot\DOM\Element\HTML\HTMLTableSectionElement;
 use Rowbot\DOM\Element\HTML\HTMLTemplateElement;
 use Rowbot\DOM\Namespaces;
+use Rowbot\DOM\Parser\Collection\Exception\DuplicateItemException;
 use Rowbot\DOM\Parser\Collection\Exception\EmptyStackException;
-use Rowbot\DOM\Support\UniquelyIdentifiable;
+use Rowbot\DOM\Parser\Collection\Exception\NotInCollectionException;
 
 use function array_merge_recursive;
+use function array_push;
+use function array_search;
+use function array_splice;
 
+/**
+ * @extends \Rowbot\DOM\Parser\Collection\ObjectStack<\Rowbot\DOM\Node>
+ */
 class OpenElementStack extends ObjectStack
 {
     protected const SPECIFIC_SCOPE = [
@@ -62,7 +69,54 @@ class OpenElementStack extends ObjectStack
         $this->templateElementCount = 0;
     }
 
-    public function replace(UniquelyIdentifiable $newItem, UniquelyIdentifiable $oldItem): void
+    public function push($item): void
+    {
+        parent::push($item);
+
+        if ($item instanceof HTMLTemplateElement) {
+            ++$this->templateElementCount;
+        }
+    }
+
+    public function pop()
+    {
+        $popped = parent::pop();
+
+        if ($popped instanceof HTMLTemplateElement) {
+            --$this->templateElementCount;
+        }
+
+        return $popped;
+    }
+
+    public function top()
+    {
+        if ($this->size === 0) {
+            throw new EmptyStackException();
+        }
+
+        return $this->stack[0];
+    }
+
+    public function bottom()
+    {
+        if ($this->size === 0) {
+            throw new EmptyStackException();
+        }
+
+        return $this->stack[$this->size - 1];
+    }
+
+    public function remove($item): void
+    {
+        parent::remove($item);
+
+        if ($item instanceof HTMLTemplateElement) {
+            --$this->templateElementCount;
+        }
+    }
+
+    public function replace($newItem, $oldItem): void
     {
         parent::replace($newItem, $oldItem);
 
@@ -75,71 +129,31 @@ class OpenElementStack extends ObjectStack
         }
     }
 
-    public function insertBefore(
-        UniquelyIdentifiable $newItem,
-        UniquelyIdentifiable $oldItem = null
-    ): void {
-        parent::insertBefore($newItem, $oldItem);
+    public function insertAfter($newItem, $oldItem): void
+    {
+        if (!$this->cache->contains($oldItem)) {
+            throw new NotInCollectionException();
+        }
+
+        if ($this->cache->contains($newItem)) {
+            throw new DuplicateItemException();
+        }
 
         if ($newItem instanceof HTMLTemplateElement) {
             ++$this->templateElementCount;
         }
-    }
 
-    public function insertAfter(UniquelyIdentifiable $newItem, UniquelyIdentifiable $oldItem): void
-    {
-        parent::insertAfter($newItem, $oldItem);
+        $this->cache->attach($newItem);
+        ++$this->size;
 
-        if ($newItem instanceof HTMLTemplateElement) {
-            ++$this->templateElementCount;
-        }
-    }
+        if ($this->stack[$this->size - 2] === $oldItem) {
+            array_push($this->stack, $newItem);
 
-    public function remove(UniquelyIdentifiable $item): void
-    {
-        parent::remove($item);
-
-        if ($item instanceof HTMLTemplateElement) {
-            --$this->templateElementCount;
-        }
-    }
-
-    public function push(UniquelyIdentifiable $item): void
-    {
-        parent::push($item);
-
-        if ($item instanceof HTMLTemplateElement) {
-            ++$this->templateElementCount;
-        }
-    }
-
-    public function pop(): UniquelyIdentifiable
-    {
-        $popped = parent::pop();
-
-        if ($popped instanceof HTMLTemplateElement) {
-            --$this->templateElementCount;
+            return;
         }
 
-        return $popped;
-    }
-
-    public function top(): UniquelyIdentifiable
-    {
-        if ($this->size === 0) {
-            throw new EmptyStackException();
-        }
-
-        return $this->collection[0];
-    }
-
-    public function bottom(): UniquelyIdentifiable
-    {
-        if ($this->size === 0) {
-            throw new EmptyStackException();
-        }
-
-        return $this->collection[$this->size - 1];
+        $index = array_search($oldItem, $this->stack, true);
+        array_splice($this->stack, $index + 1, 0, [$newItem]);
     }
 
     /**
@@ -161,7 +175,7 @@ class OpenElementStack extends ObjectStack
         $size = $this->size;
 
         while ($size--) {
-            $currentNode = $this->collection[$size];
+            $currentNode = $this->stack[$size];
 
             if (
                 $currentNode instanceof HTMLTableSectionElement
@@ -186,7 +200,7 @@ class OpenElementStack extends ObjectStack
         $size = $this->size;
 
         while ($size--) {
-            $currentNode = $this->collection[$size];
+            $currentNode = $this->stack[$size];
 
             if (
                 $currentNode instanceof HTMLTableElement
@@ -211,7 +225,7 @@ class OpenElementStack extends ObjectStack
         $size = $this->size;
 
         while ($size--) {
-            $currentNode = $this->collection[$size];
+            $currentNode = $this->stack[$size];
 
             if (
                 $currentNode instanceof HTMLTableRowElement
@@ -239,7 +253,7 @@ class OpenElementStack extends ObjectStack
         $size = $this->size;
 
         while ($size--) {
-            $node = $this->collection[$size];
+            $node = $this->stack[$size];
 
             $ns = $node->namespaceURI;
             $localName = $node->localName;
@@ -310,7 +324,7 @@ class OpenElementStack extends ObjectStack
         $size = $this->size;
 
         while ($size--) {
-            $node = $this->collection[$size];
+            $node = $this->stack[$size];
             $ns = $node->namespaceURI;
             $localName = $node->localName;
 
@@ -319,8 +333,10 @@ class OpenElementStack extends ObjectStack
             }
 
             if (
-                !($namespace === Namespaces::HTML
-                && ($localName === 'optgroup' || $localName === 'option'))
+                !(
+                    $namespace === Namespaces::HTML
+                    && ($localName === 'optgroup' || $localName === 'option')
+                )
             ) {
                 return false;
             }

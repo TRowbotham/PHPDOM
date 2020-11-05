@@ -733,7 +733,7 @@ class TreeBuilder
 
             // Insert a marker at the end of the list of active formatting
             // elements.
-            $this->activeFormattingElements->push(new Marker());
+            $this->activeFormattingElements->insertMarker();
 
             // Set the frameset-ok flag to "not ok".
             $this->framesetOk = 'not ok';
@@ -1044,7 +1044,7 @@ class TreeBuilder
             // attribute is already present on the top element of the stack of
             // open elements. If it is not, add the attribute and its
             // corresponding value to that element.
-            $firstOnStack = $this->openElements[0];
+            $firstOnStack = $this->openElements->top();
 
             foreach ($token->attributes as $attr) {
                 $name = $attr->name;
@@ -1085,8 +1085,8 @@ class TreeBuilder
             // or if there is a template element on the stack of open elements,
             // then ignore the token. (fragment case)
             if (
-                !$this->openElements[1] instanceof HTMLBodyElement
-                || count($this->openElements) === 1
+                count($this->openElements) === 1
+                || !$this->openElements->itemAt(1) instanceof HTMLBodyElement
                 || $this->openElements->containsTemplateElement()
             ) {
                 // Fragment case
@@ -1100,7 +1100,7 @@ class TreeBuilder
             // open elements, and if it is not, add the attribute and its
             // corresponding value to that element.
             $this->framesetOk = 'not ok';
-            $body = $this->openElements[1];
+            $body = $this->openElements->itemAt(1);
 
             foreach ($token->attributes as $attr) {
                 $name = $attr->name;
@@ -1116,7 +1116,7 @@ class TreeBuilder
             // element, then ignore the token. (fragment case)
             $count = count($this->openElements);
 
-            if ($count === 1 || !$this->openElements[1] instanceof HTMLBodyElement) {
+            if ($count === 1 || !$this->openElements->itemAt(1) instanceof HTMLBodyElement) {
                 // Fragment case
                 // Ignore the token
                 return;
@@ -1130,7 +1130,7 @@ class TreeBuilder
 
             // Remove the second element on the stack of open elements from its
             // parent node, if it has one.
-            if (($body = $this->openElements[1]) && ($parent = $body->parentNode)) {
+            if (($body = $this->openElements->itemAt(1)) && ($parent = $body->parentNode)) {
                 $parent->removeChild($body);
             }
 
@@ -1839,7 +1839,7 @@ class TreeBuilder
 
             // Insert a marker at the end of the list of active formatting
             // elements.
-            $this->activeFormattingElements->push(new Marker());
+            $this->activeFormattingElements->insertMarker();
 
             // Set the frameset-ok flag to "not ok".
             $this->framesetOk = 'not ok';
@@ -2366,7 +2366,7 @@ class TreeBuilder
             $count = count($this->openElements);
 
             for ($i = $formattingElementIndex + 1; $i < $count; $i++) {
-                $current = $this->openElements[$i];
+                $current = $this->openElements->itemAt($i);
 
                 if ($this->isSpecialNode($current)) {
                     $furthestBlock = $current;
@@ -2394,7 +2394,7 @@ class TreeBuilder
 
             // Let common ancestor be the element immediately above formatting
             // element in the stack of open elements.
-            $commonAncestor = $this->openElements[$formattingElementIndex - 1];
+            $commonAncestor = $this->openElements->itemAt($formattingElementIndex - 1);
 
             // Let a bookmark note the position of formatting element in the
             // list of active formatting elements relative to the elements on
@@ -2422,7 +2422,7 @@ class TreeBuilder
                 $targetStack = !$this->openElements->contains($node)
                     ? $clonedStack
                     : $this->openElements;
-                $node = $targetStack[$targetStack->indexOf($node) - 1];
+                $node = $targetStack->itemAt($targetStack->indexOf($node) - 1);
 
                 // If node is formatting element, then go to the next step in
                 // the overall algorithm.
@@ -2611,7 +2611,7 @@ class TreeBuilder
 
             // Insert a marker at the end of the list of active formatting
             // elements.
-            $this->activeFormattingElements->push(new Marker());
+            $this->activeFormattingElements->insertMarker();
 
             // Insert an HTML element for the token, then switch the insertion
             // mode to "in caption".
@@ -3206,7 +3206,7 @@ class TreeBuilder
 
             // Insert a marker at the end of the list of active formatting
             // elements.
-            $this->activeFormattingElements->push(new Marker());
+            $this->activeFormattingElements->insertMarker();
         } elseif ($token instanceof EndTagToken && $tagName === 'tr') {
             // If the stack of open elements does not have a tr element in
             // table scope, this is a parse error; ignore the token.
@@ -3864,7 +3864,7 @@ class TreeBuilder
         } elseif ($token instanceof CommentToken) {
             // Insert a comment as the last child of the first element in the
             // stack of open elements (the html element).
-            $this->insertComment($token, [$this->openElements[0], 'beforeend']);
+            $this->insertComment($token, [$this->openElements->top(), 'beforeend']);
         } elseif ($token instanceof DoctypeToken) {
             // Parse error.
             // Ignore the token.
@@ -4767,7 +4767,7 @@ class TreeBuilder
 
                 if ($lastTable === null) {
                     // Fragment case
-                    $adjustedInsertionLocation = [$this->openElements[0], 'beforeend'];
+                    $adjustedInsertionLocation = [$this->openElements->top(), 'beforeend'];
 
                     break;
                 }
@@ -4778,7 +4778,7 @@ class TreeBuilder
                     break;
                 }
 
-                $previousElement = $this->openElements[$lastTableIndex - 1];
+                $previousElement = $this->openElements->itemAt($lastTableIndex - 1);
                 $adjustedInsertionLocation = [$previousElement, 'beforeend'];
 
                 break;
@@ -5237,7 +5237,7 @@ class TreeBuilder
 
         // Let entry be the entry one earlier than entry in the list of active
         // formatting elements.
-        $entry = $this->activeFormattingElements[--$cursor];
+        $entry = $this->activeFormattingElements->itemAt(--$cursor);
 
         // If entry is neither a marker nor an element that is also in the stack
         // of open elements, go to the step labeled rewind.
@@ -5248,7 +5248,7 @@ class TreeBuilder
         Advance:
         // Let entry be the element one later than entry in the list of active
         // formatting elements.
-        $entry = $this->activeFormattingElements[++$cursor];
+        $entry = $this->activeFormattingElements->itemAt(++$cursor);
 
         Create:
         // Insert an HTML element for the token for which the element entry was

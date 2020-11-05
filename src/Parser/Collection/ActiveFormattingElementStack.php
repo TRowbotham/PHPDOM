@@ -6,26 +6,20 @@ namespace Rowbot\DOM\Parser\Collection;
 
 use Rowbot\DOM\Parser\Collection\Exception\DuplicateItemException;
 use Rowbot\DOM\Parser\Marker;
-use Rowbot\DOM\Support\UniquelyIdentifiable;
 
 use function array_splice;
 use function count;
 
+/**
+ * @extends \Rowbot\DOM\Parser\Collection\ObjectStack<\Rowbot\DOM\Element\HTML\HTMLElement|\Rowbot\DOM\Parser\Marker>
+ */
 class ActiveFormattingElementStack extends ObjectStack
 {
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#push-onto-the-list-of-active-formatting-elements
-     *
-     * @param (\Rowbot\DOM\Element\Element|\Rowbot\DOM\Parser\Marker)&\Rowbot\DOM\Support\UniquelyIdentifiable
      */
-    public function push(UniquelyIdentifiable $item): void
+    public function push($item): void
     {
-        if ($item instanceof Marker) {
-            parent::push($item);
-
-            return;
-        }
-
         $count = 0;
 
         // 1. If there are already three elements in the list of active formatting elements after
@@ -37,7 +31,7 @@ class ActiveFormattingElementStack extends ObjectStack
         // attributes in each pair have identical names, namespaces, and values (the order of the
         // attributes does not matter).
         for ($i = $this->size - 1; $i >= 0; --$i) {
-            $element = $this->collection[$i];
+            $element = $this->stack[$i];
 
             if ($element instanceof Marker) {
                 break;
@@ -102,16 +96,25 @@ class ActiveFormattingElementStack extends ObjectStack
         }
     }
 
-    public function insertAt(int $index, UniquelyIdentifiable $item): void
+    /**
+     * @param \Rowbot\DOM\Node $item
+     */
+    public function insertAt(int $index, $item): void
     {
-        $itemId = $item->uuid();
-
-        if (isset($this->cache[$itemId])) {
+        if ($this->cache->contains($item)) {
             throw new DuplicateItemException();
         }
 
+        array_splice($this->stack, $index, 0, [$item]);
+        $this->cache->attach($item);
         ++$this->size;
-        $this->cache[$itemId] = true;
-        array_splice($this->collection, $index, 0, [$item]);
+    }
+
+    public function insertMarker(): void
+    {
+        $marker = new Marker();
+        $this->stack[] = $marker;
+        $this->cache->attach($marker);
+        ++$this->size;
     }
 }

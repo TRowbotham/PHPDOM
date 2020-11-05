@@ -74,7 +74,7 @@ trait ParserOrTreeBuilder
         $iterator = $this->openElements->getIterator();
 
         foreach ($iterator as $node) {
-            if ($this->openElements[0] === $node) {
+            if ($this->openElements->top() === $node) {
                 $last = true;
 
                 if ($this->isFragmentCase) {
@@ -88,7 +88,7 @@ trait ParserOrTreeBuilder
                     $ancestor = $node;
 
                     while ($iterator->valid()) {
-                        if ($ancestor === $this->openElements[0]) {
+                        if ($ancestor === $this->openElements->top()) {
                             break;
                         }
 
