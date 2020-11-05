@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Parser\Collection;
 
-use Rowbot\DOM\Parser\Collection\Exception\CollectionException;
 use Rowbot\DOM\Parser\Collection\Exception\DuplicateItemException;
 use Rowbot\DOM\Parser\Marker;
 use Rowbot\DOM\Support\UniquelyIdentifiable;
@@ -17,28 +16,37 @@ class ActiveFormattingElementStack extends ObjectStack
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#push-onto-the-list-of-active-formatting-elements
      *
-     * @return (\Rowbot\DOM\Element\Element&\Rowbot\DOM\Support\UniquelyIdentifiable)|\Rowbot\DOM\Parser\Marker
+     * @param (\Rowbot\DOM\Element\Element|\Rowbot\DOM\Parser\Marker)&\Rowbot\DOM\Support\UniquelyIdentifiable
      */
-    public function push(UniquelyIdentifiable $element): void
+    public function push(UniquelyIdentifiable $item): void
     {
-        $count = 0;
-
-        if ($element instanceof Marker) {
-            parent::push($element);
+        if ($item instanceof Marker) {
+            parent::push($item);
 
             return;
         }
 
-        for ($i = $this->size - 1; $i >= 0; $i--) {
-            if ($this->collection[$i] instanceof Marker) {
+        $count = 0;
+
+        // 1. If there are already three elements in the list of active formatting elements after
+        // the last marker, if any, or anywhere in the list if there are no markers, that have the
+        // same tag name, namespace, and attributes as element, then remove the earliest such
+        // element from the list of active formatting elements. For these purposes, the attributes
+        // must be compared as they were when the elements were created by the parser; two elements
+        // have the same attributes if all their parsed attributes can be paired such that the two
+        // attributes in each pair have identical names, namespaces, and values (the order of the
+        // attributes does not matter).
+        for ($i = $this->size - 1; $i >= 0; --$i) {
+            $element = $this->collection[$i];
+
+            if ($element instanceof Marker) {
                 break;
             }
 
-            $item = $this->collection[$i];
-            $namespace = $element->namespaceURI;
-            $tagName = $element->tagName;
-
-            if ($namespace !== $item->namespaceURI || $tagName !== $item->tagName) {
+            if (
+                $element->namespaceURI !== $item->namespaceURI
+                || $element->tagName !== $item->tagName
+            ) {
                 continue;
             }
 
@@ -51,7 +59,6 @@ class ActiveFormattingElementStack extends ObjectStack
 
             foreach ($elementAttributes as $attr) {
                 $attrNamespace = $attr->getNamespace();
-                $attrName = $attr->getQualifiedName();
                 $itemAttr = $itemAttributes->getAttrByNamespaceAndLocalName(
                     $attrNamespace,
                     $attr->getLocalName()
@@ -59,8 +66,8 @@ class ActiveFormattingElementStack extends ObjectStack
 
                 if (
                     $itemAttr === null
-                    || $attrName !== $itemAttr->getQualifiedName()
-                    || $attrNamespace !== $itemAttr->getNamespace()
+                    || $attr->getQualifiedName() !== $itemAttr->getQualifiedName()
+                    || $attr->getNamespace() !== $itemAttr->getNamespace()
                     || $attr->getValue() !== $itemAttr->getValue()
                 ) {
                     continue 2;
@@ -68,21 +75,14 @@ class ActiveFormattingElementStack extends ObjectStack
             }
 
             if (++$count === 3) {
-                try {
-                    parent::push($element);
-                } catch (CollectionException $e) {
-                    throw $e;
+                parent::remove($element);
 
-                    return;
-                }
-
-                parent::remove($this->collection[$i]);
-
-                return;
+                break;
             }
         }
 
-        parent::push($element);
+        // 2. Add element to the list of active formatting elements.
+        parent::push($item);
     }
 
     /**
