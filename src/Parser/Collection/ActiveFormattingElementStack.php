@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Parser\Collection;
 
-use Rowbot\DOM\Parser\Bookmark;
 use Rowbot\DOM\Parser\Collection\Exception\CollectionException;
+use Rowbot\DOM\Parser\Collection\Exception\DuplicateItemException;
 use Rowbot\DOM\Parser\Marker;
 use Rowbot\DOM\Support\UniquelyIdentifiable;
 
+use function array_splice;
 use function count;
 
 class ActiveFormattingElementStack extends ObjectStack
@@ -22,7 +23,7 @@ class ActiveFormattingElementStack extends ObjectStack
     {
         $count = 0;
 
-        if ($element instanceof Bookmark || $element instanceof Marker) {
+        if ($element instanceof Marker) {
             parent::push($element);
 
             return;
@@ -31,10 +32,6 @@ class ActiveFormattingElementStack extends ObjectStack
         for ($i = $this->size - 1; $i >= 0; $i--) {
             if ($this->collection[$i] instanceof Marker) {
                 break;
-            }
-
-            if ($this->collection[$i] instanceof Bookmark) {
-                continue;
             }
 
             $item = $this->collection[$i];
@@ -103,5 +100,18 @@ class ActiveFormattingElementStack extends ObjectStack
                 break;
             }
         }
+    }
+
+    public function insertAt(int $index, UniquelyIdentifiable $item): void
+    {
+        $itemId = $item->uuid();
+
+        if (isset($this->cache[$itemId])) {
+            throw new DuplicateItemException();
+        }
+
+        ++$this->size;
+        $this->cache[$itemId] = true;
+        array_splice($this->collection, $index, 0, [$item]);
     }
 }

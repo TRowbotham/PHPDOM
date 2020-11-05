@@ -42,7 +42,6 @@ use Rowbot\DOM\Encoding\EncodingUtils;
 use Rowbot\DOM\Exception\DOMException;
 use Rowbot\DOM\Namespaces;
 use Rowbot\DOM\Node;
-use Rowbot\DOM\Parser\Bookmark;
 use Rowbot\DOM\Parser\Collection\ActiveFormattingElementStack;
 use Rowbot\DOM\Parser\Collection\OpenElementStack;
 use Rowbot\DOM\Parser\Marker;
@@ -2400,8 +2399,7 @@ class TreeBuilder
             // Let a bookmark note the position of formatting element in the
             // list of active formatting elements relative to the elements on
             // either side of it in the list.
-            $bookmark = new Bookmark();
-            $this->activeFormattingElements->insertAfter($bookmark, $formattingElement);
+            $bookmark = $this->activeFormattingElements->indexOf($formattingElement);
 
             // Let node and last node be furthest block.
             $node = $furthestBlock;
@@ -2473,8 +2471,7 @@ class TreeBuilder
                 // bookmark to be immediately after the new node in the list of
                 // active formatting elements.
                 if ($lastNode === $furthestBlock) {
-                    $this->activeFormattingElements->remove($bookmark);
-                    $this->activeFormattingElements->insertAfter($bookmark, $newElement);
+                    $bookmark = $this->activeFormattingElements->indexOf($newElement) + 1;
                 }
 
                 // Insert last node into node, first removing it from its
@@ -2517,7 +2514,7 @@ class TreeBuilder
             // formatting elements at the position of the aforementioned
             // bookmark.
             $this->activeFormattingElements->remove($formattingElement);
-            $this->activeFormattingElements->replace($element, $bookmark);
+            $this->activeFormattingElements->insertAt($bookmark, $element);
 
             // Remove formatting element from the stack of open elements, and
             // insert the new element into the stack of open elements
