@@ -45,7 +45,6 @@ use Rowbot\DOM\Node;
 use Rowbot\DOM\Parser\Collection\ActiveFormattingElementStack;
 use Rowbot\DOM\Parser\Collection\OpenElementStack;
 use Rowbot\DOM\Parser\Marker;
-use Rowbot\DOM\Parser\TextBuilder;
 use Rowbot\DOM\Parser\Token\CharacterToken;
 use Rowbot\DOM\Parser\Token\CommentToken;
 use Rowbot\DOM\Parser\Token\DoctypeToken;
@@ -220,7 +219,6 @@ class TreeBuilder
         ActiveFormattingElementStack $activeFormattingElements,
         OpenElementStack $openElements,
         SplStack $templateInsertionModes,
-        TextBuilder $textBuilder,
         SplObjectStorage $tokenRepository,
         bool $isFragmentCase,
         bool $isScriptingEnabled,
@@ -239,7 +237,6 @@ class TreeBuilder
         $this->openElements = $openElements;
         $this->state = $state;
         $this->templateInsertionModes = $templateInsertionModes;
-        $this->textBuilder = $textBuilder;
         $this->tokenRepository = $tokenRepository;
     }
 
@@ -4856,20 +4853,12 @@ class TreeBuilder
         }
 
         if ($node instanceof Text) {
-            if ($node !== $this->textBuilder->getNode()) {
-                $this->textBuilder->flushText();
-                $this->textBuilder->setNode($node);
-            }
-
-            $this->textBuilder->append($data);
+            $node->setData($data, true);
 
             return;
         }
 
-        $this->textBuilder->flushText();
-        $node = new Text($adjustedInsertionLocation[0]->getNodeDocument());
-        $this->textBuilder->setNode($node);
-        $this->textBuilder->append($data);
+        $node = new Text($adjustedInsertionLocation[0]->getNodeDocument(), $data);
         $this->insertNode($node, $adjustedInsertionLocation);
     }
 

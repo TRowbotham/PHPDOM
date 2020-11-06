@@ -59,11 +59,6 @@ trait ParserOrTreeBuilder
     private $tokenRepository;
 
     /**
-     * @var \Rowbot\DOM\Parser\TextBuilder
-     */
-    private $textBuilder;
-
-    /**
      * Resets the HTML Parser's insertion mode.
      *
      * @see https://html.spec.whatwg.org/multipage/syntax.html#reset-the-insertion-mode-appropriately

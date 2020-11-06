@@ -69,7 +69,7 @@ class Text extends CharacterData
      */
     public function splitText(int $offset): self
     {
-        $length = $this->length;
+        $length = $this->getLength();
 
         if ($offset > $length) {
             throw new IndexSizeError();

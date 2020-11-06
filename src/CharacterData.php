@@ -35,17 +35,11 @@ abstract class CharacterData extends Node implements ChildNode
      */
     protected $data;
 
-    /**
-     * @var int
-     */
-    protected $length;
-
     public function __construct(Document $document, string $data)
     {
         parent::__construct($document);
 
         $this->data = $data;
-        $this->length = mb_strlen($data, 'utf-8');
     }
 
     public function __get(string $name)
@@ -55,7 +49,7 @@ abstract class CharacterData extends Node implements ChildNode
                 return $this->data;
 
             case 'length':
-                return $this->length;
+                return $this->getLength();
 
             case 'nextElementSibling':
                 return $this->getNextElementSibling();
@@ -76,7 +70,7 @@ abstract class CharacterData extends Node implements ChildNode
                     $value = '';
                 }
 
-                $this->doReplaceData(0, $this->length, (string) $value);
+                $this->doReplaceData(0, $this->getLength(), (string) $value);
 
                 break;
 
@@ -92,7 +86,7 @@ abstract class CharacterData extends Node implements ChildNode
      */
     public function appendData(string $data): void
     {
-        $this->doReplaceData($this->length, 0, $data);
+        $this->doReplaceData($this->getLength(), 0, $data);
     }
 
     /**
@@ -142,7 +136,7 @@ abstract class CharacterData extends Node implements ChildNode
      */
     public function doReplaceData(int $offset, int $count, string $data): void
     {
-        $length = $this->length;
+        $length = $this->getLength();
 
         if ($offset < 0 || $offset > $length) {
             throw new IndexSizeError(sprintf(
@@ -164,8 +158,6 @@ abstract class CharacterData extends Node implements ChildNode
             . $data
             . mb_substr($this->data, $offset + $count, $length - $offset, 'utf-8');
         $newDataLen = mb_strlen($data, 'utf-8');
-        $this->length += $newDataLen - $count;
-
         $ranges = Range::getRangeCollection();
 
         foreach ($ranges as $range) {
@@ -223,7 +215,7 @@ abstract class CharacterData extends Node implements ChildNode
      */
     public function substringData(int $offset, int $count): string
     {
-        $length = $this->length;
+        $length = $this->getLength();
         $offset = Utils::unsignedLong($offset);
         $count = Utils::unsignedLong($count);
 
@@ -245,7 +237,21 @@ abstract class CharacterData extends Node implements ChildNode
 
     public function getLength(): int
     {
-        return $this->length;
+        return mb_strlen($this->data, 'utf-8');
+    }
+
+    /**
+     * @internal
+     */
+    public function setData(string $data, bool $append = false): void
+    {
+        if (!$append) {
+            $this->data = $data;
+
+            return;
+        }
+
+        $this->data .= $data;
     }
 
     protected function getNodeValue(): string
@@ -259,7 +265,7 @@ abstract class CharacterData extends Node implements ChildNode
             $value = '';
         }
 
-        $this->doReplaceData(0, $this->length, $value);
+        $this->doReplaceData(0, $this->getLength(), $value);
     }
 
     protected function getTextContent(): string
@@ -273,6 +279,6 @@ abstract class CharacterData extends Node implements ChildNode
             $value = '';
         }
 
-        $this->doReplaceData(0, $this->length, $value);
+        $this->doReplaceData(0, $this->getLength(), $value);
     }
 }
