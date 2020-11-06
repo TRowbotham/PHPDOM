@@ -151,6 +151,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
                 return $iter->root->nodeDocument !== $this;
             }
         );
+        Range::prune($this);
     }
 
     public function __get(string $name)

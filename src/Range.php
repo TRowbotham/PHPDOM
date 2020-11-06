@@ -16,7 +16,6 @@ use Rowbot\DOM\Parser\ParserFactory;
 use Rowbot\DOM\Support\Stringable;
 
 use function array_reverse;
-use function in_array;
 use function iterator_to_array;
 use function mb_substr;
 
@@ -1050,6 +1049,20 @@ final class Range extends AbstractRange implements Stringable
     {
         $this->endNode = $node;
         $this->endOffset = $offset;
+    }
+
+    /**
+     * Removes all ranges whose start node's node document is the given document.
+     *
+     * @internal
+     */
+    public static function prune(Document $document): void
+    {
+        foreach (self::$collection as $i => $range) {
+            if ($range->startNode->getNodeDocument() === $document) {
+                unset(self::$collection[$i]);
+            }
+        }
     }
 
     /**
