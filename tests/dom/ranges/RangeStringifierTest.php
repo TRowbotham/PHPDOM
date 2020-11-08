@@ -1,6 +1,6 @@
 <?php
 
-namespace Rowbot\DOM\Tests\ranges;
+namespace Rowbot\DOM\Tests\dom\ranges;
 
 use Rowbot\DOM\DOMParser;
 use Rowbot\DOM\Tests\TestCase;
