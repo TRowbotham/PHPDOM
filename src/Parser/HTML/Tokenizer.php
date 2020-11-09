@@ -19,7 +19,6 @@ use Rowbot\DOM\Parser\Token\StartTagToken;
 use Rowbot\DOM\Support\CodePointStream;
 use Rowbot\DOM\Utils;
 
-use function array_pop;
 use function ctype_alnum;
 use function ctype_alpha;
 use function ctype_digit;
@@ -2823,8 +2822,8 @@ class Tokenizer
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#named-character-reference-state
                 case TokenizerState::NAMED_CHARACTER_REFERENCE:
-                    $char = '';
-                    $matches = [];
+                    $lastCharIsSemiColon = false;
+                    $match = null;
 
                     // Load the JSON file for the named character references
                     // table on demand.
@@ -2864,7 +2863,8 @@ class Tokenizer
                                 // we found a full match
                                 $char = $this->input->get();
                                 $buffer .= $char;
-                                $matches[] = [$buffer, $i];
+                                $match = [$buffer, $i];
+                                $lastCharIsSemiColon = true;
 
                                 break;
                             }
@@ -2872,7 +2872,7 @@ class Tokenizer
                             // we found a potential match as it is possible to match a shorter
                             // non-semi-colon terminated entity before a longer one.
                             if ($nonConformingMatch) {
-                                $matches[] = [$buffer, $i];
+                                $match = [$buffer, $i];
                             }
 
                             // dont't break as there could be a longer entity to match
@@ -2881,20 +2881,16 @@ class Tokenizer
                             // or we encounter a non-alphanumeric character then, that indicates
                             // that we should stop consuming characters for that entity.
                         } elseif ($char === ';' || !ctype_alnum($char)) {
-                            if ($matches !== []) {
-                                // partial match
-                            }
-
                             break;
                         }
                     }
 
-                    if ($matches !== []) {
+                    if ($match !== null) {
                         // rewind the input stream by the difference between the number of
                         // characters consumed and the number of characters consumed by the last
                         // match.
-                        $this->input->seek(end($matches)[1] - $i);
-                        $buffer = array_pop($matches)[0];
+                        $this->input->seek($match[1] - $i);
+                        $buffer = $match[0];
 
                         // If the character reference was consumed as part of an
                         // attribute, and the last character is not a semi-colon
@@ -2907,7 +2903,7 @@ class Tokenizer
                             case TokenizerState::ATTRIBUTE_VALUE_SINGLE_QUOTED:
                             case TokenizerState::ATTRIBUTE_VALUE_UNQUOTED:
                                 if (
-                                    $char !== ';'
+                                    !$lastCharIsSemiColon
                                     && preg_match('/^[=A-Za-z0-9]$/', $this->input->peek())
                                 ) {
                                     yield from $this->flush($buffer, $attributeToken, $returnState);
@@ -2922,7 +2918,7 @@ class Tokenizer
 
                         // If the last character consumed in a match is not a
                         // semi-colon (;), then this is a parse error.
-                        if ($char !== ';') {
+                        if (!$lastCharIsSemiColon) {
                             // Parse error.
                         }
 
