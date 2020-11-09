@@ -24,6 +24,7 @@ use SplStack;
 
 use function mb_check_encoding;
 use function mb_convert_encoding;
+use function mb_substitute_character;
 use function preg_match;
 use function preg_replace;
 
@@ -269,7 +270,10 @@ class HTMLParser extends Parser
      */
     public function preprocessInputStream(string $input): void
     {
+        $char = mb_substitute_character();
+        mb_substitute_character(0xFFFD);
         $input = mb_convert_encoding($input, 'utf-8', 'utf-8');
+        mb_substitute_character($char);
 
         if (
             preg_match(
