@@ -1095,14 +1095,20 @@ final class Range extends AbstractRange implements Stringable
         $tw = new TreeWalker(
             $boundaryPointB[0]->getRootNode(),
             NodeFilter::SHOW_ALL,
-            static function (Node $node) use ($boundaryPointA): int {
-                if ($node === $boundaryPointA[0]) {
-                    return NodeFilter::FILTER_ACCEPT;
-                }
+            new class implements NodeFilter {
+                public $node;
 
-                return NodeFilter::FILTER_SKIP;
+                public function acceptNode(Node $node): int
+                {
+                    if ($node === $this->node) {
+                        return NodeFilter::FILTER_ACCEPT;
+                    }
+
+                    return NodeFilter::FILTER_SKIP;
+                }
             }
         );
+        $tw->filter->node = $boundaryPointA[0];
         $tw->currentNode = $boundaryPointB[0];
 
         $AFollowsB = $tw->nextNode();
