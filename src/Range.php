@@ -1108,13 +1108,8 @@ final class Range extends AbstractRange implements Stringable
         $AFollowsB = $tw->nextNode();
 
         if ($AFollowsB) {
-            switch ($this->computePosition($boundaryPointB, $boundaryPointA)) {
-                case 'after':
-                    return 'before';
-
-                case 'before':
-                    return 'after';
-            }
+            // Swap variables
+            [$boundaryPointB, $boundaryPointA] = [$boundaryPointA, $boundaryPointB];
         }
 
         $ancestor = $boundaryPointB[0]->parentNode;
@@ -1139,11 +1134,11 @@ final class Range extends AbstractRange implements Stringable
             }
 
             if ($child->getTreeIndex() < $boundaryPointA[1]) {
-                return 'after';
+                return $AFollowsB ? 'before' : 'after';
             }
         }
 
-        return 'before';
+        return $AFollowsB ? 'after' : 'before';
     }
 
     /**
