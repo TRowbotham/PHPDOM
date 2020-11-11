@@ -613,15 +613,34 @@ final class Range extends AbstractRange implements Stringable
             }
         }
 
-        $containedChildren = [];
+        $containedChildrenStart = null;
+        $containedChildrenEnd = null;
 
-        foreach ($commonAncestor->childNodes as $child) {
+        $child = $firstPartiallyContainedChild ?: $commonAncestor->firstChild;
+        for (; $child; $child = $child->nextSibling) {
             if ($this->isFullyContainedNode($child)) {
-                if ($child instanceof DocumentType) {
-                    throw new HierarchyRequestError();
-                }
+                $containedChildrenStart = $child;
 
-                $containedChildren[] = $child;
+                break;
+            }
+        }
+
+        $child = $lastPartiallyContainedChild ?: $commonAncestor->lastChild;
+        for (; $child !== $containedChildrenStart; $child = $child->previousSibling) {
+            if ($this->isFullyContainedNode($child)) {
+                $containedChildrenEnd = $child;
+
+                break;
+            }
+        }
+        if (!$containedChildrenEnd) {
+            $containedChildrenEnd = $containedChildrenStart;
+        }
+
+        // $containedChildrenStart and $containedChildrenEnd may be null here, but this loop still works correctly
+        for ($child = $containedChildrenStart; $child !== $containedChildrenEnd; $child = $child->nextSibling) {
+            if ($child instanceof DocumentType) {
+                throw new HierarchyRequestError();
             }
         }
 
@@ -648,7 +667,13 @@ final class Range extends AbstractRange implements Stringable
             $clone->appendChild($subfragment);
         }
 
-        foreach ($containedChildren as $child) {
+        // $containedChildrenStart and $containedChildrenEnd may be null here, but this loop still works correctly
+        for ($child = $containedChildrenStart; $child !== $containedChildrenEnd; $child = $child->nextSibling) {
+            $clone = $child->cloneNodeInternal(null, true);
+            $fragment->appendChild($clone);
+        }
+        // If not null, this node wasn't processed by the loop
+        if ($containedChildrenEnd) {
             $clone = $child->cloneNodeInternal(null, true);
             $fragment->appendChild($clone);
         }
