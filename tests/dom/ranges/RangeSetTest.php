@@ -2,6 +2,7 @@
 
 namespace Rowbot\DOM\Tests\dom\ranges;
 
+use Generator;
 use Rowbot\DOM\Exception\IndexSizeError;
 use Rowbot\DOM\Exception\InvalidNodeTypeError;
 use Rowbot\DOM\Node;
@@ -16,17 +17,125 @@ class RangeSetTest extends RangeTestCase
 {
     use WindowTrait;
 
-    private static $startTests;
-    private static $endTests;
-    private static $startBeforeTests;
-    private static $startAfterTests;
-    private static $endBeforeTests;
-    private static $endAfterTests;
+    /**
+     * @dataProvider buildTests1
+     */
+    public function testSetStart(string $rangeEndpoints, string $nodes): void
+    {
+        [$range, $node, $offset] = $this->doEval($rangeEndpoints, $nodes);
+        $this->checkSetStart($range, $node, $offset);
+    }
 
     /**
-     * @dataProvider setStartTestProvider
+     * @dataProvider buildTests1
      */
-    public function testSetStart(Range $range, Node $node, int $offset): void
+    public function testSetEnd(string $rangeEndpoints, string $nodes): void
+    {
+        [$range, $node, $offset] = $this->doEval($rangeEndpoints, $nodes);
+        $this->checkSetEnd($range, $node, $offset);
+    }
+
+    /**
+     * @dataProvider buildTests2
+     */
+    public function testSetStartBefore(string $rangeEndpoints, string $nodes): void
+    {
+        [$range, $node] = $this->doEval($rangeEndpoints, $nodes);
+        $parent = $node->parentNode;
+
+        if ($parent === null) {
+            $this->assertThrows(static function () use ($range, $node): void {
+                $range->setStartBefore($node);
+            }, InvalidNodeTypeError::class);
+
+            return;
+        }
+
+        $idx = 0;
+
+        while ($node->parentNode->childNodes[$idx] !== $node) {
+            ++$idx;
+        }
+
+        $this->checkSetStart($range, $node->parentNode, $idx);
+    }
+
+    /**
+     * @dataProvider buildTests2
+     */
+    public function testSetStartAfter(string $rangeEndpoints, string $nodes): void
+    {
+        [$range, $node] = $this->doEval($rangeEndpoints, $nodes);
+        $parent = $node->parentNode;
+
+        if ($parent === null) {
+            $this->assertThrows(static function () use ($range, $node): void {
+                $range->setStartAfter($node);
+            }, InvalidNodeTypeError::class);
+
+            return;
+        }
+
+        $idx = 0;
+
+        while ($node->parentNode->childNodes[$idx] !== $node) {
+            ++$idx;
+        }
+
+        $this->checkSetStart($range, $node->parentNode, $idx + 1);
+    }
+
+    /**
+     * @dataProvider buildTests2
+     */
+    public function testSetEndBefore(string $rangeEndpoints, string $nodes): void
+    {
+        [$range, $node] = $this->doEval($rangeEndpoints, $nodes);
+        $parent = $node->parentNode;
+
+        if ($parent === null) {
+            $this->assertThrows(static function () use ($range, $node): void {
+                $range->setEndBefore($node);
+            }, InvalidNodeTypeError::class);
+
+            return;
+        }
+
+        $idx = 0;
+
+        while ($node->parentNode->childNodes[$idx] !== $node) {
+            ++$idx;
+        }
+
+        $this->checkSetEnd($range, $node->parentNode, $idx);
+    }
+
+    /**
+     * @dataProvider buildTests2
+     */
+    public function testSetEndAfter(string $rangeEndpoints, string $nodes): void
+    {
+        [$range, $node] = $this->doEval($rangeEndpoints, $nodes);
+        $parent = $node->parentNode;
+
+        if ($parent === null) {
+            $this->assertThrows(static function () use ($range, $node): void {
+                $range->setEndAfter($node);
+            }, InvalidNodeTypeError::class);
+
+            return;
+        }
+
+        $idx = 0;
+
+        while ($node->parentNode->childNodes[$idx] !== $node) {
+            ++$idx;
+        }
+
+        $this->checkSetEnd($range, $node->parentNode, $idx + 1);
+    }
+
+    public function checkSetStart(Range $range, Node $node, int $offset): void
     {
         if ($node->nodeType === Node::DOCUMENT_TYPE_NODE) {
             $this->assertThrows(static function () use ($range, $node, $offset): void {
@@ -62,10 +171,7 @@ class RangeSetTest extends RangeTestCase
         }
     }
 
-    /**
-     * @dataProvider setEndTestProvider
-     */
-    public function testSetEnd(Range $range, Node $node, int $offset): void
+    public function checkSetEnd(Range $range, Node $node, int $offset): void
     {
         if ($node->nodeType === Node::DOCUMENT_TYPE_NODE) {
             $this->assertThrows(static function () use ($range, $node, $offset): void {
@@ -101,195 +207,49 @@ class RangeSetTest extends RangeTestCase
         $this->assertSame($offset, $newRange->endOffset);
     }
 
-    /**
-     * @dataProvider setStartBeforeTestProvider
-     */
-    public function testSetStartBefore(Range $range, Node $node): void
+    public function doEval(string $rangeEndpoints, string $nodes): array
     {
-        $parent = $node->parentNode;
-
-        if ($parent === null) {
-            $this->assertThrows(static function () use ($range, $node): void {
-                $range->setStartBefore($node);
-            }, InvalidNodeTypeError::class);
-
-            return;
-        }
-
-        $idx = 0;
-
-        while ($node->parentNode->childNodes[$idx] !== $node) {
-            ++$idx;
-        }
-
-        $this->testSetStart($range, $node->parentNode, $idx);
-    }
-
-    /**
-     * @dataProvider setStartAfterTestProvider
-     */
-    public function testSetStartAfter(Range $range, Node $node): void
-    {
-        $parent = $node->parentNode;
-
-        if ($parent === null) {
-            $this->assertThrows(static function () use ($range, $node): void {
-                $range->setStartAfter($node);
-            }, InvalidNodeTypeError::class);
-
-            return;
-        }
-
-        $idx = 0;
-
-        while ($node->parentNode->childNodes[$idx] !== $node) {
-            ++$idx;
-        }
-
-        $this->testSetStart($range, $node->parentNode, $idx + 1);
-    }
-
-    /**
-     * @dataProvider setEndBeforeTestProvider
-     */
-    public function testSetEndBefore(Range $range, Node $node): void
-    {
-        $parent = $node->parentNode;
-
-        if ($parent === null) {
-            $this->assertThrows(static function () use ($range, $node): void {
-                $range->setEndBefore($node);
-            }, InvalidNodeTypeError::class);
-
-            return;
-        }
-
-        $idx = 0;
-
-        while ($node->parentNode->childNodes[$idx] !== $node) {
-            ++$idx;
-        }
-
-        $this->testSetEnd($range, $node->parentNode, $idx);
-    }
-
-    /**
-     * @dataProvider setEndAfterTestProvider
-     */
-    public function testSetEndAfter(Range $range, Node $node): void
-    {
-        $parent = $node->parentNode;
-
-        if ($parent === null) {
-            $this->assertThrows(static function () use ($range, $node): void {
-                $range->setEndAfter($node);
-            }, InvalidNodeTypeError::class);
-
-            return;
-        }
-
-        $idx = 0;
-
-        while ($node->parentNode->childNodes[$idx] !== $node) {
-            ++$idx;
-        }
-
-        $this->testSetEnd($range, $node->parentNode, $idx + 1);
-    }
-
-    public function setStartTestProvider(): array
-    {
-        $this->generateTests();
-
-        return self::$startTests;
-    }
-
-    public function setEndTestProvider(): array
-    {
-        $this->generateTests();
-
-        return self::$endTests;
-    }
-
-    public function setStartBeforeTestProvider(): array
-    {
-        $this->generateTests();
-
-        return self::$startBeforeTests;
-    }
-
-    public function setStartAfterTestProvider(): array
-    {
-        $this->generateTests();
-
-        return self::$startAfterTests;
-    }
-
-    public function setEndBeforeTestProvider(): array
-    {
-        $this->generateTests();
-
-        return self::$endBeforeTests;
-    }
-
-    public function setEndAfterTestProvider(): array
-    {
-        $this->generateTests();
-
-        return self::$endAfterTests;
-    }
-
-    public function generateTests(): void
-    {
-        static $testSetupComplete = false;
-
-        if ($testSetupComplete) {
-            return;
-        }
-
-        $testSetupComplete = true;
         $window = self::getWindow();
-        $window->setupRangeTests();
-        self::$startTests = [];
-        self::$endTests = [];
-        self::$startBeforeTests = [];
-        self::$startAfterTests = [];
-        self::$endBeforeTests = [];
-        self::$endAfterTests = [];
-        $testPointsCached = array_map(function (string $points) use ($window) {
-            return $window->eval($points);
-        }, $window->testPoints);
-        $testNodesCached = array_map(function (string $points) use ($window) {
-            return $window->eval($points);
-        }, $window->testNodesShort);
+        $endpoints = $window->eval($rangeEndpoints);
+        $range = Window::ownerDocument($endpoints[0])->createRange();
+        $range->setStart($endpoints[0], $endpoints[1]);
+        $range->setEnd($endpoints[2], $endpoints[3]);
+        $evaled = $window->eval($nodes);
 
-        for ($i = 0, $len1 = count($window->testRangesShort); $i < $len1; ++$i) {
-            $endpoints = $window->eval($window->testRangesShort[$i]);
-            $range = Window::ownerDocument($endpoints[0])->createRange();
-            $range->setStart($endpoints[0], $endpoints[1]);
-            $range->setEnd($endpoints[2], $endpoints[3]);
-
-            for ($j = 0, $len2 = count($window->testPoints); $j < $len2; ++$j) {
-                self::$startTests[] = [$range, $testPointsCached[$j][0], $testPointsCached[$j][1]];
-                self::$endTests[] = [$range, $testPointsCached[$j][0], $testPointsCached[$j][1]];
-            }
-
-            for ($j = 0, $len3 = count($window->testNodesShort); $j < $len3; ++$j) {
-                self::$startBeforeTests[] = [$range, $testNodesCached[$j]];
-                self::$startAfterTests[] = [$range, $testNodesCached[$j]];
-                self::$endBeforeTests[] = [$range, $testNodesCached[$j]];
-                self::$endAfterTests[] = [$range, $testNodesCached[$j]];
-            }
+        if ($evaled instanceof Node) {
+            return [$range, $evaled];
         }
 
-        self::registerCleanup(static function (): void {
-            self::$startTests = null;
-            self::$endTests = null;
-            self::$startBeforeTests = null;
-            self::$startAfterTests = null;
-            self::$endBeforeTests = null;
-            self::$endAfterTests = null;
-        });
+        return [$range, $evaled[0], $evaled[1]];
+    }
+
+    public function buildTests1(): Generator
+    {
+        $window = self::getWindow();
+        $window->initStrings();
+
+        foreach ($window->testRangesShort as $i => $rangeEndpoints) {
+            foreach ($window->testPoints as $j => $point) {
+                yield [$rangeEndpoints, $point];
+            }
+        }
+    }
+
+    public function buildTests2(): Generator
+    {
+        $window = self::getWindow();
+        $window->initStrings();
+
+        foreach ($window->testRangesShort as $i => $rangeEndpoints) {
+            foreach ($window->testNodesShort as $j => $node) {
+                yield [$rangeEndpoints, $node];
+            }
+        }
+    }
+
+    public static function setUpBeforeClass(): void
+    {
+        self::getWindow()->setupRangeTests();
     }
 
     public static function getDocumentName(): string

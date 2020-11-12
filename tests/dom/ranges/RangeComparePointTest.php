@@ -2,15 +2,14 @@
 
 namespace Rowbot\DOM\Tests\dom\ranges;
 
-use Exception;
 use Generator;
 use Rowbot\DOM\Exception\IndexSizeError;
 use Rowbot\DOM\Exception\InvalidNodeTypeError;
 use Rowbot\DOM\Exception\WrongDocumentError;
 use Rowbot\DOM\Node;
-use Rowbot\DOM\Range;
 use Rowbot\DOM\Tests\dom\Window;
 use Rowbot\DOM\Tests\dom\WindowTrait;
+use Throwable;
 
 use function pow;
 
@@ -24,8 +23,17 @@ class RangeComparePointTest extends RangeTestCase
     /**
      * @dataProvider pointsProvider
      */
-    public function testComparePoint(Node $node, int $offset, Range $range): void
+    public function testComparePoint(string $testPoint, string $testRange): void
     {
+        $window = self::getWindow();
+        [$node, $offset] = $window->eval($testPoint);
+
+        try {
+            $range = Window::rangeFromEndpoints($window->eval($testRange));
+        } catch (Throwable $e) {
+            $range = null;
+        }
+
         // comparePoint is an unsigned long, so per WebIDL, we need to treat it as
         // though it wrapped to an unsigned 32-bit integer.
         $normalizedOffset = $offset % pow(2, 32);
@@ -92,21 +100,18 @@ class RangeComparePointTest extends RangeTestCase
     public function pointsProvider(): Generator
     {
         $window = self::getWindow();
-        $window->setupRangeTests();
+        $window->initStrings();
 
         foreach ($window->testPoints as $point) {
-            $evaled = $window->eval($point);
-
             foreach ($window->testRanges as $range) {
-                try {
-                    $range = Window::rangeFromEndpoints($window->eval($range));
-                } catch (Exception $e) {
-                    $range = null;
-                }
-
-                yield [$evaled[0], $evaled[1], $range];
+                yield [$point, $range];
             }
         }
+    }
+
+    public static function setUpBeforeClass(): void
+    {
+        self::getWindow()->setupRangeTests();
     }
 
     public static function getDocumentName(): string

@@ -2,12 +2,12 @@
 
 namespace Rowbot\DOM\Tests\dom\ranges;
 
-use Exception;
+use Generator;
 use Rowbot\DOM\Exception\InvalidNodeTypeError;
 use Rowbot\DOM\Exception\InvalidStateError;
 use Rowbot\DOM\Node;
-use Rowbot\DOM\Range;
 use Rowbot\DOM\Tests\dom\WindowTrait;
+use Throwable;
 
 /**
  * @see https://github.com/web-platform-tests/wpt/blob/master/dom/ranges/Range-selectNode.html
@@ -16,21 +16,20 @@ class RangeSelectNodeTest extends RangeTestCase
 {
     use WindowTrait;
 
-    private $tests;
-
-    private static $range;
-    private static $foreignRange;
-    private static $xmlRange;
-    private static $detachedRange;
-
     /**
      * @dataProvider rangeProvider
      */
-    public function testSelectNode(string $marker, Range $range, Node $node): void
+    public function testSelectNode(string $marker, string $rangeDoc, bool $detached, Node $node): void
     {
+        $range = self::getWindow()->eval($rangeDoc)->createRange();
+
+        if ($detached) {
+            $range->detach();
+        }
+
         try {
             $range->collapsed;
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             // Range is detached
             $this->assertThrows(static function () use ($range, $node): void {
                 $range->selectNode($node);
@@ -75,54 +74,44 @@ class RangeSelectNodeTest extends RangeTestCase
         }
     }
 
-    public function rangeProvider(): array
+    public function rangeProvider(): Generator
     {
         $window = self::getWindow();
         $window->setupRangeTests();
-        self::$range = $window->document->createRange();
-        self::$foreignRange = $window->foreignDoc->createRange();
-        self::$xmlRange = $window->xmlDoc->createRange();
-        self::$detachedRange = $window->document->createRange();
-        self::$detachedRange->detach();
-        $this->tests = [];
 
-        $this->generateTestTree($window->document, 'current doc');
-        $this->generateTestTree($window->foreignDoc, 'foreign doc');
-        $this->generateTestTree($window->detachedDiv, 'detached div in current doc');
+        yield from $this->generateTestTree($window->document, 'current doc');
+        yield from $this->generateTestTree($window->foreignDoc, 'foreign doc');
+        yield from $this->generateTestTree($window->detachedDiv, 'detached div in current doc');
 
         $otherTests = ['xmlDoc', 'xmlElement', 'detachedTextNode',
         'foreignTextNode', 'xmlTextNode', 'processingInstruction', 'comment',
         'foreignComment', 'xmlComment', 'docfrag', 'foreignDocfrag', 'xmlDocfrag'];
 
         foreach ($otherTests as $test) {
-            $this->generateTestTree($window->eval($test), $test);
+            yield from $this->generateTestTree($window->eval($test), $test);
         }
-
-        self::registerCleanup(function (): void {
-            self::$range = null;
-            self::$foreignRange = null;
-            self::$xmlRange = null;
-            self::$detachedRange = null;
-            $this->tests = null;
-        });
-
-        return $this->tests;
     }
 
-    public function generateTestTree(Node $root, string $marker): void
+    public static function setUpBeforeClass(): void
+    {
+        // Don't create new nodes again because the data provider runs first.
+        self::getWindow()->setupRangeTests(false);
+    }
+
+    public function generateTestTree(Node $root, string $marker): Generator
     {
         if ($root->nodeType === Node::ELEMENT_NODE && $root->id === 'log') {
             // This is being modified during the tests, so let's not test it.
             return;
         }
 
-        $this->tests[] = [$marker, self::$range, $root];
-        $this->tests[] = [$marker, self::$foreignRange, $root];
-        $this->tests[] = [$marker, self::$xmlRange, $root];
-        $this->tests[] = [$marker, self::$detachedRange, $root];
+        yield [$marker, 'document', false, $root];
+        yield [$marker, 'foreignDoc', false, $root];
+        yield [$marker, 'xmlDoc', false, $root];
+        yield [$marker, 'document', true, $root];
 
         foreach ($root->childNodes as $node) {
-            $this->generateTestTree($node, $marker);
+            yield from $this->generateTestTree($node, $marker);
         }
     }
 

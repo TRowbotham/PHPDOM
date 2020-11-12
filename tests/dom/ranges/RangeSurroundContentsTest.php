@@ -261,6 +261,18 @@ class RangeSurroundContentsTest extends RangeTestCase
     public function rangesProvider(): Generator
     {
         $window = self::getWindow();
+        $window->initStrings();
+
+        foreach ($window->testRangesShort as $i => $range) {
+            foreach ($window->testNodesShort as $j => $node) {
+                yield [$i, $j];
+            }
+        }
+    }
+
+    public static function setUpBeforeClass(): void
+    {
+        $window = self::getWindow();
         $document = $window->document;
         $window->setupRangeTests();
         $window->testDiv->parentNode->removeChild($window->testDiv);
@@ -278,12 +290,6 @@ class RangeSurroundContentsTest extends RangeTestCase
             self::$expectedIframe = null;
             self::$referenceDoc = null;
         });
-
-        foreach ($window->testRangesShort as $i => $range) {
-            foreach ($window->testNodesShort as $j => $node) {
-                yield [$i, $j];
-            }
-        }
     }
 
     public static function getDocumentName(): string

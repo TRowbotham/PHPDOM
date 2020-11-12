@@ -15,7 +15,7 @@ class RangeCloneRangeTest extends RangeTestCase
     /**
      * @dataProvider rangeProvider
      */
-    public function testCloneRange(array $rangeEndpoints): void
+    public function testCloneRange(string $rangeEndpoints): void
     {
         if ($rangeEndpoints === 'detached') {
             $range = self::getWindow()->document->createRange();
@@ -30,6 +30,7 @@ class RangeCloneRangeTest extends RangeTestCase
             return;
         }
 
+        $rangeEndpoints = self::getWindow()->eval($rangeEndpoints);
         $ownerDoc = $rangeEndpoints[0]->nodeType === Node::DOCUMENT_NODE
             ? $rangeEndpoints[0]
             : $rangeEndpoints[0]->ownerDocument;
@@ -83,14 +84,19 @@ class RangeCloneRangeTest extends RangeTestCase
     public function rangeProvider(): array
     {
         $window = self::getWindow();
-        $window->setupRangeTests();
+        $window->initStrings();
         $tests = [];
 
         foreach ($window->testRanges as $i => $range) {
-            $tests["Range {$i} {$range}"] = [$window->eval($range)];
+            $tests["Range {$i} {$range}"] = [$range];
         }
 
         return $tests;
+    }
+
+    public static function setUpBeforeClass(): void
+    {
+        self::getWindow()->setupRangeTests();
     }
 
     public static function getDocumentName(): string

@@ -2,12 +2,10 @@
 
 namespace Rowbot\DOM\Tests\dom\ranges;
 
-use Exception;
 use Generator;
-use Rowbot\DOM\Node;
-use Rowbot\DOM\Range;
 use Rowbot\DOM\Tests\dom\Window;
 use Rowbot\DOM\Tests\dom\WindowTrait;
+use Throwable;
 
 /**
  * @see https://github.com/web-platform-tests/wpt/blob/master/dom/ranges/Range-intersectsNode.html
@@ -19,8 +17,17 @@ class RangeIntersectsNodeTest extends RangeTestCase
     /**
      * @dataProvider intersectionNodeProvider
      */
-    public function testIntersectsNode(Node $node, Range $range): void
+    public function testIntersectsNode(string $node, string $range): void
     {
+        $window = self::getWindow();
+        $node = $window->eval($node);
+
+        try {
+            $range = Window::rangeFromEndpoints($window->eval($range));
+        } catch (Throwable $e) {
+            $range = null;
+        }
+
         $this->assertNotNull($range);
 
         $range = $range->cloneRange();
@@ -63,21 +70,18 @@ class RangeIntersectsNodeTest extends RangeTestCase
     public function intersectionNodeProvider(): Generator
     {
         $window = self::getWindow();
-        $window->setupRangeTests();
+        $window->initStrings();
 
         foreach ($window->testNodes as $node) {
-            $node = $window->eval($node);
-
             foreach ($window->testRanges as $range) {
-                try {
-                    $range = Window::rangeFromEndpoints($window->eval($range));
-                } catch (Exception $e) {
-                    $range = null;
-                }
-
                 yield [$node, $range];
             }
         }
+    }
+
+    public static function setUpBeforeClass(): void
+    {
+        self::getWindow()->setupRangeTests();
     }
 
     public static function getDocumentName(): string

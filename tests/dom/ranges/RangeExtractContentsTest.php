@@ -161,6 +161,16 @@ class RangeExtractContentsTest extends RangeTestCase
     public function rangesProvider(): Generator
     {
         $window = self::getWindow();
+        $window->initStrings();
+
+        foreach ($window->testRanges as $i => $_) {
+            yield [$i];
+        }
+    }
+
+    public static function setUpBeforeClass(): void
+    {
+        $window = self::getWindow();
         $document = $window->document;
         $window->setupRangeTests();
         $window->testDiv->parentNode->removeChild($window->testDiv);
@@ -178,10 +188,6 @@ class RangeExtractContentsTest extends RangeTestCase
             self::$expectedIframe = null;
             self::$referenceDoc = null;
         });
-
-        foreach ($window->testRanges as $i => $range) {
-            yield [$i];
-        }
     }
 
     public static function restoreIframe(FakeIframe $iframe, int $i): void

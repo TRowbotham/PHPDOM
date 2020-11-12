@@ -111,6 +111,16 @@ class RangeDeleteContentsTest extends RangeTestCase
     public function rangesProvider()
     {
         $window = self::getWindow();
+        $window->initStrings();
+
+        foreach ($window->testRanges as $i => $_) {
+            yield [$i];
+        }
+    }
+
+    public static function setUpBeforeClass(): void
+    {
+        $window = self::getWindow();
         $document = $window->document;
         $window->setupRangeTests();
         $window->testDiv->parentNode->removeChild($window->testDiv);
@@ -128,10 +138,6 @@ class RangeDeleteContentsTest extends RangeTestCase
             self::$expectedIframe = null;
             self::$referenceDoc = null;
         });
-
-        foreach ($window->testRanges as $i => $range) {
-            yield [$i];
-        }
     }
 
     public static function myDeleteContents(Range $range): void

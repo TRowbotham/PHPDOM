@@ -23,8 +23,18 @@ class RangeIsPointInRangeTest extends RangeTestCase
     /**
      * @dataProvider pointsProvider
      */
-    public function testIsPointInRange(Node $node, int $offset): void
+    public function testIsPointInRange(string $node, string $range): void
     {
+        $window = self::getWindow();
+        [$node, $offset] = $window->eval($node);
+
+        if ($range === '"detached"') {
+            $range = $window->document->createRange();
+            $range->detach();
+        } else {
+            $range = Window::rangeFromEndpoints($window->eval($range));
+        }
+
         // isPointInRange is an unsigned long, so per WebIDL, we need to treat it
         // as though it wrapped to an unsigned 32-bit integer.
         $normalizedOffset = $offset % pow(2, 32);
@@ -33,75 +43,70 @@ class RangeIsPointInRangeTest extends RangeTestCase
             $normalizedOffset += pow(2, 32);
         }
 
-        foreach (self::$testRangesCached as $range) {
-            $range = $range->cloneRange();
+        $range = $range->cloneRange();
 
-            // "If node's root is different from the context object's root,
-            // return false and terminate these steps."
-            if ($node->getRootNode() !== $range->startContainer->getRootNode()) {
-                $this->assertFalse($range->isPointInRange($node, $offset));
+        // "If node's root is different from the context object's root,
+        // return false and terminate these steps."
+        if ($node->getRootNode() !== $range->startContainer->getRootNode()) {
+            $this->assertFalse($range->isPointInRange($node, $offset));
 
-                return;
-            }
-
-            // "If node is a doctype, throw an "InvalidNodeTypeError" exception
-            // and terminate these steps."
-            if ($node->nodeType === Node::DOCUMENT_TYPE_NODE) {
-                $this->assertThrows(static function () use ($range, $node, $offset): void {
-                    $range->isPointInRange($node, $offset);
-                }, InvalidNodeTypeError::class);
-
-                return;
-            }
-
-            // "If offset is greater than node's length, throw an
-            // "IndexSizeError" exception and terminate these steps."
-            if ($normalizedOffset > $node->getLength()) {
-                $this->assertThrows(static function () use ($range, $node, $offset): void {
-                    $range->isPointInRange($node, $offset);
-                }, IndexSizeError::class);
-
-                return;
-            }
-
-            // "If (node, offset) is before start or after end, return false
-            // and terminate these steps."
-            if (
-                Window::getPosition($node, $normalizedOffset, $range->startContainer, $range->startOffset) === 'before'
-                || Window::getPosition($node, $normalizedOffset, $range->endContainer, $range->endOffset) === 'after'
-            ) {
-                $this->assertFalse($range->isPointInRange($node, $offset));
-
-                return;
-            }
-
-            $this->assertTrue($range->isPointInRange($node, $offset));
+            return;
         }
+
+        // "If node is a doctype, throw an "InvalidNodeTypeError" exception
+        // and terminate these steps."
+        if ($node->nodeType === Node::DOCUMENT_TYPE_NODE) {
+            $this->assertThrows(static function () use ($range, $node, $offset): void {
+                $range->isPointInRange($node, $offset);
+            }, InvalidNodeTypeError::class);
+
+            return;
+        }
+
+        // "If offset is greater than node's length, throw an
+        // "IndexSizeError" exception and terminate these steps."
+        if ($normalizedOffset > $node->getLength()) {
+            $this->assertThrows(static function () use ($range, $node, $offset): void {
+                $range->isPointInRange($node, $offset);
+            }, IndexSizeError::class);
+
+            return;
+        }
+
+        // "If (node, offset) is before start or after end, return false
+        // and terminate these steps."
+        if (
+            Window::getPosition($node, $normalizedOffset, $range->startContainer, $range->startOffset) === 'before'
+            || Window::getPosition($node, $normalizedOffset, $range->endContainer, $range->endOffset) === 'after'
+        ) {
+            $this->assertFalse($range->isPointInRange($node, $offset));
+
+            return;
+        }
+
+        $this->assertTrue($range->isPointInRange($node, $offset));
     }
 
     public function pointsProvider(): Generator
     {
         $window = self::getWindow();
-        $window->setupRangeTests();
-        self::$testRangesCached = [];
+        $window->initStrings();
 
-        foreach ($window->testRanges as $range) {
-            self::$testRangesCached[] = Window::rangeFromEndpoints($window->eval($range));
-        }
-
-        $detachedRange = $window->document->createRange();
-        $detachedRange->detach();
-        $window->testRanges[] = '"detached"';
-        self::$testRangesCached[] = $detachedRange;
-
-        self::registerCleanup(static function (): void {
-            self::$testRangesCached = null;
-        });
+        array_unshift($window->testRanges, '"detached"');
 
         foreach ($window->testPoints as $testPoint) {
-            $evaled = $window->eval($testPoint);
-            yield [$evaled[0], $evaled[1]];
+            foreach ($window->testRanges as $range) {
+                yield [$testPoint, $range];
+            }
         }
+    }
+
+    public static function setUpBeforeClass(): void
+    {
+        $window = self::getWindow();
+        $window->setupRangeTests();
+
+        array_unshift($window->testRanges, '"detached"');
     }
 
     public static function getDocumentName(): string

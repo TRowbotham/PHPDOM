@@ -15,17 +15,6 @@ class RangeCommonAncestorContainerTest extends RangeTestCase
 {
     use WindowTrait;
 
-    public function rangeProvider(): Generator
-    {
-        $window = self::getWindow();
-        $window->setupRangeTests();
-        array_unshift($window->testRanges, '[detached]');
-
-        foreach ($window->testRanges as $i => $range) {
-            yield [$i, $range];
-        }
-    }
-
     /**
      * @dataProvider rangeProvider
      */
@@ -50,6 +39,24 @@ class RangeCommonAncestorContainerTest extends RangeTestCase
         }
 
         $this->assertSame($container, $range->commonAncestorContainer);
+    }
+
+    public function rangeProvider(): Generator
+    {
+        $window = self::getWindow();
+        $window->initStrings();
+        array_unshift($window->testRanges, '[detached]');
+
+        foreach ($window->testRanges as $i => $range) {
+            yield [$i, $range];
+        }
+    }
+
+    public static function setUpBeforeClass(): void
+    {
+        $window = self::getWindow();
+        $window->setupRangeTests();
+        array_unshift($window->testRanges, '[detached]');
     }
 
     public static function getDocumentName(): string

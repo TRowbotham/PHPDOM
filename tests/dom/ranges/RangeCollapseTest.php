@@ -15,7 +15,7 @@ class RangeCollapseTest extends RangeTestCase
     /**
      * @dataProvider rangeProvider
      */
-    public function testCollapse(array $rangeEndpoints, ?bool $toStart): void
+    public function testCollapse(string $rangeEndpoints, ?bool $toStart): void
     {
         if ($rangeEndpoints === 'detached') {
             $range = self::getWindow()->document->createRange();
@@ -23,8 +23,11 @@ class RangeCollapseTest extends RangeTestCase
             $range->collapse($toStart);
 
             $this->assertTrue($range->collapsed);
+
+            return;
         }
 
+        $rangeEndpoints = self::getWindow()->eval($rangeEndpoints);
         // Have to account for Ranges involving Documents!
         $ownerDoc = $rangeEndpoints[0]->nodeType === Node::DOCUMENT_NODE
             ? $rangeEndpoints[0]
@@ -54,16 +57,21 @@ class RangeCollapseTest extends RangeTestCase
     public function rangeProvider(): array
     {
         $window = self::getWindow();
-        $window->setupRangeTests();
+        $window->initStrings();
         $tests = [];
 
         foreach ($window->testRanges as $i => $range) {
-            $tests["Range {$i} {$range}, toStart true"] = [$window->eval($range), true];
-            $tests["Range {$i} {$range}, toStart false"] = [$window->eval($range), false];
-            $tests["Range {$i} {$range}, toStart omitted"] = [$window->eval($range), null];
+            $tests["Range {$i} {$range}, toStart true"] = [$range, true];
+            $tests["Range {$i} {$range}, toStart false"] = [$range, false];
+            $tests["Range {$i} {$range}, toStart omitted"] = [$range, null];
         }
 
         return $tests;
+    }
+
+    public static function setUpBeforeClass(): void
+    {
+        self::getWindow()->setupRangeTests();
     }
 
     public static function getDocumentName(): string

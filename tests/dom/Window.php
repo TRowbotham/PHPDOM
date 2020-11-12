@@ -63,14 +63,20 @@ class Window
     public $document;
 
     private static $evalReplacePattern;
+    private $initialized;
 
     public function __construct(Document $document)
     {
         $this->document = $document;
+        $this->initialized = false;
     }
 
-    public function setupRangeTests(): void
+    public function setupRangeTests($run = true): void
     {
+        if ($this->initialized && !$run) {
+            return;
+        }
+
         // $this->testDiv = $this->document->querySelector('#test');
         $this->testDiv = $this->document->getElementById('test');
 
@@ -177,6 +183,16 @@ class Window
         $this->doctype = $this->document->doctype;
         $this->foreignDoctype = $this->foreignDoc->doctype;
 
+        $this->initStrings();
+    }
+
+    public function initStrings(): void
+    {
+        if ($this->initialized) {
+            return;
+        }
+
+        $this->initialized = true;
         $this->testRangesShort = [
             // Various ranges within the text node children of different
             // paragraphs.  All should be valid.

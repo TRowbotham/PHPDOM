@@ -6,7 +6,6 @@ use Exception;
 use Rowbot\DOM\Exception\DOMException;
 use Rowbot\DOM\Node;
 use Rowbot\DOM\Range;
-use Rowbot\DOM\Tests\dom\ranges\FakeIframe;
 use Rowbot\DOM\Tests\dom\Window;
 use Rowbot\DOM\Tests\dom\WindowTrait;
 
@@ -144,6 +143,20 @@ class RangeInsertNodeTest extends RangeTestCase
     public function rangesProvider()
     {
         $window = self::getWindow();
+        $window->initStrings();
+
+        array_unshift($window->testRanges, '"detached"');
+
+        foreach ($window->testRangesShort as $i => $range) {
+            foreach ($window->testNodesShort as $j => $node) {
+                yield [$i, $j];
+            }
+        }
+    }
+
+    public static function setUpBeforeClass(): void
+    {
+        $window = self::getWindow();
         $document = $window->document;
         $window->setupRangeTests();
         $window->testDiv->parentNode->removeChild($window->testDiv);
@@ -163,12 +176,6 @@ class RangeInsertNodeTest extends RangeTestCase
             self::$expectedIframe = null;
             self::$referenceDoc = null;
         });
-
-        foreach ($window->testRangesShort as $i => $range) {
-            foreach ($window->testNodesShort as $j => $node) {
-                yield [$i, $j];
-            }
-        }
     }
 
     public static function restoreIframe(FakeIframe $iframe, int $i, int $j): void
