@@ -40,7 +40,7 @@ final class Range extends AbstractRange implements Stringable
     public const END_TO_START   = 3;
 
     /**
-     * @var \Rowbot\DOM\Support\Collection\WeakColleciton<self>|\Rowbot\DOM\Support\Collection\ArrayCollection<self>|null
+     * @var \Rowbot\DOM\Support\Collection\WeakCollection<self>|\Rowbot\DOM\Support\Collection\ArrayCollection<self>|null
      */
     private static $collection;
 
