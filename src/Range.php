@@ -13,11 +13,15 @@ use Rowbot\DOM\Exception\InvalidStateError;
 use Rowbot\DOM\Exception\NotSupportedError;
 use Rowbot\DOM\Exception\WrongDocumentError;
 use Rowbot\DOM\Parser\ParserFactory;
+use Rowbot\DOM\Support\Collection\ArrayCollection;
+use Rowbot\DOM\Support\Collection\WeakCollection;
 use Rowbot\DOM\Support\Stringable;
 
 use function array_reverse;
 use function iterator_to_array;
 use function mb_substr;
+
+use const PHP_VERSION_ID;
 
 /**
  * Represents a sequence of content within a node tree.
@@ -36,13 +40,19 @@ final class Range extends AbstractRange implements Stringable
     public const END_TO_START   = 3;
 
     /**
-     * @var self[]
+     * @var \Rowbot\DOM\Support\Collection\WeakColleciton<self>|\Rowbot\DOM\Support\Collection\ArrayCollection<self>|null
      */
-    private static $collection = [];
+    private static $collection;
 
     public function __construct(Document $document)
     {
-        self::$collection[] = $this;
+        if (!self::$collection) {
+            self::$collection = PHP_VERSION_ID < 70400
+                ? new ArrayCollection()
+                : new WeakCollection();
+        }
+
+        self::$collection->attach($this);
         $this->startNode = $document;
         $this->startOffset = 0;
         $this->endNode = $document;
@@ -56,6 +66,11 @@ final class Range extends AbstractRange implements Stringable
         }
 
         return parent::__get($name);
+    }
+
+    public function __clone()
+    {
+        self::$collection->attach($this);
     }
 
     /**
@@ -1005,10 +1020,16 @@ final class Range extends AbstractRange implements Stringable
      *
      * @internal
      *
-     * @return self[]
+     * @return \Rowbot\DOM\Support\Collection\WeakCollection<self>|\Rowbot\DOM\Support\Collection\WeakCollection<self>
      */
-    public static function getRangeCollection(): array
+    public static function getRangeCollection()
     {
+        if (!self::$collection) {
+            self::$collection = PHP_VERSION_ID < 70400
+                ? new ArrayCollection()
+                : new WeakCollection();
+        }
+
         return self::$collection;
     }
 
@@ -1083,9 +1104,13 @@ final class Range extends AbstractRange implements Stringable
      */
     public static function prune(Document $document): void
     {
+        if (!self::$collection) {
+            return;
+        }
+
         foreach (self::$collection as $i => $range) {
             if ($range->startNode->getNodeDocument() === $document) {
-                unset(self::$collection[$i]);
+                self::$collection->unset($i);
             }
         }
     }

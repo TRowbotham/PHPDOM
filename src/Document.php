@@ -16,11 +16,12 @@ use Rowbot\DOM\Exception\HierarchyRequestError;
 use Rowbot\DOM\Exception\InvalidCharacterError;
 use Rowbot\DOM\Exception\NotSupportedError;
 use Rowbot\DOM\Parser\MarkupFactory;
+use Rowbot\DOM\Support\Collection\ArrayCollection;
+use Rowbot\DOM\Support\Collection\WeakCollection;
 use Rowbot\DOM\Support\Stringable;
 use Rowbot\DOM\URL\URLParser;
 use Rowbot\URL\URLRecord;
 
-use function array_filter;
 use function count;
 use function in_array;
 use function mb_strpos;
@@ -29,6 +30,7 @@ use function preg_match;
 use function strtolower;
 
 use const PHP_SAPI;
+use const PHP_VERSION_ID;
 
 /**
  * @see https://dom.spec.whatwg.org/#interface-document
@@ -100,9 +102,9 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
     private $isHTMLDocument;
 
     /**
-     * @var \Rowbot\DOM\NodeIterator[]
+     * @var \Rowbot\DOM\Support\Collection\WeakCollection<\Rowbot\DOM\NodeIterator>|\Rowbot\DOM\Support\ArrayCollection<\Rowbot\DOM\NodeIterator>|null
      */
-    private static $nodeIteratorList = [];
+    private static $nodeIteratorList;
 
     /**
      * @var \Rowbot\URL\URLRecord|null
@@ -123,6 +125,12 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
     {
         parent::__construct($this);
 
+        if (!self::$nodeIteratorList) {
+            self::$nodeIteratorList = PHP_VERSION_ID < 70400
+                ? new ArrayCollection()
+                : new WeakCollection();
+        }
+
         $this->characterSet = 'UTF-8';
         $this->contentType = 'application/xml';
         $this->flags = 0;
@@ -140,18 +148,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
         $this->readyState = DocumentReadyState::COMPLETE;
 
         $this->source = DocumentSource::NOT_FROM_PARSER;
-    }
-
-    public function __destruct()
-    {
-        // Filter out any NodeIterators where root's node document is this document.
-        self::$nodeIteratorList = array_filter(
-            self::$nodeIteratorList,
-            function (NodeIterator $iter): bool {
-                return $iter->root->nodeDocument !== $this;
-            }
-        );
-        Range::prune($this);
     }
 
     public function __get(string $name)
@@ -406,7 +402,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
         $filter = null
     ): NodeIterator {
         $iter = new NodeIterator($root, $whatToShow, $filter);
-        self::$nodeIteratorList[] = $iter;
+        self::$nodeIteratorList->attach($iter);
 
         return $iter;
     }
@@ -697,11 +693,35 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      *
      * @internal
      *
-     * @return array<int, \Rowbot\DOM\NodeIterator>
+     * @return \Rowbot\DOM\Support\Collection\WeakCollection<\Rowbot\DOM\NodeIterator>|\Rowbot\DOM\Support\ArrayCollection<\Rowbot\DOM\NodeIterator>
      */
-    public static function getNodeIteratorCollection(): array
+    public static function getNodeIteratorCollection()
     {
+        if (!self::$nodeIteratorList) {
+            self::$nodeIteratorList = PHP_VERSION_ID < 70400
+                ? new ArrayCollection()
+                : new WeakCollection();
+        }
+
         return self::$nodeIteratorList;
+    }
+
+    /**
+     * Prune node iterators for the given document.
+     *
+     * @internal
+     */
+    public function pruneNodeIterators(): void
+    {
+        if (!self::$nodeIteratorList) {
+            return;
+        }
+
+        foreach (self::$nodeIteratorList as $i => $iter) {
+            if ($iter->root->nodeDocument === $this) {
+                self::$nodeIteratorList->unset($i);
+            }
+        }
     }
 
     /**
