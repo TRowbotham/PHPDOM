@@ -11,8 +11,6 @@ use Rowbot\DOM\Exception\HierarchyRequestError;
 use Rowbot\DOM\Exception\NotFoundError;
 use Rowbot\DOM\Exception\NotSupportedError;
 use Rowbot\DOM\Support\Collection\NodeSet;
-use Rowbot\DOM\Support\UniquelyIdentifiable;
-use Rowbot\DOM\Support\UuidTrait;
 
 use function count;
 use function method_exists;
@@ -40,10 +38,8 @@ use function strcmp;
  * @property-read \Rowbot\DOM\Element\Element|null $parentElement
  * @property-read \Rowbot\DOM\Node|null            $previousSibling
  */
-abstract class Node extends EventTarget implements UniquelyIdentifiable
+abstract class Node extends EventTarget
 {
-    use UuidTrait;
-
     public const ELEMENT_NODE                = 1;
     public const ATTRIBUTE_NODE              = 2;
     public const TEXT_NODE                   = 3;
