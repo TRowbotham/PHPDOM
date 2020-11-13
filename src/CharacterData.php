@@ -158,51 +158,58 @@ abstract class CharacterData extends Node implements ChildNode
             . $data
             . mb_substr($this->data, $offset + $count, $length - $offset, 'utf-8');
         $newDataLen = mb_strlen($data, 'utf-8');
-        $ranges = Range::getRangeCollection();
+        $ranges = [];
 
-        foreach ($ranges as $range) {
-            $startContainer = $range->startContainer;
+        foreach (Range::getRangeCollection() as $range) {
+            $startNode = $range->startContainer;
+            $endNode = $range->endContainer;
+
+            if ($startNode === $this || $endNode === $this) {
+                $ranges[] = [$range, $startNode, $endNode];
+            }
+        }
+
+        foreach ($ranges as [$range, $startNode, $endNode]) {
             $startOffset = $range->startOffset;
 
             if (
-                $startContainer === $this
+                $startNode === $this
                 && $startOffset > $offset
                 && $startOffset <= $offset + $count
             ) {
-                $range->setStartInternal($startContainer, $offset);
+                $range->setStartInternal($startNode, $offset);
             }
         }
 
-        foreach ($ranges as $range) {
-            $endContainer = $range->endContainer;
+        foreach ($ranges as [$range, $startNode, $endNode]) {
             $endOffset = $range->endOffset;
 
             if (
-                $endContainer === $this
+                $endNode === $this
                 && $endOffset > $offset
                 && $endOffset <= $offset + $count
             ) {
-                $range->setEndInternal($endContainer, $offset);
+                $range->setEndInternal($endNode, $offset);
             }
         }
 
-        foreach ($ranges as $range) {
-            $startContainer = $range->startContainer;
+        foreach ($ranges as [$range, $startNode, $endNode]) {
             $startOffset = $range->startOffset;
 
-            if ($startContainer === $this && $startOffset > $offset + $count) {
-                $range->setStartInternal($startContainer, $startOffset + $newDataLen - $count);
+            if ($startNode === $this && $startOffset > $offset + $count) {
+                $range->setStartInternal($startNode, $startOffset + $newDataLen - $count);
             }
         }
 
-        foreach ($ranges as $range) {
-            $endContainer = $range->endContainer;
+        foreach ($ranges as [$range, $startNode, $endNode]) {
             $endOffset = $range->endOffset;
 
-            if ($endContainer === $this && $endOffset > $offset + $count) {
-                $range->setEndInternal($endContainer, $endOffset + $newDataLen - $count);
+            if ($endNode === $this && $endOffset > $offset + $count) {
+                $range->setEndInternal($endNode, $endOffset + $newDataLen - $count);
             }
         }
+
+        unset($ranges);
     }
 
     /**

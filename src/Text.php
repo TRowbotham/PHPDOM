@@ -78,45 +78,59 @@ class Text extends CharacterData
         $count = $length - $offset;
         $newData = $this->substringData($offset, $count);
         $newNode = new Text($this->nodeDocument, $newData);
-        $ranges = Range::getRangeCollection();
 
         if ($this->parentNode) {
             $this->parentNode->insertNode($newNode, $this->nextSibling);
             $treeIndex = $this->getTreeIndex();
+            $ranges = [];
 
-            foreach ($ranges as $range) {
+            foreach (Range::getRangeCollection() as $range) {
+                $startNode = $range->startContainer;
+                $endNode = $range->endContainer;
+
+                if (
+                    $startNode === $this
+                    || $startNode === $this->parentNode
+                    || $endNode === $this
+                    || $endNode === $this->parentNode
+                ) {
+                    $ranges[] = [$range, $startNode, $endNode];
+                }
+            }
+
+            foreach ($ranges as [$range, $startNode, $endNode]) {
                 $startOffset = $range->startOffset;
 
-                if ($range->startContainer === $this && $startOffset > $offset) {
+                if ($startNode === $this && $startOffset > $offset) {
                     $range->setStartInternal($newNode, $startOffset - $offset);
                 }
             }
 
-            foreach ($ranges as $range) {
+            foreach ($ranges as [$range, $startNode, $endNode]) {
                 $endOffset = $range->endOffset;
 
-                if ($range->endContainer === $this && $endOffset > $offset) {
+                if ($endNode === $this && $endOffset > $offset) {
                     $range->setEndInternal($newNode, $endOffset - $offset);
                 }
             }
 
-            foreach ($ranges as $range) {
-                $startContainer = $range->startContainer;
+            foreach ($ranges as [$range, $startNode, $endNode]) {
                 $startOffset = $range->startOffset;
 
-                if ($startContainer === $this->parentNode && $startOffset === $treeIndex + 1) {
-                    $range->setStartInternal($startContainer, $startOffset + 1);
+                if ($startNode === $this->parentNode && $startOffset === $treeIndex + 1) {
+                    $range->setStartInternal($startNode, $startOffset + 1);
                 }
             }
 
-            foreach ($ranges as $range) {
-                $endContainer = $range->endContainer;
+            foreach ($ranges as [$range, $startNode, $endNode]) {
                 $endOffset = $range->endOffset;
 
-                if ($endContainer === $this->parentNode && $endOffset === $treeIndex + 1) {
-                    $range->setEndInternal($endContainer, $endOffset + 1);
+                if ($endNode === $this->parentNode && $endOffset === $treeIndex + 1) {
+                    $range->setEndInternal($endNode, $endOffset + 1);
                 }
             }
+
+            unset($ranges);
         }
 
         $this->doReplaceData($offset, $count, '');
