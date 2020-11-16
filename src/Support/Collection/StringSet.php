@@ -7,7 +7,6 @@ namespace Rowbot\DOM\Support\Collection;
 use ArrayAccess;
 use Countable;
 use Iterator;
-use Rowbot\DOM\Utils;
 
 use function array_pop;
 use function array_search;
@@ -15,9 +14,7 @@ use function array_shift;
 use function array_splice;
 use function array_unshift;
 use function implode;
-use function preg_split;
-
-use const PREG_SPLIT_NO_EMPTY;
+use function strtok;
 
 /**
  * StringSet is a collection of strings that does not allow for duplicate items.
@@ -60,11 +57,12 @@ final class StringSet implements ArrayAccess, Countable, Iterator
      */
     public static function createFromString(string $input): self
     {
-        $inputTokens = preg_split(Utils::ASCII_WHITESPACE, $input, -1, PREG_SPLIT_NO_EMPTY);
         $tokens = new self();
+        $token = strtok($input, "\t\n\f\r\x20");
 
-        foreach ($inputTokens as $token) {
+        while ($token !== false) {
             $tokens->append($token);
+            $token = strtok("\t\n\f\r\x20");
         }
 
         return $tokens;
