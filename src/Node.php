@@ -1687,7 +1687,7 @@ abstract class Node extends EventTarget
      *
      * @internal
      */
-    public static function getCommonAncestor(Node $nodeA, Node $nodeB): self
+    public static function getCommonAncestor(Node $nodeA, Node $nodeB): ?self
     {
         while ($nodeA) {
             $node = $nodeB;
