@@ -1117,20 +1117,39 @@ final class Range extends AbstractRange implements Stringable
             }
         }
 
-        $tw = new TreeWalker(
-            $boundaryPointB[0]->getRootNode(),
-            NodeFilter::SHOW_ALL,
-            static function (Node $node) use ($boundaryPointA): int {
-                if ($node === $boundaryPointA[0]) {
-                    return NodeFilter::FILTER_ACCEPT;
-                }
+        $commonAncestor = Node::getCommonAncestor($boundaryPointB[0], $boundaryPointA[0]);
 
-                return NodeFilter::FILTER_SKIP;
+        if ($commonAncestor === $boundaryPointA[0]) {
+            $AFollowsB = false;
+        } elseif ($commonAncestor === $boundaryPointB[0]) {
+            $AFollowsB = true;
+        } else {
+            // A was not found inside B. Traverse both A & B up to the nodes
+            // before their common ancestor, then see if A is in the nextSibling
+            // chain of B.
+            $b = $boundaryPointB[0];
+
+            while ($b->parentNode !== $commonAncestor) {
+                $b = $b->parentNode;
             }
-        );
-        $tw->currentNode = $boundaryPointB[0];
 
-        $AFollowsB = $tw->nextNode();
+            $a = $boundaryPointA[0];
+
+            while ($a->parentNode !== $commonAncestor) {
+                $a = $a->parentNode;
+            }
+
+            $AFollowsB = false;
+
+            while ($b) {
+                if ($a === $b) {
+                    $AFollowsB = true;
+
+                    break;
+                }
+                $b = $b->nextSibling;
+            }
+        }
 
         if ($AFollowsB) {
             // Swap variables
@@ -1227,8 +1246,8 @@ final class Range extends AbstractRange implements Stringable
         switch ($type) {
             case 'start':
                 if (
-                    $this->computePosition($bp, [$this->endNode, $this->endOffset]) === 'after'
-                    || $this->startNode->getRootNode() !== $node->getRootNode()
+                    $this->startNode->getRootNode() !== $node->getRootNode()
+                    || $this->computePosition($bp, [$this->endNode, $this->endOffset]) === 'after'
                 ) {
                     $this->endNode = $node;
                     $this->endOffset = $offset;
@@ -1241,8 +1260,8 @@ final class Range extends AbstractRange implements Stringable
 
             case 'end':
                 if (
-                    $this->computePosition($bp, [$this->startNode, $this->startOffset]) === 'before'
-                    || $this->startNode->getRootNode() !== $node->getRootNode()
+                    $this->startNode->getRootNode() !== $node->getRootNode()
+                    || $this->computePosition($bp, [$this->startNode, $this->startOffset]) === 'before'
                 ) {
                     $this->startNode = $node;
                     $this->startOffset = $offset;
