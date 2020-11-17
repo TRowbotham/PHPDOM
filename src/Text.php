@@ -82,55 +82,50 @@ class Text extends CharacterData
         if ($this->parentNode) {
             $this->parentNode->insertNode($newNode, $this->nextSibling);
             $treeIndex = $this->getTreeIndex();
-            $ranges = [];
 
             foreach (Range::getRangeCollection() as $range) {
                 $startNode = $range->startContainer;
                 $endNode = $range->endContainer;
 
-                if (
-                    $startNode === $this
-                    || $startNode === $this->parentNode
-                    || $endNode === $this
-                    || $endNode === $this->parentNode
-                ) {
-                    $ranges[] = [$range, $startNode, $endNode];
+                // 7.2. For each live range whose start node is node and start offset is greater
+                // than offset, set its start node to new node and decrease its start offset by
+                // offset.
+                if ($startNode === $this) {
+                    $startOffset = $range->startOffset;
+
+                    if ($startOffset > $offset) {
+                        $range->setStartInternal($newNode, $startOffset - $offset);
+                    }
+
+                // 7.4. For each live range whose start node is parent and start offset is equal to
+                // the index of node plus 1, increase its start offset by 1.
+                } elseif ($startNode === $this->parentNode) {
+                    $startOffset = $range->startOffset;
+
+                    if ($startOffset === $treeIndex + 1) {
+                        $range->setStartInternal($startNode, $startOffset + 1);
+                    }
+                }
+
+                // 7.3. For each live range whose end node is node and end offset is greater than
+                // offset, set its end node to new node and decrease its end offset by offset.
+                if ($endNode === $this) {
+                    $endOffset = $range->endOffset;
+
+                    if ($endOffset > $offset) {
+                        $range->setEndInternal($newNode, $endOffset - $offset);
+                    }
+
+                // 7.5. For each live range whose end node is parent and end offset is equal to the
+                // index of node plus 1, increase its end offset by 1.
+                } elseif ($endNode === $this->parentNode) {
+                    $endOffset = $range->endOffset;
+
+                    if ($endOffset === $treeIndex + 1) {
+                        $range->setEndInternal($endNode, $endOffset + 1);
+                    }
                 }
             }
-
-            foreach ($ranges as [$range, $startNode, $endNode]) {
-                $startOffset = $range->startOffset;
-
-                if ($startNode === $this && $startOffset > $offset) {
-                    $range->setStartInternal($newNode, $startOffset - $offset);
-                }
-            }
-
-            foreach ($ranges as [$range, $startNode, $endNode]) {
-                $endOffset = $range->endOffset;
-
-                if ($endNode === $this && $endOffset > $offset) {
-                    $range->setEndInternal($newNode, $endOffset - $offset);
-                }
-            }
-
-            foreach ($ranges as [$range, $startNode, $endNode]) {
-                $startOffset = $range->startOffset;
-
-                if ($startNode === $this->parentNode && $startOffset === $treeIndex + 1) {
-                    $range->setStartInternal($startNode, $startOffset + 1);
-                }
-            }
-
-            foreach ($ranges as [$range, $startNode, $endNode]) {
-                $endOffset = $range->endOffset;
-
-                if ($endNode === $this->parentNode && $endOffset === $treeIndex + 1) {
-                    $range->setEndInternal($endNode, $endOffset + 1);
-                }
-            }
-
-            unset($ranges);
         }
 
         $this->doReplaceData($offset, $count, '');
