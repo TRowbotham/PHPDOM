@@ -102,7 +102,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
     private $isHTMLDocument;
 
     /**
-     * @var \Rowbot\DOM\Support\Collection\WeakCollection<\Rowbot\DOM\NodeIterator>|\Rowbot\DOM\Support\ArrayCollection<\Rowbot\DOM\NodeIterator>|null
+     * @var \Rowbot\DOM\Support\Collection\WeakCollection<\Rowbot\DOM\NodeIterator>|\Rowbot\DOM\Support\Collection\ArrayCollection<\Rowbot\DOM\NodeIterator>|null
      */
     private static $nodeIteratorList;
 
@@ -694,7 +694,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      *
      * @internal
      *
-     * @return \Rowbot\DOM\Support\Collection\WeakCollection<\Rowbot\DOM\NodeIterator>|\Rowbot\DOM\Support\ArrayCollection<\Rowbot\DOM\NodeIterator>
+     * @return \Rowbot\DOM\Support\Collection\WeakCollection<\Rowbot\DOM\NodeIterator>|\Rowbot\DOM\Support\Collection\ArrayCollection<\Rowbot\DOM\NodeIterator>
      */
     public static function getNodeIteratorCollection()
     {
