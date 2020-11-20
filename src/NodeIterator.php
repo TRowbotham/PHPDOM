@@ -105,16 +105,20 @@ final class NodeIterator
         }
 
         if ($this->pointerBeforeReferenceNode) {
-            $iter = new self(
-                $this->root,
-                NodeFilter::SHOW_ALL,
-                static function (Node $node) use ($nodeToBeRemoved): int {
-                    return !$node->isInclusiveDescendantOf($nodeToBeRemoved)
-                        ? NodeFilter::FILTER_ACCEPT
-                        : NodeFilter::FILTER_REJECT;
+            $next = null;
+            $node = $nodeToBeRemoved;
+
+            while ($node && !$node->nextSibling) {
+                if ($node === $this->root) {
+                    break;
                 }
-            );
-            $next = $iter->nextNode();
+
+                $node = $node->parentNode;
+            }
+
+            if ($node && $node !== $this->root) {
+                $next = $node->nextSibling;
+            }
 
             if ($next) {
                 $this->referenceNode = $next;

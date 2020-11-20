@@ -604,26 +604,19 @@ abstract class Node extends EventTarget
             return self::DOCUMENT_POSITION_CONTAINED_BY | self::DOCUMENT_POSITION_FOLLOWING;
         }
 
-        $tw = new TreeWalker(
-            $node2Root,
-            NodeFilter::SHOW_ALL,
-            static function (self $node) use ($node1): int {
-                if ($node === $node1) {
-                    return NodeFilter::FILTER_ACCEPT;
-                }
-
-                return NodeFilter::FILTER_SKIP;
-            }
-        );
-        $tw->currentNode = $node2;
-
         // If node1 is preceding node2, then return DOCUMENT_POSITION_PRECEDING.
         //
         // NOTE: Due to the way attributes are handled in this algorithm this
         // results in a node’s attributes counting as preceding that node’s
         // children, despite attributes not participating in a tree.
-        if ($tw->previousNode()) {
-            return self::DOCUMENT_POSITION_PRECEDING;
+        $preceedingNode = $node2->previousNode();
+
+        while ($preceedingNode) {
+            if ($preceedingNode === $node1) {
+                return self::DOCUMENT_POSITION_PRECEDING;
+            }
+
+            $preceedingNode = $preceedingNode->previousNode();
         }
 
         // Return DOCUMENT_POSITION_FOLLOWING.
@@ -900,11 +893,14 @@ abstract class Node extends EventTarget
             // The document element must follow the doctype in the tree.
             // Throw a HierarchyRequestError if we try to insert an element
             // before a node that preceedes the doctype.
-            $tw = new TreeWalker($parent, NodeFilter::SHOW_DOCUMENT_TYPE);
-            $tw->currentNode = $child;
+            $followingNode = $child->nextNode($parent);
 
-            if ($tw->nextNode()) {
-                throw new HierarchyRequestError();
+            while ($followingNode) {
+                if ($followingNode instanceof DocumentType) {
+                    throw new HierarchyRequestError();
+                }
+
+                $followingNode = $followingNode->nextNode($parent);
             }
         } elseif ($node instanceof Element) {
             // A Document cannot contain more than 1 element child. Throw a
@@ -930,11 +926,14 @@ abstract class Node extends EventTarget
             // Again, the document element must follow the doctype in the tree.
             // Throw a HierarchyRequestError if we try to insert an element
             // before a node that preceedes the doctype.
-            $tw = new TreeWalker($parent, NodeFilter::SHOW_DOCUMENT_TYPE);
-            $tw->currentNode = $child;
+            $followingNode = $child->nextNode($parent);
 
-            if ($tw->nextNode()) {
-                throw new HierarchyRequestError();
+            while ($followingNode) {
+                if ($followingNode instanceof DocumentType) {
+                    throw new HierarchyRequestError();
+                }
+
+                $followingNode = $followingNode->nextNode($parent);
             }
         } elseif ($node instanceof DocumentType) {
             // A document can only contain 1 doctype definition. Throw a
@@ -950,11 +949,14 @@ abstract class Node extends EventTarget
             // HierarchyRequestError if we try to insert a doctype before a
             // node that follows an element.
             if ($child !== null) {
-                $tw = new TreeWalker($parent, NodeFilter::SHOW_ELEMENT);
-                $tw->currentNode = $child;
+                $preceedingNode = $child->previousNode($parent);
 
-                if ($tw->previousNode()) {
-                    throw new HierarchyRequestError();
+                while ($preceedingNode) {
+                    if ($preceedingNode instanceof Element) {
+                        throw new HierarchyRequestError();
+                    }
+
+                    $preceedingNode = $preceedingNode->previousNode($parent);
                 }
 
                 return;
@@ -1105,16 +1107,18 @@ abstract class Node extends EventTarget
             $node->previousSibling = $oldPreviousSibling;
             $node->nextSibling = $nextSibling;
 
-            $iter = new NodeIterator($node);
+            $inclusiveDescendant = $node;
 
             // 7.7 For each shadow-including inclusive descendant inclusiveDescendant of node, in
             // shadow-including tree order:
-            while (($inclusiveDescendant = $iter->nextNode())) {
+            do {
                 // 7.7.1 Run the insertion steps with inclusiveDescendant.
                 if (method_exists($inclusiveDescendant, 'doInsertingSteps')) {
                     $inclusiveDescendant->doInsertingSteps($inclusiveDescendant);
                 }
-            }
+
+                $inclusiveDescendant = $inclusiveDescendant->nextNode($node);
+            } while ($inclusiveDescendant);
         }
 
         // TODO: 9. Run the children changed steps for parent.
@@ -1206,11 +1210,14 @@ abstract class Node extends EventTarget
                         }
                     }
 
-                    $tw = new TreeWalker($parent, NodeFilter::SHOW_DOCUMENT_TYPE);
-                    $tw->currentNode = $child;
+                    $followingNode = $child->nextNode($parent);
 
-                    if ($tw->nextNode() !== null) {
-                        throw new HierarchyRequestError();
+                    while ($followingNode) {
+                        if ($followingNode instanceof DocumentType) {
+                            throw new HierarchyRequestError();
+                        }
+
+                        $followingNode = $followingNode->nextNode($parent);
                     }
                 }
             } elseif ($node instanceof Element) {
@@ -1221,14 +1228,14 @@ abstract class Node extends EventTarget
                     }
                 }
 
-                $tw = new TreeWalker(
-                    $parent,
-                    NodeFilter::SHOW_DOCUMENT_TYPE
-                );
-                $tw->currentNode = $child;
+                $followingNode = $child->nextNode($parent);
 
-                if ($tw->nextNode() !== null) {
-                    throw new HierarchyRequestError();
+                while ($followingNode) {
+                    if ($followingNode instanceof DocumentType) {
+                        throw new HierarchyRequestError();
+                    }
+
+                    $followingNode = $followingNode->nextNode($parent);
                 }
             } elseif ($node instanceof DocumentType) {
                 // parent has a doctype child that is not child, or an element is preceding child.
@@ -1238,11 +1245,14 @@ abstract class Node extends EventTarget
                     }
                 }
 
-                $tw = new TreeWalker($parent, NodeFilter::SHOW_ELEMENT);
-                $tw->currentNode = $child;
+                $preceedingNode = $child->previousNode($parent);
 
-                if ($tw->previousNode() !== null) {
-                    throw new HierarchyRequestError();
+                while ($preceedingNode) {
+                    if ($preceedingNode instanceof Element) {
+                        throw new HierarchyRequestError();
+                    }
+
+                    $preceedingNode = $preceedingNode->previousNode($parent);
                 }
             }
         }
@@ -1442,16 +1452,18 @@ abstract class Node extends EventTarget
             $this->doRemovingSteps($parent);
         }
 
-        $iter = new NodeIterator($this);
+        $descendant = $this;
 
         // 18. For each shadow-including descendant descendant of node, in shadow-including tree
         // order, then:
-        while (($descendant = $iter->nextNode())) {
+        do {
             // 19. Run the removing steps with descendant.
             if (method_exists($descendant, 'doRemovingSteps')) {
                 $descendant->doRemovingSteps();
             }
-        }
+
+            $descendant = $descendant->nextNode($this);
+        } while ($descendant);
 
         // TODO: 21. Run the children changed steps for parent.
     }
@@ -1497,6 +1509,68 @@ abstract class Node extends EventTarget
     public function getTreeIndex(): int
     {
         return $this->parentNode->childNodes->indexOf($this);
+    }
+
+    /**
+     * Returns the next Node in tree-order, if any. If a root is given, then it will only find nodes
+     * within the given root.
+     *
+     * @internal
+     */
+    public function nextNode(self $root = null): ?self
+    {
+        $node = $this->childNodes->first();
+
+        if ($node !== null) {
+            return $node;
+        }
+
+        $node = $this;
+
+        while ($node && !$node->nextSibling) {
+            if ($node === $root) {
+                return null;
+            }
+
+            $node = $node->parentNode;
+        }
+
+        if ($node === null || $node === $root) {
+            return null;
+        }
+
+        return $node->nextSibling;
+    }
+
+    /**
+     * Returns the last Node that's before node in tree order, or null if node is
+     * the first Node. If a root is given, then it will only find nodes within the given root.
+     *
+     * @internal
+     */
+    public function previousNode(self $root = null): ?self
+    {
+        $node = $this;
+
+        if ($node->previousSibling) {
+            $node = $node->previousSibling;
+
+            while ($node->childNodes->first()) {
+                if ($node === $root) {
+                    return null;
+                }
+
+                $node = $node->lastChild;
+            }
+
+            return $node;
+        }
+
+        if ($node === $root) {
+            return null;
+        }
+
+        return $node->parentNode;
     }
 
     /**

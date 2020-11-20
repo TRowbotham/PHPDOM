@@ -510,31 +510,32 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
             $node->removeNode();
         }
 
+        // 3. If document is not oldDocument, then:
         if ($this !== $oldDocument) {
-            $iter = new NodeIterator($node, NodeFilter::SHOW_ALL);
+            $descendant = $node;
 
-            while (($nextNode = $iter->nextNode())) {
-                $nextNode->nodeDocument = $this;
+            // 3.1. For each inclusiveDescendant in node’s shadow-including inclusive descendants:
+            do {
+                // 3.1.1. Set inclusiveDescendant’s node document to document.
+                $descendant->nodeDocument = $this;
 
                 // 3.1.2. If inclusiveDescendant is an element, then set the node document of each
                 // attribute in inclusiveDescendant’s attribute list to document.
-                if ($nextNode instanceof Element) {
-                    foreach ($nextNode->getAttributeList() as $attr) {
+                if ($descendant instanceof Element) {
+                    foreach ($descendant->getAttributeList() as $attr) {
                         $attr->nodeDocument = $this;
                     }
                 }
-            }
 
-            // For each descendant in node’s inclusive descendants, in
-            // tree order, run the adopting steps with descendant and
-            // oldDocument.
-            $iter = new NodeIterator($node);
-
-            while (($descendant = $iter->nextNode())) {
+                // 3.3. For each inclusiveDescendant in node’s shadow-including inclusive
+                // descendants, in shadow-including tree order, run the adopting steps with
+                // inclusiveDescendant and oldDocument.
                 if (method_exists($descendant, 'doAdoptingSteps')) {
                     $descendant->doAdoptingSteps($oldDocument);
                 }
-            }
+
+                $descendant = $descendant->nextNode($node);
+            } while ($descendant);
         }
     }
 

@@ -337,24 +337,39 @@ final class Range extends AbstractRange implements Stringable
             return;
         }
 
-        $nodesToRemove = array();
-        $tw = new TreeWalker(
-            $originalStartNode,
-            NodeFilter::SHOW_ALL,
-            function (Node $node) {
-                if (
-                    $this->isFullyContainedNode($node)
-                    && !$this->isFullyContainedNode($node->parentNode)
-                ) {
-                    return NodeFilter::FILTER_ACCEPT;
+        $nodesToRemove = [];
+        $commonAncestor = Node::getCommonAncestor($originalStartNode, $originalEndNode);
+
+        if ($commonAncestor) {
+            $node = $originalStartNode->nextNode($commonAncestor);
+
+            while ($node) {
+                if ($this->isFullyContainedNode($node)) {
+                    $nodesToRemove[] = $node;
+
+                    // $node is fully contained, so skip checking its descendants as they are all
+                    // contained as well.
+                    while ($node && !$node->nextSibling) {
+                        if ($node === $commonAncestor) {
+                            break 2;
+                        }
+
+                        $node = $node->parentNode;
+                    }
+
+                    if ($node === $commonAncestor) {
+                        break;
+                    }
+
+                    if ($node) {
+                        $node = $node->nextSibling;
+                    }
+
+                    continue;
                 }
 
-                return NodeFilter::FILTER_SKIP;
+                $node = $node->nextNode($commonAncestor);
             }
-        );
-
-        while ($node = $tw->nextNode()) {
-            $nodesToRemove[] = $node;
         }
 
         if ($originalStartNode->contains($originalEndNode)) {
@@ -789,16 +804,14 @@ final class Range extends AbstractRange implements Stringable
         $commonAncestor = Node::getCommonAncestor($this->startNode, $this->endNode);
 
         if ($commonAncestor) {
-            $tw = new TreeWalker($commonAncestor, NodeFilter::SHOW_ALL, function (Node $node): int {
+            $node = $commonAncestor->nextNode($commonAncestor);
+
+            while ($node) {
                 if (!$node instanceof Text && $this->isPartiallyContainedNode($node)) {
-                    return NodeFilter::FILTER_ACCEPT;
+                    throw new InvalidStateError();
                 }
 
-                return NodeFilter::FILTER_SKIP;
-            });
-
-            if ($tw->nextNode()) {
-                throw new InvalidStateError();
+                $node = $node->nextNode($commonAncestor);
             }
         }
 
@@ -986,21 +999,15 @@ final class Range extends AbstractRange implements Stringable
             );
         }
 
-        $tw = new TreeWalker(
-            $this->startNode->getRootNode(),
-            NodeFilter::SHOW_TEXT,
-            function ($node) {
-                if ($this->isFullyContainedNode($node)) {
-                    return NodeFilter::FILTER_ACCEPT;
-                }
+        $root = $this->startNode->getRootNode();
+        $node = $this->startNode->nextNode($root);
 
-                return NodeFilter::FILTER_REJECT;
+        while ($node) {
+            if ($node instanceof Text && $this->isFullyContainedNode($node)) {
+                $s .= $node->data;
             }
-        );
-        $tw->currentNode = $this->startNode;
 
-        while ($text = $tw->nextNode()) {
-            $s .= $text->data;
+            $node = $node->nextNode($root);
         }
 
         if ($this->endNode instanceof Text) {

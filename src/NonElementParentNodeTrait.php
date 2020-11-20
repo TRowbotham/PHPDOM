@@ -17,18 +17,16 @@ trait NonElementParentNodeTrait
             return null;
         }
 
-        $tw = new TreeWalker(
-            $this,
-            NodeFilter::SHOW_ELEMENT,
-            static function (Node $node) use ($elementId): int {
-                if ($node->id === $elementId) {
-                    return NodeFilter::FILTER_ACCEPT;
-                }
+        $node = $this->nextNode($this);
 
-                return NodeFilter::FILTER_SKIP;
+        while ($node) {
+            if ($node instanceof Element && $node->id === $elementId) {
+                return $node;
             }
-        );
 
-        return $tw->nextNode();
+            $node = $node->nextNode($this);
+        }
+
+        return $node;
     }
 }

@@ -104,11 +104,15 @@ class DocumentFragment extends Node implements NonElementParentNode, ParentNode
 
     protected function getTextContent(): string
     {
-        $tw = new TreeWalker($this, NodeFilter::SHOW_TEXT);
+        $node = $this->nextNode($this);
         $data = '';
 
-        while (($node = $tw->nextNode())) {
-            $data .= $node->data;
+        while ($node) {
+            if ($node instanceof Text && !$node instanceof CDATASection) {
+                $data .= $node->data;
+            }
+
+            $node = $node->nextNode($this);
         }
 
         return $data;

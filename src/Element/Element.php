@@ -7,6 +7,7 @@ namespace Rowbot\DOM\Element;
 use Rowbot\DOM\Attr;
 use Rowbot\DOM\AttributeChangeObserver;
 use Rowbot\DOM\AttributeList;
+use Rowbot\DOM\CDATASection;
 use Rowbot\DOM\ChildNode;
 use Rowbot\DOM\ChildNodeTrait;
 use Rowbot\DOM\Document;
@@ -22,14 +23,12 @@ use Rowbot\DOM\HTMLDocument;
 use Rowbot\DOM\NamedNodeMap;
 use Rowbot\DOM\Namespaces;
 use Rowbot\DOM\Node;
-use Rowbot\DOM\NodeFilter;
 use Rowbot\DOM\NonDocumentTypeChildNode;
 use Rowbot\DOM\ParentNode;
 use Rowbot\DOM\ParentNodeTrait;
 use Rowbot\DOM\Parser\MarkupFactory;
 use Rowbot\DOM\Parser\ParserFactory;
 use Rowbot\DOM\Text;
-use Rowbot\DOM\TreeWalker;
 use Rowbot\DOM\URL\URLParser;
 use Rowbot\DOM\Utils;
 
@@ -889,11 +888,15 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
 
     protected function getTextContent(): string
     {
-        $tw = new TreeWalker($this, NodeFilter::SHOW_TEXT);
+        $node = $this->nextNode($this);
         $data = '';
 
-        while (($node = $tw->nextNode())) {
-            $data .= $node->data;
+        while ($node) {
+            if ($node instanceof Text && !$node instanceof CDATASection) {
+                $data .= $node->data;
+            }
+
+            $node = $node->nextNode($this);
         }
 
         return $data;

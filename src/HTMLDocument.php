@@ -151,19 +151,15 @@ class HTMLDocument extends Document
             }
         } elseif ($docElement) {
             // Find the first title element in the document.
-            $tw = new TreeWalker(
-                $this,
-                NodeFilter::SHOW_ELEMENT,
-                static function (Node $node): int {
-                    if ($node instanceof HTMLTitleElement) {
-                        return NodeFilter::FILTER_ACCEPT;
-                    }
+            $node = $this->nextNode($this);
 
-                    return NodeFilter::FILTER_SKIP;
+            while ($node) {
+                if ($node instanceof HTMLTitleElement) {
+                    return $node;
                 }
-            );
 
-            return $tw->nextNode();
+                $node = $node->nextNode($this);
+            }
         }
 
         return null;
