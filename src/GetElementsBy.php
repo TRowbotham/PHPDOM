@@ -29,6 +29,9 @@ trait GetElementsBy
 
         // NOTE: When invoked with the same argument, the same HTMLCollection object may be returned
         // as returned by an earlier call.
+
+        // 3. Return a HTMLCollection rooted at root, whose filter matches descendant elements
+        // that have all their classes in classes.
         return new HTMLCollection($this, static function (self $root) use ($classes): Generator {
             // 2. If classes is the empty set, return an empty HTMLCollection.
             if ($classes->isEmpty()) {
@@ -36,52 +39,43 @@ trait GetElementsBy
             }
 
             $isQuirksMode = $root->nodeDocument->getMode() === DocumentMode::QUIRKS;
-            $mapToASCIILowercase = static function (string $className): string {
-                return Utils::toASCIILowercase($className);
-            };
 
             if ($isQuirksMode) {
-                $classes = array_map($mapToASCIILowercase, $classes->all());
+                $classes = array_map([Utils::class, 'toASCIILowercase'], $classes->all());
             }
 
-            // 3. Return a HTMLCollection rooted at root, whose filter matches descendant elements
-            // that have all their classes in classes.
-            $walker = new TreeWalker(
-                $root,
-                NodeFilter::SHOW_ELEMENT,
-                static function (Element $node) use (
-                    $isQuirksMode,
-                    $mapToASCIILowercase,
-                    $classes
-                ): int {
-                    // NOTE: The comparisons for the classes must be done in an ASCII
-                    // case-insensitive manner if root’s node document’s mode is "quirks", and in an
-                    // identical to manner otherwise.
-                    if ($isQuirksMode) {
-                        $nodeClasses = array_map(
-                            $mapToASCIILowercase,
-                            StringSet::createFromString($node->className)->all()
-                        );
+            $node = $root;
 
-                        foreach ($classes as $className) {
-                            if (!in_array($className, $nodeClasses, true)) {
-                                return NodeFilter::FILTER_SKIP;
-                            }
-                        }
-                    } else {
-                        foreach ($classes as $className) {
-                            if (!$node->classList->contains($className)) {
-                                return NodeFilter::FILTER_SKIP;
-                            }
+            while (($node = $node->nextNode($root)) !== null) {
+                if (!$node instanceof Element) {
+                    continue;
+                }
+
+                // NOTE: The comparisons for the classes must be done in an ASCII
+                // case-insensitive manner if root’s node document’s mode is "quirks", and in an
+                // identical to manner otherwise.
+                if ($isQuirksMode) {
+                    $nodeClasses = array_map(
+                        [Utils::class, 'toASCIILowercase'],
+                        StringSet::createFromString($node->className)->all()
+                    );
+
+                    foreach ($classes as $className) {
+                        if (!in_array($className, $nodeClasses, true)) {
+                            continue 2;
                         }
                     }
+                } else {
+                    $classList = $node->classList;
 
-                    return NodeFilter::FILTER_ACCEPT;
+                    foreach ($classes as $className) {
+                        if (!$classList->contains($className)) {
+                            continue 2;
+                        }
+                    }
                 }
-            );
 
-            while (($element = $walker->nextNode()) !== null) {
-                yield $element;
+                yield $node;
             }
         });
     }
@@ -98,51 +92,69 @@ trait GetElementsBy
      */
     public function getElementsByTagName(string $qualifiedName): HTMLCollection
     {
-        // 3. Otherwise, return a HTMLCollection rooted at root, whose filter matches descendant
-        // elements whose qualified name is qualifiedName.
-        $filter = static function (Element $element) use ($qualifiedName): int {
-            return $qualifiedName === $element->getQualifiedName()
-                ? NodeFilter::FILTER_ACCEPT
-                : NodeFilter::FILTER_SKIP;
-        };
+        // NOTE: When invoked with the same argument, and as long as root’s node document’s type has
+        // not changed, the same HTMLCollection object may be returned as returned by an earlier
+        // call.
 
         // 1. If qualifiedName is "*" (U+002A), return a HTMLCollection rooted at root, whose filter
         // matches only descendant elements.
         if ($qualifiedName === '*') {
-            $filter = null;
+            return new HTMLCollection($this, static function (self $root): Generator {
+                $node = $root;
 
-        //Otherwise, if root’s node document is an HTML document, return a HTMLCollection rooted
-        // at root, whose filter matches the following descendant elements:
-        } elseif ($this->nodeDocument instanceof HTMLDocument) {
-            $filter = static function (Element $element) use ($qualifiedName): int {
-                $isHTMLNamespace = $element->namespaceURI === Namespaces::HTML;
-                $qName = $element->getQualifiedName();
-
-                // - Whose namespace is the HTML namespace and whose qualified name is
-                //   qualifiedName, in ASCII lowercase.
-                // - Whose namespace is not the HTML namespace and whose qualified name is
-                //   qualifiedName.
-                if (
-                    ($isHTMLNamespace && $qName === Utils::toASCIILowercase($qualifiedName))
-                    || (!$isHTMLNamespace && $qName === $qualifiedName)
-                ) {
-                    return NodeFilter::FILTER_ACCEPT;
+                while (($node = $node->nextNode($root)) !== null) {
+                    if ($node instanceof Element) {
+                        yield $node;
+                    }
                 }
-
-                return NodeFilter::FILTER_SKIP;
-            };
+            });
         }
 
-        // NOTE: When invoked with the same argument, and as long as root’s node document’s type has
-        // not changed, the same HTMLCollection object may be returned as returned by an earlier
-        // call.
-        return new HTMLCollection($this, static function (self $root) use ($filter): Generator {
-            $walker = new TreeWalker($root, NodeFilter::SHOW_ELEMENT, $filter);
+        // 2. Otherwise, if root’s node document is an HTML document, return a HTMLCollection rooted
+        // at root, whose filter matches the following descendant elements:
+        if ($this->nodeDocument instanceof HTMLDocument) {
+            return new HTMLCollection(
+                $this,
+                static function (self $root) use ($qualifiedName): Generator {
+                    $node = $root;
 
-            while (($element = $walker->nextNode()) !== null) {
-                yield $element;
+                    while (($node = $node->nextNode($root)) !== null) {
+                        if (!$node instanceof Element) {
+                            continue;
+                        }
+
+                        $isHTMLNamespace = $node->namespaceURI === Namespaces::HTML;
+                        $qName = $node->getQualifiedName();
+
+                        // - Whose namespace is the HTML namespace and whose qualified name is
+                        //   qualifiedName, in ASCII lowercase.
+                        // - Whose namespace is not the HTML namespace and whose qualified name is
+                        //   qualifiedName.
+                        if (
+                            ($isHTMLNamespace && $qName === Utils::toASCIILowercase($qualifiedName))
+                            || (!$isHTMLNamespace && $qName === $qualifiedName)
+                        ) {
+                            yield $node;
+                        }
+                    }
+                }
+            );
+        }
+
+        // 3. Otherwise, return a HTMLCollection rooted at root, whose filter matches descendant
+        // elements whose qualified name is qualifiedName.
+        return new HTMLCollection(
+            $this,
+            static function (self $root) use ($qualifiedName): Generator {
+                $node = $root;
+
+                while (($node = $node->nextNode($root)) !== null) {
+                    if ($node instanceof Element && $node->getQualifiedName() === $qualifiedName) {
+                        yield $node;
+                    }
+                }
             }
-        });
+        );
     }
 
     /**
@@ -162,51 +174,79 @@ trait GetElementsBy
      */
     public function getElementsByTagNameNS(?string $namespace, string $localName): HTMLCollection
     {
+        // NOTE: When invoked with the same arguments, the same HTMLCollection object may be
+        // returned as returned by an earlier call.
+
         // 1. If namespace is the empty string, set it to null.
         if ($namespace === '') {
             $namespace = null;
         }
 
-        // 5. Otherwise, return a HTMLCollection rooted at root, whose filter matches descendant
-        // elements whose namespace is namespace and local name is localName.
-        $filter = static function (Element $element) use ($namespace, $localName): int {
-            return $element->namespaceURI === $namespace && $element->localName === $localName
-                ? NodeFilter::FILTER_ACCEPT
-                : NodeFilter::FILTER_SKIP;
-        };
-
         // 2. If both namespace and localName are "*" (U+002A), return a HTMLCollection rooted at
         // root, whose filter matches descendant elements.
         if ($namespace === '*' && $localName === '*') {
-            $filter = null;
+            return new HTMLCollection($this, static function (self $root): Generator {
+                $node = $root;
+
+                while (($node = $node->nextNode($root)) !== null) {
+                    if ($node instanceof Element) {
+                        yield $node;
+                    }
+                }
+            });
+        }
 
         // 3. Otherwise, if namespace is "*" (U+002A), return a HTMLCollection rooted at root, whose
         // filter matches descendant elements whose local name is localName.
-        } elseif ($namespace === '*') {
-            $filter = static function (Element $element) use ($localName): int {
-                return $element->localName === $localName
-                    ? NodeFilter::FILTER_ACCEPT
-                    : NodeFilter::FILTER_SKIP;
-            };
+        if ($namespace === '*') {
+            return new HTMLCollection(
+                $this,
+                static function (self $root) use ($localName): Generator {
+                    $node = $root;
+
+                    while (($node = $node->nextNode($root)) !== null) {
+                        if ($node instanceof Element && $node->localName === $localName) {
+                            yield $node;
+                        }
+                    }
+                }
+            );
+        }
 
         // 4. Otherwise, if localName is "*" (U+002A), return a HTMLCollection rooted at root, whose
         // filter matches descendant elements whose namespace is namespace.
-        } elseif ($localName === '*') {
-            $filter = static function (Element $element) use ($namespace): int {
-                return $element->namespaceURI === $namespace
-                    ? NodeFilter::FILTER_ACCEPT
-                    : NodeFilter::FILTER_SKIP;
-            };
+        if ($localName === '*') {
+            return new HTMLCollection(
+                $this,
+                static function (self $root) use ($namespace): Generator {
+                    $node = $root;
+
+                    while (($node = $node->nextNode($root)) !== null) {
+                        if ($node instanceof Element && $node->namespaceURI === $namespace) {
+                            yield $node;
+                        }
+                    }
+                }
+            );
         }
 
-        // NOTE: When invoked with the same arguments, the same HTMLCollection object may be
-        // returned as returned by an earlier call.
-        return new HTMLCollection($this, static function (self $root) use ($filter): Generator {
-            $walker = new TreeWalker($root, NodeFilter::SHOW_ELEMENT, $filter);
+        // 5. Otherwise, return a HTMLCollection rooted at root, whose filter matches descendant
+        // elements whose namespace is namespace and local name is localName.
+        return new HTMLCollection(
+            $this,
+            static function (self $root) use ($namespace, $localName): Generator {
+                $node = $root;
 
-            while (($element = $walker->nextNode()) !== null) {
-                yield $element;
+                while (($node = $node->nextNode($root)) !== null) {
+                    if (
+                        $node instanceof Element
+                        && $node->namespaceURI === $namespace
+                        && $node->localName === $localName
+                    ) {
+                        yield $node;
+                    }
+                }
             }
-        });
+        );
     }
 }
