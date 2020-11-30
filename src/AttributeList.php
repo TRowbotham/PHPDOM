@@ -305,9 +305,7 @@ class AttributeList implements ArrayAccess, Countable, Iterator
 
     public function observe(AttributeChangeObserver $observer): void
     {
-        if (!$this->observers->contains($observer)) {
-            $this->observers->attach($observer);
-        }
+        $this->observers->attach($observer);
     }
 
     public function unobserve(AttributeChangeObserver $observer): void
