@@ -8,7 +8,7 @@ use Rowbot\DOM\Tests\TestCase;
 
 abstract class AccessorTestCase extends TestCase
 {
-    public function getHtmlBaseDir(): string
+    public static function getHtmlBaseDir(): string
     {
         return __DIR__ . DIRECTORY_SEPARATOR . 'html';
     }
