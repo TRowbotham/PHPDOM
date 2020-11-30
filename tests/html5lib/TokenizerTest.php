@@ -206,7 +206,8 @@ class TokenizerTest extends TestCase
 
     public function preprocessInput(string $input, CodePointStream $stream): void
     {
-        $orig = mb_substitute_character(0xFFFD);
+        $orig = mb_substitute_character();
+        mb_substitute_character(0xFFFD);
         $input = mb_convert_encoding($input, 'utf-8', 'utf-8');
         mb_substitute_character($orig);
 
