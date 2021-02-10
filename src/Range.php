@@ -16,8 +16,6 @@ use Rowbot\DOM\Parser\ParserFactory;
 use Rowbot\DOM\Support\Stringable;
 use SplObjectStorage;
 
-use function array_reverse;
-use function iterator_to_array;
 use function mb_substr;
 
 /**
@@ -479,12 +477,16 @@ final class Range extends AbstractRange implements Stringable
         $lastPartiallyContainedChild = null;
 
         if (!$originalEndNode->contains($originalStartNode)) {
-            foreach (array_reverse(iterator_to_array($commonAncestor->childNodes)) as $node) {
+            $node = $commonAncestor->lastChild;
+
+            while ($node) {
                 if ($this->isPartiallyContainedNode($node)) {
                     $lastPartiallyContainedChild = $node;
 
                     break;
                 }
+
+                $node = $node->previousSibling;
             }
         }
 
@@ -632,14 +634,16 @@ final class Range extends AbstractRange implements Stringable
         $lastPartiallyContainedChild = null;
 
         if (!$originalEndNode->contains($originalStartNode)) {
-            $childNodes = $commonAncestor->childNodes->getIterator()->getArrayCopy();
+            $node = $commonAncestor->lastChild;
 
-            foreach (array_reverse($childNodes) as $node) {
+            while ($node) {
                 if ($this->isPartiallyContainedNode($node)) {
                     $lastPartiallyContainedChild = $node;
 
                     break;
                 }
+
+                $node = $node->previousSibling;
             }
         }
 
