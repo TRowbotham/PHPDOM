@@ -1560,10 +1560,7 @@ class TreeBuilder
                 // If node is null or if the stack of open elements does not
                 // have node in scope, then this is a parse error; abort these
                 // steps and ignore the token.
-                if (
-                    $node === null
-                    || !$this->openElements->hasElementInScope($node->localName, Namespaces::HTML)
-                ) {
+                if ($node === null || !$this->openElements->contains($node)) {
                     // Parse error.
                     // Ignore the token.
                     return;
