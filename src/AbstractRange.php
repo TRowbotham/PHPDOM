@@ -18,24 +18,14 @@ namespace Rowbot\DOM;
 abstract class AbstractRange
 {
     /**
-     * @var \Rowbot\DOM\Node
+     * @var \Rowbot\DOM\RangeBoundary
      */
-    protected $startNode;
+    protected $range;
 
-    /**
-     * @var int
-     */
-    protected $startOffset;
-
-    /**
-     * @var \Rowbot\DOM\Node
-     */
-    protected $endNode;
-
-    /**
-     * @var int
-     */
-    protected $endOffset;
+    public function __construct(RangeBoundary $range)
+    {
+        $this->range = $range;
+    }
 
     /**
      * @return mixed
@@ -43,19 +33,19 @@ abstract class AbstractRange
     public function __get(string $name)
     {
         if ($name === 'startContainer') {
-            return $this->startNode;
+            return $this->range->startNode;
         }
 
         if ($name === 'startOffset') {
-            return $this->startOffset;
+            return $this->range->startOffset;
         }
 
         if ($name === 'endContainer') {
-            return $this->endNode;
+            return $this->range->endNode;
         }
 
         if ($name === 'endOffset') {
-            return $this->endOffset;
+            return $this->range->endOffset;
         }
 
         if ($name === 'collapsed') {
@@ -70,6 +60,7 @@ abstract class AbstractRange
      */
     protected function isCollapsed(): bool
     {
-        return $this->startNode === $this->endNode && $this->startOffset === $this->endOffset;
+        return $this->range->startNode === $this->range->endNode
+            && $this->range->startOffset === $this->range->endOffset;
     }
 }

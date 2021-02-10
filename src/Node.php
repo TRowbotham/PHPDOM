@@ -333,37 +333,38 @@ abstract class Node extends EventTarget
                 $treeIndex = $currentNode->getTreeIndex();
 
                 foreach (Range::getRangeCollection() as $range) {
-                    $startNode = $range->startContainer;
-                    $endNode = $range->endContainer;
-
                     // 6.1. For each live range whose start node is currentNode, add length to its
                     // start offset and set its start node to node.
-                    if ($startNode === $currentNode) {
-                        $range->setStartInternal($node, $range->startOffset + $length);
+                    if ($range->startNode === $currentNode) {
+                        $range->startOffset += $length;
+                        $range->startNode = $node;
 
                     // 6.3. For each live range whose start node is currentNode’s parent and start
                     // offset is currentNode’s index, set its start node to node and its start
                     // offset to length.
                     } elseif (
-                        $startNode === $currentNode->parentNode
+                        $range->startNode === $currentNode->parentNode
                         && $range->startOffset === $treeIndex
                     ) {
-                        $range->setStartInternal($node, $length);
+                        $range->startNode = $node;
+                        $range->startOffset = $length;
                     }
 
                     // 6.2. For each live range whose end node is currentNode, add length to its end
                     // offset and set its end node to node.
-                    if ($endNode === $currentNode) {
-                        $range->setEndInternal($node, $range->endOffset + $length);
+                    if ($range->endNode === $currentNode) {
+                        $range->endOffset += $length;
+                        $range->endNode = $node;
 
                     // 6.4. For each live range whose end node is currentNode’s parent and end
                     // offset is currentNode’s index, set its end node to node and its end offset to
                     // length.
                     } elseif (
-                        $endNode === $currentNode->parentNode
+                        $range->endNode === $currentNode->parentNode
                         && $range->endOffset === $treeIndex
                     ) {
-                        $range->setEndInternal($node, $length);
+                        $range->endNode = $node;
+                        $range->endOffset = $length;
                     }
                 }
 
@@ -1050,27 +1051,16 @@ abstract class Node extends EventTarget
             $index = $child->getTreeIndex();
 
             foreach (Range::getRangeCollection() as $range) {
-                $startNode = $range->startContainer;
-                $endNode = $range->endContainer;
-
                 // 5.1. For each live range whose start node is parent and start offset is greater
                 // than child’s index, increase its start offset by count.
-                if ($startNode === $this) {
-                    $startOffset = $range->startOffset;
-
-                    if ($startOffset > $index) {
-                        $range->setStartInternal($startNode, $startOffset + $count);
-                    }
+                if ($range->startNode === $this && $range->startOffset > $index) {
+                    $range->startOffset += $count;
                 }
 
                 // 5.2. For each live range whose end node is parent and end offset is greater than
                 // child’s index, increase its end offset by count.
-                if ($endNode === $this) {
-                    $endOffset = $range->endOffset;
-
-                    if ($endOffset > $index) {
-                        $range->setEndInternal($endNode, $endOffset + $count);
-                    }
+                if ($range->endNode === $this && $range->endOffset > $index) {
+                    $range->endOffset += $count;
                 }
             }
         }
@@ -1380,41 +1370,30 @@ abstract class Node extends EventTarget
         $index = $parent->childNodes->indexOf($this);
 
         foreach (Range::getRangeCollection() as $range) {
-            $startNode = $range->startContainer;
-            $endNode = $range->endContainer;
-
             // 4. For each live range whose start node is an inclusive descendant of node, set its
             // start to (parent, index).
-            if ($startNode === $this || $this->contains($startNode)) {
-                $range->setStartInternal($parent, $index);
-                $startNode = $parent;
+            if ($range->startNode === $this || $this->contains($range->startNode)) {
+                $range->startNode = $parent;
+                $range->startOffset = $index;
             }
 
             // 5. For each live range whose end node is an inclusive descendant of node, set its end
             // to (parent, index).
-            if ($endNode === $this || $this->contains($endNode)) {
-                $range->setEndInternal($parent, $index);
-                $endNode = $parent;
+            if ($range->endNode === $this || $this->contains($range->endNode)) {
+                $range->endNode = $parent;
+                $range->endOffset = $index;
             }
 
             // 6. For each live range whose start node is parent and start offset is greater than
             // index, decrease its start offset by 1.
-            if ($startNode === $parent) {
-                $startOffset = $range->startOffset;
-
-                if ($startOffset > $index) {
-                    $range->setStartInternal($startNode, $startOffset - 1);
-                }
+            if ($range->startNode === $parent && $range->startOffset > $index) {
+                $range->startOffset -= 1;
             }
 
             // 7. For each live range whose end node is parent and end offset is greater than index,
             // decrease its end offset by 1.
-            if ($endNode === $parent) {
-                $endOffset = $range->endOffset;
-
-                if ($endOffset > $index) {
-                    $range->setEndInternal($endNode, $endOffset - 1);
-                }
+            if ($range->endNode === $parent && $range->endOffset > $index) {
+                $range->endOffset -= 1;
             }
         }
 

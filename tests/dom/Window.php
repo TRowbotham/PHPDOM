@@ -74,7 +74,6 @@ class Window
     public function __destruct()
     {
         $this->document->pruneNodeIterators();
-        Range::prune($this->document);
     }
 
     public function setupRangeTests($run = true): void

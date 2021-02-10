@@ -160,35 +160,30 @@ abstract class CharacterData extends Node implements ChildNode
         $newDataLen = mb_strlen($data, 'utf-8');
 
         foreach (Range::getRangeCollection() as $range) {
-            $startNode = $range->startContainer;
-            $endNode = $range->endContainer;
-
-            if ($startNode === $this) {
-                $startOffset = $range->startOffset;
-
+            if ($range->startNode === $this) {
                 // 8. For each live range whose start node is node and start offset is greater than
                 // offset but less than or equal to offset plus count, set its start offset to
                 // offset.
-                if ($startOffset > $offset && $startOffset <= $startOffset + $count) {
-                    $range->setStartInternal($startNode, $offset);
+                if ($range->startOffset > $offset && $range->startOffset <= $offset + $count) {
+                    $range->startOffset = $offset;
 
                 // 10. For each live range whose start node is node and start offset is greater than
                 // offset plus count, increase its start offset by data’s length and decrease it by
                 // count.
-                } elseif ($startOffset > $offset + $count) {
+                } elseif ($range->startOffset > $offset + $count) {
                     // If we perform step 8, then we know we can't reach here since range's start
                     // offset is set to $offset and therefore can't be greater than $offset + $count.
-                    $range->setStartInternal($startNode, $startOffset + $newDataLen - $count);
+                    $range->startOffset += $newDataLen - $count;
                 }
             }
 
-            if ($endNode === $this) {
+            if ($range->endNode === $this) {
                 $endOffset = $range->endOffset;
 
                 // 9. For each live range whose end node is node and end offset is greater than
                 // offset but less than or equal to offset plus count, set its end offset to offset.
                 if ($endOffset > $offset && $endOffset <= $offset + $count) {
-                    $range->setEndInternal($endNode, $offset);
+                    $range->endOffset = $offset;
 
                 // 11. For each live range whose end node is node and end offset is greater than
                 // offset plus count, increase its end offset by data’s length and decrease it by
@@ -196,7 +191,7 @@ abstract class CharacterData extends Node implements ChildNode
                 } elseif ($endOffset > $offset + $count) {
                     // If we perform step 9, then we know we can't reach here since range's end
                     // offset is set to $offset and therefore can't be greater than $offset + $count.
-                    $range->setEndInternal($endNode, $endOffset + $newDataLen - $count);
+                    $range->endOffset += $newDataLen - $count;
                 }
             }
         }
