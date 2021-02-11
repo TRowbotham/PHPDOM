@@ -19,35 +19,19 @@ final class NodeIterator
     use NodeFilterUtils;
 
     /**
-     * @var bool
+     * @var \Rowbot\DOM\NodeIteratorContext
      */
-    private $pointerBeforeReferenceNode;
-
-    /**
-     * @var \Rowbot\DOM\Node
-     */
-    private $referenceNode;
-
-    /**
-     * @var \Rowbot\DOM\Node
-     */
-    private $root;
-
-    /**
-     * @var int
-     */
-    private $whatToShow;
+    private $context;
 
     /**
      * @param \Rowbot\DOM\NodeFilter|callable|null $filter
      */
     public function __construct(Node $root, int $whatToShow = NodeFilter::SHOW_ALL, $filter = null)
     {
+        $this->context = new NodeIteratorContext($root);
         $this->setFilter($filter);
-        $this->pointerBeforeReferenceNode = true;
-        $this->referenceNode = $root;
-        $this->root = $root;
         $this->whatToShow = $whatToShow;
+        NodeIteratorContext::getIterators()->attach($this->context);
     }
 
     /**
@@ -60,17 +44,22 @@ final class NodeIterator
                 return $this->filter;
 
             case 'pointerBeforeReferenceNode':
-                return $this->pointerBeforeReferenceNode;
+                return $this->context->pointerBeforeReferenceNode;
 
             case 'referenceNode':
-                return $this->referenceNode;
+                return $this->context->referenceNode;
 
             case 'root':
-                return $this->root;
+                return $this->context->root;
 
             case 'whatToShow':
                 return $this->whatToShow;
         }
+    }
+
+    public function __destruct()
+    {
+        NodeIteratorContext::getIterators()->detach($this->context);
     }
 
     /**
@@ -96,63 +85,12 @@ final class NodeIterator
     /**
      * @internal
      *
-     * @see https://dom.spec.whatwg.org/#nodeiterator-pre-removing-steps
-     */
-    public function preremoveNode(Node $nodeToBeRemoved): void
-    {
-        if (!$nodeToBeRemoved->contains($this->referenceNode) || $nodeToBeRemoved === $this->root) {
-            return;
-        }
-
-        if ($this->pointerBeforeReferenceNode) {
-            $next = null;
-            $node = $nodeToBeRemoved;
-
-            while ($node && !$node->nextSibling) {
-                if ($node === $this->root) {
-                    break;
-                }
-
-                $node = $node->parentNode;
-            }
-
-            if ($node && $node !== $this->root) {
-                $next = $node->nextSibling;
-            }
-
-            if ($next) {
-                $this->referenceNode = $next;
-
-                return;
-            }
-
-            $this->pointerBeforeReferenceNode = false;
-        }
-
-        $node = $nodeToBeRemoved->previousSibling;
-
-        if (!$node) {
-            $this->referenceNode = $nodeToBeRemoved->parentNode;
-
-            return;
-        }
-
-        $iter = new self($node);
-
-        while ($temp = $iter->nextNode()) {
-            $this->referenceNode = $temp;
-        }
-    }
-
-    /**
-     * @internal
-     *
      * @see https://dom.spec.whatwg.org/#concept-nodeiterator-traverse
      */
     private function traverse(string $direction): ?Node
     {
-        $node = $this->referenceNode;
-        $beforeNode = $this->pointerBeforeReferenceNode;
+        $node = $this->context->referenceNode;
+        $beforeNode = $this->context->pointerBeforeReferenceNode;
 
         while (true) {
             switch ($direction) {
@@ -206,7 +144,7 @@ final class NodeIterator
                             }
                         }
 
-                        if ($this->referenceNode === $this->root || !($node = $node->parentNode)) {
+                        if ($this->context->referenceNode === $this->root || !($node = $node->parentNode)) {
                             return null;
                         }
                     } else {
@@ -221,8 +159,8 @@ final class NodeIterator
             }
         }
 
-        $this->referenceNode = $node;
-        $this->pointerBeforeReferenceNode = $beforeNode;
+        $this->context->referenceNode = $node;
+        $this->context->pointerBeforeReferenceNode = $beforeNode;
 
         return $node;
     }

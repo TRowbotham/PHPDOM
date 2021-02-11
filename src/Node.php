@@ -1399,9 +1399,9 @@ abstract class Node extends EventTarget
 
         // 8. For each NodeIterator object iterator whose root’s node document is node’s node
         // document, run the NodeIterator pre-removing steps given node and iterator.
-        foreach (Document::getNodeIteratorCollection() as $iter) {
+        foreach (NodeIteratorContext::getIterators() as $iter) {
             if ($iter->root->nodeDocument === $this->nodeDocument) {
-                $iter->preremoveNode($this);
+                $iter->adjustIteratorPosition($this);
             }
         }
 

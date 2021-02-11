@@ -71,11 +71,6 @@ class Window
         $this->initialized = false;
     }
 
-    public function __destruct()
-    {
-        $this->document->pruneNodeIterators();
-    }
-
     public function setupRangeTests($run = true): void
     {
         if ($this->initialized && !$run) {

@@ -16,8 +16,6 @@ use Rowbot\DOM\Exception\HierarchyRequestError;
 use Rowbot\DOM\Exception\InvalidCharacterError;
 use Rowbot\DOM\Exception\NotSupportedError;
 use Rowbot\DOM\Parser\MarkupFactory;
-use Rowbot\DOM\Support\Collection\ArrayCollection;
-use Rowbot\DOM\Support\Collection\WeakCollection;
 use Rowbot\DOM\Support\Stringable;
 use Rowbot\DOM\URL\URLParser;
 use Rowbot\URL\URLRecord;
@@ -30,7 +28,6 @@ use function preg_match;
 use function strtolower;
 
 use const PHP_SAPI;
-use const PHP_VERSION_ID;
 
 /**
  * @see https://dom.spec.whatwg.org/#interface-document
@@ -102,11 +99,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
     private $isHTMLDocument;
 
     /**
-     * @var \Rowbot\DOM\Support\Collection\WeakCollection<\Rowbot\DOM\NodeIterator>|\Rowbot\DOM\Support\Collection\ArrayCollection<\Rowbot\DOM\NodeIterator>|null
-     */
-    private static $nodeIteratorList;
-
-    /**
      * @var \Rowbot\URL\URLRecord|null
      */
     private $url;
@@ -124,12 +116,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
     public function __construct()
     {
         parent::__construct($this);
-
-        if (!self::$nodeIteratorList) {
-            self::$nodeIteratorList = PHP_VERSION_ID < 70400
-                ? new ArrayCollection()
-                : new WeakCollection();
-        }
 
         $this->characterSet = 'UTF-8';
         $this->contentType = 'application/xml';
@@ -401,10 +387,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
         int $whatToShow = NodeFilter::SHOW_ALL,
         $filter = null
     ): NodeIterator {
-        $iter = new NodeIterator($root, $whatToShow, $filter);
-        self::$nodeIteratorList->attach($iter);
-
-        return $iter;
+        return new NodeIterator($root, $whatToShow, $filter);
     }
 
     /**
@@ -687,42 +670,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
     public function markAsIframeSrcdoc(): void
     {
         $this->isIframeSrcDoc = true;
-    }
-
-    /**
-     * Gets the node iterator collection.
-     *
-     * @internal
-     *
-     * @return \Rowbot\DOM\Support\Collection\WeakCollection<\Rowbot\DOM\NodeIterator>|\Rowbot\DOM\Support\Collection\ArrayCollection<\Rowbot\DOM\NodeIterator>
-     */
-    public static function getNodeIteratorCollection()
-    {
-        if (!self::$nodeIteratorList) {
-            self::$nodeIteratorList = PHP_VERSION_ID < 70400
-                ? new ArrayCollection()
-                : new WeakCollection();
-        }
-
-        return self::$nodeIteratorList;
-    }
-
-    /**
-     * Prune node iterators for the given document.
-     *
-     * @internal
-     */
-    public function pruneNodeIterators(): void
-    {
-        if (!self::$nodeIteratorList) {
-            return;
-        }
-
-        foreach (self::$nodeIteratorList as $i => $iter) {
-            if ($iter->root->nodeDocument === $this) {
-                self::$nodeIteratorList->unset($i);
-            }
-        }
     }
 
     /**

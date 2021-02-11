@@ -29,11 +29,6 @@ final class TreeWalker
     private $root;
 
     /**
-     * @var int
-     */
-    private $whatToShow;
-
-    /**
      * @param \Rowbot\DOM\NodeFilter|callable|null $filter
      */
     public function __construct(

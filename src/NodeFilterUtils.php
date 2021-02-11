@@ -23,6 +23,11 @@ trait NodeFilterUtils
     private $isActive = false;
 
     /**
+     * @var int
+     */
+    private $whatToShow;
+
+    /**
      * @param \Rowbot\DOM\NodeFilter|callable|null $filter
      */
     private function setFilter($filter): void
