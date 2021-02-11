@@ -8,7 +8,6 @@ use function mb_strlen;
 use function mb_strtolower;
 use function mb_strtoupper;
 use function mb_substr;
-use function pow;
 
 final class Utils
 {
@@ -74,10 +73,10 @@ final class Utils
 
     public static function unsignedLong(int $offset): int
     {
-        $normalizedOffset = $offset % pow(2, 32);
+        $normalizedOffset = $offset % (2 ** 32);
 
         if ($normalizedOffset < 0) {
-            $normalizedOffset += pow(2, 32);
+            $normalizedOffset += 2 ** 32;
         }
 
         return $normalizedOffset;
