@@ -270,10 +270,10 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
      *
      * @internal
      *
-     * @param \Rowbot\DOM\Document|null $document  The element's owner document.
-     * @param string                    $localName The element's local name that you are creating.
-     * @param ?string                   $namespace The namespace that the element belongs to.
-     * @param ?string                   $prefix    (optional) The namespace prefix of the element.
+     * @param \Rowbot\DOM\Document $document  The element's owner document.
+     * @param string               $localName The element's local name that you are creating.
+     * @param ?string              $namespace The namespace that the element belongs to.
+     * @param ?string              $prefix    (optional) The namespace prefix of the element.
      *
      * @return static
      */

@@ -100,7 +100,7 @@ class NodeList implements ArrayAccess, Countable, IteratorAggregate
     /**
      * Returns the iterator object for the list.
      *
-     * @return \ArrayIterator<\Rowbot\DOM\Node>
+     * @return \ArrayIterator<int, \Rowbot\DOM\Node>
      */
     public function getIterator(): ArrayIterator
     {

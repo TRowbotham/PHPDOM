@@ -186,6 +186,9 @@ abstract class ObjectStack implements Countable, IteratorAggregate
         $this->cache->attach($newItem);
     }
 
+    /**
+     * @return \Generator<int, TValue>
+     */
     public function getIterator(): Generator
     {
         $stack = $this->stack;

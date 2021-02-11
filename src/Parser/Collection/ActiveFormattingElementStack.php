@@ -17,6 +17,8 @@ class ActiveFormattingElementStack extends ObjectStack
 {
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#push-onto-the-list-of-active-formatting-elements
+     *
+     * @param \Rowbot\DOM\Element\HTML\HTMLElement $item
      */
     public function push($item): void
     {

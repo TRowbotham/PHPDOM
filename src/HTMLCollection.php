@@ -22,6 +22,7 @@ use function iterator_count;
  * @template TValue of \Rowbot\DOM\Element\HTML\HTMLElement
  *
  * @implements \ArrayAccess<int|string, TValue>
+ * @implements \IteratorAggregate<int, TValue>
  *
  * @property-read int $length
  */
@@ -191,6 +192,9 @@ class HTMLCollection implements ArrayAccess, Countable, IteratorAggregate
         return iterator_count(($this->filter)($this->root));
     }
 
+    /**
+     * @return \Generator<int, TValue>
+     */
     public function getIterator(): Generator
     {
         return ($this->filter)($this->root);

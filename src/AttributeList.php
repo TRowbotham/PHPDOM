@@ -29,7 +29,7 @@ class AttributeList implements ArrayAccess, Countable, Iterator
     private $element;
 
     /**
-     * @var \SplObjectStorage<\Rowbot\DOM\AttributeChangeObserver>
+     * @var \SplObjectStorage<\Rowbot\DOM\AttributeChangeObserver, null>
      */
     private $observers;
 

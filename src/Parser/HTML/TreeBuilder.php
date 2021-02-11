@@ -213,6 +213,7 @@ class TreeBuilder
 
     /**
      * @param \SplStack<int> $templateInsertionModes
+     * @param \SplObjectStorage<\Rowbot\DOM\Node, \Rowbot\DOM\Parser\Token\Token> $tokenRepository
      */
     public function __construct(
         Document $document,

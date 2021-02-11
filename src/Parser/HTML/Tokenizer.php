@@ -108,7 +108,7 @@ class Tokenizer
      * The contents of the entities.json file decoded as JSON. The contents are
      * lazily loaded.
      *
-     * @var string
+     * @var non-empty-array<string, string>|null
      */
     private static $namedCharacterReferences;
 
