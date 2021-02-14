@@ -208,9 +208,7 @@ class HTMLDocument extends Document
             throw new HierarchyRequestError();
         }
 
-        if (!$oldBody) {
-            $docElement->appendChild($newBody);
-        }
+        $docElement->appendChild($newBody);
     }
 
     /**
