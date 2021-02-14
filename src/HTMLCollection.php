@@ -29,7 +29,7 @@ use function iterator_count;
 class HTMLCollection implements ArrayAccess, Countable, IteratorAggregate
 {
     /**
-     * @var \Closure(\Rowbot\DOM\Node): \iterable
+     * @var \Closure(\Rowbot\DOM\Node): \Generator<int, TValue>
      */
     private $filter;
 
