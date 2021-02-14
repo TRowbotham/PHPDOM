@@ -17,24 +17,27 @@ trait ChildOrParentNode
      *
      * @see https://dom.spec.whatwg.org/#converting-nodes-into-a-node
      *
-     * @param list<\Rowbot\DOM\Node|string> $nodes
+     * @param list<\Rowbot\DOM\Node|string> $potentialNodes
      *
      * @return \Rowbot\DOM\DocumentFragment|\Rowbot\DOM\Node If $nodes > 1, then a DocumentFragment is returned,
      *                                                       otherwise a single Node is returned.
      */
-    private function convertNodesToNode(array $nodes, Document $document): Node
+    private function convertNodesToNode(array $potentialNodes, Document $document): Node
     {
         $node = null;
+        $nodes = [];
 
         // Replace each string in nodes with a new Text node whose data is the
         // string and node document is document.
-        foreach ($nodes as &$potentialNode) {
+        foreach ($potentialNodes as $potentialNode) {
             if (!$potentialNode instanceof Node) {
-                $potentialNode = new Text($document, (string) $potentialNode);
-            }
-        }
+                $nodes[] = new Text($document, (string) $potentialNode);
 
-        unset($potentialNode);
+                continue;
+            }
+
+            $nodes[] = $potentialNode;
+        }
 
         // If nodes contains one node, set node to that node. Otherwise, set
         // node to a new DocumentFragment whose node document is document, and
