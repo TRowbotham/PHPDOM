@@ -574,7 +574,11 @@ abstract class Node extends EventTarget
         if ($node1 === null || $node2 === null || $node1->getRootNode() !== $node2Root) {
             $ret = self::DOCUMENT_POSITION_DISCONNECTED
                 | self::DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC;
-            $position = strcmp(spl_object_hash($node2), spl_object_hash($node1));
+            $position = 0;
+
+            if ($node1 !== null && $node2 !== null) {
+                $position = strcmp(spl_object_hash($node2), spl_object_hash($node1));
+            }
 
             // Pointer comparison is supposed to be used to determine whether
             // a node is following or preceding another node in this case,
