@@ -19,6 +19,7 @@ use Rowbot\DOM\Parser\Token\StartTagToken;
 use Rowbot\DOM\Support\CodePointStream;
 use Rowbot\DOM\Utils;
 
+use function array_pop;
 use function ctype_alnum;
 use function ctype_alpha;
 use function ctype_digit;
@@ -1421,14 +1422,14 @@ class Tokenizer
                         // and its value to the empty string. Switch to the
                         // attribute name state.
                         $attributeToken = new AttributeToken($c, '');
-                        $tagToken->attributes->push($attributeToken);
+                        $tagToken->attributes[] = $attributeToken;
                         $this->state->tokenizerState = TokenizerState::ATTRIBUTE_NAME;
                     } else {
                         // Start a new attribute in the current tag token. Set
                         // that attribute name and value to the empty string.
                         // Reconsume in the attribute name state.
                         $attributeToken = new AttributeToken('', '');
-                        $tagToken->attributes->push($attributeToken);
+                        $tagToken->attributes[] = $attributeToken;
                         $this->input->seek(-1);
                         $this->state->tokenizerState = TokenizerState::ATTRIBUTE_NAME;
                     }
@@ -1485,14 +1486,12 @@ class Tokenizer
                     // this is a parse error and the new attribute must be
                     // removed from the token.
                     if ($state !== TokenizerState::ATTRIBUTE_NAME) {
-                        $state = TokenizerState::ATTRIBUTE_NAME;
-                        $attributes = $tagToken->attributes;
                         $attrName = $attributeToken->name;
 
-                        foreach ($attributes as $attr) {
+                        foreach ($tagToken->attributes as $attr) {
                             if ($attr->name === $attrName && $attr !== $attributeToken) {
                                 // Parse error.
-                                $attributes->pop();
+                                array_pop($tagToken->attributes);
 
                                 break;
                             }
@@ -1529,7 +1528,7 @@ class Tokenizer
                         // that attribute name and value to the empty string.
                         // Reconsume in the attribute name state.
                         $attributeToken = new AttributeToken('', '');
-                        $tagToken->attributes->push($attributeToken);
+                        $tagToken->attributes[] = $attributeToken;
                         $this->input->seek(-1);
                         $this->state->tokenizerState = TokenizerState::ATTRIBUTE_NAME;
                     }

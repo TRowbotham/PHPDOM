@@ -187,11 +187,9 @@ class HTMLParser extends Parser
         // Create a start tag token whose name is the local name of context and
         // whose attributes are the attributes of context.
         $token = new StartTagToken($localName);
-        $attributes = $token->attributes;
 
         foreach ($contextElement->attributes as $attr) {
-            $attrToken = new AttributeToken($attr->name, $attr->value);
-            $attributes->push($attrToken);
+            $token->attributes[] = new AttributeToken($attr->name, $attr->value);
         }
 
         // Let this start tag token be the start tag token of the context node,
@@ -243,7 +241,7 @@ class HTMLParser extends Parser
             } elseif ($token instanceof EndTagToken) {
                 // When an end tag token is emitted with attributes, that is a
                 // parse error.
-                if (!$token->attributes->isEmpty()) {
+                if ($token->attributes !== []) {
                     // Parse error.
                 }
 

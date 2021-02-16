@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Parser\Token;
 
-use SplDoublyLinkedList;
-
 /**
  * Start and end tag tokens have a tag name, a self-closing flag, and a list of attributes, each of which has a name and
  * a value. When a start or end tag token is created its self-closing flag must be unset (its other state is that it be
@@ -14,7 +12,7 @@ use SplDoublyLinkedList;
 abstract class TagToken implements Token
 {
     /**
-     * @var \SplDoublyLinkedList<\Rowbot\DOM\Parser\Token\AttributeToken>
+     * @var list<\Rowbot\DOM\Parser\Token\AttributeToken>
      */
     public $attributes;
 
@@ -35,7 +33,7 @@ abstract class TagToken implements Token
 
     public function __construct(string $tagName = '')
     {
-        $this->attributes = new SplDoublyLinkedList();
+        $this->attributes = [];
         $this->selfClosingFlagAcknowledged = false;
         $this->tagName = $tagName;
     }
@@ -45,7 +43,7 @@ abstract class TagToken implements Token
      */
     public function clearAttributes(): void
     {
-        $this->attributes = new SplDoublyLinkedList();
+        $this->attributes = [];
     }
 
     /**
