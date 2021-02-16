@@ -267,11 +267,6 @@ class TreeBuilderTest extends TestCase
             } elseif ($buffer[0] === '"') {
                 // Plain text
                 $text = substr($buffer, 1, -2);
-
-                if ($text === false) {
-                    xdebug_break();
-                }
-
                 $parent->appendChild($document->createTextNode($text));
             } elseif ($buffer === "content\n") {
                 // Template contents
