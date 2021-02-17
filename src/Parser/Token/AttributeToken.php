@@ -16,12 +16,12 @@ class AttributeToken implements Token
     public $name;
 
     /**
-     * @var null
+     * @var string|null
      */
     public $namespace;
 
     /**
-     * @var null
+     * @var string|null
      */
     public $prefix;
 
