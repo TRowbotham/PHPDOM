@@ -8,7 +8,7 @@ use DirectoryIterator;
 use Generator;
 use PHPUnit\Framework\TestCase;
 use Rowbot\DOM\Parser\Collection\OpenElementStack;
-use Rowbot\DOM\Parser\HTML\ParserState;
+use Rowbot\DOM\Parser\HTML\ParserContext;
 use Rowbot\DOM\Parser\HTML\Tokenizer;
 use Rowbot\DOM\Parser\HTML\TokenizerState;
 use Rowbot\DOM\Parser\Token\CharacterToken;
@@ -64,9 +64,8 @@ class TokenizerTest extends TestCase
         $stream = new CodePointStream();
         $this->preprocessInput($input, $stream);
 
-        $parserState = new ParserState();
-        $parserState->tokenizerState = $state;
-        $tokenizer = new Tokenizer($stream, new OpenElementStack(), false, null, $parserState);
+        $parserState = new ParserContext(null, new OpenElementStack(), $stream, false, false, $state);
+        $tokenizer = new Tokenizer($parserState);
 
         if ($lastStartTag !== null) {
             $tokenizer->setLastEmittedStartTagToken(new StartTagToken($lastStartTag));

@@ -15,12 +15,12 @@ use Rowbot\DOM\Namespaces;
 use Rowbot\DOM\NodeList;
 use Rowbot\DOM\Parser\Collection\ActiveFormattingElementStack;
 use Rowbot\DOM\Parser\Collection\OpenElementStack;
+use Rowbot\DOM\Parser\HTML\InsertionMode\InTemplateInsertionMode;
 use Rowbot\DOM\Parser\Parser;
 use Rowbot\DOM\Parser\Token\AttributeToken;
 use Rowbot\DOM\Parser\Token\EndTagToken;
 use Rowbot\DOM\Parser\Token\StartTagToken;
 use SplObjectStorage;
-use SplStack;
 
 use function mb_check_encoding;
 use function mb_convert_encoding;
@@ -30,7 +30,10 @@ use function preg_replace;
 
 class HTMLParser extends Parser
 {
-    use ParserOrTreeBuilder;
+    /**
+     * @var \Rowbot\DOM\Parser\HTML\ParserContext
+     */
+    private $context;
 
     /**
      * The tokenizer associated with the parser.
@@ -46,6 +49,11 @@ class HTMLParser extends Parser
      */
     private $treeBuilder;
 
+    /**
+     * @var \Rowbot\DOM\Parser\HTML\TreeBuilderContext
+     */
+    private $treeBuilderContext;
+
     public function __construct(
         Document $document,
         bool $isFragmentCase = false,
@@ -53,34 +61,20 @@ class HTMLParser extends Parser
     ) {
         parent::__construct();
 
-        $this->activeFormattingElements = new ActiveFormattingElementStack();
-        $this->contextElement = $contextElement;
-        $this->document = $document;
-        $this->isFragmentCase = $isFragmentCase;
-        $this->isScriptingEnabled = false;
-        $this->openElements = new OpenElementStack();
-        $this->state = new ParserState();
-        $this->templateInsertionModes = new SplStack();
-        $this->tokenRepository = new SplObjectStorage();
-        $this->treeBuilder = new TreeBuilder(
-            $document,
-            $this->activeFormattingElements,
-            $this->openElements,
-            $this->templateInsertionModes,
-            $this->tokenRepository,
-            $this->isFragmentCase,
-            $this->isScriptingEnabled,
-            $this->contextElement,
-            $this->state,
-            $this->inputStream
-        );
-        $this->tokenizer = new Tokenizer(
+        $this->context = new ParserContext(
+            $contextElement,
+            new OpenElementStack(),
             $this->inputStream,
-            $this->openElements,
-            $this->isFragmentCase,
-            $this->contextElement,
-            $this->state
+            $isFragmentCase
         );
+        $this->tokenizer = new Tokenizer($this->context);
+        $this->treeBuilderContext = new TreeBuilderContext(
+            $document,
+            $this->context,
+            new ActiveFormattingElementStack(),
+            new SplObjectStorage()
+        );
+        $this->treeBuilder = new TreeBuilder($this->treeBuilderContext);
     }
 
     /**
@@ -93,13 +87,13 @@ class HTMLParser extends Parser
         $this->inputStream->discard();
 
         // Set the current document readiness to "interactive"
-        $this->document->setReadyState(DocumentReadyState::INTERACTIVE);
+        $this->treeBuilderContext->document->setReadyState(DocumentReadyState::INTERACTIVE);
 
         // Pop all the nodes off the stack of open elements.
-        $this->openElements->clear();
+        $this->context->openElements->clear();
 
         // Set the current document readiness to "complete"
-        $this->document->setReadyState(DocumentReadyState::COMPLETE);
+        $this->treeBuilderContext->document->setReadyState(DocumentReadyState::COMPLETE);
     }
 
     /**
@@ -109,7 +103,6 @@ class HTMLParser extends Parser
     {
         // Create a new Document node, and mark it as being an HTML document.
         $doc = new HTMLDocument();
-        $mode = $contextElement->getNodeDocument()->getMode();
 
         // If the node document of the context element is in quirks mode, then
         // let the Document be in quirks mode. Otherwise, the node document of
@@ -120,7 +113,7 @@ class HTMLParser extends Parser
 
         // Create a new HTML parser, and associate it with the just created
         // Document node.
-        $parser = new HTMLParser($doc, true, $contextElement);
+        $parser = new self($doc, true, $contextElement);
         $localName = $contextElement->localName;
 
         // Set the state of the HTML parser's tokenization stage as follows,
@@ -128,7 +121,7 @@ class HTMLParser extends Parser
         switch ($localName) {
             case 'title':
             case 'textarea':
-                $parser->state->tokenizerState = TokenizerState::RCDATA;
+                $parser->context->tokenizerState = TokenizerState::RCDATA;
 
                 break;
 
@@ -137,24 +130,24 @@ class HTMLParser extends Parser
             case 'iframe':
             case 'noembed':
             case 'noframes':
-                $parser->state->tokenizerState = TokenizerState::RAWTEXT;
+                $parser->context->tokenizerState = TokenizerState::RAWTEXT;
 
                 break;
 
             case 'script':
-                $parser->state->tokenizerState = TokenizerState::SCRIPT_DATA;
+                $parser->context->tokenizerState = TokenizerState::SCRIPT_DATA;
 
                 break;
 
             case 'noscript':
-                if ($parser->isScriptingEnabled) {
-                    $parser->state->tokenizerState = TokenizerState::RAWTEXT;
+                if ($parser->context->isScriptingEnabled) {
+                    $parser->context->tokenizerState = TokenizerState::RAWTEXT;
                 }
 
                 break;
 
             case 'plaintext':
-                $parser->state->tokenizerState = TokenizerState::PLAINTEXT;
+                $parser->context->tokenizerState = TokenizerState::PLAINTEXT;
         }
 
         // NOTE: For performance reasons, an implementation that does not report
@@ -173,15 +166,13 @@ class HTMLParser extends Parser
 
         // Set up the parser's stack of open elements so that it contains just
         // the single element root.
-        $parser->openElements->push($root);
+        $parser->context->openElements->push($root);
 
         // If the context element is a template element, push "in template" onto
         // the stack of template insertion modes so that it is the new current
         // template insertion mode.
         if ($contextElement instanceof HTMLTemplateElement) {
-            $parser->templateInsertionModes->push(
-                ParserInsertionMode::IN_TEMPLATE
-            );
+            $parser->treeBuilderContext->templateInsertionModes->push(InTemplateInsertionMode::class);
         }
 
         // Create a start tag token whose name is the local name of context and
@@ -195,13 +186,10 @@ class HTMLParser extends Parser
         // Let this start tag token be the start tag token of the context node,
         // e.g. for the purposes of determining if it is an HTML integration
         // point.
-        $parser->tokenRepository->attach(
-            $contextElement,
-            $token
-        );
+        $parser->treeBuilderContext->tokenRepository->attach($contextElement, $token);
 
         // Reset the parser's insertion mode appropriately.
-        $parser->resetInsertionMode();
+        $parser->treeBuilderContext->resetInsertionMode();
         $node = $contextElement;
 
         // Set the parser's form element pointer to the nearest node to the
@@ -233,10 +221,10 @@ class HTMLParser extends Parser
 
     public function run(): void
     {
-        $gen = $this->tokenizer->run();
+        foreach ($this->tokenizer->run() as $token) {
+            $isStartTagToken = $token instanceof StartTagToken;
 
-        foreach ($gen as $token) {
-            if ($token instanceof StartTagToken) {
+            if ($isStartTagToken) {
                 $this->tokenizer->setLastEmittedStartTagToken($token);
             } elseif ($token instanceof EndTagToken) {
                 // When an end tag token is emitted with attributes, that is a
@@ -257,7 +245,7 @@ class HTMLParser extends Parser
             // When a start tag token is emitted with its self-closing flag set,
             // if the flag is not acknowledged when it is processed by the tree
             // construction stage, that is a parse error.
-            if ($token instanceof StartTagToken && !$token->wasAcknowledged()) {
+            if ($isStartTagToken && !$token->wasAcknowledged()) {
                 // Parse error.
             }
         }
