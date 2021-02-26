@@ -186,7 +186,7 @@ class HTMLParser extends Parser
         // Let this start tag token be the start tag token of the context node,
         // e.g. for the purposes of determining if it is an HTML integration
         // point.
-        $parser->treeBuilderContext->tokenRepository->attach($contextElement, $token);
+        $parser->treeBuilderContext->elementTokenMap->attach($contextElement, $token);
 
         // Reset the parser's insertion mode appropriately.
         $parser->treeBuilderContext->resetInsertionMode();
@@ -199,7 +199,7 @@ class HTMLParser extends Parser
         // pointer keeps its initial value, null.)
         while ($node) {
             if ($node instanceof HTMLFormElement) {
-                $parser->state->formElementPointer = $node;
+                $parser->context->formElementPointer = $node;
 
                 break;
             }

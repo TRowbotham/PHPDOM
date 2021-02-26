@@ -37,7 +37,8 @@ class InTableTextInsertionMode extends InsertionMode
         // "anything else" entry in the "in table" insertion mode.
         // Otherwise, insert the characters given by the pending table
         // character tokens list.
-        $methodName = [$this->context, 'insertCharacter'];
+        $obj = $this->context;
+        $methodName = 'insertCharacter';
 
         foreach ($this->context->pendingTableCharacterTokens as $characterToken) {
             if (
@@ -47,14 +48,15 @@ class InTableTextInsertionMode extends InsertionMode
                 && $characterToken->data !== "\x0D"
                 && $characterToken->data !== "\x20"
             ) {
-                $methodName = [$this, 'inTableInsertionModeAnythingElse'];
+                $obj = $this;
+                $methodName = 'inTableInsertionModeAnythingElse';
 
                 break;
             }
         }
 
         foreach ($this->context->pendingTableCharacterTokens as $characterToken) {
-            $methodName($characterToken);
+            $obj->{$methodName}($characterToken);
         }
 
         // Switch the insertion mode to the original insertion mode and

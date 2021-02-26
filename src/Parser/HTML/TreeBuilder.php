@@ -21,6 +21,7 @@ use Rowbot\DOM\Parser\Token\TagToken;
 use Rowbot\DOM\Parser\Token\Token;
 use Rowbot\DOM\Utils;
 
+use function assert;
 use function preg_match;
 
 class TreeBuilder
@@ -423,8 +424,9 @@ class TreeBuilder
                 return false;
             }
 
-            /** @var \Rowbot\DOM\Parser\Token\TagToken $attr */
-            foreach ($this->context->tokenRepository[$node]->attributes as $attr) {
+            assert(isset($this->context->elementTokenMap[$node]));
+
+            foreach ($this->context->elementTokenMap[$node]->attributes as $attr) {
                 if ($attr->name === 'encoding') {
                     $value = Utils::toASCIILowercase($attr->value);
 

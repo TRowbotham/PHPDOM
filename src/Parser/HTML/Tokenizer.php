@@ -121,15 +121,17 @@ class Tokenizer
 
     /**
      * Runs the tokenization steps.
+     *
+     * @return \Generator<int, \Rowbot\DOM\Parser\Token\Token>
      */
     public function run(): Generator
     {
-        $returnState = null;
+        $returnState = TokenizerState::DATA;
         $characterReferenceCode = 0;
-        $attributeToken = null;
-        $commentToken = null;
-        $doctypeToken = null;
-        $tagToken = null;
+        $attributeToken = new AttributeToken();
+        $commentToken = new CommentToken();
+        $doctypeToken = new DoctypeToken();
+        $tagToken = new StartTagToken();
         $buffer = '';
 
         do {
@@ -3226,7 +3228,7 @@ class Tokenizer
      *
      * @return iterable<int, \Rowbot\DOM\Parser\Token\CharacterToken>
      */
-    private function flush(string $codepoints, ?AttributeToken $token, int $returnState): iterable
+    private function flush(string $codepoints, AttributeToken $token, int $returnState): iterable
     {
         switch ($returnState) {
             case TokenizerState::ATTRIBUTE_VALUE_DOUBLE_QUOTED:

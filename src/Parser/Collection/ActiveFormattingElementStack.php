@@ -99,7 +99,7 @@ class ActiveFormattingElementStack extends ObjectStack
     }
 
     /**
-     * @param \Rowbot\DOM\Node $item
+     * @param \Rowbot\DOM\Element\HTML\HTMLElement $item
      */
     public function insertAt(int $index, $item): void
     {

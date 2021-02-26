@@ -20,7 +20,7 @@ use function array_search;
 use function array_splice;
 
 /**
- * @extends \Rowbot\DOM\Parser\Collection\ObjectStack<\Rowbot\DOM\Node>
+ * @extends \Rowbot\DOM\Parser\Collection\ObjectStack<\Rowbot\DOM\Element\Element>
  */
 class OpenElementStack extends ObjectStack
 {
@@ -129,6 +129,10 @@ class OpenElementStack extends ObjectStack
         }
     }
 
+    /**
+     * @param \Rowbot\DOM\Element\Element $newItem
+     * @param \Rowbot\DOM\Element\Element $oldItem
+     */
     public function insertAfter($newItem, $oldItem): void
     {
         if (!$this->cache->contains($oldItem)) {

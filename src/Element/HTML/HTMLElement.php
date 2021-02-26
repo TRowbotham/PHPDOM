@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Element\HTML;
 
-use Rowbot\DOM\Document;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Exception\DOMException;
 use Rowbot\DOM\Exception\IndexSizeError;
 use Rowbot\DOM\Exception\SyntaxError;
 use Rowbot\DOM\Utils;
 
+use function assert;
 use function filter_var;
 use function is_numeric;
 use function mb_strtolower;
@@ -68,13 +68,6 @@ class HTMLElement extends Element
     protected const UNSIGNED_LONG_NON_NEGATIVE_GREATER_THAN_ZERO_WITH_FALLBACK = 5;
 
     protected $dataset;
-
-    protected function __construct(Document $document)
-    {
-        parent::__construct($document);
-
-        $this->dataset;
-    }
 
     public function __get(string $name)
     {

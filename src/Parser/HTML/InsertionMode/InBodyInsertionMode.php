@@ -57,11 +57,11 @@ class InBodyInsertionMode extends InsertionMode
             $this->context->insertCharacter($token);
 
             if (
-                ($data = $token->data) !== "\x09"
-                && $data !== "\x0A"
-                && $data !== "\x0C"
-                && $data !== "\x0D"
-                && $data !== "\x20"
+                $token->data !== "\x09"
+                && $token->data !== "\x0A"
+                && $token->data !== "\x0C"
+                && $token->data !== "\x0D"
+                && $token->data !== "\x20"
             ) {
                 // Set the frameset-ok flag to "not ok".
                 $this->context->framesetOk = 'not ok';
@@ -213,7 +213,10 @@ class InBodyInsertionMode extends InsertionMode
 
             // Remove the second element on the stack of open elements from its
             // parent node, if it has one.
-            if (($body = $this->context->parser->openElements->itemAt(1)) && ($parent = $body->parentNode)) {
+            $body = $this->context->parser->openElements->itemAt(1);
+            $parent = $body->parentNode;
+
+            if ($parent !== null) {
                 $parent->removeChild($body);
             }
 
@@ -1535,7 +1538,7 @@ class InBodyInsertionMode extends InsertionMode
         Create:
         // Insert an HTML element for the token for which the element entry was
         // created, to obtain new element.
-        $newElement = $this->context->insertForeignElement($this->context->tokenRepository[$entry], Namespaces::HTML);
+        $newElement = $this->context->insertForeignElement($this->context->elementTokenMap[$entry], Namespaces::HTML);
 
         // Replace the entry for entry in the list with an entry for new
         // element.
@@ -1761,11 +1764,11 @@ class InBodyInsertionMode extends InsertionMode
                 // elements with an entry for the new element, and let node be
                 // the new element.
                 $newElement = $this->context->createElementForToken(
-                    $this->context->tokenRepository[$node],
+                    $this->context->elementTokenMap[$node],
                     Namespaces::HTML,
                     $commonAncestor
                 );
-                $this->context->tokenRepository->attach($newElement, $this->context->tokenRepository[$node]);
+                $this->context->elementTokenMap->attach($newElement, $this->context->elementTokenMap[$node]);
 
                 $this->context->activeFormattingElements->replace($newElement, $node);
                 $this->context->parser->openElements->replace($newElement, $node);
@@ -1798,11 +1801,11 @@ class InBodyInsertionMode extends InsertionMode
             // created, in the HTML namespace, with furthest block as the
             // intended parent.
             $element = $this->context->createElementForToken(
-                $this->context->tokenRepository[$formattingElement],
+                $this->context->elementTokenMap[$formattingElement],
                 Namespaces::HTML,
                 $furthestBlock
             );
-            $this->context->tokenRepository->attach($element, $this->context->tokenRepository[$formattingElement]);
+            $this->context->elementTokenMap->attach($element, $this->context->elementTokenMap[$formattingElement]);
 
             // Take all of the child nodes of furthest block and append them to
             // the element created in the last step.

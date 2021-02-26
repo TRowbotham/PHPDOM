@@ -153,9 +153,9 @@ final class TreeBuilderContext
     /**
      * A collection of nodes and the tokens that were used to create them.
      *
-     * @var \SplObjectStorage<\Rowbot\DOM\Node, \Rowbot\DOM\Parser\Token\Token>
+     * @var \SplObjectStorage<\Rowbot\DOM\Element\Element, \Rowbot\DOM\Parser\Token\TagToken>
      */
-    public $tokenRepository;
+    public $elementTokenMap;
 
     /**
      * Whether or not foster-parenting mode is active.
@@ -190,18 +190,18 @@ final class TreeBuilderContext
     public $pendingTableCharacterTokens;
 
     /**
-     * @param \SplObjectStorage<\Rowbot\DOM\Node, \Rowbot\DOM\Parser\Token\Token> $tokenRepository
+     * @param \SplObjectStorage<\Rowbot\DOM\Element\Element, \Rowbot\DOM\Parser\Token\TagToken> $elementTokenMap
      */
     public function __construct(
         Document $document,
         ParserContext $parser,
         ActiveFormattingElementStack $activeFormattingElementStack,
-        SplObjectStorage $tokenRepository
+        SplObjectStorage $elementTokenMap
     ) {
         $this->document                    = $document;
         $this->parser                      = $parser;
         $this->activeFormattingElements    = $activeFormattingElementStack;
-        $this->tokenRepository             = $tokenRepository;
+        $this->elementTokenMap             = $elementTokenMap;
         $this->insertionMode               = new InitialInsertionMode($this);
         $this->originalInsertionMode       = $this->insertionMode;
         $this->framesetOk                  = 'ok';
@@ -448,10 +448,7 @@ final class TreeBuilderContext
 
         if (
             $adjustedInsertionLocation[0] instanceof HTMLTemplateElement
-            && (
-                $adjustedInsertionLocation[1] === 'beforeend'
-                || $adjustedInsertionLocation[1] === 'afterbegin'
-            )
+            && $adjustedInsertionLocation[1] === 'beforeend'
         ) {
             $adjustedInsertionLocation = [$adjustedInsertionLocation[0]->content, 'beforeend'];
         }
@@ -592,7 +589,7 @@ final class TreeBuilderContext
         // Push the element onto the stack of open elements so that it is the
         // new current node.
         $this->parser->openElements->push($element);
-        $this->tokenRepository->attach($element, $token);
+        $this->elementTokenMap->attach($element, $token);
 
         // Return the newly created element.
         return $element;

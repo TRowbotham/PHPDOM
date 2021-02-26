@@ -19,7 +19,7 @@ use function iterator_count;
 /**
  * @see https://dom.spec.whatwg.org/#interface-htmlcollection
  *
- * @template TValue of \Rowbot\DOM\Element\HTML\HTMLElement
+ * @template TValue of \Rowbot\DOM\Element\Element
  *
  * @implements \ArrayAccess<int|string, TValue>
  * @implements \IteratorAggregate<int, TValue>
