@@ -311,7 +311,10 @@ final class Range extends AbstractRange implements Stringable
      */
     public function deleteContents(): void
     {
-        if ($this->range->startNode === $this->range->endNode && $this->range->startOffset === $this->range->endOffset) {
+        if (
+            $this->range->startNode === $this->range->endNode
+            && $this->range->startOffset === $this->range->endOffset
+        ) {
             return;
         }
 
@@ -428,7 +431,10 @@ final class Range extends AbstractRange implements Stringable
     {
         $fragment = $this->range->startNode->getNodeDocument()->createDocumentFragment();
 
-        if ($this->range->startNode === $this->range->endNode && $this->range->startOffset === $this->range->endOffset) {
+        if (
+            $this->range->startNode === $this->range->endNode
+            && $this->range->startOffset === $this->range->endOffset
+        ) {
             return $fragment;
         }
 
@@ -590,7 +596,10 @@ final class Range extends AbstractRange implements Stringable
         $nodeDocument = $this->range->startNode->getNodeDocument();
         $fragment = $nodeDocument->createDocumentFragment();
 
-        if ($this->range->startNode === $this->range->endNode && $this->range->startOffset === $this->range->endOffset) {
+        if (
+            $this->range->startNode === $this->range->endNode
+            && $this->range->startOffset === $this->range->endOffset
+        ) {
             return $fragment;
         }
 
@@ -649,8 +658,8 @@ final class Range extends AbstractRange implements Stringable
 
         $containedChildrenStart = null;
         $containedChildrenEnd = null;
-
         $child = $firstPartiallyContainedChild ?: $commonAncestor->firstChild;
+
         for (; $child; $child = $child->nextSibling) {
             if ($this->isFullyContainedNode($child)) {
                 $containedChildrenStart = $child;
@@ -660,6 +669,7 @@ final class Range extends AbstractRange implements Stringable
         }
 
         $child = $lastPartiallyContainedChild ?: $commonAncestor->lastChild;
+
         for (; $child !== $containedChildrenStart; $child = $child->previousSibling) {
             if ($this->isFullyContainedNode($child)) {
                 $containedChildrenEnd = $child;
@@ -667,6 +677,7 @@ final class Range extends AbstractRange implements Stringable
                 break;
             }
         }
+
         if (!$containedChildrenEnd) {
             $containedChildrenEnd = $containedChildrenStart;
         }
@@ -706,6 +717,7 @@ final class Range extends AbstractRange implements Stringable
             $clone = $child->cloneNodeInternal(null, true);
             $fragment->appendChild($clone);
         }
+
         // If not null, this node wasn't processed by the loop
         if ($containedChildrenEnd) {
             $clone = $child->cloneNodeInternal(null, true);
@@ -789,7 +801,10 @@ final class Range extends AbstractRange implements Stringable
 
         $parent->preinsertNode($node, $referenceNode);
 
-        if ($this->range->startNode === $this->range->endNode && $this->range->startOffset === $this->range->endOffset) {
+        if (
+            $this->range->startNode === $this->range->endNode
+            && $this->range->startOffset === $this->range->endOffset
+        ) {
             $this->range->endNode = $parent;
             $this->range->endOffset = $newOffset;
         }
@@ -1145,6 +1160,7 @@ final class Range extends AbstractRange implements Stringable
 
                     break;
                 }
+
                 $b = $b->nextSibling;
             }
         }

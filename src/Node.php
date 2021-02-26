@@ -12,6 +12,7 @@ use Rowbot\DOM\Exception\NotFoundError;
 use Rowbot\DOM\Exception\NotSupportedError;
 use Rowbot\DOM\Support\Collection\NodeSet;
 
+use function assert;
 use function count;
 use function method_exists;
 use function range;

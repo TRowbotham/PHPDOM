@@ -33,6 +33,7 @@ use Rowbot\DOM\URL\URLParser;
 use Rowbot\DOM\Utils;
 
 use function count;
+use function func_num_args;
 use function preg_match;
 
 /**

@@ -13,6 +13,7 @@ use Rowbot\DOM\Exception\SyntaxError;
 use Rowbot\DOM\Support\Collection\StringSet;
 use Rowbot\DOM\Support\Stringable;
 
+use function func_num_args;
 use function preg_match;
 
 /**

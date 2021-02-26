@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Rowbot\DOM\URL;
 
 use Rowbot\URL\BasicURLParser;
-use Rowbot\URL\URLRecord;
 use Rowbot\URL\String\Utf8String;
+use Rowbot\URL\URLRecord;
 
 final class URLParser
 {

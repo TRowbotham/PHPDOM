@@ -9,6 +9,8 @@ use function array_unshift;
 use function count;
 use function preg_split;
 
+use const PREG_SPLIT_NO_EMPTY;
+
 class CodePointStream
 {
     public const SEEK_RELATIVE = 1;

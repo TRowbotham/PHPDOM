@@ -10,6 +10,8 @@ use Rowbot\DOM\Exception\IndexSizeError;
 use Rowbot\DOM\HTMLCollection;
 use Rowbot\DOM\Namespaces;
 
+use function assert;
+
 /**
  * Represents the HTML table row element <tr>.
  *
