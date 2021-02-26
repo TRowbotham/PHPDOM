@@ -5,207 +5,341 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Element;
 
 use Rowbot\DOM\Document;
+use Rowbot\DOM\Element\HTML\HTMLAnchorElement;
+use Rowbot\DOM\Element\HTML\HTMLAreaElement;
+use Rowbot\DOM\Element\HTML\HTMLAudioElement;
+use Rowbot\DOM\Element\HTML\HTMLBaseElement;
+use Rowbot\DOM\Element\HTML\HTMLBodyElement;
+use Rowbot\DOM\Element\HTML\HTMLBRElement;
+use Rowbot\DOM\Element\HTML\HTMLButtonElement;
+use Rowbot\DOM\Element\HTML\HTMLCanvasElement;
+use Rowbot\DOM\Element\HTML\HTMLDataElement;
+use Rowbot\DOM\Element\HTML\HTMLDataListElement;
+use Rowbot\DOM\Element\HTML\HTMLDetailsElement;
+use Rowbot\DOM\Element\HTML\HTMLDialogElement;
+use Rowbot\DOM\Element\HTML\HTMLDirectoryElement;
+use Rowbot\DOM\Element\HTML\HTMLDivElement;
+use Rowbot\DOM\Element\HTML\HTMLDListElement;
+use Rowbot\DOM\Element\HTML\HTMLElement;
+use Rowbot\DOM\Element\HTML\HTMLEmbedElement;
+use Rowbot\DOM\Element\HTML\HTMLFieldSetElement;
+use Rowbot\DOM\Element\HTML\HTMLFontElement;
+use Rowbot\DOM\Element\HTML\HTMLFormElement;
+use Rowbot\DOM\Element\HTML\HTMLFrameElement;
+use Rowbot\DOM\Element\HTML\HTMLFrameSetElement;
+use Rowbot\DOM\Element\HTML\HTMLHeadElement;
+use Rowbot\DOM\Element\HTML\HTMLHeadingElement;
+use Rowbot\DOM\Element\HTML\HTMLHRElement;
+use Rowbot\DOM\Element\HTML\HTMLHtmlElement;
+use Rowbot\DOM\Element\HTML\HTMLIFrameElement;
+use Rowbot\DOM\Element\HTML\HTMLImageElement;
+use Rowbot\DOM\Element\HTML\HTMLInputElement;
+use Rowbot\DOM\Element\HTML\HTMLLabelElement;
+use Rowbot\DOM\Element\HTML\HTMLLegendElement;
+use Rowbot\DOM\Element\HTML\HTMLLIElement;
+use Rowbot\DOM\Element\HTML\HTMLLinkElement;
+use Rowbot\DOM\Element\HTML\HTMLMapElement;
+use Rowbot\DOM\Element\HTML\HTMLMarqueeElement;
+use Rowbot\DOM\Element\HTML\HTMLMenuElement;
+use Rowbot\DOM\Element\HTML\HTMLMenuItemElement;
+use Rowbot\DOM\Element\HTML\HTMLMetaElement;
+use Rowbot\DOM\Element\HTML\HTMLMeterElement;
+use Rowbot\DOM\Element\HTML\HTMLModElement;
+use Rowbot\DOM\Element\HTML\HTMLObjectElement;
+use Rowbot\DOM\Element\HTML\HTMLOListElement;
+use Rowbot\DOM\Element\HTML\HTMLOptGroupElement;
+use Rowbot\DOM\Element\HTML\HTMLOptionElement;
+use Rowbot\DOM\Element\HTML\HTMLOutputElement;
+use Rowbot\DOM\Element\HTML\HTMLParagraphElement;
+use Rowbot\DOM\Element\HTML\HTMLParamElement;
+use Rowbot\DOM\Element\HTML\HTMLPictureElement;
+use Rowbot\DOM\Element\HTML\HTMLPreElement;
+use Rowbot\DOM\Element\HTML\HTMLProgressElement;
+use Rowbot\DOM\Element\HTML\HTMLQuoteElement;
+use Rowbot\DOM\Element\HTML\HTMLScriptElement;
+use Rowbot\DOM\Element\HTML\HTMLSelectElement;
+use Rowbot\DOM\Element\HTML\HTMLSlotElement;
+use Rowbot\DOM\Element\HTML\HTMLSourceElement;
+use Rowbot\DOM\Element\HTML\HTMLSpanElement;
+use Rowbot\DOM\Element\HTML\HTMLStyleElement;
+use Rowbot\DOM\Element\HTML\HTMLTableCaptionElement;
+use Rowbot\DOM\Element\HTML\HTMLTableCellElement;
+use Rowbot\DOM\Element\HTML\HTMLTableColElement;
+use Rowbot\DOM\Element\HTML\HTMLTableElement;
+use Rowbot\DOM\Element\HTML\HTMLTableRowElement;
+use Rowbot\DOM\Element\HTML\HTMLTableSectionElement;
+use Rowbot\DOM\Element\HTML\HTMLTemplateElement;
+use Rowbot\DOM\Element\HTML\HTMLTextAreaElement;
+use Rowbot\DOM\Element\HTML\HTMLTimeElement;
+use Rowbot\DOM\Element\HTML\HTMLTitleElement;
+use Rowbot\DOM\Element\HTML\HTMLTrackElement;
+use Rowbot\DOM\Element\HTML\HTMLUListElement;
+use Rowbot\DOM\Element\HTML\HTMLUnknownElement;
+use Rowbot\DOM\Element\HTML\HTMLVideoElement;
+use Rowbot\DOM\Element\SVG\SVGAElement;
+use Rowbot\DOM\Element\SVG\SVGAnimateElement;
+use Rowbot\DOM\Element\SVG\SVGAnimateMotionElement;
+use Rowbot\DOM\Element\SVG\SVGAnimateTransformElement;
+use Rowbot\DOM\Element\SVG\SVGCircleElement;
+use Rowbot\DOM\Element\SVG\SVGClipPathElement;
+use Rowbot\DOM\Element\SVG\SVGDefsElement;
+use Rowbot\DOM\Element\SVG\SVGDescElement;
+use Rowbot\DOM\Element\SVG\SVGElement;
+use Rowbot\DOM\Element\SVG\SVGFEBlendElement;
+use Rowbot\DOM\Element\SVG\SVGFEColorMatrixElement;
+use Rowbot\DOM\Element\SVG\SVGFEComponentTransferElement;
+use Rowbot\DOM\Element\SVG\SVGFECompositeElement;
+use Rowbot\DOM\Element\SVG\SVGFEConvolveMatrixElement;
+use Rowbot\DOM\Element\SVG\SVGFEDiffuseLightingElement;
+use Rowbot\DOM\Element\SVG\SVGFEDisplacementMapElement;
+use Rowbot\DOM\Element\SVG\SVGFEDistantLightElement;
+use Rowbot\DOM\Element\SVG\SVGFEDropShadowElement;
+use Rowbot\DOM\Element\SVG\SVGFEFloodElement;
+use Rowbot\DOM\Element\SVG\SVGFEFuncAElement;
+use Rowbot\DOM\Element\SVG\SVGFEFuncBElement;
+use Rowbot\DOM\Element\SVG\SVGFEFuncGElement;
+use Rowbot\DOM\Element\SVG\SVGFEFuncRElement;
+use Rowbot\DOM\Element\SVG\SVGFEGaussianBlurElement;
+use Rowbot\DOM\Element\SVG\SVGFEImageElement;
+use Rowbot\DOM\Element\SVG\SVGFEMergeElement;
+use Rowbot\DOM\Element\SVG\SVGFEMergeNodeElement;
+use Rowbot\DOM\Element\SVG\SVGFEMorphologyElement;
+use Rowbot\DOM\Element\SVG\SVGFEOffsetElement;
+use Rowbot\DOM\Element\SVG\SVGFEPointLightElement;
+use Rowbot\DOM\Element\SVG\SVGFESpecularLightingElement;
+use Rowbot\DOM\Element\SVG\SVGFESpotLightElement;
+use Rowbot\DOM\Element\SVG\SVGFETileElement;
+use Rowbot\DOM\Element\SVG\SVGFETurbulenceElement;
+use Rowbot\DOM\Element\SVG\SVGFilterElement;
+use Rowbot\DOM\Element\SVG\SVGForeignObjectElement;
+use Rowbot\DOM\Element\SVG\SVGGElement;
+use Rowbot\DOM\Element\SVG\SVGImageElement;
+use Rowbot\DOM\Element\SVG\SVGLinearGradientElement;
+use Rowbot\DOM\Element\SVG\SVGLineElement;
+use Rowbot\DOM\Element\SVG\SVGMarkerElement;
+use Rowbot\DOM\Element\SVG\SVGMaskElement;
+use Rowbot\DOM\Element\SVG\SVGMetadataElement;
+use Rowbot\DOM\Element\SVG\SVGMPathElement;
+use Rowbot\DOM\Element\SVG\SVGPathElement;
+use Rowbot\DOM\Element\SVG\SVGPatternElement;
+use Rowbot\DOM\Element\SVG\SVGPolygonElement;
+use Rowbot\DOM\Element\SVG\SVGPolylineElement;
+use Rowbot\DOM\Element\SVG\SVGRadialGradientElement;
+use Rowbot\DOM\Element\SVG\SVGRectElement;
+use Rowbot\DOM\Element\SVG\SVGScriptElement;
+use Rowbot\DOM\Element\SVG\SVGSetElement;
+use Rowbot\DOM\Element\SVG\SVGStopElement;
+use Rowbot\DOM\Element\SVG\SVGStyleElement;
+use Rowbot\DOM\Element\SVG\SVGSVGElement;
+use Rowbot\DOM\Element\SVG\SVGSwitchElement;
+use Rowbot\DOM\Element\SVG\SVGSymbolElement;
+use Rowbot\DOM\Element\SVG\SVGTextElement;
+use Rowbot\DOM\Element\SVG\SVGTextPathElement;
+use Rowbot\DOM\Element\SVG\SVGTitleElement;
+use Rowbot\DOM\Element\SVG\SVGTSpanElement;
+use Rowbot\DOM\Element\SVG\SVGUseElement;
+use Rowbot\DOM\Element\SVG\SVGViewElement;
 use Rowbot\DOM\Namespaces;
 
 final class ElementFactory
 {
     private const HTML_ELEMENTS = [
-        'a'          => 'HTMLAnchorElement',
-        'abbr'       => 'HTMLElement',
-        'acronym'    => 'HTMLElement', // Obsolete
-        'address'    => 'HTMLElement',
-        'area'       => 'HTMLAreaElement',
-        'article'    => 'HTMLElement',
-        'aside'      => 'HTMLElement',
-        'audio'      => 'HTMLAudioElement',
-        'b'          => 'HTMLElement',
-        'base'       => 'HTMLBaseElement',
-        'basefont'   => 'HTMLElement', // Obsolete
-        'bdi'        => 'HTMLElement',
-        'bdo'        => 'HTMLElement',
-        'big'        => 'HTMLElement', // Obsolete
-        'blockquote' => 'HTMLQuoteElement',
-        'body'       => 'HTMLBodyElement',
-        'br'         => 'HTMLBRElement',
-        'button'     => 'HTMLButtonElement',
-        'canvas'     => 'HTMLCanvasElement',
-        'caption'    => 'HTMLTableCaptionElement',
-        'center'     => 'HTMLElement', // Obsolete
-        'cite'       => 'HTMLElement',
-        'code'       => 'HTMLElement',
-        'col'        => 'HTMLTableColElement',
-        'colgroup'   => 'HTMLTableColElement',
-        'data'       => 'HTMLDataElement',
-        'datalist'   => 'HTMLDataListElement',
-        'dd'         => 'HTMLElement',
-        'del'        => 'HTMLModElement',
-        'details'    => 'HTMLDetailsElement',
-        'dfn'        => 'HTMLElement',
-        'dialog'     => 'HTMLDialogElement',
-        'dir'        => 'HTMLDirectoryElement', // Obsolete
-        'div'        => 'HTMLDivElement',
-        'dl'         => 'HTMLDListElement',
-        'dt'         => 'HTMLElement',
-        'em'         => 'HTMLElement',
-        'embed'      => 'HTMLEmbedElement',
-        'fieldset'   => 'HTMLFieldSetElement',
-        'figcaption' => 'HTMLElement',
-        'figure'     => 'HTMLElement',
-        'font'       => 'HTMLFontElement', // Obsolete
-        'footer'     => 'HTMLElement',
-        'form'       => 'HTMLFormElement',
-        'frame'      => 'HTMLFrameElement', // Deprecated
-        'frameset'   => 'HTMLFrameSetElement', // Deprecated
-        'h1'         => 'HTMLHeadingElement',
-        'h2'         => 'HTMLHeadingElement',
-        'h3'         => 'HTMLHeadingElement',
-        'h4'         => 'HTMLHeadingElement',
-        'h5'         => 'HTMLHeadingElement',
-        'h6'         => 'HTMLHeadingElement',
-        'head'       => 'HTMLHeadElement',
-        'header'     => 'HTMLElement',
-        'hgroup'     => 'HTMLElement', // Obsolete
-        'hr'         => 'HTMLHRElement',
-        'html'       => 'HTMLHtmlElement',
-        'i'          => 'HTMLElement',
-        'iframe'     => 'HTMLIFrameElement',
-        'img'        => 'HTMLImageElement',
-        'input'      => 'HTMLInputElement',
-        'ins'        => 'HTMLModElement',
-        'kbd'        => 'HTMLElement',
-        'label'      => 'HTMLLabelElement',
-        'legend'     => 'HTMLLegendElement',
-        'li'         => 'HTMLLIElement',
-        'link'       => 'HTMLLinkElement',
-        'main'       => 'HTMLElement',
-        'map'        => 'HTMLMapElement',
-        'mark'       => 'HTMLElement',
-        'marquee'    => 'HTMLMarqueeElement', // Obsolete
-        'menu'       => 'HTMLMenuElement',
-        'menuitem'   => 'HTMLMenuItemElement',
-        'meta'       => 'HTMLMetaElement',
-        'meter'      => 'HTMLMeterElement',
-        'nav'        => 'HTMLElement',
-        'noembed'    => 'HTMLElement', // Deprecated and non-standard
-        'noframes'   => 'HTMLElement',
-        'noscript'   => 'HTMLElement',
-        'object'     => 'HTMLObjectElement',
-        'ol'         => 'HTMLOListElement',
-        'optgroup'   => 'HTMLOptGroupElement',
-        'option'     => 'HTMLOptionElement',
-        'output'     => 'HTMLOutputElement',
-        'p'          => 'HTMLParagraphElement',
-        'param'      => 'HTMLParamElement',
-        'picture'    => 'HTMLPictureElement',
-        'pre'        => 'HTMLPreElement',
-        'progress'   => 'HTMLProgressElement',
-        'q'          => 'HTMLQuoteElement',
-        'rp'         => 'HTMLElement',
-        'rt'         => 'HTMLElement',
-        'rtc'        => 'HTMLElement',
-        'ruby'       => 'HTMLElement',
-        's'          => 'HTMLElement',
-        'samp'       => 'HTMLElement',
-        'script'     => 'HTMLScriptElement',
-        'section'    => 'HTMLElement',
-        'select'     => 'HTMLSelectElement',
-        'slot'       => 'HTMLSlotElement',
-        'small'      => 'HTMLElement',
-        'source'     => 'HTMLSourceElement',
-        'span'       => 'HTMLSpanElement',
-        'strike'     => 'HTMLElement', // Obsolete
-        'strong'     => 'HTMLElement',
-        'style'      => 'HTMLStyleElement',
-        'sub'        => 'HTMLElement',
-        'summary'    => 'HTMLElement',
-        'sup'        => 'HTMLElement',
-        'table'      => 'HTMLTableElement',
-        'tbody'      => 'HTMLTableSectionElement',
-        'td'         => 'HTMLTableCellElement',
-        'template'   => 'HTMLTemplateElement',
-        'textarea'   => 'HTMLTextAreaElement',
-        'tfoot'      => 'HTMLTableSectionElement',
-        'th'         => 'HTMLTableCellElement',
-        'thead'      => 'HTMLTableSectionElement',
-        'time'       => 'HTMLTimeElement',
-        'title'      => 'HTMLTitleElement',
-        'tr'         => 'HTMLTableRowElement',
-        'track'      => 'HTMLTrackElement',
-        'tt'         => 'HTMLElement', // Obsolete
-        'u'          => 'HTMLElement',
-        'ul'         => 'HTMLUListElement',
-        'var'        => 'HTMLElement',
-        'video'      => 'HTMLVideoElement',
-        'wbr'        => 'HTMLElement',
-        'xmp'        => 'HTMLElement', // Obsolete
+        'a'          => HTMLAnchorElement::class,
+        'abbr'       => HTMLElement::class,
+        'acronym'    => HTMLElement::class, // Obsolete
+        'address'    => HTMLElement::class,
+        'area'       => HTMLAreaElement::class,
+        'article'    => HTMLElement::class,
+        'aside'      => HTMLElement::class,
+        'audio'      => HTMLAudioElement::class,
+        'b'          => HTMLElement::class,
+        'base'       => HTMLBaseElement::class,
+        'basefont'   => HTMLElement::class, // Obsolete
+        'bdi'        => HTMLElement::class,
+        'bdo'        => HTMLElement::class,
+        'big'        => HTMLElement::class, // Obsolete
+        'blockquote' => HTMLQuoteElement::class,
+        'body'       => HTMLBodyElement::class,
+        'br'         => HTMLBRElement::class,
+        'button'     => HTMLButtonElement::class,
+        'canvas'     => HTMLCanvasElement::class,
+        'caption'    => HTMLTableCaptionElement::class,
+        'center'     => HTMLElement::class, // Obsolete
+        'cite'       => HTMLElement::class,
+        'code'       => HTMLElement::class,
+        'col'        => HTMLTableColElement::class,
+        'colgroup'   => HTMLTableColElement::class,
+        'data'       => HTMLDataElement::class,
+        'datalist'   => HTMLDataListElement::class,
+        'dd'         => HTMLElement::class,
+        'del'        => HTMLModElement::class,
+        'details'    => HTMLDetailsElement::class,
+        'dfn'        => HTMLElement::class,
+        'dialog'     => HTMLDialogElement::class,
+        'dir'        => HTMLDirectoryElement::class, // Obsolete
+        'div'        => HTMLDivElement::class,
+        'dl'         => HTMLDListElement::class,
+        'dt'         => HTMLElement::class,
+        'em'         => HTMLElement::class,
+        'embed'      => HTMLEmbedElement::class,
+        'fieldset'   => HTMLFieldSetElement::class,
+        'figcaption' => HTMLElement::class,
+        'figure'     => HTMLElement::class,
+        'font'       => HTMLFontElement::class, // Obsolete
+        'footer'     => HTMLElement::class,
+        'form'       => HTMLFormElement::class,
+        'frame'      => HTMLFrameElement::class, // Deprecated
+        'frameset'   => HTMLFrameSetElement::class, // Deprecated
+        'h1'         => HTMLHeadingElement::class,
+        'h2'         => HTMLHeadingElement::class,
+        'h3'         => HTMLHeadingElement::class,
+        'h4'         => HTMLHeadingElement::class,
+        'h5'         => HTMLHeadingElement::class,
+        'h6'         => HTMLHeadingElement::class,
+        'head'       => HTMLHeadElement::class,
+        'header'     => HTMLElement::class,
+        'hgroup'     => HTMLElement::class, // Obsolete
+        'hr'         => HTMLHRElement::class,
+        'html'       => HTMLHtmlElement::class,
+        'i'          => HTMLElement::class,
+        'iframe'     => HTMLIFrameElement::class,
+        'img'        => HTMLImageElement::class,
+        'input'      => HTMLInputElement::class,
+        'ins'        => HTMLModElement::class,
+        'kbd'        => HTMLElement::class,
+        'label'      => HTMLLabelElement::class,
+        'legend'     => HTMLLegendElement::class,
+        'li'         => HTMLLIElement::class,
+        'link'       => HTMLLinkElement::class,
+        'main'       => HTMLElement::class,
+        'map'        => HTMLMapElement::class,
+        'mark'       => HTMLElement::class,
+        'marquee'    => HTMLMarqueeElement::class, // Obsolete
+        'menu'       => HTMLMenuElement::class,
+        'menuitem'   => HTMLMenuItemElement::class,
+        'meta'       => HTMLMetaElement::class,
+        'meter'      => HTMLMeterElement::class,
+        'nav'        => HTMLElement::class,
+        'noembed'    => HTMLElement::class, // Deprecated and non-standard
+        'noframes'   => HTMLElement::class,
+        'noscript'   => HTMLElement::class,
+        'object'     => HTMLObjectElement::class,
+        'ol'         => HTMLOListElement::class,
+        'optgroup'   => HTMLOptGroupElement::class,
+        'option'     => HTMLOptionElement::class,
+        'output'     => HTMLOutputElement::class,
+        'p'          => HTMLParagraphElement::class,
+        'param'      => HTMLParamElement::class,
+        'picture'    => HTMLPictureElement::class,
+        'pre'        => HTMLPreElement::class,
+        'progress'   => HTMLProgressElement::class,
+        'q'          => HTMLQuoteElement::class,
+        'rp'         => HTMLElement::class,
+        'rt'         => HTMLElement::class,
+        'rtc'        => HTMLElement::class,
+        'ruby'       => HTMLElement::class,
+        's'          => HTMLElement::class,
+        'samp'       => HTMLElement::class,
+        'script'     => HTMLScriptElement::class,
+        'section'    => HTMLElement::class,
+        'select'     => HTMLSelectElement::class,
+        'slot'       => HTMLSlotElement::class,
+        'small'      => HTMLElement::class,
+        'source'     => HTMLSourceElement::class,
+        'span'       => HTMLSpanElement::class,
+        'strike'     => HTMLElement::class, // Obsolete
+        'strong'     => HTMLElement::class,
+        'style'      => HTMLStyleElement::class,
+        'sub'        => HTMLElement::class,
+        'summary'    => HTMLElement::class,
+        'sup'        => HTMLElement::class,
+        'table'      => HTMLTableElement::class,
+        'tbody'      => HTMLTableSectionElement::class,
+        'td'         => HTMLTableCellElement::class,
+        'template'   => HTMLTemplateElement::class,
+        'textarea'   => HTMLTextAreaElement::class,
+        'tfoot'      => HTMLTableSectionElement::class,
+        'th'         => HTMLTableCellElement::class,
+        'thead'      => HTMLTableSectionElement::class,
+        'time'       => HTMLTimeElement::class,
+        'title'      => HTMLTitleElement::class,
+        'tr'         => HTMLTableRowElement::class,
+        'track'      => HTMLTrackElement::class,
+        'tt'         => HTMLElement::class, // Obsolete
+        'u'          => HTMLElement::class,
+        'ul'         => HTMLUListElement::class,
+        'var'        => HTMLElement::class,
+        'video'      => HTMLVideoElement::class,
+        'wbr'        => HTMLElement::class,
+        'xmp'        => HTMLElement::class, // Obsolete
     ];
 
     /**
      * @see https://svgwg.org/svg2-draft/eltindex.html
      */
     private const SVG_ELEMENTS = [
-        'a'                   => 'SVGAElement',
-        'animate'             => 'SVGAnimateElement',
-        'animateMotion'       => 'SVGAnimateMotionElement',
-        'animateTransform'    => 'SVGAnimateTransformElement',
-        'circle'              => 'SVGCircleElement',
-        'clipPath'            => 'SVGClipPathElement',
-        'defs'                => 'SVGDefsElement',
-        'desc'                => 'SVGDescElement',
-        'feBlend'             => 'SVGFEBlendElement',
-        'feColorMatrix'       => 'SVGFEColorMatrixElement',
-        'feComponentTransfer' => 'SVGFEComponentTransferElement',
-        'feComposite'         => 'SVGFECompositeElement',
-        'feConvolveMatrix'    => 'SVGFEConvolveMatrixElement',
-        'feDiffuseLighting'   => 'SVGFEDiffuseLightingElement',
-        'feDisplacementMap'   => 'SVGFEDisplacementMapElement',
-        'feDistantLight'      => 'SVGFEDistantLightElement',
-        'feDropShadow'        => 'SVGFEDropShadowElement',
-        'feFlood'             => 'SVGFEFloodElement',
-        'feFuncA'             => 'SVGFEFuncAElement',
-        'feFuncB'             => 'SVGFEFuncBElement',
-        'feFuncG'             => 'SVGFEFuncGElement',
-        'feFuncR'             => 'SVGFEFuncRElement',
-        'feGaussianBlur'      => 'SVGFEGaussianBlurElement',
-        'feImage'             => 'SVGFEImageElement',
-        'feMerge'             => 'SVGFEMergeElement',
-        'feMergeNode'         => 'SVGFEMergeNodeElement',
-        'feMorphology'        => 'SVGFEMorphologyElement',
-        'feOffset'            => 'SVGFEOffsetElement',
-        'fePointLight'        => 'SVGFEPointLightElement',
-        'feSpecularLighting'  => 'SVGFESpecularLightingElement',
-        'feSpotLight'         => 'SVGFESpotLightElement',
-        'feTile'              => 'SVGFETileElement',
-        'feTurbulence'        => 'SVGFETurbulenceElement',
-        'filter'              => 'SVGFilterElement',
-        'foreignObject'       => 'SVGForeignObjectElement',
-        'g'                   => 'SVGGElement',
-        'image'               => 'SVGImageElement',
-        'line'                => 'SVGLineElement',
-        'linearGradient'      => 'SVGLinearGradientElement',
-        'marker'              => 'SVGMarkerElement',
-        'mask'                => 'SVGMaskElement',
-        'metadata'            => 'SVGMetadataElement',
-        'mpath'               => 'SVGMPathElement',
-        'path'                => 'SVGPathElement',
-        'pattern'             => 'SVGPatternElement',
-        'polygon'             => 'SVGPolygonElement',
-        'polyline'            => 'SVGPolylineElement',
-        'radialGradient'      => 'SVGRadialGradientElement',
-        'rect'                => 'SVGRectElement',
-        'script'              => 'SVGScriptElement',
-        'set'                 => 'SVGSetElement',
-        'stop'                => 'SVGStopElement',
-        'style'               => 'SVGStyleElement',
-        'svg'                 => 'SVGSVGElement',
-        'switch'              => 'SVGSwitchElement',
-        'symbol'              => 'SVGSymbolElement',
-        'text'                => 'SVGTextElement',
-        'textPath'            => 'SVGTextPathElement',
-        'title'               => 'SVGTitleElement',
-        'tspan'               => 'SVGTSpanElement',
-        'use'                 => 'SVGUseElement',
-        'view'                => 'SVGViewElement',
+        'a'                   => SVGAElement::class,
+        'animate'             => SVGAnimateElement::class,
+        'animateMotion'       => SVGAnimateMotionElement::class,
+        'animateTransform'    => SVGAnimateTransformElement::class,
+        'circle'              => SVGCircleElement::class,
+        'clipPath'            => SVGClipPathElement::class,
+        'defs'                => SVGDefsElement::class,
+        'desc'                => SVGDescElement::class,
+        'feBlend'             => SVGFEBlendElement::class,
+        'feColorMatrix'       => SVGFEColorMatrixElement::class,
+        'feComponentTransfer' => SVGFEComponentTransferElement::class,
+        'feComposite'         => SVGFECompositeElement::class,
+        'feConvolveMatrix'    => SVGFEConvolveMatrixElement::class,
+        'feDiffuseLighting'   => SVGFEDiffuseLightingElement::class,
+        'feDisplacementMap'   => SVGFEDisplacementMapElement::class,
+        'feDistantLight'      => SVGFEDistantLightElement::class,
+        'feDropShadow'        => SVGFEDropShadowElement::class,
+        'feFlood'             => SVGFEFloodElement::class,
+        'feFuncA'             => SVGFEFuncAElement::class,
+        'feFuncB'             => SVGFEFuncBElement::class,
+        'feFuncG'             => SVGFEFuncGElement::class,
+        'feFuncR'             => SVGFEFuncRElement::class,
+        'feGaussianBlur'      => SVGFEGaussianBlurElement::class,
+        'feImage'             => SVGFEImageElement::class,
+        'feMerge'             => SVGFEMergeElement::class,
+        'feMergeNode'         => SVGFEMergeNodeElement::class,
+        'feMorphology'        => SVGFEMorphologyElement::class,
+        'feOffset'            => SVGFEOffsetElement::class,
+        'fePointLight'        => SVGFEPointLightElement::class,
+        'feSpecularLighting'  => SVGFESpecularLightingElement::class,
+        'feSpotLight'         => SVGFESpotLightElement::class,
+        'feTile'              => SVGFETileElement::class,
+        'feTurbulence'        => SVGFETurbulenceElement::class,
+        'filter'              => SVGFilterElement::class,
+        'foreignObject'       => SVGForeignObjectElement::class,
+        'g'                   => SVGGElement::class,
+        'image'               => SVGImageElement::class,
+        'line'                => SVGLineElement::class,
+        'linearGradient'      => SVGLinearGradientElement::class,
+        'marker'              => SVGMarkerElement::class,
+        'mask'                => SVGMaskElement::class,
+        'metadata'            => SVGMetadataElement::class,
+        'mpath'               => SVGMPathElement::class,
+        'path'                => SVGPathElement::class,
+        'pattern'             => SVGPatternElement::class,
+        'polygon'             => SVGPolygonElement::class,
+        'polyline'            => SVGPolylineElement::class,
+        'radialGradient'      => SVGRadialGradientElement::class,
+        'rect'                => SVGRectElement::class,
+        'script'              => SVGScriptElement::class,
+        'set'                 => SVGSetElement::class,
+        'stop'                => SVGStopElement::class,
+        'style'               => SVGStyleElement::class,
+        'svg'                 => SVGSVGElement::class,
+        'switch'              => SVGSwitchElement::class,
+        'symbol'              => SVGSymbolElement::class,
+        'text'                => SVGTextElement::class,
+        'textPath'            => SVGTextPathElement::class,
+        'title'               => SVGTitleElement::class,
+        'tspan'               => SVGTSpanElement::class,
+        'use'                 => SVGUseElement::class,
+        'view'                => SVGViewElement::class,
     ];
 
     /**
@@ -231,28 +365,15 @@ final class ElementFactory
         ?string $namespace,
         ?string $prefix = null
     ): Element {
-        $interface = 'Element';
+        $interface = Element::class;
 
         if ($namespace === Namespaces::HTML) {
-            $interface = 'HTML\\HTMLUnknownElement';
-
-            if (isset(self::HTML_ELEMENTS[$localName])) {
-                $interface = 'HTML\\' . self::HTML_ELEMENTS[$localName];
-            }
+            $interface = self::HTML_ELEMENTS[$localName] ?? HTMLUnknownElement::class;
         } elseif ($namespace === Namespaces::SVG) {
-            $interface = 'SVG\\SVGElement';
-
-            if (isset(self::SVG_ELEMENTS[$localName])) {
-                $interface = 'SVG\\' . self::SVG_ELEMENTS[$localName];
-            }
+            $interface = self::SVG_ELEMENTS[$localName] ?? SVGElement::class;
         }
 
-        return ('\\Rowbot\\DOM\\Element\\' . $interface)::create(
-            $document,
-            $localName,
-            $namespace,
-            $prefix
-        );
+        return $interface::create($document, $localName, $namespace, $prefix);
     }
 
     /**

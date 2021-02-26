@@ -14,8 +14,8 @@ trait HTMLElementInterfaces
 
         $map = $reflection->getConstant('HTML_ELEMENTS');
 
-        foreach ($map as $name => $className) {
-            yield [$name, "Rowbot\\DOM\\Element\\HTML\\{$className}"];
+        foreach ($map as $name => $classString) {
+            yield [$name, $classString];
         }
     }
 }
