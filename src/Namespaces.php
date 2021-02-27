@@ -22,6 +22,7 @@ final class Namespaces
 
     public const NAME = '(' . self::NAME_START_CHAR . ')(' . self::NAME_CHAR . ')*';
     public const NAME_PRODUCTION = '/^' . self::NAME . '$/u';
+    public const QNAME = '/^(' . self::PREFIXED_NAME . '|' . self::UNPREFIXED_NAME . ')$/u';
 
     // Same as NAME_START_CHAR, but without the ":".
     private const NCNAME_START_CHAR = '[A-Z]|_|[a-z]|[\xC0-\xD6]|[\xD8-\xF6]|'
@@ -39,33 +40,12 @@ final class Namespaces
     private const LOCALPART = self::NCNAME;
     private const PREFIXED_NAME = '(' . self::PREFIX . '):(' . self::LOCALPART . ')';
     private const UNPREFIXED_NAME = self::LOCALPART;
-    private const QNAME = '/^(' . self::PREFIXED_NAME . '|' . self::UNPREFIXED_NAME . ')$/u';
 
     /**
      * @codeCoverageIgnore
      */
     private function __construct()
     {
-    }
-
-    /**
-     * Ensures that a qualified name is a valid one.
-     *
-     * @see https://dom.spec.whatwg.org/#validate
-     *
-     * @throws \Rowbot\DOM\Exception\InvalidCharacterError If the qualified name does not match the XML 'Name' or
-     *                                                     'QName' production.
-     */
-    public static function validate(string $qualifiedName): void
-    {
-        // If qualifiedName does not match the 'Name' or 'QName' production,
-        // then throw an InvalidCharacterError.
-        if (
-            !preg_match(self::NAME_PRODUCTION, $qualifiedName)
-            || !preg_match(self::QNAME, $qualifiedName)
-        ) {
-            throw new InvalidCharacterError();
-        }
     }
 
     /**
@@ -76,6 +56,7 @@ final class Namespaces
      *
      * @return array{0: string|null, 1: string|null, 2: string} Returns the namespace, namespace prefix, and localName.
      *
+     * @throws \Rowbot\DOM\Exception\InvalidCharacterError
      * @throws \Rowbot\DOM\Exception\NamespaceError
      */
     public static function validateAndExtract(?string $namespace, string $qualifiedName): array
@@ -84,7 +65,9 @@ final class Namespaces
             $namespace = null;
         }
 
-        self::validate($qualifiedName);
+        if (preg_match(self::QNAME, $qualifiedName) !== 1) {
+            throw new InvalidCharacterError();
+        }
 
         $prefix = null;
         $localName = $qualifiedName;

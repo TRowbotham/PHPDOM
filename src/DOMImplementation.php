@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Rowbot\DOM;
 
 use Rowbot\DOM\Element\ElementFactory;
+use Rowbot\DOM\Exception\InvalidCharacterError;
 
 use function func_num_args;
+use function preg_match;
 
 /**
  * @see https://dom.spec.whatwg.org/#interface-domimplementation
@@ -89,15 +91,16 @@ final class DOMImplementation
      *
      * @see https://dom.spec.whatwg.org/#dom-domimplementation-createdocumenttype
      *
-     * @throws \Rowbot\DOM\Exception\InvalidCharacterError If the qualified name does not match the Name production.
-     * @throws \Rowbot\DOM\Exception\NamespaceError        If the qualified name does not match the QName production.
+     * @throws \Rowbot\DOM\Exception\InvalidCharacterError If the qualified name does not match the QName production.
      */
     public function createDocumentType(
         string $qualifiedName,
         string $publicId,
         string $systemId
     ): DocumentType {
-        Namespaces::validate($qualifiedName);
+        if (preg_match(Namespaces::QNAME, $qualifiedName) !== 1) {
+            throw new InvalidCharacterError();
+        }
 
         return new DocumentType($this->document, $qualifiedName, $publicId, $systemId);
     }
