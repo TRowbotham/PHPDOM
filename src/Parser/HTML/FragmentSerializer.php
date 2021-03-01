@@ -20,13 +20,23 @@ use function str_replace;
 class FragmentSerializer implements FragmentSerializerInterface
 {
     /**
+     * @see https://html.spec.whatwg.org/multipage/parsing.html#serializes-as-void
+     */
+    private const EXTENDED_VOID_ELEMENTS = self::VOID_ELEMENTS + [
+        'basefont' => true,
+        'bgsound'  => true,
+        'frame'    => true,
+        'keygen'   => true,
+    ];
+
+    /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#serialising-html-fragments
      *
      * @param \Rowbot\DOM\Element\Element|\Rowbot\DOM\Document|\Rowbot\DOM\DocumentFragment $node
      */
     public function serializeFragment(Node $node, bool $requireWellFormed = false): string
     {
-        if ($this->serializesAsVoid($node)) {
+        if ($node instanceof Element && isset(self::EXTENDED_VOID_ELEMENTS[$node->localName])) {
             return '';
         }
 
@@ -64,7 +74,7 @@ class FragmentSerializer implements FragmentSerializerInterface
 
                 // If the current node's local name is a known void element,
                 // then move on to current node's next sibling, if any.
-                if ($this->serializesAsVoid($currentNode)) {
+                if (isset(self::EXTENDED_VOID_ELEMENTS[$localName])) {
                     continue;
                 }
 
@@ -173,24 +183,5 @@ class FragmentSerializer implements FragmentSerializerInterface
         }
 
         return $attr->getQualifiedName();
-    }
-
-    /**
-     * @see https://html.spec.whatwg.org/multipage/parsing.html#serializes-as-void
-     */
-    private function serializesAsVoid(Node $node): bool
-    {
-        if (!$node instanceof Element) {
-            return false;
-        }
-
-        $voidElements = self::VOID_ELEMENTS + [
-            'basefont' => true,
-            'bgsound'  => true,
-            'frame'    => true,
-            'keygen'   => true,
-        ];
-
-        return $voidElements[$node->localName] ?? false;
     }
 }
