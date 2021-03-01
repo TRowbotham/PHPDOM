@@ -11,6 +11,7 @@ use Rowbot\DOM\Exception\HierarchyRequestError;
 use Rowbot\DOM\Exception\NotFoundError;
 use Rowbot\DOM\Exception\NotSupportedError;
 use Rowbot\DOM\Support\Collection\NodeSet;
+use SplDoublyLinkedList;
 
 use function assert;
 use function count;
@@ -281,56 +282,63 @@ abstract class Node extends EventTarget
      */
     public function normalize(): void
     {
-        $iter = $this->nodeDocument->createNodeIterator($this, NodeFilter::SHOW_TEXT);
+        $node = $this->nextNode($this);
 
-        while ($node = $iter->nextNode()) {
-            $length = $node->getLength();
-
-            // If length is zero, then remove node and continue with the next
-            // exclusive Text node, if any.
-            if ($length === 0) {
-                $node->removeNode();
+        while ($node !== null) {
+            // We are only interested in actual Text nodes, not derived nodes like CDATASection.
+            if ($node->nodeType !== self::TEXT_NODE) {
+                $node = $node->nextNode($this);
 
                 continue;
             }
 
-            // Let data be the concatenation of the data of node’s contiguous
-            // exclusive Text nodes (excluding itself), in tree order.
+            assert($node instanceof Text && !$node instanceof CDATASection);
+
+            // 1. Let length be node’s length.
+            $length = $node->getLength();
+
+            // 2. If length is zero, then remove node and continue with the next exclusive Text node, if any.
+            if ($length === 0) {
+                $temp = $node->nextNode($this);
+                $node->removeNode();
+                $node = $temp;
+
+                continue;
+            }
+
+            // 3. Let data be the concatenation of the data of node’s contiguous exclusive Text nodes
+            // (excluding itself), in tree order.
             $data = '';
-            $contingiousTextNodes = [];
+            $contingiousTextNodes = new SplDoublyLinkedList();
+            $contingiousTextNodes->setIteratorMode(
+                SplDoublyLinkedList::IT_MODE_FIFO | SplDoublyLinkedList::IT_MODE_DELETE
+            );
             $startNode = $node->previousSibling;
 
-            while ($startNode) {
-                if ($startNode->nodeType !== self::TEXT_NODE) {
-                    break;
-                }
-
-                $data .= $startNode->data;
-                $contingiousTextNodes[] = $startNode;
+            while ($startNode !== null && $startNode->nodeType === self::TEXT_NODE) {
+                assert($startNode instanceof Text && !$startNode instanceof CDATASection);
+                $data = $startNode->data . $data;
+                $contingiousTextNodes->unshift($startNode);
                 $startNode = $startNode->previousSibling;
             }
 
             $startNode = $node->nextSibling;
 
-            while ($startNode) {
-                if ($startNode->nodeType !== self::TEXT_NODE) {
-                    break;
-                }
-
+            while ($startNode !== null && $startNode->nodeType === self::TEXT_NODE) {
+                assert($startNode instanceof Text && !$startNode instanceof CDATASection);
                 $data .= $startNode->data;
-                $contingiousTextNodes[] = $startNode;
+                $contingiousTextNodes->push($startNode);
                 $startNode = $startNode->nextSibling;
             }
 
-            // Replace data with node node, offset length, count 0, and data
-            // data.
+            // 4. Replace data with node node, offset length, count 0, and data data.
             $node->doReplaceData($length, 0, $data);
 
-            foreach (clone $node->childNodes as $currentNode) {
-                if ($currentNode->nodeType !== self::TEXT_NODE) {
-                    break;
-                }
+            // 5. Let currentNode be node’s next sibling.
+            $currentNode = $node->nextSibling;
 
+            // 6. While currentNode is an exclusive Text node:
+            while ($currentNode !== null && $currentNode->nodeType === self::TEXT_NODE) {
                 $treeIndex = $currentNode->getTreeIndex();
 
                 foreach (Range::getRangeCollection() as $range) {
@@ -369,15 +377,19 @@ abstract class Node extends EventTarget
                     }
                 }
 
-                // Add currentNode’s length to length.
+                // 6.5. Add currentNode’s length to length.
                 $length += $currentNode->getLength();
+
+                // 6.6. Set currentNode to its next sibling.
+                $currentNode = $currentNode->nextSibling;
             }
 
-            // Remove node’s contiguous exclusive Text nodes (excluding itself),
-            // in tree order.
+            // 7. Remove node’s contiguous exclusive Text nodes (excluding itself), in tree order.
             foreach ($contingiousTextNodes as $textNode) {
                 $textNode->removeNode();
             }
+
+            $node = $node->nextNode($this);
         }
     }
 
