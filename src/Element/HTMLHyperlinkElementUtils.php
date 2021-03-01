@@ -15,6 +15,9 @@ use Rowbot\URL\State\QueryState;
 use Rowbot\URL\State\SchemeStartState;
 use Rowbot\URL\String\CodePoint;
 use Rowbot\URL\String\IDLString;
+use Rowbot\URL\URLRecord;
+
+use function assert;
 
 /**
  * @see https://html.spec.whatwg.org/multipage/semantics.html#htmlhyperlinkelementutils
@@ -620,6 +623,7 @@ trait HTMLHyperlinkElementUtils
      */
     private function setUrlPassword(string $input): void
     {
+        assert($this->url instanceof URLRecord);
         $this->url->password = '';
 
         foreach (new IDLString($input) as $codePoint) {
@@ -635,6 +639,7 @@ trait HTMLHyperlinkElementUtils
      */
     private function setUrlUsername(string $input): void
     {
+        assert($this->url instanceof URLRecord);
         $this->url->username = '';
 
         foreach (new IDLString($input) as $codePoint) {

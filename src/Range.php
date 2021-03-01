@@ -43,12 +43,7 @@ final class Range extends AbstractRange implements Stringable
     {
         $range = new RangeBoundary($document, 0, $document, 0);
         parent::__construct($range);
-
-        if (!self::$collection) {
-            self::$collection = new SplObjectStorage();
-        }
-
-        self::$collection->attach($this->range);
+        self::getRangeCollection()->attach($this->range);
     }
 
     public function __get(string $name)
@@ -63,12 +58,12 @@ final class Range extends AbstractRange implements Stringable
     public function __clone()
     {
         $this->range = clone $this->range;
-        self::$collection->attach($this->range);
+        self::getRangeCollection()->attach($this->range);
     }
 
     public function __destruct()
     {
-        self::$collection->detach($this->range);
+        self::getRangeCollection()->detach($this->range);
     }
 
     /**

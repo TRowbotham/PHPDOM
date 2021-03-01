@@ -8,6 +8,7 @@ use Generator;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Encoding\EncodingUtils;
 use Rowbot\DOM\Namespaces;
+use Rowbot\DOM\Parser\Exception\ParserException;
 use Rowbot\DOM\Parser\Token\AttributeToken;
 use Rowbot\DOM\Parser\Token\CharacterToken;
 use Rowbot\DOM\Parser\Token\CommentToken;
@@ -27,11 +28,14 @@ use function ctype_upper;
 use function ctype_xdigit;
 use function file_get_contents;
 use function json_decode;
+use function json_last_error;
+use function json_last_error_msg;
 use function ord;
 use function preg_match;
 use function strtolower;
 
 use const DIRECTORY_SEPARATOR as DS;
+use const JSON_ERROR_NONE;
 
 /**
  * @see https://html.spec.whatwg.org/multipage/parsing.html#tokenization
@@ -2821,14 +2825,21 @@ class Tokenizer
                     // Load the JSON file for the named character references
                     // table on demand.
                     if (!self::$namedCharacterReferences) {
-                        // TODO: Handle json_decode() and file_get_contents()
-                        // failing. Maybe html_entity_decode() or
-                        // get_html_translation_table() can be used as a
-                        // fallback.
-                        self::$namedCharacterReferences = json_decode(
-                            file_get_contents(self::NAMED_CHAR_REFERENCES_PATH),
-                            true
-                        );
+                        $entities = file_get_contents(self::NAMED_CHAR_REFERENCES_PATH);
+
+                        if ($entities === false) {
+                            throw new ParserException(
+                                'Failed to open entity map. ' . self::NAMED_CHAR_REFERENCES_PATH
+                            );
+                        }
+
+                        $json = json_decode($entities, true);
+
+                        if (json_last_error() !== JSON_ERROR_NONE) {
+                            throw new ParserException('Failed to json decode entity map. ' . json_last_error_msg());
+                        }
+
+                        self::$namedCharacterReferences = $json;
                     }
 
                     // Consume the maximum number of characters possible, up to

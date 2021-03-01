@@ -24,19 +24,23 @@ class NamespacePrefixMap
      *
      * @see https://w3c.github.io/DOM-Parsing/#dfn-retrieving-a-preferred-prefix-string
      */
-    public function preferredPrefix(?string $namespace, string $preferredPrefix): ?string
+    public function preferredPrefix(?string $namespace, ?string $preferredPrefix): ?string
     {
         if (!isset($this->map[$namespace])) {
             return null;
         }
 
+        $lastPrefix = null;
+
         foreach ($this->map[$namespace] as $prefix => $value) {
             if ($prefix === $preferredPrefix) {
                 return $prefix;
             }
+
+            $lastPrefix = $prefix;
         }
 
-        return $prefix;
+        return $lastPrefix;
     }
 
     /**

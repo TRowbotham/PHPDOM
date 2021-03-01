@@ -26,7 +26,7 @@ use function mb_check_encoding;
 use function mb_convert_encoding;
 use function mb_substitute_character;
 use function preg_match;
-use function preg_replace;
+use function str_replace;
 
 class HTMLParser extends Parser
 {
@@ -300,6 +300,6 @@ class HTMLParser extends Parser
         // then be converted to LF characters. Thus, newlines in HTML DOMs are
         // represented by LF characters, and there are never any CR characters
         // in the input to the tokenization stage.
-        $this->inputStream->append(preg_replace(['/\x0D\x0A/u', '/\x0D/u'], "\x0A", $input));
+        $this->inputStream->append(str_replace(["\r\n", "\r"], "\n", $input));
     }
 }

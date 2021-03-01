@@ -20,6 +20,7 @@ final class Namespaces
     public const MATHML = 'http://www.w3.org/1998/Math/MathML';
     public const XLINK  = 'http://www.w3.org/1999/xlink';
 
+    public const CHAR = '/[^\x09\x0A\x0D\x20-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]/u';
     public const NAME = '(' . self::NAME_START_CHAR . ')(' . self::NAME_CHAR . ')*';
     public const NAME_PRODUCTION = '/^' . self::NAME . '$/u';
     public const QNAME = '/^(' . self::PREFIXED_NAME . '|' . self::UNPREFIXED_NAME . ')$/u';

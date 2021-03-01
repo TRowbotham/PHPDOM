@@ -9,7 +9,7 @@ use Rowbot\DOM\Element\Element;
 trait NonElementParentNodeTrait
 {
     /**
-     * @see @see https://dom.spec.whatwg.org/#dom-nonelementparentnode-getelementbyid
+     * @see https://dom.spec.whatwg.org/#dom-nonelementparentnode-getelementbyid
      */
     public function getElementById(string $elementId): ?Element
     {
@@ -27,6 +27,6 @@ trait NonElementParentNodeTrait
             $node = $node->nextNode($this);
         }
 
-        return $node;
+        return null;
     }
 }

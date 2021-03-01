@@ -15,6 +15,7 @@ use Rowbot\DOM\Element\SVG\SVGSVGElement;
 use Rowbot\DOM\Element\SVG\SVGTitleElement;
 use Rowbot\DOM\Exception\HierarchyRequestError;
 
+use function assert;
 use function preg_replace;
 use function trim;
 
@@ -120,7 +121,8 @@ class HTMLDocument extends Document
         // Trim whitespace and replace consecutive whitespace with a single
         // space.
         if ($value !== '') {
-            return preg_replace('/[\t\n\f\r\x20]+/', ' ', trim($value, "\t\n\f\r\x20"));
+            $value = preg_replace('/[\t\n\f\r\x20]+/', ' ', trim($value, "\t\n\f\r\x20"));
+            assert($value !== null);
         }
 
         return $value;
@@ -194,6 +196,7 @@ class HTMLDocument extends Document
         // If there is a pre-existing body element, then replace it with the
         // new body element.
         if ($oldBody) {
+            assert($oldBody->parentNode !== null);
             $oldBody->parentNode->replaceNode($newBody, $oldBody);
 
             return;

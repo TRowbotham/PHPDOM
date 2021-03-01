@@ -565,14 +565,12 @@ abstract class Node extends EventTarget
             }
         }
 
-        $node2Root = $node2->getRootNode();
-
         // If node1 or node2 is null, or node1’s root is not node2’s root, then
         // return the result of adding DOCUMENT_POSITION_DISCONNECTED,
         // DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC, and either
         // DOCUMENT_POSITION_PRECEDING or DOCUMENT_POSITION_FOLLOWING, with the
         // constraint that this is to be consistent, together.
-        if ($node1 === null || $node2 === null || $node1->getRootNode() !== $node2Root) {
+        if ($node1 === null || $node2 === null || $node1->getRootNode() !== $node2->getRootNode()) {
             $ret = self::DOCUMENT_POSITION_DISCONNECTED
                 | self::DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC;
             $position = 0;
@@ -860,14 +858,14 @@ abstract class Node extends EventTarget
             // has more than 1 element child or a text node.
             foreach ($node->childNodes as $childNode) {
                 if ($childNode instanceof Element) {
-                    $elementChildren++;
-
-                    if ($elementChildren > 1) {
+                    if (++$elementChildren > 1) {
                         throw new HierarchyRequestError();
                     }
+
+                    continue;
                 }
 
-                if ($elementChildren > 1 || $childNode instanceof Text) {
+                if ($childNode instanceof Text) {
                     throw new HierarchyRequestError();
                 }
             }
@@ -1369,7 +1367,7 @@ abstract class Node extends EventTarget
         $parent = $this->parentNode;
 
         // 2. Assert: parent is non-null.
-        assert($parent);
+        assert($parent !== null);
 
         // 3. Let index be node’s index.
         $index = $parent->childNodes->indexOf($this);
@@ -1492,6 +1490,10 @@ abstract class Node extends EventTarget
      */
     public function getTreeIndex(): int
     {
+        if ($this->parentNode === null) {
+            return 0;
+        }
+
         return $this->parentNode->childNodes->indexOf($this);
     }
 
@@ -1539,7 +1541,7 @@ abstract class Node extends EventTarget
         if ($node->previousSibling) {
             $node = $node->previousSibling;
 
-            while ($node->childNodes->first()) {
+            while ($node !== null && $node->childNodes->first()) {
                 if ($node === $root) {
                     return null;
                 }
@@ -1727,7 +1729,7 @@ abstract class Node extends EventTarget
      *
      * @param \Rowbot\DOM\Event\Event $event An Event object.
      *
-     * @return (\Rowbot\DOM\Element\HTML\HTMLSlotElement&\Rowbot\DOM\Event\EventTarget)|null
+     * @return ((\Rowbot\DOM\Element\HTML\HTMLSlotElement|self)&\Rowbot\DOM\Event\EventTarget)|null
      */
     protected function getTheParent(Event $event): ?EventTarget
     {

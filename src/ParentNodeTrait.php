@@ -103,13 +103,13 @@ trait ParentNodeTrait
 
         while ($node) {
             if ($node instanceof Element) {
-                break;
+                return $node;
             }
 
             $node = $node->nextSibling;
         }
 
-        return $node;
+        return null;
     }
 
     /**
@@ -125,13 +125,13 @@ trait ParentNodeTrait
 
         while ($node) {
             if ($node instanceof Element) {
-                break;
+                return $node;
             }
 
             $node = $node->previousSibling;
         }
 
-        return $node;
+        return null;
     }
 
     /**
