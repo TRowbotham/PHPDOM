@@ -62,6 +62,17 @@ class DocumentType extends Node implements ChildNode
         }
     }
 
+    public function isEqualNode(?Node $otherNode): bool
+    {
+        return $otherNode !== null
+            && $otherNode->nodeType === $this->nodeType
+            && $otherNode instanceof self
+            && $otherNode->name === $this->name
+            && $otherNode->publicId === $this->publicId
+            && $otherNode->systemId === $this->systemId
+            && $this->hasEqualChildNodes($otherNode);
+    }
+
     public function cloneNodeInternal(Document $document = null, bool $cloneChildren = false): Node
     {
         $document = $document ?? $this->nodeDocument;

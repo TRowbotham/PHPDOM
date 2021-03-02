@@ -111,6 +111,17 @@ class Attr extends Node
         }
     }
 
+    public function isEqualNode(?Node $otherNode): bool
+    {
+        return $otherNode !== null
+            && $otherNode->nodeType === $this->nodeType
+            && $otherNode instanceof self
+            && $otherNode->namespaceURI === $this->namespaceURI
+            && $otherNode->localName === $this->localName
+            && $otherNode->value === $this->value
+            && $this->hasEqualChildNodes($otherNode);
+    }
+
     /**
      * Returns the attribute's namespace.
      *

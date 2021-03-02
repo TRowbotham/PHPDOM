@@ -478,6 +478,13 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
         return new TreeWalker($root, $whatToShow, $filter);
     }
 
+    public function isEqualNode(?Node $otherNode): bool
+    {
+        return $otherNode !== null
+            && $otherNode->nodeType === $this->nodeType
+            && $this->hasEqualChildNodes($otherNode);
+    }
+
     /**
      * Removes a node from its parent and adopts it and all its children.
      *

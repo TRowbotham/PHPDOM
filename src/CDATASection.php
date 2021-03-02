@@ -16,6 +16,13 @@ class CDATASection extends Text
         $this->nodeType = self::CDATA_SECTION_NODE;
     }
 
+    public function isEqualNode(?Node $otherNode): bool
+    {
+        return $otherNode !== null
+            && $otherNode->nodeType === $this->nodeType
+            && $this->hasEqualChildNodes($otherNode);
+    }
+
     protected function getNodeName(): string
     {
         return '#cdata-section';

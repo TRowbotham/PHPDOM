@@ -16,7 +16,6 @@ use SplDoublyLinkedList;
 use function assert;
 use function count;
 use function method_exists;
-use function range;
 use function spl_object_hash;
 use function strcmp;
 
@@ -423,83 +422,18 @@ abstract class Node extends EventTarget
      *
      * @return bool Returns true if the two nodes are the same, otherwise false.
      */
-    public function isEqualNode(?self $otherNode): bool
+    abstract public function isEqualNode(?self $otherNode): bool;
+
+    protected function hasEqualChildNodes(self $otherNode): bool
     {
-        if (!$otherNode || $this->nodeType !== $otherNode->nodeType) {
+        // A and B have the same number of children.
+        if (count($this->childNodes) !== count($otherNode->childNodes)) {
             return false;
         }
 
-        if ($this instanceof DocumentType) {
-            if (
-                $this->name !== $otherNode->name
-                || $this->publicId !== $otherNode->publicId
-                || $this->systemId !== $otherNode->systemId
-            ) {
-                return false;
-            }
-        } elseif ($this instanceof Element) {
-            if (
-                $this->namespaceURI !== $otherNode->namespaceURI
-                || $this->prefix !== $otherNode->prefix
-                || $this->localName !== $otherNode->localName
-                || $this->attributeList->count() !==
-                $otherNode->attributes->length
-            ) {
-                return false;
-            }
-        } elseif ($this instanceof Attr) {
-            if (
-                $this->namespaceURI !== $otherNode->getNamespace()
-                || $this->localName !== $otherNode->getLocalName()
-                || $this->value !== $otherNode->getValue()
-            ) {
-                return false;
-            }
-        } elseif ($this instanceof ProcessingInstruction) {
-            if ($this->target !== $otherNode->target || $this->data !== $otherNode->data) {
-                return false;
-            }
-        } elseif ($this instanceof Text || $this instanceof Comment) {
-            if ($this->data !== $otherNode->data) {
-                return false;
-            }
-        }
-
-        if ($this instanceof Element) {
-            $attributeCount = $this->attributeList->count();
-
-            if (count($otherNode->attributeList) < $attributeCount) {
-                return false;
-            }
-
-            $indexes = range(0, $attributeCount - 1);
-
-            foreach ($this->attributeList as $attribute) {
-                $match = false;
-
-                foreach ($indexes as $i) {
-                    if ($attribute->isEqualNode($otherNode->attributeList[$i])) {
-                        $match = true;
-                        unset($indexes[$i]);
-
-                        break;
-                    }
-                }
-
-                if (!$match) {
-                    return false;
-                }
-            }
-        }
-
-        $childNodeCount = count($this->childNodes);
-
-        if ($childNodeCount !== count($otherNode->childNodes)) {
-            return false;
-        }
-
-        for ($i = 0; $i < $childNodeCount; $i++) {
-            if (!$this->childNodes[$i]->isEqualNode($otherNode->childNodes[$i])) {
+        // Each child of A equals the child of B at the identical index.
+        foreach ($this->childNodes as $i => $child) {
+            if (!$child->isEqualNode($otherNode->childNodes[$i])) {
                 return false;
             }
         }

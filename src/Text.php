@@ -51,6 +51,15 @@ class Text extends CharacterData
         }
     }
 
+    public function isEqualNode(?Node $otherNode): bool
+    {
+        return $otherNode !== null
+            && $otherNode->nodeType === $this->nodeType
+            && $otherNode instanceof self
+            && $otherNode->data === $this->data
+            && $otherNode->hasEqualChildNodes($otherNode);
+    }
+
     public function cloneNodeInternal(Document $document = null, bool $cloneChildren = false): Node
     {
         $document = $document ?? $this->getNodeDocument();

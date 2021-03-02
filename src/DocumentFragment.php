@@ -50,6 +50,14 @@ class DocumentFragment extends Node implements NonElementParentNode, ParentNode
         }
     }
 
+    public function isEqualNode(?Node $otherNode): bool
+    {
+        return $otherNode !== null
+            && $otherNode->nodeType === $this->nodeType
+            && $otherNode instanceof self
+            && $this->hasEqualChildNodes($otherNode);
+    }
+
     /**
      * @return static
      */

@@ -35,6 +35,16 @@ class ProcessingInstruction extends CharacterData
         }
     }
 
+    public function isEqualNode(?Node $otherNode): bool
+    {
+        return $otherNode !== null
+            && $otherNode->nodeType === $this->nodeType
+            && $otherNode instanceof self
+            && $otherNode->target === $this->target
+            && $otherNode->data === $this->data
+            && $this->hasEqualChildNodes($otherNode);
+    }
+
     public function cloneNodeInternal(Document $document = null, bool $cloneChildren = false): Node
     {
         $document = $document ?? $this->nodeDocument;

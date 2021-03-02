@@ -35,6 +35,7 @@ use Rowbot\DOM\Utils;
 use function count;
 use function func_num_args;
 use function preg_match;
+use function range;
 
 /**
  * @see https://dom.spec.whatwg.org/#element
@@ -510,6 +511,49 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
             $namespace,
             $localName
         ) !== null;
+    }
+
+    public function isEqualNode(?Node $otherNode): bool
+    {
+        if (
+            $otherNode === null
+            || $otherNode->nodeType !== $this->nodeType
+            || !$otherNode instanceof self
+            || $otherNode->namespaceURI !== $this->namespaceURI
+            || $otherNode->prefix !== $this->prefix
+            || $otherNode->localName !== $this->localName
+        ) {
+            return false;
+        }
+
+        $numAttributes = $this->attributeList->count();
+
+        if ($numAttributes !== $otherNode->attributeList->count()) {
+            return false;
+        }
+
+        // If A is an element, each attribute in its attribute list has an attribute that equals an
+        // attribute in B’s attribute list.
+        $indexes = range(0, $numAttributes - 1);
+
+        foreach ($this->attributeList as $attribute) {
+            $match = false;
+
+            foreach ($indexes as $i) {
+                if ($attribute->isEqualNode($otherNode->attributeList[$i])) {
+                    $match = true;
+                    unset($indexes[$i]);
+
+                    break;
+                }
+            }
+
+            if (!$match) {
+                return false;
+            }
+        }
+
+        return $this->hasEqualChildNodes($otherNode);
     }
 
     /**
