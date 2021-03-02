@@ -59,18 +59,6 @@ class DocumentFragment extends Node implements NonElementParentNode, ParentNode
     }
 
     /**
-     * @return static
-     */
-    public function cloneNodeInternal(Document $document = null, bool $cloneChildren = false): Node
-    {
-        $document = $document ?? $this->getNodeDocument();
-        $copy = new static($document);
-        $this->postCloneNode($copy, $document, $cloneChildren);
-
-        return $copy;
-    }
-
-    /**
      * Gets a DocumentFragment's host object.
      *
      * @internal

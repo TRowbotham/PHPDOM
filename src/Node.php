@@ -1607,28 +1607,16 @@ abstract class Node extends EventTarget
      *
      * @return static The newly created node.
      */
-    abstract public function cloneNodeInternal(
-        Document $document = null,
-        bool $cloneChildren = false
-    ): self;
+    public function cloneNodeInternal(Document $document = null, bool $cloneChildren = false)
+    {
+        $document = $document ?? $this->nodeDocument;
+        $copy = clone $this;
 
-    /**
-     * Performs steps after cloning a node.
-     *
-     * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#concept-node-clone
-     */
-    protected function postCloneNode(
-        Node $copy,
-        Document $document,
-        bool $cloneChildren
-    ): void {
         if ($copy instanceof Document) {
-            $copy->setNodeDocument($copy);
+            $copy->nodeDocument = $copy;
             $document = $copy;
         } else {
-            $copy->setNodeDocument($document);
+            $copy->nodeDocument = $document;
         }
 
         if (method_exists($this, 'onCloneNode')) {
@@ -1641,6 +1629,8 @@ abstract class Node extends EventTarget
                 $copy->appendChild($copyChild);
             }
         }
+
+        return $copy;
     }
 
     /**
@@ -1821,5 +1811,14 @@ abstract class Node extends EventTarget
         return $root instanceof ShadowRoot
             && !$root->isShadowIncludingInclusiveAncestorOf($otherNode)
             && ($root->mode === 'closed' || $root->host->isClosedShadowHiddenFrom($otherNode));
+    }
+
+    protected function __clone()
+    {
+        $this->parentNode = null;
+        $this->nextSibling = null;
+        $this->previousSibling = null;
+        $this->childNodes = new NodeSet();
+        $this->nodeList = new NodeList($this->childNodes);
     }
 }

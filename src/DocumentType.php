@@ -73,18 +73,6 @@ class DocumentType extends Node implements ChildNode
             && $this->hasEqualChildNodes($otherNode);
     }
 
-    public function cloneNodeInternal(Document $document = null, bool $cloneChildren = false): Node
-    {
-        $document = $document ?? $this->nodeDocument;
-        $copy = new static($document, $this->name);
-        $copy->name = $this->name;
-        $copy->publicId = $this->publicId;
-        $copy->systemId = $this->systemId;
-        $this->postCloneNode($copy, $document, $cloneChildren);
-
-        return $copy;
-    }
-
     public function getLength(): int
     {
         // Return 0 since a DocumentType cannot have any children.

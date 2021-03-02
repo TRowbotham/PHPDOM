@@ -877,26 +877,6 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
         return $this->attributeList->getAttrValue($name);
     }
 
-    public function cloneNodeInternal(Document $document = null, bool $cloneChildren = false): Node
-    {
-        $document = $document ?? $this->getNodeDocument();
-        $copy = ElementFactory::create(
-            $document,
-            $this->localName,
-            $this->namespaceURI,
-            $this->prefix
-        );
-
-        foreach ($this->attributeList as $attr) {
-            $copyAttribute = $attr->cloneNodeInternal();
-            $copy->attributeList->append($copyAttribute);
-        }
-
-        $this->postCloneNode($copy, $document, $cloneChildren);
-
-        return $copy;
-    }
-
     public function onAttributeChanged(
         Element $element,
         string $localName,
@@ -965,5 +945,20 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
         }
 
         $this->replaceAllNodes($node);
+    }
+
+    protected function __clone()
+    {
+        parent::__clone();
+        $attributeList = new AttributeList($this);
+
+        foreach ($this->attributeList as $attr) {
+            $attributeList->append(clone $attr);
+        }
+
+        $this->attributeList = $attributeList;
+        $this->classList = new DOMTokenList($this, 'class');
+        $this->namedNodeMap = new NamedNodeMap($this);
+        $this->attributeList->observe($this);
     }
 }

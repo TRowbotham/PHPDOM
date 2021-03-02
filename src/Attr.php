@@ -213,21 +213,6 @@ class Attr extends Node
         $this->ownerElement->getAttributeList()->change($this, $value);
     }
 
-    public function cloneNodeInternal(Document $document = null, bool $cloneChildren = false): Node
-    {
-        $document = $document ?? $this->getNodeDocument();
-        $copy = new static(
-            $document,
-            $this->localName,
-            $this->value,
-            $this->namespaceURI,
-            $this->prefix
-        );
-        $this->postCloneNode($copy, $document, $cloneChildren);
-
-        return $copy;
-    }
-
     protected function getNodeName(): string
     {
         if ($this->prefix) {
@@ -269,5 +254,11 @@ class Attr extends Node
         }
 
         $this->setExistingAttributeValue($value);
+    }
+
+    protected function __clone()
+    {
+        parent::__clone();
+        $this->ownerElement = null;
     }
 }

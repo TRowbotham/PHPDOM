@@ -189,18 +189,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
         }
     }
 
-    public function cloneNodeInternal(Document $document = null, bool $cloneChildren = false): Node
-    {
-        $document = $document ?? $this->getNodeDocument();
-        $copy = new static();
-        $copy->characterSet = $this->characterSet;
-        $copy->contentType = $this->contentType;
-        $copy->mode = $this->mode;
-        $this->postCloneNode($copy, $document, $cloneChildren);
-
-        return $copy;
-    }
-
     /**
      * Adopts the given Node and its subtree from a differnt Document allowing
      * the node to be used in this Document.
@@ -839,5 +827,17 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
     public function __toString(): string
     {
         return MarkupFactory::serializeFragment($this, true);
+    }
+
+    protected function __clone()
+    {
+        parent::__clone();
+        $this->flags = 0;
+        $this->implementation = new DOMImplementation($this);
+        $this->isIframeSrcDoc = false;
+        $this->inertTemplateDocument = null;
+        $this->url = $this->url === null ? null : clone $this->url;
+        $this->readyState = DocumentReadyState::COMPLETE;
+        $this->source = DocumentSource::NOT_FROM_PARSER;
     }
 }

@@ -60,15 +60,6 @@ class Text extends CharacterData
             && $otherNode->hasEqualChildNodes($otherNode);
     }
 
-    public function cloneNodeInternal(Document $document = null, bool $cloneChildren = false): Node
-    {
-        $document = $document ?? $this->getNodeDocument();
-        $copy = new static($document, $this->data);
-        $this->postCloneNode($copy, $document, $cloneChildren);
-
-        return $copy;
-    }
-
     /**
      * Splits the text at the given offset.
      *

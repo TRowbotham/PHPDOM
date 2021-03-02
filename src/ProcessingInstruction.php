@@ -45,17 +45,6 @@ class ProcessingInstruction extends CharacterData
             && $this->hasEqualChildNodes($otherNode);
     }
 
-    public function cloneNodeInternal(Document $document = null, bool $cloneChildren = false): Node
-    {
-        $document = $document ?? $this->nodeDocument;
-        $copy = new static($document, $this->target, $this->data);
-        $copy->data = $this->data;
-        $copy->target = $this->target;
-        $this->postCloneNode($copy, $document, $cloneChildren);
-
-        return $copy;
-    }
-
     protected function getNodeName(): string
     {
         return $this->target;
