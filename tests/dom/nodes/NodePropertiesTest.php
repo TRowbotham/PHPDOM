@@ -53,7 +53,8 @@ class NodePropertiesTest extends NodeTestCase
             $props[$property->getName()] = $property->getValue($window);
         }
 
-        assert(extract($props) === count($properties));
+        $extractCount = extract($props);
+        assert($extractCount === count($properties));
 
         /**
          * First we define a data structure to tell us what tests to run.  The keys
