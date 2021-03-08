@@ -1,5 +1,13 @@
 name: Test
-on: [push, pull_request]
+on:
+  push:
+    paths-ignore:
+      - '**.md'
+
+  pull_request:
+    paths-ignore:
+      - '**.md'
+
 jobs:
   test:
     name: Test PHP ${{ matrix.php-versions }} on ${{ matrix.operating-system }} ${{ matrix.arch }}
