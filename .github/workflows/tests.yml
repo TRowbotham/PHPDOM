@@ -2,7 +2,7 @@ name: Test
 on: [push, pull_request]
 jobs:
   test:
-    name: Test PHP ${{ matrix.php-versions }} on ${{ matrix.operating-system }}
+    name: Test PHP ${{ matrix.php-versions }} on ${{ matrix.operating-system }} ${{ matrix.arch }}
     runs-on: ${{ matrix.operating-system }}
 
     strategy:
