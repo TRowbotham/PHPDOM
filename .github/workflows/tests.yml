@@ -10,13 +10,12 @@ on:
 
 jobs:
   test:
-    name: Test PHP ${{ matrix.php-versions }} on ${{ matrix.operating-system }}
-    runs-on: ${{ matrix.operating-system }}
+    name: Test PHP ${{ matrix.php-versions }} on ubuntu
+    runs-on: 'ubuntu-latest'
 
     strategy:
       fail-fast: false
       matrix:
-        operating-system: ['ubuntu-latest']
         php-versions: ['7.1', '7.2', '7.4', '8.0']
         composer-options: ['--optimize-autoloader']
         coverage: ['none']
@@ -25,7 +24,6 @@ jobs:
             coverage: 'pcov'
 
           - php-versions: '8.1'
-            operating-system: 'ubuntu-latest'
             composer-options: '--optimize-autoloader --ignore-platform-reqs'
 
     steps:
