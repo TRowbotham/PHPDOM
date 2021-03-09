@@ -1,4 +1,4 @@
-name: Test
+name: Test PHPDOM
 on:
   push:
     paths-ignore:
@@ -10,25 +10,23 @@ on:
 
 jobs:
   test:
-    name: Test PHP ${{ matrix.php-versions }} on ${{ matrix.operating-system }} ${{ matrix.arch }}
+    name: Test PHP ${{ matrix.php-versions }} on ${{ matrix.operating-system }}
     runs-on: ${{ matrix.operating-system }}
 
     strategy:
       fail-fast: false
       matrix:
         operating-system: ['ubuntu-latest']
-        php-versions: ['7.1', '7.2', '7.3', '7.4', '8.0']
-        arch: ['amd64']
-        phpunit-flags: ['--prefer-dist --optimize-autoloader']
+        php-versions: ['7.1', '7.2', '7.4', '8.0']
+        composer-options: ['--optimize-autoloader']
+        coverage: ['none']
         include:
-          - php-versions: '7.1'
-            operating-system: 'ubuntu-latest'
-            arch: 'i386'
+          - php-versions: '7.3'
+            coverage: 'pcov'
 
           - php-versions: '8.1'
             operating-system: 'ubuntu-latest'
-            arch: 'amd64'
-            phpunit-flags: '--prefer-dist --optimize-autoloader --ignore-platform-reqs'
+            composer-options: '--optimize-autoloader --ignore-platform-reqs'
 
     steps:
       - name: Checkout
@@ -40,13 +38,7 @@ jobs:
           php-version: ${{ matrix.php-versions }}
           extensions: ctype, json, mbstring, opcache, pcre, gmp
           ini-values: zend.assertions=1
-          coverage: pcov
-
-      - name: Setup PCOV
-        if: ${{ matrix.php-versions == '7.1' }}
-        run: |
-          composer require pcov/clobber
-          vendor/bin/pcov clobber
+          coverage: ${{ matrix.coverage }}
 
       - name: Get composer cache directory
         id: composer-cache
@@ -60,14 +52,21 @@ jobs:
           restore-keys: ${{ runner.os }}-composer-
 
       - name: Install Composer dependencies
-        run: composer install ${{ matrix.phpunit-flags }}
+        run: composer update ${{ matrix.composer-options }}
 
       - name: Run Tests
-        run: vendor/bin/phpunit --coverage-clover ./build/coverage/clover.xml
-        continue-on-error: true
+        run: |
+          if [[ ${{ matrix.php-versions == '7.3' }} ]]; then
+            mkdir -p ./build/coverage/
+            vendor/bin/phpunit --coverage-clover ./build/coverage/clover.xml
+          else
+            vendor/bin/phpunit --no-coverage
+          fi
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
+        if: ${{ always() && matrix.php-versions == '7.3' }}
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./build/coverage/clover.xml
+          name: PHP ${{ matrix.php-versions }}
