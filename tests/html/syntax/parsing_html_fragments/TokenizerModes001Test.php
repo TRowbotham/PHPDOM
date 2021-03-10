@@ -86,6 +86,8 @@ class TokenizerModes001Test extends TestCase
 
     public function testNoscriptShouldNotBreakOutOfNoscript(): void
     {
+        $this->markTestSkipped('We don\'t support scripting in the parser.');
+
         $document = new HTMLDocument();
         $e = $document->createElement('noscript');
         $e->innerHTML = '</noscript><div>';
