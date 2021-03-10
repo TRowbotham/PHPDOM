@@ -373,7 +373,7 @@ class NodeTextContentTest extends TestCase
     }
 
     /**
-     * @dataProvider documentsProvider
+     * @dataProvider doctypesProvider
      */
     public function test26($doctype)
     {
