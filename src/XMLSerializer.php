@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM;
 
-use Rowbot\DOM\Parser\XML\XMLParser;
+use Rowbot\DOM\Parser\XML\FragmentSerializer;
 
 /**
  * @see https://w3c.github.io/DOM-Parsing/#the-xmlserializer-interface
@@ -18,6 +18,6 @@ final class XMLSerializer
      */
     public function serializeToString(Node $root): string
     {
-        return XMLParser::serializeAsXML($root, false);
+        return (new FragmentSerializer())->serializeFragment($root, false);
     }
 }

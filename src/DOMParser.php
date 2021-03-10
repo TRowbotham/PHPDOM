@@ -7,6 +7,7 @@ namespace Rowbot\DOM;
 use Rowbot\DOM\Element\ElementFactory;
 use Rowbot\DOM\Exception\TypeError;
 use Rowbot\DOM\Parser\HTML\HTMLParser;
+use Rowbot\DOM\Parser\XML\XMLParser;
 use Throwable;
 
 /**

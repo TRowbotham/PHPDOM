@@ -68,7 +68,7 @@ class XMLParser extends Parser
     /**
      * Executes the parsing steps.
      */
-    public function run()
+    public function run(): void
     {
     }
 }
