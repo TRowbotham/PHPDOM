@@ -9,6 +9,9 @@ use Rowbot\DOM\Element\ElementFactory;
 use Rowbot\DOM\Element\HTML\HTMLBaseElement;
 use Rowbot\DOM\Element\HTML\HTMLHeadElement;
 use Rowbot\DOM\Element\HTML\HTMLHtmlElement;
+use Rowbot\DOM\Element\HTML\HTMLTitleElement;
+use Rowbot\DOM\Element\SVG\SVGSVGElement;
+use Rowbot\DOM\Element\SVG\SVGTitleElement;
 use Rowbot\DOM\Event\Event;
 use Rowbot\DOM\Event\EventFlags;
 use Rowbot\DOM\Event\EventTarget;
@@ -20,12 +23,15 @@ use Rowbot\DOM\Support\Stringable;
 use Rowbot\DOM\URL\URLParser;
 use Rowbot\URL\URLRecord;
 
+use function assert;
 use function count;
 use function in_array;
 use function mb_strpos;
 use function method_exists;
 use function preg_match;
+use function preg_replace;
 use function strtolower;
+use function trim;
 
 use const PHP_SAPI;
 
@@ -44,6 +50,8 @@ use const PHP_SAPI;
  * @property-read \Rowbot\DOM\DocumentType|null    $doctype
  * @property-read \Rowbot\DOM\Element\Element|null $documentElement
  * @property-read string                           $readyState
+ *
+ * @property string $title  Reflects the text content of the <title> element.
  */
 class Document extends Node implements NonElementParentNode, ParentNode, Stringable
 {
@@ -184,8 +192,24 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
             case 'readyState':
                 return $this->readyState;
 
+            case 'title':
+                return $this->getTitle();
+
             default:
                 return parent::__get($name);
+        }
+    }
+
+    public function __set(string $name, $value): void
+    {
+        switch ($name) {
+            case 'title':
+                $this->setTitle((string) $value);
+
+                break;
+
+            default:
+                parent::__set($name, $value);
         }
     }
 
@@ -807,6 +831,138 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
         }
 
         return $this->url;
+    }
+
+    /**
+     * Gets the text of the document's title element.
+     *
+     * @internal
+     *
+     * @see https://html.spec.whatwg.org/multipage/dom.html#document.title
+     */
+    protected function getTitle(): string
+    {
+        $element = $this->getTitleElement();
+        $value = '';
+
+        if ($element) {
+            // Concatenate the text data of all the text node children of the
+            // title element.
+            foreach ($element->childNodes as $child) {
+                if ($child instanceof Text) {
+                    $value .= $child->data;
+                }
+            }
+        }
+
+        // Trim whitespace and replace consecutive whitespace with a single
+        // space.
+        if ($value !== '') {
+            $value = preg_replace('/[\t\n\f\r\x20]+/', ' ', trim($value, "\t\n\f\r\x20"));
+            assert($value !== null);
+        }
+
+        return $value;
+    }
+
+    /**
+     * Gets the document's title element. The title element is the
+     * first title element in the document element if the document element is
+     * an svg element, othwerwise it is the first title element in the document.
+     *
+     * @internal
+     *
+     * @see https://html.spec.whatwg.org/multipage/dom.html#document.title
+     *
+     * @return \Rowbot\DOM\Element\HTML\HTMLTitleElement|\Rowbot\DOM\Element\SVG\SVGTitleElement|null
+     */
+    protected function getTitleElement(): ?Element
+    {
+        $docElement = $this->getFirstElementChild();
+
+        if ($docElement && $docElement instanceof SVGSVGElement) {
+            // Find the first child of the document element that is a svg title
+            // element.
+            foreach ($docElement->childNodes as $child) {
+                if ($child instanceof SVGTitleElement) {
+                    return $child;
+                }
+            }
+        } elseif ($docElement) {
+            // Find the first title element in the document.
+            $node = $this->nextNode($this);
+
+            while ($node) {
+                if ($node instanceof HTMLTitleElement) {
+                    return $node;
+                }
+
+                $node = $node->nextNode($this);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Sets the text of the document's title element.
+     *
+     * @internal
+     *
+     * @see https://html.spec.whatwg.org/multipage/dom.html#document.title
+     */
+    protected function setTitle(string $newTitle): void
+    {
+        $docElement = $this->getFirstElementChild();
+        $element = null;
+
+        if ($docElement && $docElement instanceof SVGSVGElement) {
+            // Find the first child of the document element that is an
+            // svg title element.
+            foreach ($docElement->childNodes as $child) {
+                if ($child instanceof SVGTitleElement) {
+                    $element = $child;
+
+                    break;
+                }
+            }
+
+            // If there is no pre-existing svg title element, then create one
+            // and insert it as the first child of the document element.
+            if (!$element) {
+                $element = ElementFactory::create(
+                    $docElement->nodeDocument,
+                    'title',
+                    Namespaces::SVG
+                );
+                $docElement->insertNode($element, $docElement->childNodes->first());
+            }
+
+            $element->textContent = $newTitle;
+        } elseif ($docElement && $docElement->namespaceURI === Namespaces::HTML) {
+            $element = $this->getTitleElement();
+            $head = $this->getHeadElement();
+
+            // The title element can only exist in the head element. If neither
+            // of these exist, then there is no title element to set and no
+            // place to insert a new one.
+            if (!$element && !$head) {
+                return;
+            }
+
+            // If there is no pre-existing title element, then create one
+            // and append it to the head element.
+            if (!$element) {
+                $element = ElementFactory::create(
+                    $docElement->nodeDocument,
+                    'title',
+                    Namespaces::HTML
+                );
+                $head->appendChild($element);
+            }
+
+            $element->textContent = $newTitle;
+        }
     }
 
     protected function setNodeValue(?string $value): void
