@@ -33,13 +33,11 @@ class DOMParserParseFromStringHTMLTest extends TestCase
 
     public function testCompatMode(): void
     {
-        $this->markTestSkipped('We don\'t support Document::compatMode');
         $this->assertSame('BackCompat', self::$doc->compatMode);
     }
 
     public function testCompatModeWithProperDoctype(): void
     {
-        $this->markTestSkipped('We don\'t support Document::compatMode');
         $input = '<!DOCTYPE html><html id="root"><head></head><body></body></html>';
         self::$doc = self::$parser->parseFromString($input, 'text/html');
         $this->assertSame('CSS1Compat', self::$doc->compatMode);

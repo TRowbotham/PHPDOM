@@ -97,8 +97,7 @@ class DOMImplementationCreateDocumentTest extends TestCase
             $qualifiedName,
             $doctype
         );
-        // TODO: Should we support the compatMode attribute?
-        // $this->assertSame('CSS1Compat', $doc->compatMode);
+        $this->assertSame('CSS1Compat', $doc->compatMode);
         $this->assertSame('UTF-8', $doc->characterSet);
 
         if ($namespace === Namespaces::HTML) {

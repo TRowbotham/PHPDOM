@@ -161,6 +161,9 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
             case 'contentType':
                 return $this->contentType;
 
+            case 'compatMode':
+                return $this->mode === DocumentMode::QUIRKS ? 'BackCompat' : 'CSS1Compat';
+
             case 'doctype':
                 foreach ($this->childNodes as $child) {
                     if ($child instanceof DocumentType) {

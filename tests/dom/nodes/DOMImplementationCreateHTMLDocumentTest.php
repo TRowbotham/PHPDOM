@@ -78,7 +78,7 @@ class DOMImplementationCreateHTMLDocumentTest extends TestCase
 
         $this->assertSame('about:blank', $doc->URL);
         $this->assertSame('about:blank', $doc->documentURI);
-        // $this->assertSame('CSS1Compat', $doc->compatMode);
+        $this->assertSame('CSS1Compat', $doc->compatMode);
         $this->assertSame('UTF-8', $doc->characterSet);
         $this->assertSame('text/html', $doc->contentType);
         $this->assertSame('div', $doc->createElement('DIV')->localName);

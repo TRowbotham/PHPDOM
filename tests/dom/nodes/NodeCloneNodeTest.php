@@ -178,7 +178,7 @@ class NodeCloneNodeTest extends TestCase
         $this->assertEquals($doc->URL, $copy->URL, 'URL');
         $this->assertEquals($doc->origin, 'null', 'origin');
         $this->assertEquals($doc->origin, $copy->origin, 'origin');
-        $this->assertEquals($doc->compatMode, 'CSS1', 'compatMode');
+        $this->assertEquals($doc->compatMode, 'CSS1Compat', 'compatMode');
         $this->assertEquals($doc->compatMode, $copy->compatMode, 'compatMode');
     }
 

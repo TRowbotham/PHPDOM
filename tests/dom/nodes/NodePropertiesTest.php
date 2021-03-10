@@ -10,7 +10,6 @@ use Rowbot\DOM\Tests\dom\WindowTrait;
 
 use function count;
 use function extract;
-use function in_array;
 use function mb_strlen;
 
 /**
@@ -20,9 +19,6 @@ class NodePropertiesTest extends NodeTestCase
 {
     use WindowTrait;
 
-    // Mostly deprecated or irrelevant properties
-    private const IGNORE = ['compatMode'];
-
     /**
      * @dataProvider nodePropertiesProvider
      */
@@ -31,10 +27,6 @@ class NodePropertiesTest extends NodeTestCase
         $window = self::getWindow();
 
         foreach ($nodeData as $prop => $expected) {
-            if (in_array($prop, self::IGNORE, true)) {
-                continue;
-            }
-
             $this->assertSame($window->eval("{$node}->{$prop}"), $expected);
         }
     }
