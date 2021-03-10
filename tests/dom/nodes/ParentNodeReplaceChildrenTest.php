@@ -34,7 +34,7 @@ class ParentNodeReplaceChildrenTest extends NodeTestCase
     {
         $parent = $node->cloneNode();
         $parent->replaceChildren(null);
-        $this->assertSame('', $parent->childNodes[0]->textContent);
+        $this->assertSame('null', $parent->childNodes[0]->textContent);
     }
 
     /**
@@ -68,7 +68,7 @@ class ParentNodeReplaceChildrenTest extends NodeTestCase
         $parent->appendChild($child);
         $parent->replaceChildren(null);
         $this->assertSame(1, $parent->childNodes->length);
-        $this->assertSame('', $parent->childNodes[0]->textContent);
+        $this->assertSame('null', $parent->childNodes[0]->textContent);
     }
 
     /**

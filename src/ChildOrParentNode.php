@@ -31,7 +31,7 @@ trait ChildOrParentNode
         // string and node document is document.
         foreach ($potentialNodes as $potentialNode) {
             if (!$potentialNode instanceof Node) {
-                $nodes[] = new Text($document, (string) $potentialNode);
+                $nodes[] = new Text($document, $potentialNode === null ? 'null' : (string) $potentialNode);
 
                 continue;
             }
