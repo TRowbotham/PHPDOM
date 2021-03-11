@@ -8,8 +8,14 @@ use Rowbot\DOM\Document;
 use Rowbot\DOM\DocumentReadyState;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Element\ElementFactory;
+use Rowbot\DOM\Element\HTML\HTMLElement;
 use Rowbot\DOM\Element\HTML\HTMLFormElement;
+use Rowbot\DOM\Element\HTML\HTMLIFrameElement;
+use Rowbot\DOM\Element\HTML\HTMLScriptElement;
+use Rowbot\DOM\Element\HTML\HTMLStyleElement;
 use Rowbot\DOM\Element\HTML\HTMLTemplateElement;
+use Rowbot\DOM\Element\HTML\HTMLTextAreaElement;
+use Rowbot\DOM\Element\HTML\HTMLTitleElement;
 use Rowbot\DOM\HTMLDocument;
 use Rowbot\DOM\Namespaces;
 use Rowbot\DOM\NodeList;
@@ -116,38 +122,25 @@ class HTMLParser extends Parser
         $parser = new self($doc, true, $contextElement);
         $localName = $contextElement->localName;
 
-        // Set the state of the HTML parser's tokenization stage as follows,
-        // switching on the context element:
-        switch ($localName) {
-            case 'title':
-            case 'textarea':
-                $parser->context->tokenizerState = TokenizerState::RCDATA;
-
-                break;
-
-            case 'style':
-            case 'xmp':
-            case 'iframe':
-            case 'noembed':
-            case 'noframes':
+        // Set the state of the HTML parser's tokenization stage as follows, switching on the context element:
+        if ($contextElement instanceof HTMLTitleElement || $contextElement instanceof HTMLTextAreaElement) {
+            $parser->context->tokenizerState = TokenizerState::RCDATA;
+        } elseif (
+            $contextElement instanceof HTMLStyleElement
+            || ($contextElement instanceof HTMLElement && $localName === 'xmp')
+            || $contextElement instanceof HTMLIFrameElement
+            || ($contextElement instanceof HTMLElement && $localName === 'noembed')
+            || ($contextElement instanceof HTMLElement && $localName === 'noframes')
+        ) {
+            $parser->context->tokenizerState = TokenizerState::RAWTEXT;
+        } elseif ($contextElement instanceof HTMLScriptElement) {
+            $parser->context->tokenizerState = TokenizerState::SCRIPT_DATA;
+        } elseif ($contextElement instanceof HTMLElement && $localName === 'noscript') {
+            if ($parser->context->isScriptingEnabled) {
                 $parser->context->tokenizerState = TokenizerState::RAWTEXT;
-
-                break;
-
-            case 'script':
-                $parser->context->tokenizerState = TokenizerState::SCRIPT_DATA;
-
-                break;
-
-            case 'noscript':
-                if ($parser->context->isScriptingEnabled) {
-                    $parser->context->tokenizerState = TokenizerState::RAWTEXT;
-                }
-
-                break;
-
-            case 'plaintext':
-                $parser->context->tokenizerState = TokenizerState::PLAINTEXT;
+            }
+        } elseif ($contextElement instanceof HTMLElement && $localName === 'plaintext') {
+            $parser->context->tokenizerState = TokenizerState::PLAINTEXT;
         }
 
         // NOTE: For performance reasons, an implementation that does not report
