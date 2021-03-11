@@ -231,6 +231,7 @@ final class ElementFactory
         'p'          => HTMLParagraphElement::class,
         'param'      => HTMLParamElement::class,
         'picture'    => HTMLPictureElement::class,
+        'plaintext'  => HTMLElement::class, // Obsolete
         'pre'        => HTMLPreElement::class,
         'progress'   => HTMLProgressElement::class,
         'q'          => HTMLQuoteElement::class,
