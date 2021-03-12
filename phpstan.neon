@@ -1,0 +1,119 @@
+parameters:
+    level: max
+    paths:
+        - src/
+    excludePaths:
+        - src/Event
+
+    ignoreErrors:
+        - 
+            message: '#Strict comparison using === between \*NEVER\* and \x27[a-z0-9]+\x27 will always evaluate to false\.#'
+            paths:
+                - src/Parser/HTML/InsertionMode/
+
+        -
+            message: '#Result of \|\| is always false\.#'
+            path: src/Parser/HTML/InsertionMode/InBodyInsertionMode.php
+            count: 43
+
+        -
+            message: '#Result of \|\| is always false\.#'
+            path: src/Parser/HTML/InsertionMode/InTemplateInsertionMode.php
+            count: 5
+
+        -
+            message: '#Result of && is always false\.#'
+            path: src/Parser/HTML/InsertionMode/InBodyInsertionMode.php
+            count: 1
+
+        -
+            message: '#Access to protected property Rowbot\\DOM\\Element\\HTML\\HTMLTemplateElement::\$content\.#'
+            paths:
+                - src/Parser/HTML/TreeBuilderContext.php
+                - src/Parser/HTML/FragmentSerializer.php
+
+        -
+            message: '#Call to an undefined method Rowbot\\DOM\\Parser\\Token\\Token::wasAcknowledged\(\)\.#'
+            path: src/Parser/HTML/HTMLParser.php
+
+        -
+            message: '#Parameter \#2 \$offset of function array_splice expects int, int\|false given\.#'
+            paths:
+                - src/Support/Collection/NodeSet.php
+                - src/Support/Collection/StringSet.php
+                - src/Parser/Collection/ObjectStack.php
+
+        -
+            message: '#Parameter \#1 \$obj of method SplObjectStorage<TValue of object,null>::detach\(\) expects TValue of object, TValue of object\|null given\.#'
+            path: src/Parser/Collection/ObjectStack.php
+
+        -
+            message: '#Parameter \#4 \$elementTokenMap of class Rowbot\\DOM\\Parser\\HTML\\TreeBuilderContext constructor expects SplObjectStorage<Rowbot\\DOM\\Element\\Element, Rowbot\\DOM\\Parser\\Token\\TagToken>, SplObjectStorage<object, mixed> given\.#'
+            path: src/Parser/HTML/HTMLParser.php
+            count: 1
+
+        -
+            message: '#Static property Rowbot\\DOM\\NodeIteratorContext::\$nodeIterators \(SplObjectStorage<Rowbot\\DOM\\NodeIteratorContext, null>\|null\) does not accept SplObjectStorage<object, mixed>\.#'
+            path: src/NodeIteratorContext.php
+            count: 1
+
+        -
+            message: '#Method Rowbot\\DOM\\NodeIteratorContext::getIterators\(\) should return SplObjectStorage<Rowbot\\DOM\\NodeIteratorContext, null> but returns SplObjectStorage<object, mixed>\|SplObjectStorage<Rowbot\\DOM\\NodeIteratorContext, null>\.#'
+            path: src/NodeIteratorContext.php
+            count: 1
+
+        -
+            message: '#Else branch is unreachable because previous condition is always true\.#'
+            path: src/Element/Element.php
+            count: 1
+
+        -
+            message: '#If condition is always true\.#'
+            path: src/Node.php
+            count: 1
+
+        -
+            message: '#Cannot call method serializeURL\(\) on Rowbot\\URL\\URLRecord\|null\.#'
+            path: src/Element/HTMLHyperlinkElementUtils.php
+            count: 4
+
+        -
+            message: '#Cannot call method replaceNode\(\) on Rowbot\\DOM\\Node\|null\.#'
+            path: src/Element/Element.php
+            count: 1
+
+        -
+            message: '#Cannot call method preinsertNode\(\) on Rowbot\\DOM\\Node\|null.#'
+            path: src/Element/Element.php
+            count: 2
+
+        -
+            message: '#Method Rowbot\\DOM\\Element\\HTML\\HTMLElement::reflectLongAttributeValue\(\) should return int but returns int\|null\.#'
+            path: src/Element/HTML/HTMLElement.php
+
+        -
+            message: '#Cannot call method appendChild\(\) on Rowbot\\DOM\\Element\\HTML\\HTMLHeadElement\|null\.#'
+            path: src/Document.php
+            count: 1
+
+        -
+            message: '#Cannot access property \$localName on Rowbot\\DOM\\Node\|null\.#'
+            path: src/Parser/HTML/FragmentSerializer.php
+            count: 1
+
+        -
+            message: '#Static property Rowbot\\DOM\\Range::\$collection \(SplObjectStorage<Rowbot\\DOM\\RangeBoundary, null>\|null\) does not accept SplObjectStorage<object, mixed>\.#'
+            path: src/Range.php
+            count: 1
+
+        -
+            message: '#Method Rowbot\\DOM\\Range::getRangeCollection\(\) should return SplObjectStorage<Rowbot\\DOM\\RangeBoundary, null> but returns SplObjectStorage<object, mixed>\|SplObjectStorage<Rowbot\\DOM\\RangeBoundary, null>\.#'
+            path: src/Range.php
+            count: 1
+
+        -
+            message: '#Strict comparison using === between string and null will always evaluate to false\.#'
+            path: src/ChildOrParentNode.php
+            count: 6
+
+        - '#Rowbot\\DOM\\ShadowRoot#'
