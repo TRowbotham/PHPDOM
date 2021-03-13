@@ -10,6 +10,7 @@ use Rowbot\DOM\Document;
 use Rowbot\DOM\DocumentFragment;
 use Rowbot\DOM\DocumentType;
 use Rowbot\DOM\Element\Element;
+use Rowbot\DOM\Element\HTML\HTMLTemplateElement;
 use Rowbot\DOM\Exception\InvalidStateError;
 use Rowbot\DOM\Exception\TypeError;
 use Rowbot\DOM\Namespaces;
@@ -20,6 +21,7 @@ use Rowbot\DOM\ProcessingInstruction;
 use Rowbot\DOM\Text;
 use Throwable;
 
+use function assert;
 use function htmlspecialchars;
 use function mb_strpos;
 use function mb_substr;
@@ -272,6 +274,7 @@ class FragmentSerializer implements FragmentSerializerInterface
         }
 
         if ($ns === Namespaces::HTML && $localName === 'template') {
+            assert($node instanceof HTMLTemplateElement);
             $markup .= $this->serializeDocumentFragmentNode(
                 $node->content,
                 $inheritedNS,

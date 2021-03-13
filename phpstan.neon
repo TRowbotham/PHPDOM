@@ -6,7 +6,7 @@ parameters:
         - src/Event
 
     ignoreErrors:
-        - 
+        -
             message: '#Strict comparison using === between \*NEVER\* and \x27[a-z0-9]+\x27 will always evaluate to false\.#'
             paths:
                 - src/Parser/HTML/InsertionMode/
@@ -31,6 +31,7 @@ parameters:
             paths:
                 - src/Parser/HTML/TreeBuilderContext.php
                 - src/Parser/HTML/FragmentSerializer.php
+                - src/Parser/XML/FragmentSerializer.php
 
         -
             message: '#Call to an undefined method Rowbot\\DOM\\Parser\\Token\\Token::wasAcknowledged\(\)\.#'
@@ -115,5 +116,21 @@ parameters:
             message: '#Strict comparison using === between string and null will always evaluate to false\.#'
             path: src/ChildOrParentNode.php
             count: 6
+
+        -
+            message: '#Result of && is always false\.#'
+            path: src/NodeFilterUtils.php
+            count: 2
+
+        -
+            message: '#Property Rowbot\\DOM\\(NodeIterator|TreeWalker)::\$filter is not writable\.#'
+            path: src/NodeFilterUtils.php
+            count: 2
+
+        -
+            message: '#Property Rowbot\\DOM\\(NodeIterator|TreeWalker)::\$whatToShow is not writable\.#'
+            paths:
+                - src/TreeWalker.php
+                - src/NodeIterator.php
 
         - '#Rowbot\\DOM\\ShadowRoot#'

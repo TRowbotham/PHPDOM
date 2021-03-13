@@ -16,6 +16,7 @@ use Rowbot\DOM\Parser\ParserFactory;
 use Rowbot\DOM\Support\Stringable;
 use SplObjectStorage;
 
+use function assert;
 use function mb_substr;
 
 /**
@@ -372,16 +373,21 @@ final class Range extends AbstractRange implements Stringable
             $newNode = $originalStartNode;
             $newOffset = $originalStartOffset;
         } else {
+            // 6.1. Let reference node equal original start node.
             $referenceNode = $originalStartNode;
 
-            while ($referenceNode) {
-                if ($referenceNode->contains($originalEndNode)) {
-                    break;
-                }
-
-                $referenceNode = $referenceNode->parentNode;
+            // 6.2. While reference node’s parent is not null and is not an inclusive ancestor of original end node,
+            // set reference node to its parent.
+            while (($parent = $referenceNode->parentNode) !== null && !$parent->contains($originalEndNode)) {
+                $referenceNode = $parent;
             }
 
+            // Note: If reference node’s parent were null, it would be the root of this, so would be an inclusive
+            // ancestor of original end node, and we could not reach this point.
+            assert($referenceNode->parentNode !== null);
+
+            // 6.3. Set new node to the parent of reference node, and new offset to one plus the index of reference
+            // node.
             $newNode = $referenceNode->parentNode;
             $newOffset = $referenceNode->getTreeIndex() + 1;
         }
@@ -459,10 +465,10 @@ final class Range extends AbstractRange implements Stringable
             return $fragment;
         }
 
-        $commonAncestor = Node::getCommonAncestor(
-            $originalStartNode,
-            $originalEndNode
-        );
+        $commonAncestor = Node::getCommonAncestor($originalStartNode, $originalEndNode);
+        // It should be impossible for common ancestor to be null here since both nodes should be
+        // in the same tree.
+        assert($commonAncestor !== null);
         $firstPartiallyContainedChild = null;
 
         if (!$originalStartNode->contains($originalEndNode)) {
@@ -515,6 +521,9 @@ final class Range extends AbstractRange implements Stringable
                 $parent = $referenceNode->parentNode;
             }
 
+            // Note: If reference node’s parent is null, it would be the root of range, so would be an inclusive
+            // ancestor of original end node, and we could not reach this point.
+            assert($parent !== null);
             $newNode = $parent;
             $newOffset = $referenceNode->getTreeIndex() + 1;
         }
@@ -524,6 +533,8 @@ final class Range extends AbstractRange implements Stringable
             || $firstPartiallyContainedChild instanceof ProcessingInstruction
             || $firstPartiallyContainedChild instanceof Comment
         ) {
+            // Note: In this case, first partially contained child is original start node.
+            assert($originalStartNode instanceof CharacterData);
             $clone = $originalStartNode->cloneNodeInternal();
             $clone->data = $originalStartNode->substringData(
                 $originalStartOffset,
@@ -556,7 +567,8 @@ final class Range extends AbstractRange implements Stringable
             || $lastPartiallyContainedChild instanceof ProcessingInstruction
             || $lastPartiallyContainedChild instanceof Comment
         ) {
-            // In this case, last partially contained child is original end node
+            // Note: In this case, last partially contained child is original end node.
+            assert($originalEndNode instanceof CharacterData);
             $clone = $originalEndNode->cloneNodeInternal();
             $clone->data = $originalEndNode->substringData(0, $originalEndOffset);
             $fragment->appendChild($clone);
@@ -619,10 +631,10 @@ final class Range extends AbstractRange implements Stringable
             return $fragment;
         }
 
-        $commonAncestor = Node::getCommonAncestor(
-            $originalStartNode,
-            $originalEndNode
-        );
+        $commonAncestor = Node::getCommonAncestor($originalStartNode, $originalEndNode);
+        // It should be impossible for common ancestor to be null here since both nodes should be
+        // in the same tree.
+        assert($commonAncestor !== null);
         $firstPartiallyContainedChild = null;
 
         if (!$originalStartNode->contains($originalEndNode)) {
@@ -773,6 +785,7 @@ final class Range extends AbstractRange implements Stringable
         $parent = !$referenceNode
             ? $this->range->startNode
             : $referenceNode->parentNode;
+        assert($parent !== null);
         $parent->ensurePreinsertionValidity($node, $referenceNode);
 
         if ($this->range->startNode instanceof Text) {
@@ -1138,12 +1151,14 @@ final class Range extends AbstractRange implements Stringable
             $b = $boundaryPointB[0];
 
             while ($b->parentNode !== $commonAncestor) {
+                /** @var \Rowbot\DOM\Node $b */
                 $b = $b->parentNode;
             }
 
             $a = $boundaryPointA[0];
 
             while ($a->parentNode !== $commonAncestor) {
+                /** @var \Rowbot\DOM\Node $a */
                 $a = $a->parentNode;
             }
 

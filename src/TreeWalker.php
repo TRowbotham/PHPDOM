@@ -104,6 +104,7 @@ final class TreeWalker
 
         while (true) {
             while ($result !== NodeFilter::FILTER_REJECT && $node->hasChildNodes()) {
+                /** @var \Rowbot\DOM\Node $node */
                 $node = $node->firstChild;
                 $result = $this->filterNode($node);
 

@@ -121,11 +121,11 @@ final class NodeIterator
                             $temp = $temp->parentNode;
                         } while ($temp);
 
-                        $node = $sibling;
-
                         if (!$sibling) {
                             return null;
                         }
+
+                        $node = $sibling;
                     } else {
                         $beforeNode = false;
                     }
