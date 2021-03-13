@@ -1709,7 +1709,7 @@ abstract class Node extends EventTarget
      */
     public function isDescendantOf(?self $otherNode): bool
     {
-        return $otherNode->isAncestorOf($this);
+        return $otherNode !== null && $otherNode->isAncestorOf($this);
     }
 
     /**
@@ -1786,7 +1786,7 @@ abstract class Node extends EventTarget
      */
     public function isShadowIncludingAncestorOf(?self $otherNode): bool
     {
-        return $otherNode->isShadowIncludingDescendantOf($this);
+        return $otherNode !== null && $otherNode->isShadowIncludingDescendantOf($this);
     }
 
     /**
