@@ -243,4 +243,16 @@ class HTMLAnchorElement extends HTMLElement
 
         parent::onAttributeChanged($element, $localName, $oldValue, $value, $namespace);
     }
+
+    protected function __clone()
+    {
+        parent::__clone();
+
+        $this->ping = clone $this->ping;
+        $this->relList = clone $this->relList;
+
+        if ($this->url !== null) {
+            $this->url = clone $this->url;
+        }
+    }
 }

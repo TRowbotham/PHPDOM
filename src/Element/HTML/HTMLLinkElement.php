@@ -126,4 +126,12 @@ class HTMLLinkElement extends HTMLElement
                 parent::__set($name, $value);
         }
     }
+
+    protected function __clone()
+    {
+        parent::__clone();
+
+        $this->relList = clone $this->relList;
+        $this->sizes = clone $this->sizes;
+    }
 }

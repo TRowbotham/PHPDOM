@@ -147,4 +147,13 @@ class HTMLBaseElement extends HTMLElement
             $this->setFrozenBaseURL();
         }
     }
+
+    protected function __clone()
+    {
+        parent::__clone();
+
+        if ($this->frozenBaseUrl !== null) {
+            $this->frozenBaseUrl = clone $this->frozenBaseUrl;
+        }
+    }
 }

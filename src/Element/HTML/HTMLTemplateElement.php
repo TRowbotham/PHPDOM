@@ -54,4 +54,11 @@ class HTMLTemplateElement extends HTMLElement
         $copiedContents = $this->content->cloneNodeInternal($copy->content->nodeDocument, true);
         $copy->content->appendChild($copiedContents);
     }
+
+    protected function __clone()
+    {
+        parent::__clone();
+
+        $this->content = $this->content->cloneNodeInternal($this->content->getNodeDocument(), true);
+    }
 }

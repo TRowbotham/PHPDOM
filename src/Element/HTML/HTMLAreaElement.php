@@ -153,4 +153,13 @@ class HTMLAreaElement extends HTMLElement
 
         parent::onAttributeChanged($element, $localName, $oldValue, $value, $namespace);
     }
+
+    protected function __clone()
+    {
+        parent::__clone();
+
+        if ($this->url !== null) {
+            $this->url = clone $this->url;
+        }
+    }
 }
