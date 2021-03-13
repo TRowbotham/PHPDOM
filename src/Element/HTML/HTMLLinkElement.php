@@ -131,7 +131,7 @@ class HTMLLinkElement extends HTMLElement
     {
         parent::__clone();
 
-        $this->relList = clone $this->relList;
-        $this->sizes = clone $this->sizes;
+        $this->relList = new DOMTokenList($this, 'rel');
+        $this->sizes = new DOMTokenList($this, 'sizes');
     }
 }

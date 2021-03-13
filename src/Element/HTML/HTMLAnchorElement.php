@@ -248,8 +248,8 @@ class HTMLAnchorElement extends HTMLElement
     {
         parent::__clone();
 
-        $this->ping = clone $this->ping;
-        $this->relList = clone $this->relList;
+        $this->ping = new DOMTokenList($this, 'ping');
+        $this->relList = new DOMTokenList($this, 'rel');
 
         if ($this->url !== null) {
             $this->url = clone $this->url;
