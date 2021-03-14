@@ -7,6 +7,9 @@ namespace Rowbot\DOM;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Element\ElementFactory;
 use Rowbot\DOM\Element\HTML\HTMLBaseElement;
+use Rowbot\DOM\Element\HTML\HTMLBodyElement;
+use Rowbot\DOM\Element\HTML\HTMLElement;
+use Rowbot\DOM\Element\HTML\HTMLFrameSetElement;
 use Rowbot\DOM\Element\HTML\HTMLHeadElement;
 use Rowbot\DOM\Element\HTML\HTMLHtmlElement;
 use Rowbot\DOM\Element\HTML\HTMLTitleElement;
@@ -51,7 +54,9 @@ use const PHP_SAPI;
  * @property-read \Rowbot\DOM\Element\Element|null $documentElement
  * @property-read string                           $readyState
  *
- * @property string $title  Reflects the text content of the <title> element.
+ * @property \Rowbot\DOM\Element\HTML\HTMLBodyElement|null $body  Represents the HTML document's <body> element.
+ * @property \Rowbot\DOM\Element\HTML\HTMLHeadElement|null $head  Represents the HTML document's <head> element.
+ * @property string                                        $title Reflects the text content of the <title> element.
  */
 class Document extends Node implements NonElementParentNode, ParentNode, Stringable
 {
@@ -147,6 +152,12 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
     public function __get(string $name)
     {
         switch ($name) {
+            case 'body':
+                return $this->getBodyElement();
+
+            case 'head':
+                return $this->getHeadElement();
+
             case 'characterSet':
             case 'charset':
             case 'inputEncoding':
@@ -206,6 +217,11 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
     public function __set(string $name, $value): void
     {
         switch ($name) {
+            case 'body':
+                $this->setBodyElement($value);
+
+                break;
+
             case 'title':
                 $this->setTitle((string) $value);
 
@@ -966,6 +982,80 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
 
             $element->textContent = $newTitle;
         }
+    }
+
+    /**
+     * Gets the document's body element. The document's body element is the
+     * first child of the html element that is either a body or frameset
+     * element.
+     *
+     * @internal
+     *
+     * @see https://html.spec.whatwg.org/multipage/dom.html#dom-document-body
+     *
+     * @return \Rowbot\DOM\Element\HTML\HTMLBodyElement|\Rowbot\DOM\Element\HTML\HTMLFrameSetElement|null
+     */
+    protected function getBodyElement(): ?HTMLElement
+    {
+        $docElement = $this->getFirstElementChild();
+
+        if ($docElement && $docElement instanceof HTMLHtmlElement) {
+            // Get the first element in the document element that is a body or
+            // frameset element.
+            foreach ($docElement->childNodes as $child) {
+                if ($child instanceof HTMLBodyElement || $child instanceof HTMLFrameSetElement) {
+                    return $child;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Sets the document's body element.
+     *
+     * @internal
+     *
+     * @see https://html.spec.whatwg.org/multipage/dom.html#dom-document-body
+     *
+     * @param \Rowbot\DOM\Element\HTML\HTMLBodyElement|\Rowbot\DOM\Element\HTML\HTMLFrameSetElement $newBody
+     */
+    protected function setBodyElement(HTMLElement $newBody): void
+    {
+        // The document's body can only be a body or frameset element. If the
+        // new value being passed is not one of these, then throw an exception
+        // and abort the algorithm.
+        if (!$newBody instanceof HTMLBodyElement && !$newBody instanceof HTMLFrameSetElement) {
+            throw new HierarchyRequestError();
+        }
+
+        $oldBody = $this->getBodyElement();
+
+        // Don't try setting the document's body to the same node.
+        if ($newBody === $oldBody) {
+            return;
+        }
+
+        // If there is a pre-existing body element, then replace it with the
+        // new body element.
+        if ($oldBody) {
+            assert($oldBody->parentNode !== null);
+            $oldBody->parentNode->replaceNode($newBody, $oldBody);
+
+            return;
+        }
+
+        $docElement = $this->getFirstElementChild();
+
+        // A body element can only exist as a child of the document element.
+        // Throw an exception and abort the algorithm if the document element
+        // does not exist.
+        if (!$docElement) {
+            throw new HierarchyRequestError();
+        }
+
+        $docElement->appendChild($newBody);
     }
 
     protected function setNodeValue(?string $value): void
