@@ -45,13 +45,23 @@ class FragmentSerializer implements FragmentSerializerInterface
         $prefixIndex = 1;
 
         try {
-            return $this->serializeNode(
-                $node,
-                $namespace,
-                $prefixMap,
-                $prefixIndex,
-                $requireWellFormed
-            );
+            // When the given node is an Element, serialize it's children, rather than the node itself, to work around
+            // spec bug https://github.com/w3c/DOM-Parsing/issues/28
+            $buffer = '';
+            $childNodes = $node instanceof Element ? $node->childNodes : [$node];
+
+            foreach ($childNodes as $child) {
+                $prefixIndex = 1;
+                $buffer .= $this->serializeNode(
+                    $child,
+                    $namespace,
+                    $prefixMap,
+                    $prefixIndex,
+                    $requireWellFormed
+                );
+            }
+
+            return $buffer;
         } catch (Throwable $e) {
             throw new InvalidStateError('', $e);
         }
