@@ -42,19 +42,6 @@ class HTMLTemplateElement extends HTMLElement
         $doc->doAdoptNode($this->content);
     }
 
-    public function onCloneNode(
-        HTMLTemplateElement $copy,
-        Document $document,
-        bool $cloneChildren
-    ): void {
-        if (!$cloneChildren) {
-            return;
-        }
-
-        $copiedContents = $this->content->cloneNodeInternal($copy->content->nodeDocument, true);
-        $copy->content->appendChild($copiedContents);
-    }
-
     protected function __clone()
     {
         parent::__clone();
