@@ -242,7 +242,7 @@ class FragmentSerializer implements FragmentSerializerInterface
                 $inheritedNS = $ns;
                 $markup .= $qualifiedName;
                 $markup .= ' ';
-                $markup .= 'xmlns:';
+                $markup .= 'xmlns';
                 $markup .= '="';
                 $markup .= $this->serializeAttributeValue(
                     $ns,
