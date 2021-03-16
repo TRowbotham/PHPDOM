@@ -37,7 +37,6 @@ class InnerHTMLMxssSubTest extends TestCase
     ];
 
     /**
-     * @requires PHP > 7.1
      * @dataProvider whitespaceProvider
      */
     public function testInnerHTML(string $whitespace): void
