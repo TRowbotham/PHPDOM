@@ -551,8 +551,8 @@ class FragmentSerializer implements FragmentSerializerInterface
             && (
                 preg_match(Namespaces::CHAR, $data)
                 || mb_strpos($data, '--', 0, 'utf-8') !== false
+                || mb_substr($data, -1, 1, 'utf-8') === '-'
             )
-            || mb_substr($data, -1, 1, 'utf-8') === '-'
         ) {
             throw new ParserException();
         }
