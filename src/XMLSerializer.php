@@ -18,6 +18,6 @@ final class XMLSerializer
      */
     public function serializeToString(Node $root): string
     {
-        return (new FragmentSerializer())->serializeFragment($root, false);
+        return (new FragmentSerializer(false))->serializeFragment($root, false);
     }
 }

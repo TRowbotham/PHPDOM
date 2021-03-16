@@ -33,6 +33,16 @@ use function strcasecmp;
 class FragmentSerializer implements FragmentSerializerInterface
 {
     /**
+     * @var bool
+     */
+    private $isFragmentCase;
+
+    public function __construct(bool $isFragmentCase = true)
+    {
+        $this->isFragmentCase = $isFragmentCase;
+    }
+
+    /**
      * @see https://w3c.github.io/DOM-Parsing/#dfn-xml-serialization
      *
      * @throws \Rowbot\DOM\Exception\InvalidStateError
@@ -48,7 +58,7 @@ class FragmentSerializer implements FragmentSerializerInterface
             // When the given node is an Element, serialize it's children, rather than the node itself, to work around
             // spec bug https://github.com/w3c/DOM-Parsing/issues/28
             $buffer = '';
-            $childNodes = $node instanceof Element ? $node->childNodes : [$node];
+            $childNodes = $this->isFragmentCase && $node instanceof Element ? $node->childNodes : [$node];
 
             foreach ($childNodes as $child) {
                 $prefixIndex = 1;
