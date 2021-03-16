@@ -30,6 +30,8 @@ use function preg_match;
 use function str_replace;
 use function strcasecmp;
 
+use const ENT_COMPAT;
+
 class FragmentSerializer implements FragmentSerializerInterface
 {
     /**
@@ -382,7 +384,7 @@ class FragmentSerializer implements FragmentSerializerInterface
             throw new ParserException();
         }
 
-        return htmlspecialchars($value, 0);
+        return htmlspecialchars($value, ENT_COMPAT);
     }
 
     /**
