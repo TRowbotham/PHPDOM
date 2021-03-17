@@ -462,16 +462,17 @@ class FragmentSerializer implements FragmentSerializerInterface
                     }
 
                 // Work around https://github.com/w3c/DOM-Parsing/issues/29 by implementing the changes from
-                // https://github.com/w3c/DOM-Parsing/pull/30
+                // https://github.com/w3c/DOM-Parsing/pull/30. Must use $candidatePrefix variable instead of $newPrefix
+                // since the following steps rely on $candidatePrefix.
                 } elseif ($candidatePrefix === null) {
-                    $newPrefix = $attributePrefix !== null && !isset($localPrefixesMap[$attributePrefix])
+                    $candidatePrefix = $attributePrefix !== null && !isset($localPrefixesMap[$attributePrefix])
                         ? $attributePrefix
                         : $this->generatePrefix($map, $attributeNamespace, $prefixIndex);
-                    $map->add($attributeNamespace, $newPrefix);
-                    $localPrefixesMap[$newPrefix] = $attributeNamespace;
+                    $map->add($attributeNamespace, $candidatePrefix);
+                    $localPrefixesMap[$candidatePrefix] = $attributeNamespace;
                     $result .= ' ';
                     $result .= 'xmlns:';
-                    $result .= $newPrefix;
+                    $result .= $candidatePrefix;
                     $result .= '="';
                     $result .= $this->serializeAttributeValue($attributeNamespace, $requireWellFormed);
                     $result .= '"';
