@@ -223,8 +223,9 @@ class FragmentSerializer implements FragmentSerializerInterface
                     $inheritedNS = $localDefaultNamespace === ''
                         ? null
                         : $localDefaultNamespace;
-                    $markup .= $qualifiedName;
                 }
+
+                $markup .= $qualifiedName;
             } elseif ($prefix !== null) {
                 if (isset($localPrefixesMap[$prefix])) {
                     $prefix = $this->generatePrefix($map, $ns, $prefixIndex);
