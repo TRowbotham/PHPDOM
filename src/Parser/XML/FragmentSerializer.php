@@ -22,15 +22,12 @@ use Rowbot\DOM\Text;
 use Throwable;
 
 use function assert;
-use function htmlspecialchars;
 use function mb_strpos;
 use function mb_substr;
 use function md5;
 use function preg_match;
 use function str_replace;
 use function strcasecmp;
-
-use const ENT_COMPAT;
 
 class FragmentSerializer implements FragmentSerializerInterface
 {
@@ -385,7 +382,13 @@ class FragmentSerializer implements FragmentSerializerInterface
             throw new ParserException();
         }
 
-        return htmlspecialchars($value, ENT_COMPAT);
+        // In addition to &, ", <, and > listed in the spec, we also need to escape certain whitespace
+        // characters. See https://github.com/w3c/DOM-Parsing/issues/59
+        return str_replace(
+            ['&', '"', '<', '>', "\t", "\n", "\r"],
+            ['&amp;', '&quot;', '&lt;', '&gt;', '&#9;', '&#10;', '&#13;'],
+            $value
+        );
     }
 
     /**
