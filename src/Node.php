@@ -1620,7 +1620,7 @@ abstract class Node extends EventTarget
         }
 
         if (method_exists($this, 'onCloneNode')) {
-            $this->onCloneNode($copy, $document, $cloneChildren);
+            $this->onCloneNode($copy, $this, $document, $cloneChildren);
         }
 
         if ($cloneChildren) {

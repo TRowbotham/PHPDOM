@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Element\HTML;
 
 use Rowbot\DOM\Document;
+use Rowbot\DOM\Node;
 
 /**
  * @see https://html.spec.whatwg.org/multipage/scripting.html#the-template-element
@@ -42,10 +43,22 @@ class HTMLTemplateElement extends HTMLElement
         $doc->doAdoptNode($this->content);
     }
 
+    public function onCloneNode(self $copy, Node $node, Document $document, bool $cloneChildren): void
+    {
+        if (!$cloneChildren) {
+            return;
+        }
+
+        $copiedContents = $node->content->cloneNodeInternal($copy->content->nodeDocument, true);
+        $copy->content->appendChild($copiedContents);
+    }
+
     protected function __clone()
     {
         parent::__clone();
 
-        $this->content = $this->content->cloneNodeInternal($this->content->getNodeDocument(), true);
+        $doc = $this->nodeDocument->getAppropriateTemplateContentsOwnerDocument();
+        $this->content = $doc->createDocumentFragment();
+        $this->content->setHost($this);
     }
 }
