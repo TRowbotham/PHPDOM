@@ -7,6 +7,7 @@ namespace Rowbot\DOM\Parser\HTML\InsertionMode;
 use Rowbot\DOM\Element\HTML\HTMLFrameSetElement;
 use Rowbot\DOM\Element\HTML\HTMLHtmlElement;
 use Rowbot\DOM\Namespaces;
+use Rowbot\DOM\Parser\HTML\TreeBuilderContext;
 use Rowbot\DOM\Parser\Token\CharacterToken;
 use Rowbot\DOM\Parser\Token\CommentToken;
 use Rowbot\DOM\Parser\Token\DoctypeToken;
@@ -20,7 +21,7 @@ use Rowbot\DOM\Parser\Token\Token;
  */
 class InFrameSetInsertionMode extends InsertionMode
 {
-    public function processToken(Token $token): void
+    public function processToken(TreeBuilderContext $context, Token $token): void
     {
         if (
             $token instanceof CharacterToken
@@ -33,14 +34,14 @@ class InFrameSetInsertionMode extends InsertionMode
             )
         ) {
             // Insert the character.
-            $this->context->insertCharacter($token);
+            $this->insertCharacter($context, $token);
 
             return;
         }
 
         if ($token instanceof CommentToken) {
             // Insert a comment.
-            $this->context->insertComment($token);
+            $this->insertComment($context, $token);
 
             return;
         }
@@ -54,14 +55,14 @@ class InFrameSetInsertionMode extends InsertionMode
         if ($token instanceof StartTagToken) {
             if ($token->tagName === 'html') {
                 // Process the token using the rules for the "in body" insertion mode.
-                (new InBodyInsertionMode($this->context))->processToken($token);
+                (new InBodyInsertionMode())->processToken($context, $token);
 
                 return;
             }
 
             if ($token->tagName === 'frameset') {
                 // Insert an HTML element for the token.
-                $this->context->insertForeignElement($token, Namespaces::HTML);
+                $this->insertForeignElement($context, $token, Namespaces::HTML);
 
                 return;
             }
@@ -69,8 +70,8 @@ class InFrameSetInsertionMode extends InsertionMode
             if ($token->tagName === 'frame') {
                 // Insert an HTML element for the token. Immediately pop the current
                 // node off the stack of open elements.
-                $this->context->insertForeignElement($token, Namespaces::HTML);
-                $this->context->parser->openElements->pop();
+                $this->insertForeignElement($context, $token, Namespaces::HTML);
+                $context->parser->openElements->pop();
 
                 // Acknowledge the token's self-closing flag, if it is set.
                 if ($token->isSelfClosing()) {
@@ -82,7 +83,7 @@ class InFrameSetInsertionMode extends InsertionMode
 
             if ($token->tagName === 'noframes') {
                 // Process the token using the rules for the "in head" insertion mode.
-                (new InHeadInsertionMode($this->context))->processToken($token);
+                (new InHeadInsertionMode())->processToken($context, $token);
 
                 return;
             }
@@ -90,13 +91,13 @@ class InFrameSetInsertionMode extends InsertionMode
             if ($token->tagName === 'frameset') {
                 // If the current node is the root html element, then this is a
                 // parse error; ignore the token. (fragment case)
-                if ($this->context->parser->openElements->bottom() instanceof HTMLHtmlElement) {
+                if ($context->parser->openElements->bottom() instanceof HTMLHtmlElement) {
                     // Parse error.
                     // Ignore the token.
                 } else {
                     // Otherwise, pop the current node from the stack of open
                     // elements.
-                    $this->context->parser->openElements->pop();
+                    $context->parser->openElements->pop();
                 }
 
                 // If the parser was not originally created as part of the HTML
@@ -104,10 +105,10 @@ class InFrameSetInsertionMode extends InsertionMode
                 // is no longer a frameset element, then switch the insertion mode
                 // to "after frameset".
                 if (
-                    !$this->context->parser->isFragmentCase
-                    && !$this->context->parser->openElements->bottom() instanceof HTMLFrameSetElement
+                    !$context->parser->isFragmentCase
+                    && !$context->parser->openElements->bottom() instanceof HTMLFrameSetElement
                 ) {
-                    $this->context->insertionMode = new AfterFramesetInsertionMode($this->context);
+                    $context->insertionMode = new AfterFramesetInsertionMode();
                 }
 
                 return;
@@ -115,7 +116,7 @@ class InFrameSetInsertionMode extends InsertionMode
         } elseif ($token instanceof EOFToken) {
             // If the current node is not the root html element, then this is a
             // parse error.
-            if (!$this->context->parser->openElements->bottom() instanceof HTMLHtmlElement) {
+            if (!$context->parser->openElements->bottom() instanceof HTMLHtmlElement) {
                 // Parse error.
             }
 
@@ -123,7 +124,7 @@ class InFrameSetInsertionMode extends InsertionMode
             // fragment case.
 
             // Stop parsing.
-            $this->context->stopParsing();
+            $this->stopParsing($context);
 
             return;
         }

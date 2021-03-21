@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Parser\HTML\InsertionMode;
 
 use Rowbot\DOM\Element\HTML\HTMLTemplateElement;
+use Rowbot\DOM\Parser\HTML\TreeBuilderContext;
 use Rowbot\DOM\Parser\Token\CharacterToken;
 use Rowbot\DOM\Parser\Token\CommentToken;
 use Rowbot\DOM\Parser\Token\DoctypeToken;
@@ -18,7 +19,7 @@ use Rowbot\DOM\Parser\Token\Token;
  */
 class InTemplateInsertionMode extends InsertionMode
 {
-    public function processToken(Token $token): void
+    public function processToken(TreeBuilderContext $context, Token $token): void
     {
         if (
             $token instanceof CharacterToken
@@ -27,7 +28,7 @@ class InTemplateInsertionMode extends InsertionMode
         ) {
             // Process the token using the rules for the "in body" insertion
             // mode.
-            (new InBodyInsertionMode($this->context))->processToken($token);
+            (new InBodyInsertionMode())->processToken($context, $token);
 
             return;
         }
@@ -46,7 +47,7 @@ class InTemplateInsertionMode extends InsertionMode
                 || $token->tagName === 'title'
             ) {
                 // Process the token using the rules for the "in head" insertion mode.
-                (new InHeadInsertionMode($this->context))->processToken($token);
+                (new InHeadInsertionMode())->processToken($context, $token);
 
                 return;
             }
@@ -60,15 +61,15 @@ class InTemplateInsertionMode extends InsertionMode
             ) {
                 // Pop the current template insertion mode off the stack of template
                 // insertion modes.
-                $this->context->templateInsertionModes->pop();
+                $context->templateInsertionModes->pop();
 
                 // Push "in table" onto the stack of template insertion modes so
                 // that it is the new current template insertion mode.
-                $this->context->templateInsertionModes->push(InTableInsertionMode::class);
+                $context->templateInsertionModes->push(InTableInsertionMode::class);
 
                 // Switch the insertion mode to "in table", and reprocess the token.
-                $this->context->insertionMode = new InTableInsertionMode($this->context);
-                $this->context->insertionMode->processToken($token);
+                $context->insertionMode = new InTableInsertionMode();
+                $context->insertionMode->processToken($context, $token);
 
                 return;
             }
@@ -76,16 +77,16 @@ class InTemplateInsertionMode extends InsertionMode
             if ($token->tagName === 'col') {
                 // Pop the current template insertion mode off the stack of template
                 // insertion modes.
-                $this->context->templateInsertionModes->pop();
+                $context->templateInsertionModes->pop();
 
                 // Push "in column group" onto the stack of template insertion modes
                 // so that it is the new current template insertion mode.
-                $this->context->templateInsertionModes->push(InColumnGroupInsertionMode::class);
+                $context->templateInsertionModes->push(InColumnGroupInsertionMode::class);
 
                 // Switch the insertion mode to "in column group", and reprocess the
                 // token.
-                $this->context->insertionMode = new InColumnGroupInsertionMode($this->context);
-                $this->context->insertionMode->processToken($token);
+                $context->insertionMode = new InColumnGroupInsertionMode();
+                $context->insertionMode->processToken($context, $token);
 
                 return;
             }
@@ -93,16 +94,16 @@ class InTemplateInsertionMode extends InsertionMode
             if ($token->tagName === 'tr') {
                 // Pop the current template insertion mode off the stack of template
                 // insertion modes.
-                $this->context->templateInsertionModes->pop();
+                $context->templateInsertionModes->pop();
 
                 // Push "in table body" onto the stack of template insertion modes
                 // so that it is the new current template insertion mode.
-                $this->context->templateInsertionModes->push(InTableBodyInsertionMode::class);
+                $context->templateInsertionModes->push(InTableBodyInsertionMode::class);
 
                 // Switch the insertion mode to "in table body", and reprocess the
                 // token.
-                $this->context->insertionMode = new InTableBodyInsertionMode($this->context);
-                $this->context->insertionMode->processToken($token);
+                $context->insertionMode = new InTableBodyInsertionMode();
+                $context->insertionMode->processToken($context, $token);
 
                 return;
             }
@@ -110,30 +111,30 @@ class InTemplateInsertionMode extends InsertionMode
             if ($token->tagName === 'td' || $token->tagName === 'th') {
                 // Pop the current template insertion mode off the stack of template
                 // insertion modes.
-                $this->context->templateInsertionModes->pop();
+                $context->templateInsertionModes->pop();
 
                 // Push "in row" onto the stack of template insertion modes so that
                 // it is the new current template insertion mode.
-                $this->context->templateInsertionModes->push(InRowInsertionMode::class);
+                $context->templateInsertionModes->push(InRowInsertionMode::class);
 
                 // Switch the insertion mode to "in row", and reprocess the token.
-                $this->context->insertionMode = new InRowInsertionMode($this->context);
-                $this->context->insertionMode->processToken($token);
+                $context->insertionMode = new InRowInsertionMode();
+                $context->insertionMode->processToken($context, $token);
 
                 return;
             }
 
             // Pop the current template insertion mode off the stack of template
             // insertion modes.
-            $this->context->templateInsertionModes->pop();
+            $context->templateInsertionModes->pop();
 
             // Push "in body" onto the stack of template insertion modes so that
             // it is the new current template insertion mode.
-            $this->context->templateInsertionModes->push(InBodyInsertionMode::class);
+            $context->templateInsertionModes->push(InBodyInsertionMode::class);
 
             // Switch the insertion mode to "in body", and reprocess the token.
-            $this->context->insertionMode = new InBodyInsertionMode($this->context);
-            $this->context->insertionMode->processToken($token);
+            $context->insertionMode = new InBodyInsertionMode();
+            $context->insertionMode->processToken($context, $token);
 
             return;
         }
@@ -141,7 +142,7 @@ class InTemplateInsertionMode extends InsertionMode
         if ($token instanceof EndTagToken) {
             if ($token->tagName === 'template') {
                 // Process the token using the rules for the "in head" insertion mode.
-                (new InHeadInsertionMode($this->context))->processToken($token);
+                (new InHeadInsertionMode())->processToken($context, $token);
 
                 return;
             }
@@ -154,16 +155,16 @@ class InTemplateInsertionMode extends InsertionMode
         if ($token instanceof EOFToken) {
             // If there is no template element on the stack of open elements,
             // then stop parsing. (fragment case)
-            if (!$this->context->parser->openElements->containsTemplateElement()) {
-                $this->context->stopParsing();
+            if (!$context->parser->openElements->containsTemplateElement()) {
+                $this->stopParsing($context);
             } else {
                 // Parse  error
             }
 
             // Pop elements from the stack of open elements until a template
             // element has been popped from the stack.
-            while (!$this->context->parser->openElements->isEmpty()) {
-                $popped = $this->context->parser->openElements->pop();
+            while (!$context->parser->openElements->isEmpty()) {
+                $popped = $context->parser->openElements->pop();
 
                 if ($popped instanceof HTMLTemplateElement) {
                     break;
@@ -172,17 +173,17 @@ class InTemplateInsertionMode extends InsertionMode
 
             // Clear the list of active formatting elements up to the last
             // marker.
-            $this->context->activeFormattingElements->clearUpToLastMarker();
+            $context->activeFormattingElements->clearUpToLastMarker();
 
             // Pop the current template insertion mode off the stack of template
             // insertion modes.
-            $this->context->templateInsertionModes->pop();
+            $context->templateInsertionModes->pop();
 
             // Reset the insertion mode appropriately.
-            $this->context->resetInsertionMode();
+            $context->resetInsertionMode();
 
             // Reprocess the token.
-            $this->context->insertionMode->processToken($token);
+            $context->insertionMode->processToken($context, $token);
         }
     }
 }

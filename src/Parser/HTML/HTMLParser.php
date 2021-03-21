@@ -37,11 +37,6 @@ use function str_replace;
 class HTMLParser extends Parser
 {
     /**
-     * @var \Rowbot\DOM\Parser\HTML\ParserContext
-     */
-    private $context;
-
-    /**
      * The tokenizer associated with the parser.
      *
      * @var \Rowbot\DOM\Parser\HTML\Tokenizer
@@ -55,11 +50,6 @@ class HTMLParser extends Parser
      */
     private $treeBuilder;
 
-    /**
-     * @var \Rowbot\DOM\Parser\HTML\TreeBuilderContext
-     */
-    private $treeBuilderContext;
-
     public function __construct(
         Document $document,
         bool $isFragmentCase = false,
@@ -67,20 +57,20 @@ class HTMLParser extends Parser
     ) {
         parent::__construct();
 
-        $this->context = new ParserContext(
+        $context = new ParserContext(
             $contextElement,
             new OpenElementStack(),
             $this->inputStream,
             $isFragmentCase
         );
-        $this->tokenizer = new Tokenizer($this->context);
-        $this->treeBuilderContext = new TreeBuilderContext(
+        $this->tokenizer = new Tokenizer($context);
+        $context = new TreeBuilderContext(
             $document,
-            $this->context,
+            $context,
             new ActiveFormattingElementStack(),
             new SplObjectStorage()
         );
-        $this->treeBuilder = new TreeBuilder($this->treeBuilderContext);
+        $this->treeBuilder = new TreeBuilder($context);
     }
 
     /**
@@ -92,14 +82,16 @@ class HTMLParser extends Parser
         // future content that would have been added to it.
         $this->inputStream->discard();
 
+        $context = $this->treeBuilder->getContext();
+
         // Set the current document readiness to "interactive"
-        $this->treeBuilderContext->document->setReadyState(DocumentReadyState::INTERACTIVE);
+        $context->document->setReadyState(DocumentReadyState::INTERACTIVE);
 
         // Pop all the nodes off the stack of open elements.
-        $this->context->openElements->clear();
+        $context->parser->openElements->clear();
 
         // Set the current document readiness to "complete"
-        $this->treeBuilderContext->document->setReadyState(DocumentReadyState::COMPLETE);
+        $context->document->setReadyState(DocumentReadyState::COMPLETE);
     }
 
     /**
@@ -121,10 +113,11 @@ class HTMLParser extends Parser
         // Document node.
         $parser = new self($doc, true, $contextElement);
         $localName = $contextElement->localName;
+        $context = $parser->treeBuilder->getContext();
 
         // Set the state of the HTML parser's tokenization stage as follows, switching on the context element:
         if ($contextElement instanceof HTMLTitleElement || $contextElement instanceof HTMLTextAreaElement) {
-            $parser->context->tokenizerState = TokenizerState::RCDATA;
+            $context->parser->tokenizerState = TokenizerState::RCDATA;
         } elseif (
             $contextElement instanceof HTMLStyleElement
             || ($contextElement instanceof HTMLElement && $localName === 'xmp')
@@ -132,15 +125,15 @@ class HTMLParser extends Parser
             || ($contextElement instanceof HTMLElement && $localName === 'noembed')
             || ($contextElement instanceof HTMLElement && $localName === 'noframes')
         ) {
-            $parser->context->tokenizerState = TokenizerState::RAWTEXT;
+            $context->parser->tokenizerState = TokenizerState::RAWTEXT;
         } elseif ($contextElement instanceof HTMLScriptElement) {
-            $parser->context->tokenizerState = TokenizerState::SCRIPT_DATA;
+            $context->parser->tokenizerState = TokenizerState::SCRIPT_DATA;
         } elseif ($contextElement instanceof HTMLElement && $localName === 'noscript') {
-            if ($parser->context->isScriptingEnabled) {
-                $parser->context->tokenizerState = TokenizerState::RAWTEXT;
+            if ($context->parser->isScriptingEnabled) {
+                $context->parser->tokenizerState = TokenizerState::RAWTEXT;
             }
         } elseif ($contextElement instanceof HTMLElement && $localName === 'plaintext') {
-            $parser->context->tokenizerState = TokenizerState::PLAINTEXT;
+            $context->parser->tokenizerState = TokenizerState::PLAINTEXT;
         }
 
         // NOTE: For performance reasons, an implementation that does not report
@@ -159,13 +152,13 @@ class HTMLParser extends Parser
 
         // Set up the parser's stack of open elements so that it contains just
         // the single element root.
-        $parser->context->openElements->push($root);
+        $context->parser->openElements->push($root);
 
         // If the context element is a template element, push "in template" onto
         // the stack of template insertion modes so that it is the new current
         // template insertion mode.
         if ($contextElement instanceof HTMLTemplateElement) {
-            $parser->treeBuilderContext->templateInsertionModes->push(InTemplateInsertionMode::class);
+            $context->templateInsertionModes->push(InTemplateInsertionMode::class);
         }
 
         // Create a start tag token whose name is the local name of context and
@@ -179,10 +172,10 @@ class HTMLParser extends Parser
         // Let this start tag token be the start tag token of the context node,
         // e.g. for the purposes of determining if it is an HTML integration
         // point.
-        $parser->treeBuilderContext->elementTokenMap->attach($contextElement, $token);
+        $context->elementTokenMap->attach($contextElement, $token);
 
         // Reset the parser's insertion mode appropriately.
-        $parser->treeBuilderContext->resetInsertionMode();
+        $context->resetInsertionMode();
         $node = $contextElement;
 
         // Set the parser's form element pointer to the nearest node to the
@@ -192,7 +185,7 @@ class HTMLParser extends Parser
         // pointer keeps its initial value, null.)
         while ($node) {
             if ($node instanceof HTMLFormElement) {
-                $parser->context->formElementPointer = $node;
+                $context->parser->formElementPointer = $node;
 
                 break;
             }

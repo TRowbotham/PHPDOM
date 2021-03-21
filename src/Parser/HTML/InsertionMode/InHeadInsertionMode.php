@@ -26,7 +26,7 @@ use function preg_match;
  */
 class InHeadInsertionMode extends InsertionMode
 {
-    public function processToken(Token $token): void
+    public function processToken(TreeBuilderContext $context, Token $token): void
     {
         if (
             $token instanceof CharacterToken
@@ -39,14 +39,14 @@ class InHeadInsertionMode extends InsertionMode
             )
         ) {
             // Insert the character.
-            $this->context->insertCharacter($token);
+            $this->insertCharacter($context, $token);
 
             return;
         }
 
         if ($token instanceof CommentToken) {
             // Insert a comment.
-            $this->context->insertComment($token);
+            $this->insertComment($context, $token);
 
             return;
         }
@@ -60,7 +60,7 @@ class InHeadInsertionMode extends InsertionMode
         if ($token instanceof StartTagToken) {
             if ($token->tagName === 'html') {
                 // Process the token using the rules for the "in body" insertion mode.
-                (new InBodyInsertionMode($this->context))->processToken($token);
+                (new InBodyInsertionMode())->processToken($context, $token);
 
                 return;
             }
@@ -73,8 +73,8 @@ class InHeadInsertionMode extends InsertionMode
             ) {
                 // Insert an HTML element for the token. Immediately pop the current
                 // node off the stack of open elements.
-                $this->context->insertForeignElement($token, Namespaces::HTML);
-                $this->context->parser->openElements->pop();
+                $this->insertForeignElement($context, $token, Namespaces::HTML);
+                $context->parser->openElements->pop();
 
                 // Acknowledge the token's self-closing flag, if it is set.
                 if ($token->isSelfClosing()) {
@@ -87,8 +87,8 @@ class InHeadInsertionMode extends InsertionMode
             if ($token->tagName === 'meta') {
                 // Insert an HTML element for the token. Immediately pop the current
                 // node off the stack of open elements.
-                $node = $this->context->insertForeignElement($token, Namespaces::HTML);
-                $this->context->parser->openElements->pop();
+                $node = $this->insertForeignElement($context, $token, Namespaces::HTML);
+                $context->parser->openElements->pop();
 
                 // Acknowledge the token's self-closing flag, if it is set.
                 if ($token->isSelfClosing()) {
@@ -110,7 +110,7 @@ class InHeadInsertionMode extends InsertionMode
                 if (
                     $charset !== null
                     && EncodingUtils::getEncoding($charset) !== false
-                    && $this->context->parser->encodingConfidence === ParserContext::CONFIDENCE_TENTATIVE
+                    && $context->parser->encodingConfidence === ParserContext::CONFIDENCE_TENTATIVE
                 ) {
                     // TODO: change the encoding to the resulting encoding
                 } elseif (
@@ -126,39 +126,39 @@ class InHeadInsertionMode extends InsertionMode
 
             if ($token->tagName === 'title') {
                 // Follow the generic RCDATA element parsing algorithm.
-                $this->context->parseGenericTextElement($token, TreeBuilderContext::RCDATA_ELEMENT_ALGORITHM);
+                $this->parseGenericTextElement($context, $token, self::RCDATA_ELEMENT_ALGORITHM);
 
                 return;
             }
 
             if (
-                ($token->tagName === 'noscript' && $this->context->parser->isScriptingEnabled)
+                ($token->tagName === 'noscript' && $context->parser->isScriptingEnabled)
                 || ($token->tagName === 'noframes' || $token->tagName === 'style')
             ) {
                 // Follow the generic raw text element parsing algorithm.
-                $this->context->parseGenericTextElement($token, TreeBuilderContext::RAW_TEXT_ELEMENT_ALGORITHM);
+                $this->parseGenericTextElement($context, $token, self::RAW_TEXT_ELEMENT_ALGORITHM);
 
                 return;
             }
 
-            if ($token->tagName === 'noscript' && !$this->context->parser->isScriptingEnabled) {
+            if ($token->tagName === 'noscript' && !$context->parser->isScriptingEnabled) {
                 // Insert an HTML element for the token.
-                $this->context->insertForeignElement($token, Namespaces::HTML);
+                $this->insertForeignElement($context, $token, Namespaces::HTML);
 
                 // Switch the insertion mode to "in head noscript".
-                $this->context->insertionMode = new InHeadNoScriptInsertionMode($this->context);
+                $context->insertionMode = new InHeadNoScriptInsertionMode();
 
                 return;
             }
 
             if ($token->tagName === 'script') {
                 // Let the adjusted insertion location be the appropriate place for inserting a node.
-                $adjustedInsertionLocation = $this->context->getAppropriatePlaceForInsertingNode();
+                $adjustedInsertionLocation = $this->getAppropriatePlaceForInsertingNode($context);
 
                 // Create an element for the token in the HTML namespace, with the
                 // intended parent being the element in which the adjusted insertion
                 // location finds itself.
-                $node = $this->context->createElementForToken(
+                $node = $this->createElementForToken(
                     $token,
                     Namespaces::HTML,
                     $adjustedInsertionLocation[0]
@@ -176,7 +176,7 @@ class InHeadInsertionMode extends InsertionMode
                 // If the parser was originally created for the HTML fragment
                 // parsing algorithm, then mark the script element as "already
                 // started". (fragment case)
-                if ($this->context->parser->isFragmentCase) {
+                if ($context->parser->isFragmentCase) {
                     // TODO
                 }
 
@@ -189,41 +189,41 @@ class InHeadInsertionMode extends InsertionMode
 
                 // Insert the newly created element at the adjusted insertion
                 // location.
-                $this->context->insertNode($node, $adjustedInsertionLocation);
+                $this->insertNode($node, $adjustedInsertionLocation);
 
                 // Push the element onto the stack of open elements so that it is
                 // the new current node.
-                $this->context->parser->openElements->push($node);
+                $context->parser->openElements->push($node);
 
                 // Switch the tokenizer to the script data state.
-                $this->context->parser->tokenizerState = TokenizerState::SCRIPT_DATA;
+                $context->parser->tokenizerState = TokenizerState::SCRIPT_DATA;
 
                 // Let the original insertion mode be the current insertion mode.
-                $this->context->originalInsertionMode = $this->context->insertionMode;
+                $context->originalInsertionMode = $context->insertionMode;
 
                 // Switch the insertion mode to "text".
-                $this->context->insertionMode = new TextInsertionMode($this->context);
+                $context->insertionMode = new TextInsertionMode();
 
                 return;
             }
 
             if ($token->tagName === 'template') {
                 // Insert an HTML element for the token.
-                $this->context->insertForeignElement($token, Namespaces::HTML);
+                $this->insertForeignElement($context, $token, Namespaces::HTML);
 
                 // Insert a marker at the end of the list of active formatting
                 // elements.
-                $this->context->activeFormattingElements->insertMarker();
+                $context->activeFormattingElements->insertMarker();
 
                 // Set the frameset-ok flag to "not ok".
-                $this->context->framesetOk = 'not ok';
+                $context->framesetOk = 'not ok';
 
                 // Switch the insertion mode to "in template".
-                $this->context->insertionMode = new InTemplateInsertionMode($this->context);
+                $context->insertionMode = new InTemplateInsertionMode();
 
                 // Push "in template" onto the stack of template insertion modes so
                 // that it is the new current template insertion mode.
-                $this->context->templateInsertionModes->push(InTemplateInsertionMode::class);
+                $context->templateInsertionModes->push(InTemplateInsertionMode::class);
 
                 return;
             }
@@ -237,34 +237,34 @@ class InHeadInsertionMode extends InsertionMode
             if ($token->tagName === 'head') {
                 // Pop the current node (which will be the head element) off the
                 // stack of open elements.
-                $this->context->parser->openElements->pop();
+                $context->parser->openElements->pop();
 
                 // Switch the insertion mode to "after head".
-                $this->context->insertionMode = new AfterHeadInsertionMode($this->context);
+                $context->insertionMode = new AfterHeadInsertionMode();
 
                 return;
             }
 
             if ($token->tagName === 'body' || $token->tagName === 'html' || $token->tagName === 'br') {
                 // Act as described in the "anything else" entry below.
-                $this->inHeadInsertionModeAnythingElse($token);
+                $this->inHeadInsertionModeAnythingElse($context, $token);
 
                 return;
             }
 
             if ($token->tagName === 'template') {
-                if (!$this->context->parser->openElements->containsTemplateElement()) {
+                if (!$context->parser->openElements->containsTemplateElement()) {
                     // Parse error.
                     // Ignore the token.
                     return;
                 }
 
                 // Generate all implied end tags thoroughly.
-                $this->generateAllImpliedEndTagsThoroughly();
+                $this->generateAllImpliedEndTagsThoroughly($context);
 
                 // If the current node is not a template element, then this is
                 // a parse error.
-                $currentNode = $this->context->parser->openElements->bottom();
+                $currentNode = $context->parser->openElements->bottom();
 
                 if (!$currentNode instanceof HTMLTemplateElement) {
                     // Parse error
@@ -272,8 +272,8 @@ class InHeadInsertionMode extends InsertionMode
 
                 // Pop elements from the stack of open elements until a
                 // template element has been popped from the stack.
-                while (!$this->context->parser->openElements->isEmpty()) {
-                    $popped = $this->context->parser->openElements->pop();
+                while (!$context->parser->openElements->isEmpty()) {
+                    $popped = $context->parser->openElements->pop();
 
                     if ($popped instanceof HTMLTemplateElement) {
                         break;
@@ -282,14 +282,14 @@ class InHeadInsertionMode extends InsertionMode
 
                 // Clear the list of active formatting elements up to the last
                 // marker.
-                $this->context->activeFormattingElements->clearUpToLastMarker();
+                $context->activeFormattingElements->clearUpToLastMarker();
 
                 // Pop the current template insertion mode off the stack of
                 // template insertion modes.
-                $this->context->templateInsertionModes->pop();
+                $context->templateInsertionModes->pop();
 
                 // Reset the insertion mode appropriately.
-                $this->context->resetInsertionMode();
+                $context->resetInsertionMode();
 
                 return;
             }
@@ -299,34 +299,34 @@ class InHeadInsertionMode extends InsertionMode
             return;
         }
 
-        $this->inHeadInsertionModeAnythingElse($token);
+        $this->inHeadInsertionModeAnythingElse($context, $token);
     }
 
     /**
      * The "in head" insertion mode "anything else" steps.
      */
-    private function inHeadInsertionModeAnythingElse(Token $token): void
+    private function inHeadInsertionModeAnythingElse(TreeBuilderContext $context, Token $token): void
     {
         // Pop the current node (which will be the head element) off the
         // stack of open elements.
-        $this->context->parser->openElements->pop();
+        $context->parser->openElements->pop();
 
         // Switch the insertion mode to "after head".
-        $this->context->insertionMode = new AfterHeadInsertionMode($this->context);
+        $context->insertionMode = new AfterHeadInsertionMode();
 
         // Reprocess the token.
-        $this->context->insertionMode->processToken($token);
+        $context->insertionMode->processToken($context, $token);
     }
 
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#generate-all-implied-end-tags-thoroughly
      */
-    private function generateAllImpliedEndTagsThoroughly(): void
+    private function generateAllImpliedEndTagsThoroughly(TreeBuilderContext $context): void
     {
         $pattern = '/^(caption|colgroup|dd|dt|li|optgroup|option|p|rb|rp|rt';
         $pattern .= '|rtc|tbody|td|tfoot|th|thead|tr)$/';
 
-        foreach ($this->context->parser->openElements as $currentNode) {
+        foreach ($context->parser->openElements as $currentNode) {
             if (
                 !$currentNode instanceof HTMLElement
                 || !preg_match($pattern, $currentNode->localName)
@@ -334,7 +334,7 @@ class InHeadInsertionMode extends InsertionMode
                 break;
             }
 
-            $this->context->parser->openElements->pop();
+            $context->parser->openElements->pop();
         }
     }
 }

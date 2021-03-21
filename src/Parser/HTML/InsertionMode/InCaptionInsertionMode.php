@@ -6,6 +6,7 @@ namespace Rowbot\DOM\Parser\HTML\InsertionMode;
 
 use Rowbot\DOM\Element\HTML\HTMLTableCaptionElement;
 use Rowbot\DOM\Namespaces;
+use Rowbot\DOM\Parser\HTML\TreeBuilderContext;
 use Rowbot\DOM\Parser\Token\EndTagToken;
 use Rowbot\DOM\Parser\Token\StartTagToken;
 use Rowbot\DOM\Parser\Token\TagToken;
@@ -16,25 +17,25 @@ use Rowbot\DOM\Parser\Token\Token;
  */
 class InCaptionInsertionMode extends InsertionMode
 {
-    public function processToken(Token $token): void
+    public function processToken(TreeBuilderContext $context, Token $token): void
     {
         if ($token instanceof EndTagToken) {
             if ($token->tagName === 'caption') {
                 // If the stack of open elements does not have a caption element in
                 // table scope, this is a parse error; ignore the token. (fragment
                 // case)
-                if (!$this->context->parser->openElements->hasElementInTableScope('caption', Namespaces::HTML)) {
+                if (!$context->parser->openElements->hasElementInTableScope('caption', Namespaces::HTML)) {
                     // Parse error.
                     // Ignore the token.
                     return;
                 }
 
                 // Generate implied end tags.
-                $this->context->generateImpliedEndTags();
+                $this->generateImpliedEndTags($context);
 
                 // Now, if the current node is not a caption element, then this is
                 // a parse error.
-                $currentNode = $this->context->parser->openElements->bottom();
+                $currentNode = $context->parser->openElements->bottom();
 
                 if (!$currentNode instanceof HTMLTableCaptionElement) {
                     // Parse error.
@@ -42,8 +43,8 @@ class InCaptionInsertionMode extends InsertionMode
 
                 // Pop elements from this stack until a caption element has been
                 // popped from the stack.
-                while (!$this->context->parser->openElements->isEmpty()) {
-                    $popped = $this->context->parser->openElements->pop();
+                while (!$context->parser->openElements->isEmpty()) {
+                    $popped = $context->parser->openElements->pop();
 
                     if ($popped instanceof HTMLTableCaptionElement) {
                         break;
@@ -52,16 +53,16 @@ class InCaptionInsertionMode extends InsertionMode
 
                 // Clear the list of active formatting elements up to the last
                 // marker.
-                $this->context->activeFormattingElements->clearUpToLastMarker();
+                $context->activeFormattingElements->clearUpToLastMarker();
 
                 // Switch the insertion mode to "in table".
-                $this->context->insertionMode = new InTableInsertionMode($this->context);
+                $context->insertionMode = new InTableInsertionMode();
 
                 return;
             }
 
             if ($token->tagName === 'table') {
-                $this->extracted($token);
+                $this->extracted($context, $token);
 
                 return;
             }
@@ -96,22 +97,22 @@ class InCaptionInsertionMode extends InsertionMode
                 || $token->tagName === 'tr'
             )
         ) {
-            $this->extracted($token);
+            $this->extracted($context, $token);
 
             return;
         }
 
         // Process the token using the rules for the "in body" insertion
         // mode.
-        (new InBodyInsertionMode($this->context))->processToken($token);
+        (new InBodyInsertionMode())->processToken($context, $token);
     }
 
-    private function extracted(TagToken $token): void
+    private function extracted(TreeBuilderContext $context, TagToken $token): void
     {
         // If the stack of open elements does not have a caption element
         // in table scope, this is a parse error; ignore the token.
         // (fragment case)
-        if (!$this->context->parser->openElements->hasElementInTableScope('caption', Namespaces::HTML)) {
+        if (!$context->parser->openElements->hasElementInTableScope('caption', Namespaces::HTML)) {
             // Parse error.
             // Ignore the token.
 
@@ -119,11 +120,11 @@ class InCaptionInsertionMode extends InsertionMode
         }
 
         // Generate implied end tags.
-        $this->context->generateImpliedEndTags();
+        $this->generateImpliedEndTags($context);
 
         // Now, if the current node is not a caption element, then this
         // is a parse error.
-        $currentNode = $this->context->parser->openElements->bottom();
+        $currentNode = $context->parser->openElements->bottom();
 
         if (!$currentNode instanceof HTMLTableCaptionElement) {
             // Parse error.
@@ -131,8 +132,8 @@ class InCaptionInsertionMode extends InsertionMode
 
         // Pop elements from this stack until a caption element has
         // been popped from the stack.
-        while (!$this->context->parser->openElements->isEmpty()) {
-            $popped = $this->context->parser->openElements->pop();
+        while (!$context->parser->openElements->isEmpty()) {
+            $popped = $context->parser->openElements->pop();
 
             if ($popped instanceof HTMLTableCaptionElement) {
                 break;
@@ -141,12 +142,12 @@ class InCaptionInsertionMode extends InsertionMode
 
         // Clear the list of active formatting elements up to the last
         // marker.
-        $this->context->activeFormattingElements->clearUpToLastMarker();
+        $context->activeFormattingElements->clearUpToLastMarker();
 
         // Switch the insertion mode to "in table".
-        $this->context->insertionMode = new InTableInsertionMode($this->context);
+        $context->insertionMode = new InTableInsertionMode();
 
         // Reprocess the token.
-        $this->context->insertionMode->processToken($token);
+        $context->insertionMode->processToken($context, $token);
     }
 }

@@ -6,6 +6,7 @@ namespace Rowbot\DOM\Parser\HTML\InsertionMode;
 
 use Rowbot\DOM\Element\HTML\HTMLTableColElement;
 use Rowbot\DOM\Namespaces;
+use Rowbot\DOM\Parser\HTML\TreeBuilderContext;
 use Rowbot\DOM\Parser\Token\CharacterToken;
 use Rowbot\DOM\Parser\Token\CommentToken;
 use Rowbot\DOM\Parser\Token\DoctypeToken;
@@ -19,7 +20,7 @@ use Rowbot\DOM\Parser\Token\Token;
  */
 class InColumnGroupInsertionMode extends InsertionMode
 {
-    public function processToken(Token $token): void
+    public function processToken(TreeBuilderContext $context, Token $token): void
     {
         if (
             $token instanceof CharacterToken
@@ -32,14 +33,14 @@ class InColumnGroupInsertionMode extends InsertionMode
             )
         ) {
             // Insert the character.
-            $this->context->insertCharacter($token);
+            $this->insertCharacter($context, $token);
 
             return;
         }
 
         if ($token instanceof CommentToken) {
             // Insert a comment.
-            $this->context->insertComment($token);
+            $this->insertComment($context, $token);
 
             return;
         }
@@ -53,7 +54,7 @@ class InColumnGroupInsertionMode extends InsertionMode
         if ($token instanceof StartTagToken) {
             if ($token->tagName === 'html') {
                 // Process the token using the rules for the "in body" insertion mode.
-                (new InBodyInsertionMode($this->context))->processToken($token);
+                (new InBodyInsertionMode())->processToken($context, $token);
 
                 return;
             }
@@ -61,8 +62,8 @@ class InColumnGroupInsertionMode extends InsertionMode
             if ($token->tagName === 'col') {
                 // Insert an HTML element for the token. Immediately pop the current
                 // node off the stack of open elements.
-                $this->context->insertForeignElement($token, Namespaces::HTML);
-                $this->context->parser->openElements->pop();
+                $this->insertForeignElement($context, $token, Namespaces::HTML);
+                $context->parser->openElements->pop();
 
                 // Acknowledge the token's self-closing flag, if it is set.
                 if ($token->isSelfClosing()) {
@@ -75,7 +76,7 @@ class InColumnGroupInsertionMode extends InsertionMode
             if ($token->tagName === 'template') {
                 // Process the token using the rules for the "in head" insertion
                 // mode.
-                (new InHeadInsertionMode($this->context))->processToken($token);
+                (new InHeadInsertionMode())->processToken($context, $token);
 
                 return;
             }
@@ -83,7 +84,7 @@ class InColumnGroupInsertionMode extends InsertionMode
             if ($token->tagName === 'colgroup') {
                 // If the current node is not a colgroup element, then this is a
                 // parse error; ignore the token.
-                $currentNode = $this->context->parser->openElements->bottom();
+                $currentNode = $context->parser->openElements->bottom();
 
                 if (
                     !(
@@ -98,8 +99,8 @@ class InColumnGroupInsertionMode extends InsertionMode
 
                 // Otherwise, pop the current node from the stack of open elements.
                 // Switch the insertion mode to "in table".
-                $this->context->parser->openElements->pop();
-                $this->context->insertionMode = new InTableInsertionMode($this->context);
+                $context->parser->openElements->pop();
+                $context->insertionMode = new InTableInsertionMode();
 
                 return;
             }
@@ -113,21 +114,21 @@ class InColumnGroupInsertionMode extends InsertionMode
             if ($token->tagName === 'template') {
                 // Process the token using the rules for the "in head" insertion
                 // mode.
-                (new InHeadInsertionMode($this->context))->processToken($token);
+                (new InHeadInsertionMode())->processToken($context, $token);
 
                 return;
             }
         } elseif ($token instanceof EOFToken) {
             // Process the token using the rules for the "in body" insertion
             // mode.
-            (new InBodyInsertionMode($this->context))->processToken($token);
+            (new InBodyInsertionMode())->processToken($context, $token);
 
             return;
         }
 
         // If the current node is not a colgroup element, then this is a
         // parse error; ignore the token.
-        $currentNode = $this->context->parser->openElements->bottom();
+        $currentNode = $context->parser->openElements->bottom();
 
         if (!($currentNode instanceof HTMLTableColElement && $currentNode->localName === 'colgroup')) {
             // Parse error.
@@ -137,12 +138,12 @@ class InColumnGroupInsertionMode extends InsertionMode
 
         // Otherwise, pop the current node from the stack of open
         // elements.
-        $this->context->parser->openElements->pop();
+        $context->parser->openElements->pop();
 
         // Switch the insertion mode to "in table".
-        $this->context->insertionMode = new InTableInsertionMode($this->context);
+        $context->insertionMode = new InTableInsertionMode();
 
         // Reprocess the token.
-        $this->context->insertionMode->processToken($token);
+        $context->insertionMode->processToken($context, $token);
     }
 }

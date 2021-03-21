@@ -6,6 +6,7 @@ namespace Rowbot\DOM\Parser\HTML\InsertionMode;
 
 use Rowbot\DOM\DocumentMode;
 use Rowbot\DOM\DocumentType;
+use Rowbot\DOM\Parser\HTML\TreeBuilderContext;
 use Rowbot\DOM\Parser\Token\CharacterToken;
 use Rowbot\DOM\Parser\Token\CommentToken;
 use Rowbot\DOM\Parser\Token\DoctypeToken;
@@ -19,7 +20,7 @@ use function mb_strpos;
  */
 class InitialInsertionMode extends InsertionMode
 {
-    public function processToken(Token $token): void
+    public function processToken(TreeBuilderContext $context, Token $token): void
     {
         if (
             $token instanceof CharacterToken
@@ -37,31 +38,31 @@ class InitialInsertionMode extends InsertionMode
         }
 
         if ($token instanceof CommentToken) {
-            $this->context->insertComment($token, [$this->context->document, 'beforeend']);
+            $this->insertComment($context, $token, [$context->document, 'beforeend']);
 
             return;
         }
 
         if ($token instanceof DoctypeToken) {
-            $this->processDoctypeToken($token);
+            $this->processDoctypeToken($context, $token);
 
             return;
         }
 
         // If the document is not an iframe srcdoc document, then this
         // is a parse error; set the Document to quirks mode.
-        if (!$this->context->document->isIframeSrcdoc()) {
+        if (!$context->document->isIframeSrcdoc()) {
             // Parse error.
-            $this->context->document->setMode(DocumentMode::QUIRKS);
+            $context->document->setMode(DocumentMode::QUIRKS);
         }
 
         // In any case, switch the insertion mode to "before html", then
         // reprocess the token.
-        $this->context->insertionMode = new BeforeHTMLInsertionMode($this->context);
-        $this->context->insertionMode->processToken($token);
+        $context->insertionMode = new BeforeHTMLInsertionMode();
+        $context->insertionMode->processToken($context, $token);
     }
 
-    private function processDoctypeToken(DoctypeToken $token): void
+    private function processDoctypeToken(TreeBuilderContext $context, DoctypeToken $token): void
     {
         $publicId = $token->publicIdentifier;
         $systemId = $token->systemIdentifier;
@@ -86,11 +87,11 @@ class InitialInsertionMode extends InsertionMode
         // null and empty lists as appropriate. Associate the DocumentType
         // node with the Document object so that it is returned as the value
         // of the doctype attribute of the Document object.
-        $doctype = new DocumentType($this->context->document, $name ?? '', $publicId ?? '', $systemId ?? '');
-        $this->context->document->appendChild($doctype);
+        $doctype = new DocumentType($context->document, $name ?? '', $publicId ?? '', $systemId ?? '');
+        $context->document->appendChild($doctype);
 
         // If the document is not an iframe srcdoc document...
-        if (!$this->context->document->isIframeSrcdoc()) {
+        if (!$context->document->isIframeSrcdoc()) {
             // and the DOCTYPE token matches one of the conditions in the
             // following list, the set the Document to quirks mode.
             if (
@@ -164,7 +165,7 @@ class InitialInsertionMode extends InsertionMode
                     '-//W3C//DTD HTML 4.01 Transitional//',
                 ]))
             ) {
-                $this->context->document->setMode(DocumentMode::QUIRKS);
+                $context->document->setMode(DocumentMode::QUIRKS);
 
                 // Otherwise, if the DOCTYPE token matches one of the
                 // conditions in the following list, then set the Document
@@ -179,12 +180,12 @@ class InitialInsertionMode extends InsertionMode
                     '-//W3C//DTD HTML 4.01 Transitional//',
                 ]))
             ) {
-                $this->context->document->setMode(DocumentMode::LIMITED_QUIRKS);
+                $context->document->setMode(DocumentMode::LIMITED_QUIRKS);
             }
         }
 
         // The, switch the insertion mode to "before html".
-        $this->context->insertionMode = new BeforeHTMLInsertionMode($this->context);
+        $context->insertionMode = new BeforeHTMLInsertionMode();
     }
 
     /**

@@ -6,6 +6,7 @@ namespace Rowbot\DOM\Parser\HTML\InsertionMode;
 
 use Rowbot\DOM\Element\HTML\HTMLTableCellElement;
 use Rowbot\DOM\Namespaces;
+use Rowbot\DOM\Parser\HTML\TreeBuilderContext;
 use Rowbot\DOM\Parser\Token\EndTagToken;
 use Rowbot\DOM\Parser\Token\StartTagToken;
 use Rowbot\DOM\Parser\Token\Token;
@@ -15,27 +16,27 @@ use Rowbot\DOM\Parser\Token\Token;
  */
 class InCellInsertionMode extends InsertionMode
 {
-    public function processToken(Token $token): void
+    public function processToken(TreeBuilderContext $context, Token $token): void
     {
         if ($token instanceof EndTagToken) {
             if ($token->tagName === 'td' || $token->tagName === 'th') {
                 // If the stack of open elements does not have an element in table
                 // scope that is an HTML element with the same tag name as that of
                 // the token, then this is a parse error; ignore the token.
-                if (!$this->context->parser->openElements->hasElementInTableScope($token->tagName, Namespaces::HTML)) {
+                if (!$context->parser->openElements->hasElementInTableScope($token->tagName, Namespaces::HTML)) {
                     // Parse error.
                     // Ignore the token.
                     return;
                 }
 
                 // Generate implied end tags.
-                $this->context->generateImpliedEndTags();
+                $this->generateImpliedEndTags($context);
 
                 // Now, if the current node is not an HTML element with the same
                 // tag name as the token, then this is a parse error.
                 if (
-                    !$this->context->isHTMLElementWithName(
-                        $this->context->parser->openElements->bottom(),
+                    !$this->isHTMLElementWithName(
+                        $context->parser->openElements->bottom(),
                         $token->tagName
                     )
                 ) {
@@ -45,10 +46,10 @@ class InCellInsertionMode extends InsertionMode
                 // Pop elements from the stack of open elements stack until an
                 // HTML element with the same tag name as the token has been popped
                 // from the stack.
-                while (!$this->context->parser->openElements->isEmpty()) {
+                while (!$context->parser->openElements->isEmpty()) {
                     if (
-                        $this->context->isHTMLElementWithName(
-                            $this->context->parser->openElements->pop(),
+                        $this->isHTMLElementWithName(
+                            $context->parser->openElements->pop(),
                             $token->tagName
                         )
                     ) {
@@ -58,10 +59,10 @@ class InCellInsertionMode extends InsertionMode
 
                 // Clear the list of active formatting elements up to the last
                 // marker.
-                $this->context->activeFormattingElements->clearUpToLastMarker();
+                $context->activeFormattingElements->clearUpToLastMarker();
 
                 // Switch the insertion mode to "in row".
-                $this->context->insertionMode = new InRowInsertionMode($this->context);
+                $context->insertionMode = new InRowInsertionMode();
 
                 return;
             }
@@ -89,15 +90,15 @@ class InCellInsertionMode extends InsertionMode
                 // If the stack of open elements does not have an element in table
                 // scope that is an HTML element with the same tag name as that of
                 // the token, then this is a parse error; ignore the token.
-                if (!$this->context->parser->openElements->hasElementInTableScope($token->tagName, Namespaces::HTML)) {
+                if (!$context->parser->openElements->hasElementInTableScope($token->tagName, Namespaces::HTML)) {
                     // Parse error.
                     // Ignore the token.
                     return;
                 }
 
                 // Otherwise, close the cell and reprocess the token.
-                $this->closeCell();
-                $this->context->insertionMode->processToken($token);
+                $this->closeCell($context);
+                $context->insertionMode->processToken($context, $token);
 
                 return;
             }
@@ -119,8 +120,8 @@ class InCellInsertionMode extends InsertionMode
             // in table scope, then this is a parse error; ignore the token.
             // (fragment case)
             if (
-                !$this->context->parser->openElements->hasElementInTableScope('td', Namespaces::HTML)
-                && !$this->context->parser->openElements->hasElementInTableScope(
+                !$context->parser->openElements->hasElementInTableScope('td', Namespaces::HTML)
+                && !$context->parser->openElements->hasElementInTableScope(
                     'th',
                     Namespaces::HTML
                 )
@@ -131,44 +132,44 @@ class InCellInsertionMode extends InsertionMode
             }
 
             // Otherwise, close the cell and reprocess the token.
-            $this->closeCell();
-            $this->context->insertionMode->processToken($token);
+            $this->closeCell($context);
+            $context->insertionMode->processToken($context, $token);
 
             return;
         }
 
         // Process the token using the rules for the "in body" insertion
         // mode.
-        (new InBodyInsertionMode($this->context))->processToken($token);
+        (new InBodyInsertionMode())->processToken($context, $token);
     }
 
     /**
      * Performs the steps necessary to close a table cell (td) element.
      */
-    private function closeCell(): void
+    private function closeCell(TreeBuilderContext $context): void
     {
         // Generate implied end tags.
-        $this->context->generateImpliedEndTags();
+        $this->generateImpliedEndTags($context);
 
         // If the current node is not now a td element or a th element, then
         // this is a parse error.
-        if (!$this->context->parser->openElements->bottom() instanceof HTMLTableCellElement) {
+        if (!$context->parser->openElements->bottom() instanceof HTMLTableCellElement) {
             // Parse error.
         }
 
         // Pop elements from the stack of open elements stack until a td
         // element or a th element has been popped from the stack.
-        while (!$this->context->parser->openElements->isEmpty()) {
-            if ($this->context->parser->openElements->pop() instanceof HTMLTableCellElement) {
+        while (!$context->parser->openElements->isEmpty()) {
+            if ($context->parser->openElements->pop() instanceof HTMLTableCellElement) {
                 break;
             }
         }
 
         // Clear the list of active formatting elements up to the last marker.
-        $this->context->activeFormattingElements->clearUpToLastMarker();
+        $context->activeFormattingElements->clearUpToLastMarker();
 
         // Switch the insertion mode to "in row".
-        $this->context->insertionMode = new InRowInsertionMode($this->context);
+        $context->insertionMode = new InRowInsertionMode();
 
         // NOTE: The stack of open elements cannot have both a td and a th
         // element in table scope at the same time, nor can it have neither

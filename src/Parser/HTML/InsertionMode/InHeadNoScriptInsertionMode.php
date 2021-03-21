@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Parser\HTML\InsertionMode;
 
+use Rowbot\DOM\Parser\HTML\TreeBuilderContext;
 use Rowbot\DOM\Parser\Token\CharacterToken;
 use Rowbot\DOM\Parser\Token\CommentToken;
 use Rowbot\DOM\Parser\Token\DoctypeToken;
@@ -16,7 +17,7 @@ use Rowbot\DOM\Parser\Token\Token;
  */
 class InHeadNoScriptInsertionMode extends InsertionMode
 {
-    public function processToken(Token $token): void
+    public function processToken(TreeBuilderContext $context, Token $token): void
     {
         if ($token instanceof DoctypeToken) {
             // Parse error.
@@ -26,7 +27,7 @@ class InHeadNoScriptInsertionMode extends InsertionMode
             if ($token->tagName === 'html') {
                 // Process the token using the rules for the "in body" insertion
                 // mode.
-                (new InBodyInsertionMode($this->context))->processToken($token);
+                (new InBodyInsertionMode())->processToken($context, $token);
 
                 return;
             }
@@ -40,7 +41,7 @@ class InHeadNoScriptInsertionMode extends InsertionMode
                 || $token->tagName === 'style'
             ) {
                 // Process the token using the rules for the "in head" insertion mode.
-                (new InHeadInsertionMode($this->context))->processToken($token);
+                (new InHeadInsertionMode())->processToken($context, $token);
 
                 return;
             }
@@ -55,17 +56,17 @@ class InHeadNoScriptInsertionMode extends InsertionMode
                 // Pop the current node (which will be a noscript element) from the
                 // stack of open elements; the new current node will be a head
                 // element.
-                $this->context->parser->openElements->pop();
+                $context->parser->openElements->pop();
 
                 // Switch the insertion mode to "in head".
-                $this->context->insertionMode = new InHeadInsertionMode($this->context);
+                $context->insertionMode = new InHeadInsertionMode();
 
                 return;
             }
 
             if ($token->tagName === 'br') {
                 // Act as described in the "anything else" entry below.
-                $this->inHeadNoScriptInsertionModeAnythingElse($token);
+                $this->inHeadNoScriptInsertionModeAnythingElse($context, $token);
 
                 return;
             }
@@ -88,29 +89,29 @@ class InHeadNoScriptInsertionMode extends InsertionMode
         ) {
             // Process the token using the rules for the "in head" insertion
             // mode.
-            (new InHeadInsertionMode($this->context))->processToken($token);
+            (new InHeadInsertionMode())->processToken($context, $token);
 
             return;
         }
 
-        $this->inHeadNoScriptInsertionModeAnythingElse($token);
+        $this->inHeadNoScriptInsertionModeAnythingElse($context, $token);
     }
 
     /**
      * The "in head noscript" insertion mode "anything else" steps.
      */
-    private function inHeadNoScriptInsertionModeAnythingElse(Token $token): void
+    private function inHeadNoScriptInsertionModeAnythingElse(TreeBuilderContext $context, Token $token): void
     {
         // Parse error.
         // Pop the current node (which will be a noscript element) from the
         // stack of open elements; the new current node will be a head
         // element.
-        $this->context->parser->openElements->pop();
+        $context->parser->openElements->pop();
 
         // Switch the insertion mode to "in head".
-        $this->context->insertionMode = new InHeadInsertionMode($this->context);
+        $context->insertionMode = new InHeadInsertionMode();
 
         // Reprocess the token.
-        $this->context->insertionMode->processToken($token);
+        $context->insertionMode->processToken($context, $token);
     }
 }

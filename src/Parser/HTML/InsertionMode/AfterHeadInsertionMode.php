@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Parser\HTML\InsertionMode;
 
 use Rowbot\DOM\Namespaces;
+use Rowbot\DOM\Parser\HTML\TreeBuilderContext;
 use Rowbot\DOM\Parser\Token\CharacterToken;
 use Rowbot\DOM\Parser\Token\CommentToken;
 use Rowbot\DOM\Parser\Token\DoctypeToken;
@@ -17,7 +18,7 @@ use Rowbot\DOM\Parser\Token\Token;
  */
 class AfterHeadInsertionMode extends InsertionMode
 {
-    public function processToken(Token $token): void
+    public function processToken(TreeBuilderContext $context, Token $token): void
     {
         if (
             $token instanceof CharacterToken
@@ -30,12 +31,12 @@ class AfterHeadInsertionMode extends InsertionMode
             )
         ) {
             // Insert the character.
-            $this->context->insertCharacter($token);
+            $this->insertCharacter($context, $token);
 
             return;
         } elseif ($token instanceof CommentToken) {
             // Insert a comment.
-            $this->context->insertComment($token);
+            $this->insertComment($context, $token);
 
             return;
         } elseif ($token instanceof DoctypeToken) {
@@ -46,30 +47,30 @@ class AfterHeadInsertionMode extends InsertionMode
             if ($token->tagName === 'html') {
                 // Process the token using the rules for the "in body" insertion
                 // mode.
-                (new InBodyInsertionMode($this->context))->processToken($token);
+                (new InBodyInsertionMode())->processToken($context, $token);
 
                 return;
             }
 
             if ($token->tagName === 'body') {
                 // Insert an HTML element for the token.
-                $this->context->insertForeignElement($token, Namespaces::HTML);
+                $this->insertForeignElement($context, $token, Namespaces::HTML);
 
                 // Set the frameset-ok flag to "not ok".
-                $this->context->framesetOk = 'not ok';
+                $context->framesetOk = 'not ok';
 
                 // Switch the insertion mode to "in body".
-                $this->context->insertionMode = new InBodyInsertionMode($this->context);
+                $context->insertionMode = new InBodyInsertionMode();
 
                 return;
             }
 
             if ($token->tagName === 'frameset') {
                 // Insert an HTML element for the token.
-                $this->context->insertForeignElement($token, Namespaces::HTML);
+                $this->insertForeignElement($context, $token, Namespaces::HTML);
 
                 // Switch the insertion mode to "in frameset".
-                $this->context->insertionMode = new InFrameSetInsertionMode($this->context);
+                $context->insertionMode = new InFrameSetInsertionMode();
 
                 return;
             }
@@ -89,17 +90,17 @@ class AfterHeadInsertionMode extends InsertionMode
                 // Parse error
                 // Push the node pointed to by the head element pointer onto the
                 // stack of open elements.
-                $this->context->parser->openElements->push($this->context->parser->headElementPointer);
+                $context->parser->openElements->push($context->parser->headElementPointer);
 
                 // Process the token using the rules for the "in head" insertion
                 // mode.
-                (new InHeadInsertionMode($this->context))->processToken($token);
+                (new InHeadInsertionMode())->processToken($context, $token);
 
                 // Remove the node pointed to by the head element pointer from the
                 // stack of open elements. (It might not be the current node at
                 // this point.)
                 // NOTE: The head element pointer cannot be null at this point.
-                $this->context->parser->openElements->remove($this->context->parser->headElementPointer);
+                $context->parser->openElements->remove($context->parser->headElementPointer);
 
                 return;
             }
@@ -112,14 +113,14 @@ class AfterHeadInsertionMode extends InsertionMode
         } elseif ($token instanceof EndTagToken) {
             if ($token->tagName === 'template') {
                 // Process the token using the rules for the "in head" insertion mode.
-                (new InHeadInsertionMode($this->context))->processToken($token);
+                (new InHeadInsertionMode())->processToken($context, $token);
 
                 return;
             }
 
             if ($token->tagName === 'body' || $token->tagName === 'html' || $token->tagName === 'br') {
                 // Act as described in the "anything else" entry below.
-                $this->afterHeadInsertionModeAnythingElse($token);
+                $this->afterHeadInsertionModeAnythingElse($context, $token);
 
                 return;
             }
@@ -129,22 +130,22 @@ class AfterHeadInsertionMode extends InsertionMode
             return;
         }
 
-        $this->afterHeadInsertionModeAnythingElse($token);
+        $this->afterHeadInsertionModeAnythingElse($context, $token);
     }
 
     /**
      * The "after head" insertion mode's "anything else" steps.
      */
-    private function afterHeadInsertionModeAnythingElse(Token $token): void
+    private function afterHeadInsertionModeAnythingElse(TreeBuilderContext $context, Token $token): void
     {
         // Insert an HTML element for a "body" start tag token with no
         // attributes.
-        $this->context->insertForeignElement(new StartTagToken('body'), Namespaces::HTML);
+        $this->insertForeignElement($context, new StartTagToken('body'), Namespaces::HTML);
 
         // Switch the insertion mode to "in body".
-        $this->context->insertionMode = new InBodyInsertionMode($this->context);
+        $context->insertionMode = new InBodyInsertionMode();
 
         // Reprocess the current token
-        $this->context->insertionMode->processToken($token);
+        $context->insertionMode->processToken($context, $token);
     }
 }

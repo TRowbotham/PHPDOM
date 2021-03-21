@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Parser\HTML\InsertionMode;
 
+use Rowbot\DOM\Parser\HTML\TreeBuilderContext;
 use Rowbot\DOM\Parser\Token\CharacterToken;
 use Rowbot\DOM\Parser\Token\Token;
 
@@ -14,7 +15,7 @@ class InTableTextInsertionMode extends InsertionMode
 {
     use InTableInsertionModeAnythingElseTrait;
 
-    public function processToken(Token $token): void
+    public function processToken(TreeBuilderContext $context, Token $token): void
     {
         if ($token instanceof CharacterToken) {
             if ($token->data === "\x00") {
@@ -25,7 +26,7 @@ class InTableTextInsertionMode extends InsertionMode
 
             // Append the character token to the pending table character tokens
             // list.
-            $this->context->pendingTableCharacterTokens[] = $token;
+            $context->pendingTableCharacterTokens[] = $token;
 
             return;
         }
@@ -37,10 +38,9 @@ class InTableTextInsertionMode extends InsertionMode
         // "anything else" entry in the "in table" insertion mode.
         // Otherwise, insert the characters given by the pending table
         // character tokens list.
-        $obj = $this->context;
         $methodName = 'insertCharacter';
 
-        foreach ($this->context->pendingTableCharacterTokens as $characterToken) {
+        foreach ($context->pendingTableCharacterTokens as $characterToken) {
             if (
                 $characterToken->data !== "\x09"
                 && $characterToken->data !== "\x0A"
@@ -48,20 +48,19 @@ class InTableTextInsertionMode extends InsertionMode
                 && $characterToken->data !== "\x0D"
                 && $characterToken->data !== "\x20"
             ) {
-                $obj = $this;
                 $methodName = 'inTableInsertionModeAnythingElse';
 
                 break;
             }
         }
 
-        foreach ($this->context->pendingTableCharacterTokens as $characterToken) {
-            $obj->{$methodName}($characterToken);
+        foreach ($context->pendingTableCharacterTokens as $characterToken) {
+            $this->{$methodName}($context, $characterToken);
         }
 
         // Switch the insertion mode to the original insertion mode and
         // reprocess the token.
-        $this->context->insertionMode = $this->context->originalInsertionMode;
-        $this->context->insertionMode->processToken($token);
+        $context->insertionMode = $context->originalInsertionMode;
+        $context->insertionMode->processToken($context, $token);
     }
 }

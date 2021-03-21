@@ -41,7 +41,7 @@ use function preg_match;
  */
 class InBodyInsertionMode extends InsertionMode
 {
-    public function processToken(Token $token): void
+    public function processToken(TreeBuilderContext $context, Token $token): void
     {
         if ($token instanceof CharacterToken) {
             if ($token->data === "\x00") {
@@ -51,10 +51,10 @@ class InBodyInsertionMode extends InsertionMode
             }
 
             // Reconstruct the active formatting elements, if any.
-            $this->reconstructActiveFormattingElements();
+            $this->reconstructActiveFormattingElements($context);
 
             // Insert the token's character.
-            $this->context->insertCharacter($token);
+            $this->insertCharacter($context, $token);
 
             if (
                 $token->data !== "\x09"
@@ -64,24 +64,24 @@ class InBodyInsertionMode extends InsertionMode
                 && $token->data !== "\x20"
             ) {
                 // Set the frameset-ok flag to "not ok".
-                $this->context->framesetOk = 'not ok';
+                $context->framesetOk = 'not ok';
             }
         } elseif ($token instanceof CommentToken) {
             // Insert a comment.
-            $this->context->insertComment($token);
+            $this->insertComment($context, $token);
         } elseif ($token instanceof DoctypeToken) {
             // Parse error.
             // Ignore the token.
         } elseif ($token instanceof StartTagToken) {
-            $this->processStartTagToken($token);
+            $this->processStartTagToken($context, $token);
         } elseif ($token instanceof EndTagToken) {
-            $this->processEndTagToken($token);
+            $this->processEndTagToken($context, $token);
         } elseif ($token instanceof EOFToken) {
             // If the stack of template insertion modes is not empty, then
             // process the token using the rules for the "in template"
             // insertion mode.
-            if (!$this->context->templateInsertionModes->isEmpty()) {
-                (new InTemplateInsertionMode($this->context))->processToken($token);
+            if (!$context->templateInsertionModes->isEmpty()) {
+                (new InTemplateInsertionMode())->processToken($context, $token);
 
                 return;
             }
@@ -96,7 +96,7 @@ class InBodyInsertionMode extends InsertionMode
             $pattern = '/^(dd|dt|li|optgroup|option|p|rb|rp|rt|rtc|';
             $pattern .= 'tbody|td|tfoot|th|thead|tr|body|html)$/';
 
-            foreach ($this->context->parser->openElements as $el) {
+            foreach ($context->parser->openElements as $el) {
                 if (!($el instanceof HTMLElement && preg_match($pattern, $el->localName))) {
                     // Parse error.
                     break;
@@ -104,17 +104,17 @@ class InBodyInsertionMode extends InsertionMode
             }
 
             // Stop parsing.
-            $this->context->stopParsing();
+            $this->stopParsing($context);
         }
     }
 
-    private function processStartTagToken(StartTagToken $token): void
+    private function processStartTagToken(TreeBuilderContext $context, StartTagToken $token): void
     {
         if ($token->tagName === 'html') {
             // Parse error.
             // If there is a template element on the stack of open elements,
             // then ignore the token.
-            if ($this->context->parser->openElements->containsTemplateElement()) {
+            if ($context->parser->openElements->containsTemplateElement()) {
                 return;
             }
 
@@ -122,7 +122,7 @@ class InBodyInsertionMode extends InsertionMode
             // attribute is already present on the top element of the stack of
             // open elements. If it is not, add the attribute and its
             // corresponding value to that element.
-            $firstOnStack = $this->context->parser->openElements->top();
+            $firstOnStack = $context->parser->openElements->top();
 
             foreach ($token->attributes as $attr) {
                 $name = $attr->name;
@@ -152,7 +152,7 @@ class InBodyInsertionMode extends InsertionMode
             || $token->tagName === 'title'
         ) {
             // Process the token using the rules for the "in head" insertion mode.
-            (new InHeadInsertionMode($this->context))->processToken($token);
+            (new InHeadInsertionMode())->processToken($context, $token);
 
             return;
         }
@@ -164,9 +164,9 @@ class InBodyInsertionMode extends InsertionMode
             // or if there is a template element on the stack of open elements,
             // then ignore the token. (fragment case)
             if (
-                $this->context->parser->openElements->count() === 1
-                || !$this->context->parser->openElements->itemAt(1) instanceof HTMLBodyElement
-                || $this->context->parser->openElements->containsTemplateElement()
+                $context->parser->openElements->count() === 1
+                || !$context->parser->openElements->itemAt(1) instanceof HTMLBodyElement
+                || $context->parser->openElements->containsTemplateElement()
             ) {
                 // Fragment case
                 // Ignore the token.
@@ -178,8 +178,8 @@ class InBodyInsertionMode extends InsertionMode
             // present on the body element (the second element) on the stack of
             // open elements, and if it is not, add the attribute and its
             // corresponding value to that element.
-            $this->context->framesetOk = 'not ok';
-            $body = $this->context->parser->openElements->itemAt(1);
+            $context->framesetOk = 'not ok';
+            $body = $context->parser->openElements->itemAt(1);
 
             foreach ($token->attributes as $attr) {
                 $name = $attr->name;
@@ -197,23 +197,23 @@ class InBodyInsertionMode extends InsertionMode
             // If the stack of open elements has only one node on it, or if the
             // second element on the stack of open elements is not a body
             // element, then ignore the token. (fragment case)
-            $count = $this->context->parser->openElements->count();
+            $count = $context->parser->openElements->count();
 
-            if ($count === 1 || !$this->context->parser->openElements->itemAt(1) instanceof HTMLBodyElement) {
+            if ($count === 1 || !$context->parser->openElements->itemAt(1) instanceof HTMLBodyElement) {
                 // Fragment case
                 // Ignore the token
                 return;
             }
 
             // If the frameset-ok flag is set to "not ok", ignore the token.
-            if ($this->context->framesetOk === 'not ok') {
+            if ($context->framesetOk === 'not ok') {
                 // Ignore the token.
                 return;
             }
 
             // Remove the second element on the stack of open elements from its
             // parent node, if it has one.
-            $body = $this->context->parser->openElements->itemAt(1);
+            $body = $context->parser->openElements->itemAt(1);
             $parent = $body->parentNode;
 
             if ($parent !== null) {
@@ -224,14 +224,14 @@ class InBodyInsertionMode extends InsertionMode
             // from the current node up to, but not including, the root html
             // element.
             for ($i = $count - 1; $i > 0; $i--) {
-                $this->context->parser->openElements->pop();
+                $context->parser->openElements->pop();
             }
 
             // Insert an HTML element for the token.
-            $this->context->insertForeignElement($token, Namespaces::HTML);
+            $this->insertForeignElement($context, $token, Namespaces::HTML);
 
             // Switch the insertion mode to "in frameset".
-            $this->context->insertionMode = new InFrameSetInsertionMode($this->context);
+            $context->insertionMode = new InFrameSetInsertionMode();
 
             return;
         }
@@ -245,12 +245,12 @@ class InBodyInsertionMode extends InsertionMode
             )
         ) {
             // If the stack of open elements has a p element in button scope, then close a p element.
-            if ($this->context->parser->openElements->hasElementInButtonScope('p', Namespaces::HTML)) {
-                $this->closePElement();
+            if ($context->parser->openElements->hasElementInButtonScope('p', Namespaces::HTML)) {
+                $this->closePElement($context);
             }
 
             // Insert an HTML element for the token.
-            $this->context->insertForeignElement($token, Namespaces::HTML);
+            $this->insertForeignElement($context, $token, Namespaces::HTML);
 
             return;
         }
@@ -265,20 +265,20 @@ class InBodyInsertionMode extends InsertionMode
         ) {
             // If the stack of open elements has a p element in button scope,
             // then close a p element.
-            if ($this->context->parser->openElements->hasElementInButtonScope('p', Namespaces::HTML)) {
-                $this->closePElement();
+            if ($context->parser->openElements->hasElementInButtonScope('p', Namespaces::HTML)) {
+                $this->closePElement($context);
             }
 
             // If the current node is an HTML element whose tag name is one of
             // "h1", "h2", "h3", "h4", "h5", or "h6", then this is a parse
             // error; pop the current node off the stack of open elements.
-            if ($this->context->parser->openElements->bottom() instanceof HTMLHeadingElement) {
+            if ($context->parser->openElements->bottom() instanceof HTMLHeadingElement) {
                 // Parse error.
-                $this->context->parser->openElements->pop();
+                $context->parser->openElements->pop();
             }
 
             // Insert an HTML element for the token.
-            $this->context->insertForeignElement($token, Namespaces::HTML);
+            $this->insertForeignElement($context, $token, Namespaces::HTML);
 
             return;
         }
@@ -286,21 +286,21 @@ class InBodyInsertionMode extends InsertionMode
         if ($token->tagName === 'pre' || $token->tagName === 'listing') {
             // If the stack of open elements has a p element in button scope,
             // then close a p element.
-            if ($this->context->parser->openElements->hasElementInButtonScope('p', Namespaces::HTML)) {
-                $this->closePElement();
+            if ($context->parser->openElements->hasElementInButtonScope('p', Namespaces::HTML)) {
+                $this->closePElement($context);
             }
 
             // Insert an HTML element for the token.
-            $this->context->insertForeignElement($token, Namespaces::HTML);
+            $this->insertForeignElement($context, $token, Namespaces::HTML);
 
             // If the next token is a U+000A LINE FEED (LF) character
             // token, then ignore that token and move on to the next one.
             // (Newlines at the start of pre blocks are ignored as an authoring
             // convenience.)
-            $this->ignoreNextLineFeed();
+            $this->ignoreNextLineFeed($context);
 
             // Set the frameset-ok flag to "not ok".
-            $this->context->framesetOk = 'not ok';
+            $context->framesetOk = 'not ok';
 
             return;
         }
@@ -310,25 +310,25 @@ class InBodyInsertionMode extends InsertionMode
             // template element on the stack of open elements, then this is a
             // parse error; ignore the token.
             if (
-                $this->context->parser->formElementPointer
-                && !$this->context->parser->openElements->containsTemplateElement()
+                $context->parser->formElementPointer
+                && !$context->parser->openElements->containsTemplateElement()
             ) {
                 // Parse error.
                 // Ignore the token.
             } else {
                 // If the stack of open elements has a p element in button
                 // scope, then close a p element.
-                if ($this->context->parser->openElements->hasElementInButtonScope('p', Namespaces::HTML)) {
-                    $this->closePElement();
+                if ($context->parser->openElements->hasElementInButtonScope('p', Namespaces::HTML)) {
+                    $this->closePElement($context);
                 }
 
                 // Insert an HTML element for the token, and, if there is no
                 // template element on the stack of open elements, set the
                 // form element pointer to point to the element created.
-                $node = $this->context->insertForeignElement($token, Namespaces::HTML);
+                $node = $this->insertForeignElement($context, $token, Namespaces::HTML);
 
-                if (!$this->context->parser->openElements->containsTemplateElement()) {
-                    $this->context->parser->formElementPointer = $node;
+                if (!$context->parser->openElements->containsTemplateElement()) {
+                    $context->parser->formElementPointer = $node;
                 }
             }
 
@@ -337,19 +337,19 @@ class InBodyInsertionMode extends InsertionMode
 
         if ($token->tagName === 'li') {
             // Set the frameset-ok flag to "not ok".
-            $this->context->framesetOk = 'not ok';
+            $context->framesetOk = 'not ok';
 
             // Initialise node to be the current node (the bottommost node of
             // the stack).
             // Step "Loop".
-            foreach ($this->context->parser->openElements as $node) {
+            foreach ($context->parser->openElements as $node) {
                 if ($node instanceof HTMLLIElement) {
                     // Generate implied end tags, except for li elements.
-                    $this->context->generateImpliedEndTags('li');
+                    $this->generateImpliedEndTags($context, 'li');
 
                     // If the current node is not an li element, then this is a
                     // parse error.
-                    $currentNode = $this->context->parser->openElements->bottom();
+                    $currentNode = $context->parser->openElements->bottom();
 
                     if (!$currentNode instanceof HTMLLIElement) {
                         // Parse error.
@@ -357,8 +357,8 @@ class InBodyInsertionMode extends InsertionMode
 
                     // Pop elements from the stack of open elements until an li
                     // element has been popped from the stack.
-                    while (!$this->context->parser->openElements->isEmpty()) {
-                        if ($this->context->parser->openElements->pop() instanceof HTMLLIElement) {
+                    while (!$context->parser->openElements->isEmpty()) {
+                        if ($context->parser->openElements->pop() instanceof HTMLLIElement) {
                             break;
                         }
                     }
@@ -387,28 +387,28 @@ class InBodyInsertionMode extends InsertionMode
             // Step "Done".
             // If the stack of open elements has a p element in button scope,
             // then close a p element.
-            if ($this->context->parser->openElements->hasElementInButtonScope('p', Namespaces::HTML)) {
-                $this->closePElement();
+            if ($context->parser->openElements->hasElementInButtonScope('p', Namespaces::HTML)) {
+                $this->closePElement($context);
             }
 
             // Finally, insert an HTML element for the token.
-            $this->context->insertForeignElement($token, Namespaces::HTML);
+            $this->insertForeignElement($context, $token, Namespaces::HTML);
 
             return;
         }
 
         if ($token->tagName === 'dd' || $token->tagName === 'dt') {
             // Set the frameset-ok flag to "not ok".
-            $this->context->framesetOk = 'not ok';
+            $context->framesetOk = 'not ok';
 
             // Initialise node to be the current node (the bottommost node of the stack).
             // Step "Loop".
-            foreach ($this->context->parser->openElements as $node) {
+            foreach ($context->parser->openElements as $node) {
                 if ($node instanceof HTMLElement && $node->localName === 'dd') {
                     // Generate implied end tags, except for dd elements.
-                    $this->context->generateImpliedEndTags('dd');
+                    $this->generateImpliedEndTags($context, 'dd');
 
-                    $currentNode = $this->context->parser->openElements->bottom();
+                    $currentNode = $context->parser->openElements->bottom();
 
                     // If the current node is not a dd element, then this is a
                     // parse error.
@@ -420,8 +420,8 @@ class InBodyInsertionMode extends InsertionMode
 
                     // Pop elements from the stack of open elements until a dd
                     // element has been popped from the stack.
-                    while (!$this->context->parser->openElements->isEmpty()) {
-                        $popped = $this->context->parser->openElements->pop();
+                    while (!$context->parser->openElements->isEmpty()) {
+                        $popped = $context->parser->openElements->pop();
 
                         if ($popped instanceof HTMLElement && $popped->localName === 'dd') {
                             break;
@@ -434,9 +434,9 @@ class InBodyInsertionMode extends InsertionMode
 
                 if ($node instanceof HTMLElement && $node->localName === 'dt') {
                     // Generate implied end tags, except for dt elements.
-                    $this->context->generateImpliedEndTags('dt');
+                    $this->generateImpliedEndTags($context, 'dt');
 
-                    $currentNode = $this->context->parser->openElements->bottom();
+                    $currentNode = $context->parser->openElements->bottom();
 
                     // If the current node is not a dt element, then this is a
                     // parse error.
@@ -448,8 +448,8 @@ class InBodyInsertionMode extends InsertionMode
 
                     // Pop elements from the stack of open elements until a dt
                     // element has been popped from the stack.
-                    while (!$this->context->parser->openElements->isEmpty()) {
-                        $popped = $this->context->parser->openElements->pop();
+                    while (!$context->parser->openElements->isEmpty()) {
+                        $popped = $context->parser->openElements->pop();
 
                         if ($popped instanceof HTMLElement && $popped->localName === 'dt') {
                             break;
@@ -481,12 +481,12 @@ class InBodyInsertionMode extends InsertionMode
             // Step "Done".
             // If the stack of open elements has a p element in button scope,
             // then close a p element.
-            if ($this->context->parser->openElements->hasElementInButtonScope('p', Namespaces::HTML)) {
-                $this->closePElement();
+            if ($context->parser->openElements->hasElementInButtonScope('p', Namespaces::HTML)) {
+                $this->closePElement($context);
             }
 
             // Finally, insert an HTML element for the token.
-            $this->context->insertForeignElement($token, Namespaces::HTML);
+            $this->insertForeignElement($context, $token, Namespaces::HTML);
 
             return;
         }
@@ -494,19 +494,19 @@ class InBodyInsertionMode extends InsertionMode
         if ($token->tagName === 'plaintext') {
             // If the stack of open elements has a p element in button scope,
             // then close a p element.
-            if ($this->context->parser->openElements->hasElementInButtonScope('p', Namespaces::HTML)) {
-                $this->closePElement();
+            if ($context->parser->openElements->hasElementInButtonScope('p', Namespaces::HTML)) {
+                $this->closePElement($context);
             }
 
             // Insert an HTML element for the token.
-            $this->context->insertForeignElement($token, Namespaces::HTML);
+            $this->insertForeignElement($context, $token, Namespaces::HTML);
 
             // Switch the tokenizer to the PLAINTEXT state.
             // NOTE: Once a start tag with the tag name "plaintext" has been
             // seen, that will be the last token ever seen other than character
             // tokens (and the end-of-file token), because there is no way to
             // switch out of the PLAINTEXT state.
-            $this->context->parser->tokenizerState = TokenizerState::PLAINTEXT;
+            $context->parser->tokenizerState = TokenizerState::PLAINTEXT;
 
             return;
         }
@@ -514,15 +514,15 @@ class InBodyInsertionMode extends InsertionMode
         if ($token->tagName === 'button') {
             // If the stack of open elements has a button element in scope,
             // then run these substeps:
-            if ($this->context->parser->openElements->hasElementInScope('button', Namespaces::HTML)) {
+            if ($context->parser->openElements->hasElementInScope('button', Namespaces::HTML)) {
                 // Parse error.
                 // Generate implied end tags.
-                $this->context->generateImpliedEndTags();
+                $this->generateImpliedEndTags($context);
 
                 // Pop elements from the stack of open elements until a button
                 // element has been popped from the stack.
-                while (!$this->context->parser->openElements->isEmpty()) {
-                    $popped = $this->context->parser->openElements->pop();
+                while (!$context->parser->openElements->isEmpty()) {
+                    $popped = $context->parser->openElements->pop();
 
                     if ($popped instanceof HTMLButtonElement) {
                         break;
@@ -531,13 +531,13 @@ class InBodyInsertionMode extends InsertionMode
             }
 
             // Reconstruct the active formatting elements, if any.
-            $this->reconstructActiveFormattingElements();
+            $this->reconstructActiveFormattingElements($context);
 
             // Insert an HTML element for the token.
-            $this->context->insertForeignElement($token, Namespaces::HTML);
+            $this->insertForeignElement($context, $token, Namespaces::HTML);
 
             // Set the frameset-ok flag to "not ok".
-            $this->context->framesetOk = 'not ok';
+            $context->framesetOk = 'not ok';
 
             return;
         }
@@ -551,11 +551,11 @@ class InBodyInsertionMode extends InsertionMode
             // formatting elements and the stack of open elements if the
             // adoption agency algorithm didn't already remove it (it might not
             // have if the element is not in table scope).
-            if (!$this->context->activeFormattingElements->isEmpty()) {
+            if (!$context->activeFormattingElements->isEmpty()) {
                 $hasAnchorElement = false;
                 $element = null;
 
-                foreach ($this->context->activeFormattingElements as $element) {
+                foreach ($context->activeFormattingElements as $element) {
                     if ($element instanceof Marker) {
                         break;
                     } elseif ($element instanceof HTMLAnchorElement) {
@@ -567,22 +567,22 @@ class InBodyInsertionMode extends InsertionMode
 
                 if ($hasAnchorElement) {
                     // Parse error.
-                    $this->adoptionAgency($token);
+                    $this->adoptionAgency($context, $token);
 
-                    if ($element !== null && $this->context->activeFormattingElements->contains($element)) {
-                        $this->context->activeFormattingElements->remove($element);
-                        $this->context->parser->openElements->remove($element);
+                    if ($element !== null && $context->activeFormattingElements->contains($element)) {
+                        $context->activeFormattingElements->remove($element);
+                        $context->parser->openElements->remove($element);
                     }
                 }
             }
 
             // Reconstruct the active formatting elements, if any.
-            $this->reconstructActiveFormattingElements();
+            $this->reconstructActiveFormattingElements($context);
 
             // Insert an HTML element for the token. Push onto the list of
             // active formatting elements that element.
-            $node = $this->context->insertForeignElement($token, Namespaces::HTML);
-            $this->context->activeFormattingElements->push($node);
+            $node = $this->insertForeignElement($context, $token, Namespaces::HTML);
+            $context->activeFormattingElements->push($node);
 
             return;
         }
@@ -602,51 +602,51 @@ class InBodyInsertionMode extends InsertionMode
             || $token->tagName === 'u'
         ) {
             // Reconstruct the active formatting elements, if any.
-            $this->reconstructActiveFormattingElements();
+            $this->reconstructActiveFormattingElements($context);
 
             // Insert an HTML element for the token. Push onto the list of
             // active formatting elements that element.
-            $node = $this->context->insertForeignElement($token, Namespaces::HTML);
-            $this->context->activeFormattingElements->push($node);
+            $node = $this->insertForeignElement($context, $token, Namespaces::HTML);
+            $context->activeFormattingElements->push($node);
 
             return;
         }
 
         if ($token->tagName === 'nobr') {
             // Reconstruct the active formatting elements, if any.
-            $this->reconstructActiveFormattingElements();
+            $this->reconstructActiveFormattingElements($context);
 
             // If the stack of open elements has a nobr element in scope,
             // then this is a parse error; run the adoption agency algorithm for
             // the token, then once again reconstruct the active formatting
             // elements, if any.
-            if ($this->context->parser->openElements->hasElementInScope('nobr', Namespaces::HTML)) {
+            if ($context->parser->openElements->hasElementInScope('nobr', Namespaces::HTML)) {
                 // Parse error.
-                $this->adoptionAgency($token);
-                $this->reconstructActiveFormattingElements();
+                $this->adoptionAgency($context, $token);
+                $this->reconstructActiveFormattingElements($context);
             }
 
             // Insert an HTML element for the token. Push onto the list of
             // active formatting elements that element.
-            $node = $this->context->insertForeignElement($token, Namespaces::HTML);
-            $this->context->activeFormattingElements->push($node);
+            $node = $this->insertForeignElement($context, $token, Namespaces::HTML);
+            $context->activeFormattingElements->push($node);
 
             return;
         }
 
         if ($token->tagName === 'applet' || $token->tagName === 'marquee' || $token->tagName === 'object') {
             // Reconstruct the active formatting elements, if any.
-            $this->reconstructActiveFormattingElements();
+            $this->reconstructActiveFormattingElements($context);
 
             // Insert an HTML element for the token.
-            $this->context->insertForeignElement($token, Namespaces::HTML);
+            $this->insertForeignElement($context, $token, Namespaces::HTML);
 
             // Insert a marker at the end of the list of active formatting
             // elements.
-            $this->context->activeFormattingElements->insertMarker();
+            $context->activeFormattingElements->insertMarker();
 
             // Set the frameset-ok flag to "not ok".
-            $this->context->framesetOk = 'not ok';
+            $context->framesetOk = 'not ok';
 
             return;
         }
@@ -656,20 +656,20 @@ class InBodyInsertionMode extends InsertionMode
             // open elements has a p element in button scope, then close a p
             // element.
             if (
-                $this->context->document->getMode() !== DocumentMode::QUIRKS
-                && $this->context->parser->openElements->hasElementInButtonScope('p', Namespaces::HTML)
+                $context->document->getMode() !== DocumentMode::QUIRKS
+                && $context->parser->openElements->hasElementInButtonScope('p', Namespaces::HTML)
             ) {
-                $this->closePElement();
+                $this->closePElement($context);
             }
 
             // Insert an HTML element for the token.
-            $this->context->insertForeignElement($token, Namespaces::HTML);
+            $this->insertForeignElement($context, $token, Namespaces::HTML);
 
             // Set the frameset-ok flag to "not ok".
-            $this->context->framesetOk = 'not ok';
+            $context->framesetOk = 'not ok';
 
             // Switch the insertion mode to "in table".
-            $this->context->insertionMode = new InTableInsertionMode($this->context);
+            $context->insertionMode = new InTableInsertionMode();
 
             return;
         }
@@ -683,12 +683,12 @@ class InBodyInsertionMode extends InsertionMode
             || $token->tagName === 'wbr'
         ) {
             // Reconstruct the active formatting elements, if any.
-            $this->reconstructActiveFormattingElements();
+            $this->reconstructActiveFormattingElements($context);
 
             // Insert an HTML element for the token. Immediately pop the
             // current node off the stack of open elements.
-            $this->context->insertForeignElement($token, Namespaces::HTML);
-            $this->context->parser->openElements->pop();
+            $this->insertForeignElement($context, $token, Namespaces::HTML);
+            $context->parser->openElements->pop();
 
             // Acknowledge the token's self-closing flag, if it is set.
             if ($token->isSelfClosing()) {
@@ -696,19 +696,19 @@ class InBodyInsertionMode extends InsertionMode
             }
 
             // Set the frameset-ok flag to "not ok".
-            $this->context->framesetOk = 'not ok';
+            $context->framesetOk = 'not ok';
 
             return;
         }
 
         if ($token->tagName === 'input') {
             // Reconstruct the active formatting elements, if any.
-            $this->reconstructActiveFormattingElements();
+            $this->reconstructActiveFormattingElements($context);
 
             // Insert an HTML element for the token. Immediately pop the
             // current node off the stack of open elements.
-            $this->context->insertForeignElement($token, Namespaces::HTML);
-            $this->context->parser->openElements->pop();
+            $this->insertForeignElement($context, $token, Namespaces::HTML);
+            $context->parser->openElements->pop();
 
             // Acknowledge the token's self-closing flag, if it is set.
             if ($token->isSelfClosing()) {
@@ -733,7 +733,7 @@ class InBodyInsertionMode extends InsertionMode
                 $typeAttribute === null
                 || Utils::toASCIILowercase($typeAttribute->value) !== 'hidden'
             ) {
-                $this->context->framesetOk = 'not ok';
+                $context->framesetOk = 'not ok';
             }
 
             return;
@@ -742,8 +742,8 @@ class InBodyInsertionMode extends InsertionMode
         if ($token->tagName === 'param' || $token->tagName === 'source' || $token->tagName === 'track') {
             // Insert an HTML element for the token. Immediately pop the current
             // node off the stack of open elements.
-            $this->context->insertForeignElement($token, Namespaces::HTML);
-            $this->context->parser->openElements->pop();
+            $this->insertForeignElement($context, $token, Namespaces::HTML);
+            $context->parser->openElements->pop();
 
             // Acknowledge the token's self-closing flag, if it is set.
             if ($token->isSelfClosing()) {
@@ -756,14 +756,14 @@ class InBodyInsertionMode extends InsertionMode
         if ($token->tagName === 'hr') {
             // If the stack of open elements has a p element in button scope,
             // then close a p element.
-            if ($this->context->parser->openElements->hasElementInButtonScope('p', Namespaces::HTML)) {
-                $this->closePElement();
+            if ($context->parser->openElements->hasElementInButtonScope('p', Namespaces::HTML)) {
+                $this->closePElement($context);
             }
 
             // Insert an HTML element for the token. Immediately pop the
             // current node off the stack of open elements.
-            $this->context->insertForeignElement($token, Namespaces::HTML);
-            $this->context->parser->openElements->pop();
+            $this->insertForeignElement($context, $token, Namespaces::HTML);
+            $context->parser->openElements->pop();
 
             // Acknowledge the token's self-closing flag, if it is set.
             if ($token->isSelfClosing()) {
@@ -771,7 +771,7 @@ class InBodyInsertionMode extends InsertionMode
             }
 
             // Set the frameset-ok flag to "not ok".
-            $this->context->framesetOk = 'not ok';
+            $context->framesetOk = 'not ok';
 
             return;
         }
@@ -781,32 +781,32 @@ class InBodyInsertionMode extends InsertionMode
             // Change the token's tag name to "img" and reprocess it. (Don't
             // ask.)
             $token->tagName = 'img';
-            $this->context->insertionMode->processToken($token);
+            $context->insertionMode->processToken($context, $token);
 
             return;
         }
 
         if ($token->tagName === 'textarea') {
             // Insert an HTML element for the token.
-            $this->context->insertForeignElement($token, Namespaces::HTML);
+            $this->insertForeignElement($context, $token, Namespaces::HTML);
 
             // If the next token is a U+000A LINE FEED (LF) character
             // token, then ignore that token and move on to the next one.
             // (Newlines at the start of textarea elements are ignored as an
             // authoring convenience.)
-            $this->ignoreNextLineFeed();
+            $this->ignoreNextLineFeed($context);
 
             // Switch the tokenizer to the RCDATA state.
-            $this->context->parser->tokenizerState = TokenizerState::RCDATA;
+            $context->parser->tokenizerState = TokenizerState::RCDATA;
 
             // Let the original insertion mode be the current insertion mode.
-            $this->context->originalInsertionMode = $this->context->insertionMode;
+            $context->originalInsertionMode = $context->insertionMode;
 
             // Set the frameset-ok flag to "not ok".
-            $this->context->framesetOk = 'not ok';
+            $context->framesetOk = 'not ok';
 
             // Switch the insertion mode to "text".
-            $this->context->insertionMode = new TextInsertionMode($this->context);
+            $context->insertionMode = new TextInsertionMode();
 
             return;
         }
@@ -814,72 +814,69 @@ class InBodyInsertionMode extends InsertionMode
         if ($token->tagName === 'xmp') {
             // If the stack of open elements has a p element in button scope,
             // then close a p element.
-            if ($this->context->parser->openElements->hasElementInButtonScope('p', Namespaces::HTML)) {
-                $this->closePElement();
+            if ($context->parser->openElements->hasElementInButtonScope('p', Namespaces::HTML)) {
+                $this->closePElement($context);
             }
 
             // Reconstruct the active formatting elements, if any.
-            $this->reconstructActiveFormattingElements();
+            $this->reconstructActiveFormattingElements($context);
 
             // Set the frameset-ok flag to "not ok
-            $this->context->framesetOk = 'not ok';
+            $context->framesetOk = 'not ok';
 
             // Follow the generic raw text element parsing algorithm.
-            $this->context->parseGenericTextElement($token, TreeBuilderContext::RAW_TEXT_ELEMENT_ALGORITHM);
+            $this->parseGenericTextElement($context, $token, self::RAW_TEXT_ELEMENT_ALGORITHM);
 
             return;
         }
 
         if ($token->tagName === 'iframe') {
             // Set the frameset-ok flag to "not ok".
-            $this->context->framesetOk = 'not ok';
+            $context->framesetOk = 'not ok';
 
             // Follow the generic raw text element parsing algorithm.
-            $this->context->parseGenericTextElement(
-                $token,
-                TreeBuilderContext::RAW_TEXT_ELEMENT_ALGORITHM
-            );
+            $this->parseGenericTextElement($context, $token, self::RAW_TEXT_ELEMENT_ALGORITHM);
 
             return;
         }
 
         if (
             $token->tagName === 'noembed'
-            || ($token->tagName === 'noscript' && $this->context->parser->isScriptingEnabled)
+            || ($token->tagName === 'noscript' && $context->parser->isScriptingEnabled)
         ) {
             // Follow the generic raw text element parsing algorithm.
-            $this->context->parseGenericTextElement($token, TreeBuilderContext::RAW_TEXT_ELEMENT_ALGORITHM);
+            $this->parseGenericTextElement($context, $token, self::RAW_TEXT_ELEMENT_ALGORITHM);
 
             return;
         }
 
         if ($token->tagName === 'select') {
             // Reconstruct the active formatting elements, if any.
-            $this->reconstructActiveFormattingElements();
+            $this->reconstructActiveFormattingElements($context);
 
             // Insert an HTML element for the token.
-            $this->context->insertForeignElement($token, Namespaces::HTML);
+            $this->insertForeignElement($context, $token, Namespaces::HTML);
 
             // Set the frameset-ok flag to "not ok".
-            $this->context->framesetOk = 'not ok';
+            $context->framesetOk = 'not ok';
 
             // If the insertion mode is one of "in table", "in caption",
             // "in table body", "in row", or "in cell", then switch the
             // insertion mode to "in select in table". Otherwise, switch the
             // insertion mode to "in select".
             if (
-                $this->context->insertionMode instanceof InTableInsertionMode
-                || $this->context->insertionMode instanceof InCaptionInsertionMode
-                || $this->context->insertionMode instanceof InTableBodyInsertionMode
-                || $this->context->insertionMode instanceof InRowInsertionMode
-                || $this->context->insertionMode instanceof InCellInsertionMode
+                $context->insertionMode instanceof InTableInsertionMode
+                || $context->insertionMode instanceof InCaptionInsertionMode
+                || $context->insertionMode instanceof InTableBodyInsertionMode
+                || $context->insertionMode instanceof InRowInsertionMode
+                || $context->insertionMode instanceof InCellInsertionMode
             ) {
-                $this->context->insertionMode = new InSelectInTableInsertionMode($this->context);
+                $context->insertionMode = new InSelectInTableInsertionMode();
 
                 return;
             }
 
-            $this->context->insertionMode = new InSelectInsertionMode($this->context);
+            $context->insertionMode = new InSelectInsertionMode();
 
             return;
         }
@@ -887,15 +884,15 @@ class InBodyInsertionMode extends InsertionMode
         if ($token->tagName === 'optgroup' || $token->tagName === 'option') {
             // If the current node is an option element, then pop the current
             // node off the stack of open elements.
-            if ($this->context->parser->openElements->bottom() instanceof HTMLOptionElement) {
-                $this->context->parser->openElements->pop();
+            if ($context->parser->openElements->bottom() instanceof HTMLOptionElement) {
+                $context->parser->openElements->pop();
             }
 
             // Reconstruct the active formatting elements, if any.
-            $this->reconstructActiveFormattingElements();
+            $this->reconstructActiveFormattingElements($context);
 
             // Insert an HTML element for the token.
-            $this->context->insertForeignElement($token, Namespaces::HTML);
+            $this->insertForeignElement($context, $token, Namespaces::HTML);
 
             return;
         }
@@ -903,9 +900,9 @@ class InBodyInsertionMode extends InsertionMode
         if ($token->tagName === 'rb' || $token->tagName === 'rtc') {
             // If the stack of open elements has a ruby element in scope,
             // then generate implied end tags
-            if ($this->context->parser->openElements->hasElementInScope('ruby', Namespaces::HTML)) {
-                $this->context->generateImpliedEndTags();
-                $currentNode = $this->context->parser->openElements->bottom();
+            if ($context->parser->openElements->hasElementInScope('ruby', Namespaces::HTML)) {
+                $this->generateImpliedEndTags($context);
+                $currentNode = $context->parser->openElements->bottom();
 
                 // If the current node is not now a ruby element, this is a
                 // parse error.
@@ -915,7 +912,7 @@ class InBodyInsertionMode extends InsertionMode
             }
 
             // Insert an HTML element for the token.
-            $this->context->insertForeignElement($token, Namespaces::HTML);
+            $this->insertForeignElement($context, $token, Namespaces::HTML);
 
             return;
         }
@@ -923,9 +920,9 @@ class InBodyInsertionMode extends InsertionMode
         if ($token->tagName === 'rp' || $token->tagName === 'rt') {
             // If the stack of open elements has a ruby element in scope,
             // then generate implied end tags, except for rtc elements.
-            if ($this->context->parser->openElements->hasElementInScope('ruby', Namespaces::HTML)) {
-                $this->context->generateImpliedEndTags('rtc');
-                $currentNode = $this->context->parser->openElements->bottom();
+            if ($context->parser->openElements->hasElementInScope('ruby', Namespaces::HTML)) {
+                $this->generateImpliedEndTags($context, 'rtc');
+                $currentNode = $context->parser->openElements->bottom();
 
                 // If the current node is not now a rtc element or a ruby
                 // element, this is a parse error.
@@ -935,31 +932,31 @@ class InBodyInsertionMode extends InsertionMode
             }
 
             // Insert an HTML element for the token.
-            $this->context->insertForeignElement($token, Namespaces::HTML);
+            $this->insertForeignElement($context, $token, Namespaces::HTML);
 
             return;
         }
 
         if ($token->tagName === 'math') {
             // Reconstruct the active formatting elements, if any.
-            $this->reconstructActiveFormattingElements();
+            $this->reconstructActiveFormattingElements($context);
 
             // Adjust MathML attributes for the token. (This fixes the case of
             // MathML attributes that are not all lowercase.)
-            $this->context->adjustMathMLAttributes($token);
+            $this->adjustMathMLAttributes($token);
 
             // Adjust foreign attributes for the token. (This fixes the use of
             // namespaced attributes, in particular XLink.)
-            $this->context->adjustForeignAttributes($token);
+            $this->adjustForeignAttributes($token);
 
             // Insert a foreign element for the token, in the MathML namespace.
-            $this->context->insertForeignElement($token, Namespaces::MATHML);
+            $this->insertForeignElement($context, $token, Namespaces::MATHML);
 
             // If the token has its self-closing flag set, pop the current node
             // off the stack of open elements and acknowledge the token's
             // self-closing flag.
             if ($token->isSelfClosing()) {
-                $this->context->parser->openElements->pop();
+                $context->parser->openElements->pop();
                 $token->acknowledge();
             }
 
@@ -968,24 +965,24 @@ class InBodyInsertionMode extends InsertionMode
 
         if ($token->tagName === 'svg') {
             // Reconstruct the active formatting elements, if any.
-            $this->reconstructActiveFormattingElements();
+            $this->reconstructActiveFormattingElements($context);
 
             // Adjust SVG attributes for the token. (This fixes the case of SVG
             // attributes that are not all lowercase.)
-            $this->context->adjustSVGAttributes($token);
+            $this->adjustSVGAttributes($token);
 
             // Adjust foreign attributes for the token. (This fixes the use of
             // namespaced attributes, in particular XLink in SVG.)
-            $this->context->adjustForeignAttributes($token);
+            $this->adjustForeignAttributes($token);
 
             // Insert a foreign element for the token, in the SVG namespace.
-            $this->context->insertForeignElement($token, Namespaces::SVG);
+            $this->insertForeignElement($context, $token, Namespaces::SVG);
 
             // If the token has its self-closing flag set, pop the current node
             // off the stack of open elements and acknowledge the token's
             // self-closing flag.
             if ($token->isSelfClosing()) {
-                $this->context->parser->openElements->pop();
+                $context->parser->openElements->pop();
                 $token->acknowledge();
             }
 
@@ -1011,18 +1008,18 @@ class InBodyInsertionMode extends InsertionMode
         }
 
         // Reconstruct the active formatting elements, if any.
-        $this->reconstructActiveFormattingElements();
+        $this->reconstructActiveFormattingElements($context);
 
         // Insert an HTML element for the token.
         // NOTE: This element will be an ordinary element.
-        $this->context->insertForeignElement($token, Namespaces::HTML);
+        $this->insertForeignElement($context, $token, Namespaces::HTML);
     }
 
-    private function processEndTagToken(EndTagToken $token): void
+    private function processEndTagToken(TreeBuilderContext $context, EndTagToken $token): void
     {
         if ($token->tagName === 'template') {
             // Process the token using the rules for the "in head" insertion mode.
-            (new InHeadInsertionMode($this->context))->processToken($token);
+            (new InHeadInsertionMode())->processToken($context, $token);
 
             return;
         }
@@ -1030,7 +1027,7 @@ class InBodyInsertionMode extends InsertionMode
         if ($token->tagName === 'body') {
             // If the stack of open elements does not have a body element
             // in scope, this is a parse error; ignore the token.
-            if (!$this->context->parser->openElements->hasElementInScope('body', Namespaces::HTML)) {
+            if (!$context->parser->openElements->hasElementInScope('body', Namespaces::HTML)) {
                 // Parse error.
                 // Ignore the token.
                 return;
@@ -1046,7 +1043,7 @@ class InBodyInsertionMode extends InsertionMode
             $pattern = '/^(dd|dt|li|optgroup|option|p|rb|rp|rt|';
             $pattern .= 'rtc|tbody|td|tfoot|th|thead|tr|body|html)$/';
 
-            foreach ($this->context->parser->openElements as $el) {
+            foreach ($context->parser->openElements as $el) {
                 if (!($el instanceof HTMLElement && preg_match($pattern, $el->localName))) {
                     // Parse error.
                     break;
@@ -1054,7 +1051,7 @@ class InBodyInsertionMode extends InsertionMode
             }
 
             // Switch the insertion mode to "after body".
-            $this->context->insertionMode = new AfterBodyInsertionMode($this->context);
+            $context->insertionMode = new AfterBodyInsertionMode();
 
             return;
         }
@@ -1062,7 +1059,7 @@ class InBodyInsertionMode extends InsertionMode
         if ($token->tagName === 'html') {
             // If the stack of open elements does not have a body element in
             // scope, this is a parse error; ignore the token.
-            if (!$this->context->parser->openElements->hasElementInScope('body', Namespaces::HTML)) {
+            if (!$context->parser->openElements->hasElementInScope('body', Namespaces::HTML)) {
                 // Parse error.
                 // Ignore the token.
                 return;
@@ -1078,7 +1075,7 @@ class InBodyInsertionMode extends InsertionMode
             $pattern = '/^(dd|dt|li|optgroup|option|p|rb|rp|rt|';
             $pattern .= 'rtc|tbody|td|tfoot|th|thead|tr|body|html)$/';
 
-            foreach ($this->context->parser->openElements as $el) {
+            foreach ($context->parser->openElements as $el) {
                 if (!($el instanceof HTMLElement && preg_match($pattern, $el->localName))) {
                     // Parse error.
                     break;
@@ -1086,10 +1083,10 @@ class InBodyInsertionMode extends InsertionMode
             }
 
             // Switch the insertion mode to "after body".
-            $this->context->insertionMode = new AfterBodyInsertionMode($this->context);
+            $context->insertionMode = new AfterBodyInsertionMode();
 
             // Reprocess the token.
-            $this->context->insertionMode->processToken($token);
+            $context->insertionMode->processToken($context, $token);
 
             return;
         }
@@ -1105,20 +1102,20 @@ class InBodyInsertionMode extends InsertionMode
             // If the stack of open elements does not have an element in
             // scope that is an HTML element with the same tag name as that of
             // the token, then this is a parse error; ignore the token.
-            if (!$this->context->parser->openElements->hasElementInScope($token->tagName, Namespaces::HTML)) {
+            if (!$context->parser->openElements->hasElementInScope($token->tagName, Namespaces::HTML)) {
                 // Parse error.
                 // Ignore the token.
                 return;
             }
 
             // Generate implied end tags.
-            $this->context->generateImpliedEndTags();
+            $this->generateImpliedEndTags($context);
 
             // If the current node is not an HTML element with the same tag
             // name as that of the token, then this is a parse error.
             if (
-                !$this->context->isHTMLElementWithName(
-                    $this->context->parser->openElements->bottom(),
+                !$this->isHTMLElementWithName(
+                    $context->parser->openElements->bottom(),
                     $token->tagName
                 )
             ) {
@@ -1128,10 +1125,10 @@ class InBodyInsertionMode extends InsertionMode
             // Pop elements from the stack of open elements until an HTML
             // element with the same tag name as the token has been popped
             // from the stack.
-            while (!$this->context->parser->openElements->isEmpty()) {
+            while (!$context->parser->openElements->isEmpty()) {
                 if (
-                    $this->context->isHTMLElementWithName(
-                        $this->context->parser->openElements->pop(),
+                    $this->isHTMLElementWithName(
+                        $context->parser->openElements->pop(),
                         $token->tagName
                     )
                 ) {
@@ -1143,33 +1140,33 @@ class InBodyInsertionMode extends InsertionMode
         }
 
         if ($token->tagName === 'form') {
-            if (!$this->context->parser->openElements->containsTemplateElement()) {
+            if (!$context->parser->openElements->containsTemplateElement()) {
                 // Let node be the element that the form element pointer is set
                 // to, or null if it is not set to an element.
-                $node = $this->context->parser->formElementPointer;
+                $node = $context->parser->formElementPointer;
 
                 // Set the form element pointer to null.
-                $this->context->parser->formElementPointer = null;
+                $context->parser->formElementPointer = null;
 
                 // If node is null or if the stack of open elements does not
                 // have node in scope, then this is a parse error; abort these
                 // steps and ignore the token.
-                if ($node === null || !$this->context->parser->openElements->contains($node)) {
+                if ($node === null || !$context->parser->openElements->contains($node)) {
                     // Parse error.
                     // Ignore the token.
                     return;
                 }
 
                 // Generate implied end tags.
-                $this->context->generateImpliedEndTags();
+                $this->generateImpliedEndTags($context);
 
                 // If the current node is not node, then this is a parse error.
-                if ($this->context->parser->openElements->bottom() !== $node) {
+                if ($context->parser->openElements->bottom() !== $node) {
                     // Parse error.
                 }
 
                 // Remove node from the stack of open elements.
-                $this->context->parser->openElements->remove($node);
+                $context->parser->openElements->remove($node);
 
                 return;
             }
@@ -1177,25 +1174,25 @@ class InBodyInsertionMode extends InsertionMode
             // If the stack of open elements does not have a form element
             // in scope, then this is a parse error; abort these steps and
             // ignore the token.
-            if (!$this->context->parser->openElements->hasElementInScope('form', Namespaces::HTML)) {
+            if (!$context->parser->openElements->hasElementInScope('form', Namespaces::HTML)) {
                 // Parse error.
                 // Ignore the token.
                 return;
             }
 
             // Generate implied end tags.
-            $this->context->generateImpliedEndTags();
+            $this->generateImpliedEndTags($context);
 
             // If the current node is not a form element, then this is a parse
             // error.
-            if (!$this->context->parser->openElements->bottom() instanceof HTMLFormElement) {
+            if (!$context->parser->openElements->bottom() instanceof HTMLFormElement) {
                 // Parse error.
             }
 
             // Pop elements from the stack of open elements until a form
             // element has been popped from the stack.
-            while (!$this->context->parser->openElements->isEmpty()) {
-                if ($this->context->parser->openElements->pop() instanceof HTMLFormElement) {
+            while (!$context->parser->openElements->isEmpty()) {
+                if ($context->parser->openElements->pop() instanceof HTMLFormElement) {
                     break;
                 }
             }
@@ -1207,16 +1204,13 @@ class InBodyInsertionMode extends InsertionMode
             // If the stack of open elements does not have a p element in
             // button scope, then this is a parse error; insert an HTML element
             // for a "p" start tag token with no attributes.
-            if (!$this->context->parser->openElements->hasElementInButtonScope('p', Namespaces::HTML)) {
+            if (!$context->parser->openElements->hasElementInButtonScope('p', Namespaces::HTML)) {
                 // Parse error.
-                $this->context->insertForeignElement(
-                    new StartTagToken('p'),
-                    Namespaces::HTML
-                );
+                $this->insertForeignElement($context, new StartTagToken('p'), Namespaces::HTML);
             }
 
             // Close a p element.
-            $this->closePElement();
+            $this->closePElement($context);
 
             return;
         }
@@ -1224,25 +1218,25 @@ class InBodyInsertionMode extends InsertionMode
         if ($token->tagName === 'li') {
             // If the stack of open elements does not have an li element
             // in list item scope, then this is a parse error; ignore the token.
-            if (!$this->context->parser->openElements->hasElementInListItemScope('li', Namespaces::HTML)) {
+            if (!$context->parser->openElements->hasElementInListItemScope('li', Namespaces::HTML)) {
                 // Parse error.
                 // Ignore the token.
                 return;
             }
 
             // Generate implied end tags, except for li elements.
-            $this->context->generateImpliedEndTags('li');
+            $this->generateImpliedEndTags($context, 'li');
 
             // If the current node is not an li element, then this is a parse
             // error.
-            if (!$this->context->parser->openElements->bottom() instanceof HTMLLIElement) {
+            if (!$context->parser->openElements->bottom() instanceof HTMLLIElement) {
                 // Parse error.
             }
 
             // Pop elements from the stack of open elements until an li element
             // has been popped from the stack.
-            while (!$this->context->parser->openElements->isEmpty()) {
-                if ($this->context->parser->openElements->pop() instanceof HTMLLIElement) {
+            while (!$context->parser->openElements->isEmpty()) {
+                if ($context->parser->openElements->pop() instanceof HTMLLIElement) {
                     break;
                 }
             }
@@ -1254,7 +1248,7 @@ class InBodyInsertionMode extends InsertionMode
             // If the stack of open elements does not have an element in
             // scope that is an HTML element with the same tag name as that of
             // the token, then this is a parse error; ignore the token.
-            if (!$this->context->parser->openElements->hasElementInScope($token->tagName, Namespaces::HTML)) {
+            if (!$context->parser->openElements->hasElementInScope($token->tagName, Namespaces::HTML)) {
                 // Parse error.
                 // Ignore the token.
                 return;
@@ -1262,13 +1256,13 @@ class InBodyInsertionMode extends InsertionMode
 
             // Generate implied end tags, except for HTML elements with the
             // same tag name as the token.
-            $this->context->generateImpliedEndTags($token->tagName);
+            $this->generateImpliedEndTags($context, $token->tagName);
 
             // If the current node is not an HTML element with the same tag
             // name as that of the token, then this is a parse error.
             if (
-                !$this->context->isHTMLElementWithName(
-                    $this->context->parser->openElements->bottom(),
+                !$this->isHTMLElementWithName(
+                    $context->parser->openElements->bottom(),
                     $token->tagName
                 )
             ) {
@@ -1278,10 +1272,10 @@ class InBodyInsertionMode extends InsertionMode
             // Pop elements from the stack of open elements until an HTML
             // element with the same tag name as the token has been popped from
             // the stack.
-            while (!$this->context->parser->openElements->isEmpty()) {
+            while (!$context->parser->openElements->isEmpty()) {
                 if (
-                    $this->context->isHTMLElementWithName(
-                        $this->context->parser->openElements->pop(),
+                    $this->isHTMLElementWithName(
+                        $context->parser->openElements->pop(),
                         $token->tagName
                     )
                 ) {
@@ -1305,12 +1299,12 @@ class InBodyInsertionMode extends InsertionMode
             // "h2", "h3", "h4", "h5", or "h6", then this is a parse error;
             // ignore the token.
             if (
-                !$this->context->parser->openElements->hasElementInScope('h1', Namespaces::HTML)
-                && !$this->context->parser->openElements->hasElementInScope('h2', Namespaces::HTML)
-                && !$this->context->parser->openElements->hasElementInScope('h3', Namespaces::HTML)
-                && !$this->context->parser->openElements->hasElementInScope('h4', Namespaces::HTML)
-                && !$this->context->parser->openElements->hasElementInScope('h5', Namespaces::HTML)
-                && !$this->context->parser->openElements->hasElementInScope('h6', Namespaces::HTML)
+                !$context->parser->openElements->hasElementInScope('h1', Namespaces::HTML)
+                && !$context->parser->openElements->hasElementInScope('h2', Namespaces::HTML)
+                && !$context->parser->openElements->hasElementInScope('h3', Namespaces::HTML)
+                && !$context->parser->openElements->hasElementInScope('h4', Namespaces::HTML)
+                && !$context->parser->openElements->hasElementInScope('h5', Namespaces::HTML)
+                && !$context->parser->openElements->hasElementInScope('h6', Namespaces::HTML)
             ) {
                 // Parse error.
                 // Ignore the token.
@@ -1318,13 +1312,13 @@ class InBodyInsertionMode extends InsertionMode
             }
 
             // Generate implied end tags.
-            $this->context->generateImpliedEndTags();
+            $this->generateImpliedEndTags($context);
 
             // If the current node is not an HTML element with the same tag
             // name as that of the token, then this is a parse error.
             if (
-                !$this->context->isHTMLElementWithName(
-                    $this->context->parser->openElements->bottom(),
+                !$this->isHTMLElementWithName(
+                    $context->parser->openElements->bottom(),
                     $token->tagName
                 )
             ) {
@@ -1334,8 +1328,8 @@ class InBodyInsertionMode extends InsertionMode
             // Pop elements from the stack of open elements until an HTML
             // element whose tag name is one of "h1", "h2", "h3", "h4", "h5",
             // or "h6" has been popped from the stack.
-            while (!$this->context->parser->openElements->isEmpty()) {
-                if ($this->context->parser->openElements->pop() instanceof HTMLHeadingElement) {
+            while (!$context->parser->openElements->isEmpty()) {
+                if ($context->parser->openElements->pop() instanceof HTMLHeadingElement) {
                     break;
                 }
             }
@@ -1360,7 +1354,7 @@ class InBodyInsertionMode extends InsertionMode
             || $token->tagName === 'u'
         ) {
             // Run the adoption agency algorithm for the token.
-            $this->adoptionAgency($token);
+            $this->adoptionAgency($context, $token);
 
             return;
         }
@@ -1369,20 +1363,20 @@ class InBodyInsertionMode extends InsertionMode
             // If the stack of open elements does not have an element in scope
             // that is an HTML element with the same tag name as that of the
             // token, then this is a parse error; ignore the token.
-            if (!$this->context->parser->openElements->hasElementInScope($token->tagName, Namespaces::HTML)) {
+            if (!$context->parser->openElements->hasElementInScope($token->tagName, Namespaces::HTML)) {
                 // Parse error.
                 // Ignore the token.
                 return;
             }
 
             // Generate implied end tags.
-            $this->context->generateImpliedEndTags();
+            $this->generateImpliedEndTags($context);
 
             // If the current node is not an HTML element with the same tag
             // name as that of the token, then this is a parse error.
             if (
-                !$this->context->isHTMLElementWithName(
-                    $this->context->parser->openElements->bottom(),
+                !$this->isHTMLElementWithName(
+                    $context->parser->openElements->bottom(),
                     $token->tagName
                 )
             ) {
@@ -1392,10 +1386,10 @@ class InBodyInsertionMode extends InsertionMode
             // Pop elements from the stack of open elements until an HTML
             // element with the same tag name as the token has been popped from
             // the stack.
-            while (!$this->context->parser->openElements->isEmpty()) {
+            while (!$context->parser->openElements->isEmpty()) {
                 if (
-                    $this->context->isHTMLElementWithName(
-                        $this->context->parser->openElements->pop(),
+                    $this->isHTMLElementWithName(
+                        $context->parser->openElements->pop(),
                         $token->tagName
                     )
                 ) {
@@ -1405,7 +1399,7 @@ class InBodyInsertionMode extends InsertionMode
 
             // Clear the list of active formatting elements up to the last
             // marker.
-            $this->context->activeFormattingElements->clearUpToLastMarker();
+            $context->activeFormattingElements->clearUpToLastMarker();
 
             return;
         }
@@ -1418,12 +1412,12 @@ class InBodyInsertionMode extends InsertionMode
             $token->clearAttributes();
 
             // Reconstruct the active formatting elements, if any.
-            $this->reconstructActiveFormattingElements();
+            $this->reconstructActiveFormattingElements($context);
 
             // Insert an HTML element for the token. Immediately pop the
             // current node off the stack of open elements.
-            $this->context->insertForeignElement($token, Namespaces::HTML);
-            $this->context->parser->openElements->pop();
+            $this->insertForeignElement($context, $token, Namespaces::HTML);
+            $context->parser->openElements->pop();
 
             // Acknowledge the token's self-closing flag, if it is set.
             if ($token->isSelfClosing()) {
@@ -1431,33 +1425,33 @@ class InBodyInsertionMode extends InsertionMode
             }
 
             // Set the frameset-ok flag to "not ok".
-            $this->context->framesetOk = 'not ok';
+            $context->framesetOk = 'not ok';
         }
 
-        $this->applyAnyOtherEndTagForInBodyInsertionMode($token);
+        $this->applyAnyOtherEndTagForInBodyInsertionMode($context, $token);
     }
 
-    private function applyAnyOtherEndTagForInBodyInsertionMode(EndTagToken $token): void
+    private function applyAnyOtherEndTagForInBodyInsertionMode(TreeBuilderContext $context, EndTagToken $token): void
     {
         // Initialise node to be the current node (the bottommost node of the
         // stack).
         $tagName = $token->tagName;
 
-        foreach ($this->context->parser->openElements as $node) {
-            if ($this->context->isHTMLElementWithName($node, $tagName)) {
+        foreach ($context->parser->openElements as $node) {
+            if ($this->isHTMLElementWithName($node, $tagName)) {
                 // Generate implied end tags, except for HTML elements with
                 // the same tag name as the token.
-                $this->context->generateImpliedEndTags($tagName);
+                $this->generateImpliedEndTags($context, $tagName);
 
                 // If node is not the current node, then this is a parse error.
-                if ($node !== $this->context->parser->openElements->bottom()) {
+                if ($node !== $context->parser->openElements->bottom()) {
                     // Parse error.
                 }
 
                 // Pop all the nodes from the current node up to node, including
                 // node, then stop these steps.
-                while (!$this->context->parser->openElements->isEmpty()) {
-                    if ($this->context->parser->openElements->pop() === $node) {
+                while (!$context->parser->openElements->isEmpty()) {
+                    if ($context->parser->openElements->pop() === $node) {
                         break 2;
                     }
                 }
@@ -1474,16 +1468,16 @@ class InBodyInsertionMode extends InsertionMode
      *
      * @see https://html.spec.whatwg.org/multipage/#close-a-p-element
      */
-    private function closePElement(): void
+    private function closePElement(TreeBuilderContext $context): void
     {
-        $this->context->generateImpliedEndTags('p');
+        $this->generateImpliedEndTags($context, 'p');
 
-        if (!$this->context->parser->openElements->bottom() instanceof HTMLParagraphElement) {
+        if (!$context->parser->openElements->bottom() instanceof HTMLParagraphElement) {
             // Parse error
         }
 
-        while (!$this->context->parser->openElements->isEmpty()) {
-            if ($this->context->parser->openElements->pop() instanceof HTMLParagraphElement) {
+        while (!$context->parser->openElements->isEmpty()) {
+            if ($context->parser->openElements->pop() instanceof HTMLParagraphElement) {
                 break;
             }
         }
@@ -1492,11 +1486,11 @@ class InBodyInsertionMode extends InsertionMode
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#reconstruct-the-active-formatting-elements
      */
-    private function reconstructActiveFormattingElements(): void
+    private function reconstructActiveFormattingElements(TreeBuilderContext $context): void
     {
         // If there are no entries in the list of active formatting elements,
         // then there is nothing to reconstruct; stop this algorithm.
-        if ($this->context->activeFormattingElements->isEmpty()) {
+        if ($context->activeFormattingElements->isEmpty()) {
             return;
         }
 
@@ -1504,13 +1498,13 @@ class InBodyInsertionMode extends InsertionMode
         // formatting elements is a marker, or if it is an element that is in
         // the stack of open elements, then there is nothing to reconstruct;
         // stop this algorithm.
-        $entry = $this->context->activeFormattingElements->top();
+        $entry = $context->activeFormattingElements->top();
 
-        if ($entry instanceof Marker || $this->context->parser->openElements->contains($entry)) {
+        if ($entry instanceof Marker || $context->parser->openElements->contains($entry)) {
             return;
         }
 
-        $cursor = $this->context->activeFormattingElements->count() - 1;
+        $cursor = $context->activeFormattingElements->count() - 1;
 
         // If there are no entries before entry in the list of active formatting
         // elements, then jump to the step labeled create.
@@ -1522,32 +1516,32 @@ class InBodyInsertionMode extends InsertionMode
 
         // Let entry be the entry one earlier than entry in the list of active
         // formatting elements.
-        $entry = $this->context->activeFormattingElements->itemAt(--$cursor);
+        $entry = $context->activeFormattingElements->itemAt(--$cursor);
 
         // If entry is neither a marker nor an element that is also in the stack
         // of open elements, go to the step labeled rewind.
-        if (!$entry instanceof Marker && !$this->context->parser->openElements->contains($entry)) {
+        if (!$entry instanceof Marker && !$context->parser->openElements->contains($entry)) {
             goto Rewind;
         }
 
         Advance:
         // Let entry be the element one later than entry in the list of active
         // formatting elements.
-        $entry = $this->context->activeFormattingElements->itemAt(++$cursor);
+        $entry = $context->activeFormattingElements->itemAt(++$cursor);
 
         Create:
         // Insert an HTML element for the token for which the element entry was
         // created, to obtain new element.
-        $newElement = $this->context->insertForeignElement($this->context->elementTokenMap[$entry], Namespaces::HTML);
+        $newElement = $this->insertForeignElement($context, $context->elementTokenMap[$entry], Namespaces::HTML);
 
         // Replace the entry for entry in the list with an entry for new
         // element.
-        $this->context->activeFormattingElements->replace($newElement, $entry);
+        $context->activeFormattingElements->replace($newElement, $entry);
 
         // If the entry for new element in the list of active formatting
         // elements is not the last entry in the list, return to the step
         // labeled advance.
-        if ($newElement !== $this->context->activeFormattingElements->top()) {
+        if ($newElement !== $context->activeFormattingElements->top()) {
             goto Advance;
         }
     }
@@ -1558,18 +1552,18 @@ class InBodyInsertionMode extends InsertionMode
      * This is a bit hacky doing it with the input stream instead of looking at the next token, but
      * it seems to work.
      */
-    private function ignoreNextLineFeed(): void
+    private function ignoreNextLineFeed(TreeBuilderContext $context): void
     {
-        $peeked = $this->context->parser->input->peek();
+        $peeked = $context->parser->input->peek();
 
         if ($peeked === "\n") {
-            $this->context->parser->input->get();
+            $context->parser->input->get();
         } elseif ($peeked === '&') {
             // need to account for numeric character reference as well
-            $peeked = $this->context->parser->input->peek(6);
+            $peeked = $context->parser->input->peek(6);
 
             if ($peeked === '&#x0a;' || $peeked === '&#x0A;') {
-                $this->context->parser->input->get(6);
+                $context->parser->input->get(6);
             }
         }
     }
@@ -1577,20 +1571,20 @@ class InBodyInsertionMode extends InsertionMode
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#adoption-agency-algorithm
      */
-    private function adoptionAgency(TagToken $token): void
+    private function adoptionAgency(TreeBuilderContext $context, TagToken $token): void
     {
         $subject = $token->tagName;
-        $currentNode = $this->context->parser->openElements->bottom();
+        $currentNode = $context->parser->openElements->bottom();
 
         // If the current node is an HTML Element with a tag name that matches
         // subject and the current node is not in the list of active formatting
         // elements, then remove the current node from the stack of open
         // elements and abort these steps.
         if (
-            $this->context->isHTMLElementWithName($currentNode, $subject)
-            && !$this->context->activeFormattingElements->contains($currentNode)
+            $this->isHTMLElementWithName($currentNode, $subject)
+            && !$context->activeFormattingElements->contains($currentNode)
         ) {
-            $this->context->parser->openElements->pop();
+            $context->parser->openElements->pop();
 
             return;
         }
@@ -1615,7 +1609,7 @@ class InBodyInsertionMode extends InsertionMode
             // otherwise, and has the tag name subject.
             $formattingElement = null;
 
-            foreach ($this->context->activeFormattingElements as $e) {
+            foreach ($context->activeFormattingElements as $e) {
                 // TODO: Spec says use tag name, but it is broken unless I use
                 // local name.
                 if ($e instanceof Element && $e->localName === $subject) {
@@ -1630,7 +1624,7 @@ class InBodyInsertionMode extends InsertionMode
             // If there is no such element, then abort these steps and instead
             // act as described in the "any other end tag" entry above.
             if (!$formattingElement) {
-                $this->applyAnyOtherEndTagForInBodyInsertionMode($token);
+                $this->applyAnyOtherEndTagForInBodyInsertionMode($context, $token);
 
                 return;
             }
@@ -1638,9 +1632,9 @@ class InBodyInsertionMode extends InsertionMode
             // If formatting element is not in the stack of open elements, then
             // this is a parse error; remove the element from the list, and
             // abort these steps.
-            if (!$this->context->parser->openElements->contains($formattingElement)) {
+            if (!$context->parser->openElements->contains($formattingElement)) {
                 // Parse error.
-                $this->context->activeFormattingElements->remove($formattingElement);
+                $context->activeFormattingElements->remove($formattingElement);
 
                 return;
             }
@@ -1649,8 +1643,8 @@ class InBodyInsertionMode extends InsertionMode
             // the element is not in scope, then this is a parse error; abort
             // these steps.
             if (
-                $this->context->parser->openElements->contains($formattingElement)
-                && !$this->context->parser->openElements->hasElementInScope(
+                $context->parser->openElements->contains($formattingElement)
+                && !$context->parser->openElements->hasElementInScope(
                     $formattingElement->localName,
                     $formattingElement->namespaceURI
                 )
@@ -1661,7 +1655,7 @@ class InBodyInsertionMode extends InsertionMode
 
             // If formatting element is not the current node, this is a parse
             // error. (But do not abort these steps.)
-            if ($this->context->parser->openElements->bottom() !== $formattingElement) {
+            if ($context->parser->openElements->bottom() !== $formattingElement) {
                 // Parse error.
             }
 
@@ -1669,11 +1663,11 @@ class InBodyInsertionMode extends InsertionMode
             // elements that is lower in the stack than formatting element, and
             // is an element in the special category. There might not be one.
             $furthestBlock = null;
-            $formattingElementIndex = $this->context->parser->openElements->indexOf($formattingElement);
-            $count = $this->context->parser->openElements->count();
+            $formattingElementIndex = $context->parser->openElements->indexOf($formattingElement);
+            $count = $context->parser->openElements->count();
 
             for ($i = $formattingElementIndex + 1; $i < $count; $i++) {
-                $current = $this->context->parser->openElements->itemAt($i);
+                $current = $context->parser->openElements->itemAt($i);
 
                 if ($this->isSpecialNode($current)) {
                     $furthestBlock = $current;
@@ -1688,25 +1682,25 @@ class InBodyInsertionMode extends InsertionMode
             // formatting element from the list of active formatting elements,
             // and finally abort these steps.
             if (!$furthestBlock) {
-                while (!$this->context->parser->openElements->isEmpty()) {
-                    if ($this->context->parser->openElements->pop() === $formattingElement) {
+                while (!$context->parser->openElements->isEmpty()) {
+                    if ($context->parser->openElements->pop() === $formattingElement) {
                         break;
                     }
                 }
 
-                $this->context->activeFormattingElements->remove($formattingElement);
+                $context->activeFormattingElements->remove($formattingElement);
 
                 return;
             }
 
             // Let common ancestor be the element immediately above formatting
             // element in the stack of open elements.
-            $commonAncestor = $this->context->parser->openElements->itemAt($formattingElementIndex - 1);
+            $commonAncestor = $context->parser->openElements->itemAt($formattingElementIndex - 1);
 
             // Let a bookmark note the position of formatting element in the
             // list of active formatting elements relative to the elements on
             // either side of it in the list.
-            $bookmark = $this->context->activeFormattingElements->indexOf($formattingElement);
+            $bookmark = $context->activeFormattingElements->indexOf($formattingElement);
 
             // Let node and last node be furthest block.
             $node = $furthestBlock;
@@ -1714,7 +1708,7 @@ class InBodyInsertionMode extends InsertionMode
 
             // Let inner loop counter be zero.
             $innerLoopCounter = 0;
-            $clonedStack = clone $this->context->parser->openElements;
+            $clonedStack = clone $context->parser->openElements;
 
             // Inner loop
             do {
@@ -1726,9 +1720,9 @@ class InBodyInsertionMode extends InsertionMode
                 // open elements (e.g. because it got removed by this
                 // algorithm), the element that was immediately above node in
                 // the stack of open elements before node was removed.
-                $targetStack = !$this->context->parser->openElements->contains($node)
+                $targetStack = !$context->parser->openElements->contains($node)
                     ? $clonedStack
-                    : $this->context->parser->openElements;
+                    : $context->parser->openElements;
                 $node = $targetStack->itemAt($targetStack->indexOf($node) - 1);
 
                 // If node is formatting element, then go to the next step in
@@ -1740,10 +1734,10 @@ class InBodyInsertionMode extends InsertionMode
                 // If inner loop counter is greater than three and node is in
                 // the list of active formatting elements, then remove node from
                 // the list of active formatting elements.
-                $nodeInList = $this->context->activeFormattingElements->contains($node);
+                $nodeInList = $context->activeFormattingElements->contains($node);
 
                 if ($innerLoopCounter > 3 && $nodeInList) {
-                    $this->context->activeFormattingElements->remove($node);
+                    $context->activeFormattingElements->remove($node);
                     $nodeInList = false;
                 }
 
@@ -1751,7 +1745,7 @@ class InBodyInsertionMode extends InsertionMode
                 // then remove node from the stack of open elements and then go
                 // back to the step labeled inner loop.
                 if (!$nodeInList) {
-                    $this->context->parser->openElements->remove($node);
+                    $context->parser->openElements->remove($node);
 
                     continue;
                 }
@@ -1763,22 +1757,22 @@ class InBodyInsertionMode extends InsertionMode
                 // element, replace the entry for node in the stack of open
                 // elements with an entry for the new element, and let node be
                 // the new element.
-                $newElement = $this->context->createElementForToken(
-                    $this->context->elementTokenMap[$node],
+                $newElement = $this->createElementForToken(
+                    $context->elementTokenMap[$node],
                     Namespaces::HTML,
                     $commonAncestor
                 );
-                $this->context->elementTokenMap->attach($newElement, $this->context->elementTokenMap[$node]);
+                $context->elementTokenMap->attach($newElement, $context->elementTokenMap[$node]);
 
-                $this->context->activeFormattingElements->replace($newElement, $node);
-                $this->context->parser->openElements->replace($newElement, $node);
+                $context->activeFormattingElements->replace($newElement, $node);
+                $context->parser->openElements->replace($newElement, $node);
                 $node = $newElement;
 
                 // If last node is furthest block, then move the aforementioned
                 // bookmark to be immediately after the new node in the list of
                 // active formatting elements.
                 if ($lastNode === $furthestBlock) {
-                    $bookmark = $this->context->activeFormattingElements->indexOf($newElement) + 1;
+                    $bookmark = $context->activeFormattingElements->indexOf($newElement) + 1;
                 }
 
                 // Insert last node into node, first removing it from its
@@ -1792,20 +1786,20 @@ class InBodyInsertionMode extends InsertionMode
             // Insert whatever last node ended up being in the previous step at
             // the appropriate place for inserting a node, but using common
             // ancestor as the override target.
-            $this->context->insertNode(
+            $this->insertNode(
                 $lastNode,
-                $this->context->getAppropriatePlaceForInsertingNode($commonAncestor)
+                $this->getAppropriatePlaceForInsertingNode($context, $commonAncestor)
             );
 
             // Create an element for the token for which formatting element was
             // created, in the HTML namespace, with furthest block as the
             // intended parent.
-            $element = $this->context->createElementForToken(
-                $this->context->elementTokenMap[$formattingElement],
+            $element = $this->createElementForToken(
+                $context->elementTokenMap[$formattingElement],
                 Namespaces::HTML,
                 $furthestBlock
             );
-            $this->context->elementTokenMap->attach($element, $this->context->elementTokenMap[$formattingElement]);
+            $context->elementTokenMap->attach($element, $context->elementTokenMap[$formattingElement]);
 
             // Take all of the child nodes of furthest block and append them to
             // the element created in the last step.
@@ -1820,14 +1814,14 @@ class InBodyInsertionMode extends InsertionMode
             // elements, and insert the new element into the list of active
             // formatting elements at the position of the aforementioned
             // bookmark.
-            $this->context->activeFormattingElements->remove($formattingElement);
-            $this->context->activeFormattingElements->insertAt($bookmark, $element);
+            $context->activeFormattingElements->remove($formattingElement);
+            $context->activeFormattingElements->insertAt($bookmark, $element);
 
             // Remove formatting element from the stack of open elements, and
             // insert the new element into the stack of open elements
             // immediately below the position of furthest block in that stack.
-            $this->context->parser->openElements->remove($formattingElement);
-            $this->context->parser->openElements->insertAfter($element, $furthestBlock);
+            $context->parser->openElements->remove($formattingElement);
+            $context->parser->openElements->insertAfter($element, $furthestBlock);
         } while (true);
     }
 

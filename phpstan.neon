@@ -29,7 +29,7 @@ parameters:
         -
             message: '#Access to protected property Rowbot\\DOM\\Element\\HTML\\HTMLTemplateElement::\$content\.#'
             paths:
-                - src/Parser/HTML/TreeBuilderContext.php
+                - src/Parser/HTML/InsertionMode/InsertionMode.php
                 - src/Parser/HTML/FragmentSerializer.php
                 - src/Parser/XML/FragmentSerializer.php
 

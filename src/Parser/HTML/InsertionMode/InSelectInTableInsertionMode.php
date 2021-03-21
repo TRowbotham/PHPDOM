@@ -6,6 +6,7 @@ namespace Rowbot\DOM\Parser\HTML\InsertionMode;
 
 use Rowbot\DOM\Element\HTML\HTMLSelectElement;
 use Rowbot\DOM\Namespaces;
+use Rowbot\DOM\Parser\HTML\TreeBuilderContext;
 use Rowbot\DOM\Parser\Token\EndTagToken;
 use Rowbot\DOM\Parser\Token\StartTagToken;
 use Rowbot\DOM\Parser\Token\Token;
@@ -15,7 +16,7 @@ use Rowbot\DOM\Parser\Token\Token;
  */
 class InSelectInTableInsertionMode extends InsertionMode
 {
-    public function processToken(Token $token): void
+    public function processToken(TreeBuilderContext $context, Token $token): void
     {
         if (
             $token instanceof StartTagToken
@@ -33,17 +34,17 @@ class InSelectInTableInsertionMode extends InsertionMode
             // Parse error.
             // Pop elements from the stack of open elements until a select
             // element has been popped from the stack.
-            while (!$this->context->parser->openElements->isEmpty()) {
-                if ($this->context->parser->openElements->pop() instanceof HTMLSelectElement) {
+            while (!$context->parser->openElements->isEmpty()) {
+                if ($context->parser->openElements->pop() instanceof HTMLSelectElement) {
                     break;
                 }
             }
 
             // Reset the insertion mode appropriately.
-            $this->context->resetInsertionMode();
+            $context->resetInsertionMode();
 
             // Reprocess the token.
-            $this->context->insertionMode->processToken($token);
+            $context->insertionMode->processToken($context, $token);
 
             return;
         }
@@ -65,29 +66,29 @@ class InSelectInTableInsertionMode extends InsertionMode
             // If the stack of open elements does not have an element in
             // table scope that is an HTML element with the same tag name as
             // that of the token, then ignore the token.
-            if (!$this->context->parser->openElements->hasElementInTableScope($token->tagName, Namespaces::HTML)) {
+            if (!$context->parser->openElements->hasElementInTableScope($token->tagName, Namespaces::HTML)) {
                 // Ignore the token.
                 return;
             }
 
             // Pop elements from the stack of open elements until a select
             // element has been popped from the stack.
-            while (!$this->context->parser->openElements->isEmpty()) {
-                if ($this->context->parser->openElements->pop() instanceof HTMLSelectElement) {
+            while (!$context->parser->openElements->isEmpty()) {
+                if ($context->parser->openElements->pop() instanceof HTMLSelectElement) {
                     break;
                 }
             }
 
             // Reset the insertion mode appropriately.
-            $this->context->resetInsertionMode();
+            $context->resetInsertionMode();
 
             // Reprocess the token.
-            $this->context->insertionMode->processToken($token);
+            $context->insertionMode->processToken($context, $token);
 
             return;
         }
 
         // Process the token using the rules for the "in select" insertion mode.
-        (new InSelectInsertionMode($this->context))->processToken($token);
+        (new InSelectInsertionMode())->processToken($context, $token);
     }
 }

@@ -8,6 +8,7 @@ use Rowbot\DOM\Element\HTML\HTMLTableElement;
 use Rowbot\DOM\Element\HTML\HTMLTableRowElement;
 use Rowbot\DOM\Element\HTML\HTMLTableSectionElement;
 use Rowbot\DOM\Namespaces;
+use Rowbot\DOM\Parser\HTML\TreeBuilderContext;
 use Rowbot\DOM\Parser\Token\CharacterToken;
 use Rowbot\DOM\Parser\Token\CommentToken;
 use Rowbot\DOM\Parser\Token\DoctypeToken;
@@ -24,34 +25,34 @@ class InTableInsertionMode extends InsertionMode
 {
     use InTableInsertionModeAnythingElseTrait;
 
-    public function processToken(Token $token): void
+    public function processToken(TreeBuilderContext $context, Token $token): void
     {
         if (
             $token instanceof CharacterToken
             && (
-                ($currentNode = $this->context->parser->openElements->bottom()) instanceof HTMLTableElement
+                ($currentNode = $context->parser->openElements->bottom()) instanceof HTMLTableElement
                 || $currentNode instanceof HTMLTableSectionElement
                 || $currentNode instanceof HTMLTableRowElement
             )
         ) {
             // Let the pending table character tokens be an empty list of
             // tokens.
-            $this->context->pendingTableCharacterTokens = [];
+            $context->pendingTableCharacterTokens = [];
 
             // Let the original insertion mode be the current insertion mode.
-            $this->context->originalInsertionMode = $this->context->insertionMode;
+            $context->originalInsertionMode = $context->insertionMode;
 
             // Switch the insertion mode to "in table text" and reprocess the
             // token.
-            $this->context->insertionMode = new InTableTextInsertionMode($this->context);
-            $this->context->insertionMode->processToken($token);
+            $context->insertionMode = new InTableTextInsertionMode();
+            $context->insertionMode->processToken($context, $token);
 
             return;
         }
 
         if ($token instanceof CommentToken) {
             // Insert a comment.
-            $this->context->insertComment($token);
+            $this->insertComment($context, $token);
 
             return;
         }
@@ -65,70 +66,70 @@ class InTableInsertionMode extends InsertionMode
         if ($token instanceof StartTagToken) {
             if ($token->tagName === 'caption') {
                 // Clear the stack back to a table context.
-                $this->context->parser->openElements->clearBackToTableContext();
+                $context->parser->openElements->clearBackToTableContext();
 
                 // Insert a marker at the end of the list of active formatting
                 // elements.
-                $this->context->activeFormattingElements->insertMarker();
+                $context->activeFormattingElements->insertMarker();
 
                 // Insert an HTML element for the token, then switch the insertion
                 // mode to "in caption".
-                $this->context->insertForeignElement($token, Namespaces::HTML);
-                $this->context->insertionMode = new InCaptionInsertionMode($this->context);
+                $this->insertForeignElement($context, $token, Namespaces::HTML);
+                $context->insertionMode = new InCaptionInsertionMode();
 
                 return;
             }
 
             if ($token->tagName === 'colgroup') {
                 // Clear the stack back to a table context.
-                $this->context->parser->openElements->clearBackToTableContext();
+                $context->parser->openElements->clearBackToTableContext();
 
                 // Insert an HTML element for the token, then switch the insertion
                 // mode to "in column group".
-                $this->context->insertForeignElement($token, Namespaces::HTML);
-                $this->context->insertionMode = new InColumnGroupInsertionMode($this->context);
+                $this->insertForeignElement($context, $token, Namespaces::HTML);
+                $context->insertionMode = new InColumnGroupInsertionMode();
 
                 return;
             }
 
             if ($token->tagName === 'col') {
                 // Clear the stack back to a table context.
-                $this->context->parser->openElements->clearBackToTableContext();
+                $context->parser->openElements->clearBackToTableContext();
 
                 // Insert an HTML element for a "colgroup" start tag token with no
                 // attributes, then switch the insertion mode to "in column group".
-                $this->context->insertForeignElement(new StartTagToken('colgroup'), Namespaces::HTML);
-                $this->context->insertionMode = new InColumnGroupInsertionMode($this->context);
+                $this->insertForeignElement($context, new StartTagToken('colgroup'), Namespaces::HTML);
+                $context->insertionMode = new InColumnGroupInsertionMode();
 
                 // Reprocess the current token.
-                $this->context->insertionMode->processToken($token);
+                $context->insertionMode->processToken($context, $token);
 
                 return;
             }
 
             if ($token->tagName === 'tbody' || $token->tagName === 'tfoot' || $token->tagName === 'thead') {
                 // Clear the stack back to a table context.
-                $this->context->parser->openElements->clearBackToTableContext();
+                $context->parser->openElements->clearBackToTableContext();
 
                 // Insert an HTML element for the token, then switch the insertion
                 // mode to "in table body".
-                $this->context->insertForeignElement($token, Namespaces::HTML);
-                $this->context->insertionMode = new InTableBodyInsertionMode($this->context);
+                $this->insertForeignElement($context, $token, Namespaces::HTML);
+                $context->insertionMode = new InTableBodyInsertionMode();
 
                 return;
             }
 
             if ($token->tagName === 'td' || $token->tagName === 'th' || $token->tagName === 'tr') {
                 // Clear the stack back to a table context.
-                $this->context->parser->openElements->clearBackToTableContext();
+                $context->parser->openElements->clearBackToTableContext();
 
                 // Insert an HTML element for a "tbody" start tag token with no
                 // attributes, then switch the insertion mode to "in table body".
-                $this->context->insertForeignElement(new StartTagToken('tbody'), Namespaces::HTML);
-                $this->context->insertionMode = new InTableBodyInsertionMode($this->context);
+                $this->insertForeignElement($context, new StartTagToken('tbody'), Namespaces::HTML);
+                $context->insertionMode = new InTableBodyInsertionMode();
 
                 // Reprocess the current token.
-                $this->context->insertionMode->processToken($token);
+                $context->insertionMode->processToken($context, $token);
 
                 return;
             }
@@ -137,15 +138,15 @@ class InTableInsertionMode extends InsertionMode
                 // Parse error.
                 // If the stack of open elements does not have a table element
                 // in table scope, ignore the token.
-                if (!$this->context->parser->openElements->hasElementInTableScope('table', Namespaces::HTML)) {
+                if (!$context->parser->openElements->hasElementInTableScope('table', Namespaces::HTML)) {
                     // Ignore the token.
                     return;
                 }
 
                 // Pop elements from this stack until a table element has been
                 // popped from the stack.
-                while (!$this->context->parser->openElements->isEmpty()) {
-                    $popped = $this->context->parser->openElements->pop();
+                while (!$context->parser->openElements->isEmpty()) {
+                    $popped = $context->parser->openElements->pop();
 
                     if ($popped instanceof HTMLTableElement) {
                         break;
@@ -153,17 +154,17 @@ class InTableInsertionMode extends InsertionMode
                 }
 
                 // Reset the insertion mode appropriately.
-                $this->context->resetInsertionMode();
+                $context->resetInsertionMode();
 
                 // Reprocess the token.
-                $this->context->insertionMode->processToken($token);
+                $context->insertionMode->processToken($context, $token);
 
                 return;
             }
 
             if ($token->tagName === 'style' || $token->tagName === 'script' || $token->tagName === 'template') {
                 // Process the token using the rules for the "in head" insertion mode.
-                (new InHeadInsertionMode($this->context))->processToken($token);
+                (new InHeadInsertionMode())->processToken($context, $token);
 
                 return;
             }
@@ -184,17 +185,17 @@ class InTableInsertionMode extends InsertionMode
                 }
 
                 if ($typeAttr === null || Utils::toASCIILowercase($typeAttr->value) !== 'hidden') {
-                    $this->inTableInsertionModeAnythingElse($token);
+                    $this->inTableInsertionModeAnythingElse($context, $token);
 
                     return;
                 }
 
                 // Parse error.
                 // Insert an HTML element for the token.
-                $this->context->insertForeignElement($token, Namespaces::HTML);
+                $this->insertForeignElement($context, $token, Namespaces::HTML);
 
                 // Pop that input element off the stack of open elements.
-                $this->context->parser->openElements->pop();
+                $context->parser->openElements->pop();
 
                 // Acknowledge the token's self-closing flag, if it is set.
                 if ($token->isSelfClosing()) {
@@ -209,8 +210,8 @@ class InTableInsertionMode extends InsertionMode
                 // If there is a template element on the stack of open elements, or
                 // if the form element pointer is not null, ignore the token.
                 if (
-                    $this->context->parser->openElements->containsTemplateElement()
-                    || $this->context->parser->formElementPointer !== null
+                    $context->parser->openElements->containsTemplateElement()
+                    || $context->parser->formElementPointer !== null
                 ) {
                     // Ignore the token.
                     return;
@@ -218,13 +219,10 @@ class InTableInsertionMode extends InsertionMode
 
                 // Insert an HTML element for the token, and set the form element
                 // pointer to point to the element created.
-                $this->context->parser->formElementPointer = $this->context->insertForeignElement(
-                    $token,
-                    Namespaces::HTML
-                );
+                $context->parser->formElementPointer = $this->insertForeignElement($context, $token, Namespaces::HTML);
 
                 // Pop that form element off the stack of open elements.
-                $this->context->parser->openElements->pop();
+                $context->parser->openElements->pop();
 
                 return;
             }
@@ -232,7 +230,7 @@ class InTableInsertionMode extends InsertionMode
             if ($token->tagName === 'table') {
                 // If the stack of open elements does not have a table element in
                 // table scope, this is a parse error; ignore the token.
-                if (!$this->context->parser->openElements->hasElementInTableScope('table', Namespaces::HTML)) {
+                if (!$context->parser->openElements->hasElementInTableScope('table', Namespaces::HTML)) {
                     // Parse error.
                     // Ignore the token.
                     return;
@@ -240,8 +238,8 @@ class InTableInsertionMode extends InsertionMode
 
                 // Pop elements from this stack until a table element has been
                 // popped from the stack.
-                while (!$this->context->parser->openElements->isEmpty()) {
-                    $popped = $this->context->parser->openElements->pop();
+                while (!$context->parser->openElements->isEmpty()) {
+                    $popped = $context->parser->openElements->pop();
 
                     if ($popped instanceof HTMLTableElement) {
                         break;
@@ -249,7 +247,7 @@ class InTableInsertionMode extends InsertionMode
                 }
 
                 // Reset the insertion mode appropriately.
-                $this->context->resetInsertionMode();
+                $context->resetInsertionMode();
 
                 return;
             }
@@ -274,18 +272,18 @@ class InTableInsertionMode extends InsertionMode
 
             if ($token->tagName === 'template') {
                 // Process the token using the rules for the "in head" insertion mode.
-                (new InHeadInsertionMode($this->context))->processToken($token);
+                (new InHeadInsertionMode())->processToken($context, $token);
 
                 return;
             }
         } elseif ($token instanceof EOFToken) {
             // Process the token using the rules for the "in body" insertion
             // mode.
-            (new InBodyInsertionMode($this->context))->processToken($token);
+            (new InBodyInsertionMode())->processToken($context, $token);
 
             return;
         }
 
-        $this->inTableInsertionModeAnythingElse($token);
+        $this->inTableInsertionModeAnythingElse($context, $token);
     }
 }

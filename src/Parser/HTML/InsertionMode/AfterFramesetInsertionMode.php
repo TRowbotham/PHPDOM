@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Parser\HTML\InsertionMode;
 
+use Rowbot\DOM\Parser\HTML\TreeBuilderContext;
 use Rowbot\DOM\Parser\Token\CharacterToken;
 use Rowbot\DOM\Parser\Token\CommentToken;
 use Rowbot\DOM\Parser\Token\DoctypeToken;
@@ -17,7 +18,7 @@ use Rowbot\DOM\Parser\Token\Token;
  */
 class AfterFramesetInsertionMode extends InsertionMode
 {
-    public function processToken(Token $token): void
+    public function processToken(TreeBuilderContext $context, Token $token): void
     {
         if (
             $token instanceof CharacterToken
@@ -30,14 +31,14 @@ class AfterFramesetInsertionMode extends InsertionMode
             )
         ) {
             // Insert the character.
-            $this->context->insertCharacter($token);
+            $this->insertCharacter($context, $token);
 
             return;
         }
 
         if ($token instanceof CommentToken) {
             // Insert a comment.
-            $this->context->insertComment($token);
+            $this->insertComment($context, $token);
 
             return;
         }
@@ -52,25 +53,25 @@ class AfterFramesetInsertionMode extends InsertionMode
             if ($token->tagName === 'html') {
                 // Process the token using the rules for the "in body" insertion
                 // mode.
-                (new InBodyInsertionMode($this->context))->processToken($token);
+                (new InBodyInsertionMode())->processToken($context, $token);
 
                 return;
             }
 
             if ($token->tagName === 'noframes') {
                 // Process the token using the rules for the "in head" insertion mode.
-                (new InHeadInsertionMode($this->context))->processToken($token);
+                (new InHeadInsertionMode())->processToken($context, $token);
 
                 return;
             }
         } elseif ($token instanceof EndTagToken && $token->tagName === 'html') {
             // Switch the insertion mode to "after after frameset".
-            $this->context->insertionMode = new AfterAfterFramesetInsertionMode($this->context);
+            $context->insertionMode = new AfterAfterFramesetInsertionMode();
 
             return;
         } elseif ($token instanceof EOFToken) {
             // Stop parsing
-            $this->context->stopParsing();
+            $this->stopParsing($context);
 
             return;
         }
