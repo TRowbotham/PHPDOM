@@ -157,9 +157,11 @@ class InTemplateInsertionMode extends AbstractInsertionMode implements Insertion
             // then stop parsing. (fragment case)
             if (!$context->parser->openElements->containsTemplateElement()) {
                 $this->stopParsing($context);
-            } else {
-                // Parse  error
+
+                return;
             }
+
+            // Parse  error
 
             // Pop elements from the stack of open elements until a template
             // element has been popped from the stack.
