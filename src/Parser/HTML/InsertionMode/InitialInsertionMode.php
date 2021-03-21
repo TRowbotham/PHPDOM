@@ -18,7 +18,7 @@ use function mb_strpos;
 /**
  * @see https://html.spec.whatwg.org/multipage/syntax.html#the-initial-insertion-mode
  */
-class InitialInsertionMode extends InsertionMode
+class InitialInsertionMode extends AbstractInsertionMode implements InsertionMode
 {
     public function processToken(TreeBuilderContext $context, Token $token): void
     {

@@ -16,7 +16,7 @@ use Rowbot\DOM\Parser\Token\Token;
 /**
  * @see https://html.spec.whatwg.org/multipage/syntax.html#the-before-head-insertion-mode
  */
-class BeforeHeadInsertionMode extends InsertionMode
+class BeforeHeadInsertionMode extends AbstractInsertionMode implements InsertionMode
 {
     public function processToken(TreeBuilderContext $context, Token $token): void
     {

@@ -14,7 +14,7 @@ use Rowbot\DOM\Parser\Token\Token;
 /**
  * @see https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-intbody
  */
-class InTableBodyInsertionMode extends InsertionMode
+class InTableBodyInsertionMode extends AbstractInsertionMode implements InsertionMode
 {
     public function processToken(TreeBuilderContext $context, Token $token): void
     {

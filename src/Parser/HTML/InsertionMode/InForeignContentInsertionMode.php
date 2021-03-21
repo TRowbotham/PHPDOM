@@ -22,9 +22,9 @@ use function preg_match;
 
 /**
  * This is a pseudo insertion mode. It cannot be set as an insertion mode in terms of the parser's
- * current insertion mode.
+ * current insertion mode. It intentionally does not implement the InsertionMode interface.
  */
-class InForeignContentInsertionMode extends InsertionMode
+class InForeignContentInsertionMode extends AbstractInsertionMode
 {
     use IntegrationPointTrait;
 

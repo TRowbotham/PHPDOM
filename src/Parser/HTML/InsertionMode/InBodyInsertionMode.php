@@ -39,7 +39,7 @@ use function preg_match;
 /**
  * @see https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-inbody
  */
-class InBodyInsertionMode extends InsertionMode
+class InBodyInsertionMode extends AbstractInsertionMode implements InsertionMode
 {
     public function processToken(TreeBuilderContext $context, Token $token): void
     {

@@ -24,7 +24,7 @@ use function preg_match;
 /**
  * @see https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-inhead
  */
-class InHeadInsertionMode extends InsertionMode
+class InHeadInsertionMode extends AbstractInsertionMode implements InsertionMode
 {
     public function processToken(TreeBuilderContext $context, Token $token): void
     {

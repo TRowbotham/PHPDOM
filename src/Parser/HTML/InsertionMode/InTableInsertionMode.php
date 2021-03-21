@@ -21,7 +21,7 @@ use Rowbot\DOM\Utils;
 /**
  * @see https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-intable
  */
-class InTableInsertionMode extends InsertionMode
+class InTableInsertionMode extends AbstractInsertionMode implements InsertionMode
 {
     use InTableInsertionModeAnythingElseTrait;
 

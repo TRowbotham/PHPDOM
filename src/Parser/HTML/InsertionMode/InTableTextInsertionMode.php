@@ -11,7 +11,7 @@ use Rowbot\DOM\Parser\Token\Token;
 /**
  * @see https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-intabletext
  */
-class InTableTextInsertionMode extends InsertionMode
+class InTableTextInsertionMode extends AbstractInsertionMode implements InsertionMode
 {
     use InTableInsertionModeAnythingElseTrait;
 

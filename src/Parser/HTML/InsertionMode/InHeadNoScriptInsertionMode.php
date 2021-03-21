@@ -15,7 +15,7 @@ use Rowbot\DOM\Parser\Token\Token;
 /**
  * @see https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-inheadnoscript
  */
-class InHeadNoScriptInsertionMode extends InsertionMode
+class InHeadNoScriptInsertionMode extends AbstractInsertionMode implements InsertionMode
 {
     public function processToken(TreeBuilderContext $context, Token $token): void
     {
