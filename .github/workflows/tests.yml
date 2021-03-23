@@ -21,10 +21,12 @@ jobs:
         coverage: ['none']
         include:
           - php-versions: '7.3'
+            composer-options: '--optimize-autoloader'
             coverage: 'pcov'
 
           - php-versions: '8.1'
             composer-options: '--optimize-autoloader --ignore-platform-reqs'
+            coverage: 'none'
 
     steps:
       - name: Checkout
