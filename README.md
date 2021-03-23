@@ -1,7 +1,7 @@
 # PHPDOM
 
 [![GitHub](https://img.shields.io/github/license/TRowbotham/PHPDOM.svg?style=flat-square)](https://github.com/TRowbotham/PHPDOM/blob/master/LICENSE)
-[![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/TRowbotham/PHPDOM/Test/master?style=flat-square)](https://github.com/TRowbotham/PHPDOM/actions)
+[![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/TRowbotham/PHPDOM/Test%20PHPDOM/master?style=flat-square)](https://github.com/TRowbotham/PHPDOM/actions)
 [![Codecov branch](https://img.shields.io/codecov/c/github/TRowbotham/PHPDOM/master?logo=Codecov&style=flat-square&token=mT7l2Nu8Zf)](https://codecov.io/gh/TRowbotham/PHPDOM)
 
 PHPDOM is an attempt to implement the Document Object Model (DOM) in PHP that was more inline with current standards.
