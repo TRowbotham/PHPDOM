@@ -91,7 +91,7 @@ class FragmentSerializer implements FragmentSerializerInterface
                     || $localName === 'noembed'
                     || $localName === 'noframes'
                     || $localName === 'plaintext'
-                    || $localName === 'noscript'
+                    || ($localName === 'noscript' && $currentNode->getNodeDocument()->isScriptingEnabled())
                 ) {
                     $s .= $currentNode->data;
                 } else {

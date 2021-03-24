@@ -767,6 +767,16 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
     }
 
     /**
+     * @see https://html.spec.whatwg.org/multipage/webappapis.html#enabling-and-disabling-scripting
+     *
+     * @internal
+     */
+    public function isScriptingEnabled(): bool
+    {
+        return false;
+    }
+
+    /**
      * Gets the document's head element. The document's head element is the
      * first child of the html element that is a head element.
      *
