@@ -128,7 +128,7 @@ class FragmentSerializer implements FragmentSerializerInterface
 
         // 1. Replace any occurrence of the "&" character by the string "&amp;".
         // 2. Replace any occurrences of the U+00A0 NO-BREAK SPACE character by the string "&nbsp;".
-        $search = ['&', "\xA0"];
+        $search = ['&', "\u{00A0}"];
         $replace = ['&amp;', '&nbsp;'];
 
         // 3. If the algorithm was invoked in the attribute mode, replace any occurrences of the """
