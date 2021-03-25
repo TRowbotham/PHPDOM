@@ -3,7 +3,7 @@
 namespace Rowbot\DOM\Tests\dom\nodes;
 
 use Rowbot\DOM\CharacterData;
-use Rowbot\DOM\HTMLDocument;
+use Rowbot\DOM\Document;
 use Rowbot\DOM\Node;
 use Rowbot\DOM\Tests\TestCase;
 
@@ -12,13 +12,13 @@ use function strlen;
 abstract class CharacterDataTestCase extends TestCase
 {
     public function checkDocumentCreateMethod(
+        Document $document,
         string $method,
         string $iface,
         int $nodeType,
         string $nodeName,
         $value
     ): void {
-        $document = new HTMLDocument();
         $c = $document->{$method}($value);
         $expected = (string) $value;
 

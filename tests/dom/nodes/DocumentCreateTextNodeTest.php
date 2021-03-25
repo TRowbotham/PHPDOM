@@ -3,6 +3,7 @@
 namespace Rowbot\DOM\Tests\dom\nodes;
 
 use Generator;
+use Rowbot\DOM\HTMLDocument;
 use Rowbot\DOM\Text;
 
 /**
@@ -20,7 +21,7 @@ class DocumentCreateTextNodeTest extends CharacterDataTestCase
         string $nodeValue,
         $value
     ): void {
-        $this->checkDocumentCreateMethod($method, $iface, $nodeType, $nodeValue, $value);
+        $this->checkDocumentCreateMethod(new HTMLDocument(), $method, $iface, $nodeType, $nodeValue, $value);
     }
 
     public function textNodeDataProvider(): Generator

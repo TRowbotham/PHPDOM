@@ -4,6 +4,7 @@ namespace Rowbot\DOM\Tests\dom\nodes;
 
 use Generator;
 use Rowbot\DOM\Comment;
+use Rowbot\DOM\HTMLDocument;
 
 /**
  * @see https://github.com/web-platform-tests/wpt/blob/master/dom/nodes/Document-createComment.html
@@ -20,7 +21,7 @@ class DocumentCreateCommentTest extends CharacterDataTestCase
         string $nodeValue,
         $value
     ): void {
-        $this->checkDocumentCreateMethod($method, $iface, $nodeType, $nodeValue, $value);
+        $this->checkDocumentCreateMethod(new HTMLDocument(), $method, $iface, $nodeType, $nodeValue, $value);
     }
 
     public function commentNodeDataProvider(): Generator
