@@ -144,36 +144,25 @@ class InForeignContentInsertionMode extends AbstractInsertionMode
                 )
             ) {
                 // Parse error.
-                // If the parser was originally created for the HTML fragment
-                // parsing algorithm, then act as described in the "any other start
-                // tag" entry below. (fragment case)
-                if ($context->parser->isFragmentCase) {
-                    $this->inForeignContentAnyOtherStartTag($context, $token);
 
-                    return;
-                }
-
-                // Pop an element from the stack of open elements, and then keep
-                // popping more elements from the stack of open elements until the
-                // current node is a MathML text integration point, an HTML
-                // integration point, or an element in the HTML namespace.
+                // While the current node is not a MathML text integration point, an HTML integration point, or an
+                // element in the HTML namespace, pop elements from the stack of open elements.
                 while (!$context->parser->openElements->isEmpty()) {
-                    $context->parser->openElements->pop();
                     $currentNode = $context->parser->openElements->bottom();
 
                     if (
                         $this->isMathMLTextIntegrationPoint($currentNode)
                         || $this->isHTMLIntegrationPoint($currentNode, $context->elementTokenMap)
-                        || (
-                            $currentNode instanceof Element
-                            && $currentNode->namespaceURI === Namespaces::HTML
-                        )
+                        || $currentNode->namespaceURI === Namespaces::HTML
                     ) {
                         break;
                     }
+
+                    $context->parser->openElements->pop();
                 }
 
-                // Then, reprocess the token.
+                // Reprocess the token according to the rules given in the section corresponding to the current
+                // insertion mode in HTML content.
                 $context->insertionMode->processToken($context, $token);
 
                 return;
