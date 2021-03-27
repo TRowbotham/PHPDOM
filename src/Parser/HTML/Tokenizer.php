@@ -31,8 +31,9 @@ use function json_decode;
 use function json_last_error;
 use function json_last_error_msg;
 use function ord;
-use function preg_match;
+use function strlen;
 use function strtolower;
+use function substr;
 
 use const DIRECTORY_SEPARATOR as DS;
 use const JSON_ERROR_NONE;
@@ -76,19 +77,13 @@ class Tokenizer
     ];
 
     /**
-     * Currrently, the longest named character reference, from the named
-     * character references table, consists of 33 characters, however, because
-     * the ampersand (&) is already in the temporary buffer, subtract 1.
-     */
-    private const MAX_NAMED_CHAR_REFERENCE_LENGTH = 32;
-
-    /**
-     * The path to the entities.json file.
+     * The path to the named-character-references.json file. The file is turned into a trie and a valid match will have
+     * a key named "chars" containing the UTF-8 encoded representation of the named reference.
      *
      * @see https://html.spec.whatwg.org/multipage/named-characters.html#named-character-references
      * @see https://html.spec.whatwg.org/entities.json
      */
-    private const NAMED_CHAR_REFERENCES_PATH = __DIR__ . DS . '..' . DS . 'entities.json';
+    private const NAMED_CHAR_REFERENCES_PATH = __DIR__ . DS . 'named-character-references.json';
 
     /**
      * The input stream.
@@ -105,7 +100,7 @@ class Tokenizer
     private $lastEmittedStartTagToken;
 
     /**
-     * The contents of the entities.json file decoded as JSON. The contents are
+     * The contents of the named-character-references.json file decoded as JSON. The contents are
      * lazily loaded.
      *
      * @var non-empty-array<string, string>|null
@@ -2819,82 +2814,64 @@ class Tokenizer
 
                 // https://html.spec.whatwg.org/multipage/syntax.html#named-character-reference-state
                 case TokenizerState::NAMED_CHARACTER_REFERENCE:
-                    $lastCharIsSemiColon = false;
-                    $match = null;
+                    // Load the JSON file for the named character references trie on-demand.
+                    if (self::$namedCharacterReferences === null) {
+                        $data = file_get_contents(self::NAMED_CHAR_REFERENCES_PATH);
 
-                    // Load the JSON file for the named character references
-                    // table on demand.
-                    if (!self::$namedCharacterReferences) {
-                        $entities = file_get_contents(self::NAMED_CHAR_REFERENCES_PATH);
+                        if ($data === false) {
+                            throw new ParserException('Failed to open named character references json file.');
+                        }
 
-                        if ($entities === false) {
+                        $json = json_decode($data, true);
+
+                        if (json_last_error() !== JSON_ERROR_NONE) {
                             throw new ParserException(
-                                'Failed to open entity map. ' . self::NAMED_CHAR_REFERENCES_PATH
+                                'Failed to json decode named character references trie. ' . json_last_error_msg()
                             );
                         }
 
-                        $json = json_decode($entities, true);
-
-                        if (json_last_error() !== JSON_ERROR_NONE) {
-                            throw new ParserException('Failed to json decode entity map. ' . json_last_error_msg());
-                        }
-
                         self::$namedCharacterReferences = $json;
+                        unset($data, $json);
                     }
 
-                    // Consume the maximum number of characters possible, up to
-                    // MAX_NAMED_CHAR_REFERENCE_LENGTH, where the consumed characters are one of the
-                    // identifiers in the first column of the named character references table.
-                    // Append each character to the temporary buffer when it's consumed.
-                    for ($i = 0; $i < self::MAX_NAMED_CHAR_REFERENCE_LENGTH; $i++) {
-                        $char = $this->input->get();
+                    // Consume the maximum number of characters possible, where the consumed characters are one of
+                    // the identifiers in the first column of the named character references table. Append each
+                    // character to the temporary buffer when it's consumed.
+                    $char = $this->input->get();
+                    $refsTrie = self::$namedCharacterReferences;
+                    $refName = '';
+                    $replacement = '';
+                    $bufferSize = 1;
 
-                        // We've reached the end of the input stream. Break out
-                        // of the loop without a match.
-                        if ($char === '') {
-                            break;
-                        }
-
-                        // Append the character from the input stream to the
-                        // temporary buffer.
+                    while ($char !== '' && isset($refsTrie[$char])) {
+                        $refsTrie = $refsTrie[$char];
                         $buffer .= $char;
+                        ++$bufferSize;
 
-                        $conformingMatch = isset(self::$namedCharacterReferences[$buffer . ';']);
-                        $nonConformingMatch = isset(self::$namedCharacterReferences[$buffer]);
-
-                        if ($nonConformingMatch || $conformingMatch) {
-                            if ($conformingMatch && $this->input->peek() === ';') {
-                                // we found a full match
-                                $char = $this->input->get();
-                                $buffer .= $char;
-                                $match = [$buffer, $i];
-                                $lastCharIsSemiColon = true;
-
-                                break;
-                            }
-
-                            // we found a potential match as it is possible to match a shorter
-                            // non-semi-colon terminated entity before a longer one.
-                            if ($nonConformingMatch) {
-                                $match = [$buffer, $i];
-                            }
-
-                            // dont't break as there could be a longer entity to match
-
-                            // If we find a semi-colon that wasn't consumed as a full match above
-                            // or we encounter a non-alphanumeric character then, that indicates
-                            // that we should stop consuming characters for that entity.
-                        } elseif ($char === ';' || !ctype_alnum($char)) {
-                            break;
+                        if (isset($refsTrie['chars'])) {
+                            $refName = $buffer;
+                            $replacement = $refsTrie['chars'];
                         }
+
+                        $char = $this->input->get();
                     }
 
-                    if ($match !== null) {
-                        // rewind the input stream by the difference between the number of
-                        // characters consumed and the number of characters consumed by the last
-                        // match.
-                        $this->input->seek($match[1] - $i);
-                        $buffer = $match[0];
+                    // Unconsume the char that made the loop above fail.
+                    $this->input->seek(-1);
+                    unset($refsTrie);
+
+                    if ($replacement !== '') {
+                        $refNameSize = strlen($refName);
+
+                        if ($bufferSize > $refNameSize) {
+                            // Unconsume the number of bytes that are not part of the matched character reference name.
+                            // $buffer may contain more bytes than the matched entity. e.g. $buffer = "&notin", but the
+                            // matched name is "&not", so we need to go back by 2 to unconsume the "in" after "&not".
+                            $this->input->seek($refNameSize - $bufferSize);
+                            $buffer = $refName;
+                        }
+
+                        $lastCharIsSemiColon = substr($buffer, -1) === ';';
 
                         // If the character reference was consumed as part of an
                         // attribute, and the last character is not a semi-colon
@@ -2906,48 +2883,42 @@ class Tokenizer
                             case TokenizerState::ATTRIBUTE_VALUE_DOUBLE_QUOTED:
                             case TokenizerState::ATTRIBUTE_VALUE_SINGLE_QUOTED:
                             case TokenizerState::ATTRIBUTE_VALUE_UNQUOTED:
-                                if (
-                                    !$lastCharIsSemiColon
-                                    && preg_match('/^[=A-Za-z0-9]$/', $this->input->peek())
-                                ) {
+                                $next = $this->input->peek();
+
+                                if (!$lastCharIsSemiColon && ($next === '=' || ctype_alnum($next))) {
                                     yield from $this->flush($buffer, $attributeToken, $returnState);
 
                                     $this->parser->tokenizerState = $returnState;
 
-                                    // Leave the named character reference
-                                    // state.
+                                    // Leave the named character reference state.
                                     break 2;
                                 }
                         }
 
-                        // If the last character consumed in a match is not a
-                        // semi-colon (;), then this is a parse error.
+                        // 1. If the last character consumed in a match is not a semi-colon (;), then
+                        // this is a parse error.
                         if (!$lastCharIsSemiColon) {
                             // Parse error.
                         }
 
-                        $namedRef = self::$namedCharacterReferences[$buffer];
+                        // 2. Set the temporary buffer to the empty string. Append one or two characters corresponding
+                        // to the character reference name (as given by the second column of the named character
+                        // references table) to the temporary buffer.
+                        $buffer = $replacement;
 
-                        // Set the temporary buffer to the empty string.
-                        $buffer = '';
-
-                        // Append each character, from the named character
-                        // references table, corresponding to the character
-                        // reference name to the temporary buffer.
-                        $buffer .= $namedRef['characters'];
-
+                        // 3. Flush code points consumed as a character reference. Switch to the return state.
                         yield from $this->flush($buffer, $attributeToken, $returnState);
 
                         $this->parser->tokenizerState = $returnState;
 
-                        // If no match was found, but the buffer contains an
-                        // ampersand (&) followed by one or more ASCII
-                        // alphanumerics, then this is a parse error.
-                    } else {
-                        yield from $this->flush($buffer, $attributeToken, $returnState);
-
-                        $this->parser->tokenizerState = TokenizerState::AMBIGUOUS_AMPERSAND;
+                        break;
                     }
+
+                    // Otherwise, Flush code points consumed as a character reference. Switch to the ambiguous
+                    // ampersand state.
+                    yield from $this->flush($buffer, $attributeToken, $returnState);
+
+                    $this->parser->tokenizerState = TokenizerState::AMBIGUOUS_AMPERSAND;
 
                     break;
 
