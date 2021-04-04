@@ -114,8 +114,8 @@ class InTableBodyInsertionMode extends AbstractInsertionMode implements Insertio
         // token.
         if (
             !$context->parser->openElements->hasElementInTableScope('tbody', Namespaces::HTML)
-            && !$context->parser->openElements->hasElementInTableScope('tbody', Namespaces::HTML)
-            && !$context->parser->openElements->hasElementInTableScope('tbody', Namespaces::HTML)
+            && !$context->parser->openElements->hasElementInTableScope('thead', Namespaces::HTML)
+            && !$context->parser->openElements->hasElementInTableScope('tfoot', Namespaces::HTML)
         ) {
             // Parse error.
             // Ignore the token.
