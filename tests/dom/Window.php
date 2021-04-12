@@ -16,6 +16,7 @@ use Rowbot\DOM\Text;
 use function array_merge;
 use function get_class;
 use function implode;
+use function is_string;
 use function preg_replace;
 
 /**
@@ -404,8 +405,12 @@ class Window
         ]);
     }
 
-    public function eval(string $input)
+    public function eval($input)
     {
+        if (!is_string($input)) {
+            return $input;
+        }
+
         if (!self::$evalReplacePattern) {
             $reflection = new ReflectionClass($this);
             $names = [];
