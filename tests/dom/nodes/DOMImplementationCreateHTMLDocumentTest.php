@@ -86,8 +86,6 @@ class DOMImplementationCreateHTMLDocumentTest extends TestCase
 
     public function testCreateHTMLDocumentCharacterSetAliases(): void
     {
-        $this->markTestSkipped('We don\'t support characterSet aliases.');
-
         $doc = self::loadDocument()->implementation->createHTMLDocument('test');
 
         $this->assertSame('UTF-8', $doc->characterSet);
