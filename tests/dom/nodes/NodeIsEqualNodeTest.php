@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Tests\dom\nodes;
 
 use Rowbot\DOM\Tests\dom\DocumentGetter;
@@ -204,18 +207,18 @@ class NodeIsEqualNodeTest extends TestCase
         $document = $this->getHTMLDocument();
 
         return [
-            [function () use ($document) {
+            [static function () use ($document) {
                 return $document->createElement('foo');
             }],
-            [function () use ($document) {
+            [static function () use ($document) {
                 return $document->createDocumentFragment();
             }],
-            [function () use ($document) {
+            [static function () use ($document) {
                 return $document->implementation->createDocument('', '');
             }],
-            [function () use ($document) {
+            [static function () use ($document) {
                 return $document->implementation->createHTMLDocument();
-            }]
+            }],
         ];
     }
 

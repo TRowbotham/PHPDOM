@@ -11,6 +11,8 @@ use Rowbot\DOM\Tests\TestCase;
 use function hexdec;
 use function rawurlencode;
 
+use const DIRECTORY_SEPARATOR;
+
 /**
  * @see https://github.com/web-platform-tests/wpt/blob/master/domparsing/innerhtml-mxss.sub.html
  */

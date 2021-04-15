@@ -23,11 +23,15 @@ use RuntimeException;
 
 use function count;
 use function file_get_contents;
+use function intval;
 use function json_decode;
+use function json_last_error;
 use function mb_check_encoding;
 use function mb_convert_encoding;
+use function mb_substitute_character;
 use function preg_match;
 use function preg_replace;
+use function preg_replace_callback;
 
 use const DIRECTORY_SEPARATOR as DS;
 use const JSON_ERROR_NONE;

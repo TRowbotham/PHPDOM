@@ -11,6 +11,8 @@ use Rowbot\DOM\Tests\TestCase;
 
 use function array_keys;
 
+use const DIRECTORY_SEPARATOR;
+
 /**
  * @see https://github.com/web-platform-tests/wpt/blob/master/domparsing/insert-adjacent.html
  */

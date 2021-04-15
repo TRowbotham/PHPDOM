@@ -7,6 +7,8 @@ namespace Rowbot\DOM\Tests\html\semantics\document_metadata\the_title_element;
 use Rowbot\DOM\Tests\dom\WindowTrait;
 use Rowbot\DOM\Tests\TestCase;
 
+use const DIRECTORY_SEPARATOR;
+
 /**
  * @see https://github.com/web-platform-tests/wpt/blob/master/html/semantics/document-metadata/the-title-element/title.text-01.html
  */

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Tests\dom\nodes;
 
 use Generator;
@@ -8,7 +10,6 @@ use ReflectionProperty;
 use Rowbot\DOM\Node;
 use Rowbot\DOM\Tests\dom\WindowTrait;
 
-use function count;
 use function extract;
 use function mb_strlen;
 
@@ -45,8 +46,7 @@ class NodePropertiesTest extends NodeTestCase
             $props[$property->getName()] = $property->getValue($window);
         }
 
-        $extractCount = extract($props);
-        assert($extractCount === count($properties));
+        self::assertCount(extract($props), $properties);
 
         /**
          * First we define a data structure to tell us what tests to run.  The keys
@@ -712,12 +712,8 @@ class NodePropertiesTest extends NodeTestCase
                 // those.  Otherwise, at least check that .firstChild == .childNodes[0]
                 // and .lastChild == .childNodes[len - 1], even if we aren't sure what
                 // they should be.
-                $expected[$node]['firstChild'] = isset($expected[$node]['childNodes[0]'])
-                    ? $expected[$node]['childNodes[0]']
-                    : eval('return $' . $node . '->childNodes[0];');
-                $expected[$node]['lastChild'] = isset($expected[$node]['childNodes[' . ($len - 1) . ']'])
-                    ? $expected[$node]['childNodes[' . ($len - 1) . ']']
-                    : eval('return $' . $node . '->childNodes[' . ($len - 1) . '];');
+                $expected[$node]['firstChild'] = $expected[$node]['childNodes[0]'] ?? eval('return $' . $node . '->childNodes[0];');
+                $expected[$node]['lastChild'] = $expected[$node]['childNodes[' . ($len - 1) . ']'] ?? eval('return $' . $node . '->childNodes[' . ($len - 1) . '];');
             }
 
             $expected[$node]['hasChildNodes()'] = !!$expected[$node]['childNodes->length'];

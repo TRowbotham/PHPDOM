@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Tests\dom\nodes;
 
 use Rowbot\DOM\Element\Element;
@@ -7,7 +10,12 @@ use Rowbot\DOM\Exception\SyntaxError;
 use Rowbot\DOM\Namespaces;
 use Rowbot\DOM\Tests\dom\DocumentGetter;
 use Rowbot\DOM\Tests\TestCase;
+use TypeError;
 
+use function array_fill;
+use function array_push;
+use function count;
+use function in_array;
 use function is_array;
 use function is_string;
 
@@ -50,13 +58,13 @@ class ElementClassListTest extends TestCase
         $this->setClass($e, $before);
 
         if (in_array(null, $args, true)) {
-            $this->expectException(\TypeError::class);
+            $this->expectException(TypeError::class);
         }
 
         if ($shouldThrow) {
             $list = $e->classList;
 
-            $this->assertThrows(function () use ($list, $funcName, $args, &$res) {
+            $this->assertThrows(static function () use ($list, $funcName, $args, &$res) {
                 $res = $list->{$funcName}(...$args);
             }, $expectedException);
         } else {
@@ -103,7 +111,7 @@ class ElementClassListTest extends TestCase
             $document->createElementNS(Namespaces::HTML, "div"),
             $document->createElementNS(Namespaces::MATHML, "math"),
             $document->createElementNS(null, "foo"),
-            $document->createElementNS("http://example.org/foo", "foo")
+            $document->createElementNS("http://example.org/foo", "foo"),
         ];
     }
 
@@ -129,7 +137,7 @@ class ElementClassListTest extends TestCase
             ["a A B b", 4],
             ["a b c c b a a b c c", 3],
             ["   a  a b", 2],
-            ["a\tb\nc\fd\re f", 6]
+            ["a\tb\nc\fd\re f", 6],
         ]);
     }
 
@@ -154,7 +162,7 @@ class ElementClassListTest extends TestCase
         return $this->buildTestData([
             [null, ""],
             ["foo", "foo"],
-            ["   a  a b", "   a  a b"]
+            ["   a  a b", "   a  a b"],
         ]);
     }
 
@@ -184,7 +192,7 @@ class ElementClassListTest extends TestCase
             ["aa AA aa", ["aa", "AA"]],
             ["a b", ["a", "b"]],
             ["   a  a b", ["a", "b"]],
-            ["\t\n\f\r a\t\n\f\r b\t\n\f\r ", ["a", "b"]]
+            ["\t\n\f\r a\t\n\f\r b\t\n\f\r ", ["a", "b"]],
         ]);
     }
 
@@ -238,7 +246,7 @@ class ElementClassListTest extends TestCase
             ["a a a", ["a", "aa", "b"], [true, false, false]],
             ["a b c", ["a", "b"], true],
 
-            ["\t\n\f\r a\t\n\f\r b\t\n\f\r ", ["a", "b"], true]
+            ["\t\n\f\r a\t\n\f\r b\t\n\f\r ", ["a", "b"], true],
         ]);
     }
 
@@ -309,14 +317,14 @@ class ElementClassListTest extends TestCase
             [null, ["a", "b"], "a b"],
             ["", ["a", "b"], "a b"],
 
-            [null, null, "null"]
+            [null, null, "null"],
         ]);
     }
 
     /**
      * @dataProvider addProvider
      *
-     * @param Element $element
+     * @param \Rowbot\DOM\Element\Element $element
      * @param string|null $before
      * @param [type] $argument
      * @param string|null $after
@@ -420,14 +428,14 @@ class ElementClassListTest extends TestCase
             ["", ["a", "b"], ""],
             ["a a", [], "a"],
 
-            ["null", null, ""]
+            ["null", null, ""],
         ]);
     }
 
     /**
      * @dataProvider removeProvider
      *
-     * @param Element $element
+     * @param \Rowbot\DOM\Element\Element $element
      * @param string|null $before
      * @param [type] $argument
      * @param string|null $after
@@ -501,7 +509,7 @@ class ElementClassListTest extends TestCase
             ["\t\n\f\r a\t\n\f\r b\t\n\f\r ", "c", true, "a b c"],
 
             ["null", null, false, ""],
-            ["", null, true, "null"]
+            ["", null, true, "null"],
         ]);
     }
 
@@ -588,7 +596,7 @@ class ElementClassListTest extends TestCase
             ["\t\n\f\r a\t\n\f\r b\t\n\f\r ", "b", "c", true, "a c"],
 
             ["a null", null, "b", true, "a b"],
-            ["a b", "a", null, true, "null b"]
+            ["a b", "a", null, true, "null b"],
         ]);
     }
 

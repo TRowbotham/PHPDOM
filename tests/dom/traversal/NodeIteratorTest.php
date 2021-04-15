@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Tests\dom\traversal;
 
 use Closure;
@@ -10,6 +12,7 @@ use Rowbot\DOM\NodeFilter;
 use Rowbot\DOM\NodeIterator;
 use Rowbot\DOM\Tests\dom\Window;
 use Rowbot\DOM\Tests\dom\WindowTrait;
+use Throwable;
 use TypeError;
 
 /**
@@ -53,7 +56,7 @@ class NodeIteratorTest extends TestCase
                 throw new Exception();
             }
         );
-        $this->expectException(Exception::class);
+        $this->expectException(Throwable::class);
         $iter->nextNode();
     }
 
@@ -84,6 +87,7 @@ class NodeIteratorTest extends TestCase
             $iter->previousNode();
         }, InvalidStateError::class);
     }
+
     /**
      * @dataProvider iteratorInputProvider
      */

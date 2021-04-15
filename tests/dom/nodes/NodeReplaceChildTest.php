@@ -1,10 +1,15 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Tests\dom\nodes;
 
 use Rowbot\DOM\Exception\HierarchyRequestError;
 use Rowbot\DOM\Exception\NotFoundError;
 use Rowbot\DOM\Tests\dom\DocumentGetter;
 use TypeError;
+
+use function iterator_to_array;
 
 /**
  * @see https://github.com/w3c/web-platform-tests/blob/master/dom/nodes/Node-replaceChild.html
@@ -22,16 +27,16 @@ class NodeReplaceChildTest extends NodeTestCase
         $document = $this->getHTMLDocument();
         $a = $document->createElement('div');
 
-        $this->assertThrows(function () use ($a) {
+        $this->assertThrows(static function () use ($a) {
             $a->replaceChild(null, null);
         }, TypeError::class);
 
         $b = $document->createElement('div');
 
-        $this->assertThrows(function () use ($a, $b) {
+        $this->assertThrows(static function () use ($a, $b) {
             $a->replaceChild($b, null);
         }, TypeError::class);
-        $this->assertThrows(function () use ($a, $b) {
+        $this->assertThrows(static function () use ($a, $b) {
             $a->replaceChild(null, $b);
         }, TypeError::class);
     }
@@ -46,16 +51,16 @@ class NodeReplaceChildTest extends NodeTestCase
         $a = $document->createElement('div');
         $b = $document->createElement('div');
         $c = $document->createElement('div');
-        $this->assertThrows(function () use ($a, $b, $c) {
+        $this->assertThrows(static function () use ($a, $b, $c) {
             $a->replaceChild($b, $c);
         }, NotFoundError::class);
 
         $d = $document->createElement('div');
         $d->appendChild($b);
-        $this->assertThrows(function () use ($a, $b, $c) {
+        $this->assertThrows(static function () use ($a, $b, $c) {
             $a->replaceChild($b, $c);
         }, NotFoundError::class);
-        $this->assertThrows(function () use ($a, $b) {
+        $this->assertThrows(static function () use ($a, $b) {
             $a->replaceChild($b, $a);
         }, NotFoundError::class);
     }
@@ -68,7 +73,7 @@ class NodeReplaceChildTest extends NodeTestCase
             [$document->implementation->createDocumentType('html', '', '')],
             [$document->createTextNode('text')],
             [$document->implementation->createDocument(null, 'foo', null)->createProcessingInstruction('foo', 'bar')],
-            [$document->createComment('comment')]
+            [$document->createComment('comment')],
         ];
     }
 
@@ -97,18 +102,18 @@ class NodeReplaceChildTest extends NodeTestCase
         $a = $document->createElement('div');
         $b = $document->createElement('div');
 
-        $this->assertThrows(function () use ($a) {
+        $this->assertThrows(static function () use ($a) {
             $a->replaceChild($a, $a);
         }, HierarchyRequestError::class);
 
         $a->appendChild($b);
-        $this->assertThrows(function () use ($a, $b) {
+        $this->assertThrows(static function () use ($a, $b) {
             $a->replaceChild($a, $b);
         }, HierarchyRequestError::class);
 
         $c = $document->createElement('div');
         $c->appendChild($a);
-        $this->assertThrows(function () use ($a, $b, $c) {
+        $this->assertThrows(static function () use ($a, $b, $c) {
             $a->replaceChild($c, $b);
         }, HierarchyRequestError::class);
     }
@@ -123,11 +128,11 @@ class NodeReplaceChildTest extends NodeTestCase
         $doc = $document->implementation->createHTMLDocument('title');
         $doc2 = $document->implementation->createHTMLDocument('title2');
 
-        $this->assertThrows(function () use ($doc, $doc2) {
+        $this->assertThrows(static function () use ($doc, $doc2) {
             $doc->replaceChild($doc2, $doc->documentElement);
         }, HierarchyRequestError::class);
 
-        $this->assertThrows(function () use ($doc) {
+        $this->assertThrows(static function () use ($doc) {
             $doc->replaceChild(
                 $doc->createTextNode('text'),
                 $doc->documentElement
@@ -148,20 +153,20 @@ class NodeReplaceChildTest extends NodeTestCase
         $df = $doc->createDocumentFragment();
         $df->appendChild($doc->createElement('a'));
         $df->appendChild($doc->createElement('b'));
-        $this->assertThrows(function () use ($doc, $df) {
+        $this->assertThrows(static function () use ($doc, $df) {
             $doc->replaceChild($df, $doc->documentElement);
         }, HierarchyRequestError::class);
 
         $df = $document->createDocumentFragment();
         $df->appendChild($doc->createTextNode('text'));
-        $this->assertThrows(function () use ($doc, $df) {
+        $this->assertThrows(static function () use ($doc, $df) {
             $doc->replaceChild($df, $doc->documentElement);
         }, HierarchyRequestError::class);
 
         $df = $document->createDocumentFragment();
         $df->appendChild($doc->createComment('comment'));
         $df->appendChild($doc->createTextNode('text'));
-        $this->assertThrows(function () use ($doc, $df) {
+        $this->assertThrows(static function () use ($doc, $df) {
             $doc->replaceChild($df, $doc->documentElement);
         }, HierarchyRequestError::class);
     }
@@ -180,7 +185,7 @@ class NodeReplaceChildTest extends NodeTestCase
         $df = $doc->createDocumentFragment();
         $df->appendChild($doc->createElement('a'));
         $df->appendChild($doc->createElement('b'));
-        $this->assertThrows(function () use ($doc, $df) {
+        $this->assertThrows(static function () use ($doc, $df) {
             $doc->replaceChild($df, $doc->doctype);
         }, HierarchyRequestError::class);
     }
@@ -203,11 +208,11 @@ class NodeReplaceChildTest extends NodeTestCase
 
         $df = $doc->createDocumentFragment();
         $df->appendChild($doc->createElement('a'));
-        $this->assertThrows(function () use ($doc, $df, $comment) {
+        $this->assertThrows(static function () use ($doc, $df, $comment) {
             $doc->replaceChild($df, $comment);
         }, HierarchyRequestError::class);
 
-        $this->assertThrows(function () use ($doc, $df) {
+        $this->assertThrows(static function () use ($doc, $df) {
             $doc->replaceChild($df, $doc->doctype);
         }, HierarchyRequestError::class);
     }
@@ -233,7 +238,7 @@ class NodeReplaceChildTest extends NodeTestCase
 
         $df = $doc->createDocumentFragment();
         $df->appendChild($doc->createElement('a'));
-        $this->assertThrows(function () use ($doc, $df, $comment) {
+        $this->assertThrows(static function () use ($doc, $df, $comment) {
             $doc->replaceChild($df, $comment);
         }, HierarchyRequestError::class);
     }
@@ -253,11 +258,11 @@ class NodeReplaceChildTest extends NodeTestCase
         );
 
         $a = $doc->createElement('a');
-        $this->assertThrows(function () use ($doc, $a, $comment) {
+        $this->assertThrows(static function () use ($doc, $a, $comment) {
             $doc->replaceChild($a, $comment);
         }, HierarchyRequestError::class);
 
-        $this->assertThrows(function () use ($doc, $a) {
+        $this->assertThrows(static function () use ($doc, $a) {
             $doc->replaceChild($a, $doc->doctype);
         }, HierarchyRequestError::class);
     }
@@ -281,7 +286,7 @@ class NodeReplaceChildTest extends NodeTestCase
         );
 
         $a = $doc->createElement('a');
-        $this->assertThrows(function () use ($doc, $a, $comment) {
+        $this->assertThrows(static function () use ($doc, $a, $comment) {
             $doc->replaceChild($a, $comment);
         }, HierarchyRequestError::class);
     }
@@ -304,11 +309,11 @@ class NodeReplaceChildTest extends NodeTestCase
         );
 
         $doctype = $document->implementation->createDocumentType('html', '', '');
-        $this->assertThrows(function () use ($doc, $doctype, $comment) {
+        $this->assertThrows(static function () use ($doc, $doctype, $comment) {
             $doc->replaceChild($doctype, $comment);
         }, HierarchyRequestError::class);
 
-        $this->assertThrows(function () use ($doc, $doctype) {
+        $this->assertThrows(static function () use ($doc, $doctype) {
             $doc->replaceChild($doctype, $doc->documentElement);
         }, HierarchyRequestError::class);
     }
@@ -329,7 +334,7 @@ class NodeReplaceChildTest extends NodeTestCase
         );
 
         $doctype = $document->implementation->createDocumentType('html', '', '');
-        $this->assertThrows(function () use ($doc, $doctype, $comment) {
+        $this->assertThrows(static function () use ($doc, $doctype, $comment) {
             $doc->replaceChild($doctype, $comment);
         }, HierarchyRequestError::class);
     }
@@ -345,12 +350,12 @@ class NodeReplaceChildTest extends NodeTestCase
         $a = $df->appendChild($document->createElement('a'));
 
         $doc = $document->implementation->createHTMLDocument('title');
-        $this->assertThrows(function () use ($doc, $a, $df) {
+        $this->assertThrows(static function () use ($doc, $a, $df) {
             $df->replaceChild($doc, $a);
         }, HierarchyRequestError::class);
 
         $doctype = $document->implementation->createDocumentType('html', '', '');
-        $this->assertThrows(function () use ($doctype, $a, $df) {
+        $this->assertThrows(static function () use ($doctype, $a, $df) {
             $df->replaceChild($doctype, $a);
         }, HierarchyRequestError::class);
     }
@@ -366,12 +371,12 @@ class NodeReplaceChildTest extends NodeTestCase
         $a = $el->appendChild($document->createElement('a'));
 
         $doc = $document->implementation->createHTMLDocument('title');
-        $this->assertThrows(function () use ($doc, $a, $el) {
+        $this->assertThrows(static function () use ($doc, $a, $el) {
             $el->replaceChild($doc, $a);
         }, HierarchyRequestError::class);
 
         $doctype = $document->implementation->createDocumentType('html', '', '');
-        $this->assertThrows(function () use ($doctype, $a, $el) {
+        $this->assertThrows(static function () use ($doctype, $a, $el) {
             $el->replaceChild($doctype, $a);
         }, HierarchyRequestError::class);
     }
@@ -532,7 +537,7 @@ class NodeReplaceChildTest extends NodeTestCase
     {
         $this->markTestSkipped('We don\'t yet support mutation events.');
         $document = $this->getHTMLDocument();
-        $document->addEventListener('DOMNodeRemoved', function ($e) use ($document) {
+        $document->addEventListener('DOMNodeRemoved', static function ($e) use ($document) {
             $document->body->appendChild($document->createElement('x'));
         }, false);
         $a = $document->body->firstChild;

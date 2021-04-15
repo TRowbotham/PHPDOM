@@ -6,6 +6,8 @@ namespace Rowbot\DOM\Tests\dom\ranges;
 
 use RuntimeException;
 
+use function array_merge;
+
 /**
  * @see https://github.com/web-platform-tests/wpt/blob/master/dom/ranges/Range-mutations-dataChange.html
  */

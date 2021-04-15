@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Tests\dom\nodes;
 
 use Rowbot\DOM\Exception\NotFoundError;
@@ -23,7 +26,7 @@ class NodeRemoveChildTest extends TestCase
             $doc = $document;
             $s = $doc->{$creator}('a');
             $this->assertSame($doc, $s->ownerDocument);
-            $this->assertThrows(function () use ($document, $s) {
+            $this->assertThrows(static function () use ($document, $s) {
                 $document->body->removeChild($s);
             }, NotFoundError::class);
             $this->assertSame($doc, $s->ownerDocument);
@@ -39,7 +42,7 @@ class NodeRemoveChildTest extends TestCase
             $doc = $fames[0]->document;
             $s = $doc->{$creator}('a');
             $this->assertSame($doc, $s->ownerDocument);
-            $this->assertThrows(function () use ($document, $s) {
+            $this->assertThrows(static function () use ($document, $s) {
                 $document->body->removeChild($s);
             }, NotFoundError::class);
             $this->assertSame($doc, $s->ownerDocument);
@@ -54,7 +57,7 @@ class NodeRemoveChildTest extends TestCase
             $doc = $document->implementation->createHTMLDocument();
             $s = $doc->{$creator}('a');
             $this->assertSame($doc, $s->ownerDocument);
-            $this->assertThrows(function () use ($document, $s) {
+            $this->assertThrows(static function () use ($document, $s) {
                 $document->body->removeChild($s);
             }, NotFoundError::class);
             $this->assertSame($doc, $s->ownerDocument);
@@ -68,10 +71,10 @@ class NodeRemoveChildTest extends TestCase
     public function test4()
     {
         $document = $this->getHTMLDocument();
-        $this->assertThrows(function () use ($document) {
+        $this->assertThrows(static function () use ($document) {
             $document->removeChild(null);
         }, TypeError::class);
-        $this->assertThrows(function () use ($document) {
+        $this->assertThrows(static function () use ($document) {
             $obj = new stdClass();
             $obj->a = 'b';
             $document->body->removeChild($obj);

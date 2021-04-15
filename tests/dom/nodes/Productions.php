@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Tests\dom\nodes;
 
 trait Productions
@@ -12,7 +15,7 @@ trait Productions
             ["'"],
             ['"'],
             ["0"],
-            ["0:a"]
+            ["0:a"],
         ];
     }
 
@@ -21,7 +24,7 @@ trait Productions
         return [
             ["x"],
             [":"],
-            ["a:0"]
+            ["a:0"],
         ];
     }
 
@@ -30,7 +33,7 @@ trait Productions
         return [
             [":a"],
             ["b:"],
-            ["x:y:z"]
+            ["x:y:z"],
         ];
     }
 }

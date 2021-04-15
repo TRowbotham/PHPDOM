@@ -9,6 +9,8 @@ use Rowbot\DOM\Tests\TestCase;
 use RuntimeException;
 
 use function file_get_contents;
+use function json_decode;
+use function json_last_error;
 
 use const DIRECTORY_SEPARATOR as DS;
 use const JSON_ERROR_NONE;

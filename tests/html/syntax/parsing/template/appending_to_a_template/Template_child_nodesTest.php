@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\html\syntax\parsing\template\appending_to_a_template;
 
-use Rowbot\DOM\HTMLDocument;
 use Rowbot\DOM\Tests\dom\ranges\FakeIframe;
 use Rowbot\DOM\Tests\html\resources\CommonTrait;
 use Rowbot\DOM\Tests\TestCase;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Tests\dom\nodes;
 
 use Rowbot\DOM\Element\Element;
@@ -51,7 +53,7 @@ class DocumentCreateElementTest extends TestCase
             // Test that non-ASCII chars don't get uppercased/lowercased
             ["mar\u{212a}"],
             ["\u{0130}nput"],
-            ["\u{0131}nput"]
+            ["\u{0131}nput"],
         ];
     }
 
@@ -81,7 +83,7 @@ class DocumentCreateElementTest extends TestCase
         return [
             'HTML document',
             'XML document',
-            'XHTML document'
+            'XHTML document',
         ];
     }
 
@@ -131,7 +133,7 @@ class DocumentCreateElementTest extends TestCase
             ["f<oo"],
             ["-foo"],
             [".foo"],
-            ["\u{0300}"]
+            ["\u{0300}"],
         ];
     }
 
@@ -142,7 +144,7 @@ class DocumentCreateElementTest extends TestCase
     {
         foreach ($this->getDocumentDescription() as $desc) {
             $doc = $this->getWin($desc);
-            $this->assertThrows(function () use ($doc, $arg) {
+            $this->assertThrows(static function () use ($doc, $arg) {
                 $doc->createElement($arg);
             }, InvalidCharacterError::class);
         }

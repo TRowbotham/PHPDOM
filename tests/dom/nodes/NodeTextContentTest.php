@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Tests\dom\nodes;
 
 use Rowbot\DOM\Tests\dom\DocumentGetter;
@@ -164,7 +167,7 @@ class NodeTextContentTest extends TestCase
         return [
             [$document],
             [$document->implementation->createDocument('', 'text', null)],
-            [$document->implementation->createHTMLDocument('title')]
+            [$document->implementation->createHTMLDocument('title')],
         ];
     }
 
@@ -174,7 +177,7 @@ class NodeTextContentTest extends TestCase
 
         return [
             [$document->doctype],
-            [$document->implementation->createDocumentType('x', '', '')]
+            [$document->implementation->createDocumentType('x', '', '')],
         ];
     }
 
@@ -202,7 +205,7 @@ class NodeTextContentTest extends TestCase
             [42, '42'],
             ['abc', 'abc'],
             ['<b>xyz<\/b>', '<b>xyz<\/b>'],
-            ["d\0e", "d\0e"]
+            ["d\0e", "d\0e"],
         ];
     }
 
@@ -211,6 +214,7 @@ class NodeTextContentTest extends TestCase
         if ($expectation === null) {
             $this->assertEquals('', $elementOrDocumentFragment->textContent);
             $this->assertNull($elementOrDocumentFragment->firstChild);
+
             return;
         }
 
@@ -380,7 +384,7 @@ class NodeTextContentTest extends TestCase
         $props = [
             'name' => $doctype->name,
             'publicId' => $doctype->publicId,
-            'systemId' => $doctype->systemId
+            'systemId' => $doctype->systemId,
         ];
         $doctype->textContent = 'b';
         $this->assertNull($doctype->textContent);

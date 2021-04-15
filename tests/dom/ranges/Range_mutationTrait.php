@@ -10,6 +10,7 @@ use Rowbot\DOM\Node;
 use Rowbot\DOM\Tests\dom\WindowTrait;
 
 use function array_map;
+use function array_merge;
 use function count;
 use function mb_strlen;
 use function mb_substr;
@@ -26,7 +27,7 @@ trait Range_mutationTrait
     {
         if ($startContainer === $endContainer && $startOffset === $endOffset) {
             return "range collapsed at (" . $startContainer . ", " . $startOffset . ")";
-        } else if ($startContainer === $endContainer) {
+        } elseif ($startContainer === $endContainer) {
             return "range on " . $startContainer . " from " . $startOffset . " to " . $endOffset;
         } else {
             return "range from (" . $startContainer . ", " . $startOffset . ") to (" . $endContainer . ", " . $endOffset . ")";
@@ -122,7 +123,6 @@ trait Range_mutationTrait
         return $tests;
     }
 
-
     /**
      * Set up the range, call the callback function to do the DOM modification and
      * tell us what to expect.  The callback function needs to return a
@@ -135,6 +135,7 @@ trait Range_mutationTrait
      * tell us what range to build.
      *
      * @dataProvider rangeProvider
+     *
      * @test
      */
     public function doTest($callback, $useSelection, $startContainer, $startOffset, $endContainer, $endOffset): void
@@ -201,20 +202,28 @@ trait Range_mutationTrait
             $exceptionThrown = true;
         }
 
-        self::assertSame($originalParent, $node->parentNode,
-          "Sanity check failed: changing data changed the parent");
+        self::assertSame(
+            $originalParent,
+            $node->parentNode,
+            "Sanity check failed: changing data changed the parent"
+        );
 
         // "User agents must run the following steps whenever they replace data of
         // a CharacterData node, as though they were written in the specification
         // for that algorithm after all other steps. In particular, the steps must
         // not be executed if the algorithm threw an exception."
         if ($exceptionThrown) {
-          self::assertSame($originalData, $node->data,
-            "Sanity check failed: exception thrown but data changed");
+            self::assertSame(
+                $originalData,
+                $node->data,
+                "Sanity check failed: exception thrown but data changed"
+            );
         } else {
-          self::assertSame(mb_substr($originalData, 0, $offset, 'utf-8') . $data . mb_substr($originalData, $offset + $count, null, 'utf-8'),
-            $node->data,
-            "Sanity check failed: data not changed as expected");
+            self::assertSame(
+                mb_substr($originalData, 0, $offset, 'utf-8') . $data . mb_substr($originalData, $offset + $count, null, 'utf-8'),
+                $node->data,
+                "Sanity check failed: data not changed as expected"
+            );
         }
 
         // "For every boundary point whose node is node, and whose offset is
@@ -258,7 +267,7 @@ trait Range_mutationTrait
         }
 
         return [$expectedStartContainer, $expectedStartOffset, $expectedEndContainer, $expectedEndOffset];
-      }
+    }
 
     // If we were to remove removedNode from its parent, what would the boundary
     // point [node, offset] become?  Returns [new node, new offset].  Must be

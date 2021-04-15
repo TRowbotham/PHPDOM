@@ -8,6 +8,8 @@ use Rowbot\DOM\Element\HTML\HTMLTableRowElement;
 use Rowbot\DOM\Tests\dom\WindowTrait;
 use Rowbot\DOM\Tests\TestCase;
 
+use const DIRECTORY_SEPARATOR;
+
 /**
  * @see https://github.com/web-platform-tests/wpt/blob/master/html/semantics/tabular-data/the-tr-element/sectionRowIndex.html
  */

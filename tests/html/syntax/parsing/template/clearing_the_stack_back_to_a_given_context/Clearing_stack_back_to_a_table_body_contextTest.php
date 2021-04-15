@@ -30,8 +30,7 @@ class Clearing_stack_back_to_a_table_body_contextTest extends TestCase
         ?string $footerId = null,
         bool $headerIsNull = false,
         ?string $headerId = null
-    ): void
-    {
+    ): void {
         $doc->body->innerHTML = ''
             . '<table id="tbl">'
             . '<' . $tagToTest . '>'
@@ -196,7 +195,7 @@ class Clearing_stack_back_to_a_table_body_contextTest extends TestCase
              $doc, 'thead', '</tfoot>', null, null],
 
             ['Clearing stack back to a table body context. Test </tfoot> in <tbody>',
-             $doc, 'tbody', '</tfoot>', null, null]
+             $doc, 'tbody', '</tfoot>', null, null],
         ];
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Tests\dom\nodes;
 
 use Rowbot\DOM\Document;
@@ -28,6 +30,7 @@ class DocumentDoctypeTest extends TestCase
 
         $this->assertNull($newdoc->doctype);
     }
+
     public static function loadDocument(): HTMLDocument
     {
         $html = <<<'TEST_HTML'

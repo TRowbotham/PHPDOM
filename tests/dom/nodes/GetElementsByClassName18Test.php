@@ -20,7 +20,7 @@ class GetElementsByClassName18Test extends NodeTestCase
         $document = self::getWindow()->document;
         self::assertSame(
             [$document->body],
-            iterator_to_array($document->getElementsByClassName(["\fa","b\n"]))
+            iterator_to_array($document->getElementsByClassName(["\fa", "b\n"]))
         );
     }
 

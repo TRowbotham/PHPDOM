@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Tests\dom\traversal;
 
 use Generator;
@@ -77,6 +79,7 @@ class NodeIteratorRemovalTest extends TestCase
                     // that is being removed, and terminate these steps."
                     if (!$iter->pointerBeforeReferenceNode) {
                         $expectedReferenceNodes[$idx] = Window::previousNode($node);
+
                         continue;
                     }
 
@@ -87,6 +90,7 @@ class NodeIteratorRemovalTest extends TestCase
 
                     if ($next) {
                         $expectedReferenceNodes[$idx] = $next;
+
                         continue;
                     }
 

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Tests\dom\traversal;
 
 use Closure;
@@ -254,6 +256,7 @@ class TreeWalkerTest extends TestCase
                 // attribute to node and return node."
                 if ($result === NodeFilter::FILTER_ACCEPT) {
                     $expectedCurrentNode = $expectedReturn = $node;
+
                     return;
                 }
 

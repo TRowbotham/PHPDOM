@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Tests\dom\nodes;
 
 use Rowbot\DOM\DOMParser;
@@ -44,7 +46,8 @@ class DocumentCreateTreeWalkerTest extends TestCase
 
     public function testCreateTreeWalkerOptionalArguments3Filter(): void
     {
-        $fn = static function () {};
+        $fn = static function () {
+        };
         $tw = self::$document->createTreeWalker(self::$document->body, 42, $fn);
 
         $this->assertSame(self::$document->body, $tw->root);

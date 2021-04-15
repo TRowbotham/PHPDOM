@@ -17,7 +17,7 @@ trait Document_createProcessingInstructionTrait
     /**
      * @dataProvider invalidNamesProvider
      */
-    public function testCreateProcessingInstructionInvalidNames($target,string $data): void
+    public function testCreateProcessingInstructionInvalidNames($target, string $data): void
     {
         $this->expectException(InvalidCharacterError::class);
         $this->getDocument()->createProcessingInstruction((string) $target, $data);
@@ -48,7 +48,7 @@ trait Document_createProcessingInstructionTrait
             ["\\A", "x"],
             ["\f", "x"],
             [0, "x"],
-            ["0", "x"]
+            ["0", "x"],
         ];
     }
 

@@ -7,6 +7,8 @@ namespace Rowbot\DOM\Tests\html\semantics\text_level_semantics\the_a_element;
 use Rowbot\DOM\Tests\dom\WindowTrait;
 use Rowbot\DOM\Tests\TestCase;
 
+use const DIRECTORY_SEPARATOR;
+
 /**
  * @see https://github.com/web-platform-tests/wpt/blob/master/html/semantics/text-level-semantics/the-a-element/a.text-getter-01.html
  */

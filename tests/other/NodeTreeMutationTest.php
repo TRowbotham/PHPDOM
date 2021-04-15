@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Tests\other;
 
 use Rowbot\DOM\Element\HTML\HTMLDivElement;

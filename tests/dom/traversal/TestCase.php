@@ -1,9 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Tests\dom\traversal;
 
 use Rowbot\DOM\Node;
 use Rowbot\DOM\Tests\TestCase as DOMTestCase;
+
+use const DIRECTORY_SEPARATOR;
 
 abstract class TestCase extends DOMTestCase
 {

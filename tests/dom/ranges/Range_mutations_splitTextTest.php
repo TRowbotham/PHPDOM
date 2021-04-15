@@ -70,7 +70,7 @@ class Range_mutations_splitTextTest extends RangeTestCase
         // greater than offset but less than or equal to offset plus count, set its
         // offset to offset."
         if (
-            $startContainer == $oldNode
+            $startContainer === $oldNode
             && $startOffset > $offset
             && $startOffset <= $originalLength
         ) {
@@ -78,7 +78,7 @@ class Range_mutations_splitTextTest extends RangeTestCase
         }
 
         if (
-            $endContainer == $oldNode
+            $endContainer === $oldNode
             && $endOffset > $offset
             && $endOffset <= $originalLength
         ) {
@@ -127,21 +127,21 @@ class Range_mutations_splitTextTest extends RangeTestCase
         //   * "For each range whose end node is parent and end offset is equal to
         //   the index of node + 1, increase its end offset by one."
         if ($oldNode->parentNode) {
-            if ($startContainer == $oldNode && $originalStartOffset > $offset) {
+            if ($startContainer === $oldNode && $originalStartOffset > $offset) {
                 $startContainer = $newNode;
                 $startOffset = $originalStartOffset - $offset;
             }
 
-            if ($endContainer == $oldNode && $originalEndOffset > $offset) {
+            if ($endContainer === $oldNode && $originalEndOffset > $offset) {
                 $endContainer = $newNode;
                 $endOffset = $originalEndOffset - $offset;
             }
 
-            if ($startContainer == $oldNode->parentNode && $startOffset == 1 + self::getWindow()->indexOf($oldNode)) {
+            if ($startContainer === $oldNode->parentNode && $startOffset === 1 + self::getWindow()->indexOf($oldNode)) {
                 $startOffset++;
             }
 
-            if ($endContainer == $oldNode->parentNode && $endOffset == 1 + self::getWindow()->indexOf($oldNode)) {
+            if ($endContainer === $oldNode->parentNode && $endOffset === 1 + self::getWindow()->indexOf($oldNode)) {
                 $endOffset++;
             }
         }

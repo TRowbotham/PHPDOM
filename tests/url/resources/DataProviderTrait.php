@@ -8,6 +8,7 @@ use Rowbot\DOM\Element\HTML\HTMLAnchorElement;
 use Rowbot\DOM\Tests\dom\WindowTrait;
 use RuntimeException;
 
+use function array_filter;
 use function file_get_contents;
 use function hexdec;
 use function json_decode;
@@ -16,6 +17,7 @@ use function json_last_error_msg;
 use function preg_match;
 use function substr_replace;
 
+use const DIRECTORY_SEPARATOR;
 use const JSON_ERROR_NONE;
 use const PREG_OFFSET_CAPTURE;
 

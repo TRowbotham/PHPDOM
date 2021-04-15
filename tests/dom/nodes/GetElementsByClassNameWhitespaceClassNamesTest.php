@@ -9,6 +9,7 @@ use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Tests\dom\WindowTrait;
 
 use function iterator_to_array;
+use function mb_strlen;
 
 /**
  * @see https://github.com/web-platform-tests/wpt/blob/master/dom/nodes/getElementsByClassName-whitespace-class-names.html

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Tests\dom\nodes;
 
 use Rowbot\DOM\Exception\HierarchyRequestError;
@@ -6,6 +9,8 @@ use Rowbot\DOM\Exception\NotFoundError;
 use Rowbot\DOM\Tests\dom\DocumentGetter;
 use stdClass;
 use TypeError;
+
+use function iterator_to_array;
 
 /**
  * @see https://github.com/w3c/web-platform-tests/blob/master/dom/nodes/Node-insertBefore.html
@@ -27,13 +32,13 @@ class NodeInsertBeforeTest extends NodeTestCase
     {
         $document = $this->getHTMLDocument();
 
-        $this->assertThrows(function () use ($document) {
+        $this->assertThrows(static function () use ($document) {
             $document->body->insertBefore(null, null);
         }, TypeError::class);
-        $this->assertThrows(function () use ($document) {
+        $this->assertThrows(static function () use ($document) {
             $document->body->insertBefore(null, $document->body->firstChild);
         }, TypeError::class);
-        $this->assertThrows(function () use ($document) {
+        $this->assertThrows(static function () use ($document) {
             $obj = new stdClass();
             $obj->a = 'b';
             $document->body->insertBefore($obj, $document->body->firstChild);
@@ -45,18 +50,18 @@ class NodeInsertBeforeTest extends NodeTestCase
         $document = $this->getHTMLDocument();
 
         return [
-            ['DocumentType', function () use ($document) {
+            ['DocumentType', static function () use ($document) {
                 return $document->doctype;
             }],
-            ['Text', function () use ($document) {
+            ['Text', static function () use ($document) {
                 return $document->createTextNode('Foo');
             }],
-            ['Comment', function () use ($document) {
+            ['Comment', static function () use ($document) {
                 return $document->createComment('Foo');
             }],
-            ['ProcessingInstruction', function () use ($document) {
+            ['ProcessingInstruction', static function () use ($document) {
                 return $document->createProcessingInstruction('foo', 'bar');
-            }]
+            }],
         ];
     }
 
@@ -68,16 +73,16 @@ class NodeInsertBeforeTest extends NodeTestCase
         $document = $this->getHTMLDocument();
         $node = $createNodeFunction();
 
-        $this->assertThrows(function () use ($node) {
+        $this->assertThrows(static function () use ($node) {
             $node->insertBefore(null, null);
         }, TypeError::class);
-        $this->assertThrows(function () use ($node, $document) {
+        $this->assertThrows(static function () use ($node, $document) {
             $node->insertBefore($document->createTextNode('fail'), null);
         }, HierarchyRequestError::class);
-        $this->assertThrows(function () use ($node) {
+        $this->assertThrows(static function () use ($node) {
             $node->insertBefore($node, null);
         }, HierarchyRequestError::class);
-        $this->assertThrows(function () use ($node, $document) {
+        $this->assertThrows(static function () use ($node, $document) {
             $node->insertBefore($node, $document->createTextNode('child'));
         }, HierarchyRequestError::class);
     }
@@ -86,14 +91,14 @@ class NodeInsertBeforeTest extends NodeTestCase
     {
         $document = $this->getHTMLDocument();
 
-        $this->assertThrows(function () use ($document) {
+        $this->assertThrows(static function () use ($document) {
             $document->body->insertBefore(
                 $document->body,
                 $document->getElementById('log')
             );
         }, HierarchyRequestError::class);
 
-        $this->assertThrows(function () use ($document) {
+        $this->assertThrows(static function () use ($document) {
             $document->body->insertBefore(
                 $document->documentElement,
                 $document->getElementById('log')
@@ -125,10 +130,10 @@ class NodeInsertBeforeTest extends NodeTestCase
         $doc = $document->implementation->createHTMLDocument('title');
         $doc2 = $document->implementation->createHTMLDocument('title');
 
-        $this->assertThrows(function () use ($doc, $doc2) {
+        $this->assertThrows(static function () use ($doc, $doc2) {
             $doc->insertBefore($doc2, $doc->documentElement);
         }, HierarchyRequestError::class);
-        $this->assertThrows(function () use ($doc) {
+        $this->assertThrows(static function () use ($doc) {
             $doc->insertBefore(
                 $doc->createTextNode('text'),
                 $doc->documentElement
@@ -150,20 +155,20 @@ class NodeInsertBeforeTest extends NodeTestCase
         $df->appendChild($doc->createElement('a'));
         $df->appendChild($doc->createElement('b'));
 
-        $this->assertThrows(function () use ($doc, $df) {
+        $this->assertThrows(static function () use ($doc, $df) {
             $doc->insertBefore($df, null);
         }, HierarchyRequestError::class);
 
         $df = $doc->createDocumentFragment();
         $df->appendChild($doc->createTextNode('text'));
-        $this->assertThrows(function () use ($doc, $df) {
+        $this->assertThrows(static function () use ($doc, $df) {
             $doc->insertBefore($df, null);
         }, HierarchyRequestError::class);
 
         $df = $doc->createDocumentFragment();
         $df->appendChild($doc->createComment('comment'));
         $df->appendChild($doc->createTextNode('text'));
-        $this->assertThrows(function () use ($doc, $df) {
+        $this->assertThrows(static function () use ($doc, $df) {
             $doc->insertBefore($df, null);
         }, HierarchyRequestError::class);
     }
@@ -199,20 +204,20 @@ class NodeInsertBeforeTest extends NodeTestCase
         $df = $doc->createDocumentFragment();
         $df->appendChild($doc->createElement('a'));
         $df->appendChild($doc->createElement('b'));
-        $this->assertThrows(function () use ($doc, $df) {
+        $this->assertThrows(static function () use ($doc, $df) {
             $doc->insertBefore($df, $doc->firstChild);
         }, HierarchyRequestError::class);
 
         $df = $doc->createDocumentFragment();
         $df->appendChild($doc->createTextNode('text'));
-        $this->assertThrows(function () use ($doc, $df) {
+        $this->assertThrows(static function () use ($doc, $df) {
             $doc->insertBefore($df, $doc->firstChild);
         }, HierarchyRequestError::class);
 
         $df = $doc->createDocumentFragment();
         $df->appendChild($doc->createComment('comment'));
         $df->appendChild($doc->createTextNode('text'));
-        $this->assertThrows(function () use ($doc, $df) {
+        $this->assertThrows(static function () use ($doc, $df) {
             $doc->insertBefore($df, $doc->firstChild);
         }, HierarchyRequestError::class);
     }
@@ -233,16 +238,16 @@ class NodeInsertBeforeTest extends NodeTestCase
 
         $df = $doc->createDocumentFragment();
         $df->appendChild($doc->createElement('a'));
-        $this->assertThrows(function () use ($doc, $df) {
+        $this->assertThrows(static function () use ($doc, $df) {
             $doc->insertBefore($df, $doc->doctype);
         }, HierarchyRequestError::class);
-        $this->assertThrows(function () use ($doc, $df) {
+        $this->assertThrows(static function () use ($doc, $df) {
             $doc->insertBefore($df, $doc->documentElement);
         }, HierarchyRequestError::class);
-        $this->assertThrows(function () use ($doc, $df, $comment) {
+        $this->assertThrows(static function () use ($doc, $df, $comment) {
             $doc->insertBefore($df, $comment);
         }, HierarchyRequestError::class);
-        $this->assertThrows(function () use ($doc, $df) {
+        $this->assertThrows(static function () use ($doc, $df) {
             $doc->insertBefore($df, null);
         }, HierarchyRequestError::class);
     }
@@ -291,7 +296,7 @@ class NodeInsertBeforeTest extends NodeTestCase
 
         $df = $doc->createDocumentFragment();
         $df->appendChild($doc->createElement('a'));
-        $this->assertThrows(function () use ($doc, $df, $comment) {
+        $this->assertThrows(static function () use ($doc, $df, $comment) {
             $doc->insertBefore($df, $comment);
         }, HierarchyRequestError::class);
     }
@@ -314,16 +319,16 @@ class NodeInsertBeforeTest extends NodeTestCase
         );
 
         $a = $doc->createElement('a');
-        $this->assertThrows(function () use ($doc, $a) {
+        $this->assertThrows(static function () use ($doc, $a) {
             $doc->insertBefore($a, $doc->doctype);
         }, HierarchyRequestError::class);
-        $this->assertThrows(function () use ($doc, $a) {
+        $this->assertThrows(static function () use ($doc, $a) {
             $doc->insertBefore($a, $doc->documentElement);
         }, HierarchyRequestError::class);
-        $this->assertThrows(function () use ($doc, $a, $comment) {
+        $this->assertThrows(static function () use ($doc, $a, $comment) {
             $doc->insertBefore($a, $comment);
         }, HierarchyRequestError::class);
-        $this->assertThrows(function () use ($doc, $a) {
+        $this->assertThrows(static function () use ($doc, $a) {
             $doc->insertBefore($a, null);
         }, HierarchyRequestError::class);
     }
@@ -348,7 +353,7 @@ class NodeInsertBeforeTest extends NodeTestCase
         );
 
         $a = $doc->createElement('a');
-        $this->assertThrows(function () use ($doc, $a) {
+        $this->assertThrows(static function () use ($doc, $a) {
             $doc->insertBefore($a, $doc->doctype);
         }, HierarchyRequestError::class);
     }
@@ -373,7 +378,7 @@ class NodeInsertBeforeTest extends NodeTestCase
         );
 
         $a = $doc->createElement('a');
-        $this->assertThrows(function () use ($doc, $a, $comment) {
+        $this->assertThrows(static function () use ($doc, $a, $comment) {
             $doc->insertBefore($a, $comment);
         }, HierarchyRequestError::class);
     }
@@ -398,16 +403,16 @@ class NodeInsertBeforeTest extends NodeTestCase
         );
 
         $doctype = $document->implementation->createDocumentType('html', '', '');
-        $this->assertThrows(function () use ($doc, $doctype, $comment) {
+        $this->assertThrows(static function () use ($doc, $doctype, $comment) {
             $doc->insertBefore($doctype, $comment);
         }, HierarchyRequestError::class);
-        $this->assertThrows(function () use ($doc, $doctype) {
+        $this->assertThrows(static function () use ($doc, $doctype) {
             $doc->insertBefore($doctype, $doc->doctype);
         }, HierarchyRequestError::class);
-        $this->assertThrows(function () use ($doc, $doctype) {
+        $this->assertThrows(static function () use ($doc, $doctype) {
             $doc->insertBefore($doctype, $doc->documentElement);
         }, HierarchyRequestError::class);
-        $this->assertThrows(function () use ($doc, $doctype) {
+        $this->assertThrows(static function () use ($doc, $doctype) {
             $doc->insertBefore($doctype, null);
         }, HierarchyRequestError::class);
     }
@@ -428,7 +433,7 @@ class NodeInsertBeforeTest extends NodeTestCase
         );
 
         $doctype = $document->implementation->createDocumentType('html', '', '');
-        $this->assertThrows(function () use ($doc, $doctype, $comment) {
+        $this->assertThrows(static function () use ($doc, $doctype, $comment) {
             $doc->insertBefore($doctype, $comment);
         }, HierarchyRequestError::class);
     }
@@ -449,7 +454,7 @@ class NodeInsertBeforeTest extends NodeTestCase
         );
 
         $doctype = $document->implementation->createDocumentType('html', '', '');
-        $this->assertThrows(function () use ($doc, $doctype) {
+        $this->assertThrows(static function () use ($doc, $doctype) {
             $doc->insertBefore($doctype, null);
         }, HierarchyRequestError::class);
     }
@@ -467,18 +472,18 @@ class NodeInsertBeforeTest extends NodeTestCase
         $a = $df->appendChild($document->createElement('a'));
 
         $doc = $document->implementation->createHTMLDocument('title');
-        $this->assertThrows(function () use ($doc, $df, $a) {
+        $this->assertThrows(static function () use ($doc, $df, $a) {
             $df->insertBefore($doc, $a);
         }, HierarchyRequestError::class);
-        $this->assertThrows(function () use ($doc, $df) {
+        $this->assertThrows(static function () use ($doc, $df) {
             $df->insertBefore($doc, null);
         }, HierarchyRequestError::class);
 
         $doctype = $document->implementation->createDocumentType('html', '', '');
-        $this->assertThrows(function () use ($doctype, $df, $a) {
+        $this->assertThrows(static function () use ($doctype, $df, $a) {
             $df->insertBefore($doctype, $a);
         }, HierarchyRequestError::class);
-        $this->assertThrows(function () use ($doctype, $df) {
+        $this->assertThrows(static function () use ($doctype, $df) {
             $df->insertBefore($doctype, null);
         }, HierarchyRequestError::class);
     }
@@ -494,18 +499,18 @@ class NodeInsertBeforeTest extends NodeTestCase
         $a = $el->appendChild($document->createElement('a'));
 
         $doc = $document->implementation->createHTMLDocument('title');
-        $this->assertThrows(function () use ($doc, $el, $a) {
+        $this->assertThrows(static function () use ($doc, $el, $a) {
             $el->insertBefore($doc, $a);
         }, HierarchyRequestError::class);
-        $this->assertThrows(function () use ($doc, $el) {
+        $this->assertThrows(static function () use ($doc, $el) {
             $el->insertBefore($doc, null);
         }, HierarchyRequestError::class);
 
         $doctype = $document->implementation->createDocumentType('html', '', '');
-        $this->assertThrows(function () use ($doctype, $el, $a) {
+        $this->assertThrows(static function () use ($doctype, $el, $a) {
             $el->insertBefore($doctype, $a);
         }, HierarchyRequestError::class);
-        $this->assertThrows(function () use ($doc, $el) {
+        $this->assertThrows(static function () use ($doc, $el) {
             $el->insertBefore($doc, null);
         }, HierarchyRequestError::class);
     }

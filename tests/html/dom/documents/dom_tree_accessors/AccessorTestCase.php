@@ -6,6 +6,8 @@ namespace Rowbot\DOM\Tests\html\dom\documents\dom_tree_accessors;
 
 use Rowbot\DOM\Tests\TestCase;
 
+use const DIRECTORY_SEPARATOR;
+
 abstract class AccessorTestCase extends TestCase
 {
     public static function getHtmlBaseDir(): string

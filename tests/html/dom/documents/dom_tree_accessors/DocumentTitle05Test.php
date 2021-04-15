@@ -14,7 +14,7 @@ class DocumentTitle05Test extends AccessorTestCase
 {
     use WindowTrait;
 
-    private CONST WHITESPACE = [
+    private const WHITESPACE = [
         "\u{000B}",
         "\u{0085}",
         "\u{00A0}",

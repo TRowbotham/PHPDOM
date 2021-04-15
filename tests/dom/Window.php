@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Tests\dom;
 
 use ReflectionClass;
@@ -14,9 +16,12 @@ use Rowbot\DOM\Range;
 use Rowbot\DOM\Text;
 
 use function array_merge;
+use function array_slice;
+use function count;
 use function get_class;
 use function implode;
 use function is_string;
+use function iterator_to_array;
 use function preg_replace;
 
 /**
@@ -490,7 +495,6 @@ class Window
             ($node2->compareDocumentPosition($node1) & Node::DOCUMENT_POSITION_CONTAINS);
     }
 
-
     /**
      * Returns the first Node that's after node in tree order, or null if node is
      * the last Node.
@@ -606,9 +610,11 @@ class Window
             if ($offsetA === $offsetB) {
                 return "equal";
             }
+
             if ($offsetA < $offsetB) {
                 return "before";
             }
+
             if ($offsetA > $offsetB) {
                 return "after";
             }
@@ -623,6 +629,7 @@ class Window
             if ($pos === "before") {
                 return "after";
             }
+
             if ($pos === "after") {
                 return "before";
             }
@@ -668,9 +675,11 @@ class Window
      * contained in a range if it is an ancestor container of the range's start but
      * not its end, or vice versa."
      */
-    public static function isPartiallyContained($node, Range $range) {
+    public static function isPartiallyContained($node, Range $range)
+    {
         $cond1 = self::isAncestorContainer($node, $range->startContainer);
         $cond2 = self::isAncestorContainer($node, $range->endContainer);
+
         return ($cond1 && !$cond2) || ($cond2 && !$cond1);
     }
 
@@ -781,9 +790,11 @@ class Window
             for ($i = 0, $length = count($commonAncestor->childNodes); $i < $length; $i++) {
                 if (self::isPartiallyContained($commonAncestor->childNodes[$i], $range)) {
                     $firstPartiallyContainedChild = $commonAncestor->childNodes[$i];
+
                     break;
                 }
             }
+
             if (!$firstPartiallyContainedChild) {
                 throw "Spec bug: no first partially contained child!";
             }
@@ -801,9 +812,11 @@ class Window
             for ($i = $commonAncestor->childNodes->length - 1; $i >= 0; $i--) {
                 if (self::isPartiallyContained($commonAncestor->childNodes[$i], $range)) {
                     $lastPartiallyContainedChild = $commonAncestor->childNodes[$i];
+
                     break;
                 }
             }
+
             if (!$lastPartiallyContainedChild) {
                 throw "Spec bug: no last partially contained child!";
             }
@@ -821,6 +834,7 @@ class Window
                 if ($commonAncestor->childNodes[$i]->nodeType === Node::DOCUMENT_TYPE_NODE) {
                     return HierarchyRequestError::class;
                 }
+
                 $containedChildren[] = $commonAncestor->childNodes[$i];
             }
         }
@@ -1115,16 +1129,17 @@ class Window
 
         // "If either node is a Text node and parent is a document, or node is a
         // doctype and parent is not a document, throw a HierarchyRequestError."
-        if (($node->nodeType === Node::TEXT_NODE && $parent_->nodeType === Node::DOCUMENT_NODE)
+        if (
+            ($node->nodeType === Node::TEXT_NODE && $parent_->nodeType === Node::DOCUMENT_NODE)
             || ($node->nodeType === Node::DOCUMENT_TYPE_NODE
-                && $parent_->nodeType != Node::DOCUMENT_NODE)
+                && $parent_->nodeType !== Node::DOCUMENT_NODE)
         ) {
             return HierarchyRequestError::class;
         }
 
         // "If parent is a document, and any of the statements below, switched on
         // node, are true, throw a HierarchyRequestError."
-        if ($parent_->nodeType == Node::DOCUMENT_NODE) {
+        if ($parent_->nodeType === Node::DOCUMENT_NODE) {
             switch ($node->nodeType) {
                 case Node::DOCUMENT_FRAGMENT_NODE:
                     // "If node has more than one element child or has a Text node

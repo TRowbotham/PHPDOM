@@ -9,6 +9,8 @@ use Rowbot\DOM\Tests\TestCase;
 
 use function iterator_to_array;
 
+use const DIRECTORY_SEPARATOR;
+
 /**
  * @see https://github.com/web-platform-tests/wpt/blob/master/html/semantics/tabular-data/the-tr-element/cells.html
  */

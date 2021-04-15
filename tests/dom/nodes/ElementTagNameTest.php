@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Tests\dom\nodes;
 
 use Rowbot\DOM\Namespaces;
@@ -107,6 +110,5 @@ class ElementTagNameTest extends TestCase
         $htmlel = $document->importNode($xmlel, true);
         $this->assertSame($document, $htmlel->ownerDocument);
         $this->assertEquals('FOO:DIV', $htmlel->tagName);
-
     }
 }

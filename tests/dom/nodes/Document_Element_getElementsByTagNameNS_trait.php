@@ -20,6 +20,7 @@ trait Document_Element_getElementsByTagNameNS_trait
     use WindowTrait;
 
     abstract public static function context(): Node;
+
     abstract public static function element(): Element;
 
     public function testCachingIsAllowed(): void

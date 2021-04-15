@@ -9,6 +9,10 @@ use Generator;
 use Rowbot\DOM\Tests\dom\WindowTrait;
 use Rowbot\DOM\Tests\TestCase;
 
+use function str_replace;
+
+use const DIRECTORY_SEPARATOR;
+
 /**
  * @see https://github.com/web-platform-tests/wpt/blob/master/html/syntax/serializing-html-fragments/serializing.html
  */
@@ -45,13 +49,13 @@ class SerializingTest extends TestCase
         ["<noscript><&></noscript>", "<span><noscript><&></noscript></span>"],
         ["<!--data-->", "<span><!--data--></span>"],
         ["<a><b><c></c></b><d>e</d><f><g>h</g></f></a>", "<span><a><b><c></c></b><d>e</d><f><g>h</g></f></a></span>"],
-        ["", "<span b=\"c\"></span>"]
+        ["", "<span b=\"c\"></span>"],
     ];
     private const TEXT_ELEMENTS = ["pre", "textarea", "listing"];
     private const VOID_ELEMENTS = [
         "area", "base", "basefont", "bgsound", "br", "col", "embed",
         "frame", "hr", "img", "input", "keygen", "link",
-        "meta", "param", "source", "track", "wbr"
+        "meta", "param", "source", "track", "wbr",
     ];
 
     /**
@@ -80,7 +84,7 @@ class SerializingTest extends TestCase
     {
         foreach (self::EXPECTED as $i => $item) {
             yield [
-                function () use ($i) {
+                static function () use ($i) {
                     return self::getWindow()->document->getElementById('test')->children[$i];
                 },
                 null,
@@ -93,7 +97,7 @@ class SerializingTest extends TestCase
     {
         foreach (self::EXPECTED as $i => $item) {
             yield [
-                function () use ($i) {
+                static function () use ($i) {
                     return self::getWindow()->document->getElementById('test')->children[$i];
                 },
                 null,
@@ -120,7 +124,7 @@ class SerializingTest extends TestCase
     {
         $document = self::getWindow()->document;
 
-        return $this->cross_map($this->text_tests(), self::TEXT_ELEMENTS, function ($test_data, $elem_name) use ($document) {
+        return $this->cross_map($this->text_tests(), self::TEXT_ELEMENTS, static function ($test_data, $elem_name) use ($document) {
             return [
                 $test_data[1],
                 $document->createElement($elem_name),
@@ -133,7 +137,7 @@ class SerializingTest extends TestCase
     {
         $document = self::getWindow()->document;
 
-        return $this->cross_map($this->text_tests(), self::TEXT_ELEMENTS, function ($test_data, $elem_name) use ($document) {
+        return $this->cross_map($this->text_tests(), self::TEXT_ELEMENTS, static function ($test_data, $elem_name) use ($document) {
             return [
                 $test_data[1],
                 $document->createElement($elem_name),
@@ -195,72 +199,72 @@ class SerializingTest extends TestCase
 
         return [
             ["Attribute in the XML namespace",
-             function() use ($document) {
-                  $span = $document->createElement("span");
-                  $svg = $document->createElement("svg");
-                  $svg->setAttributeNS("http://www.w3.org/XML/1998/namespace", "xml:foo", "test");
-                  $span->appendChild($svg);
+                static function () use ($document) {
+                     $span = $document->createElement("span");
+                     $svg = $document->createElement("svg");
+                     $svg->setAttributeNS("http://www.w3.org/XML/1998/namespace", "xml:foo", "test");
+                     $span->appendChild($svg);
 
-                  return $span;
-             },
+                     return $span;
+                },
              '<svg xml:foo="test"></svg>',
              '<span><svg xml:foo="test"></svg></span>'],
 
             ["Attribute in the XML namespace with the prefix not set to xml:",
-             function() use ($document) {
-                  $span = $document->createElement("span");
-                  $svg = $document->createElement("svg");
-                  $svg->setAttributeNS("http://www.w3.org/XML/1998/namespace", "abc:foo", "test");
-                  $span->appendChild($svg);
+                static function () use ($document) {
+                     $span = $document->createElement("span");
+                     $svg = $document->createElement("svg");
+                     $svg->setAttributeNS("http://www.w3.org/XML/1998/namespace", "abc:foo", "test");
+                     $span->appendChild($svg);
 
-                  return $span;
-             },
+                     return $span;
+                },
              '<svg xml:foo="test"></svg>',
              '<span><svg xml:foo="test"></svg></span>'],
 
              ["Non-'xmlns' attribute in the xmlns namespace",
-              function() use ($document) {
-                  $span = $document->createElement("span");
-                  $svg = $document->createElement("svg");
-                  $svg->setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:foo", "test");
-                  $span->appendChild($svg);
+                static function () use ($document) {
+                    $span = $document->createElement("span");
+                    $svg = $document->createElement("svg");
+                    $svg->setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:foo", "test");
+                    $span->appendChild($svg);
 
-                  return $span;
-             },
+                    return $span;
+                },
              '<svg xmlns:foo="test"></svg>',
              '<span><svg xmlns:foo="test"></svg></span>'],
 
              ["'xmlns' attribute in the xmlns namespace",
-              function() use ($document) {
-                  $span = $document->createElement("span");
-                  $svg = $document->createElement("svg");
-                  $svg->setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns", "test");
-                  $span->appendChild($svg);
+                static function () use ($document) {
+                    $span = $document->createElement("span");
+                    $svg = $document->createElement("svg");
+                    $svg->setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns", "test");
+                    $span->appendChild($svg);
 
-                  return $span;
-             },
+                    return $span;
+                },
              '<svg xmlns="test"></svg>',
              '<span><svg xmlns="test"></svg></span>'],
 
             ["Attribute in non-standard namespace",
-              function() use ($document) {
-                  $span = $document->createElement("span");
-                  $svg = $document->createElement("svg");
-                  $svg->setAttributeNS("fake_ns", "abc:def", "test");
-                  $span->appendChild($svg);
+                static function () use ($document) {
+                    $span = $document->createElement("span");
+                    $svg = $document->createElement("svg");
+                    $svg->setAttributeNS("fake_ns", "abc:def", "test");
+                    $span->appendChild($svg);
 
-                  return $span;
-             },
+                    return $span;
+                },
              '<svg abc:def="test"></svg>',
              '<span><svg abc:def="test"></svg></span>'],
 
             ["<span> starting with U+000A",
-             function() use ($document) {
-                 $elem = $document->createElement("span");
-                 $elem->appendChild($document->createTextNode("\x0A"));
+                static function () use ($document) {
+                    $elem = $document->createElement("span");
+                    $elem->appendChild($document->createTextNode("\x0A"));
 
-                 return $elem;
-             },
+                    return $elem;
+                },
              "\x0A",
              "<span>\x0A</span>"],
 
@@ -274,42 +278,42 @@ class SerializingTest extends TestCase
 
         return [
             ["<%text> context starting with U+000A",
-             function ($elem) use ($document) {
-                 $elem->appendChild($document->createTextNode("\x0A"));
+                static function ($elem) use ($document) {
+                    $elem->appendChild($document->createTextNode("\x0A"));
 
-                 return $elem;
-             },
+                    return $elem;
+                },
              "\x0A",
              "<%text>\x0A</%text>"],
 
             ["<%text> context not starting with U+000A",
-             function ($elem) use ($document) {
-                 $elem->appendChild($document->createTextNode("a\x0A"));
+                static function ($elem) use ($document) {
+                    $elem->appendChild($document->createTextNode("a\x0A"));
 
-                 return $elem;
-             },
+                    return $elem;
+                },
              "a\x0A",
              "<%text>a\x0A</%text>"],
 
             ["<%text> non-context starting with U+000A",
-             function ($elem) use ($document) {
-                 $span = $document->createElement("span");
-                 $elem->appendChild($document->createTextNode("\x0A"));
-                 $span->appendChild($elem);
+                static function ($elem) use ($document) {
+                    $span = $document->createElement("span");
+                    $elem->appendChild($document->createTextNode("\x0A"));
+                    $span->appendChild($elem);
 
-                 return $span;
-             },
+                    return $span;
+                },
              "<%text>\x0A</%text>",
              "<span><%text>\x0A</%text></span>"],
 
             ["<%text> non-context not starting with U+000A",
-             function ($elem) use ($document) {
-                 $span = $document->createElement("span");
-                 $elem->appendChild($document->createTextNode("a\x0A"));
-                 $span->appendChild($elem);
+                static function ($elem) use ($document) {
+                    $span = $document->createElement("span");
+                    $elem->appendChild($document->createTextNode("a\x0A"));
+                    $span->appendChild($elem);
 
-                 return $span;
-             },
+                    return $span;
+                },
              "<%text>a\x0A</%text>",
              "<span><%text>a\x0A</%text></span>"],
         ];
@@ -321,47 +325,47 @@ class SerializingTest extends TestCase
 
         return [
             ["Void context node",
-             function ($void_elem) {
-                  return $void_elem;
-             },
+                static function ($void_elem) {
+                     return $void_elem;
+                },
              "",
-             "<%void>"
+             "<%void>",
             ],
             ["void as first child with following siblings",
-             function ($void_elem) use ($document) {
-                  $span = $document->createElement("span");
-                  $span->appendChild($void_elem);
-                  $span->appendChild($document->createElement("a"))->appendChild($document->createTextNode("test"));
-                  $span->appendChild($document->createElement("b"));
+                static function ($void_elem) use ($document) {
+                     $span = $document->createElement("span");
+                     $span->appendChild($void_elem);
+                     $span->appendChild($document->createElement("a"))->appendChild($document->createTextNode("test"));
+                     $span->appendChild($document->createElement("b"));
 
-                  return $span;
-             },
+                     return $span;
+                },
              "<%void><a>test</a><b></b>",
-             "<span><%void><a>test</a><b></b></span>"
+             "<span><%void><a>test</a><b></b></span>",
             ],
             ["void as second child with following siblings",
-             function ($void_elem) use ($document) {
-                  $span = $document->createElement("span");
-                  $span->appendChild($document->createElement("a"))->appendChild($document->createTextNode("test"));
-                  $span->appendChild($void_elem);
-                  $span->appendChild($document->createElement("b"));
+                static function ($void_elem) use ($document) {
+                     $span = $document->createElement("span");
+                     $span->appendChild($document->createElement("a"))->appendChild($document->createTextNode("test"));
+                     $span->appendChild($void_elem);
+                     $span->appendChild($document->createElement("b"));
 
-                  return $span;
-             },
+                     return $span;
+                },
              "<a>test</a><%void><b></b>",
-             "<span><a>test</a><%void><b></b></span>"
+             "<span><a>test</a><%void><b></b></span>",
             ],
             ["void as last child with preceding siblings",
-             function ($void_elem) use ($document) {
-                   $span = $document->createElement("span");
-                   $span->appendChild($document->createElement("a"))->appendChild($document->createTextNode("test"));
-                   $span->appendChild($document->createElement("b"));
-                   $span->appendChild($void_elem);
+                static function ($void_elem) use ($document) {
+                      $span = $document->createElement("span");
+                      $span->appendChild($document->createElement("a"))->appendChild($document->createTextNode("test"));
+                      $span->appendChild($document->createElement("b"));
+                      $span->appendChild($void_elem);
 
-                   return $span;
-             },
+                      return $span;
+                },
              "<a>test</a><b></b><%void>",
-             "<span><a>test</a><b></b><%void></span>"
+             "<span><a>test</a><b></b><%void></span>",
             ],
         ];
     }

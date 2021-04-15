@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Tests\dom\nodes;
 
 /**
@@ -9,6 +12,6 @@ trait Creators
     public $creators = [
         'element' => 'createElement',
         'text'    => 'createTextNode',
-        'comment' => 'createComment'
+        'comment' => 'createComment',
     ];
 }

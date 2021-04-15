@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Tests\dom\traversal;
 
 use Rowbot\DOM\NodeFilter;
@@ -17,7 +20,7 @@ class NodeFilterConstantsTest extends TestCase
         return [
             [
                 [
-                    [NodeFilter::class, 'NodeFilter interface object']
+                    [NodeFilter::class, 'NodeFilter interface object'],
                 ],
                 [
                     // "acceptNode"
@@ -38,9 +41,9 @@ class NodeFilterConstantsTest extends TestCase
                     ['SHOW_DOCUMENT',              0x100],
                     ['SHOW_DOCUMENT_TYPE',         0x200],
                     ['SHOW_DOCUMENT_FRAGMENT',     0x400],
-                    ['SHOW_NOTATION',              0x800]
-                ]
-            ]
+                    ['SHOW_NOTATION',              0x800],
+                ],
+            ],
         ];
     }
 }

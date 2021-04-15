@@ -8,6 +8,8 @@ use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Exception\NoModificationAllowedError;
 use Rowbot\DOM\Tests\dom\WindowTrait;
 
+use const DIRECTORY_SEPARATOR;
+
 /**
  * @see https://github.com/web-platform-tests/wpt/blob/master/domparsing/insert_adjacent_html.js
  */

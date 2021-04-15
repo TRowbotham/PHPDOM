@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\html\syntax\parsing\template\additions_to_foster_parenting;
 
-use Rowbot\DOM\HTMLDocument;
 use Rowbot\DOM\Tests\html\resources\CommonTrait;
 use Rowbot\DOM\Tests\TestCase;
 

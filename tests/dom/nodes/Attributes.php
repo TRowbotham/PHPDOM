@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Tests\dom\nodes;
 
 use Rowbot\DOM\Attr;
@@ -33,7 +35,7 @@ trait Attributes
                 $el->attributes[$i],
                 $l[$i][1],
                 $l[$i][0],
-                (count($l[$i]) < 3) ? null : $l[$i][2],
+                count($l[$i]) < 3 ? null : $l[$i][2],
                 null,
                 $l[$i][0]
             );

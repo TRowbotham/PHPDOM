@@ -1,10 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Tests\dom\nodes;
 
 use Rowbot\DOM\DocumentFragment;
 use Rowbot\DOM\DOMParser;
 use Rowbot\DOM\Tests\TestCase;
+
+use function method_exists;
 
 /**
  * @see https://github.com/web-platform-tests/wpt/blob/master/dom/nodes/DocumentFragment-getElementById.html

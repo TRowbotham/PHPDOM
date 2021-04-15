@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Tests;
 
 use Closure;
@@ -10,7 +12,6 @@ use PHPUnit\Framework\Constraint\ExceptionMessageRegularExpression;
 use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 use Throwable;
 
-use function call_user_func;
 use function is_string;
 
 abstract class TestCase extends PHPUnitTestCase
@@ -25,17 +26,17 @@ abstract class TestCase extends PHPUnitTestCase
         $e = null;
 
         try {
-            call_user_func($callback);
+            $callback();
         } catch (Throwable $e) {
         }
 
         $this->assertThat($e, new Exception($expectedException));
 
-        if (is_string($expectedExceptionMessage) && !empty($expectedExceptionMessage)) {
+        if (is_string($expectedExceptionMessage) && $expectedExceptionMessage !== '') {
             $this->assertThat($e, new ExceptionMessage($expectedExceptionMessage));
         }
 
-        if (is_string($expectedExceptionMessageRegExp) && !empty($expectedExceptionMessageRegExp)) {
+        if (is_string($expectedExceptionMessageRegExp) && $expectedExceptionMessageRegExp !== '') {
             $this->assertThat(
                 $e,
                 new ExceptionMessageRegularExpression($expectedExceptionMessageRegExp)

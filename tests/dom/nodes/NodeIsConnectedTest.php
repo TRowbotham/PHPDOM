@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Tests\dom\nodes;
 
 use Rowbot\DOM\Tests\dom\DocumentGetter;
@@ -17,7 +20,7 @@ class NodeIsConnectedTest extends TestCase
         $nodes = [
             $document->createElement('div'),
             $document->createElement('div'),
-            $document->createElement('div')
+            $document->createElement('div'),
         ];
 
         $this->checkNodes([], $nodes);
@@ -45,13 +48,13 @@ class NodeIsConnectedTest extends TestCase
             $document->createElement("iframe"),
             $document->createElement("iframe"),
             $document->createElement("iframe"),
-            $document->createElement("div")
+            $document->createElement("div"),
         ];
         $frames = [
             $nodes[0],
             $nodes[1],
             $nodes[2],
-            $nodes[3]
+            $nodes[3],
         ];
 
         $this->checkNodes([], $nodes);

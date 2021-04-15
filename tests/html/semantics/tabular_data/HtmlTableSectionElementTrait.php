@@ -13,7 +13,7 @@ trait HtmlTableSectionElementTrait
 {
     use DocumentGetter;
 
-    public abstract function getTableSectionName(): string;
+    abstract public function getTableSectionName(): string;
 
     public function testRowsAttribute(): void
     {

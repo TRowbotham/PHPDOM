@@ -7,6 +7,8 @@ namespace Rowbot\DOM\Tests\dom\collections;
 use Rowbot\DOM\Tests\dom\WindowTrait;
 use Rowbot\DOM\Tests\TestCase;
 
+use const DIRECTORY_SEPARATOR;
+
 /**
  * @see https://github.com/web-platform-tests/wpt/blob/master/dom/collections/HTMLCollection-empty-name.html
  */

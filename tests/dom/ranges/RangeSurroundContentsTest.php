@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Tests\dom\ranges;
 
 use Generator;
@@ -41,6 +43,8 @@ class RangeSurroundContentsTest extends RangeTestCase
         $expectedRange = self::$expectedIframe->contentWindow->testRange;
         $actualNode = self::$actualIframe->contentWindow->testNode;
         $expectedNode = self::$expectedIframe->contentWindow->testNode;
+        $actualRoots = [];
+        $expectedRoots = [];
 
         $this->assertNull(self::$actualIframe->contentWindow->unexpectedException);
         $this->assertNull(self::$expectedIframe->contentWindow->unexpectedException);
@@ -83,6 +87,7 @@ class RangeSurroundContentsTest extends RangeTestCase
 
             throw $e;
         }
+
         if (is_string($result)) {
             $this->assertThrows(static function () use ($actualNode, $actualRange, $expectedDoctype, $actualDoctype): void {
                 try {

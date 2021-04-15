@@ -29,7 +29,7 @@ class CharacterDataReplaceDataTest extends NodeTestCase
             $node->replaceData(5, 1, 'x');
         }, IndexSizeError::class);
         $this->assertThrows(static function () use ($node): void {
-            $node->replaceData(5, 0,'');
+            $node->replaceData(5, 0, '');
         }, IndexSizeError::class);
         $this->assertThrows(static function () use ($node): void {
             $node->replaceData(-1, 1, 'x');

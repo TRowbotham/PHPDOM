@@ -9,6 +9,8 @@ use Rowbot\DOM\Tests\TestCase;
 
 use function str_replace;
 
+use const DIRECTORY_SEPARATOR;
+
 /**
  * @see https://github.com/web-platform-tests/wpt/blob/master/html/syntax/serializing-html-fragments/initial-linefeed-pre.html
  */

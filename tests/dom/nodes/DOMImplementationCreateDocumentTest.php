@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Tests\dom\nodes;
 
 use Rowbot\DOM\DocumentType;
@@ -9,6 +11,8 @@ use Rowbot\DOM\Tests\dom\DocumentGetter;
 use Rowbot\DOM\Tests\TestCase;
 use TypeError;
 
+use function array_filter;
+use function array_map;
 use function array_merge;
 use function explode;
 use function mb_strpos;
@@ -143,7 +147,7 @@ class DOMImplementationCreateDocumentTest extends TestCase
             $document = $this->getHTMLDocument();
 
             $this->tests = array_merge(
-                array_map(function ($t) {
+                array_map(static function ($t) {
                     return [$t[0], $t[1], null, $t[2]];
                 }, $this->getCreateElementNSTests()),
                 [
@@ -167,19 +171,22 @@ class DOMImplementationCreateDocumentTest extends TestCase
                     ["foo:", "", null, null],
                     [null, null, $document->implementation->createDocumentType("foo", "", ""), null],
                     [null, null, $document->doctype, null], // This causes a horrible WebKit bug (now fixed in trunk).
-                    [null, null, (function () use ($document) {
+                    [null, null, (static function () use ($document) {
                         $foo = $document->implementation->createDocumentType("bar", "", "");
                         $document->implementation->createDocument(null, null, $foo);
+
                         return $foo;
                     })(), null], // DOCTYPE already associated with a document.
-                    [null, null, (function () use ($document) {
+                    [null, null, (static function () use ($document) {
                         $bar = $document->implementation->createDocument(null, null, null);
+
                         return $bar->implementation->createDocumentType("baz", "", "");
                     })(), null], // DOCTYPE created by a different implementation.
-                    [null, null, (function () use ($document) {
+                    [null, null, (static function () use ($document) {
                         $bar = $document->implementation->createDocument(null, null, null);
                         $magic = $bar->implementation->createDocumentType("quz", "", "");
                         $bar->implementation->createDocument(null, null, $magic);
+
                         return $magic;
                     })(), null], // DOCTYPE created by a different implementation and already associated with a document.
                     [null, "foo", $document->implementation->createDocumentType("foo", "", ""), null],
@@ -215,7 +222,7 @@ class DOMImplementationCreateDocumentTest extends TestCase
 
     public function noErrorProvider(): array
     {
-        return array_filter($this->getTestData(), function ($value) {
+        return array_filter($this->getTestData(), static function ($value) {
             return !isset($value[3]) || $value[3] === null;
         });
     }

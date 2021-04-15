@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Tests\dom\nodes;
 
 use Generator;
@@ -28,6 +31,7 @@ class NodeCompareDocumentPositionTest extends NodeTestCase
         // terminate these steps."
         if ($other === $reference) {
             $this->assertEquals(0, $result);
+
             return;
         }
 
@@ -44,8 +48,9 @@ class NodeCompareDocumentPositionTest extends NodeTestCase
                 Node::DOCUMENT_POSITION_PRECEDING,
                 Node::DOCUMENT_POSITION_DISCONNECTED +
                 Node::DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC +
-                Node::DOCUMENT_POSITION_FOLLOWING
+                Node::DOCUMENT_POSITION_FOLLOWING,
             ]);
+
             return;
         }
 
@@ -58,6 +63,7 @@ class NodeCompareDocumentPositionTest extends NodeTestCase
                 Node::DOCUMENT_POSITION_CONTAINS +
                 Node::DOCUMENT_POSITION_PRECEDING
             );
+
             return;
         }
 
@@ -70,6 +76,7 @@ class NodeCompareDocumentPositionTest extends NodeTestCase
                 Node::DOCUMENT_POSITION_CONTAINED_BY +
                 Node::DOCUMENT_POSITION_FOLLOWING
             );
+
             return;
         }
 
@@ -83,6 +90,7 @@ class NodeCompareDocumentPositionTest extends NodeTestCase
 
         if ($prev === $other) {
             $this->assertEquals($result, Node::DOCUMENT_POSITION_PRECEDING);
+
             return;
         }
 

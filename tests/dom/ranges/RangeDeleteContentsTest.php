@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Tests\dom\ranges;
 
 use Rowbot\DOM\Node;
@@ -287,6 +289,7 @@ class RangeDeleteContentsTest extends RangeTestCase
             // hit by anything.
             $iframe->contentDocument->appendChild($iframe->contentDocument->implementation->createDocumentType("html", "", ""));
         }
+
         $iframe->contentDocument->appendChild(self::$referenceDoc->documentElement->cloneNode(true));
         $iframe->contentWindow->setupRangeTests();
         $iframe->contentWindow->testRangeInput = self::getWindow()->testRanges[$i];

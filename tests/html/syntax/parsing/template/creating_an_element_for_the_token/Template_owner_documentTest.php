@@ -7,7 +7,6 @@ namespace Rowbot\DOM\Tests\html\syntax\parsing\template\creating_an_element_for_
 use Generator;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Element\HTML\HTMLTemplateElement;
-use Rowbot\DOM\HTMLDocument;
 use Rowbot\DOM\Tests\dom\ranges\FakeIframe;
 use Rowbot\DOM\Tests\html\resources\CommonTrait;
 use Rowbot\DOM\Tests\TestCase;

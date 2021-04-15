@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Tests\dom\nodes;
 
 use Rowbot\DOM\Node;
@@ -23,7 +26,7 @@ class NodeConstantsTest extends TestCase
                 [
                     [Node::class, 'Node interface object'],
                     [$document->createElement('foo'), 'Element object'],
-                    [$document->createTextNode('bar'), 'Text object']
+                    [$document->createTextNode('bar'), 'Text object'],
                 ],
                 [
                     // "nodeType"
@@ -46,9 +49,9 @@ class NodeConstantsTest extends TestCase
                     ["DOCUMENT_POSITION_FOLLOWING", 0x04],
                     ["DOCUMENT_POSITION_CONTAINS", 0x08],
                     ["DOCUMENT_POSITION_CONTAINED_BY", 0x10],
-                    ["DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC", 0x20]
-                ]
-            ]
+                    ["DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC", 0x20],
+                ],
+            ],
         ];
     }
 }

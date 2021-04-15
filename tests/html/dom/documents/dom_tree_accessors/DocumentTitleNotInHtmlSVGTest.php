@@ -20,7 +20,6 @@ class DocumentTitleNotInHtmlSVGTest extends AccessorTestCase
         self::assertSame('', $doc->title);
     }
 
-
     public function testShouldNotBeAbleToSetDocumentTitleInXMLDocumentWithHtmlTitleElement(): void
     {
         $document = new HTMLDocument();

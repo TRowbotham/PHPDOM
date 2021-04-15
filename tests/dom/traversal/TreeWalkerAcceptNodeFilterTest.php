@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Tests\dom\traversal;
 
 use Closure;
@@ -9,6 +11,7 @@ use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Exception\TypeError;
 use Rowbot\DOM\Node;
 use Rowbot\DOM\NodeFilter;
+use Throwable;
 
 /**
  * @see https://github.com/web-platform-tests/wpt/blob/master/dom/traversal/TreeWalker-acceptNode-filter.html
@@ -95,7 +98,8 @@ class TreeWalkerAcceptNodeFilterTest extends TestCase
         $walker = self::$document->createTreeWalker(
             self::$testElement,
             NodeFilter::SHOW_ELEMENT,
-            new class {}
+            new class {
+            }
         );
 
         $this->assertThrows(static function () use ($walker): void {
@@ -156,11 +160,11 @@ class TreeWalkerAcceptNodeFilterTest extends TestCase
 
         $this->assertThrows(static function () use ($walker): void {
             $walker->firstChild();
-        }, Exception::class);
+        }, Throwable::class);
         $this->assertNode(['type' => Element::class, 'id' => 'root'], $walker->currentNode);
         $this->assertThrows(static function () use ($walker): void {
             $walker->nextNode();
-        }, Exception::class);
+        }, Throwable::class);
         $this->assertNode(['type' => Element::class, 'id' => 'root'], $walker->currentNode);
     }
 
@@ -185,11 +189,11 @@ class TreeWalkerAcceptNodeFilterTest extends TestCase
 
         $this->assertThrows(static function () use ($walker): void {
             $walker->firstChild();
-        }, Exception::class);
+        }, Throwable::class);
         $this->assertNode(['type' => Element::class, 'id' => 'root'], $walker->currentNode);
         $this->assertThrows(static function () use ($walker): void {
             $walker->nextNode();
-        }, Exception::class);
+        }, Throwable::class);
         $this->assertNode(['type' => Element::class, 'id' => 'root'], $walker->currentNode);
     }
 
@@ -238,11 +242,11 @@ class TreeWalkerAcceptNodeFilterTest extends TestCase
 
         $this->assertThrows(static function () use ($walker): void {
             $walker->firstChild();
-        }, Exception::class);
+        }, Throwable::class);
         $this->assertNode(['type' => Element::class, 'id' => 'root'], $walker->currentNode);
         $this->assertThrows(static function () use ($walker): void {
             $walker->nextNode();
-        }, Exception::class);
+        }, Throwable::class);
         $this->assertNode(['type' => Element::class, 'id' => 'root'], $walker->currentNode);
     }
 

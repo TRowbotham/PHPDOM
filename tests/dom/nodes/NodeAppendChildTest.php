@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Tests\dom\nodes;
 
 use Rowbot\DOM\Exception\HierarchyRequestError;
@@ -17,10 +20,10 @@ class NodeAppendChildTest extends TestCase
     public function test1()
     {
         $document = $this->getHTMLDocument();
-        $this->assertThrows(function () use ($document) {
+        $this->assertThrows(static function () use ($document) {
             $document->body->appendChild(null);
         }, TypeError::class);
-        $this->assertThrows(function () use ($document) {
+        $this->assertThrows(static function () use ($document) {
             $obj = new stdClass();
             $obj->a = 'b';
             $document->body->appendChild(null);
@@ -34,7 +37,7 @@ class NodeAppendChildTest extends TestCase
         return [
             [$document->createTextNode('foo'), 'text node'],
             [$document->createComment('foo'), 'comment'],
-            [$document->doctype, 'doctype']
+            [$document->doctype, 'doctype'],
         ];
     }
 
@@ -44,11 +47,11 @@ class NodeAppendChildTest extends TestCase
     public function testLeaf($node, $desc)
     {
         $document = $this->getHTMLDocument();
-        $this->assertThrows(function () use ($document, $node) {
+        $this->assertThrows(static function () use ($node) {
             $node->appendChild(null);
         }, TypeError::class);
 
-        $this->assertThrows(function () use ($document, $node) {
+        $this->assertThrows(static function () use ($document, $node) {
             $node->appendChild($document->createTextNode('fail'));
         }, HierarchyRequestError::class);
     }
@@ -62,7 +65,7 @@ class NodeAppendChildTest extends TestCase
         $document = $this->getHTMLDocument();
         // We don't have a window object to access the frames property
         $frameDoc = $frames[0]->document;
-        $this->assertThrows(function () use ($document, $frameDoc) {
+        $this->assertThrows(static function () use ($document, $frameDoc) {
             $document->body->appendChild($frameDoc);
         }, HierarchyRequestError::class);
     }

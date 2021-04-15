@@ -19,6 +19,7 @@ use SplStack;
 use Throwable;
 
 use function array_map;
+use function array_pop;
 use function ctype_alpha;
 use function explode;
 use function fgets;
@@ -26,6 +27,8 @@ use function fopen;
 use function fseek;
 use function rtrim;
 use function strlen;
+use function strpos;
+use function strspn;
 use function substr;
 
 use const DIRECTORY_SEPARATOR as DS;

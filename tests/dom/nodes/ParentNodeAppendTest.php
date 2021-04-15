@@ -1,7 +1,12 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Tests\dom\nodes;
 
 use Rowbot\DOM\Tests\dom\DocumentGetter;
+
+use function iterator_to_array;
 
 /**
  * @see https://github.com/w3c/web-platform-tests/blob/master/dom/nodes/ParentNode-append.html
@@ -19,7 +24,7 @@ class ParentNodeAppendTest extends NodeTestCase
             $document = $this->getHTMLDocument();
             $this->tests = [
                 [$document->createElement('div')],
-                [$document->createDocumentFragment()]
+                [$document->createDocumentFragment()],
             ];
         }
 

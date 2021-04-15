@@ -25,8 +25,7 @@ class Clearing_stack_back_to_a_table_row_contextTest extends TestCase
         ?string $id,
         ?string $tagName,
         ?string $elementId = null
-    ): void
-    {
+    ): void {
         $doc->body->innerHTML = ''
             . '<table id="tbl">'
             . '<tr id="tr">'
@@ -82,7 +81,7 @@ class Clearing_stack_back_to_a_table_row_contextTest extends TestCase
              $doc, '<td id="td1">Table cell</td>', 'td1', 'TD', 'td1'],
 
             ['Clearing stack back to a table row context. Test </tr>',
-             $doc, '</tr>', null, null]
+             $doc, '</tr>', null, null],
         ];
     }
 }

@@ -27,8 +27,7 @@ class Clearing_stack_back_to_a_table_contextTest extends TestCase
         ?int $bodiesNum = null,
         bool $footerIsNull = false,
         bool $headerIsNull = false
-    ): void
-    {
+    ): void {
         $doc->body->innerHTML = ''
             . '<table id="tbl">'
             . '<template id="tmpl1">'
@@ -94,7 +93,7 @@ class Clearing_stack_back_to_a_table_contextTest extends TestCase
              $doc, '<thead id="thead1"></thead>', 'thead1', 'THEAD', null, false, true],
 
             ['Clearing stack back to a table context. Test <col>',
-             $doc, '<col id="col1" width="100%"/>', 'col1', 'COL']
+             $doc, '<col id="col1" width="100%"/>', 'col1', 'COL'],
         ];
     }
 }

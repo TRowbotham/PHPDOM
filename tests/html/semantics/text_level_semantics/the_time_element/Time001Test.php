@@ -33,7 +33,7 @@ class Time001Test extends TestCase
     {
         self::assertSame(
             '2000-02-01T03:04:05Z',
-            $this->makeTime('2000-02-01T03:04:05Z','2001-02-01T03:04:05Z')->dateTime
+            $this->makeTime('2000-02-01T03:04:05Z', '2001-02-01T03:04:05Z')->dateTime
         );
     }
 

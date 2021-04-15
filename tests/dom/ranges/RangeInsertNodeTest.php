@@ -1,19 +1,25 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Tests\dom\ranges;
 
-use Exception;
 use Rowbot\DOM\Exception\DOMException;
 use Rowbot\DOM\Node;
 use Rowbot\DOM\Range;
 use Rowbot\DOM\Tests\dom\Window;
 use Rowbot\DOM\Tests\dom\WindowTrait;
+use Throwable;
 
 use function array_unshift;
+use function count;
 use function is_string;
 
 use const DIRECTORY_SEPARATOR as DS;
 
+/**
+ * @see https://github.com/web-platform-tests/wpt/blob/master/dom/ranges/Range-insertNode.html
+ */
 class RangeInsertNodeTest extends RangeTestCase
 {
     use WindowTrait;
@@ -41,7 +47,7 @@ class RangeInsertNodeTest extends RangeTestCase
 
         try {
             $actualRange->collapsed;
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             $detached = true;
         }
 

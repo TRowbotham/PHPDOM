@@ -404,9 +404,9 @@ class RangeCloneContentsTest extends RangeTestCase
         if (
             $lastPartiallyContainedChild
             && (
-                $lastPartiallyContainedChild->nodeType == Node::TEXT_NODE
-                || $lastPartiallyContainedChild->nodeType == Node::COMMENT_NODE
-                || $lastPartiallyContainedChild->nodeType == Node::PROCESSING_INSTRUCTION_NODE
+                $lastPartiallyContainedChild->nodeType === Node::TEXT_NODE
+                || $lastPartiallyContainedChild->nodeType === Node::COMMENT_NODE
+                || $lastPartiallyContainedChild->nodeType === Node::PROCESSING_INSTRUCTION_NODE
             )
         ) {
             // "Let clone be the result of calling cloneNode(false) on original
@@ -479,6 +479,7 @@ class RangeCloneContentsTest extends RangeTestCase
             // hit by anything.
             $iframe->contentDocument->appendChild($iframe->contentDocument->implementation->createDocumentType("html", "", ""));
         }
+
         $iframe->contentDocument->appendChild(self::$referenceDoc->documentElement->cloneNode(true));
         $iframe->contentWindow->setupRangeTests();
         $iframe->contentWindow->testRangeInput = self::getWindow()->testRanges[$i];

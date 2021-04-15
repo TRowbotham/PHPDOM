@@ -1,10 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Tests\dom;
 
 use Closure;
 use Rowbot\DOM\DOMParser;
-use Rowbot\DOM\Tests\dom\Window;
 
 use function array_pop;
 use function file_get_contents;
@@ -24,6 +25,7 @@ trait WindowTrait
     private static $window;
 
     abstract public static function getDocumentName(): string;
+
     abstract public static function getHtmlBaseDir(): string;
 
     public static function tearDownAfterClass(): void

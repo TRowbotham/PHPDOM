@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Tests\dom\nodes;
 
 use Rowbot\DOM\Element\Element;
@@ -6,11 +9,14 @@ use Rowbot\DOM\Element\HTML\HTMLElement;
 use Rowbot\DOM\Element\HTML\HTMLSpanElement;
 use Rowbot\DOM\Element\HTML\HTMLUnknownElement;
 use Rowbot\DOM\Exception\InvalidCharacterError;
-use Rowbot\DOM\Exception\NamespaceError;
 use Rowbot\DOM\Namespaces;
 use Rowbot\DOM\Node;
 use Rowbot\DOM\Tests\dom\DocumentGetter;
 use Rowbot\DOM\Tests\TestCase;
+
+use function array_merge;
+use function explode;
+use function mb_strpos;
 
 /**
  * @see https://github.com/web-platform-tests/wpt/blob/master/dom/nodes/Document-createElementNS.html
@@ -67,6 +73,7 @@ class DocumentCreateElementNSTest extends TestCase
             if ($expected !== null) {
                 $this->expectException($expected);
                 $doc->createElementNS($namespace, $qualifiedName);
+
                 return;
             }
 

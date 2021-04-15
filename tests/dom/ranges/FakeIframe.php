@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Tests\dom\ranges;
 
-use Exception;
 use Rowbot\DOM\Document;
 use Rowbot\DOM\DOMParser;
 use Rowbot\DOM\Tests\dom\Window;
+use Throwable;
 
 use function file_get_contents;
 
@@ -51,7 +53,7 @@ class FakeIframe
                     }
 
                     $this->testRange = $range;
-                } catch (Exception $e) {
+                } catch (Throwable $e) {
                     $this->unexpectedException = $e;
                 }
             }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Tests\dom\ranges;
 
 use Generator;
@@ -17,7 +19,11 @@ use function array_unshift;
 use function count;
 use function floor;
 use function in_array;
+use function is_nan;
 use function is_numeric;
+
+use const INF;
+use const NAN;
 
 /**
  * @see https://github.com/web-platform-tests/wpt/blob/master/dom/ranges/Range-compareBoundaryPoints.html

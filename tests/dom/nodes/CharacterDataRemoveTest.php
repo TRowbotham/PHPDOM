@@ -24,7 +24,7 @@ class CharacterDataRemoveTest extends NodeTestCase
             [
                 $document,
                 $document->createProcessingInstruction('foo', 'bar'),
-                $document->createElement('div')
+                $document->createElement('div'),
             ],
         ];
     }

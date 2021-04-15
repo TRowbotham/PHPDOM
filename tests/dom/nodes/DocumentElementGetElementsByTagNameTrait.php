@@ -21,6 +21,7 @@ trait DocumentElementGetElementsByTagNameTrait
     use WindowTrait;
 
     abstract public static function context(): Node;
+
     abstract public static function element(): Element;
 
     public function testInterfaces(): void

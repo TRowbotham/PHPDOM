@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Rowbot\DOM\Tests\dom\ranges;
 
 use Generator;
@@ -9,6 +11,7 @@ use Rowbot\DOM\Node;
 use Rowbot\DOM\Tests\dom\Window;
 use Rowbot\DOM\Tests\dom\WindowTrait;
 
+use function array_unshift;
 use function pow;
 
 /**
