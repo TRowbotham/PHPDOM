@@ -29,7 +29,7 @@ trait Constants
                     $reflection->getName(),
                     $constant[0]
                 ));
-                $this->assertEquals($constant[1], $reflection->getConstant($constant[0]), sprintf(
+                $this->assertSame($constant[1], $reflection->getConstant($constant[0]), sprintf(
                     'Object "%s" value for "%s" is wrong.',
                     $reflection->getName(),
                     $constant[0]

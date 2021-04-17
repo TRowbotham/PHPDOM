@@ -28,7 +28,7 @@ class NodeNormalizeTest extends TestCase
         $df->appendChild($t1);
         $df->appendChild($t2);
         $this->assertCount(2, $df->childNodes);
-        $this->assertEquals('12', $df->textContent);
+        $this->assertSame('12', $df->textContent);
 
         $e1 = $document->createElement('x');
         $df->appendChild($e1);
@@ -36,17 +36,17 @@ class NodeNormalizeTest extends TestCase
         $e1->appendChild($t4);
         $document->normalize();
         $this->assertCount(2, $e1->childNodes);
-        $this->assertEquals('34', $e1->textContent);
+        $this->assertSame('34', $e1->textContent);
         $this->assertCount(3, $df->childNodes);
-        $this->assertEquals('1', $t1->data);
+        $this->assertSame('1', $t1->data);
         $df->normalize();
         $this->assertCount(2, $df->childNodes);
         $this->assertSame($t1, $df->firstChild);
-        $this->assertEquals('12', $t1->data);
-        $this->assertEquals('2', $t2->data);
+        $this->assertSame('12', $t1->data);
+        $this->assertSame('2', $t2->data);
         $this->assertSame($t3, $e1->firstChild);
-        $this->assertEquals('34', $t3->data);
-        $this->assertEquals('4', $t4->data);
+        $this->assertSame('34', $t3->data);
+        $this->assertSame('4', $t4->data);
     }
 
     /**

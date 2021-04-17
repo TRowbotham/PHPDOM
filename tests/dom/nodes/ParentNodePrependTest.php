@@ -52,7 +52,7 @@ class ParentNodePrependTest extends NodeTestCase
     {
         $parent = $node->cloneNode();
         $parent->prepend(null);
-        $this->assertEquals('null', $parent->childNodes[0]->textContent);
+        $this->assertSame('null', $parent->childNodes[0]->textContent);
     }
 
     /**
@@ -64,7 +64,7 @@ class ParentNodePrependTest extends NodeTestCase
     {
         $parent = $node->cloneNode();
         $parent->prepend('text');
-        $this->assertEquals('text', $parent->childNodes[0]->textContent);
+        $this->assertSame('text', $parent->childNodes[0]->textContent);
     }
 
     /**
@@ -92,7 +92,7 @@ class ParentNodePrependTest extends NodeTestCase
         $child = $this->getHTMLDocument()->createElement('test');
         $parent->appendChild($child);
         $parent->prepend(null);
-        $this->assertEquals('null', $parent->childNodes[0]->textContent);
+        $this->assertSame('null', $parent->childNodes[0]->textContent);
         $this->assertSame($child, $parent->childNodes[1]);
     }
 
@@ -111,7 +111,7 @@ class ParentNodePrependTest extends NodeTestCase
         $parent->appendChild($child);
         $parent->prepend($x, 'text');
         $this->assertSame($x, $parent->childNodes[0]);
-        $this->assertEquals('text', $parent->childNodes[1]->textContent);
+        $this->assertSame('text', $parent->childNodes[1]->textContent);
         $this->assertSame($child, $parent->childNodes[2]);
     }
 

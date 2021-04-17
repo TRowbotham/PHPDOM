@@ -181,7 +181,7 @@ class ElementClassListTest extends TestCase
         string $expected
     ) {
         $this->setClass($element, $value);
-        $this->assertEquals($expected, $element->classList->toString());
+        $this->assertSame($expected, $element->classList->toString());
     }
 
     public function itemsProvider()
@@ -214,8 +214,8 @@ class ElementClassListTest extends TestCase
         $this->assertNull($element->classList[-1]);
 
         for ($i = 0; $i < count($expectedValues); $i++) {
-            $this->assertEquals($expectedValues[$i], $element->classList->item($i));
-            $this->assertEquals($expectedValues[$i], $element->classList[$i]);
+            $this->assertSame($expectedValues[$i], $element->classList->item($i));
+            $this->assertSame($expectedValues[$i], $element->classList[$i]);
         }
 
         $this->assertNull($element->classList->item($i));

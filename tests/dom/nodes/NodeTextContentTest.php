@@ -22,7 +22,7 @@ class NodeTextContentTest extends TestCase
     {
         $document = $this->getHTMLDocument();
         $element = $document->createElement('div');
-        $this->assertEquals('', $element->textContent);
+        $this->assertSame('', $element->textContent);
     }
 
     /**
@@ -31,7 +31,7 @@ class NodeTextContentTest extends TestCase
     public function test2()
     {
         $document = $this->getHTMLDocument();
-        $this->assertEquals(
+        $this->assertSame(
             '',
             $document->createDocumentFragment()->textContent
         );
@@ -47,7 +47,7 @@ class NodeTextContentTest extends TestCase
         $el->appendChild($document->createComment(' abc '));
         $el->appendChild($document->createTextNode("\tDEF\t"));
         $el->appendChild($document->createProcessingInstruction('x', ' ghi '));
-        $this->assertEquals("\tDEF\t", $el->textContent);
+        $this->assertSame("\tDEF\t", $el->textContent);
     }
 
     /**
@@ -62,7 +62,7 @@ class NodeTextContentTest extends TestCase
         $child->appendChild($document->createComment(' abc '));
         $child->appendChild($document->createTextNode("\tDEF\t"));
         $child->appendChild($document->createProcessingInstruction('x', ' ghi '));
-        $this->assertEquals("\tDEF\t", $el->textContent);
+        $this->assertSame("\tDEF\t", $el->textContent);
     }
 
     /**
@@ -75,7 +75,7 @@ class NodeTextContentTest extends TestCase
         $df->appendChild($document->createComment(' abc '));
         $df->appendChild($document->createTextNode("\tDEF\t"));
         $df->appendChild($document->createProcessingInstruction('x', ' ghi '));
-        $this->assertEquals("\tDEF\t", $df->textContent);
+        $this->assertSame("\tDEF\t", $df->textContent);
     }
 
     /**
@@ -90,7 +90,7 @@ class NodeTextContentTest extends TestCase
         $child->appendChild($document->createComment(' abc '));
         $child->appendChild($document->createTextNode("\tDEF\t"));
         $child->appendChild($document->createProcessingInstruction('x', ' ghi '));
-        $this->assertEquals("\tDEF\t", $df->textContent);
+        $this->assertSame("\tDEF\t", $df->textContent);
     }
 
     /**
@@ -99,7 +99,7 @@ class NodeTextContentTest extends TestCase
     public function test7()
     {
         $document = $this->getHTMLDocument();
-        $this->assertEquals('', $document->createTextNode('')->textContent);
+        $this->assertSame('', $document->createTextNode('')->textContent);
     }
 
     /**
@@ -109,7 +109,7 @@ class NodeTextContentTest extends TestCase
     public function test8()
     {
         $document = $this->getHTMLDocument();
-        $this->assertEquals(
+        $this->assertSame(
             '',
             $document->createProcessingInstruction('x', '')->textContent
         );
@@ -121,7 +121,7 @@ class NodeTextContentTest extends TestCase
     public function test9()
     {
         $document = $this->getHTMLDocument();
-        $this->assertEquals('', $document->createComment('')->textContent);
+        $this->assertSame('', $document->createComment('')->textContent);
     }
 
     /**
@@ -130,7 +130,7 @@ class NodeTextContentTest extends TestCase
     public function test10()
     {
         $document = $this->getHTMLDocument();
-        $this->assertEquals(
+        $this->assertSame(
             'abc',
             $document->createTextNode('abc')->textContent
         );
@@ -142,7 +142,7 @@ class NodeTextContentTest extends TestCase
     public function test11()
     {
         $document = $this->getHTMLDocument();
-        $this->assertEquals(
+        $this->assertSame(
             'abc',
             $document->createProcessingInstruction('x', 'abc')->textContent
         );
@@ -154,7 +154,7 @@ class NodeTextContentTest extends TestCase
     public function test12()
     {
         $document = $this->getHTMLDocument();
-        $this->assertEquals(
+        $this->assertSame(
             'abc',
             $document->createComment('abc')->textContent
         );
@@ -212,23 +212,23 @@ class NodeTextContentTest extends TestCase
     public function check($elementOrDocumentFragment, $expectation)
     {
         if ($expectation === null) {
-            $this->assertEquals('', $elementOrDocumentFragment->textContent);
+            $this->assertSame('', $elementOrDocumentFragment->textContent);
             $this->assertNull($elementOrDocumentFragment->firstChild);
 
             return;
         }
 
-        $this->assertEquals(
+        $this->assertSame(
             $expectation,
             $elementOrDocumentFragment->textContent
         );
-        $this->assertEquals(
+        $this->assertSame(
             1,
             $elementOrDocumentFragment->childNodes->length
         );
         $firstChild = $elementOrDocumentFragment->firstChild;
         $this->assertInstanceOf(Text::class, $firstChild);
-        $this->assertEquals($expectation, $firstChild->data);
+        $this->assertSame($expectation, $firstChild->data);
     }
 
     /**
@@ -283,7 +283,7 @@ class NodeTextContentTest extends TestCase
         $child->appendChild($document->createProcessingInstruction('x', ' ghi '));
         $el->textContent = $argument;
         $this->check($el, $expectation);
-        $this->assertEquals(3, $child->childNodes->length);
+        $this->assertSame(3, $child->childNodes->length);
     }
 
     /**
@@ -325,7 +325,7 @@ class NodeTextContentTest extends TestCase
         $child->appendChild($document->createProcessingInstruction('x', ' ghi '));
         $df->textContent = $argument;
         $this->check($df, $expectation);
-        $this->assertEquals(3, $child->childNodes->length);
+        $this->assertSame(3, $child->childNodes->length);
     }
 
     /**
@@ -336,8 +336,8 @@ class NodeTextContentTest extends TestCase
         $document = $this->getHTMLDocument();
         $text = $document->createTextNode('abc');
         $text->textContent = 'def';
-        $this->assertEquals('def', $text->textContent);
-        $this->assertEquals('def', $text->data);
+        $this->assertSame('def', $text->textContent);
+        $this->assertSame('def', $text->data);
     }
 
     /**
@@ -348,9 +348,9 @@ class NodeTextContentTest extends TestCase
         $document = $this->getHTMLDocument();
         $pi = $document->createProcessingInstruction('x', 'abc');
         $pi->textContent = 'def';
-        $this->assertEquals('def', $pi->textContent);
-        $this->assertEquals('def', $pi->data);
-        $this->assertEquals('x', $pi->target);
+        $this->assertSame('def', $pi->textContent);
+        $this->assertSame('def', $pi->data);
+        $this->assertSame('x', $pi->target);
     }
 
     /**
@@ -361,8 +361,8 @@ class NodeTextContentTest extends TestCase
         $document = $this->getHTMLDocument();
         $comment = $document->createComment('abc');
         $comment->textContent = 'def';
-        $this->assertEquals('def', $comment->textContent);
-        $this->assertEquals('def', $comment->data);
+        $this->assertSame('def', $comment->textContent);
+        $this->assertSame('def', $comment->data);
     }
 
     /**
@@ -388,8 +388,8 @@ class NodeTextContentTest extends TestCase
         ];
         $doctype->textContent = 'b';
         $this->assertNull($doctype->textContent);
-        $this->assertEquals($props['name'], $doctype->name);
-        $this->assertEquals($props['publicId'], $doctype->publicId);
-        $this->assertEquals($props['systemId'], $doctype->systemId);
+        $this->assertSame($props['name'], $doctype->name);
+        $this->assertSame($props['publicId'], $doctype->publicId);
+        $this->assertSame($props['systemId'], $doctype->systemId);
     }
 }

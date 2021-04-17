@@ -52,7 +52,7 @@ class ParentNodeAppendTest extends NodeTestCase
     {
         $parent = $node->cloneNode();
         $parent->append(null);
-        $this->assertEquals('null', $parent->childNodes[0]->textContent);
+        $this->assertSame('null', $parent->childNodes[0]->textContent);
     }
 
     /**
@@ -64,7 +64,7 @@ class ParentNodeAppendTest extends NodeTestCase
     {
         $parent = $node->cloneNode();
         $parent->append('text');
-        $this->assertEquals('text', $parent->childNodes[0]->textContent);
+        $this->assertSame('text', $parent->childNodes[0]->textContent);
     }
 
     /**
@@ -93,7 +93,7 @@ class ParentNodeAppendTest extends NodeTestCase
         $parent->append($child);
         $parent->append(null);
         $this->assertSame($child, $parent->childNodes[0]);
-        $this->assertEquals('null', $parent->childNodes[1]->textContent);
+        $this->assertSame('null', $parent->childNodes[1]->textContent);
     }
 
     /**
@@ -112,7 +112,7 @@ class ParentNodeAppendTest extends NodeTestCase
         $parent->append($x, 'text');
         $this->assertSame($child, $parent->childNodes[0]);
         $this->assertSame($x, $parent->childNodes[1]);
-        $this->assertEquals('text', $parent->childNodes[2]->textContent);
+        $this->assertSame('text', $parent->childNodes[2]->textContent);
     }
 
     public static function getDocumentName(): string

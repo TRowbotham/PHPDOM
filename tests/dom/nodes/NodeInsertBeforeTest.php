@@ -234,7 +234,7 @@ class NodeInsertBeforeTest extends NodeTestCase
         $document = $this->getHTMLDocument();
         $doc = $document->implementation->createHTMLDocument('title');
         $comment = $doc->appendChild($doc->createComment('foo'));
-        $this->assertEquals([$doc->doctype, $doc->documentElement, $comment], iterator_to_array($doc->childNodes));
+        $this->assertSame([$doc->doctype, $doc->documentElement, $comment], iterator_to_array($doc->childNodes));
 
         $df = $doc->createDocumentFragment();
         $df->appendChild($doc->createElement('a'));

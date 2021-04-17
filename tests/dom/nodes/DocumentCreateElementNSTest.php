@@ -79,8 +79,8 @@ class DocumentCreateElementNSTest extends TestCase
 
             $element = $doc->createElementNS($namespace, $qualifiedName);
             $this->assertNotNull($element);
-            $this->assertEquals(Node::ELEMENT_NODE, $element->nodeType);
-            $this->assertEquals($element::ELEMENT_NODE, $element->nodeType);
+            $this->assertSame(Node::ELEMENT_NODE, $element->nodeType);
+            $this->assertSame($element::ELEMENT_NODE, $element->nodeType);
             $this->assertNull($element->nodeValue);
             $this->assertSame($doc, $element->ownerDocument);
 
@@ -91,11 +91,11 @@ class DocumentCreateElementNSTest extends TestCase
                 $names = explode(':', $qualified, 2);
             }
 
-            $this->assertEquals($names[0], $element->prefix);
-            $this->assertEquals($names[1], $element->localName);
-            $this->assertEquals($qualified, $element->tagName);
-            $this->assertEquals($qualified, $element->nodeName);
-            $this->assertEquals(
+            $this->assertSame($names[0], $element->prefix);
+            $this->assertSame($names[1], $element->localName);
+            $this->assertSame($qualified, $element->tagName);
+            $this->assertSame($qualified, $element->nodeName);
+            $this->assertSame(
                 ($namespace === '' ? null : $namespace),
                 $element->namespaceURI
             );
@@ -109,10 +109,10 @@ class DocumentCreateElementNSTest extends TestCase
     {
         $document = $this->getHTMLDocument();
         $element = $document->createElementNS(Namespaces::HTML, 'span');
-        $this->assertEquals(Namespaces::HTML, $element->namespaceURI);
+        $this->assertSame(Namespaces::HTML, $element->namespaceURI);
         $this->assertNull($element->prefix);
-        $this->assertEquals('span', $element->localName);
-        $this->assertEquals('SPAN', $element->tagName);
+        $this->assertSame('span', $element->localName);
+        $this->assertSame('SPAN', $element->tagName);
         $this->assertInstanceOf(Node::class, $element);
         $this->assertInstanceOf(Element::class, $element);
         $this->assertInstanceOf(HTMLElement::class, $element);
@@ -126,10 +126,10 @@ class DocumentCreateElementNSTest extends TestCase
     {
         $document = $this->getHTMLDocument();
         $element = $document->createElementNS(Namespaces::HTML, 'html:span');
-        $this->assertEquals(Namespaces::HTML, $element->namespaceURI);
-        $this->assertEquals('html', $element->prefix);
-        $this->assertEquals('span', $element->localName);
-        $this->assertEquals('HTML:SPAN', $element->tagName);
+        $this->assertSame(Namespaces::HTML, $element->namespaceURI);
+        $this->assertSame('html', $element->prefix);
+        $this->assertSame('span', $element->localName);
+        $this->assertSame('HTML:SPAN', $element->tagName);
         $this->assertInstanceOf(Node::class, $element);
         $this->assertInstanceOf(Element::class, $element);
         $this->assertInstanceOf(HTMLElement::class, $element);
@@ -143,10 +143,10 @@ class DocumentCreateElementNSTest extends TestCase
     {
         $document = $this->getHTMLDocument();
         $element = $document->createElementNS('test', 'span');
-        $this->assertEquals('test', $element->namespaceURI);
+        $this->assertSame('test', $element->namespaceURI);
         $this->assertNull($element->prefix);
-        $this->assertEquals('span', $element->localName);
-        $this->assertEquals('span', $element->tagName);
+        $this->assertSame('span', $element->localName);
+        $this->assertSame('span', $element->tagName);
         $this->assertInstanceOf(Node::class, $element);
         $this->assertInstanceOf(Element::class, $element);
         $this->assertNotInstanceOf(HTMLElement::class, $element);
@@ -160,10 +160,10 @@ class DocumentCreateElementNSTest extends TestCase
     {
         $document = $this->getHTMLDocument();
         $element = $document->createElementNS('test', 'html:span');
-        $this->assertEquals('test', $element->namespaceURI);
-        $this->assertEquals('html', $element->prefix);
-        $this->assertEquals('span', $element->localName);
-        $this->assertEquals('html:span', $element->tagName);
+        $this->assertSame('test', $element->namespaceURI);
+        $this->assertSame('html', $element->prefix);
+        $this->assertSame('span', $element->localName);
+        $this->assertSame('html:span', $element->tagName);
         $this->assertInstanceOf(Node::class, $element);
         $this->assertInstanceOf(Element::class, $element);
         $this->assertNotInstanceOf(HTMLElement::class, $element);
@@ -177,10 +177,10 @@ class DocumentCreateElementNSTest extends TestCase
     {
         $document = $this->getHTMLDocument();
         $element = $document->createElementNS(Namespaces::HTML, 'SPAN');
-        $this->assertEquals(Namespaces::HTML, $element->namespaceURI);
+        $this->assertSame(Namespaces::HTML, $element->namespaceURI);
         $this->assertNull($element->prefix);
-        $this->assertEquals('SPAN', $element->localName);
-        $this->assertEquals('SPAN', $element->tagName);
+        $this->assertSame('SPAN', $element->localName);
+        $this->assertSame('SPAN', $element->tagName);
         $this->assertInstanceOf(Node::class, $element);
         $this->assertInstanceOf(Element::class, $element);
         $this->assertInstanceOf(HTMLElement::class, $element);
@@ -195,10 +195,10 @@ class DocumentCreateElementNSTest extends TestCase
     {
         $document = $this->getHTMLDocument();
         $element = $document->createElementNS(Namespaces::HTML, 'html:SPAN');
-        $this->assertEquals(Namespaces::HTML, $element->namespaceURI);
-        $this->assertEquals('html', $element->prefix);
-        $this->assertEquals('SPAN', $element->localName);
-        $this->assertEquals('HTML:SPAN', $element->tagName);
+        $this->assertSame(Namespaces::HTML, $element->namespaceURI);
+        $this->assertSame('html', $element->prefix);
+        $this->assertSame('SPAN', $element->localName);
+        $this->assertSame('HTML:SPAN', $element->tagName);
         $this->assertInstanceOf(Node::class, $element);
         $this->assertInstanceOf(Element::class, $element);
         $this->assertInstanceOf(HTMLElement::class, $element);
@@ -212,10 +212,10 @@ class DocumentCreateElementNSTest extends TestCase
     {
         $document = $this->getHTMLDocument();
         $element = $document->createElementNS('test', 'SPAN');
-        $this->assertEquals('test', $element->namespaceURI);
+        $this->assertSame('test', $element->namespaceURI);
         $this->assertNull($element->prefix);
-        $this->assertEquals('SPAN', $element->localName);
-        $this->assertEquals('SPAN', $element->tagName);
+        $this->assertSame('SPAN', $element->localName);
+        $this->assertSame('SPAN', $element->tagName);
         $this->assertInstanceOf(Node::class, $element);
         $this->assertInstanceOf(Element::class, $element);
         $this->assertNotInstanceOf(HTMLElement::class, $element);
@@ -229,10 +229,10 @@ class DocumentCreateElementNSTest extends TestCase
     {
         $document = $this->getHTMLDocument();
         $element = $document->createElementNS('test', 'html:SPAN');
-        $this->assertEquals('test', $element->namespaceURI);
-        $this->assertEquals('html', $element->prefix);
-        $this->assertEquals('SPAN', $element->localName);
-        $this->assertEquals('html:SPAN', $element->tagName);
+        $this->assertSame('test', $element->namespaceURI);
+        $this->assertSame('html', $element->prefix);
+        $this->assertSame('SPAN', $element->localName);
+        $this->assertSame('html:SPAN', $element->tagName);
         $this->assertInstanceOf(Node::class, $element);
         $this->assertInstanceOf(Element::class, $element);
         $this->assertNotInstanceOf(HTMLElement::class, $element);
@@ -245,8 +245,8 @@ class DocumentCreateElementNSTest extends TestCase
         $element = $document->createElementNS(null, 'span');
         $this->assertNull($element->namespaceURI);
         $this->assertNull($element->prefix);
-        $this->assertEquals('span', $element->localName);
-        $this->assertEquals('span', $element->tagName);
+        $this->assertSame('span', $element->localName);
+        $this->assertSame('span', $element->tagName);
         $this->assertInstanceOf(Node::class, $element);
         $this->assertInstanceOf(Element::class, $element);
         $this->assertNotInstanceOf(HTMLElement::class, $element);
@@ -259,8 +259,8 @@ class DocumentCreateElementNSTest extends TestCase
         $element = $document->createElementNS('', 'span');
         $this->assertNull($element->namespaceURI);
         $this->assertNull($element->prefix);
-        $this->assertEquals('span', $element->localName);
-        $this->assertEquals('span', $element->tagName);
+        $this->assertSame('span', $element->localName);
+        $this->assertSame('span', $element->tagName);
         $this->assertInstanceOf(Node::class, $element);
         $this->assertInstanceOf(Element::class, $element);
         $this->assertNotInstanceOf(HTMLElement::class, $element);

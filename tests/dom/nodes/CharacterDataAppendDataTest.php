@@ -47,7 +47,7 @@ class CharacterDataAppendDataTest extends TestCase
     {
         $node = $create();
 
-        $this->assertEquals('test', $node->data);
+        $this->assertSame('test', $node->data);
         $node->appendData(', append more 資料，測試資料');
         $this->assertSame('test, append more 資料，測試資料', $node->data);
         $this->assertSame(25, $node->length);
@@ -61,7 +61,7 @@ class CharacterDataAppendDataTest extends TestCase
         $this->expectException(TypeError::class);
         $node = $create();
 
-        $this->assertEquals('test', $node->data);
+        $this->assertSame('test', $node->data);
         $node->appendData(null);
         $this->assertSame('testnull', $node->data);
     }

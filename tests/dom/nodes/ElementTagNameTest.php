@@ -21,15 +21,15 @@ class ElementTagNameTest extends TestCase
     public function test1()
     {
         $document = $this->getHTMLDocument();
-        $this->assertEquals('I', $document->createElementNS(
+        $this->assertSame('I', $document->createElementNS(
             Namespaces::HTML,
             'I'
         )->tagName);
-        $this->assertEquals('I', $document->createElementNS(
+        $this->assertSame('I', $document->createElementNS(
             Namespaces::HTML,
             'i'
         )->tagName);
-        $this->assertEquals('X:B', $document->createElementNS(
+        $this->assertSame('X:B', $document->createElementNS(
             Namespaces::HTML,
             'x:b'
         )->tagName);
@@ -41,19 +41,19 @@ class ElementTagNameTest extends TestCase
     public function test2()
     {
         $document = $this->getHTMLDocument();
-        $this->assertEquals('svg', $document->createElementNS(
+        $this->assertSame('svg', $document->createElementNS(
             Namespaces::SVG,
             'svg'
         )->tagName);
-        $this->assertEquals('SVG', $document->createElementNS(
+        $this->assertSame('SVG', $document->createElementNS(
             Namespaces::SVG,
             'SVG'
         )->tagName);
-        $this->assertEquals('s:svg', $document->createElementNS(
+        $this->assertSame('s:svg', $document->createElementNS(
             Namespaces::SVG,
             's:svg'
         )->tagName);
-        $this->assertEquals('S:SVG', $document->createElementNS(
+        $this->assertSame('S:SVG', $document->createElementNS(
             Namespaces::SVG,
             'S:SVG'
         )->tagName);
@@ -72,9 +72,9 @@ class ElementTagNameTest extends TestCase
                 'text/xml'
             )
             ->documentElement;
-        $this->assertEquals('div', $xmlel->tagName);
+        $this->assertSame('div', $xmlel->tagName);
         $htmlel = $document->importNode($xmlel, true);
-        $this->assertEquals('DIV', $htmlel->tagName);
+        $this->assertSame('DIV', $htmlel->tagName);
     }
 
     /**
@@ -89,9 +89,9 @@ class ElementTagNameTest extends TestCase
             "div",
             null
         )->documentElement;
-        $this->assertEquals('div', $xmlel->tagName);
+        $this->assertSame('div', $xmlel->tagName);
         $htmlel = $document->importNode($xmlel, true);
-        $this->assertEquals('DIV', $htmlel->tagName);
+        $this->assertSame('DIV', $htmlel->tagName);
     }
 
     /**
@@ -106,9 +106,9 @@ class ElementTagNameTest extends TestCase
             "foo:div",
             null
         )->documentElement;
-        $this->assertEquals('foo:div', $xmlel->tagName);
+        $this->assertSame('foo:div', $xmlel->tagName);
         $htmlel = $document->importNode($xmlel, true);
         $this->assertSame($document, $htmlel->ownerDocument);
-        $this->assertEquals('FOO:DIV', $htmlel->tagName);
+        $this->assertSame('FOO:DIV', $htmlel->tagName);
     }
 }

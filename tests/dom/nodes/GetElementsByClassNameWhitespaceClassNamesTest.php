@@ -28,7 +28,7 @@ class GetElementsByClassNameWhitespaceClassNamesTest extends NodeTestCase
         $className = $span->getAttribute('class');
         self::assertSame(1, mb_strlen($className, 'utf-8'));
         $shouldBeSpan = self::getWindow()->document->getElementsByClassName($className);
-        self::assertEquals([$span], iterator_to_array($shouldBeSpan));
+        self::assertSame([$span], iterator_to_array($shouldBeSpan));
     }
 
     public function spanNodesProvider(): Generator

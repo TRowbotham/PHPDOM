@@ -159,6 +159,6 @@ class NodeParentElementTest extends TestCase
         $text = $document->createElement('div');
         $this->assertNull($text->parentElement);
         $document->body->appendChild($text);
-        $this->assertEquals($document->body, $text->parentElement);
+        $this->assertSame($document->body, $text->parentElement);
     }
 }

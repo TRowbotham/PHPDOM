@@ -100,16 +100,16 @@ class DocumentCreateElementTest extends TestCase
             $localName = $desc === 'HTML document'
                 ? Utils::toASCIILowercase((string) $t)
                 : (string) $t;
-            $this->assertEquals($localName, $elt->localName);
+            $this->assertSame($localName, $elt->localName);
             $tagName = $desc === 'HTML document'
                 ? Utils::toASCIIUppercase((string) $t)
                 : (string) $t;
-            $this->assertEquals($tagName, $elt->tagName);
+            $this->assertSame($tagName, $elt->tagName);
             $this->assertNull($elt->prefix);
             $namespace = $desc === 'XML document'
                 ? null
                 : Namespaces::HTML;
-            $this->assertEquals($namespace, $elt->namespaceURI);
+            $this->assertSame($namespace, $elt->namespaceURI);
         }
     }
 

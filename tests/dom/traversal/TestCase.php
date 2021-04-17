@@ -16,11 +16,11 @@ abstract class TestCase extends DOMTestCase
         $this->assertInstanceOf($expected['type'], $actual);
 
         if (isset($expected['id'])) {
-            $this->assertEquals($expected['id'], $actual->id);
+            $this->assertSame($expected['id'], $actual->id);
         }
 
         if (isset($expected['nodeValue'])) {
-            $this->assertEquals($expected['nodeValue'], $actual->nodeValue);
+            $this->assertSame($expected['nodeValue'], $actual->nodeValue);
         }
     }
 

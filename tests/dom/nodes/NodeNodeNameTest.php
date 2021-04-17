@@ -20,59 +20,59 @@ class NodeNodeNameTest extends TestCase
         $document = $this->getHTMLDocument();
 
         // For Element nodes, nodeName should return the same as tagName.
-        $this->assertEquals(
+        $this->assertSame(
             'I',
             $document->createElementNS(Namespaces::HTML, 'I')->nodeName
         );
-        $this->assertEquals(
+        $this->assertSame(
             'I',
             $document->createElementNS(Namespaces::HTML, 'i')->nodeName
         );
-        $this->assertEquals(
+        $this->assertSame(
             'svg',
             $document->createElementNS(Namespaces::SVG, 'svg')->nodeName
         );
-        $this->assertEquals(
+        $this->assertSame(
             'SVG',
             $document->createElementNS(Namespaces::SVG, 'SVG')->nodeName
         );
-        $this->assertEquals(
+        $this->assertSame(
             'X:B',
             $document->createElementNS(Namespaces::HTML, 'x:b')->nodeName
         );
 
         // For Text nodes, nodeName should return "#text".
-        $this->assertEquals(
+        $this->assertSame(
             '#text',
             $document->createTextNode('foo')->nodeName
         );
 
         // For ProcessingInstruction nodes, nodeName should return the target.
-        $this->assertEquals(
+        $this->assertSame(
             'foo',
             $document->createProcessingInstruction('foo', 'bar')->nodeName
         );
 
         // For Comment nodes, nodeName should return "#comment".
-        $this->assertEquals(
+        $this->assertSame(
             '#comment',
             $document->createComment('foo')->nodeName
         );
 
         // For Document nodes, nodeName should return "#document".
-        $this->assertEquals(
+        $this->assertSame(
             '#document',
             $document->nodeName
         );
 
         // For DocumentType nodes, nodeName should return the name.
-        $this->assertEquals(
+        $this->assertSame(
             'html',
             $document->doctype->nodeName
         );
 
         // For DocumentFragment nodes, nodeName should return "#document-fragment".
-        $this->assertEquals(
+        $this->assertSame(
             '#document-fragment',
             $document->createDocumentFragment()->nodeName
         );

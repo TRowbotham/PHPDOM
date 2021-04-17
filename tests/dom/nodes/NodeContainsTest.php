@@ -30,7 +30,7 @@ class NodeContainsTest extends NodeTestCase
             $ancestor = $ancestor->parentNode;
         }
 
-        $this->assertEquals(
+        $this->assertSame(
             $ancestor === $reference,
             $reference->contains($other)
         );

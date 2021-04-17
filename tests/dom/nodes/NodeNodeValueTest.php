@@ -21,14 +21,14 @@ class NodeNodeValueTest extends TestCase
     {
         $document = $this->getHTMLDocument();
         $the_text = $document->createTextNode('A span!');
-        $this->assertEquals('A span!', $the_text->nodeValue);
-        $this->assertEquals('A span!', $the_text->data);
+        $this->assertSame('A span!', $the_text->nodeValue);
+        $this->assertSame('A span!', $the_text->data);
         $the_text->nodeValue = 'test again';
-        $this->assertEquals('test again', $the_text->nodeValue);
-        $this->assertEquals('test again', $the_text->data);
+        $this->assertSame('test again', $the_text->nodeValue);
+        $this->assertSame('test again', $the_text->data);
         $the_text->nodeValue = null;
-        $this->assertEquals('', $the_text->nodeValue);
-        $this->assertEquals('', $the_text->data);
+        $this->assertSame('', $the_text->nodeValue);
+        $this->assertSame('', $the_text->data);
     }
 
     /**
@@ -38,14 +38,14 @@ class NodeNodeValueTest extends TestCase
     {
         $document = $this->getHTMLDocument();
         $the_comment = $document->createComment('A comment!');
-        $this->assertEquals('A comment!', $the_comment->nodeValue);
-        $this->assertEquals('A comment!', $the_comment->data);
+        $this->assertSame('A comment!', $the_comment->nodeValue);
+        $this->assertSame('A comment!', $the_comment->data);
         $the_comment->nodeValue = 'test again';
-        $this->assertEquals('test again', $the_comment->nodeValue);
-        $this->assertEquals('test again', $the_comment->data);
+        $this->assertSame('test again', $the_comment->nodeValue);
+        $this->assertSame('test again', $the_comment->data);
         $the_comment->nodeValue = null;
-        $this->assertEquals('', $the_comment->nodeValue);
-        $this->assertEquals('', $the_comment->data);
+        $this->assertSame('', $the_comment->nodeValue);
+        $this->assertSame('', $the_comment->data);
     }
 
     /**
@@ -55,14 +55,14 @@ class NodeNodeValueTest extends TestCase
     {
         $document = $this->getHTMLDocument();
         $the_pi = $document->createProcessingInstruction('pi', 'A PI!');
-        $this->assertEquals('A PI!', $the_pi->nodeValue);
-        $this->assertEquals('A PI!', $the_pi->data);
+        $this->assertSame('A PI!', $the_pi->nodeValue);
+        $this->assertSame('A PI!', $the_pi->data);
         $the_pi->nodeValue = 'test again';
-        $this->assertEquals('test again', $the_pi->nodeValue);
-        $this->assertEquals('test again', $the_pi->data);
+        $this->assertSame('test again', $the_pi->nodeValue);
+        $this->assertSame('test again', $the_pi->data);
         $the_pi->nodeValue = null;
-        $this->assertEquals('', $the_pi->nodeValue);
-        $this->assertEquals('', $the_pi->data);
+        $this->assertSame('', $the_pi->nodeValue);
+        $this->assertSame('', $the_pi->data);
     }
 
     /**

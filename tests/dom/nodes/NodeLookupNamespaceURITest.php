@@ -17,42 +17,42 @@ class NodeLookupNamespaceURITest extends TestCase
     public function test1()
     {
         $frag = $this->getHTMLDocument()->createDocumentFragment();
-        $this->assertEquals(
+        $this->assertSame(
             null,
             $frag->lookupNamespaceURI(null),
             'DocumentFragment should have null namespace, prefix null'
         );
-        $this->assertEquals(
+        $this->assertSame(
             null,
             $frag->lookupNamespaceURI(''),
             'DocumentFragment should have null namespace, prefix ""'
         );
-        $this->assertEquals(
+        $this->assertSame(
             null,
             $frag->lookupNamespaceURI('foo'),
             'DocumentFragment should have null namespace, prefix "foo"'
         );
-        $this->assertEquals(
+        $this->assertSame(
             null,
             $frag->lookupNamespaceURI('xmlns'),
             'DocumentFragment should have null namespace, prefix "xmlns"'
         );
-        $this->assertEquals(
+        $this->assertSame(
             true,
             $frag->isDefaultNamespace(null),
             'DocumentFragment is in default namespace, prefix null'
         );
-        $this->assertEquals(
+        $this->assertSame(
             true,
             $frag->isDefaultNamespace(''),
             'DocumentFragment is in default namespace, prefix ""'
         );
-        $this->assertEquals(
+        $this->assertSame(
             false,
             $frag->isDefaultNamespace('foo'),
             'DocumentFragment is in default namespace, prefix "foo"'
         );
-        $this->assertEquals(
+        $this->assertSame(
             false,
             $frag->isDefaultNamespace('xmlns'),
             'DocumentFragment is in default namespace, prefix "xmlns"'
@@ -68,48 +68,48 @@ class NodeLookupNamespaceURITest extends TestCase
         );
         $fooElem->setAttribute('bar', 'value');
 
-        $this->assertEquals(
+        $this->assertSame(
             null,
             $fooElem->lookupNamespaceURI(null),
             'Element should have null namespace, prefix null'
         );
-        $this->assertEquals(
+        $this->assertSame(
             null,
             $fooElem->lookupNamespaceURI(''),
             'Element should have null namespace, prefix ""'
         );
-        $this->assertEquals(
+        $this->assertSame(
             null,
             $fooElem->lookupNamespaceURI('fooNamespace'),
             'Element should not have namespace matching prefix with namespaceURI value'
         );
-        $this->assertEquals(
+        $this->assertSame(
             null,
             $fooElem->lookupNamespaceURI('xmlns'),
             'Element should not have XMLNS namespace'
         );
-        $this->assertEquals(
+        $this->assertSame(
             'fooNamespace',
             $fooElem->lookupNamespaceURI('prefix'),
             'Element has namespace URI matching prefix'
         );
 
-        $this->assertEquals(
+        $this->assertSame(
             true,
             $fooElem->isDefaultNamespace(null),
             'Empty namespace is not default, prefix null'
         );
-        $this->assertEquals(
+        $this->assertSame(
             true,
             $fooElem->isDefaultNamespace(''),
             'Empty namespace is not default, prefix ""'
         );
-        $this->assertEquals(
+        $this->assertSame(
             false,
             $fooElem->isDefaultNamespace('fooNamespace'),
             'fooNamespace is not default'
         );
-        $this->assertEquals(
+        $this->assertSame(
             false,
             $fooElem->isDefaultNamespace('http://www.w3.org/2000/xmlns/'),
             'xmlns namespace is not default'
@@ -126,43 +126,43 @@ class NodeLookupNamespaceURITest extends TestCase
             'bazURI'
         );
 
-        $this->assertEquals(
+        $this->assertSame(
             'bazURI',
             $fooElem->lookupNamespaceURI(null),
             'Element should have baz namespace, prefix null'
         );
-        $this->assertEquals(
+        $this->assertSame(
             'bazURI',
             $fooElem->lookupNamespaceURI(''),
             'Element should have baz namespace, prefix ""'
         );
-        $this->assertEquals(
+        $this->assertSame(
             null,
             $fooElem->lookupNamespaceURI('xmlns'),
             'Element does not has namespace with xlmns prefix'
         );
-        $this->assertEquals(
+        $this->assertSame(
             'barURI',
             $fooElem->lookupNamespaceURI('bar'),
             'Element has bar namespace'
         );
 
-        $this->assertEquals(
+        $this->assertSame(
             false,
             $fooElem->isDefaultNamespace(null),
             'Empty namespace is not default on fooElem, prefix null'
         );
-        $this->assertEquals(
+        $this->assertSame(
             false,
             $fooElem->isDefaultNamespace(''),
             'Empty namespace is not default on fooElem, prefix ""'
         );
-        $this->assertEquals(
+        $this->assertSame(
             false,
             $fooElem->isDefaultNamespace('barURI'),
             'bar namespace is not default'
         );
-        $this->assertEquals(
+        $this->assertSame(
             true,
             $fooElem->isDefaultNamespace('bazURI'),
             'baz namespace is default'
@@ -171,53 +171,53 @@ class NodeLookupNamespaceURITest extends TestCase
         $comment = $document->createComment('comment');
         $fooElem->appendChild($comment);
 
-        $this->assertEquals(
+        $this->assertSame(
             'bazURI',
             $comment->lookupNamespaceURI(null),
             'Comment should inherit baz namespace'
         );
-        $this->assertEquals(
+        $this->assertSame(
             'bazURI',
             $comment->lookupNamespaceURI(''),
             'Comment should inherit  baz namespace'
         );
-        $this->assertEquals(
+        $this->assertSame(
             'fooNamespace',
             $comment->lookupNamespaceURI('prefix'),
             'Comment should inherit namespace URI matching prefix'
         );
-        $this->assertEquals(
+        $this->assertSame(
             'barURI',
             $comment->lookupNamespaceURI('bar'),
             'Comment should inherit bar namespace'
         );
 
-        $this->assertEquals(
+        $this->assertSame(
             false,
             $comment->isDefaultNamespace(null),
             'For comment, empty namespace is not default, prefix null'
         );
-        $this->assertEquals(
+        $this->assertSame(
             false,
             $comment->isDefaultNamespace(''),
             'For comment, empty namespace is not default, prefix ""'
         );
-        $this->assertEquals(
+        $this->assertSame(
             false,
             $comment->isDefaultNamespace('fooNamespace'),
             'For comment, fooNamespace is not default'
         );
-        $this->assertEquals(
+        $this->assertSame(
             false,
             $comment->isDefaultNamespace('http://www.w3.org/2000/xmlns/'),
             'For comment, xmlns namespace is not default'
         );
-        $this->assertEquals(
+        $this->assertSame(
             false,
             $comment->isDefaultNamespace('barURI'),
             'For comment, inherited bar namespace is not default'
         );
-        $this->assertEquals(
+        $this->assertSame(
             true,
             $comment->isDefaultNamespace('bazURI'),
             'For comment, inherited baz namespace is default'
@@ -229,58 +229,58 @@ class NodeLookupNamespaceURITest extends TestCase
         );
         $fooElem->appendChild($fooChild);
 
-        $this->assertEquals(
+        $this->assertSame(
             'childNamespace',
             $fooChild->lookupNamespaceURI(null),
             'Child element should inherit baz namespace'
         );
-        $this->assertEquals(
+        $this->assertSame(
             'childNamespace',
             $fooChild->lookupNamespaceURI(''),
             'Child element should have null namespace'
         );
-        $this->assertEquals(
+        $this->assertSame(
             null,
             $fooChild->lookupNamespaceURI('xmlns'),
             'Child element should not have XMLNS namespace'
         );
-        $this->assertEquals(
+        $this->assertSame(
             'fooNamespace',
             $fooChild->lookupNamespaceURI('prefix'),
             'Child element has namespace URI matching prefix'
         );
 
-        $this->assertEquals(
+        $this->assertSame(
             false,
             $fooChild->isDefaultNamespace(null),
             'Empty namespace is not default for child, prefix null'
         );
-        $this->assertEquals(
+        $this->assertSame(
             false,
             $fooChild->isDefaultNamespace(''),
             'Empty namespace is not default for child, prefix ""'
         );
-        $this->assertEquals(
+        $this->assertSame(
             false,
             $fooChild->isDefaultNamespace('fooNamespace'),
             'fooNamespace is not default for child'
         );
-        $this->assertEquals(
+        $this->assertSame(
             false,
             $fooChild->isDefaultNamespace('http://www.w3.org/2000/xmlns/'),
             'xmlns namespace is not default for child'
         );
-        $this->assertEquals(
+        $this->assertSame(
             false,
             $fooChild->isDefaultNamespace('barURI'),
             'bar namespace is not default for child'
         );
-        $this->assertEquals(
+        $this->assertSame(
             false,
             $fooChild->isDefaultNamespace('bazURI'),
             'baz namespace is default for child'
         );
-        $this->assertEquals(
+        $this->assertSame(
             true,
             $fooChild->isDefaultNamespace('childNamespace'),
             'childNamespace is default for child'
@@ -297,58 +297,58 @@ class NodeLookupNamespaceURITest extends TestCase
             'bazURI'
         );
 
-        $this->assertEquals(
+        $this->assertSame(
             'http://www.w3.org/1999/xhtml',
             $document->lookupNamespaceURI(null),
             'Document should have xhtml namespace, prefix null'
         );
-        $this->assertEquals(
+        $this->assertSame(
             'http://www.w3.org/1999/xhtml',
             $document->lookupNamespaceURI(''),
             'Document should have xhtml namespace, prefix ""'
         );
-        $this->assertEquals(
+        $this->assertSame(
             null,
             $document->lookupNamespaceURI('prefix'),
             'Document has no namespace URI matching prefix'
         );
-        $this->assertEquals(
+        $this->assertSame(
             'barURI',
             $document->lookupNamespaceURI('bar'),
             'Document has bar namespace'
         );
 
-        $this->assertEquals(
+        $this->assertSame(
             false,
             $document->isDefaultNamespace(null),
             'For document, empty namespace is not default, prefix null'
         );
-        $this->assertEquals(
+        $this->assertSame(
             false,
             $document->isDefaultNamespace(''),
             'For document, empty namespace is not default, prefix ""'
         );
-        $this->assertEquals(
+        $this->assertSame(
             false,
             $document->isDefaultNamespace('fooNamespace'),
             'For document, fooNamespace is not default'
         );
-        $this->assertEquals(
+        $this->assertSame(
             false,
             $document->isDefaultNamespace('http://www.w3.org/2000/xmlns/'),
             'For document, xmlns namespace is not default'
         );
-        $this->assertEquals(
+        $this->assertSame(
             false,
             $document->isDefaultNamespace('barURI'),
             'For document, bar namespace is not default'
         );
-        $this->assertEquals(
+        $this->assertSame(
             false,
             $document->isDefaultNamespace('bazURI'),
             'For document, baz namespace is not default'
         );
-        $this->assertEquals(
+        $this->assertSame(
             true,
             $document->isDefaultNamespace('http://www.w3.org/1999/xhtml'),
             'For document, xhtml namespace is default'
@@ -356,7 +356,7 @@ class NodeLookupNamespaceURITest extends TestCase
 
         $comment = $document->createComment('comment');
         $document->appendChild($comment);
-        $this->assertEquals(
+        $this->assertSame(
             null,
             $comment->lookupNamespaceURI('bar'),
             'Comment does not have bar namespace'

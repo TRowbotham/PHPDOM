@@ -21,59 +21,59 @@ class NodeCloneNodeTest extends TestCase
     public function checkCopy($aOrig, $aCopy, $aType)
     {
         $this->assertNotSame($aOrig, $aCopy);
-        $this->assertEquals($aOrig->nodeType, $aCopy->nodeType, 'nodeType');
-        $this->assertEquals($aOrig->nodeName, $aCopy->nodeName, 'nodeName');
+        $this->assertSame($aOrig->nodeType, $aCopy->nodeType, 'nodeType');
+        $this->assertSame($aOrig->nodeName, $aCopy->nodeName, 'nodeName');
 
         if ($aOrig->nodeType === Node::ELEMENT_NODE) {
-            $this->assertEquals($aOrig->prefix, $aCopy->prefix, 'prefix');
-            $this->assertEquals(
+            $this->assertSame($aOrig->prefix, $aCopy->prefix, 'prefix');
+            $this->assertSame(
                 $aOrig->namespaceURI,
                 $aCopy->namespaceURI,
                 'namespaceURI'
             );
-            $this->assertEquals(
+            $this->assertSame(
                 $aOrig->localName,
                 $aCopy->localName,
                 'localName'
             );
-            $this->assertEquals($aOrig->tagName, $aCopy->tagName, 'tagName');
+            $this->assertSame($aOrig->tagName, $aCopy->tagName, 'tagName');
             $this->assertNotSame(
                 $aOrig->attributes,
                 $aCopy->attributes,
                 'attributes'
             );
-            $this->assertEquals(
+            $this->assertSame(
                 $aOrig->attributes->length,
                 $aCopy->attributes->length,
                 'attributes->length'
             );
 
             for ($i = 0, $len = $aOrig->attributes->length; $i < $len; $i++) {
-                $this->assertNotEquals(
+                $this->assertNotSame(
                     $aOrig->attributes[$i],
                     $aCopy->attributes[$i]
                 );
-                $this->assertEquals(
+                $this->assertSame(
                     $aOrig->attributes[$i]->name,
                     $aCopy->attributes[$i]->name,
                     'attribtues->name'
                 );
-                $this->assertEquals(
+                $this->assertSame(
                     $aOrig->attributes[$i]->localName,
                     $aCopy->attributes[$i]->localName,
                     'attribtues->localName'
                 );
-                $this->assertEquals(
+                $this->assertSame(
                     $aOrig->attributes[$i]->prefix,
                     $aCopy->attributes[$i]->prefix,
                     'attribtues->prefix'
                 );
-                $this->assertEquals(
+                $this->assertSame(
                     $aOrig->attributes[$i]->namespaceURI,
                     $aCopy->attributes[$i]->namespaceURI,
                     'attribtues->namespaceURI'
                 );
-                $this->assertEquals(
+                $this->assertSame(
                     $aOrig->attributes[$i]->value,
                     $aCopy->attributes[$i]->value,
                     'attribtues->value'
@@ -107,8 +107,8 @@ class NodeCloneNodeTest extends TestCase
         $text = $this->getHTMLDocument()->createTextNode('hello world');
         $copy = $text->cloneNode();
         $this->checkCopy($text, $copy, 'Rowbot\DOM\Text');
-        $this->assertEquals($text->data, $copy->data, 'data');
-        $this->assertEquals($text->wholeText, $copy->wholeText, 'wholeText');
+        $this->assertSame($text->data, $copy->data, 'data');
+        $this->assertSame($text->wholeText, $copy->wholeText, 'wholeText');
     }
 
     public function testCreateComment()
@@ -116,7 +116,7 @@ class NodeCloneNodeTest extends TestCase
         $comment = $this->getHTMLDocument()->createComment('a comment');
         $copy = $comment->cloneNode();
         $this->checkCopy($comment, $copy, 'Rowbot\DOM\Comment');
-        $this->assertEquals($comment->data, $copy->data, 'data');
+        $this->assertSame($comment->data, $copy->data, 'data');
     }
 
     public function testCreateElementWithAttributes()
@@ -150,8 +150,8 @@ class NodeCloneNodeTest extends TestCase
         $pi = $this->getHTMLDocument()->createProcessingInstruction('target', 'data');
         $copy = $pi->cloneNode();
         $this->checkCopy($pi, $copy, 'Rowbot\DOM\ProcessingInstruction');
-        $this->assertEquals($pi->data, $copy->data, 'data');
-        $this->assertEquals($pi->target, $copy->target, 'target');
+        $this->assertSame($pi->data, $copy->data, 'data');
+        $this->assertSame($pi->target, $copy->target, 'target');
     }
 
     public function testCreateDocumentType()
@@ -163,9 +163,9 @@ class NodeCloneNodeTest extends TestCase
         );
         $copy = $doctype->cloneNode();
         $this->checkCopy($doctype, $copy, 'Rowbot\DOM\DocumentType');
-        $this->assertEquals($doctype->name, $copy->name, 'name');
-        $this->assertEquals($doctype->publicId, $copy->publicId, 'publicId');
-        $this->assertEquals($doctype->systemId, $copy->systemId, 'systemId');
+        $this->assertSame($doctype->name, $copy->name, 'name');
+        $this->assertSame($doctype->publicId, $copy->publicId, 'publicId');
+        $this->assertSame($doctype->systemId, $copy->systemId, 'systemId');
     }
 
     public function testCreateDocument()
@@ -173,16 +173,16 @@ class NodeCloneNodeTest extends TestCase
         $doc = $this->getHTMLDocument()->implementation->createDocument(null, null);
         $copy = $doc->cloneNode();
         $this->checkCopy($doc, $copy, 'Rowbot\DOM\Document');
-        $this->assertEquals('UTF-8', $copy->charset, 'charset');
-        $this->assertEquals($doc->charset, $copy->charset, 'charset');
-        $this->assertEquals($doc->contentType, 'application/xml', 'contentType');
-        $this->assertEquals($doc->contentType, $copy->contentType, 'contentType');
-        $this->assertEquals($doc->URL, 'about:blank', 'URL');
-        $this->assertEquals($doc->URL, $copy->URL, 'URL');
-        $this->assertEquals($doc->origin, 'null', 'origin');
-        $this->assertEquals($doc->origin, $copy->origin, 'origin');
-        $this->assertEquals($doc->compatMode, 'CSS1Compat', 'compatMode');
-        $this->assertEquals($doc->compatMode, $copy->compatMode, 'compatMode');
+        $this->assertSame('UTF-8', $copy->charset, 'charset');
+        $this->assertSame($doc->charset, $copy->charset, 'charset');
+        $this->assertSame($doc->contentType, 'application/xml', 'contentType');
+        $this->assertSame($doc->contentType, $copy->contentType, 'contentType');
+        $this->assertSame($doc->URL, 'about:blank', 'URL');
+        $this->assertSame($doc->URL, $copy->URL, 'URL');
+        $this->assertSame($doc->origin, 'null', 'origin');
+        $this->assertSame($doc->origin, $copy->origin, 'origin');
+        $this->assertSame($doc->compatMode, 'CSS1Compat', 'compatMode');
+        $this->assertSame($doc->compatMode, $copy->compatMode, 'compatMode');
     }
 
     public function testCreateHTMLDocument()
@@ -190,7 +190,7 @@ class NodeCloneNodeTest extends TestCase
         $doc = $this->getHTMLDocument()->implementation->createHTMLDocument('title');
         $copy = $doc->cloneNode();
         $this->checkCopy($doc, $copy, 'Rowbot\DOM\HTMLDocument');
-        $this->assertEquals('', $copy->title, 'title');
+        $this->assertSame('', $copy->title, 'title');
     }
 
     public function testNodeWithChildren()
@@ -207,21 +207,21 @@ class NodeCloneNodeTest extends TestCase
 
         $copy = $parent->cloneNode(true);
         $this->checkCopy($parent, $copy, 'Rowbot\DOM\Element\HTML\HTMLDivElement');
-        $this->assertEquals(2, $copy->childNodes->length);
+        $this->assertSame(2, $copy->childNodes->length);
 
         $this->checkCopy(
             $child1,
             $copy->childNodes[0],
             'Rowbot\DOM\Element\HTML\HTMLDivElement'
         );
-        $this->assertEquals(0, $copy->childNodes[0]->childNodes->length);
+        $this->assertSame(0, $copy->childNodes[0]->childNodes->length);
 
         $this->checkCopy(
             $child2,
             $copy->childNodes[1],
             'Rowbot\DOM\Element\HTML\HTMLDivElement'
         );
-        $this->assertEquals(1, $copy->childNodes[1]->childNodes->length);
+        $this->assertSame(1, $copy->childNodes[1]->childNodes->length);
         $this->checkCopy(
             $gChild,
             $copy->childNodes[1]->childNodes[0],
@@ -230,6 +230,6 @@ class NodeCloneNodeTest extends TestCase
 
         $copy = $parent->cloneNode(false);
         $this->checkCopy($parent, $copy, 'Rowbot\DOM\Element\HTML\HTMLDivElement');
-        $this->assertEquals(0, $copy->childNodes->length);
+        $this->assertSame(0, $copy->childNodes->length);
     }
 }

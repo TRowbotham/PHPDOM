@@ -30,7 +30,7 @@ class NodeCompareDocumentPositionTest extends NodeTestCase
         // "If other and reference are the same object, return zero and
         // terminate these steps."
         if ($other === $reference) {
-            $this->assertEquals(0, $result);
+            $this->assertSame(0, $result);
 
             return;
         }
@@ -58,7 +58,7 @@ class NodeCompareDocumentPositionTest extends NodeTestCase
         // adding DOCUMENT_POSITION_CONTAINS to DOCUMENT_POSITION_PRECEDING
         // and terminate these steps."
         if ($other->isAncestorOf($reference)) {
-            $this->assertEquals(
+            $this->assertSame(
                 $result,
                 Node::DOCUMENT_POSITION_CONTAINS +
                 Node::DOCUMENT_POSITION_PRECEDING
@@ -71,7 +71,7 @@ class NodeCompareDocumentPositionTest extends NodeTestCase
         // DOCUMENT_POSITION_CONTAINED_BY to DOCUMENT_POSITION_FOLLOWING and
         // terminate these steps."
         if ($other->isDescendantOf($reference)) {
-            $this->assertEquals(
+            $this->assertSame(
                 $result,
                 Node::DOCUMENT_POSITION_CONTAINED_BY +
                 Node::DOCUMENT_POSITION_FOLLOWING
@@ -89,13 +89,13 @@ class NodeCompareDocumentPositionTest extends NodeTestCase
         }
 
         if ($prev === $other) {
-            $this->assertEquals($result, Node::DOCUMENT_POSITION_PRECEDING);
+            $this->assertSame($result, Node::DOCUMENT_POSITION_PRECEDING);
 
             return;
         }
 
         // "Return DOCUMENT_POSITION_FOLLOWING."
-        $this->assertEquals($result, Node::DOCUMENT_POSITION_FOLLOWING);
+        $this->assertSame($result, Node::DOCUMENT_POSITION_FOLLOWING);
     }
 
     public function rangeTestNodesProvider(): Generator
