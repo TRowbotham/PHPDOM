@@ -102,7 +102,8 @@ class CharacterDataDataTest extends NodeTestCase
         $this->assertSame('test', $node->data);
         $node->data = "🌠 test 🌠 TEST";
         $this->assertSame("🌠 test 🌠 TEST", $node->data);
-        $this->assertSame(15, $node->length); // Counting UTF-16 code units
+        // $this->assertSame(15, $node->length); // Counting UTF-16 code units
+        self::assertSame(13, $node->length); // Counting UTF-8 code points
     }
 
     public function nodesProvider(): array

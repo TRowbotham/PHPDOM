@@ -234,7 +234,8 @@ class CharacterDataReplaceDataTest extends NodeTestCase
 
         $this->assertSame('test', $node->data);
         $node->data = "🌠 test 🌠 TEST";
-        $node->replaceData(5, 8, '--'); // Counting UTF-16 code units
+        // $node->replaceData(5, 8, '--'); // Counting UTF-16 code units
+        $node->replaceData(4, 7, '--'); // Counting UTF-8 code points
         $this->assertSame("🌠 te--ST", $node->data);
     }
 

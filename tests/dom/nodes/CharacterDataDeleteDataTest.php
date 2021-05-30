@@ -123,7 +123,8 @@ class CharacterDataDeleteDataTest extends NodeTestCase
 
         $this->assertSame('test', $node->data);
         $node->data = "🌠 test 🌠 TEST";
-        $node->deleteData(5, 8); // Counting UTF-16 code units
+        // $node->deleteData(5, 8); // Counting UTF-16 code units
+        $node->deleteData(4, 7); // Counting UTF-8 code points
         $this->assertSame("🌠 teST", $node->data);
     }
 

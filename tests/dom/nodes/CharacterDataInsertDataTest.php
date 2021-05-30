@@ -130,7 +130,8 @@ class CharacterDataInsertDataTest extends NodeTestCase
     {
         $node = $create();
         $node->data = "🌠 test 🌠 TEST";
-        $node->insertData(5, "--"); // Counting UTF-16 code units
+        // $node->insertData(5, "--"); // Counting UTF-16 code units
+        $node->insertData(4, "--"); // Counting UTF-8 code points
 
         $this->assertSame("🌠 te--st 🌠 TEST", $node->data);
     }
