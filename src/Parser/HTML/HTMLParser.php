@@ -61,7 +61,8 @@ class HTMLParser extends Parser
             $contextElement,
             new OpenElementStack(),
             $this->inputStream,
-            $isFragmentCase
+            $isFragmentCase,
+            $document->isScriptingEnabled()
         );
         $this->tokenizer = new Tokenizer($context);
         $context = new TreeBuilderContext(

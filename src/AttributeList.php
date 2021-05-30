@@ -152,7 +152,7 @@ class AttributeList implements ArrayAccess, Countable, Iterator
     {
         if (
             $this->element->namespaceURI === Namespaces::HTML
-            && $this->element->getNodeDocument() instanceof HTMLDocument
+            && $this->element->getNodeDocument()->isHTMLDocument()
         ) {
             $qualifiedName = Utils::toASCIILowercase($qualifiedName);
         }

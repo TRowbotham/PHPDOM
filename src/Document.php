@@ -23,20 +23,16 @@ use Rowbot\DOM\Exception\InvalidCharacterError;
 use Rowbot\DOM\Exception\NotSupportedError;
 use Rowbot\DOM\Parser\MarkupFactory;
 use Rowbot\DOM\Support\Stringable;
-use Rowbot\DOM\URL\URLParser;
 use Rowbot\URL\URLRecord;
 
 use function assert;
 use function count;
-use function in_array;
 use function mb_strpos;
 use function method_exists;
 use function preg_match;
 use function preg_replace;
 use function strtolower;
 use function trim;
-
-use const PHP_SAPI;
 
 /**
  * @see https://dom.spec.whatwg.org/#interface-document
@@ -72,11 +68,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
     protected $characterSet;
 
     /**
-     * @var string
-     */
-    protected $contentType;
-
-    /**
      * @var int
      */
     protected $flags;
@@ -97,6 +88,11 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
     private $compatMode;
 
     /**
+     * @var \Rowbot\DOM\Environment
+     */
+    private $environment;
+
+    /**
      * @var \Rowbot\DOM\DOMImplementation
      */
     private $implementation;
@@ -107,14 +103,9 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
     private $isIframeSrcDoc;
 
     /**
-     * @var bool
+     * @var 'xml'|'html'
      */
-    private $isHTMLDocument;
-
-    /**
-     * @var \Rowbot\URL\URLRecord|null
-     */
-    private $url;
+    private $type;
 
     /**
      * @var string
@@ -126,19 +117,29 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      */
     private $source;
 
-    public function __construct()
+    /**
+     * @param 'xml'|'html' $type
+     */
+    public function __construct(?Environment $env = null, string $type = 'xml')
     {
         parent::__construct($this);
 
         $this->characterSet = 'UTF-8';
-        $this->contentType = 'application/xml';
         $this->flags = 0;
         $this->implementation = new DOMImplementation($this);
         $this->isIframeSrcDoc = false;
         $this->inertTemplateDocument = null;
         $this->mode = DocumentMode::NO_QUIRKS;
         $this->nodeType = self::DOCUMENT_NODE;
-        $this->url = null;
+        $this->type = $type;
+
+        if ($env === null) {
+            $env = new Environment(null, 'application/xml');
+        } else {
+            $env = clone $env;
+        }
+
+        $this->environment = $env;
 
         // When a Document object is created, it must have its current document
         // readiness set to the string "loading" if the document is associated
@@ -170,7 +171,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
                 return $this->getChildren();
 
             case 'contentType':
-                return $this->contentType;
+                return $this->environment->getContentType();
 
             case 'compatMode':
                 return $this->mode === DocumentMode::QUIRKS ? 'BackCompat' : 'CSS1Compat';
@@ -189,7 +190,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
 
             case 'documentURI':
             case 'URL':
-                return $this->getURL()->serializeURL();
+                return $this->environment->getUrl()->serializeURL();
 
             case 'firstElementChild':
                 return $this->getFirstElementChild();
@@ -201,7 +202,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
                 return $this->getLastElementChild();
 
             case 'origin':
-                return (string) $this->getURL()->getOrigin();
+                return (string) $this->environment->getUrl()->getOrigin();
 
             case 'readyState':
                 return $this->readyState;
@@ -271,7 +272,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
             throw new InvalidCharacterError();
         }
 
-        if ($this instanceof HTMLDocument) {
+        if ($this->isHTMLDocument()) {
             $localName = Utils::toASCIILowercase($localName);
         }
 
@@ -334,13 +335,13 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
 
         // If the context object is an HTML document, let localName be converted
         // to ASCII lowercase.
-        if ($this instanceof HTMLDocument) {
+        if ($this->isHTMLDocument()) {
             $localName = Utils::toASCIILowercase($localName);
         }
 
         // Let namespace be the HTML namespace, if the context object’s content
         // type is "text/html" or "application/xhtml+xml", and null otherwise.
-        switch ($this->contentType) {
+        switch ($this->environment->getContentType()) {
             case 'text/html':
             case 'application/xhtml+xml':
                 $namespace = Namespaces::HTML;
@@ -473,7 +474,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
     {
         // If context object is an HTML document, then throw a
         // NotSupportedError.
-        if ($this instanceof HTMLDocument) {
+        if ($this->isHTMLDocument()) {
             throw new NotSupportedError();
         }
 
@@ -639,7 +640,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
         // browsing context has a creator browsing context, then return the
         // creator base URL and abort these steps.
 
-        return $this->getURL();
+        return $this->environment->getUrl();
     }
 
     /**
@@ -687,7 +688,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      */
     public function isHTMLDocument(): bool
     {
-        return $this->isHTMLDocument;
+        return $this->environment->getContentType() === 'text/html';
     }
 
     /**
@@ -743,7 +744,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      */
     public function setContentType(string $type): void
     {
-        $this->contentType = $type;
+        $this->environment->setContentType($type);
     }
 
     /**
@@ -773,7 +774,15 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      */
     public function isScriptingEnabled(): bool
     {
-        return false;
+        return $this->environment->isScriptingEnabled();
+    }
+
+    /**
+     * @internal
+     */
+    public function getEnvironment(): Environment
+    {
+        return $this->environment;
     }
 
     /**
@@ -828,38 +837,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
         // We don't currently support browsing contexts or the concept of a
         // Window object, so return null as this is the end of the chain.
         return null;
-    }
-
-    /**
-     * Gets the Document's URL address.
-     *
-     * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#concept-document-url
-     */
-    protected function getURL(): URLRecord
-    {
-        if (isset($this->url)) {
-            return $this->url;
-        }
-
-        if (PHP_SAPI === 'cli') {
-            $this->url = URLParser::parseUrl('about:blank');
-        } else {
-            $ssl = isset($_SERVER['HTTPS']) && $_SERVER["HTTPS"] === 'on';
-            $port = in_array($_SERVER['SERVER_PORT'], ['80', '443'], true)
-                ? ''
-                : ':' . $_SERVER['SERVER_PORT'];
-            $url = ($ssl ? 'https' : 'http')
-                . '://'
-                . $_SERVER['SERVER_NAME']
-                . $port
-                . $_SERVER['REQUEST_URI'];
-
-            $this->url = URLParser::parseUrl($url);
-        }
-
-        return $this->url;
     }
 
     /**
@@ -1095,8 +1072,8 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
         $this->implementation = new DOMImplementation($this);
         $this->isIframeSrcDoc = false;
         $this->inertTemplateDocument = null;
-        $this->url = $this->url === null ? null : clone $this->url;
         $this->readyState = DocumentReadyState::COMPLETE;
         $this->source = DocumentSource::NOT_FROM_PARSER;
+        $this->environment = clone $this->environment;
     }
 }

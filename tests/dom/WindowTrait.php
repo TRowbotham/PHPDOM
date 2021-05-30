@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Tests\dom;
 
 use Closure;
-use Rowbot\DOM\DOMParser;
+use Rowbot\DOM\DocumentBuilder;
 
 use function array_pop;
 use function file_get_contents;
+use function method_exists;
 
 use const DIRECTORY_SEPARATOR as DS;
 
@@ -48,11 +49,14 @@ trait WindowTrait
             return self::$window;
         }
 
-        $parser = new DOMParser();
-        $document = $parser->parseFromString(
-            file_get_contents(self::getHtmlBaseDir() . DS . self::getDocumentName()),
-            'text/html'
-        );
+        $builder = DocumentBuilder::create();
+        $builder->setContentType('text/html');
+
+        if (method_exists(__CLASS__, 'customizeDocument')) {
+            self::customizeDocument($builder);
+        }
+
+        $document = $builder->createFromString(file_get_contents(self::getHtmlBaseDir() . DS . self::getDocumentName()));
         self::$window = new Window($document);
 
         return self::$window;

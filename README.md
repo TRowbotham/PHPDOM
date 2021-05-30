@@ -10,18 +10,66 @@ XML/XHTML/HTML4. This is very much a work in progress and as a result things may
 
 ## Usage
 
-Here is a small sample of how to use PHPDOM:
+### Recommeded way to create a Document
+```php
+<?php
 
+require_once 'vendor/autoload.php';
+
+use Rowbot\DOM\DocumentBuilder;
+
+// Creates a new DocumentBuilder, and saves the resulting document to $document
+$document = DocumentBuilder::create()
+
+  // Tells the builder to use the HTML parser (the only supported parser at this time)
+  ->setContentType('text/html');
+
+  // Set's the document's URL, for more accurate link parsing. Not setting this will cause the
+  // document to default to the "about:blank" URL. This must be a valid URL.
+  ->setDocumentUrl('https://example.com')
+
+  // Whether or not the environment should emulate scripting, which mostly affects how <noscript>
+  // tags are parsed and serialized. The default is false.
+  ->emulateScripting(true)
+
+  // Returns a new document using the input string.
+  ->createFromString(file_get_contents('path/to/my/index.html'));
+
+// Do some things with the document
+$document->getElementById('foo');
+```
+
+### Parsing an HTML Document using DOMParser
+
+```php
+<?php
+
+require_once "vendor/autoload.php";
+
+use Rowbot\DOM\DOMParser;
+
+$parser = new DOMParser();
+
+// Currently "text/html" is the only supported option.
+$document = $parser->parseFromString(file_get_contents('/path/to/file.html'), 'text/html');
+
+// Do some things with the document
+$document->getElementById('foo');
+```
+
+### Creating an empty Document
 ```php
 <?php
 require_once "vendor/autoload.php";
 
-use Rowbot\DOM\HTMLDocument;
+use Rowbot\DOM\DocumentBuilder;
 
 /**
  * This creates a new empty HTML Document.
  */
-$doc = new HTMLDocument();
+$doc = DocumentBuilder::create()
+    ->setContentType('text/html')
+    ->createEmptyDocument();
 
 /**
  * Want a skeleton framework for an HTML Document?
@@ -42,23 +90,7 @@ $doc->body->appendChild($a);
 echo $doc->toString();
 ```
 
-### Parsing an HTML Document
 
-```php
-<?php
-
-require_once "vendor/autoload.php";
-
-use Rowbot\DOM\DOMParser;
-
-$parser = new DOMParser();
-
-// Currently "text/html" is the only supported option.
-$document = $parser->parseFromString(file_get_contents('/path/to/file.html'), 'text/html');
-
-// Do some things with the document
-$document->getElementById('foo');
-```
 
 ## Caveats
 

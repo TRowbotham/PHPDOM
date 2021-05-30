@@ -1090,7 +1090,7 @@ final class Range extends AbstractRange implements Stringable
         // context object's node document as its node document.
         if (
             $element === null
-            || ($element->getNodeDocument() instanceof HTMLDocument
+            || ($element->getNodeDocument()->isHTMLDocument()
                 && $element->localName === 'html'
                 && $element->namespaceURI === Namespaces::HTML)
         ) {

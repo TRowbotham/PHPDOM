@@ -9,10 +9,11 @@ namespace Rowbot\DOM;
  */
 class HTMLDocument extends Document
 {
-    public function __construct()
+    public function __construct(?Environment $env = null)
     {
-        parent::__construct();
+        $env = $env ?? new Environment(null, 'text/html');
+        $env->setContentType('text/html');
 
-        $this->contentType = 'text/html';
+        parent::__construct($env, 'html');
     }
 }

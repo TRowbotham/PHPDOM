@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\html\syntax\serializing_html_fragments;
 
+use Rowbot\DOM\DocumentBuilder;
 use Rowbot\DOM\DOMParser;
 use Rowbot\DOM\HTMLDocument;
 use Rowbot\DOM\Node;
@@ -16,10 +17,21 @@ class EscapingTest extends TestCase
 {
     private const HTML_ESCAPED = '&amp;&nbsp;&lt;&gt;';
     private const HTML_UNESCAPED = "&\u{00A0}<>";
+    private const DOC_STRING = <<<'DOCUMENT'
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Serialization of script-disabled documents should follow escaping rules</title>
+<link rel="author" href="mailto:masonf@chromium.org">
+<link rel="help" href="https://html.spec.whatwg.org/multipage/parsing.html#serialising-html-fragments">
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+
+<body>
+DOCUMENT;
 
     public function testDivInnerHTML(): void
     {
-        $document = (new HTMLDocument())->implementation->createHTMLDocument();
+        $document = DocumentBuilder::create()->emulateScripting(true)->setContentType('text/html')->createFromString(self::DOC_STRING);
         $div = $document->createElement('div');
         $document->body->appendChild($div);
         $div->innerHTML = $this->getHtml(false);
@@ -28,7 +40,7 @@ class EscapingTest extends TestCase
 
     public function testDivInsertAdjacentHTML(): void
     {
-        $document = (new HTMLDocument())->implementation->createHTMLDocument();
+        $document = DocumentBuilder::create()->emulateScripting(true)->setContentType('text/html')->createFromString(self::DOC_STRING);
         $div = $document->createElement('div');
         $div->insertAdjacentHTML('afterbegin', $this->getHtml(false));
         $this->checkDoc(false, $div);

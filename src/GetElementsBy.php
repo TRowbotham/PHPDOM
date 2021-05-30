@@ -112,7 +112,7 @@ trait GetElementsBy
 
         // 2. Otherwise, if root’s node document is an HTML document, return a HTMLCollection rooted
         // at root, whose filter matches the following descendant elements:
-        if ($this->nodeDocument instanceof HTMLDocument) {
+        if ($this->nodeDocument->isHTMLDocument()) {
             return new HTMLCollection(
                 $this,
                 static function (self $root) use ($qualifiedName): Generator {

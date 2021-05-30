@@ -6,6 +6,7 @@ namespace Rowbot\DOM\Tests\html\syntax\serializing_html_fragments;
 
 use Closure;
 use Generator;
+use Rowbot\DOM\DocumentBuilder;
 use Rowbot\DOM\Tests\dom\WindowTrait;
 use Rowbot\DOM\Tests\TestCase;
 
@@ -378,5 +379,10 @@ class SerializingTest extends TestCase
     public static function getHtmlBaseDir(): string
     {
         return __DIR__ . DIRECTORY_SEPARATOR . 'resources';
+    }
+
+    public static function customizeDocument(DocumentBuilder $builder)
+    {
+        $builder->emulateScripting(true);
     }
 }

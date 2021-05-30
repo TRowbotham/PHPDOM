@@ -47,7 +47,9 @@ final class DOMParser
                 //
                 // NOTE: script elements get marked unexecutable and the
                 // contents of noscript get parsed as markup.
-                $document = new HTMLDocument();
+                $env = new Environment(null, $type);
+                $env->setScriptingEnabled(false);
+                $document = new HTMLDocument($env);
                 $parser = new HTMLParser($document);
                 $parser->preprocessInputStream($str);
                 $parser->run();
@@ -60,7 +62,9 @@ final class DOMParser
             case 'application/xhtml+xml':
             case 'image/svg+xml':
                 $parserError = false;
-                $document = new Document();
+                $env = new Environment(null, $type);
+                $env->setScriptingEnabled(false);
+                $document = new Document($env);
                 $document->setContentType($type);
 
                 try {

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Parser;
 
-use Rowbot\DOM\HTMLDocument;
 use Rowbot\DOM\Node;
 use Rowbot\DOM\Parser\HTML\FragmentSerializer as HTMLFragmentSerializer;
 use Rowbot\DOM\Parser\XML\FragmentSerializer as XMLFragmentSerializer;
@@ -16,7 +15,7 @@ class MarkupFactory
      */
     public static function serializeFragment(Node $node, bool $requireWellFormed): string
     {
-        if ($node->getNodeDocument() instanceof HTMLDocument) {
+        if ($node->getNodeDocument()->isHTMLDocument()) {
             $serializer = new HTMLFragmentSerializer();
 
             return $serializer->serializeFragment($node);

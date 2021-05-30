@@ -36,7 +36,7 @@ final class ParserFactory
     {
         $ownerDocument = $contextElement->getNodeDocument();
 
-        if ($ownerDocument instanceof HTMLDocument) {
+        if ($ownerDocument->isHTMLDocument()) {
             $newChildren = HTMLParser::parseHTMLFragment(
                 $markup,
                 $contextElement

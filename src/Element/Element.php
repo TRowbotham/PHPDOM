@@ -19,7 +19,6 @@ use Rowbot\DOM\Exception\NoModificationAllowedError;
 use Rowbot\DOM\Exception\NotFoundError;
 use Rowbot\DOM\Exception\SyntaxError;
 use Rowbot\DOM\GetElementsBy;
-use Rowbot\DOM\HTMLDocument;
 use Rowbot\DOM\NamedNodeMap;
 use Rowbot\DOM\Namespaces;
 use Rowbot\DOM\Node;
@@ -369,7 +368,7 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
 
         if (
             $this->namespaceURI === Namespaces::HTML
-            && $this->nodeDocument instanceof HTMLDocument
+            && $this->nodeDocument->isHTMLDocument()
         ) {
             $qualifiedName = Utils::toASCIILowercase($qualifiedName);
         }
@@ -445,7 +444,7 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
 
         if (
             $this->namespaceURI === Namespaces::HTML
-            && $this->nodeDocument instanceof HTMLDocument
+            && $this->nodeDocument->isHTMLDocument()
         ) {
             $qualifiedName = Utils::toASCIILowercase($qualifiedName);
         }
@@ -491,7 +490,7 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
     {
         if (
             $this->namespaceURI === Namespaces::HTML
-            && $this->nodeDocument instanceof HTMLDocument
+            && $this->nodeDocument->isHTMLDocument()
         ) {
             $qualifiedName = Utils::toASCIILowercase($qualifiedName);
         }
@@ -715,7 +714,7 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
         // the context object's node document as its node document.
         if (
             !$context instanceof self
-            || ($context->getNodeDocument() instanceof HTMLDocument
+            || ($context->getNodeDocument()->isHTMLDocument()
                 && $context->localName === 'html'
                 && $context->namespaceURI === Namespaces::HTML)
         ) {
@@ -778,7 +777,7 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
 
         if (
             $this->namespaceURI === Namespaces::HTML
-            && $this->nodeDocument instanceof HTMLDocument
+            && $this->nodeDocument->isHTMLDocument()
         ) {
             return Utils::toASCIIUppercase($qualifiedName);
         }
