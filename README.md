@@ -1,12 +1,66 @@
-# PHPDOM
+# rowbot\dom
 
 [![GitHub](https://img.shields.io/github/license/TRowbotham/PHPDOM.svg?style=flat-square)](https://github.com/TRowbotham/PHPDOM/blob/master/LICENSE)
 [![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/TRowbotham/PHPDOM/Test%20PHPDOM/master?style=flat-square)](https://github.com/TRowbotham/PHPDOM/actions)
 [![Codecov branch](https://img.shields.io/codecov/c/github/TRowbotham/PHPDOM/master?logo=Codecov&style=flat-square&token=mT7l2Nu8Zf)](https://codecov.io/gh/TRowbotham/PHPDOM)
 
-PHPDOM is an attempt to implement the Document Object Model (DOM) in PHP that was more inline with current standards.
+rowbot\dom is an attempt to implement the Document Object Model (DOM) in PHP that was more inline with current standards.
 While PHP does already have its own implementation of the DOM, it is somewhat outdated and is more geared towards
 XML/XHTML/HTML4. This is very much a work in progress and as a result things may be broken.
+
+* [Requirements](#requirements)
+* [The DocumentBuilder class](#the-documentbuilder-class)
+* [Usage](#usage)
+* [Caveats](#caveats)
+* [Turning your tree back into a string](#turning-your-tree-back-into-a-string)
+
+## Requirements
+
+ * PHP >= 7.1
+ * `ext-mbstring`
+ * `rowbot\url`
+
+## The DocumentBuilder class
+
+The primary entry point is the `DocumentBuilder` class. It allows you create a document while specifing things such as
+the Document's base URL and whether or not scripting should be emulated.
+
+### DocumentBuilder::create(): static
+
+Returns a new instance of the `DocumentBuilder`.
+
+### DocumentBuilder::setContentType(string $contentType): $this
+
+Sets the content type of the document. If the given content type is invalid, a `TypeError` will be thrown. This will
+determine the type of document returned as well as what parser to use. The content type can be one of the following:
+
+* 'text/html'
+* 'text/xml'
+* 'application/xml'
+* 'application/xhtml+xml'
+* 'image/svg+xml'
+
+### DocumentBuilder::setDocumentUrl(string $url): $this
+
+Sets the base URL of the document. This is used for resolving links in tags such as `<a href="/index.php"></a>` and
+for resolving any links specified by `<base>` elements in the document. If not set, the document will default to the
+"about:blank" URL. This must be an absolute URL. If the URL is not valid, a `TypeError` will be thrown.
+
+### DocumentBuilder::emulateScripting(bool $enable): $this
+
+Enables scripting emulation. Enabling this does not cause any scripts to be executed. This affects how
+the parser and serializer handle `<noscript>` tags. If scripting emulation is enabled, then their content
+will be seen as plain text to the DOM. If emulation is disabled, which is the default, their content
+will be parsed as part of the DOM.
+
+### DocumentBuilder::createFromString(string $input): Document
+
+Parses the input string and returns the resulting `Document` object. This will throw a `TypeError` if the content type is not specified.
+
+### DocumentBuilder::createEmptyDocument(): Document
+
+Returns an empty `Document` object. The type of `Document` object returned is dependent on the specified
+content type. This will throw a `TypeError` if the content type is not specified.
 
 ## Usage
 
@@ -90,14 +144,13 @@ $doc->body->appendChild($a);
 echo $doc->toString();
 ```
 
-
-
 ## Caveats
 
 * Only UTF-8 encoded documents are supported.
 * All string input is expected to be in UTF-8.
-* All strings returned to the user, such as those returned from `Text.data`, are in UTF-8, rather than UCS-2.
-* All string offsets and lengths such as those in `Text.replaceData()` or `Text.length` are expressed in UTF-8 code points, rather than UCS-2 code units.
+* All strings returned to the user, such as those returned from `Text.data`, are in UTF-8, rather than UTF-16.
+* All string offsets and lengths such as those in `Text.replaceData()` or `Text.length` are expressed in UTF-8 code points, rather than UTF-16 code units.
+* No XML parser exists at this time. However, XML documents can be built manually and serialized.
 
 ## Turning your tree back into a string
 

@@ -45,9 +45,11 @@ class DocumentBuilder
     }
 
     /**
-     * Sets the URL of the document, so that any links can be resolved against it.
+     * Sets the base URL of the document. This is used for resolving links in tags such as `<a href="/index.php"></a>`
+     * and for resolving any links specified by `<base>` elements in the document. If not set, the document will default
+     * to the "about:blank" URL. This must be an absolute URL. If the URL is not valid, a `TypeError` will be thrown.
      *
-     * @return static
+     * @return $this
      */
     public function setDocumentUrl(string $url)
     {
@@ -64,7 +66,17 @@ class DocumentBuilder
     }
 
     /**
-     * Sets the document's content type, which will determine how it is parsed.
+     * Sets the content type of the document. If the given content type is invalid, a `TypeError` will be thrown. This
+     * will determine the type of document returned as well as what parser to use. The content type can be one of the
+     * following:
+     *
+     * * 'text/html'
+     * * 'text/xml'
+     * * 'application/xml'
+     * * 'application/xhtml+xml'
+     * * 'image/svg+xml'
+     *
+     * @return $this
      */
     public function setContentType(string $contentType)
     {
@@ -78,10 +90,12 @@ class DocumentBuilder
     }
 
     /**
-     * Passing true will emulate an environment that has scripting enabled. No actual scripts will
-     * be executed. This mostly affects HTML parsing and serialization around tags such as <noscript>.
-     * If emulation is enabled, tags like <noscript> will not be part of the DOM, however, if disabled,
-     * <noscript> tags and their descendants will be part of the DOM. By default, scripting emulation is disabled.
+     * Enables scripting emulation. Enabling this does not cause any scripts to be executed. This affects how
+     * the parser and serializer handle `<noscript>` tags. If scripting emulation is enabled, then their content
+     * will be seen as plain text to the DOM. If emulation is disabled, which is the default, their content
+     * will be parsed as part of the DOM.
+     *
+     * @return $this
      */
     public function emulateScripting(bool $enable)
     {
