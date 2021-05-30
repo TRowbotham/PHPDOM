@@ -4,11 +4,12 @@
 [![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/TRowbotham/PHPDOM/Test%20PHPDOM/master?style=flat-square)](https://github.com/TRowbotham/PHPDOM/actions)
 [![Codecov branch](https://img.shields.io/codecov/c/github/TRowbotham/PHPDOM/master?logo=Codecov&style=flat-square&token=mT7l2Nu8Zf)](https://codecov.io/gh/TRowbotham/PHPDOM)
 
-rowbot\dom is an attempt to implement the Document Object Model (DOM) in PHP that was more inline with current standards.
+rowbot\dom is an attempt to implement the Document Object Model (DOM) in PHP that is more inline with current standards.
 While PHP does already have its own implementation of the DOM, it is somewhat outdated and is more geared towards
 XML/XHTML/HTML4. This is very much a work in progress and as a result things may be broken.
 
 * [Requirements](#requirements)
+* [Features](#features)
 * [The DocumentBuilder class](#the-documentbuilder-class)
 * [Usage](#usage)
 * [Caveats](#caveats)
@@ -19,6 +20,15 @@ XML/XHTML/HTML4. This is very much a work in progress and as a result things may
  * PHP >= 7.1
  * `ext-mbstring`
  * `rowbot\url`
+
+## Features
+
+* Does not rely on ext-dom
+* Robust HTML5 tokenizer and parser
+* Supports the `<template>` element
+* Supports innerHTML/outerHTML
+* Supports live ranges
+* Extensive test suite ported from [Web platform tests](https://github.com/web-platform-tests/wpt)
 
 ## The DocumentBuilder class
 
