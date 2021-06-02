@@ -112,9 +112,6 @@ class HTMLElement extends Element
 
                 return $state === 'true' ? true : false;
 
-            case 'dropzone':
-                return $this->reflectStringAttributeValue($name);
-
             case 'hidden':
                 return $this->reflectBooleanAttributeValue($name);
 
@@ -210,11 +207,6 @@ class HTMLElement extends Element
                 break;
 
             case 'draggable':
-                $this->attributeList->setAttrValue($name, (string) $value);
-
-                break;
-
-            case 'dropzone':
                 $this->attributeList->setAttrValue($name, (string) $value);
 
                 break;
