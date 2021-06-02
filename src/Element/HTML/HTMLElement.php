@@ -9,6 +9,7 @@ use Rowbot\DOM\Exception\DOMException;
 use Rowbot\DOM\Exception\IndexSizeError;
 use Rowbot\DOM\Exception\SyntaxError;
 use Rowbot\DOM\Utils;
+use Rowbot\URL\String\Utf8String;
 
 use function assert;
 use function filter_var;
@@ -579,5 +580,32 @@ class HTMLElement extends Element
         }
 
         $this->attributeList->setAttrValue($name, (string) $n, $prefix, $namespace);
+    }
+
+    /**
+     * If a reflecting IDL attribute is a USVString attribute whose content attribute is defined to contain a URL, then
+     * on getting, if the content attribute is absent, the IDL attribute must return the empty string. Otherwise, the
+     * IDL attribute must parse the value of the content attribute relative to the element's node document and if that
+     * is successful, return the resulting URL string. If parsing fails, then the value of the content attribute must
+     * be returned instead, converted to a USVString. On setting, the content attribute must be set to the specified
+     * new value.
+     *
+     * @see https://html.spec.whatwg.org/multipage/common-dom-interfaces.html#reflecting-content-attributes-in-idl-attributes
+     */
+    protected function reflectUrlAttribute(string $name, ?string $namespace = null): string
+    {
+        $attr = $this->attributeList->getAttrByNamespaceAndLocalName($namespace, $name);
+
+        if ($attr === null) {
+            return '';
+        }
+
+        $url = $this->parseURL($attr->getValue(), $this->nodeDocument);
+
+        if ($url !== false) {
+            return $url['urlString'];
+        }
+
+        return Utf8String::transcode($attr->getValue(), 'utf-8', 'utf-8');
     }
 }
