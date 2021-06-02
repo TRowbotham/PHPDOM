@@ -71,12 +71,6 @@ class HTMLElement extends Element
     public function __get(string $name)
     {
         switch ($name) {
-            case 'accessKey':
-            case 'accessKeyLabel':
-                // For the time being, have accessKeyLabel return the same value
-                // as accessKey
-                return $this->reflectStringAttributeValue('accessKey');
-
             case 'contentEditable':
                 $state = $this->reflectEnumeratedStringAttributeValue(
                     $name,
@@ -176,11 +170,6 @@ class HTMLElement extends Element
     public function __set(string $name, $value): void
     {
         switch ($name) {
-            case 'accessKey':
-                $this->attributeList->setAttrValue($name, (string) $value);
-
-                break;
-
             case 'contentEditable':
                 $value = mb_strtolower((string) $value, 'utf-8');
 
