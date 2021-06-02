@@ -6,7 +6,6 @@ namespace Rowbot\DOM;
 
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Element\ElementFactory;
-use Rowbot\DOM\Element\HTML\HTMLBaseElement;
 use Rowbot\DOM\Element\HTML\HTMLBodyElement;
 use Rowbot\DOM\Element\HTML\HTMLElement;
 use Rowbot\DOM\Element\HTML\HTMLFrameSetElement;
@@ -22,6 +21,7 @@ use Rowbot\DOM\Exception\HierarchyRequestError;
 use Rowbot\DOM\Exception\InvalidCharacterError;
 use Rowbot\DOM\Exception\NotSupportedError;
 use Rowbot\DOM\Parser\MarkupFactory;
+use Rowbot\DOM\Support\Collection\BaseElementList;
 use Rowbot\DOM\Support\Stringable;
 use Rowbot\URL\URLRecord;
 
@@ -83,6 +83,11 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
     protected $mode;
 
     /**
+     * @var \Rowbot\DOM\Support\Collection\BaseElementList
+     */
+    private $baseElements;
+
+    /**
      * @var string
      */
     private $compatMode;
@@ -132,6 +137,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
         $this->mode = DocumentMode::NO_QUIRKS;
         $this->nodeType = self::DOCUMENT_NODE;
         $this->type = $type;
+        $this->baseElements = new BaseElementList();
 
         if ($env === null) {
             $env = new Environment(null, 'application/xml');
@@ -606,24 +612,9 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      */
     public function getBaseURL(): URLRecord
     {
-        $head = $this->getHeadElement();
-        $base = null;
+        $base = $this->baseElements->getActiveBase();
 
-        if ($head) {
-            // A base element is only valid if it is the first base element
-            // within the head element.
-            foreach ($head->childNodes as $child) {
-                if ($child instanceof HTMLBaseElement && $child->hasAttribute('href')) {
-                    $base = $child;
-
-                    break;
-                }
-            }
-        }
-
-        // We don't have a valid base element to use as a base URL, use the
-        // fallback base URL.
-        if (!$base) {
+        if ($base === null) {
             return $this->getFallbackBaseURL();
         }
 
@@ -641,6 +632,14 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
         // creator base URL and abort these steps.
 
         return $this->environment->getUrl();
+    }
+
+    /**
+     * @internal
+     */
+    public function getBaseElements(): BaseElementList
+    {
+        return $this->baseElements;
     }
 
     /**
@@ -1075,5 +1074,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
         $this->readyState = DocumentReadyState::COMPLETE;
         $this->source = DocumentSource::NOT_FROM_PARSER;
         $this->environment = clone $this->environment;
+        $this->baseElements = new BaseElementList();
     }
 }

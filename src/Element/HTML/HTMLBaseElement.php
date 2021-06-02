@@ -9,11 +9,16 @@ use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\URL\URLParser;
 use Rowbot\URL\URLRecord;
 
+use function assert;
+use function in_array;
+
 /**
  * @see https://html.spec.whatwg.org/multipage/semantics.html#the-base-element
  */
 class HTMLBaseElement extends HTMLElement
 {
+    private const TARGET_KEYWORDS = ['_self', '_blank', '_parent', '_top'];
+
     /**
      * @var \Rowbot\URL\URLRecord
      */
@@ -71,6 +76,8 @@ class HTMLBaseElement extends HTMLElement
      */
     public function getFrozenBaseURL(): URLRecord
     {
+        assert($this->frozenBaseUrl !== null);
+
         return $this->frozenBaseUrl;
     }
 
@@ -84,8 +91,36 @@ class HTMLBaseElement extends HTMLElement
         ?string $value,
         ?string $namespace
     ): void {
-        if ($localName === 'href' && $namespace === null) {
-            $this->setFrozenBaseURL($value);
+        if ($namespace === null) {
+            assert($element === $this);
+
+            $isTarget = $localName === 'target';
+            $isHref = $localName === 'href';
+            $targetIsKeyword = false;
+            $hasTarget = false;
+
+            if (!$isHref && !$isTarget) {
+                return;
+            }
+
+            if ($isTarget) {
+                $targetIsKeyword = in_array($value, self::TARGET_KEYWORDS, true);
+                $hasTarget = true;
+            }
+
+            if ($isHref) {
+                $target = $this->attributeList->getAttrByNamespaceAndLocalName(null, 'target');
+                $hasTarget = $target !== null;
+                $targetIsKeyword = $target !== null && in_array($target->getValue(), self::TARGET_KEYWORDS, true);
+                $element->setFrozenBaseURL($value);
+            }
+
+            $list = $element->nodeDocument->getBaseElements();
+            $shouldActivate = (!$hasTarget || $targetIsKeyword) && $element->getRootNode() === $element->nodeDocument;
+
+            if ($shouldActivate && $list->getActiveBase() === null) {
+                $list->setActiveBase($element);
+            }
 
             return;
         }
@@ -127,24 +162,18 @@ class HTMLBaseElement extends HTMLElement
 
     protected function doInsertingSteps(): void
     {
-        if (!$this->parentNode instanceof HTMLHeadElement) {
-            return;
-        }
-
-        $node = $this;
-
-        while ($node) {
-            $node = $node->previousSibling;
-            $isValid = $node instanceof HTMLBaseElement &&
-                $this->attributeList->getAttrByNamespaceAndLocalName(null, 'href');
-
-            if ($isValid) {
-                break;
-            }
-        }
-
-        if (!$node) {
+        if ($this->nodeDocument->getBaseElements()->add($this)) {
             $this->setFrozenBaseURL();
+        }
+    }
+
+    protected function doRemovingSteps($parent = null): void
+    {
+        $baseElements = $this->nodeDocument->getBaseElements();
+
+        if ($baseElements->remove($this)) {
+            assert($baseElements->getActiveBase() !== null);
+            $baseElements->getActiveBase()->setFrozenBaseURL();
         }
     }
 
