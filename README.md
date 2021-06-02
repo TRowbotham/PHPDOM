@@ -26,7 +26,7 @@ XML/XHTML/HTML4. This is very much a work in progress and as a result things may
 * Does not rely on ext-dom
 * Robust HTML5 tokenizer and parser
 * Supports the `<template>` element
-* Supports innerHTML/outerHTML
+* Supports `innerHTML` and `outerHTML`
 * Supports live ranges
 * Extensive test suite ported from [Web platform tests](https://github.com/web-platform-tests/wpt)
 
@@ -41,8 +41,8 @@ Returns a new instance of the `DocumentBuilder`.
 
 ### DocumentBuilder::setContentType(string $contentType): $this
 
-Sets the content type of the document. If the given content type is invalid, a `TypeError` will be thrown. This will
-determine the type of document returned as well as what parser to use. The content type can be one of the following:
+Required. Sets the content type of the document. If the given content type is invalid, a `TypeError` will be thrown. This
+will determine the type of document returned as well as what parser to use. The content type can be one of the following:
 
 * 'text/html'
 * 'text/xml'
@@ -52,9 +52,29 @@ determine the type of document returned as well as what parser to use. The conte
 
 ### DocumentBuilder::setDocumentUrl(string $url): $this
 
-Sets the base URL of the document. This is used for resolving links in tags such as `<a href="/index.php"></a>` and
+Sets the URL of the document. This is used for resolving links in tags such as `<a href="/index.php"></a>` and
 for resolving any links specified by `<base>` elements in the document. If not set, the document will default to the
-"about:blank" URL. This must be an absolute URL. If the URL is not valid, a `TypeError` will be thrown.
+"about:blank" URL. This must be an absolute URL. If the given URL fails parsing, a `TypeError` will be thrown. Not all
+valid URIs are a valid document URL, for example, this will happily accept a URI of "mailto:me@example.com", so you
+should take care when setting this value.
+
+#### Examples
+
+```php
+DocumentBuilder::create()->setDocumentUrl('http://example.com/');
+```
+
+```php
+DocumentBuilder::create()->setDocumentUrl('file:///C:/example.html');
+```
+
+```php
+DocumentBuilder::create()->setDocumentUrl('https://my.domain.net/index.php');
+```
+
+```php
+DocumentBuilder::create()->setDocumentUrl('https://searchengine.fr/search');
+```
 
 ### DocumentBuilder::emulateScripting(bool $enable): $this
 
@@ -62,6 +82,38 @@ Enables scripting emulation. Enabling this does not cause any scripts to be exec
 the parser and serializer handle `<noscript>` tags. If scripting emulation is enabled, then their content
 will be seen as plain text to the DOM. If emulation is disabled, which is the default, their content
 will be parsed as part of the DOM.
+
+#### Example with scripting emulation **enabled**
+
+```php
+$document = DocumentBuilder::create()
+    ->setContentType('text/html')
+    ->emulateScripting(true)
+    ->createEmptyDocument();
+
+$el = $document->createElement('div');
+$el->innerHTML = '<noscript><p id="foo">You must enable scripting!</p></noscript>';
+
+$el->textContent; // &lt;p id="foo"&gt;You must enable scripting!&lt;/p&gt;&lt;/noscript&gt;
+$foo = $el->getElementById('foo'); // null
+$el->firstChild->firstChild->nodeName; // #text
+```
+
+#### Example with scripting emulation **disabled**
+
+```php
+$document = DocumentBuilder::create()
+    ->setContentType('text/html')
+    ->emulateScripting(false)
+    ->createEmptyDocument();
+
+$el = $document->createElement('div');
+$el->innerHTML = '<noscript><p id="foo">You must enable scripting!</p></noscript>';
+
+$el->textContent; // You must enable scripting!
+$foo = $el->getElementById('foo'); // HTMLParagraphElement
+$el->firstChild->firstChild->nodeName; // P
+```
 
 ### DocumentBuilder::createFromString(string $input): Document
 
@@ -85,7 +137,7 @@ use Rowbot\DOM\DocumentBuilder;
 // Creates a new DocumentBuilder, and saves the resulting document to $document
 $document = DocumentBuilder::create()
 
-  // Tells the builder to use the HTML parser (the only supported parser at this time)
+  // This is required. Tells the builder to what type of document and parser should be used.
   ->setContentType('text/html');
 
   // Set's the document's URL, for more accurate link parsing. Not setting this will cause the
