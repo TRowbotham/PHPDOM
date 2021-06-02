@@ -68,8 +68,6 @@ class HTMLElement extends Element
     protected const UNSIGNED_LONG_NON_NEGATIVE_GREATER_THAN_ZERO = 4;
     protected const UNSIGNED_LONG_NON_NEGATIVE_GREATER_THAN_ZERO_WITH_FALLBACK = 5;
 
-    protected $dataset;
-
     public function __get(string $name)
     {
         switch ($name) {
@@ -90,9 +88,6 @@ class HTMLElement extends Element
                 // TODO: Check the contentEditable state of all parent elements
                 // if state == inherit to get a more accurate answer
                 return $state;
-
-            case 'dataset':
-                return $this->dataset;
 
             case 'dir':
                 return $this->reflectEnumeratedStringAttributeValue(
