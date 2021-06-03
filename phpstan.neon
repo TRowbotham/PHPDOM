@@ -93,11 +93,6 @@ parameters:
             path: src/Element/HTML/HTMLElement.php
 
         -
-            message: '#Cannot call method appendChild\(\) on Rowbot\\DOM\\Element\\HTML\\HTMLHeadElement\|null\.#'
-            path: src/Document.php
-            count: 1
-
-        -
             message: '#Cannot access property \$localName on Rowbot\\DOM\\Node\|null\.#'
             path: src/Parser/HTML/FragmentSerializer.php
             count: 1
