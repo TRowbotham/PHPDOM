@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Rowbot\DOM;
 
 use Rowbot\DOM\Element\Element;
-use Rowbot\DOM\Event\Event;
-use Rowbot\DOM\Event\EventTarget;
 use Rowbot\DOM\Exception\HierarchyRequestError;
 use Rowbot\DOM\Exception\NotFoundError;
 use Rowbot\DOM\Exception\NotSupportedError;
@@ -39,7 +37,7 @@ use function strcmp;
  * @property-read \Rowbot\DOM\Element\Element|null $parentElement
  * @property-read \Rowbot\DOM\Node|null            $previousSibling
  */
-abstract class Node extends EventTarget
+abstract class Node
 {
     public const ELEMENT_NODE                = 1;
     public const ATTRIBUTE_NODE              = 2;
@@ -98,8 +96,6 @@ abstract class Node extends EventTarget
 
     protected function __construct(Document $document)
     {
-        parent::__construct();
-
         $this->nodeDocument = $document;
         $this->childNodes = new NodeSet();
         $this->nodeList = new NodeList($this->childNodes);
@@ -1656,22 +1652,6 @@ abstract class Node extends EventTarget
         }
 
         return $nodeA;
-    }
-
-    /**
-     * Returns node's assigned slot, if node is assigned, node's parent otherwise.
-     *
-     * @see \Rowbot\DOM\Event\EventTarget::getTheParent
-     *
-     * @param \Rowbot\DOM\Event\Event $event An Event object.
-     *
-     * @return ((\Rowbot\DOM\Element\HTML\HTMLSlotElement|self)&\Rowbot\DOM\Event\EventTarget)|null
-     */
-    protected function getTheParent(Event $event): ?EventTarget
-    {
-        // We currently don't support the HTMLSlotElement, so this will always
-        // return the node's parent.
-        return $this->parentNode;
     }
 
     /**

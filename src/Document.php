@@ -14,9 +14,6 @@ use Rowbot\DOM\Element\HTML\HTMLHtmlElement;
 use Rowbot\DOM\Element\HTML\HTMLTitleElement;
 use Rowbot\DOM\Element\SVG\SVGSVGElement;
 use Rowbot\DOM\Element\SVG\SVGTitleElement;
-use Rowbot\DOM\Event\Event;
-use Rowbot\DOM\Event\EventFlags;
-use Rowbot\DOM\Event\EventTarget;
 use Rowbot\DOM\Exception\HierarchyRequestError;
 use Rowbot\DOM\Exception\InvalidCharacterError;
 use Rowbot\DOM\Exception\NotSupportedError;
@@ -31,7 +28,6 @@ use function mb_strpos;
 use function method_exists;
 use function preg_match;
 use function preg_replace;
-use function strtolower;
 use function trim;
 
 /**
@@ -374,40 +370,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
     public function createElementNS(?string $namespace, string $qualifiedName): Element
     {
         return ElementFactory::createNS($this, $namespace, $qualifiedName);
-    }
-
-    /**
-     * Creates a new Event of the specified type and returns it.
-     *
-     * @see https://dom.spec.whatwg.org/#dom-document-createevent
-     *
-     * @throws \Rowbot\DOM\Exception\NotSupportedError
-     */
-    public function createEvent(string $interface): Event
-    {
-        $constructor = null;
-        $interface = strtolower($interface);
-
-        switch ($interface) {
-            case 'customevent':
-                $constructor = '\\Rowbot\\DOM\\Event\\CustomEvent';
-
-                break;
-
-            case 'event':
-            case 'events':
-            case 'htmlevents':
-                $constructor = '\\Rowbot\\DOM\\Event\\Event';
-        }
-
-        if (!$constructor) {
-            throw new NotSupportedError();
-        }
-
-        $event = new $constructor('');
-        $event->unsetFlag(EventFlags::INITIALIZED);
-
-        return $event;
     }
 
     /**
@@ -821,20 +783,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
 
     protected function getTextContent(): ?string
     {
-        return null;
-    }
-
-    /**
-     * Returns null if event’s type attribute value is "load" or document does
-     * not have a browsing context, and the document’s associated Window
-     * object otherwise.
-     *
-     * @see \Rowbot\DOM\Event\EventTarget::getTheParent
-     */
-    protected function getTheParent(Event $event): ?EventTarget
-    {
-        // We don't currently support browsing contexts or the concept of a
-        // Window object, so return null as this is the end of the chain.
         return null;
     }
 

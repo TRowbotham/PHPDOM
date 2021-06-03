@@ -81,23 +81,4 @@ final class Utils
 
         return $normalizedOffset;
     }
-
-    /**
-     * @see https://dom.spec.whatwg.org/#retarget
-     */
-    public static function retargetObject(Node $objectA, Node $objectB): Node
-    {
-        while (true) {
-            $root = $objectA->getRootNode();
-
-            if (
-                !$root instanceof ShadowRoot
-                || $root->isShadowIncludingInclusiveAncestorOf($objectB)
-            ) {
-                return $objectA;
-            }
-
-            $objectA = $root->getHost();
-        }
-    }
 }
