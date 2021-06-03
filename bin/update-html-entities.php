@@ -29,6 +29,10 @@ foreach ($json as $name => $data) {
         $workingTable = &$workingTable[$name[$i]];
     }
 
+    if (!isset($workingTable['chars'])) {
+        $workingTable = [];
+    }
+
     $workingTable['chars'] = $data['characters'];
 }
 
