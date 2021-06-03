@@ -11,10 +11,6 @@ namespace Rowbot\DOM\Element\HTML;
  *
  * @property string $media  Reflects the HTML media attribute. This accepts a valid media query to instruct the browser
  *                          on when this resource should apply to the document.
- *
- * @property bool   $scoped Reflects the HTML scoped attribute. When present, the styles contained within this element
- *                          will only apply to its parent element and siblings.
- *
  * @property string $type   Reflects the HTML type attribute, which hints to the browser what the content's MIME type
  *                          is. This property defaults to text/css.
  */
@@ -25,9 +21,6 @@ class HTMLStyleElement extends HTMLElement
         switch ($name) {
             case 'media':
                 return $this->reflectStringAttributeValue($name);
-
-            case 'scoped':
-                return $this->reflectBooleanAttributeValue($name);
 
             case 'type':
                 return $this->reflectStringAttributeValue($name);
@@ -41,11 +34,6 @@ class HTMLStyleElement extends HTMLElement
     {
         switch ($name) {
             case 'media':
-                $this->attributeList->setAttrValue($name, (string) $value);
-
-                break;
-
-            case 'scoped':
                 $this->attributeList->setAttrValue($name, (string) $value);
 
                 break;
