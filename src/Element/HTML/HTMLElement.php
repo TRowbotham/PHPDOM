@@ -153,16 +153,20 @@ class HTMLElement extends Element
                 return $this->reflectStringAttributeValue($name);
 
             case 'translate':
-                $state = $this->reflectEnumeratedStringAttributeValue(
-                    $name,
-                    'inherit',
-                    'inherit',
-                    self::TRANSLATE_STATE_MAP
-                );
+                $state = null;
+                $node = $this;
 
-                // TODO: Check the translate state of all parent elements to get
-                // a more accurate answer
-                return $state === 'yes' ? true : false;
+                do {
+                    $state = $node->reflectEnumeratedStringAttributeValue(
+                        $name,
+                        'inherit',
+                        'inherit',
+                        self::TRANSLATE_STATE_MAP
+                    );
+                    $node = $node->parentNode;
+                } while ($state === 'inherit' && $node instanceof self);
+
+                return $state === 'no' ? false : true;
 
             default:
                 return parent::__get($name);
