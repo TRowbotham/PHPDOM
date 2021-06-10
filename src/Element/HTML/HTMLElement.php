@@ -14,6 +14,7 @@ use Rowbot\URL\String\Utf8String;
 
 use function assert;
 use function filter_var;
+use function in_array;
 use function is_numeric;
 use function mb_strtolower;
 
@@ -72,15 +73,21 @@ class HTMLElement extends Element
         switch ($name) {
             case 'contentEditable':
                 $state = $this->reflectEnumeratedStringAttributeValue(
-                    $name,
+                    'contenteditable',
                     'inherit',
                     'inherit',
                     self::CONTENT_EDITABLE_STATE_MAP
                 );
 
-                // TODO: Check the contentEditable state of all parent elements
-                // if state == inherit to get a more accurate answer
-                return $state;
+                if ($state === 'true' || $state === '') {
+                    return 'true';
+                }
+
+                if ($state === 'false') {
+                    return 'false';
+                }
+
+                return 'inherit';
 
             case 'dataset':
                 return new DOMStringMap($this);
@@ -107,16 +114,20 @@ class HTMLElement extends Element
                 return $this->reflectBooleanAttributeValue($name);
 
             case 'isContentEditable':
-                $state = $this->reflectEnumeratedStringAttributeValue(
-                    $name,
-                    'inherit',
-                    'inherit',
-                    self::CONTENT_EDITABLE_STATE_MAP
-                );
+                $state = null;
+                $node = $this;
 
-                // TODO: Check the contentEditable state of all parent elements
-                // if state == inherit to get a more accurate answer
-                return $state === 'true' ? true : false;
+                do {
+                    $state = $node->reflectEnumeratedStringAttributeValue(
+                        'contenteditable',
+                        'inherit',
+                        'inherit',
+                        self::CONTENT_EDITABLE_STATE_MAP
+                    );
+                    $node = $node->parentNode;
+                } while ($state === 'inherit' && $node instanceof self);
+
+                return in_array($state, self::CONTENT_EDITABLE_STATE_MAP['true'], true);
 
             case 'lang':
                 return $this->reflectStringAttributeValue($name);
@@ -180,9 +191,9 @@ class HTMLElement extends Element
                 $value = mb_strtolower((string) $value, 'utf-8');
 
                 if ($value === 'inherit') {
-                    $this->attributeList->removeAttrByNamespaceAndLocalName(null, $name);
+                    $this->attributeList->removeAttrByNamespaceAndLocalName(null, 'contenteditable');
                 } elseif ($value === 'true' || $value === 'false') {
-                    $this->attributeList->setAttrValue($name, $value);
+                    $this->attributeList->setAttrValue('contenteditable', $value);
                 } else {
                     throw new SyntaxError(
                         'The value must be one of "true", "false", or "inherit".'
