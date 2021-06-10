@@ -8,6 +8,8 @@ use Rowbot\DOM\DocumentBuilder;
 use Rowbot\DOM\Tests\dom\WindowTrait;
 use Rowbot\DOM\Tests\TestCase;
 
+use const DIRECTORY_SEPARATOR;
+
 /**
  * @see https://github.com/web-platform-tests/wpt/blob/master/html/semantics/document-metadata/the-base-element/base_multiple.html
  */

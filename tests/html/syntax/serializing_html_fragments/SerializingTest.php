@@ -7,7 +7,6 @@ namespace Rowbot\DOM\Tests\html\syntax\serializing_html_fragments;
 use Closure;
 use Generator;
 use Rowbot\DOM\DocumentBuilder;
-use Rowbot\DOM\Environment;
 use Rowbot\DOM\Tests\dom\WindowTrait;
 use Rowbot\DOM\Tests\TestCase;
 

@@ -7,6 +7,10 @@ namespace Rowbot\DOM;
 use Rowbot\DOM\Tests\dom\WindowTrait;
 use Rowbot\DOM\Tests\TestCase;
 
+use function iterator_to_array;
+
+use const DIRECTORY_SEPARATOR;
+
 /**
  * @see https://github.com/web-platform-tests/wpt/blob/master/dom/collections/domstringmap-supported-property-names.html
  */

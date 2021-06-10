@@ -7,6 +7,8 @@ namespace Rowbot\DOM\Tests\html\dom\elements\global_attributes;
 use Rowbot\DOM\DocumentBuilder;
 use Rowbot\DOM\Tests\TestCase;
 
+use function count;
+
 /**
  * @see https://github.com/web-platform-tests/wpt/blob/master/html/dom/elements/global-attributes/dataset-enumeration.html
  */

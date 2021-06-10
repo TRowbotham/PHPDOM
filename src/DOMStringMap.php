@@ -11,8 +11,22 @@ use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Exception\InvalidCharacterError;
 use Rowbot\DOM\Exception\SyntaxError;
 
+use function array_keys;
+use function count;
+use function ctype_lower;
+use function explode;
+use function implode;
+use function preg_match;
+use function preg_replace_callback;
+use function strncmp;
+use function strtolower;
+use function ucfirst;
+
 /**
  * @see https://html.spec.whatwg.org/multipage/dom.html#domstringmap
+ *
+ * @implements \ArrayAccess<string, string|null>
+ * @implements \IteratorAggregate<int, string>
  */
 final class DOMStringMap implements ArrayAccess, IteratorAggregate
 {
@@ -48,32 +62,51 @@ final class DOMStringMap implements ArrayAccess, IteratorAggregate
         $this->removeAttribute($name);
     }
 
+    /**
+     * @param string $name
+     */
     public function offsetExists($name)
     {
         return isset($this->getPairs()[(string) $name]);
     }
 
+    /**
+     * @param string $name
+     */
     public function offsetGet($name)
     {
         return $this->getPairs()[(string) $name] ?? null;
     }
 
+    /**
+     * @param string $name
+     * @param string $value
+     */
     public function offsetSet($name, $value)
     {
         $this->setAttribute((string) $name, (string) $value);
     }
 
+    /**
+     * @param string $name
+     */
     public function offsetUnset($name)
     {
         $this->removeAttribute((string) $name);
     }
 
+    /**
+     * @return \ArrayIterator<int, string>
+     */
     public function getIterator()
     {
         return new ArrayIterator(array_keys($this->getPairs()));
     }
 
-    private function getPairs()
+    /**
+     * @return array<string, string>
+     */
+    private function getPairs(): array
     {
         $list = [];
 

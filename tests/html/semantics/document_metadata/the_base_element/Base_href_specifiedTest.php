@@ -6,9 +6,10 @@ namespace Rowbot\DOM\Tests;
 
 use PHPUnit\Framework\TestCase;
 use Rowbot\DOM\DocumentBuilder;
-use Rowbot\DOM\Environment;
 use Rowbot\DOM\Tests\common\GetHostInfoSubTrait;
 use Rowbot\DOM\Tests\dom\WindowTrait;
+
+use const DIRECTORY_SEPARATOR;
 
 /**
  * @see https://github.com/web-platform-tests/wpt/blob/master/html/semantics/document-metadata/the-base-element/base_href_specified.html

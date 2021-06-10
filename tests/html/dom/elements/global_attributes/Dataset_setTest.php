@@ -47,7 +47,7 @@ class Dataset_setTest extends TestCase
             ['-Foo', 'data---foo'],
             ['', 'data-'],
             ["\u{00E0}", "data-\u{00E0}"],
-            ["\u{0BC6}foo", "data-\u{0BC6}foo"]
+            ["\u{0BC6}foo", "data-\u{0BC6}foo"],
         ];
     }
 

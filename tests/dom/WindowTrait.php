@@ -6,7 +6,6 @@ namespace Rowbot\DOM\Tests\dom;
 
 use Closure;
 use Rowbot\DOM\DocumentBuilder;
-use Rowbot\DOM\Tests\dom\Window;
 
 use function array_pop;
 use function file_get_contents;
