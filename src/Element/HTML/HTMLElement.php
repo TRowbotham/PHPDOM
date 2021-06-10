@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Element\HTML;
 
+use Rowbot\DOM\DOMStringMap;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Exception\DOMException;
 use Rowbot\DOM\Exception\IndexSizeError;
@@ -80,6 +81,9 @@ class HTMLElement extends Element
                 // TODO: Check the contentEditable state of all parent elements
                 // if state == inherit to get a more accurate answer
                 return $state;
+
+            case 'dataset':
+                return new DOMStringMap($this);
 
             case 'dir':
                 return $this->reflectEnumeratedStringAttributeValue(
