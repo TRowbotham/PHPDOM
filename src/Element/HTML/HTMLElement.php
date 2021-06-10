@@ -29,8 +29,6 @@ use const FILTER_VALIDATE_INT;
  * @property \Rowbot\DOM\DOMStringMap $dataset
  * @property bool                     $hidden
  * @property int                      $tabIndex
- * @property string                   $accessKey
- * @property string                   $accessKeyLabel
  * @property bool                     $draggable
  * @property bool                     $spellcheck
  * @property string                   $contentEditable
