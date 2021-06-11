@@ -22,6 +22,7 @@ class NodeInsertBeforeTest extends NodeTestCase
         PreinsertionValidationNotFoundTrait::getWindow insteadof PreinsertionValidationHierarchyTrait;
         PreinsertionValidationNotFoundTrait::registerCleanup insteadof PreinsertionValidationHierarchyTrait;
         PreinsertionValidationNotFoundTrait::tearDownAfterClass insteadof PreinsertionValidationHierarchyTrait;
+        PreinsertionValidationNotFoundTrait::getBuilder insteadof PreinsertionValidationHierarchyTrait;
     }
 
     /**
