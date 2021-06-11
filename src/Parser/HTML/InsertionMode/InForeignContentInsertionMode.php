@@ -143,27 +143,7 @@ class InForeignContentInsertionMode extends AbstractInsertionMode
                     $token->tagName
                 )
             ) {
-                // Parse error.
-
-                // While the current node is not a MathML text integration point, an HTML integration point, or an
-                // element in the HTML namespace, pop elements from the stack of open elements.
-                while (!$context->parser->openElements->isEmpty()) {
-                    $currentNode = $context->parser->openElements->bottom();
-
-                    if (
-                        $this->isMathMLTextIntegrationPoint($currentNode)
-                        || $this->isHTMLIntegrationPoint($currentNode, $context->elementTokenMap)
-                        || $currentNode->namespaceURI === Namespaces::HTML
-                    ) {
-                        break;
-                    }
-
-                    $context->parser->openElements->pop();
-                }
-
-                // Reprocess the token according to the rules given in the section corresponding to the current
-                // insertion mode in HTML content.
-                $context->insertionMode->processToken($context, $token);
+                $this->handleIntegrationPoints($context, $token);
 
                 return;
             }
@@ -174,6 +154,12 @@ class InForeignContentInsertionMode extends AbstractInsertionMode
         }
 
         if ($token instanceof EndTagToken) {
+            if ($token->tagName === 'br' || $token->tagName === 'p') {
+                $this->handleIntegrationPoints($context, $token);
+
+                return;
+            }
+
             if (
                 $token->tagName === 'script'
                 && $context->parser->openElements->bottom() instanceof SVGScriptElement
@@ -308,5 +294,30 @@ class InForeignContentInsertionMode extends AbstractInsertionMode
         $context->parser->openElements->pop();
 
         // TODO: More stuff that will probably never be fully supported.
+    }
+
+    private function handleIntegrationPoints(TreeBuilderContext $context, TagToken $token): void
+    {
+        // Parse error.
+
+        // While the current node is not a MathML text integration point, an HTML integration point, or an
+        // element in the HTML namespace, pop elements from the stack of open elements.
+        while (!$context->parser->openElements->isEmpty()) {
+            $currentNode = $context->parser->openElements->bottom();
+
+            if (
+                $this->isMathMLTextIntegrationPoint($currentNode)
+                || $this->isHTMLIntegrationPoint($currentNode, $context->elementTokenMap)
+                || $currentNode->namespaceURI === Namespaces::HTML
+            ) {
+                break;
+            }
+
+            $context->parser->openElements->pop();
+        }
+
+        // Reprocess the token according to the rules given in the section corresponding to the current
+        // insertion mode in HTML content.
+        $context->insertionMode->processToken($context, $token);
     }
 }
