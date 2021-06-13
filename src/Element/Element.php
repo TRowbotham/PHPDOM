@@ -45,12 +45,16 @@ use function range;
  * @property string $innerHTML
  * @property string $outerHTML
  *
- * @property-read \Rowbot\DOM\DOMTokenList $classList
- * @property-read \Rowbot\DOM\NamedNodeMap $attributes
- * @property-read ?string                  $namespaceURI
- * @property-read ?string                  $prefix
- * @property-read string                   $localName
- * @property-read string                   $tagName
+ * @property-read \Rowbot\DOM\DOMTokenList                                $classList
+ * @property-read \Rowbot\DOM\NamedNodeMap                                $attributes
+ * @property-read ?string                                                 $namespaceURI
+ * @property-read ?string                                                 $prefix
+ * @property-read string                                                  $localName
+ * @property-read string                                                  $tagName
+ * @property-read \Rowbot\DOM\HTMLCollection<\Rowbot\DOM\Element\Element> $children
+ * @property-read \Rowbot\DOM\Element\Element                             $firstElementChild
+ * @property-read \Rowbot\DOM\Element\Element                             $lastElementChild
+ * @property-read int                                                     $childElementCount
  */
 class Element extends Node implements AttributeChangeObserver, ChildNode, ParentNode
 {

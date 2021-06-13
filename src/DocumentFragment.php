@@ -11,6 +11,11 @@ use function count;
 /**
  * @see https://dom.spec.whatwg.org/#interface-documentfragment
  * @see https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
+ *
+ * @property-read \Rowbot\DOM\HTMLCollection<\Rowbot\DOM\Element\Element> $children
+ * @property-read \Rowbot\DOM\Element\Element                             $firstElementChild
+ * @property-read \Rowbot\DOM\Element\Element                             $lastElementChild
+ * @property-read int                                                     $childElementCount
  */
 class DocumentFragment extends Node implements NonElementParentNode, ParentNode
 {
