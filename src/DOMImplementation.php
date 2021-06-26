@@ -46,7 +46,9 @@ final class DOMImplementation
         ?string $qualifiedName,
         DocumentType $doctype = null
     ): XMLDocument {
-        $document = new XMLDocument();
+        $env = new Environment();
+        $env->setScriptingEnabled($this->document->getEnvironment()->isScriptingEnabled());
+        $document = new XMLDocument($env);
         $element = null;
 
         if ($qualifiedName === null) {
@@ -112,8 +114,9 @@ final class DOMImplementation
      */
     public function createHTMLDocument(string $title = ''): HTMLDocument
     {
-        $doc = new HTMLDocument();
-        $doc->setContentType('text/html');
+        $env = new Environment(null, 'text/html');
+        $env->setScriptingEnabled($this->document->getEnvironment()->isScriptingEnabled());
+        $doc = new HTMLDocument($env);
         $docType = new DocumentType($doc, 'html', '', '');
         $doc->appendChild($docType);
 

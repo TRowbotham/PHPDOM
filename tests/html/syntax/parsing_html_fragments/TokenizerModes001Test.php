@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\html\syntax\parsing_html_fragments;
 
+use Rowbot\DOM\DocumentBuilder;
 use Rowbot\DOM\HTMLDocument;
 use Rowbot\DOM\Tests\TestCase;
 
@@ -86,9 +87,7 @@ class TokenizerModes001Test extends TestCase
 
     public function testNoscriptShouldNotBreakOutOfNoscript(): void
     {
-        $this->markTestSkipped('We don\'t support scripting in the parser.');
-
-        $document = new HTMLDocument();
+        $document = DocumentBuilder::create()->setContentType('text/html')->emulateScripting(true)->createEmptyDocument();
         $e = $document->createElement('noscript');
         $e->innerHTML = '</noscript><div>';
         self::assertSame(0, $e->getElementsByTagName('div')->length);

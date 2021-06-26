@@ -16,6 +16,7 @@ use Rowbot\DOM\Element\HTML\HTMLStyleElement;
 use Rowbot\DOM\Element\HTML\HTMLTemplateElement;
 use Rowbot\DOM\Element\HTML\HTMLTextAreaElement;
 use Rowbot\DOM\Element\HTML\HTMLTitleElement;
+use Rowbot\DOM\Environment;
 use Rowbot\DOM\HTMLDocument;
 use Rowbot\DOM\Namespaces;
 use Rowbot\DOM\NodeList;
@@ -101,14 +102,17 @@ class HTMLParser extends Parser
     public static function parseHTMLFragment(string $input, Element $contextElement): NodeList
     {
         // Create a new Document node, and mark it as being an HTML document.
-        $doc = new HTMLDocument();
+        $contextDocument = $contextElement->getNodeDocument();
+        $env = new Environment(null, 'text/html');
+        $env->setScriptingEnabled($contextDocument->getEnvironment()->isScriptingEnabled());
+        $doc = new HTMLDocument($env);
 
         // If the node document of the context element is in quirks mode, then
         // let the Document be in quirks mode. Otherwise, the node document of
         // the context element is in limited-quirks mode, then let the Document
         // be in limited-quirks mode. Otherwise, leave the Document in no-quirks
         // mode.
-        $doc->setMode($contextElement->getNodeDocument()->getMode());
+        $doc->setMode($contextDocument->getMode());
 
         // Create a new HTML parser, and associate it with the just created
         // Document node.

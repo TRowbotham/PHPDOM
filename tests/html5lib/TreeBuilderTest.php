@@ -7,11 +7,13 @@ namespace Rowbot\DOM\Tests\html5lib;
 use DirectoryIterator;
 use PHPUnit\Framework\TestCase;
 use Rowbot\DOM\Attr;
+use Rowbot\DOM\DocumentBuilder;
 use Rowbot\DOM\DocumentType;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Element\ElementFactory;
 use Rowbot\DOM\HTMLDocument;
 use Rowbot\DOM\Namespaces;
+use Rowbot\DOM\Parser\HTML\HTMLParser;
 use Rowbot\DOM\Parser\ParserFactory;
 use RuntimeException;
 use SplQueue;
@@ -49,7 +51,10 @@ class TreeBuilderTest extends TestCase
     public function testTreeBuilder(string $data, array $errors, $expected, Element $context = null): void
     {
         if ($context === null) {
-            $document = ParserFactory::parseHTMLDocument($data);
+            $document = DocumentBuilder::create()->setContentType('text/html')->emulateScripting(false)->createEmptyDocument();
+            $parser = new HTMLParser($document);
+            $parser->preprocessInputStream($data);
+            $parser->run();
 
             self::assertTrue($expected->isEqualNode($document));
 

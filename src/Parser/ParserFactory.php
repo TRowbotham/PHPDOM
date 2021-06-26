@@ -6,7 +6,6 @@ namespace Rowbot\DOM\Parser;
 
 use Rowbot\DOM\DocumentFragment;
 use Rowbot\DOM\Element\Element;
-use Rowbot\DOM\HTMLDocument;
 use Rowbot\DOM\Parser\HTML\HTMLParser;
 use Rowbot\DOM\Parser\XML\XMLParser;
 
@@ -17,16 +16,6 @@ final class ParserFactory
      */
     private function __construct()
     {
-    }
-
-    public static function parseHTMLDocument(string $markup): HTMLDocument
-    {
-        $doc = new HTMLDocument();
-        $parser = new HTMLParser($doc);
-        $parser->preprocessInputStream($markup);
-        $parser->run();
-
-        return $doc;
     }
 
     /**
