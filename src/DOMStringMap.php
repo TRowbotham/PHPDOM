@@ -31,7 +31,7 @@ use function ucfirst;
 final class DOMStringMap implements ArrayAccess, IteratorAggregate
 {
     /**
-     * @var \Rowbot\DOM\Element
+     * @var \Rowbot\DOM\Element\Element
      */
     private $element;
 
@@ -40,14 +40,17 @@ final class DOMStringMap implements ArrayAccess, IteratorAggregate
         $this->element = $element;
     }
 
-    public function __get(string $name)
+    public function __get(string $name): ?string
     {
         $pairs = $this->getPairs();
 
         return $pairs[$name] ?? null;
     }
 
-    public function __set(string $name, $value)
+    /**
+     * @param string $value
+     */
+    public function __set(string $name, $value): void
     {
         $this->setAttribute($name, (string) $value);
     }

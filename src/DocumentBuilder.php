@@ -17,8 +17,19 @@ use function in_array;
 
 class DocumentBuilder
 {
+    /**
+     * @var bool
+     */
     private $enableScripting;
+
+    /**
+     * @var string|null
+     */
     private $contentType;
+
+    /**
+     * @var \Rowbot\URL\URLRecord|null
+     */
     private $url;
 
     private const VALID_CONTENT_TYPES = [

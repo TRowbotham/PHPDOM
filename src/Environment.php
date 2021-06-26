@@ -17,8 +17,14 @@ class Environment
      */
     private $url;
 
+    /**
+     * @var string
+     */
     private $contentType;
 
+    /**
+     * @var bool
+     */
     private $scriptingEnabled;
 
     public function __construct(URLRecord $url = null, string $contentType = null)
