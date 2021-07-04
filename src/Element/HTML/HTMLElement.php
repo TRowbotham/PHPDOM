@@ -6,6 +6,7 @@ namespace Rowbot\DOM\Element\HTML;
 
 use Rowbot\DOM\DOMStringMap;
 use Rowbot\DOM\Element\Element;
+use Rowbot\DOM\Element\HTMLOrSVGElement;
 use Rowbot\DOM\Exception\DOMException;
 use Rowbot\DOM\Exception\IndexSizeError;
 use Rowbot\DOM\Exception\SyntaxError;
@@ -38,6 +39,8 @@ use const FILTER_VALIDATE_INT;
  */
 class HTMLElement extends Element
 {
+    use HTMLOrSVGElement;
+
     // state => array(keyword[, keyword, ...])
     protected const CONTENT_EDITABLE_STATE_MAP = [
         'true' => ['', 'true'],
@@ -90,7 +93,7 @@ class HTMLElement extends Element
                 return 'inherit';
 
             case 'dataset':
-                return new DOMStringMap($this);
+                return $this->getDataset();
 
             case 'dir':
                 return $this->reflectEnumeratedStringAttributeValue(
