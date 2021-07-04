@@ -613,18 +613,6 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
         return $attr;
     }
 
-    public function closest(string $selectorRule): ?self
-    {
-        // TODO
-        return null;
-    }
-
-    public function matches(string $selectorRule): bool
-    {
-        // TODO
-        return false;
-    }
-
     /**
      * Inserts an element adjacent to the current element.
      *
