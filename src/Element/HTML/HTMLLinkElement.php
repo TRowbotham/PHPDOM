@@ -74,7 +74,7 @@ class HTMLLinkElement extends HTMLElement
                 return $this->relList;
 
             case 'sizes':
-                return $this->reflectStringAttributeValue($name);
+                return $this->sizes;
 
             case 'type':
                 return $this->reflectStringAttributeValue($name);
@@ -112,8 +112,13 @@ class HTMLLinkElement extends HTMLElement
 
                 break;
 
+            case 'relList':
+                $this->relList->value = (string) $value;
+
+                break;
+
             case 'sizes':
-                $this->attributeList->setAttrValue($name, (string) $value);
+                $this->sizes->value = (string) $value;
 
                 break;
 
