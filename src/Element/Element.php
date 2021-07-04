@@ -540,20 +540,15 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
         $indexes = range(0, $numAttributes - 1);
 
         foreach ($this->attributeList as $attribute) {
-            $match = false;
-
             foreach ($indexes as $i) {
                 if ($attribute->isEqualNode($otherNode->attributeList[$i])) {
-                    $match = true;
                     unset($indexes[$i]);
 
-                    break;
+                    continue 2;
                 }
             }
 
-            if (!$match) {
-                return false;
-            }
+            return false;
         }
 
         return $this->hasEqualChildNodes($otherNode);
