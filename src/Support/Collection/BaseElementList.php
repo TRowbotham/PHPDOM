@@ -44,7 +44,7 @@ class BaseElementList
             while ($l !== $r) {
                 $m = (int) ceil(($l + $r) / 2);
 
-                if ($this->list[$m]->compareDocumentPosition($base) & HTMLBaseElement::DOCUMENT_POSITION_FOLLOWING) {
+                if ($base->followsNode($this->list[$m])) {
                     $l = $m;
                 } else {
                     $r = $m - 1;
@@ -68,8 +68,7 @@ class BaseElementList
             return false;
         }
 
-        $shouldActivate = $this->active === null
-            || $this->active->compareDocumentPosition($base) & HTMLBaseElement::DOCUMENT_POSITION_FOLLOWING;
+        $shouldActivate = $this->active === null || $base->followsNode($this->active);
 
         if ($shouldActivate) {
             $this->active = $base;

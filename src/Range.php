@@ -1138,75 +1138,32 @@ final class Range extends AbstractRange implements Stringable
             }
         }
 
-        $commonAncestor = Node::getCommonAncestor($boundaryPointB[0], $boundaryPointA[0]);
+        if ($boundaryPointA[0]->followsNode($boundaryPointB[0])) {
+            $position = $this->computePosition($boundaryPointB, $boundaryPointA);
 
-        if ($commonAncestor === $boundaryPointA[0]) {
-            $AFollowsB = false;
-        } elseif ($commonAncestor === $boundaryPointB[0]) {
-            $AFollowsB = true;
-        } else {
-            // A was not found inside B. Traverse both A & B up to the nodes
-            // before their common ancestor, then see if A is in the nextSibling
-            // chain of B.
-            $b = $boundaryPointB[0];
-
-            while ($b->parentNode !== $commonAncestor) {
-                /** @var \Rowbot\DOM\Node $b */
-                $b = $b->parentNode;
+            if ($position === 'before') {
+                return 'after';
             }
 
-            $a = $boundaryPointA[0];
-
-            while ($a->parentNode !== $commonAncestor) {
-                /** @var \Rowbot\DOM\Node $a */
-                $a = $a->parentNode;
-            }
-
-            $AFollowsB = false;
-
-            while ($b) {
-                if ($a === $b) {
-                    $AFollowsB = true;
-
-                    break;
-                }
-
-                $b = $b->nextSibling;
+            if ($position === 'after') {
+                return 'before';
             }
         }
 
-        if ($AFollowsB) {
-            // Swap variables
-            [$boundaryPointB, $boundaryPointA] = [$boundaryPointA, $boundaryPointB];
-        }
-
-        $ancestor = $boundaryPointB[0]->parentNode;
-
-        while ($ancestor) {
-            if ($ancestor === $boundaryPointA[0]) {
-                break;
-            }
-
-            $ancestor = $ancestor->parentNode;
-        }
-
-        if ($ancestor) {
+        if ($boundaryPointA[0]->isAncestorOf($boundaryPointB[0])) {
             $child = $boundaryPointB[0];
 
-            while ($child) {
-                if ($child->parentNode === $boundaryPointA[0]) {
-                    break;
-                }
-
+            while ($child->parentNode !== $boundaryPointA[0]) {
+                /** @var \Rowbot\DOM\Node $child */
                 $child = $child->parentNode;
             }
 
             if ($child->getTreeIndex() < $boundaryPointA[1]) {
-                return $AFollowsB ? 'before' : 'after';
+                return 'after';
             }
         }
 
-        return $AFollowsB ? 'after' : 'before';
+        return 'before';
     }
 
     /**

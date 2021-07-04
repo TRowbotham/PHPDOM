@@ -555,14 +555,8 @@ abstract class Node
         // NOTE: Due to the way attributes are handled in this algorithm this
         // results in a node’s attributes counting as preceding that node’s
         // children, despite attributes not participating in a tree.
-        $preceedingNode = $node2->previousNode();
-
-        while ($preceedingNode) {
-            if ($preceedingNode === $node1) {
-                return self::DOCUMENT_POSITION_PRECEDING;
-            }
-
-            $preceedingNode = $preceedingNode->previousNode();
+        if ($node1->precedesNode($node2)) {
+            return self::DOCUMENT_POSITION_PRECEDING;
         }
 
         // Return DOCUMENT_POSITION_FOLLOWING.
@@ -1499,6 +1493,74 @@ abstract class Node
         }
 
         return $node->parentNode;
+    }
+
+    /**
+     * @internal
+     */
+    public function precedesNode(self $node): bool
+    {
+        $nodeA = $this;
+        $nodeB = $node;
+        $commonAncestor = self::getCommonAncestor($nodeA, $nodeB);
+
+        if ($commonAncestor === null) {
+            return false;
+        }
+
+        if ($nodeA === $commonAncestor) {
+            return true;
+        }
+
+        if ($nodeB === $commonAncestor) {
+            return false;
+        }
+
+        while ($nodeA->parentNode !== $commonAncestor) {
+            /** @var \Rowbot\DOM\Node $nodeA */
+            $nodeA = $nodeA->parentNode;
+        }
+
+        while ($nodeB->parentNode !== $commonAncestor) {
+            /** @var \Rowbot\DOM\Node $nodeB */
+            $nodeB = $nodeB->parentNode;
+        }
+
+        return $nodeA->getTreeIndex() < $nodeB->getTreeIndex();
+    }
+
+    /**
+     * @internal
+     */
+    public function followsNode(self $node): bool
+    {
+        $nodeA = $this;
+        $nodeB = $node;
+        $commonAncestor = self::getCommonAncestor($nodeA, $nodeB);
+
+        if ($commonAncestor === null) {
+            return false;
+        }
+
+        if ($nodeA === $commonAncestor) {
+            return false;
+        }
+
+        if ($nodeB === $commonAncestor) {
+            return true;
+        }
+
+        while ($nodeA->parentNode !== $commonAncestor) {
+            /** @var \Rowbot\DOM\Node $nodeA */
+            $nodeA = $nodeA->parentNode;
+        }
+
+        while ($nodeB->parentNode !== $commonAncestor) {
+            /** @var \Rowbot\DOM\Node $nodeB */
+            $nodeB = $nodeB->parentNode;
+        }
+
+        return $nodeA->getTreeIndex() > $nodeB->getTreeIndex();
     }
 
     /**
