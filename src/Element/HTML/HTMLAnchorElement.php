@@ -50,18 +50,12 @@ class HTMLAnchorElement extends HTMLElement
     /**
      * @var \Rowbot\DOM\DOMTokenList
      */
-    private $ping;
-
-    /**
-     * @var \Rowbot\DOM\DOMTokenList
-     */
     private $relList;
 
     protected function __construct(Document $document)
     {
         parent::__construct($document);
 
-        $this->ping = new DOMTokenList($this, 'ping');
         $this->relList = new DOMTokenList($this, 'rel');
         $this->attributeList->observe($this);
         $this->setURL();
@@ -98,7 +92,7 @@ class HTMLAnchorElement extends HTMLElement
                 return $this->getPathname();
 
             case 'ping':
-                return $this->ping;
+                return $this->reflectStringAttributeValue($name);
 
             case 'port':
                 return $this->getPort();
@@ -176,7 +170,7 @@ class HTMLAnchorElement extends HTMLElement
                 break;
 
             case 'ping':
-                $this->ping->value = (string) $value;
+                $this->attributeList->setAttrValue($name, (string) $value);
 
                 break;
 
@@ -248,7 +242,6 @@ class HTMLAnchorElement extends HTMLElement
     {
         parent::__clone();
 
-        $this->ping = new DOMTokenList($this, 'ping');
         $this->relList = new DOMTokenList($this, 'rel');
 
         if ($this->url !== null) {
