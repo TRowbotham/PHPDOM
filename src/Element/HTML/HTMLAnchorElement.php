@@ -38,10 +38,10 @@ use Rowbot\DOM\Element\HTMLHyperlinkElementUtils;
  * @property string $type     Reflects the type HTML attribute, which indicates the MIME type of the linked resource.
  * @property string $username Represents the username specified, if any, of theURL.
  * @property string $text
+ * @property \Rowbot\DOM\DOMTokenList $relList Reflects the rel HTML attribute as a list of tokens.
  *
  * @property-read string                   $origin  Represents the URL's origin which is composed of the scheme, domain,
  *                                                  and port.
- * @property-read \Rowbot\DOM\DOMTokenList $relList Reflects the rel HTML attribute as a list of tokens.
  */
 class HTMLAnchorElement extends HTMLElement
 {
@@ -56,7 +56,6 @@ class HTMLAnchorElement extends HTMLElement
     {
         parent::__construct($document);
 
-        $this->relList = new DOMTokenList($this, 'rel');
         $this->attributeList->observe($this);
         $this->setURL();
     }
@@ -104,7 +103,7 @@ class HTMLAnchorElement extends HTMLElement
                 return $this->reflectStringAttributeValue($name);
 
             case 'relList':
-                return $this->relList;
+                return $this->getRelList();
 
             case 'search':
                 return $this->getSearch();
@@ -189,6 +188,11 @@ class HTMLAnchorElement extends HTMLElement
 
                 break;
 
+            case 'relList':
+                $this->getRelList()->value = (string) $value;
+
+                break;
+
             case 'search':
                 $this->setSearch((string) $value);
 
@@ -242,10 +246,19 @@ class HTMLAnchorElement extends HTMLElement
     {
         parent::__clone();
 
-        $this->relList = new DOMTokenList($this, 'rel');
+        $this->relList = null;
 
         if ($this->url !== null) {
             $this->url = clone $this->url;
         }
+    }
+
+    private function getRelList(): DOMTokenList
+    {
+        if ($this->relList === null) {
+            $this->relList = new DOMTokenList($this, 'rel');
+        }
+
+        return $this->relList;
     }
 }

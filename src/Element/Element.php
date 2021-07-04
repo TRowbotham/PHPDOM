@@ -76,11 +76,6 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
     protected $attributeList;
 
     /**
-     * @var \Rowbot\DOM\DOMTokenList
-     */
-    protected $classList;
-
-    /**
      * @var string
      */
     protected $localName;
@@ -95,12 +90,16 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
      */
     protected $prefix;
 
+    /**
+     * @var \Rowbot\DOM\DOMTokenList|null
+     */
+    private $classList_;
+
     protected function __construct(Document $document)
     {
         parent::__construct($document);
 
         $this->attributeList = new AttributeList($this);
-        $this->classList = new DOMTokenList($this, 'class');
         $this->localName = '';
         $this->namedNodeMap = new NamedNodeMap($this);
         $this->namespaceURI = null;
@@ -125,7 +124,7 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
                 return $this->getChildren();
 
             case 'classList':
-                return $this->classList;
+                return $this->getClassList();
 
             case 'className':
                 return $this->attributeList->getAttrValue('class');
@@ -188,7 +187,7 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
     {
         switch ($name) {
             case 'classList':
-                $this->classList->value = (string) $value;
+                $this->getClassList()->value = (string) $value;
 
                 break;
 
@@ -887,6 +886,15 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
         return count($this->childNodes);
     }
 
+    protected function getClassList(): DOMTokenList
+    {
+        if ($this->classList_ === null) {
+            $this->classList_ = new DOMTokenList($this, 'class');
+        }
+
+        return $this->classList_;
+    }
+
     protected function getNodeName(): string
     {
         return $this->getTagName();
@@ -943,7 +951,7 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
         }
 
         $this->attributeList = $attributeList;
-        $this->classList = new DOMTokenList($this, 'class');
+        $this->classList_ = null;
         $this->namedNodeMap = new NamedNodeMap($this);
         $this->attributeList->observe($this);
     }
