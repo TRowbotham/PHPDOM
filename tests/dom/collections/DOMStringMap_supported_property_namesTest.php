@@ -14,7 +14,7 @@ use const DIRECTORY_SEPARATOR;
 /**
  * @see https://github.com/web-platform-tests/wpt/blob/master/dom/collections/domstringmap-supported-property-names.html
  */
-class DOMStringMap_support_property_namesTest extends TestCase
+class DOMStringMap_supported_property_namesTest extends TestCase
 {
     use WindowTrait;
 
