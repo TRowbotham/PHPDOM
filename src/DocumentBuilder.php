@@ -17,6 +17,14 @@ use function in_array;
 
 class DocumentBuilder
 {
+    private const VALID_CONTENT_TYPES = [
+        'text/html',
+        'text/xml',
+        'application/xml',
+        'application/xhtml+xml',
+        'image/svg+xml',
+    ];
+
     /**
      * @var bool
      */
@@ -32,13 +40,10 @@ class DocumentBuilder
      */
     private $url;
 
-    private const VALID_CONTENT_TYPES = [
-        'text/html',
-        'text/xml',
-        'application/xml',
-        'application/xhtml+xml',
-        'image/svg+xml',
-    ];
+    /**
+     * @var \Rowbot\URL\URLRecord|null
+     */
+    private static $aboutBlank;
 
     protected function __construct()
     {
@@ -161,9 +166,15 @@ class DocumentBuilder
         }
 
         if ($this->url === null) {
-            $parser = new BasicURLParser();
-            $record = $parser->parse(new Utf8String('about:blank'));
-            assert($record !== false);
+            if (self::$aboutBlank === null) {
+                $parser = new BasicURLParser();
+                $record = $parser->parse(new Utf8String('about:blank'));
+                assert($record !== false);
+                self::$aboutBlank = $record;
+            } else {
+                $record = clone self::$aboutBlank;
+            }
+
             $this->url = $record;
         }
 
