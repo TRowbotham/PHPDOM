@@ -1189,11 +1189,7 @@ final class Range extends AbstractRange implements Stringable
      */
     private function isPartiallyContainedNode(Node $node): bool
     {
-        $isAncestorOfStart = $node->contains($this->range->startNode);
-        $isAncestorOfEnd = $node->contains($this->range->endNode);
-
-        return ($isAncestorOfStart && !$isAncestorOfEnd)
-            || (!$isAncestorOfStart && $isAncestorOfEnd);
+        return $node->contains($this->range->startNode) xor $node->contains($this->range->endNode);
     }
 
     /**
