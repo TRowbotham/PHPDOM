@@ -12,7 +12,6 @@ use Rowbot\URL\BasicURLParser;
 use Rowbot\URL\String\Utf8String;
 use Throwable;
 
-use function assert;
 use function in_array;
 
 class DocumentBuilder
@@ -39,11 +38,6 @@ class DocumentBuilder
      * @var \Rowbot\URL\URLRecord|null
      */
     private $url;
-
-    /**
-     * @var \Rowbot\URL\URLRecord|null
-     */
-    private static $aboutBlank;
 
     protected function __construct()
     {
@@ -163,19 +157,6 @@ class DocumentBuilder
     {
         if ($this->contentType === null) {
             throw new TypeError('You must specify the content type.');
-        }
-
-        if ($this->url === null) {
-            if (self::$aboutBlank === null) {
-                $parser = new BasicURLParser();
-                $record = $parser->parse(new Utf8String('about:blank'));
-                assert($record !== false);
-                self::$aboutBlank = $record;
-            } else {
-                $record = clone self::$aboutBlank;
-            }
-
-            $this->url = $record;
         }
 
         $env = new Environment($this->url, $this->contentType);

@@ -13,6 +13,11 @@ use function assert;
 class Environment
 {
     /**
+     * @var \Rowbot\URL\URLRecord|null
+     */
+    private static $defaultUrl;
+
+    /**
      * @var \Rowbot\URL\URLRecord
      */
     private $url;
@@ -27,15 +32,13 @@ class Environment
      */
     private $scriptingEnabled;
 
-    public function __construct(URLRecord $url = null, string $contentType = null)
+    public function __construct(?URLRecord $url = null, string $contentType = null)
     {
         if ($url === null) {
-            $parser = new BasicURLParser();
-            $url = $parser->parse(new Utf8String('about:blank'));
-            assert($url !== false);
+            $url = $this->getDefaultUrl();
         }
 
-        $this->url = $url;
+        $this->url = clone $url;
         $this->scriptingEnabled = false;
         $this->contentType = $contentType ?? 'application/xml';
     }
@@ -63,6 +66,20 @@ class Environment
     public function isScriptingEnabled(): bool
     {
         return $this->scriptingEnabled;
+    }
+
+    private function getDefaultUrl(): URLRecord
+    {
+        if (self::$defaultUrl !== null) {
+            return self::$defaultUrl;
+        }
+
+        $parser = new BasicURLParser();
+        $url = $parser->parse(new Utf8String('about:blank'));
+        assert($url !== false);
+        self::$defaultUrl = $url;
+
+        return self::$defaultUrl;
     }
 
     public function __clone()
