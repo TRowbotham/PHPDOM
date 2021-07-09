@@ -374,7 +374,7 @@ final class ElementFactory
             $interface = self::SVG_ELEMENTS[$localName] ?? SVGElement::class;
         }
 
-        return $interface::create($document, $localName, $namespace, $prefix);
+        return new $interface($document, $localName, $namespace, $prefix);
     }
 
     /**

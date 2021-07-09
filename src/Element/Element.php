@@ -95,16 +95,16 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
      */
     private $classList_;
 
-    protected function __construct(Document $document)
+    public function __construct(Document $document, string $localName, ?string $namespace, ?string $prefix = null)
     {
         parent::__construct($document);
 
         $this->attributeList = new AttributeList($this);
-        $this->localName = '';
+        $this->localName = $localName;
         $this->namedNodeMap = new NamedNodeMap($this);
-        $this->namespaceURI = null;
+        $this->namespaceURI = $namespace;
         $this->nodeType = self::ELEMENT_NODE;
-        $this->prefix = null;
+        $this->prefix = $prefix;
         $this->attributeList->observe($this);
     }
 
@@ -155,7 +155,7 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
                 // the context object providing true for the require well-formed
                 // flag (this might throw an exception instead of returning a
                 // string).
-                $fakeNode = self::create($this->nodeDocument, 'fake', Namespaces::HTML);
+                $fakeNode = ElementFactory::create($this->nodeDocument, 'fake', Namespaces::HTML);
                 $fakeNode->childNodes->append($this);
 
                 return MarkupFactory::serializeFragment($fakeNode, true);
@@ -249,7 +249,7 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
                 // namespace, and the context object's node document as its node
                 // document.
                 if ($parent instanceof DocumentFragment) {
-                    $parent = self::create($this->nodeDocument, 'body', Namespaces::HTML);
+                    $parent = ElementFactory::create($this->nodeDocument, 'body', Namespaces::HTML);
                 }
 
                 // Let fragment be the result of invoking the fragment parsing
@@ -266,33 +266,6 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
             default:
                 parent::__set($name, $value);
         }
-    }
-
-    /**
-     * Creates a new instance of an the specified element interface and
-     * intializes that elements local name, namespace, and namespace prefix.
-     *
-     * @internal
-     *
-     * @param \Rowbot\DOM\Document $document  The element's owner document.
-     * @param string               $localName The element's local name that you are creating.
-     * @param ?string              $namespace The namespace that the element belongs to.
-     * @param ?string              $prefix    (optional) The namespace prefix of the element.
-     *
-     * @return static
-     */
-    public static function create(
-        Document $document,
-        string $localName,
-        ?string $namespace,
-        ?string $prefix = null
-    ) {
-        $element = new static($document);
-        $element->localName = $localName;
-        $element->namespaceURI = $namespace;
-        $element->prefix = $prefix;
-
-        return $element;
     }
 
     /**
@@ -704,7 +677,7 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
                 && $context->localName === 'html'
                 && $context->namespaceURI === Namespaces::HTML)
         ) {
-            $context = self::create($this->nodeDocument, 'body', Namespaces::HTML);
+            $context = ElementFactory::create($this->nodeDocument, 'body', Namespaces::HTML);
         }
 
         // Let fragment be the result of invoking the fragment parsing algorithm

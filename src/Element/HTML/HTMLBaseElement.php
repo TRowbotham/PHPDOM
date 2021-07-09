@@ -24,11 +24,6 @@ class HTMLBaseElement extends HTMLElement
      */
     private $frozenBaseUrl;
 
-    protected function __construct(Document $document)
-    {
-        parent::__construct($document);
-    }
-
     public function __get(string $name)
     {
         switch ($name) {
