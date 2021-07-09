@@ -288,7 +288,7 @@ final class Range extends AbstractRange implements Stringable
                 break;
         }
 
-        switch ($this->computePosition($thisPoint, $otherPoint)) {
+        switch ($this->computePosition(...$thisPoint, ...$otherPoint)) {
             case 'before':
                 return -1;
 
@@ -910,11 +910,9 @@ final class Range extends AbstractRange implements Stringable
             throw new IndexSizeError();
         }
 
-        $bp = array($node, $offset);
-
         if (
-            $this->computePosition($bp, [$this->range->startNode, $this->range->startOffset]) === 'before'
-            || $this->computePosition($bp, [$this->range->endNode, $this->range->endOffset]) === 'after'
+            $this->computePosition($node, $offset, $this->range->startNode, $this->range->startOffset) === 'before'
+            || $this->computePosition($node, $offset, $this->range->endNode, $this->range->endOffset) === 'after'
         ) {
             return false;
         }
@@ -951,13 +949,11 @@ final class Range extends AbstractRange implements Stringable
             throw new IndexSizeError();
         }
 
-        $bp = [$node, $offset];
-
-        if ($this->computePosition($bp, [$this->range->startNode, $this->range->startOffset]) === 'before') {
+        if ($this->computePosition($node, $offset, $this->range->startNode, $this->range->startOffset) === 'before') {
             return -1;
         }
 
-        if ($this->computePosition($bp, [$this->range->endNode, $this->range->endOffset]) === 'after') {
+        if ($this->computePosition($node, $offset, $this->range->endNode, $this->range->endOffset) === 'after') {
             return 1;
         }
 
@@ -985,11 +981,8 @@ final class Range extends AbstractRange implements Stringable
         }
 
         $offset = $node->getTreeIndex();
-        $position1 = $this->computePosition([$parent, $offset], [$this->range->endNode, $this->range->endOffset]);
-        $position2 = $this->computePosition(
-            [$parent, $offset + 1],
-            [$this->range->startNode, $this->range->startOffset]
-        );
+        $position1 = $this->computePosition($parent, $offset, $this->range->endNode, $this->range->endOffset);
+        $position2 = $this->computePosition($parent, $offset + 1, $this->range->startNode, $this->range->startOffset);
 
         return $position1 === 'before' && $position2 === 'after';
     }
@@ -1114,32 +1107,31 @@ final class Range extends AbstractRange implements Stringable
     /**
      * Compares the position of two boundary points.
      *
-     * @internal
-     *
      * @see https://dom.spec.whatwg.org/#concept-range-bp-position
      *
-     * @param array{0: \Rowbot\DOM\Node, 1: int} $boundaryPointA An array containing a Node and an offset within that
-     *                                                           Node representing a boundary.
-     * @param array{0: \Rowbot\DOM\Node, 1: int} $boundaryPointB An array containing a Node and an offset within that
-     *                                                           Node representing a boundary.
-     *
-     * @return string Returns before, equal, or after based on the position of the first boundary relative to the second
-     *                boundary.
+     * @return 'before'|'after'|'equal'
      */
-    private function computePosition(array $boundaryPointA, array $boundaryPointB): string
+    private function computePosition(Node $nodeA, int $offsetA, Node $nodeB, int $offsetB): string
     {
-        if ($boundaryPointA[0] === $boundaryPointB[0]) {
-            if ($boundaryPointA[1] === $boundaryPointB[1]) {
+        // 1. Assert: nodeA and nodeB have the same root.
+        assert($nodeA->getRootNode() === $nodeB->getRootNode());
+
+        // 2. If nodeA is nodeB, then return equal if offsetA is offsetB, before if offsetA is less than offsetB, and
+        // after if offsetA is greater than offsetB.
+        if ($nodeA === $nodeB) {
+            if ($offsetA === $offsetB) {
                 return 'equal';
-            } elseif ($boundaryPointA[1] < $boundaryPointB[1]) {
+            } elseif ($offsetA < $offsetB) {
                 return 'before';
             } else {
                 return 'after';
             }
         }
 
-        if ($boundaryPointA[0]->followsNode($boundaryPointB[0])) {
-            $position = $this->computePosition($boundaryPointB, $boundaryPointA);
+        // 3. If nodeA is following nodeB, then if the position of (nodeB, offsetB) relative to (nodeA, offsetA) is
+        // before, return after, and if it is after, return before.
+        if ($nodeA->followsNode($nodeB)) {
+            $position = $this->computePosition($nodeB, $offsetB, $nodeA, $offsetA);
 
             if ($position === 'before') {
                 return 'after';
@@ -1150,19 +1142,24 @@ final class Range extends AbstractRange implements Stringable
             }
         }
 
-        if ($boundaryPointA[0]->isAncestorOf($boundaryPointB[0])) {
-            $child = $boundaryPointB[0];
+        // 4. If nodeA is an ancestor of nodeB:
+        if ($nodeA->isAncestorOf($nodeB)) {
+            // 4.1. Let child be nodeB.
+            $child = $nodeB;
 
-            while ($child->parentNode !== $boundaryPointA[0]) {
+            // 4.2. While child is not a child of nodeA, set child to its parent.
+            while ($child->parentNode !== $nodeA) {
                 /** @var \Rowbot\DOM\Node $child */
                 $child = $child->parentNode;
             }
 
-            if ($child->getTreeIndex() < $boundaryPointA[1]) {
+            // 4.3. If child’s index is less than offsetA, then return after.
+            if ($child->getTreeIndex() < $offsetA) {
                 return 'after';
             }
         }
 
+        // 5. Return before.
         return 'before';
     }
 
@@ -1173,13 +1170,9 @@ final class Range extends AbstractRange implements Stringable
      */
     private function isFullyContainedNode(Node $node): bool
     {
-        $startBP = array($this->range->startNode, $this->range->startOffset);
-        $endBP = array($this->range->endNode, $this->range->endOffset);
-        $root = $this->range->startNode->getRootNode();
-
-        return $node->getRootNode() === $root
-            && $this->computePosition([$node, 0], $startBP) === 'after'
-            && $this->computePosition([$node, $node->getLength()], $endBP) === 'before';
+        return $node->getRootNode() === $this->range->startNode->getRootNode()
+            && $this->computePosition($node, 0, $this->range->startNode, $this->range->startOffset) === 'after'
+            && $this->computePosition($node, $node->getLength(), $this->range->endNode, $this->range->endOffset) === 'before';
     }
 
     /**
@@ -1218,13 +1211,11 @@ final class Range extends AbstractRange implements Stringable
             throw new IndexSizeError();
         }
 
-        $bp = [$node, $offset];
-
         switch ($type) {
             case 'start':
                 if (
                     $this->range->startNode->getRootNode() !== $node->getRootNode()
-                    || $this->computePosition($bp, [$this->range->endNode, $this->range->endOffset]) === 'after'
+                    || $this->computePosition($node, $offset, $this->range->endNode, $this->range->endOffset) === 'after'
                 ) {
                     $this->range->endNode = $node;
                     $this->range->endOffset = $offset;
@@ -1238,7 +1229,7 @@ final class Range extends AbstractRange implements Stringable
             case 'end':
                 if (
                     $this->range->startNode->getRootNode() !== $node->getRootNode()
-                    || $this->computePosition($bp, [$this->range->startNode, $this->range->startOffset]) === 'before'
+                    || $this->computePosition($node, $offset, $this->range->startNode, $this->range->startOffset) === 'before'
                 ) {
                     $this->range->startNode = $node;
                     $this->range->startOffset = $offset;
