@@ -52,9 +52,11 @@ use function range;
  * @property-read string                                                  $localName
  * @property-read string                                                  $tagName
  * @property-read \Rowbot\DOM\HTMLCollection<\Rowbot\DOM\Element\Element> $children
- * @property-read \Rowbot\DOM\Element\Element                             $firstElementChild
- * @property-read \Rowbot\DOM\Element\Element                             $lastElementChild
+ * @property-read \Rowbot\DOM\Element\Element|null                        $firstElementChild
+ * @property-read \Rowbot\DOM\Element\Element|null                        $lastElementChild
  * @property-read int                                                     $childElementCount
+ * @property-read \Rowbot\DOM\Element\Element|null                        $nextElementSibling
+ * @property-read \Rowbot\DOM\Element\Element|null                        $previousElementSibling
  */
 class Element extends Node implements AttributeChangeObserver, ChildNode, ParentNode
 {

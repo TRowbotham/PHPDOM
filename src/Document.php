@@ -46,8 +46,8 @@ use function trim;
  * @property-read \Rowbot\DOM\Element\Element|null                        $documentElement
  * @property-read string                                                  $readyState
  * @property-read \Rowbot\DOM\HTMLCollection<\Rowbot\DOM\Element\Element> $children
- * @property-read \Rowbot\DOM\Element\Element                             $firstElementChild
- * @property-read \Rowbot\DOM\Element\Element                             $lastElementChild
+ * @property-read \Rowbot\DOM\Element\Element|null                        $firstElementChild
+ * @property-read \Rowbot\DOM\Element\Element|null                        $lastElementChild
  * @property-read int                                                     $childElementCount
  *
  * @property \Rowbot\DOM\Element\HTML\HTMLBodyElement|null $body  Represents the HTML document's <body> element.

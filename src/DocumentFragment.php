@@ -13,8 +13,8 @@ use function count;
  * @see https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
  *
  * @property-read \Rowbot\DOM\HTMLCollection<\Rowbot\DOM\Element\Element> $children
- * @property-read \Rowbot\DOM\Element\Element                             $firstElementChild
- * @property-read \Rowbot\DOM\Element\Element                             $lastElementChild
+ * @property-read \Rowbot\DOM\Element\Element|null                        $firstElementChild
+ * @property-read \Rowbot\DOM\Element\Element|null                        $lastElementChild
  * @property-read int                                                     $childElementCount
  */
 class DocumentFragment extends Node implements NonElementParentNode, ParentNode

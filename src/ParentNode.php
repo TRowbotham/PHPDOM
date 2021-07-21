@@ -7,11 +7,6 @@ namespace Rowbot\DOM;
 /**
  * @see https://dom.spec.whatwg.org/#interface-parentnode
  * @see https://developer.mozilla.org/en-US/docs/Web/API/ParentNode
- *
- * @property-read list<\Rowbot\DOM\Element> $children
- * @property-read \Rowbot\DOM\Element|null  $firstElementChild
- * @property-read \Rowbot\DOM\Element|null  $lastElementChild
- * @property-read int                       $childElementCount
  */
 interface ParentNode
 {
