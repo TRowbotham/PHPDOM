@@ -7,26 +7,6 @@ parameters:
 
     ignoreErrors:
         -
-            message: '#Strict comparison using === between \*NEVER\* and \x27[a-z0-9]+\x27 will always evaluate to false\.#'
-            paths:
-                - src/Parser/HTML/InsertionMode/
-
-        -
-            message: '#Result of \|\| is always false\.#'
-            path: src/Parser/HTML/InsertionMode/InBodyInsertionMode.php
-            count: 43
-
-        -
-            message: '#Result of \|\| is always false\.#'
-            path: src/Parser/HTML/InsertionMode/InTemplateInsertionMode.php
-            count: 5
-
-        -
-            message: '#Result of && is always false\.#'
-            path: src/Parser/HTML/InsertionMode/InBodyInsertionMode.php
-            count: 1
-
-        -
             message: '#Access to protected property Rowbot\\DOM\\Element\\HTML\\HTMLTemplateElement::\$content\.#'
             paths:
                 - src/Parser/HTML/InsertionMode/AbstractInsertionMode.php
@@ -43,10 +23,6 @@ parameters:
                 - src/Support/Collection/NodeSet.php
                 - src/Support/Collection/StringSet.php
                 - src/Parser/Collection/ObjectStack.php
-
-        -
-            message: '#Parameter \#1 \$obj of method SplObjectStorage<TValue of object,null>::detach\(\) expects TValue of object, TValue of object\|null given\.#'
-            path: src/Parser/Collection/ObjectStack.php
 
         -
             message: '#Parameter \#4 \$elementTokenMap of class Rowbot\\DOM\\Parser\\HTML\\TreeBuilderContext constructor expects SplObjectStorage<Rowbot\\DOM\\Element\\Element, Rowbot\\DOM\\Parser\\Token\\TagToken>, SplObjectStorage<object, mixed> given\.#'
