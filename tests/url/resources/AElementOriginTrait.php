@@ -27,7 +27,7 @@ trait AElementOriginTrait
     public function urlOriginTestProvider(): Generator
     {
         foreach ($this->decodeUrlTestData() as $data) {
-            if (array_key_exists('origin', $data)) {
+            if (isset($data['base']) && array_key_exists('origin', $data)) {
                 yield [$data];
             }
         }

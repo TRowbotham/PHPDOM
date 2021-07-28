@@ -68,7 +68,7 @@ final class DOMStringMap implements ArrayAccess, IteratorAggregate
     /**
      * @param string $name
      */
-    public function offsetExists($name)
+    public function offsetExists($name): bool
     {
         return isset($this->getPairs()[(string) $name]);
     }
@@ -76,7 +76,7 @@ final class DOMStringMap implements ArrayAccess, IteratorAggregate
     /**
      * @param string $name
      */
-    public function offsetGet($name)
+    public function offsetGet($name): ?string
     {
         return $this->getPairs()[(string) $name] ?? null;
     }
@@ -85,7 +85,7 @@ final class DOMStringMap implements ArrayAccess, IteratorAggregate
      * @param string $name
      * @param string $value
      */
-    public function offsetSet($name, $value)
+    public function offsetSet($name, $value): void
     {
         $this->setAttribute((string) $name, (string) $value);
     }
@@ -93,7 +93,7 @@ final class DOMStringMap implements ArrayAccess, IteratorAggregate
     /**
      * @param string $name
      */
-    public function offsetUnset($name)
+    public function offsetUnset($name): void
     {
         $this->removeAttribute((string) $name);
     }
@@ -101,7 +101,7 @@ final class DOMStringMap implements ArrayAccess, IteratorAggregate
     /**
      * @return \ArrayIterator<int, string>
      */
-    public function getIterator()
+    public function getIterator(): ArrayIterator
     {
         return new ArrayIterator(array_keys($this->getPairs()));
     }

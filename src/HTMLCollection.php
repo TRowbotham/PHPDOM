@@ -139,7 +139,7 @@ class HTMLCollection implements ArrayAccess, Countable, IteratorAggregate
      *
      * @return TValue|null
      */
-    public function offsetGet($offset)
+    public function offsetGet($offset): ?Element
     {
         if (is_int($offset)) {
             $offset = Utils::unsignedLong($offset);

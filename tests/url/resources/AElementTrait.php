@@ -42,7 +42,9 @@ trait AElementTrait
     public function urlTestDataProvider(): Generator
     {
         foreach ($this->decodeUrlTestData() as $data) {
-            yield [$data];
+            if (isset($data['base'])) {
+                yield [$data];
+            }
         }
     }
 }
