@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM;
 
-use function mb_strlen;
-use function mb_strtolower;
-use function mb_strtoupper;
-use function mb_substr;
+use function implode;
+use function mb_str_split;
+use function strtolower;
+use function strtoupper;
 
 final class Utils
 {
@@ -27,48 +27,38 @@ final class Utils
      * Replaces all characters in the range U+0041 to U+005A, inclusive, with
      * the corresponding characters in the range U+0061 to U+007A, inclusive.
      *
-     * @see https://dom.spec.whatwg.org/#converted-to-ascii-uppercase
+     * @see https://infra.spec.whatwg.org/#ascii-lowercase
      */
     public static function toASCIILowercase(string $value): string
     {
-        $len = mb_strlen($value, 'utf-8');
-        $output = '';
+        $codePoints = mb_str_split($value, 1, 'utf-8');
 
-        for ($i = 0; $i < $len; $i++) {
-            $codePoint = mb_substr($value, $i, 1, 'utf-8');
-
-            if ($codePoint >= "\x41" && $codePoint <= "\x5A") {
-                $output .= mb_strtolower($codePoint, 'utf-8');
-            } else {
-                $output .= $codePoint;
+        foreach ($codePoints as $i => $codePoint) {
+            if ($codePoint >= 'A' && $codePoint <= 'Z') {
+                $codePoints[$i] = strtolower($codePoint);
             }
         }
 
-        return $output;
+        return implode('', $codePoints);
     }
 
     /**
      * Replaces all characters in the range U+0061 to U+007A, inclusive, with
      * the corresponding characters in the range U+0041 to U+005A, inclusive.
      *
-     * @see https://dom.spec.whatwg.org/#converted-to-ascii-lowercase
+     * @see https://infra.spec.whatwg.org/#ascii-uppercase
      */
     public static function toASCIIUppercase(string $value): string
     {
-        $len = mb_strlen($value, 'utf-8');
-        $output = '';
+        $codePoints = mb_str_split($value, 1, 'utf-8');
 
-        for ($i = 0; $i < $len; $i++) {
-            $codePoint = mb_substr($value, $i, 1, 'utf-8');
-
-            if ($codePoint >= "\x61" && $codePoint <= "\x7A") {
-                $output .= mb_strtoupper($codePoint, 'utf-8');
-            } else {
-                $output .= $codePoint;
+        foreach ($codePoints as $i => $codePoint) {
+            if ($codePoint >= 'a' && $codePoint <= 'z') {
+                $codePoints[$i] = strtoupper($codePoint);
             }
         }
 
-        return $output;
+        return implode('', $codePoints);
     }
 
     public static function unsignedLong(int $offset): int
