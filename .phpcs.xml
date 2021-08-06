@@ -5,7 +5,7 @@
     <arg name="colors" />
     <arg value="p" />
 
-    <config name="php_version" value="70100" />
+    <config name="php_version" value="70400" />
     <config name="tabwidth" value="4" />
     <config name="installed_paths" value="../../slevomat/coding-standard" />
     <config name="severity" value="1" />
