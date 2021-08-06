@@ -69,12 +69,12 @@ class HTMLTableElement extends HTMLElement
     /**
      * @var \Rowbot\DOM\HTMLCollection<\Rowbot\DOM\Element\HTML\HTMLTableRowElement>|null
      */
-    private $rowsCollection;
+    private ?HTMLCollection $rowsCollection;
 
     /**
      * @var \Rowbot\DOM\HTMLCollection<\Rowbot\DOM\Element\HTML\HTMLTableSectionElement>|null
      */
-    private $tBodyCollection;
+    private ?HTMLCollection $tBodyCollection;
 
     public function __get(string $name)
     {
@@ -95,34 +95,26 @@ class HTMLTableElement extends HTMLElement
                 return null;
 
             case 'rows':
-                if ($this->rowsCollection === null) {
-                    $this->rowsCollection = new HTMLCollection($this, $this->getRowsFilter());
-                }
-
-                return $this->rowsCollection;
+                return $this->rowsCollection ??= new HTMLCollection($this, $this->getRowsFilter());
 
             case 'tBodies':
-                if ($this->tBodyCollection === null) {
-                    $this->tBodyCollection = new HTMLCollection(
-                        $this,
-                        static function (self $root) {
-                            $node = $root->firstChild;
+                return $this->tBodyCollection ??= new HTMLCollection(
+                    $this,
+                    static function (self $root) {
+                        $node = $root->firstChild;
 
-                            while ($node !== null) {
-                                if (
-                                    $node instanceof HTMLTableSectionElement
-                                    && $node->localName === 'tbody'
-                                ) {
-                                    yield $node;
-                                }
-
-                                $node = $node->nextSibling;
+                        while ($node !== null) {
+                            if (
+                                $node instanceof HTMLTableSectionElement
+                                && $node->localName === 'tbody'
+                            ) {
+                                yield $node;
                             }
-                        }
-                    );
-                }
 
-                return $this->tBodyCollection;
+                            $node = $node->nextSibling;
+                        }
+                    }
+                );
 
             case 'tFoot':
             case 'tHead':

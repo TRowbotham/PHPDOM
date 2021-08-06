@@ -11,25 +11,16 @@ use SplObjectStorage;
  */
 final class NodeIteratorContext
 {
-    /**
-     * @var bool
-     */
-    public $pointerBeforeReferenceNode;
+    public bool $pointerBeforeReferenceNode;
 
-    /**
-     * @var \Rowbot\DOM\Node
-     */
-    public $referenceNode;
+    public Node $referenceNode;
 
-    /**
-     * @var \Rowbot\DOM\Node
-     */
-    public $root;
+    public Node $root;
 
     /**
      * @var \SplObjectStorage<self, null>|null
      */
-    private static $nodeIterators;
+    private static ?SplObjectStorage $nodeIterators;
 
     public function __construct(Node $root)
     {
@@ -105,10 +96,6 @@ final class NodeIteratorContext
      */
     public static function getIterators(): SplObjectStorage
     {
-        if (self::$nodeIterators === null) {
-            self::$nodeIterators = new SplObjectStorage();
-        }
-
-        return self::$nodeIterators;
+        return self::$nodeIterators ??= new SplObjectStorage();
     }
 }

@@ -14,26 +14,18 @@ abstract class TagToken implements Token
     /**
      * @var list<\Rowbot\DOM\Parser\Token\AttributeToken>
      */
-    public $attributes;
+    public array $attributes;
 
-    /**
-     * @var bool
-     */
-    private $isSelfClosing;
+    private bool $isSelfClosing;
 
-    /**
-     * @var bool
-     */
-    private $selfClosingFlagAcknowledged;
+    private bool $selfClosingFlagAcknowledged;
 
-    /**
-     * @var string
-     */
-    public $tagName;
+    public string $tagName;
 
     public function __construct(string $tagName = '')
     {
         $this->attributes = [];
+        $this->isSelfClosing = false;
         $this->selfClosingFlagAcknowledged = false;
         $this->tagName = $tagName;
     }

@@ -57,10 +57,8 @@ class OpenElementStack extends ObjectStack
 
     /**
      * The number of HTMLTemplateElements on the stack.
-     *
-     * @var int
      */
-    private $templateElementCount;
+    private int $templateElementCount;
 
     public function __construct()
     {

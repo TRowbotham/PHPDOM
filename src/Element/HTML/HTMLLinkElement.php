@@ -28,15 +28,9 @@ use Rowbot\DOM\DOMTokenList;
  */
 class HTMLLinkElement extends HTMLElement
 {
-    /**
-     * @var \Rowbot\DOM\DOMTokenList|null
-     */
-    private $relList;
+    private ?DOMTokenList $relList;
 
-    /**
-     * @var \Rowbot\DOM\DOMTokenList|null
-     */
-    private $sizes;
+    private ?DOMTokenList $sizes;
 
     public function __get(string $name)
     {
@@ -133,19 +127,11 @@ class HTMLLinkElement extends HTMLElement
 
     private function getRelList(): DOMTokenList
     {
-        if ($this->relList === null) {
-            $this->relList = new DOMTokenList($this, 'rel');
-        }
-
-        return $this->relList;
+        return $this->relList ??= new DOMTokenList($this, 'rel');
     }
 
     private function getSizes(): DOMTokenList
     {
-        if ($this->sizes === null) {
-            $this->sizes = new DOMTokenList($this, 'sizes');
-        }
-
-        return $this->sizes;
+        return $this->sizes ??= new DOMTokenList($this, 'sizes');
     }
 }

@@ -85,19 +85,12 @@ class Tokenizer
      */
     private const NAMED_CHAR_REFERENCES_PATH = __DIR__ . DS . 'named-character-references.json';
 
-    /**
-     * The input stream.
-     *
-     * @var \Rowbot\DOM\Support\CodePointStream
-     */
-    private $input;
+    private CodePointStream $input;
 
     /**
      * The last StartTagToken that was emitted by the tokenizer.
-     *
-     * @var \Rowbot\DOM\Parser\Token\StartTagToken|null
      */
-    private $lastEmittedStartTagToken;
+    private ?StartTagToken $lastEmittedStartTagToken;
 
     /**
      * The contents of the named-character-references.json file decoded as JSON. The contents are
@@ -105,17 +98,15 @@ class Tokenizer
      *
      * @var non-empty-array<string, string>|null
      */
-    private static $namedCharacterReferences;
+    private static ?array $namedCharacterReferences;
 
-    /**
-     * @var \Rowbot\DOM\Parser\HTML\ParserContext
-     */
-    private $parser;
+    private ParserContext $parser;
 
     public function __construct(ParserContext $parser)
     {
         $this->input = $parser->input;
         $this->parser = $parser;
+        $this->lastEmittedStartTagToken = null;
     }
 
     /**
@@ -2815,7 +2806,7 @@ class Tokenizer
                 // https://html.spec.whatwg.org/multipage/syntax.html#named-character-reference-state
                 case TokenizerState::NAMED_CHARACTER_REFERENCE:
                     // Load the JSON file for the named character references trie on-demand.
-                    if (self::$namedCharacterReferences === null) {
+                    if (!isset(self::$namedCharacterReferences)) {
                         $data = file_get_contents(self::NAMED_CHAR_REFERENCES_PATH);
 
                         if ($data === false) {

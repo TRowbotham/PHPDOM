@@ -30,10 +30,7 @@ use function ucfirst;
  */
 final class DOMStringMap implements ArrayAccess, IteratorAggregate
 {
-    /**
-     * @var \Rowbot\DOM\Element\Element
-     */
-    private $element;
+    private Element $element;
 
     public function __construct(Element $element)
     {

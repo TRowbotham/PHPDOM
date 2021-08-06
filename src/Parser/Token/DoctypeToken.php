@@ -11,28 +11,19 @@ namespace Rowbot\DOM\Parser\Token;
  */
 class DoctypeToken implements Token
 {
-    /**
-     * @var string|null
-     */
-    public $publicIdentifier;
+    public ?string $publicIdentifier;
 
-    /**
-     * @var string|null
-     */
-    public $name;
+    public ?string $name;
 
-    /**
-     * @var string
-     */
-    private $forceQuirksMode;
+    private string $forceQuirksMode;
 
-    /**
-     * @var string|null
-     */
-    public $systemIdentifier;
+    public ?string $systemIdentifier;
 
     public function __construct()
     {
+        $this->name = null;
+        $this->publicIdentifier = null;
+        $this->systemIdentifier = null;
         $this->forceQuirksMode = 'off';
     }
 

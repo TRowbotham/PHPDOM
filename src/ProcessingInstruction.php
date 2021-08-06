@@ -11,10 +11,7 @@ namespace Rowbot\DOM;
  */
 class ProcessingInstruction extends CharacterData
 {
-    /**
-     * @var string
-     */
-    protected $target;
+    protected string $target;
 
     public function __construct(Document $document, string $target, string $data)
     {

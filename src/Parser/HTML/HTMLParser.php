@@ -39,17 +39,13 @@ class HTMLParser extends Parser
 {
     /**
      * The tokenizer associated with the parser.
-     *
-     * @var \Rowbot\DOM\Parser\HTML\Tokenizer
      */
-    private $tokenizer;
+    private Tokenizer $tokenizer;
 
     /**
      * The treebuilder associated with the parser.
-     *
-     * @var \Rowbot\DOM\Parser\HTML\TreeBuilder
      */
-    private $treeBuilder;
+    private TreeBuilder $treeBuilder;
 
     public function __construct(
         Document $document,

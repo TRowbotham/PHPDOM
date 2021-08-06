@@ -27,22 +27,16 @@ final class StringSet implements ArrayAccess, Countable, Iterator
     /**
      * @var list<string>
      */
-    private $list;
+    private array $list;
 
     /**
      * @var array<string, bool>
      */
-    private $cache;
+    private array $cache;
 
-    /**
-     * @var int
-     */
-    private $length;
+    private int $length;
 
-    /**
-     * @var int
-     */
-    private $cursor;
+    private int $cursor;
 
     private function __construct()
     {

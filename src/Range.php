@@ -38,7 +38,7 @@ final class Range extends AbstractRange implements Stringable
     /**
      * @var \SplObjectStorage<\Rowbot\DOM\RangeBoundary, null>|null
      */
-    private static $collection;
+    private static ?SplObjectStorage $collection;
 
     public function __construct(Document $document)
     {
@@ -1051,11 +1051,7 @@ final class Range extends AbstractRange implements Stringable
      */
     public static function getRangeCollection()
     {
-        if (!self::$collection) {
-            self::$collection = new SplObjectStorage();
-        }
-
-        return self::$collection;
+        return self::$collection ??= new SplObjectStorage();
     }
 
     /**

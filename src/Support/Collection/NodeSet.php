@@ -30,22 +30,16 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
     /**
      * @var list<TValue>
      */
-    private $list;
+    private array $list;
 
     /**
      * @var \SplObjectStorage<TValue, null>
      */
-    private $cache;
+    private SplObjectStorage $cache;
 
-    /**
-     * @var int
-     */
-    private $length;
+    private int $length;
 
-    /**
-     * @var int
-     */
-    private $cursor;
+    private int $cursor;
 
     public function __construct()
     {

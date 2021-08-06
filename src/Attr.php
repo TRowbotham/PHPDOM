@@ -26,30 +26,15 @@ use Rowbot\DOM\Element\Element;
  */
 class Attr extends Node
 {
-    /**
-     * @var string
-     */
-    private $localName;
+    private string $localName;
 
-    /**
-     * @var string|null
-     */
-    private $namespaceURI;
+    private ?string $namespaceURI;
 
-    /**
-     * @var \Rowbot\DOM\Element\Element|null
-     */
-    private $ownerElement;
+    private ?Element $ownerElement;
 
-    /**
-     * @var string|null
-     */
-    private $prefix;
+    private ?string $prefix;
 
-    /**
-     * @var string
-     */
-    private $value;
+    private string $value;
 
     public function __construct(
         Document $document,

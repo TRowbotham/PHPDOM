@@ -62,65 +62,35 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
 
     protected const INERT_TEMPLATE_DOCUMENT = 0x1;
 
-    /**
-     * @var string
-     */
-    protected $characterSet;
+    protected string $characterSet;
 
-    /**
-     * @var int
-     */
-    protected $flags;
+    protected int $flags;
 
     /**
      * @var static|null
      */
     protected $inertTemplateDocument;
 
-    /**
-     * @var int
-     */
-    protected $mode;
+    protected int $mode;
 
-    /**
-     * @var \Rowbot\DOM\Support\Collection\BaseElementList
-     */
-    private $baseElements;
+    private BaseElementList $baseElements;
 
-    /**
-     * @var string
-     */
-    private $compatMode;
+    private string $compatMode;
 
-    /**
-     * @var \Rowbot\DOM\Environment
-     */
-    private $environment;
+    private Environment $environment;
 
-    /**
-     * @var \Rowbot\DOM\DOMImplementation
-     */
-    private $implementation;
+    private DOMImplementation $implementation;
 
-    /**
-     * @var bool
-     */
-    private $isIframeSrcDoc;
+    private bool $isIframeSrcDoc;
 
     /**
      * @var 'xml'|'html'
      */
-    private $type;
+    private string $type;
 
-    /**
-     * @var string
-     */
-    private $readyState;
+    private string $readyState;
 
-    /**
-     * @var int
-     */
-    private $source;
+    private int $source;
 
     /**
      * @param 'xml'|'html' $type

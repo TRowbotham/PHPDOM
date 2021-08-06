@@ -31,10 +31,7 @@ use function strcasecmp;
 
 class FragmentSerializer implements FragmentSerializerInterface
 {
-    /**
-     * @var bool
-     */
-    private $isFragmentCase;
+    private bool $isFragmentCase;
 
     public function __construct(bool $isFragmentCase = true)
     {

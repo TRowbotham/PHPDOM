@@ -17,10 +17,7 @@ namespace Rowbot\DOM;
  */
 abstract class AbstractRange
 {
-    /**
-     * @var \Rowbot\DOM\RangeBoundary
-     */
-    protected $range;
+    protected RangeBoundary $range;
 
     public function __construct(RangeBoundary $range)
     {

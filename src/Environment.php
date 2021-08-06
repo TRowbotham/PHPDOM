@@ -12,25 +12,13 @@ use function assert;
 
 class Environment
 {
-    /**
-     * @var \Rowbot\URL\URLRecord|null
-     */
-    private static $defaultUrl;
+    private static ?URLRecord $defaultUrl;
 
-    /**
-     * @var \Rowbot\URL\URLRecord
-     */
-    private $url;
+    private URLRecord $url;
 
-    /**
-     * @var string
-     */
-    private $contentType;
+    private string $contentType;
 
-    /**
-     * @var bool
-     */
-    private $scriptingEnabled;
+    private bool $scriptingEnabled;
 
     public function __construct(?URLRecord $url = null, string $contentType = null)
     {
@@ -70,14 +58,12 @@ class Environment
 
     private function getDefaultUrl(): URLRecord
     {
-        if (self::$defaultUrl !== null) {
-            return self::$defaultUrl;
+        if (!isset(self::$defaultUrl)) {
+            $parser = new BasicURLParser();
+            $url = $parser->parse(new Utf8String('about:blank'));
+            assert($url !== false);
+            self::$defaultUrl = $url;
         }
-
-        $parser = new BasicURLParser();
-        $url = $parser->parse(new Utf8String('about:blank'));
-        assert($url !== false);
-        self::$defaultUrl = $url;
 
         return self::$defaultUrl;
     }

@@ -23,10 +23,7 @@ use Rowbot\DOM\Exception\NotFoundError;
  */
 class NamedNodeMap implements ArrayAccess, Countable, Iterator
 {
-    /**
-     * @var \Rowbot\DOM\Element\Element
-     */
-    private $element;
+    private Element $element;
 
     public function __construct(Element $element)
     {

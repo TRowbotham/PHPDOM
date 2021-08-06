@@ -62,12 +62,9 @@ abstract class Node
     /**
      * @var \Rowbot\DOM\Support\Collection\NodeSet<\Rowbot\DOM\Node>
      */
-    protected $childNodes;
+    protected NodeSet $childNodes;
 
-    /**
-     * @var int
-     */
-    protected $nodeType;
+    protected int $nodeType;
 
     /**
      * @var self|null
@@ -79,15 +76,9 @@ abstract class Node
      */
     protected $nextSibling;
 
-    /**
-     * @var \Rowbot\DOM\Document
-     */
-    protected $nodeDocument;
+    protected Document $nodeDocument;
 
-    /**
-     * @var \Rowbot\DOM\NodeList
-     */
-    protected $nodeList;
+    protected NodeList $nodeList;
 
     /**
      * @var self|null

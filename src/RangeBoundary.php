@@ -6,25 +6,13 @@ namespace Rowbot\DOM;
 
 final class RangeBoundary
 {
-    /**
-     * @var \Rowbot\DOM\Node
-     */
-    public $startNode;
+    public Node $startNode;
 
-    /**
-     * @var int
-     */
-    public $startOffset;
+    public int $startOffset;
 
-    /**
-     * @var \Rowbot\DOM\Node
-     */
-    public $endNode;
+    public Node $endNode;
 
-    /**
-     * @var int
-     */
-    public $endOffset;
+    public int $endOffset;
 
     public function __construct(Node $startNode, int $startOffset, Node $endNode, int $endOffset)
     {

@@ -8,10 +8,7 @@ use Rowbot\DOM\Support\CodePointStream;
 
 abstract class Parser
 {
-    /**
-     * @var \Rowbot\DOM\Support\CodePointStream
-     */
-    protected $inputStream;
+    protected CodePointStream $inputStream;
 
     /**
      * Constructor.

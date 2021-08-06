@@ -26,17 +26,13 @@ class HTMLTableRowElement extends HTMLElement
     /**
      * @var \Rowbot\DOM\HTMLCollection<\Rowbot\DOM\Element\HTML\HTMLTableCellElement>|null
      */
-    private $cellsCollection;
+    private ?HTMLCollection $cellsCollection;
 
     public function __get(string $name)
     {
         switch ($name) {
             case 'cells':
-                if ($this->cellsCollection !== null) {
-                    return $this->cellsCollection;
-                }
-
-                $this->cellsCollection = new HTMLCollection(
+                return $this->cellsCollection ??= new HTMLCollection(
                     $this,
                     static function (self $root): Generator {
                         $node = $root->firstChild;
@@ -50,8 +46,6 @@ class HTMLTableRowElement extends HTMLElement
                         }
                     }
                 );
-
-                return $this->cellsCollection;
 
             case 'rowIndex':
                 // The rowIndex attribute must, if this element has a parent table element, or a

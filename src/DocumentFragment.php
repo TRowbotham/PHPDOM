@@ -22,10 +22,7 @@ class DocumentFragment extends Node implements NonElementParentNode, ParentNode
     use NonElementParentNodeTrait;
     use ParentNodeTrait;
 
-    /**
-     * @var \Rowbot\DOM\Element\Element|null
-     */
-    protected $host;
+    protected ?Element $host;
 
     public function __construct(Document $document)
     {

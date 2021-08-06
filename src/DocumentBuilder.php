@@ -10,6 +10,7 @@ use Rowbot\DOM\Parser\HTML\HTMLParser;
 use Rowbot\DOM\Parser\XML\XMLParser;
 use Rowbot\URL\BasicURLParser;
 use Rowbot\URL\String\Utf8String;
+use Rowbot\URL\URLRecord;
 use Throwable;
 
 use function in_array;
@@ -24,20 +25,11 @@ class DocumentBuilder
         'image/svg+xml',
     ];
 
-    /**
-     * @var bool
-     */
-    private $enableScripting;
+    private bool $enableScripting;
 
-    /**
-     * @var string|null
-     */
-    private $contentType;
+    private ?string $contentType;
 
-    /**
-     * @var \Rowbot\URL\URLRecord|null
-     */
-    private $url;
+    private ?URLRecord $url;
 
     protected function __construct()
     {

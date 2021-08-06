@@ -9,10 +9,7 @@ namespace Rowbot\DOM\Parser\Token;
  */
 abstract class CharacterDataToken implements Token
 {
-    /**
-     * @var string
-     */
-    public $data;
+    public string $data;
 
     public function __construct(string $data = '')
     {

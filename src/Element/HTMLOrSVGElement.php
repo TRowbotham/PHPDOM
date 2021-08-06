@@ -11,17 +11,10 @@ use Rowbot\DOM\DOMStringMap;
  */
 trait HTMLOrSVGElement
 {
-    /**
-     * @var \Rowbot\DOM\DOMStringMap|null
-     */
-    private $dataset;
+    private ?DOMStringMap $dataset;
 
     protected function getDataset(): DOMStringMap
     {
-        if ($this->dataset === null) {
-            $this->dataset = new DOMStringMap($this);
-        }
-
-        return $this->dataset;
+        return $this->dataset ??= new DOMStringMap($this);
     }
 }

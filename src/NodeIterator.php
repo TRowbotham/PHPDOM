@@ -18,10 +18,7 @@ final class NodeIterator
 {
     use NodeFilterUtils;
 
-    /**
-     * @var \Rowbot\DOM\NodeIteratorContext
-     */
-    private $context;
+    private NodeIteratorContext $context;
 
     /**
      * @param \Rowbot\DOM\NodeFilter|callable|null $filter

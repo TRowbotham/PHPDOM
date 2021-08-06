@@ -28,15 +28,9 @@ use function iterator_count;
  */
 class HTMLCollection implements ArrayAccess, Countable, IteratorAggregate
 {
-    /**
-     * @var \Closure(\Rowbot\DOM\Node): \Generator<int, TValue>
-     */
-    private $filter;
+    private Closure $filter;
 
-    /**
-     * @var \Rowbot\DOM\Node
-     */
-    private $root;
+    private Node $root;
 
     public function __construct(Node $root, Closure $filter)
     {

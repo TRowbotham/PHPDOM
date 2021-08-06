@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Element\HTML;
 
 use Rowbot\DOM\Document;
+use Rowbot\DOM\DocumentFragment;
 use Rowbot\DOM\Node;
 
 /**
@@ -12,10 +13,7 @@ use Rowbot\DOM\Node;
  */
 class HTMLTemplateElement extends HTMLElement
 {
-    /**
-     * @var \Rowbot\DOM\DocumentFragment
-     */
-    protected $content;
+    protected DocumentFragment $content;
 
     public function __construct(Document $document, string $localName, ?string $namespace, ?string $prefix = null)
     {

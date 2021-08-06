@@ -67,35 +67,17 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
     use NonDocumentTypeChildNode;
     use ParentNodeTrait;
 
-    /**
-     * @var \Rowbot\DOM\NamedNodeMap
-     */
-    protected $namedNodeMap;
+    protected NamedNodeMap $namedNodeMap;
 
-    /**
-     * @var \Rowbot\DOM\AttributeList
-     */
-    protected $attributeList;
+    protected AttributeList $attributeList;
 
-    /**
-     * @var string
-     */
-    protected $localName;
+    protected string $localName;
 
-    /**
-     * @var ?string
-     */
-    protected $namespaceURI;
+    protected ?string $namespaceURI;
 
-    /**
-     * @var ?string
-     */
-    protected $prefix;
+    protected ?string $prefix;
 
-    /**
-     * @var \Rowbot\DOM\DOMTokenList|null
-     */
-    private $classList_;
+    private ?DOMTokenList $classList_;
 
     public function __construct(Document $document, string $localName, ?string $namespace, ?string $prefix = null)
     {
@@ -863,11 +845,7 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
 
     protected function getClassList(): DOMTokenList
     {
-        if ($this->classList_ === null) {
-            $this->classList_ = new DOMTokenList($this, 'class');
-        }
-
-        return $this->classList_;
+        return $this->classList_ ??= new DOMTokenList($this, 'class');
     }
 
     protected function getNodeName(): string

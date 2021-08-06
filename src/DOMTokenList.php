@@ -33,20 +33,11 @@ final class DOMTokenList implements
     Iterator,
     Stringable
 {
-    /**
-     * @var string
-     */
-    private $attrLocalName;
+    private string $attrLocalName;
 
-    /**
-     * @var \Rowbot\DOM\Element\Element
-     */
-    private $element;
+    private Element $element;
 
-    /**
-     * @var \Rowbot\DOM\Support\Collection\StringSet
-     */
-    private $tokens;
+    private StringSet $tokens;
 
     public function __construct(Element $element, string $attrLocalName)
     {

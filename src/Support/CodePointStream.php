@@ -17,19 +17,13 @@ class CodePointStream
     public const SEEK_ABSOLUTE = 2;
 
     /**
-     * @var string[]
+     * @var list<string>
      */
-    private $data;
+    private array $data;
 
-    /**
-     * @var int
-     */
-    private $currentChar;
+    private int $currentChar;
 
-    /**
-     * @var int
-     */
-    private $nextChar;
+    private int $nextChar;
 
     public function __construct(string $data = '')
     {

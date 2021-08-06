@@ -18,7 +18,7 @@ trait ParentNodeTrait
     /**
      * @var \Rowbot\DOM\HTMLCollection<\Rowbot\DOM\Element\Element>|null
      */
-    private $childElements;
+    private ?HTMLCollection $childElements;
 
     /**
      * @see https://dom.spec.whatwg.org/#dom-parentnode-append
@@ -71,11 +71,7 @@ trait ParentNodeTrait
      */
     protected function getChildren(): HTMLCollection
     {
-        if ($this->childElements !== null) {
-            return $this->childElements;
-        }
-
-        $this->childElements = new HTMLCollection($this, static function (self $root): Generator {
+        return $this->childElements ??= new HTMLCollection($this, static function (self $root): Generator {
             $node = $root->firstChild;
 
             while ($node !== null) {
@@ -86,8 +82,6 @@ trait ParentNodeTrait
                 $node = $node->nextSibling;
             }
         });
-
-        return $this->childElements;
     }
 
     /**

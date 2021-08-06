@@ -22,7 +22,7 @@ class NodeList implements ArrayAccess, Countable, IteratorAggregate
     /**
      * @var \Rowbot\DOM\Support\Collection\NodeSet<\Rowbot\DOM\Node>
      */
-    private $nodes;
+    private NodeSet $nodes;
 
     /**
      * @param \Rowbot\DOM\Support\Collection\NodeSet<\Rowbot\DOM\Node> $nodes

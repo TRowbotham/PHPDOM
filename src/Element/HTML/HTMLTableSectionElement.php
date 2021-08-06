@@ -26,17 +26,13 @@ class HTMLTableSectionElement extends HTMLElement
     /**
      * @var \Rowbot\DOM\HTMLCollection<\Rowbot\DOM\Element\HTML\HTMLTableRowElement>|null
      */
-    private $rowsCollection;
+    private ?HTMLCollection $rowsCollection;
 
     public function __get(string $name)
     {
         switch ($name) {
             case 'rows':
-                if ($this->rowsCollection !== null) {
-                    return $this->rowsCollection;
-                }
-
-                $this->rowsCollection = new HTMLCollection(
+                return $this->rowsCollection ??= new HTMLCollection(
                     $this,
                     static function (self $root): Generator {
                         $node = $root->firstChild;
@@ -50,8 +46,6 @@ class HTMLTableSectionElement extends HTMLElement
                         }
                     }
                 );
-
-                return $this->rowsCollection;
 
             default:
                 return parent::__get($name);

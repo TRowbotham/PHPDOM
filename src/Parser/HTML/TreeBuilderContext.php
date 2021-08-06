@@ -30,6 +30,7 @@ use Rowbot\DOM\Parser\HTML\InsertionMode\InitialInsertionMode;
 use Rowbot\DOM\Parser\HTML\InsertionMode\InRowInsertionMode;
 use Rowbot\DOM\Parser\HTML\InsertionMode\InSelectInsertionMode;
 use Rowbot\DOM\Parser\HTML\InsertionMode\InSelectInTableInsertionMode;
+use Rowbot\DOM\Parser\HTML\InsertionMode\InsertionMode;
 use Rowbot\DOM\Parser\HTML\InsertionMode\InTableBodyInsertionMode;
 use Rowbot\DOM\Parser\HTML\InsertionMode\InTableInsertionMode;
 use SplObjectStorage;
@@ -39,70 +40,54 @@ final class TreeBuilderContext
 {
     /**
      * The stack of active formatting elements.
-     *
-     * @var \Rowbot\DOM\Parser\Collection\ActiveFormattingElementStack
      */
-    public $activeFormattingElements;
+    public ActiveFormattingElementStack $activeFormattingElements;
 
     /**
      * The document the parser is associated with.
-     *
-     * @var \Rowbot\DOM\Document
      */
-    public $document;
+    public Document $document;
 
     /**
      * Stores the insertion mode used by the Treebuilder.
-     *
-     * @var \Rowbot\DOM\Parser\HTML\InsertionMode\InsertionMode
      */
-    public $insertionMode;
+    public InsertionMode $insertionMode;
 
     /**
      * The stack of template insertion modes.
      *
      * @var \SplStack<class-string<\Rowbot\DOM\Parser\HTML\InsertionMode\InsertionMode>>
      */
-    public $templateInsertionModes;
+    public SplStack $templateInsertionModes;
 
     /**
      * A collection of nodes and the tokens that were used to create them.
      *
      * @var \SplObjectStorage<\Rowbot\DOM\Element\Element, \Rowbot\DOM\Parser\Token\TagToken>
      */
-    public $elementTokenMap;
+    public SplObjectStorage $elementTokenMap;
 
     /**
      * Whether or not foster-parenting mode is active.
-     *
-     * @var bool
      */
-    public $fosterParenting;
+    public bool $fosterParenting;
 
-    /**
-     * @var string
-     */
-    public $framesetOk;
+    public string $framesetOk;
 
     /**
      * Stores the insertion mode that the TreeBuilder should return to after
      * it is done processing the current token in the current insertion mode.
-     *
-     * @var \Rowbot\DOM\Parser\HTML\InsertionMode\InsertionMode
      */
-    public $originalInsertionMode;
+    public InsertionMode $originalInsertionMode;
 
-    /**
-     * @var \Rowbot\DOM\Parser\HTML\ParserContext
-     */
-    public $parser;
+    public ParserContext $parser;
 
     /**
      * A list of character tokens pending insertion during table building.
      *
      * @var list<\Rowbot\DOM\Parser\Token\CharacterToken>
      */
-    public $pendingTableCharacterTokens;
+    public array $pendingTableCharacterTokens;
 
     /**
      * @param \SplObjectStorage<\Rowbot\DOM\Element\Element, \Rowbot\DOM\Parser\Token\TagToken> $elementTokenMap

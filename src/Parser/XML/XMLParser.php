@@ -13,10 +13,7 @@ use Throwable;
 
 class XMLParser extends Parser
 {
-    /**
-     * @var \Rowbot\DOM\Document
-     */
-    private $document;
+    private Document $document;
 
     public function __construct(Document $document)
     {

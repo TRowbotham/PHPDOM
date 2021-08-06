@@ -47,10 +47,7 @@ class HTMLAnchorElement extends HTMLElement
 {
     use HTMLHyperlinkElementUtils;
 
-    /**
-     * @var \Rowbot\DOM\DOMTokenList
-     */
-    private $relList;
+    private ?DOMTokenList $relList;
 
     public function __construct(Document $document, string $localName, ?string $namespace, ?string $prefix = null)
     {
@@ -255,10 +252,6 @@ class HTMLAnchorElement extends HTMLElement
 
     private function getRelList(): DOMTokenList
     {
-        if ($this->relList === null) {
-            $this->relList = new DOMTokenList($this, 'rel');
-        }
-
-        return $this->relList;
+        return $this->relList ??= new DOMTokenList($this, 'rel');
     }
 }

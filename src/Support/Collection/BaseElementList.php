@@ -19,15 +19,12 @@ use function in_array;
  */
 class BaseElementList
 {
-    /**
-     * @var \Rowbot\DOM\Element\HTML\HTMLBaseElement|null
-     */
-    private $active;
+    private ?HTMLBaseElement $active;
 
     /**
      * @var list<\Rowbot\DOM\Element\HTML\HTMLBaseElement>
      */
-    private $list;
+    private array $list;
 
     public function __construct()
     {

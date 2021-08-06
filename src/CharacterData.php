@@ -30,10 +30,7 @@ abstract class CharacterData extends Node implements ChildNode
     use ChildNodeTrait;
     use NonDocumentTypeChildNode;
 
-    /**
-     * @var string
-     */
-    protected $data;
+    protected string $data;
 
     public function __construct(Document $document, string $data)
     {

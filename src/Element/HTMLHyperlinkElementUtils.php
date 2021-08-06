@@ -24,10 +24,7 @@ use function assert;
  */
 trait HTMLHyperlinkElementUtils
 {
-    /**
-     * @var \Rowbot\URL\URLRecord|null
-     */
-    private $url;
+    private ?URLRecord $url;
 
     /**
      * Gets the Element's href IDL attribute.

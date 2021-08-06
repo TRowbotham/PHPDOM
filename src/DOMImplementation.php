@@ -16,10 +16,7 @@ use function preg_match;
  */
 final class DOMImplementation
 {
-    /**
-     * @var \Rowbot\DOM\Document
-     */
-    private $document;
+    private Document $document;
 
     public function __construct(Document $document)
     {

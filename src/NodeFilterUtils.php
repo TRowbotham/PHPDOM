@@ -17,15 +17,9 @@ trait NodeFilterUtils
      */
     private $filter;
 
-    /**
-     * @var bool
-     */
-    private $isActive = false;
+    private bool $isActive = false;
 
-    /**
-     * @var int
-     */
-    private $whatToShow;
+    private int $whatToShow;
 
     /**
      * @param \Rowbot\DOM\NodeFilter|callable|null $filter

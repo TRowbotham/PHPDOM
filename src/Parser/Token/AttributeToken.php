@@ -13,22 +13,22 @@ class AttributeToken implements Token
     /**
      * @var string
      */
-    public $name;
+    public string $name;
 
     /**
      * @var string|null
      */
-    public $namespace;
+    public ?string $namespace;
 
     /**
      * @var string|null
      */
-    public $prefix;
+    public ?string $prefix;
 
     /**
      * @var string
      */
-    public $value;
+    public string $value;
 
     public function __construct(string $name = '', string $value = '')
     {

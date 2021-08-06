@@ -18,15 +18,9 @@ final class TreeWalker
 {
     use NodeFilterUtils;
 
-    /**
-     * @var \Rowbot\DOM\Node
-     */
-    private $currentNode;
+    public Node $currentNode;
 
-    /**
-     * @var \Rowbot\DOM\Node
-     */
-    private $root;
+    private Node $root;
 
     /**
      * @param \Rowbot\DOM\NodeFilter|callable|null $filter
@@ -59,16 +53,6 @@ final class TreeWalker
 
             case 'whatToShow':
                 return $this->whatToShow;
-        }
-    }
-
-    public function __set(string $name, Node $value): void
-    {
-        switch ($name) {
-            case 'currentNode':
-                if ($value instanceof Node) {
-                    $this->currentNode = $value;
-                }
         }
     }
 

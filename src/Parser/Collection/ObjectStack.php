@@ -26,17 +26,14 @@ abstract class ObjectStack implements Countable, IteratorAggregate
     /**
      * @var \SplObjectStorage<TValue, null>
      */
-    protected $cache;
+    protected SplObjectStorage $cache;
 
     /**
      * @var list<TValue>
      */
-    protected $stack;
+    protected array $stack;
 
-    /**
-     * @var int
-     */
-    protected $size;
+    protected int $size;
 
     public function __construct()
     {

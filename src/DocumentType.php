@@ -16,20 +16,11 @@ class DocumentType extends Node implements ChildNode
 {
     use ChildNodeTrait;
 
-    /**
-     * @var string
-     */
-    private $name;
+    private string $name;
 
-    /**
-     * @var string
-     */
-    private $publicId;
+    private string $publicId;
 
-    /**
-     * @var string
-     */
-    private $systemId;
+    private string $systemId;
 
     public function __construct(
         Document $document,

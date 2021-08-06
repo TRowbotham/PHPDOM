@@ -21,17 +21,14 @@ class AttributeList implements ArrayAccess, Countable, Iterator
     /**
      * @var \Rowbot\DOM\Support\Collection\NodeSet<\Rowbot\DOM\Attr>
      */
-    private $list;
+    private NodeSet $list;
 
-    /**
-     * @var \Rowbot\DOM\Element\Element
-     */
-    private $element;
+    private Element $element;
 
     /**
      * @var \SplObjectStorage<\Rowbot\DOM\AttributeChangeObserver, null>
      */
-    private $observers;
+    private SplObjectStorage $observers;
 
     public function __construct(Element $element)
     {

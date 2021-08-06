@@ -12,7 +12,7 @@ class NamespacePrefixMap
     /**
      * @var array<string, array<string, int>>
      */
-    private $map;
+    private array $map;
 
     public function __construct()
     {

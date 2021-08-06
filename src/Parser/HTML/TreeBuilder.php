@@ -19,7 +19,7 @@ class TreeBuilder
     /**
      * @var \Rowbot\DOM\Parser\HTML\TreeBuilderContext
      */
-    private $context;
+    private TreeBuilderContext $context;
 
     public function __construct(TreeBuilderContext $context)
     {
