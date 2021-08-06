@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\domparsing;
 
-use Rowbot\DOM\Encoding\EncodingUtils;
 use Rowbot\DOM\Tests\dom\WindowTrait;
 use Rowbot\DOM\Tests\TestCase;
 
 use function hexdec;
+use function mb_chr;
 use function rawurlencode;
 
 use const DIRECTORY_SEPARATOR;
@@ -47,7 +47,7 @@ class InnerHTMLMxssSubTest extends TestCase
         // $container = $document->querySelector('a')->parentNode;
         $container = $document->getElementsByTagName('a')[0]->parentNode;
         $entity = "&#x{$whitespace};";
-        $character = EncodingUtils::encodeCodePoint(hexdec($whitespace));
+        $character = mb_chr(hexdec($whitespace), 'utf-8');
         $url = rawurlencode($character);
         $container->innerHTML = "<a href=\"{$entity}javascript:alert(1)\">Link</a>";
 
