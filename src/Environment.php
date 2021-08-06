@@ -12,7 +12,7 @@ use function assert;
 
 class Environment
 {
-    private static ?URLRecord $defaultUrl;
+    private static ?URLRecord $defaultUrl = null;
 
     private URLRecord $url;
 
@@ -58,7 +58,7 @@ class Environment
 
     private function getDefaultUrl(): URLRecord
     {
-        if (!isset(self::$defaultUrl)) {
+        if (self::$defaultUrl === null) {
             $parser = new BasicURLParser();
             $url = $parser->parse(new Utf8String('about:blank'));
             assert($url !== false);

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Element\HTML;
 
+use Rowbot\DOM\Document;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\URL\URLParser;
 use Rowbot\URL\URLRecord;
@@ -19,6 +20,13 @@ class HTMLBaseElement extends HTMLElement
     private const TARGET_KEYWORDS = ['_self', '_blank', '_parent', '_top'];
 
     private ?URLRecord $frozenBaseUrl;
+
+    public function __construct(Document $document, string $localName, ?string $namespace, ?string $prefix = null)
+    {
+        parent::__construct($document, $localName, $namespace, $prefix);
+
+        $this->frozenBaseUrl = null;
+    }
 
     public function __get(string $name)
     {
@@ -172,7 +180,7 @@ class HTMLBaseElement extends HTMLElement
     {
         parent::__clone();
 
-        if (isset($this->frozenBaseUrl)) {
+        if ($this->frozenBaseUrl !== null) {
             $this->frozenBaseUrl = clone $this->frozenBaseUrl;
         }
     }

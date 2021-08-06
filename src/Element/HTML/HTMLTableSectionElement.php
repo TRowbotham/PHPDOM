@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Element\HTML;
 
 use Generator;
+use Rowbot\DOM\Document;
 use Rowbot\DOM\Element\ElementFactory;
 use Rowbot\DOM\Exception\IndexSizeError;
 use Rowbot\DOM\HTMLCollection;
@@ -27,6 +28,13 @@ class HTMLTableSectionElement extends HTMLElement
      * @var \Rowbot\DOM\HTMLCollection<\Rowbot\DOM\Element\HTML\HTMLTableRowElement>|null
      */
     private ?HTMLCollection $rowsCollection;
+
+    public function __construct(Document $document, string $localName, ?string $namespace, ?string $prefix = null)
+    {
+        parent::__construct($document, $localName, $namespace, $prefix);
+
+        $this->rowsCollection = null;
+    }
 
     public function __get(string $name)
     {

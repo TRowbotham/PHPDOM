@@ -18,7 +18,7 @@ trait ParentNodeTrait
     /**
      * @var \Rowbot\DOM\HTMLCollection<\Rowbot\DOM\Element\Element>|null
      */
-    private ?HTMLCollection $childElements;
+    private ?HTMLCollection $childElements = null;
 
     /**
      * @see https://dom.spec.whatwg.org/#dom-parentnode-append

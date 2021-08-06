@@ -54,6 +54,7 @@ class HTMLAnchorElement extends HTMLElement
         parent::__construct($document, $localName, $namespace, $prefix);
 
         $this->attributeList->observe($this);
+        $this->relList = null;
         $this->setURL();
     }
 

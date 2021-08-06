@@ -6,6 +6,7 @@ namespace Rowbot\DOM\Element\HTML;
 
 use Closure;
 use Generator;
+use Rowbot\DOM\Document;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Element\ElementFactory;
 use Rowbot\DOM\Exception\HierarchyRequestError;
@@ -75,6 +76,14 @@ class HTMLTableElement extends HTMLElement
      * @var \Rowbot\DOM\HTMLCollection<\Rowbot\DOM\Element\HTML\HTMLTableSectionElement>|null
      */
     private ?HTMLCollection $tBodyCollection;
+
+    public function __construct(Document $document, string $localName, ?string $namespace, ?string $prefix = null)
+    {
+        parent::__construct($document, $localName, $namespace, $prefix);
+
+        $this->rowsCollection = null;
+        $this->tBodyCollection = null;
+    }
 
     public function __get(string $name)
     {

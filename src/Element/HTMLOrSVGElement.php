@@ -11,7 +11,7 @@ use Rowbot\DOM\DOMStringMap;
  */
 trait HTMLOrSVGElement
 {
-    private ?DOMStringMap $dataset;
+    private ?DOMStringMap $dataset = null;
 
     protected function getDataset(): DOMStringMap
     {

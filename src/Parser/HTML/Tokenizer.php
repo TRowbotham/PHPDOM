@@ -98,7 +98,7 @@ class Tokenizer
      *
      * @var non-empty-array<string, string>|null
      */
-    private static ?array $namedCharacterReferences;
+    private static ?array $namedCharacterReferences = null;
 
     private ParserContext $parser;
 
@@ -2806,7 +2806,7 @@ class Tokenizer
                 // https://html.spec.whatwg.org/multipage/syntax.html#named-character-reference-state
                 case TokenizerState::NAMED_CHARACTER_REFERENCE:
                     // Load the JSON file for the named character references trie on-demand.
-                    if (!isset(self::$namedCharacterReferences)) {
+                    if (self::$namedCharacterReferences === null) {
                         $data = file_get_contents(self::NAMED_CHAR_REFERENCES_PATH);
 
                         if ($data === false) {

@@ -90,6 +90,7 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
         $this->nodeType = self::ELEMENT_NODE;
         $this->prefix = $prefix;
         $this->attributeList->observe($this);
+        $this->classList_ = null;
     }
 
     /**
