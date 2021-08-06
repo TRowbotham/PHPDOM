@@ -30,16 +30,6 @@ parameters:
             count: 1
 
         -
-            message: '#Static property Rowbot\\DOM\\NodeIteratorContext::\$nodeIterators \(SplObjectStorage<Rowbot\\DOM\\NodeIteratorContext, null>\|null\) does not accept SplObjectStorage<object, mixed>\.#'
-            path: src/NodeIteratorContext.php
-            count: 1
-
-        -
-            message: '#Method Rowbot\\DOM\\NodeIteratorContext::getIterators\(\) should return SplObjectStorage<Rowbot\\DOM\\NodeIteratorContext, null> but returns SplObjectStorage<object, mixed>\|SplObjectStorage<Rowbot\\DOM\\NodeIteratorContext, null>\.#'
-            path: src/NodeIteratorContext.php
-            count: 1
-
-        -
             message: '#Else branch is unreachable because previous condition is always true\.#'
             path: src/Element/Element.php
             count: 1
@@ -71,16 +61,6 @@ parameters:
         -
             message: '#Cannot access property \$localName on Rowbot\\DOM\\Node\|null\.#'
             path: src/Parser/HTML/FragmentSerializer.php
-            count: 1
-
-        -
-            message: '#Static property Rowbot\\DOM\\Range::\$collection \(SplObjectStorage<Rowbot\\DOM\\RangeBoundary, null>\|null\) does not accept SplObjectStorage<object, mixed>\.#'
-            path: src/Range.php
-            count: 1
-
-        -
-            message: '#Method Rowbot\\DOM\\Range::getRangeCollection\(\) should return SplObjectStorage<Rowbot\\DOM\\RangeBoundary, null> but returns SplObjectStorage<object, mixed>\|SplObjectStorage<Rowbot\\DOM\\RangeBoundary, null>\.#'
-            path: src/Range.php
             count: 1
 
         -
