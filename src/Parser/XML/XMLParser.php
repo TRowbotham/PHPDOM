@@ -31,6 +31,8 @@ class XMLParser extends Parser
      *
      * @see https://html.spec.whatwg.org/multipage/xhtml.html#xml-fragment-parsing-algorithm
      *
+     * @return \Rowbot\DOM\NodeList<\Rowbot\DOM\Node>
+     *
      * @throws \Rowbot\DOM\Exception\SyntaxError
      */
     public static function parseXMLFragment(string $input, Element $contextElement): NodeList

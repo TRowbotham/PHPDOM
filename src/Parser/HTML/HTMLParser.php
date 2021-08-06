@@ -94,6 +94,8 @@ class HTMLParser extends Parser
 
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#parsing-html-fragments
+     *
+     * @return \Rowbot\DOM\NodeList<\Rowbot\DOM\Node>
      */
     public static function parseHTMLFragment(string $input, Element $contextElement): NodeList
     {

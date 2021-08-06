@@ -77,6 +77,9 @@ abstract class Node
 
     protected Document $nodeDocument;
 
+    /**
+     * @var \Rowbot\DOM\NodeList<\Rowbot\DOM\Node>
+     */
     protected NodeList $nodeList;
 
     /**
@@ -88,7 +91,7 @@ abstract class Node
     {
         $this->nodeDocument = $document;
         $this->childNodes = new NodeSet();
-        $this->nodeList = new NodeList($this->childNodes);
+        $this->nodeList = new LiveNodeList($this->childNodes);
     }
 
     /**
@@ -1857,6 +1860,6 @@ abstract class Node
         $this->nextSibling = null;
         $this->previousSibling = null;
         $this->childNodes = new NodeSet();
-        $this->nodeList = new NodeList($this->childNodes);
+        $this->nodeList = new LiveNodeList($this->childNodes);
     }
 }
