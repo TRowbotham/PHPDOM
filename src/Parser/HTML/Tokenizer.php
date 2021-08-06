@@ -30,6 +30,7 @@ use function file_get_contents;
 use function json_decode;
 use function json_last_error;
 use function json_last_error_msg;
+use function mb_chr;
 use function ord;
 use function strlen;
 use function strtolower;
@@ -3160,7 +3161,7 @@ class Tokenizer
                     // code point equal to the character reference code to the
                     // temporary buffer. Flush code points consumed as a
                     // character reference. Switch to the return state.
-                    $buffer = EncodingUtils::encodeCodePoint($characterReferenceCode);
+                    $buffer = mb_chr($characterReferenceCode, 'utf-8');
 
                     yield from $this->flush($buffer, $attributeToken, $returnState);
 
