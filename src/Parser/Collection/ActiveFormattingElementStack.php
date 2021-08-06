@@ -9,6 +9,7 @@ use Rowbot\DOM\Parser\Marker;
 
 use function array_splice;
 use function count;
+use function spl_object_id;
 
 /**
  * @extends \Rowbot\DOM\Parser\Collection\ObjectStack<\Rowbot\DOM\Element\HTML\HTMLElement|\Rowbot\DOM\Parser\Marker>
@@ -103,12 +104,14 @@ class ActiveFormattingElementStack extends ObjectStack
      */
     public function insertAt(int $index, $item): void
     {
-        if ($this->cache->contains($item)) {
+        $id = spl_object_id($item);
+
+        if (isset($this->cache[$id])) {
             throw new DuplicateItemException();
         }
 
         array_splice($this->stack, $index, 0, [$item]);
-        $this->cache->attach($item);
+        $this->cache[$id] = true;
         ++$this->size;
     }
 
@@ -116,7 +119,7 @@ class ActiveFormattingElementStack extends ObjectStack
     {
         $marker = new Marker();
         $this->stack[] = $marker;
-        $this->cache->attach($marker);
+        $this->cache[spl_object_id($marker)] = true;
         ++$this->size;
     }
 }

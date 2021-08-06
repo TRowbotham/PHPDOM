@@ -10,7 +10,8 @@ use Iterator;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Exception\InUseAttributeError;
 use Rowbot\DOM\Support\Collection\NodeSet;
-use SplObjectStorage;
+
+use function spl_object_id;
 
 /**
  * @implements \ArrayAccess<int, \Rowbot\DOM\Attr>
@@ -26,15 +27,15 @@ class AttributeList implements ArrayAccess, Countable, Iterator
     private Element $element;
 
     /**
-     * @var \SplObjectStorage<\Rowbot\DOM\AttributeChangeObserver, null>
+     * @var array<int, \Rowbot\DOM\AttributeChangeObserver>
      */
-    private SplObjectStorage $observers;
+    private array $observers;
 
     public function __construct(Element $element)
     {
         $this->list = new NodeSet();
         $this->element = $element;
-        $this->observers = new SplObjectStorage();
+        $this->observers = [];
     }
 
     /**
@@ -302,12 +303,12 @@ class AttributeList implements ArrayAccess, Countable, Iterator
 
     public function observe(AttributeChangeObserver $observer): void
     {
-        $this->observers->attach($observer);
+        $this->observers[spl_object_id($observer)] = $observer;
     }
 
     public function unobserve(AttributeChangeObserver $observer): void
     {
-        $this->observers->detach($observer);
+        unset($this->observers[spl_object_id($observer)]);
     }
 
     public function contains(Attr $attr): bool

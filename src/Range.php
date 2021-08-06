@@ -14,10 +14,10 @@ use Rowbot\DOM\Exception\NotSupportedError;
 use Rowbot\DOM\Exception\WrongDocumentError;
 use Rowbot\DOM\Parser\ParserFactory;
 use Rowbot\DOM\Support\Stringable;
-use SplObjectStorage;
 
 use function assert;
 use function mb_substr;
+use function spl_object_id;
 
 /**
  * Represents a sequence of content within a node tree.
@@ -36,15 +36,15 @@ final class Range extends AbstractRange implements Stringable
     public const END_TO_START   = 3;
 
     /**
-     * @var \SplObjectStorage<\Rowbot\DOM\RangeBoundary, null>|null
+     * @var array<int, \Rowbot\DOM\RangeBoundary>
      */
-    private static ?SplObjectStorage $collection;
+    private static $collection = [];
 
     public function __construct(Document $document)
     {
         $range = new RangeBoundary($document, 0, $document, 0);
         parent::__construct($range);
-        self::getRangeCollection()->attach($this->range);
+        self::$collection[spl_object_id($this->range)] = $this->range;
     }
 
     public function __get(string $name)
@@ -59,12 +59,12 @@ final class Range extends AbstractRange implements Stringable
     public function __clone()
     {
         $this->range = clone $this->range;
-        self::getRangeCollection()->attach($this->range);
+        self::$collection[spl_object_id($this->range)] = $this->range;
     }
 
     public function __destruct()
     {
-        self::getRangeCollection()->detach($this->range);
+        unset(self::$collection[spl_object_id($this->range)]);
     }
 
     /**
@@ -1047,11 +1047,11 @@ final class Range extends AbstractRange implements Stringable
      *
      * @internal
      *
-     * @return \SplObjectStorage<\Rowbot\DOM\RangeBoundary, null>
+     * @return array<int, \Rowbot\DOM\RangeBoundary>
      */
-    public static function getRangeCollection()
+    public static function getRangeCollection(): array
     {
-        return self::$collection ??= new SplObjectStorage();
+        return self::$collection;
     }
 
     /**

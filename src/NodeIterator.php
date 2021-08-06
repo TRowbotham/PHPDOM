@@ -26,9 +26,9 @@ final class NodeIterator
     public function __construct(Node $root, int $whatToShow = NodeFilter::SHOW_ALL, $filter = null)
     {
         $this->context = new NodeIteratorContext($root);
+        $this->context->observeSelf();
         $this->setFilter($filter);
         $this->whatToShow = $whatToShow;
-        NodeIteratorContext::getIterators()->attach($this->context);
     }
 
     /**
@@ -56,7 +56,7 @@ final class NodeIterator
 
     public function __destruct()
     {
-        NodeIteratorContext::getIterators()->detach($this->context);
+        $this->context->unobserveSelf();
     }
 
     /**

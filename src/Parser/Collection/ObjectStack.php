@@ -10,11 +10,11 @@ use IteratorAggregate;
 use Rowbot\DOM\Parser\Collection\Exception\DuplicateItemException;
 use Rowbot\DOM\Parser\Collection\Exception\EmptyStackException;
 use Rowbot\DOM\Parser\Collection\Exception\NotInCollectionException;
-use SplObjectStorage;
 
 use function array_pop;
 use function array_search;
 use function array_splice;
+use function spl_object_id;
 
 /**
  * @template TValue of object
@@ -24,9 +24,9 @@ use function array_splice;
 abstract class ObjectStack implements Countable, IteratorAggregate
 {
     /**
-     * @var \SplObjectStorage<TValue, null>
+     * @var array<int, true>
      */
-    protected SplObjectStorage $cache;
+    protected array $cache;
 
     /**
      * @var list<TValue>
@@ -38,7 +38,7 @@ abstract class ObjectStack implements Countable, IteratorAggregate
     public function __construct()
     {
         $this->stack = [];
-        $this->cache = new SplObjectStorage();
+        $this->cache = [];
         $this->size = 0;
     }
 
@@ -47,7 +47,7 @@ abstract class ObjectStack implements Countable, IteratorAggregate
      */
     public function contains($item): bool
     {
-        return $this->cache->contains($item);
+        return $this->cache[spl_object_id($item)] ?? false;
     }
 
     public function isEmpty(): bool
@@ -65,12 +65,14 @@ abstract class ObjectStack implements Countable, IteratorAggregate
      */
     public function push($item): void
     {
-        if ($this->cache->contains($item)) {
+        $id = spl_object_id($item);
+
+        if (isset($this->cache[$id])) {
             throw new DuplicateItemException();
         }
 
         $this->stack[] = $item;
-        $this->cache->attach($item);
+        $this->cache[$id] = true;
         ++$this->size;
     }
 
@@ -84,7 +86,7 @@ abstract class ObjectStack implements Countable, IteratorAggregate
         }
 
         $popped = array_pop($this->stack);
-        $this->cache->detach($popped);
+        unset($this->cache[spl_object_id($popped)]);
         --$this->size;
 
         return $popped;
@@ -117,7 +119,7 @@ abstract class ObjectStack implements Countable, IteratorAggregate
     public function clear(): void
     {
         $this->stack = [];
-        $this->cache = new SplObjectStorage();
+        $this->cache = [];
         $this->size = 0;
     }
 
@@ -126,7 +128,7 @@ abstract class ObjectStack implements Countable, IteratorAggregate
      */
     public function indexOf($item): int
     {
-        if (!$this->cache->contains($item)) {
+        if (!isset($this->cache[spl_object_id($item)])) {
             throw new NotInCollectionException();
         }
 
@@ -146,11 +148,13 @@ abstract class ObjectStack implements Countable, IteratorAggregate
      */
     public function remove($item): void
     {
-        if (!$this->cache->contains($item)) {
+        $id = spl_object_id($item);
+
+        if (!isset($this->cache[$id])) {
             throw new NotInCollectionException();
         }
 
-        $this->cache->detach($item);
+        unset($this->cache[$id]);
         --$this->size;
 
         if ($this->stack[$this->size] === $item) {
@@ -169,18 +173,22 @@ abstract class ObjectStack implements Countable, IteratorAggregate
      */
     public function replace($newItem, $oldItem): void
     {
-        if ($this->cache->contains($newItem)) {
+        $newItemId = spl_object_id($newItem);
+
+        if (isset($this->cache[$newItemId])) {
             throw new DuplicateItemException();
         }
 
-        if (!$this->cache->contains($oldItem)) {
+        $oldItemId = spl_object_id($oldItem);
+
+        if (!isset($this->cache[$oldItemId])) {
             throw new NotInCollectionException();
         }
 
         $index = array_search($oldItem, $this->stack, true);
         $this->stack[$index] = $newItem;
-        $this->cache->detach($oldItem);
-        $this->cache->attach($newItem);
+        unset($this->cache[$oldItemId]);
+        $this->cache[$newItemId] = true;
     }
 
     /**
@@ -194,10 +202,5 @@ abstract class ObjectStack implements Countable, IteratorAggregate
         for ($i = $size - 1; $i >= 0; --$i) {
             yield $i => $stack[$i];
         }
-    }
-
-    public function __clone()
-    {
-        $this->cache = clone $this->cache;
     }
 }

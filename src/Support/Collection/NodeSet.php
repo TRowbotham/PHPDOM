@@ -9,13 +9,13 @@ use Closure;
 use Countable;
 use Iterator;
 use Rowbot\DOM\Node;
-use SplObjectStorage;
 
 use function array_pop;
 use function array_search;
 use function array_shift;
 use function array_splice;
 use function array_unshift;
+use function spl_object_id;
 
 /**
  * NodeSet is a collection of node objects that does not allow for duplicate items.
@@ -33,9 +33,9 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
     private array $list;
 
     /**
-     * @var \SplObjectStorage<TValue, null>
+     * @var array<int, true>
      */
-    private SplObjectStorage $cache;
+    private array $cache;
 
     private int $length;
 
@@ -44,7 +44,7 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
     public function __construct()
     {
         $this->list = [];
-        $this->cache = new SplObjectStorage();
+        $this->cache = [];
         $this->length = 0;
         $this->cursor = 0;
     }
@@ -56,12 +56,14 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
      */
     public function append(Node $item): void
     {
-        if ($this->cache->contains($item)) {
+        $id = spl_object_id($item);
+
+        if (isset($this->cache[$id])) {
             return;
         }
 
         $this->list[] = $item;
-        $this->cache->attach($item);
+        $this->cache[$id] = true;
         ++$this->length;
     }
 
@@ -72,12 +74,14 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
      */
     public function prepend(Node $item): void
     {
-        if ($this->cache->contains($item)) {
+        $id = spl_object_id($item);
+
+        if (isset($this->cache[$id])) {
             return;
         }
 
         array_unshift($this->list, $item);
-        $this->cache->attach($item);
+        $this->cache[$id] = true;
         ++$this->length;
     }
 
@@ -96,16 +100,19 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
             return;
         }
 
+        $itemId = spl_object_id($item);
+
         // If it doesn't contain item, then there is nothing to replace or move.
-        if (!$this->cache->contains($item)) {
+        if (!isset($this->cache[$itemId])) {
             return;
         }
 
         // We now know that the list contains item and it will ultimately be
         // removed, so remove it from the cache.
-        $this->cache->detach($item);
+        unset($this->cache[$itemId]);
+        $newItemId = spl_object_id($newItem);
 
-        if ($this->cache->contains($newItem)) {
+        if (isset($this->cache[$newItemId])) {
             // At this point, we know that the list contains both item and
             // replacement item, so we know that item is going to be removed;
             // decrement the length.
@@ -161,7 +168,7 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
         // At this point the list only contains item and not the replacement
         // item. Add the replacement item to the cache as it is not currently in
         // the list.
-        $this->cache->attach($newItem);
+        $this->cache[$newItemId] = true;
 
         // If item is the last item in the list, pop it off the list and append
         // the replacement item.
@@ -184,11 +191,13 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
      */
     public function insertBefore(Node $item, Node $newItem): void
     {
-        if (!$this->cache->contains($item) || $this->cache->contains($newItem)) {
+        $newItemId = spl_object_id($newItem);
+
+        if (isset($this->cache[$newItemId]) || !isset($this->cache[spl_object_id($item)])) {
             return;
         }
 
-        $this->cache->attach($newItem);
+        $this->cache[$newItemId] = true;
         ++$this->length;
 
         // If we are trying to insert before the first item in the array use
@@ -211,12 +220,14 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
      */
     public function remove(Node $item): void
     {
-        if (!$this->cache->contains($item)) {
+        $id = spl_object_id($item);
+
+        if (!isset($this->cache[$id])) {
             return;
         }
 
         // Remove the item from the cache.
-        $this->cache->detach($item);
+        unset($this->cache[$id]);
 
         // If the given item is the last item in the array simply pop it off,
         // rather than searching the array and splicing the value out.
@@ -244,7 +255,7 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
     public function clear(): void
     {
         $this->list = [];
-        $this->cache = new SplObjectStorage();
+        $this->cache = [];
         $this->length = 0;
     }
 
@@ -263,7 +274,7 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
      */
     public function contains(Node $item): bool
     {
-        return $this->cache->contains($item);
+        return $this->cache[spl_object_id($item)] ?? false;
     }
 
     /**
@@ -281,7 +292,7 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
      */
     public function indexOf(Node $item): int
     {
-        if (!$this->cache->contains($item)) {
+        if (!isset($this->cache[spl_object_id($item)])) {
             return -1;
         }
 
@@ -423,10 +434,5 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
     public function valid(): bool
     {
         return isset($this->list[$this->cursor]);
-    }
-
-    public function __clone()
-    {
-        $this->cache = clone $this->cache;
     }
 }

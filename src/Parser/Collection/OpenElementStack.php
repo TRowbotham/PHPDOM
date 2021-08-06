@@ -18,6 +18,7 @@ use function array_merge_recursive;
 use function array_push;
 use function array_search;
 use function array_splice;
+use function spl_object_id;
 
 /**
  * @extends \Rowbot\DOM\Parser\Collection\ObjectStack<\Rowbot\DOM\Element\Element>
@@ -133,11 +134,15 @@ class OpenElementStack extends ObjectStack
      */
     public function insertAfter($newItem, $oldItem): void
     {
-        if (!$this->cache->contains($oldItem)) {
+        $oldItemId = spl_object_id($oldItem);
+
+        if (!isset($this->cache[$oldItemId])) {
             throw new NotInCollectionException();
         }
 
-        if ($this->cache->contains($newItem)) {
+        $newItemId = spl_object_id($newItem);
+
+        if (isset($this->cache[$newItemId])) {
             throw new DuplicateItemException();
         }
 
@@ -145,7 +150,7 @@ class OpenElementStack extends ObjectStack
             ++$this->templateElementCount;
         }
 
-        $this->cache->attach($newItem);
+        $this->cache[$newItemId] = true;
         ++$this->size;
 
         if ($this->stack[$this->size - 2] === $oldItem) {

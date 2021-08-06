@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM;
 
-use SplObjectStorage;
+use function spl_object_id;
 
 /**
  * @internal
@@ -18,9 +18,9 @@ final class NodeIteratorContext
     public Node $root;
 
     /**
-     * @var \SplObjectStorage<self, null>|null
+     * @var array<int, self>
      */
-    private static ?SplObjectStorage $nodeIterators;
+    private static array $nodeIterators = [];
 
     public function __construct(Node $root)
     {
@@ -92,10 +92,20 @@ final class NodeIteratorContext
     }
 
     /**
-     * @return \SplObjectStorage<self, null>
+     * @return array<int, self>
      */
-    public static function getIterators(): SplObjectStorage
+    public static function getIterators(): array
     {
-        return self::$nodeIterators ??= new SplObjectStorage();
+        return self::$nodeIterators;
+    }
+
+    public function observeSelf(): void
+    {
+        self::$nodeIterators[spl_object_id($this)] = $this;
+    }
+
+    public function unobserveSelf(): void
+    {
+        unset(self::$nodeIterators[spl_object_id($this)]);
     }
 }
