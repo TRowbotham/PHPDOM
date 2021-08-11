@@ -25,7 +25,6 @@ use Rowbot\URL\URLRecord;
 use function assert;
 use function count;
 use function mb_strpos;
-use function method_exists;
 use function preg_match;
 use function preg_replace;
 use function trim;
@@ -494,8 +493,8 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
                 // 3.3. For each inclusiveDescendant in node’s shadow-including inclusive
                 // descendants, in shadow-including tree order, run the adopting steps with
                 // inclusiveDescendant and oldDocument.
-                if (method_exists($descendant, 'doAdoptingSteps')) {
-                    $descendant->doAdoptingSteps($oldDocument);
+                if ($descendant instanceof NodeAdoptHook) {
+                    $descendant->onAdopt($descendant, $oldDocument);
                 }
 
                 $descendant = $descendant->nextNode($node);

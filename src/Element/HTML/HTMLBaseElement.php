@@ -6,6 +6,8 @@ namespace Rowbot\DOM\Element\HTML;
 
 use Rowbot\DOM\Document;
 use Rowbot\DOM\Element\Element;
+use Rowbot\DOM\NodeInsertHook;
+use Rowbot\DOM\Node;
 use Rowbot\DOM\URL\URLParser;
 use Rowbot\URL\URLRecord;
 
@@ -15,7 +17,7 @@ use function in_array;
 /**
  * @see https://html.spec.whatwg.org/multipage/semantics.html#the-base-element
  */
-class HTMLBaseElement extends HTMLElement
+class HTMLBaseElement extends HTMLElement implements NodeInsertHook
 {
     private const TARGET_KEYWORDS = ['_self', '_blank', '_parent', '_top'];
 
@@ -159,14 +161,14 @@ class HTMLBaseElement extends HTMLElement
         }
     }
 
-    protected function doInsertingSteps(): void
+    public function onInsert(Node $insertedNode): void
     {
-        if ($this->nodeDocument->getBaseElements()->add($this)) {
-            $this->setFrozenBaseURL();
+        if ($insertedNode->nodeDocument->getBaseElements()->add($insertedNode)) {
+            $insertedNode->setFrozenBaseURL();
         }
     }
 
-    protected function doRemovingSteps($parent = null): void
+    public function onRemove($parent = null): void
     {
         $baseElements = $this->nodeDocument->getBaseElements();
 

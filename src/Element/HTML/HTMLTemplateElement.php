@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Element\HTML;
 
+use Rowbot\DOM\NodeAdoptHook;
+use Rowbot\DOM\NodeCloneHook;
 use Rowbot\DOM\Document;
 use Rowbot\DOM\DocumentFragment;
 use Rowbot\DOM\Node;
@@ -11,7 +13,7 @@ use Rowbot\DOM\Node;
 /**
  * @see https://html.spec.whatwg.org/multipage/scripting.html#the-template-element
  */
-class HTMLTemplateElement extends HTMLElement
+class HTMLTemplateElement extends HTMLElement implements NodeAdoptHook, NodeCloneHook
 {
     protected DocumentFragment $content;
 
@@ -35,13 +37,13 @@ class HTMLTemplateElement extends HTMLElement
         }
     }
 
-    public function doAdoptingSteps(Document $oldDocument): void
+    public function onAdopt(Node $node, Document $oldDocument): void
     {
-        $doc = $this->nodeDocument->getAppropriateTemplateContentsOwnerDocument();
-        $doc->doAdoptNode($this->content);
+        $doc = $node->nodeDocument->getAppropriateTemplateContentsOwnerDocument();
+        $doc->doAdoptNode($node->content);
     }
 
-    public function onCloneNode(self $copy, Node $node, Document $document, bool $cloneChildren): void
+    public function onClone(Node $copy, Node $node, Document $document, bool $cloneChildren = false): void
     {
         if (!$cloneChildren) {
             return;

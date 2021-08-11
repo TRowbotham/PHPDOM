@@ -13,7 +13,6 @@ use SplDoublyLinkedList;
 
 use function assert;
 use function count;
-use function method_exists;
 use function spl_object_hash;
 use function strcmp;
 
@@ -1033,15 +1032,18 @@ abstract class Node
             // shadow-including tree order:
             do {
                 // 7.7.1 Run the insertion steps with inclusiveDescendant.
-                if (method_exists($inclusiveDescendant, 'doInsertingSteps')) {
-                    $inclusiveDescendant->doInsertingSteps($inclusiveDescendant);
+                if ($inclusiveDescendant instanceof NodeInsertHook) {
+                    $inclusiveDescendant->onInsert($inclusiveDescendant);
                 }
 
                 $inclusiveDescendant = $inclusiveDescendant->nextNode($node);
             } while ($inclusiveDescendant);
         }
 
-        // TODO: 9. Run the children changed steps for parent.
+        // 9. Run the children changed steps for parent.
+        if ($this instanceof ChildrenChangedHook) {
+            $this->onChildrenChanged();
+        }
     }
 
     /**
@@ -1357,8 +1359,8 @@ abstract class Node
         $this->parentNode = null;
 
         // 15. Run the removing steps with node and parent.
-        if (method_exists($this, 'doRemovingSteps')) {
-            $this->doRemovingSteps($parent);
+        if ($this instanceof NodeRemoveHook) {
+            $this->onRemove($this, $parent);
         }
 
         $descendant = $this;
@@ -1367,14 +1369,17 @@ abstract class Node
         // order, then:
         do {
             // 19. Run the removing steps with descendant.
-            if (method_exists($descendant, 'doRemovingSteps')) {
-                $descendant->doRemovingSteps();
+            if ($descendant instanceof NodeRemoveHook) {
+                $descendant->onRemove($descendant);
             }
 
             $descendant = $descendant->nextNode($this);
         } while ($descendant);
 
-        // TODO: 21. Run the children changed steps for parent.
+        // 21. Run the children changed steps for parent.
+        if ($parent instanceof ChildrenChangedHook) {
+            $parent->onChildrenChanged();
+        }
     }
 
     /**
@@ -1668,8 +1673,8 @@ abstract class Node
             $copy->nodeDocument = $document;
         }
 
-        if (method_exists($this, 'onCloneNode')) {
-            $this->onCloneNode($copy, $this, $document, $cloneChildren);
+        if ($this instanceof NodeCloneHook) {
+            $this->onClone($copy, $this, $document, $cloneChildren);
         }
 
         if ($cloneChildren) {
