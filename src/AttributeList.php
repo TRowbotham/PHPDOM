@@ -52,13 +52,17 @@ class AttributeList implements ArrayAccess, Countable, Iterator
         // attribute’s local name, namespace attribute’s namespace, and
         // oldValue attribute’s value.
 
+        $attrName = $attribute->getLocalName();
+        $attrValue = $attribute->getValue();
+        $attrNamespace = $attribute->getNamespace();
+
         foreach ($this->observers as $observer) {
             $observer->onAttributeChanged(
                 $this->element,
-                $attribute->getLocalName(),
-                $attribute->getValue(),
+                $attrName,
+                $attrValue,
                 $value,
-                $attribute->getNamespace()
+                $attrNamespace
             );
         }
 
@@ -76,13 +80,17 @@ class AttributeList implements ArrayAccess, Countable, Iterator
         // attribute’s local name, namespace attribute’s namespace, and
         // oldValue null.
 
+        $attrName = $attribute->getLocalName();
+        $attrValue = $attribute->getValue();
+        $attrNamespace = $attribute->getNamespace();
+
         foreach ($this->observers as $observer) {
             $observer->onAttributeChanged(
                 $this->element,
-                $attribute->getLocalName(),
+                $attrName,
                 null,
-                $attribute->getValue(),
-                $attribute->getNamespace()
+                $attrValue,
+                $attrNamespace
             );
         }
 
@@ -101,13 +109,17 @@ class AttributeList implements ArrayAccess, Countable, Iterator
         // attribute’s local name, namespace attribute’s namespace, and
         // oldValue attribute’s value.
 
+        $attrName = $attribute->getLocalName();
+        $attrValue = $attribute->getValue();
+        $attrNamespace = $attribute->getNamespace();
+
         foreach ($this->observers as $observer) {
             $observer->onAttributeChanged(
                 $this->element,
-                $attribute->getLocalName(),
-                $attribute->getValue(),
+                $attrName,
+                $attrValue,
                 null,
-                $attribute->getNamespace()
+                $attrNamespace
             );
         }
 
@@ -126,13 +138,18 @@ class AttributeList implements ArrayAccess, Countable, Iterator
         // oldAttr’s local name, namespace oldAttr’s namespace, and oldValue
         // oldAttr’s value.
 
+        $oldAttrName = $oldAttr->getLocalName();
+        $oldAttrValue = $oldAttr->getValue();
+        $newAttrValue = $newAttr->getValue();
+        $oldAttrNamespace = $oldAttr->getNamespace();
+
         foreach ($this->observers as $observer) {
             $observer->onAttributeChanged(
                 $this->element,
-                $oldAttr->getLocalName(),
-                $oldAttr->getValue(),
-                $newAttr->getValue(),
-                $oldAttr->getNamespace()
+                $oldAttrName,
+                $oldAttrValue,
+                $newAttrValue,
+                $oldAttrNamespace
             );
         }
 
