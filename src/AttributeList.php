@@ -6,24 +6,22 @@ namespace Rowbot\DOM;
 
 use ArrayAccess;
 use Countable;
-use Iterator;
+use Generator;
+use IteratorAggregate;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Exception\InUseAttributeError;
-use Rowbot\DOM\Support\Collection\NodeSet;
 
+use function array_search;
+use function array_splice;
+use function count;
 use function spl_object_id;
 
 /**
  * @implements \ArrayAccess<int, \Rowbot\DOM\Attr>
  * @implements \Iterator<int, \Rowbot\DOM\Attr>
  */
-class AttributeList implements ArrayAccess, Countable, Iterator
+class AttributeList implements ArrayAccess, Countable, IteratorAggregate
 {
-    /**
-     * @var \Rowbot\DOM\Support\Collection\NodeSet<\Rowbot\DOM\Attr>
-     */
-    private NodeSet $list;
-
     private Element $element;
 
     /**
@@ -31,11 +29,23 @@ class AttributeList implements ArrayAccess, Countable, Iterator
      */
     private array $observers;
 
+    /**
+     * @var list<\Rowbot\DOM\Attr>
+     */
+    private array $list;
+
+    /**
+     * @var array{string, array{string, \Rowbot\DOM\Attr}}
+     */
+    private array $cache;
+
     public function __construct(Element $element)
     {
-        $this->list = new NodeSet();
+        $this->list = [];
         $this->element = $element;
         $this->observers = [];
+        $this->list = [];
+        $this->cache = [];
     }
 
     /**
@@ -94,7 +104,8 @@ class AttributeList implements ArrayAccess, Countable, Iterator
             );
         }
 
-        $this->list->append($attribute);
+        $this->list[] = $attribute;
+        $this->cache[$attrNamespace][$attrName] = $attribute;
         $attribute->setOwnerElement($this->element);
     }
 
@@ -123,8 +134,19 @@ class AttributeList implements ArrayAccess, Countable, Iterator
             );
         }
 
-        $this->list->remove($attribute);
+        if (!isset($this->cache[$attrNamespace][$attrName])) {
+            return;
+        }
+
         $attribute->setOwnerElement(null);
+        unset($this->cache[$attrNamespace][$attrName]);
+        $index = array_search($attribute, $this->list, true);
+
+        if ($index === false) {
+            return;
+        }
+
+        array_splice($this->list, $index, 1);
     }
 
     /**
@@ -153,9 +175,18 @@ class AttributeList implements ArrayAccess, Countable, Iterator
             );
         }
 
-        $this->list->replace($oldAttr, $newAttr);
         $oldAttr->setOwnerElement(null);
         $newAttr->setOwnerElement($this->element);
+
+        $index = array_search($oldAttr, $this->list, true);
+
+        if ($index === false) {
+            return;
+        }
+
+        $this->list[$index] = $newAttr;
+        unset($this->cache[$oldAttrNamespace][$oldAttrName]);
+        $this->cache[$newAttr->getNamespace()][$newAttr->getLocalName()] = $newAttr;
     }
 
     /**
@@ -192,16 +223,7 @@ class AttributeList implements ArrayAccess, Countable, Iterator
             $namespace = null;
         }
 
-        foreach ($this->list as $attribute) {
-            if (
-                $attribute->getNamespace() === $namespace
-                && $attribute->getLocalName() === $localName
-            ) {
-                return $attribute;
-            }
-        }
-
-        return null;
+        return $this->cache[$namespace][$localName] ?? null;
     }
 
     /**
@@ -330,12 +352,12 @@ class AttributeList implements ArrayAccess, Countable, Iterator
 
     public function contains(Attr $attr): bool
     {
-        return $this->list->contains($attr);
+        return isset($this->cache[$attr->getNamespace()][$attr->getLocalName()]);
     }
 
     public function isEmpty(): bool
     {
-        return $this->list->isEmpty();
+        return $this->list === [];
     }
 
     /**
@@ -343,7 +365,7 @@ class AttributeList implements ArrayAccess, Countable, Iterator
      */
     public function offsetExists($offset): bool
     {
-        return $this->list->offsetExists($offset);
+        return isset($this->list[$offset]);
     }
 
     /**
@@ -351,7 +373,7 @@ class AttributeList implements ArrayAccess, Countable, Iterator
      */
     public function offsetGet($offset): ?Attr
     {
-        return $this->list->offsetGet($offset);
+        return $this->list[$offset] ?? null;
     }
 
     /**
@@ -371,31 +393,16 @@ class AttributeList implements ArrayAccess, Countable, Iterator
 
     public function count(): int
     {
-        return $this->list->count();
+        return count($this->list);
     }
 
-    public function current(): Attr
+    /**
+     * @return \Generator<int, \Rowbot\DOM\Attr>
+     */
+    public function getIterator(): Generator
     {
-        return $this->list->current();
-    }
-
-    public function key(): int
-    {
-        return $this->list->key();
-    }
-
-    public function next(): void
-    {
-        $this->list->next();
-    }
-
-    public function rewind(): void
-    {
-        $this->list->rewind();
-    }
-
-    public function valid(): bool
-    {
-        return $this->list->valid();
+        foreach ($this->list as $attr) {
+            yield $attr;
+        }
     }
 }

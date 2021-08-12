@@ -6,7 +6,7 @@ namespace Rowbot\DOM;
 
 use ArrayAccess;
 use Countable;
-use Iterator;
+use IteratorAggregate;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Exception\NotFoundError;
 
@@ -19,9 +19,9 @@ use Rowbot\DOM\Exception\NotFoundError;
  * @property-read int $length Returns the number of attributes in the list.
  *
  * @implements \ArrayAccess<int, \Rowbot\DOM\Attr>
- * @implements \Iterator<int, \Rowbot\DOM\Attr>
+ * @implements \IteratorAggregate<int, \Rowbot\DOM\Attr>
  */
-class NamedNodeMap implements ArrayAccess, Countable, Iterator
+class NamedNodeMap implements ArrayAccess, Countable, IteratorAggregate
 {
     private Element $element;
 
@@ -187,42 +187,10 @@ class NamedNodeMap implements ArrayAccess, Countable, Iterator
     }
 
     /**
-     * Returns the current attribute node.
+     * @return iterable<int, \Rowbot\DOM\Attr>
      */
-    public function current(): Attr
+    public function getIterator(): iterable
     {
-        return $this->element->getAttributeList()->current();
-    }
-
-    /**
-     * Returns the current iterator key.
-     */
-    public function key(): int
-    {
-        return $this->element->getAttributeList()->key();
-    }
-
-    /**
-     * Advances the iterator to the next item.
-     */
-    public function next(): void
-    {
-        $this->element->getAttributeList()->next();
-    }
-
-    /**
-     * Rewinds the iterator to the beginning.
-     */
-    public function rewind(): void
-    {
-        $this->element->getAttributeList()->rewind();
-    }
-
-    /**
-     * Indicates if the iterator is still valid.
-     */
-    public function valid(): bool
-    {
-        return $this->element->getAttributeList()->valid();
+        return $this->element->getAttributeList()->getIterator();
     }
 }
