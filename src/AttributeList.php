@@ -18,7 +18,7 @@ use function spl_object_id;
 
 /**
  * @implements \ArrayAccess<int, \Rowbot\DOM\Attr>
- * @implements \Iterator<int, \Rowbot\DOM\Attr>
+ * @implements \IteratorAggregate<int, \Rowbot\DOM\Attr>
  */
 class AttributeList implements ArrayAccess, Countable, IteratorAggregate
 {
