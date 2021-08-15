@@ -44,7 +44,6 @@ class AttributeList implements ArrayAccess, Countable, IteratorAggregate
         $this->list = [];
         $this->element = $element;
         $this->observers = [];
-        $this->list = [];
         $this->cache = [];
     }
 
