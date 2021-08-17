@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM;
 
-use function implode;
-use function mb_str_split;
-use function strtolower;
-use function strtoupper;
+use function strtr;
 
 final class Utils
 {
@@ -15,6 +12,64 @@ final class Utils
      * @see https://infra.spec.whatwg.org/#ascii-whitespace
      */
     public const ASCII_WHITESPACE = '/[\x09\x0A\x0C\x0D\x20]+/u';
+
+    private const TO_LOWERCASE_CHAR_MAP = [
+        'A' => 'a',
+        'B' => 'b',
+        'C' => 'c',
+        'D' => 'd',
+        'E' => 'e',
+        'F' => 'f',
+        'G' => 'g',
+        'H' => 'h',
+        'I' => 'i',
+        'J' => 'j',
+        'K' => 'k',
+        'L' => 'l',
+        'M' => 'm',
+        'N' => 'n',
+        'O' => 'o',
+        'P' => 'p',
+        'Q' => 'q',
+        'R' => 'r',
+        'S' => 's',
+        'T' => 't',
+        'U' => 'u',
+        'V' => 'v',
+        'W' => 'w',
+        'X' => 'x',
+        'Y' => 'y',
+        'Z' => 'z',
+    ];
+
+    private const TO_UPPERCASE_CHAR_MAP = [
+        'a' => 'A',
+        'b' => 'B',
+        'c' => 'C',
+        'd' => 'D',
+        'e' => 'E',
+        'f' => 'F',
+        'g' => 'G',
+        'h' => 'H',
+        'i' => 'I',
+        'j' => 'J',
+        'k' => 'K',
+        'l' => 'L',
+        'm' => 'M',
+        'n' => 'N',
+        'o' => 'O',
+        'p' => 'P',
+        'q' => 'Q',
+        'r' => 'R',
+        's' => 'S',
+        't' => 'T',
+        'u' => 'U',
+        'v' => 'V',
+        'w' => 'W',
+        'x' => 'X',
+        'y' => 'Y',
+        'z' => 'Z',
+    ];
 
     /**
      * @codeCoverageIgnore
@@ -31,15 +86,7 @@ final class Utils
      */
     public static function toASCIILowercase(string $value): string
     {
-        $codePoints = mb_str_split($value, 1, 'utf-8');
-
-        foreach ($codePoints as $i => $codePoint) {
-            if ($codePoint >= 'A' && $codePoint <= 'Z') {
-                $codePoints[$i] = strtolower($codePoint);
-            }
-        }
-
-        return implode('', $codePoints);
+        return strtr($value, self::TO_LOWERCASE_CHAR_MAP);
     }
 
     /**
@@ -50,15 +97,7 @@ final class Utils
      */
     public static function toASCIIUppercase(string $value): string
     {
-        $codePoints = mb_str_split($value, 1, 'utf-8');
-
-        foreach ($codePoints as $i => $codePoint) {
-            if ($codePoint >= 'a' && $codePoint <= 'z') {
-                $codePoints[$i] = strtoupper($codePoint);
-            }
-        }
-
-        return implode('', $codePoints);
+        return strtr($value, self::TO_UPPERCASE_CHAR_MAP);
     }
 
     public static function unsignedLong(int $offset): int

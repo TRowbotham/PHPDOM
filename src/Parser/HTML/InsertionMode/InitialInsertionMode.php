@@ -13,7 +13,8 @@ use Rowbot\DOM\Parser\Token\DoctypeToken;
 use Rowbot\DOM\Parser\Token\Token;
 use Rowbot\DOM\Utils;
 
-use function mb_strpos;
+use function strlen;
+use function strncasecmp;
 
 /**
  * @see https://html.spec.whatwg.org/multipage/syntax.html#the-initial-insertion-mode
@@ -204,18 +205,8 @@ class InitialInsertionMode extends AbstractInsertionMode implements InsertionMod
             return false;
         }
 
-        // Make the identifier ASCII lowercased for comparison.
-        $identifier = Utils::toASCIILowercase($identifier);
-
         foreach ($fragments as $identifierFragment) {
-            if (
-                mb_strpos(
-                    $identifier,
-                    Utils::toASCIILowercase($identifierFragment),
-                    0,
-                    'utf-8'
-                ) === 0
-            ) {
+            if (strncasecmp($identifier, $identifierFragment, strlen($identifierFragment)) === 0) {
                 return true;
             }
         }
