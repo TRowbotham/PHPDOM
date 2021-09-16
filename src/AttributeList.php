@@ -14,6 +14,7 @@ use Rowbot\DOM\Exception\InUseAttributeError;
 use function array_search;
 use function array_splice;
 use function count;
+use function explode;
 use function spl_object_id;
 
 /**
@@ -35,7 +36,7 @@ class AttributeList implements ArrayAccess, Countable, IteratorAggregate
     private array $list;
 
     /**
-     * @var array{string, array{string, \Rowbot\DOM\Attr}}
+     * @var array<string, array<string, \Rowbot\DOM\Attr>>
      */
     private array $cache;
 
@@ -202,9 +203,28 @@ class AttributeList implements ArrayAccess, Countable, IteratorAggregate
             $qualifiedName = Utils::toASCIILowercase($qualifiedName);
         }
 
-        foreach ($this->list as $attribute) {
-            if ($attribute->getQualifiedName() === $qualifiedName) {
-                return $attribute;
+        foreach ($this->cache as $names) {
+            if (isset($names[$qualifiedName])) {
+                return $names[$qualifiedName];
+            }
+        }
+
+        $parts = explode(':', $qualifiedName, 2);
+        $prefix = false;
+        $localName = $parts[0];
+
+        if (isset($parts[1])) {
+            $localName = $parts[1];
+            $prefix = $parts[0];
+        }
+
+        if ($prefix === false) {
+            return null;
+        }
+
+        foreach ($this->cache as $names) {
+            if (isset($names[$localName]) && $names[$localName]->prefix === $prefix) {
+                return $names[$localName];
             }
         }
 
@@ -351,7 +371,10 @@ class AttributeList implements ArrayAccess, Countable, IteratorAggregate
 
     public function contains(Attr $attr): bool
     {
-        return isset($this->cache[$attr->getNamespace()][$attr->getLocalName()]);
+        $namespace = $attr->getNamespace();
+        $localName = $attr->getLocalName();
+
+        return isset($this->cache[$namespace][$localName]) && $this->cache[$namespace][$localName] === $attr;
     }
 
     public function isEmpty(): bool
