@@ -18,6 +18,7 @@ use function array_merge_recursive;
 use function array_push;
 use function array_search;
 use function array_splice;
+use function assert;
 use function spl_object_id;
 
 /**
@@ -25,47 +26,49 @@ use function spl_object_id;
  */
 class OpenElementStack extends ObjectStack
 {
-    protected const SPECIFIC_SCOPE = [
+    private const SPECIFIC_SCOPE = [
         Namespaces::HTML => [
-            'applet',
-            'caption',
-            'html',
-            'table',
-            'td',
-            'th',
-            'marquee',
-            'object',
-            'template',
+            'applet'   => false,
+            'caption'  => false,
+            'html'     => false,
+            'table'    => false,
+            'td'       => false,
+            'th'       => false,
+            'marquee'  => false,
+            'object'   => false,
+            'template' => false,
         ],
         Namespaces::MATHML => [
-            'mi',
-            'mo',
-            'mn',
-            'ms',
-            'mtext',
-            'annotation-xml',
+            'mi'             => false,
+            'mo'             => false,
+            'mn'             => false,
+            'ms'             => false,
+            'mtext'          => false,
+            'annotation-xml' => false,
         ],
         Namespaces::SVG => [
-            'foreignObject',
-            'desc',
-            'title',
+            'foreignObject' => false,
+            'desc'          => false,
+            'title'         => false,
         ],
     ];
-    protected const LIST_ITEM_SCOPE = [Namespaces::HTML => ['ol', 'ul']];
-    protected const BUTTON_SCOPE    = [Namespaces::HTML => ['button']];
-    protected const TABLE_SCOPE     = [Namespaces::HTML => ['html', 'table', 'template']];
-    protected const SELECT_SCOPE    = [Namespaces::HTML => ['optgroup', 'option']];
+    private const LIST_ITEM_SCOPE = [Namespaces::HTML => ['ol' => false, 'ul' => false]];
+    private const BUTTON_SCOPE    = [Namespaces::HTML => ['button' => false]];
+    private const TABLE_SCOPE     = [Namespaces::HTML => ['html' => false, 'table' => false, 'template' => false]];
 
     /**
      * The number of HTMLTemplateElements on the stack.
      */
     private int $templateElementCount;
 
+    private array $mergedScopes;
+
     public function __construct()
     {
         parent::__construct();
 
         $this->templateElementCount = 0;
+        $this->mergedScopes = [];
     }
 
     public function push($item): void
@@ -251,32 +254,32 @@ class OpenElementStack extends ObjectStack
      *
      * @param array<string, list<string>> $list
      */
-    private function hasElementInSpecificScope(
-        string $tagName,
-        string $aNamespace,
-        array ...$list
-    ): bool {
-        $list = array_merge_recursive(...$list);
+    private function hasElementInSpecificScope(string $tagName, array $list): bool
+    {
         $size = $this->size;
 
         while ($size--) {
+            // 1. Initialize node to be the current node (the bottommost node of the stack).
             $node = $this->stack[$size];
-
-            $ns = $node->namespaceURI;
+            $namespace = $node->namespaceURI;
             $localName = $node->localName;
 
-            if ($aNamespace === $ns && $localName === $tagName) {
+            // 2. If node is the target node, terminate in a match state.
+            if ($namespace === Namespaces::HTML && $localName === $tagName) {
                 return true;
             }
 
-            foreach ($list as $namespace => $elements) {
-                foreach ($elements as $name) {
-                    if ($namespace === $ns && $name === $localName) {
-                        return false;
-                    }
-                }
+            // 3. Otherwise, if node is one of the element types in list, terminate in a failure state.
+            if (isset($list[$namespace][$localName])) {
+                return false;
             }
+
+            // 4. Otherwise, set node to the previous entry in the stack of open elements and return to step 2. (This
+            // will never fail, since the loop will always terminate in the previous step if the top of the stack — an
+            // html element — is reached.)
         }
+
+        assert(false, 'Should not reach here.');
 
         return false;
     }
@@ -286,7 +289,7 @@ class OpenElementStack extends ObjectStack
      */
     public function hasElementInScope(string $tagName, string $namespace): bool
     {
-        return $this->hasElementInSpecificScope($tagName, $namespace, self::SPECIFIC_SCOPE);
+        return $this->hasElementInSpecificScope($tagName, self::SPECIFIC_SCOPE);
     }
 
     /**
@@ -294,12 +297,11 @@ class OpenElementStack extends ObjectStack
      */
     public function hasElementInListItemScope(string $tagName, string $namespace): bool
     {
-        return $this->hasElementInSpecificScope(
-            $tagName,
-            $namespace,
-            self::SPECIFIC_SCOPE,
-            self::LIST_ITEM_SCOPE
-        );
+        if (!isset($this->mergedScopes['list'])) {
+            $this->mergedScopes['list'] = array_merge_recursive(self::SPECIFIC_SCOPE, self::LIST_ITEM_SCOPE);
+        }
+
+        return $this->hasElementInSpecificScope($tagName, $this->mergedScopes['list']);
     }
 
     /**
@@ -307,12 +309,11 @@ class OpenElementStack extends ObjectStack
      */
     public function hasElementInButtonScope(string $tagName, string $namespace): bool
     {
-        return $this->hasElementInSpecificScope(
-            $tagName,
-            $namespace,
-            self::SPECIFIC_SCOPE,
-            self::BUTTON_SCOPE
-        );
+        if (!isset($this->mergedScopes['button'])) {
+            $this->mergedScopes['button'] = array_merge_recursive(self::SPECIFIC_SCOPE, self::BUTTON_SCOPE);
+        }
+
+        return $this->hasElementInSpecificScope($tagName, $this->mergedScopes['button']);
     }
 
     /**
@@ -320,7 +321,7 @@ class OpenElementStack extends ObjectStack
      */
     public function hasElementInTableScope(string $tagName, string $namespace): bool
     {
-        return $this->hasElementInSpecificScope($tagName, $namespace, self::TABLE_SCOPE);
+        return $this->hasElementInSpecificScope($tagName, self::TABLE_SCOPE);
     }
 
     /**
