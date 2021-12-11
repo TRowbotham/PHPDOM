@@ -6,6 +6,7 @@ namespace Rowbot\DOM;
 
 use ArrayAccess;
 use Countable;
+use Iterator;
 use IteratorAggregate;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Exception\NotFoundError;
@@ -187,9 +188,9 @@ class NamedNodeMap implements ArrayAccess, Countable, IteratorAggregate
     }
 
     /**
-     * @return iterable<int, \Rowbot\DOM\Attr>
+     * @return \Iterator<int, \Rowbot\DOM\Attr>
      */
-    public function getIterator(): iterable
+    public function getIterator(): Iterator
     {
         return $this->element->getAttributeList()->getIterator();
     }
