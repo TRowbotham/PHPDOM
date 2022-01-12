@@ -14,10 +14,13 @@
         "rowbot/url": "3.1.4"
     },
     "config": {
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
     },
     "require-dev": {
-        "phpstan/phpstan": "^0.12.93",
+        "phpstan/phpstan": "^1.0",
         "phpunit/phpunit": "^9.5",
         "slevomat/coding-standard": "^7.0.4",
         "squizlabs/php_codesniffer": "^3.6"
