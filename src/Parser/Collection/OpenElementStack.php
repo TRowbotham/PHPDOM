@@ -61,6 +61,9 @@ class OpenElementStack extends ObjectStack
      */
     private int $templateElementCount;
 
+    /**
+     * @var array<string, array<string, bool>>
+     */
     private array $mergedScopes;
 
     public function __construct()
@@ -252,7 +255,7 @@ class OpenElementStack extends ObjectStack
     /**
      * @see https://html.spec.whatwg.org/multipage/syntax.html#has-an-element-in-the-specific-scope
      *
-     * @param array<string, list<string>> $list
+     * @param array<string, array<string, bool>> $list
      */
     private function hasElementInSpecificScope(string $tagName, array $list): bool
     {
