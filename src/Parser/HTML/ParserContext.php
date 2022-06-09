@@ -79,6 +79,9 @@ final class ParserContext
      */
     public int $tokenizerState;
 
+    /**
+     * @param \Rowbot\DOM\Parser\HTML\TokenizerState::* $tokenizerState
+     */
     public function __construct(
         ?Element $contextElement,
         OpenElementStack $openElementStack,
