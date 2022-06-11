@@ -92,7 +92,7 @@ class TreeBuilderTest extends TestCase
                         $prevLine = '';
 
                         while (($line = fgets($handle)) !== false) {
-                            if ($line === "#errors\n") {
+                            if ($line !== '' && $line[0] === '#') {
                                 $tests[$i]['data'] .= rtrim($prevLine, "\n");
 
                                 continue 3;
