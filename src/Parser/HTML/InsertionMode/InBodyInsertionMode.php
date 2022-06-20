@@ -35,6 +35,7 @@ use Rowbot\DOM\Parser\Token\Token;
 use Rowbot\DOM\Utils;
 
 use function preg_match;
+use function strcasecmp;
 
 /**
  * @see https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-inbody
@@ -1562,7 +1563,7 @@ class InBodyInsertionMode extends AbstractInsertionMode implements InsertionMode
             // need to account for numeric character reference as well
             $peeked = $context->parser->input->peek(6);
 
-            if ($peeked === '&#x0a;' || $peeked === '&#x0A;') {
+            if (strcasecmp($peeked, '&#x0a;') === 0) {
                 $context->parser->input->get(6);
             }
         }
