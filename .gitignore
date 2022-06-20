@@ -49,5 +49,5 @@ Temporary Items
 composer.lock
 /vendor/
 /build/
-.phpunit.result.cache
+/.phpunit.cache/
 .php_cs.cache
