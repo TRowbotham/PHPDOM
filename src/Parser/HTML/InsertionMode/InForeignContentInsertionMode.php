@@ -18,7 +18,7 @@ use Rowbot\DOM\Parser\Token\TagToken;
 use Rowbot\DOM\Parser\Token\Token;
 use Rowbot\DOM\Utils;
 
-use function preg_match;
+use function in_array;
 
 /**
  * This is a pseudo insertion mode. It cannot be set as an insertion mode in terms of the parser's
@@ -135,13 +135,52 @@ class InForeignContentInsertionMode extends AbstractInsertionMode
 
             if (
                 $isMatchingFontToken
-                || preg_match(
-                    '/^(b|big|blockquote|body|br|center|code|dd|div|dl|dt|em|'
-                    . 'embed|h[1-6]|head|hr|i|img|li|listing|menu|meta|nobr|ol|p|'
-                    . 'pre|ruby|s|small|span|strong|strike|sub|sup|table|tt|u|ul|'
-                    . 'var)$/',
-                    $token->tagName
-                )
+                || in_array($token->tagName, [
+                    'b',
+                    'big',
+                    'blockquote',
+                    'body',
+                    'br',
+                    'center',
+                    'code',
+                    'dd',
+                    'div',
+                    'dl',
+                    'dt',
+                    'em',
+                    'embed',
+                    'h1',
+                    'h2',
+                    'h3',
+                    'h4',
+                    'h5',
+                    'h6',
+                    'head',
+                    'hr',
+                    'i',
+                    'img',
+                    'li',
+                    'listing',
+                    'menu',
+                    'meta',
+                    'nobr',
+                    'ol',
+                    'p',
+                    'pre',
+                    'ruby',
+                    's',
+                    'small',
+                    'span',
+                    'strong',
+                    'strike',
+                    'sub',
+                    'sup',
+                    'table',
+                    'tt',
+                    'u',
+                    'ul',
+                    'var',
+                ], true)
             ) {
                 $this->handleIntegrationPoints($context, $token);
 

@@ -34,7 +34,7 @@ use Rowbot\DOM\Parser\Token\TagToken;
 use Rowbot\DOM\Parser\Token\Token;
 use Rowbot\DOM\Utils;
 
-use function preg_match;
+use function in_array;
 use function strcasecmp;
 
 /**
@@ -94,11 +94,30 @@ class InBodyInsertionMode extends AbstractInsertionMode implements InsertionMode
             // element, a tfoot element, a th element, a thead element, a tr
             // element, the body element, or the html element, then this is a
             // parse error.
-            $pattern = '/^(dd|dt|li|optgroup|option|p|rb|rp|rt|rtc|';
-            $pattern .= 'tbody|td|tfoot|th|thead|tr|body|html)$/';
-
             foreach ($context->parser->openElements as $el) {
-                if (!($el instanceof HTMLElement && preg_match($pattern, $el->localName))) {
+                if (
+                    !($el instanceof HTMLElement
+                    && in_array($el->localName, [
+                        'dd',
+                        'dt',
+                        'li',
+                        'optgroup',
+                        'option',
+                        'p',
+                        'rb',
+                        'rp',
+                        'rt',
+                        'rtc',
+                        'tbody',
+                        'td',
+                        'tfoot',
+                        'th',
+                        'thead',
+                        'tr',
+                        'body',
+                        'html',
+                    ], true))
+                ) {
                     // Parse error.
                     break;
                 }
@@ -238,12 +257,32 @@ class InBodyInsertionMode extends AbstractInsertionMode implements InsertionMode
         }
 
         if (
-            preg_match(
-                '/^(address|article|aside|blockquote|center|details|dialog|'
-                . 'dir|div|dl|fieldset|figcaption|figure|footer|header|hgroup|'
-                . 'main|menu|nav|ol|p|section|summary|ul)$/',
-                $token->tagName
-            )
+            in_array($token->tagName, [
+                'address',
+                'article',
+                'aside',
+                'blockquote',
+                'center',
+                'details',
+                'dialog',
+                'dir',
+                'div',
+                'dl',
+                'fieldset',
+                'figcaption',
+                'figure',
+                'footer',
+                'header',
+                'hgroup',
+                'main',
+                'menu',
+                'nav',
+                'ol',
+                'p',
+                'section',
+                'summary',
+                'ul',
+            ], true)
         ) {
             // If the stack of open elements has a p element in button scope, then close a p element.
             if ($context->parser->openElements->hasElementInButtonScope('p', Namespaces::HTML)) {
@@ -1041,11 +1080,30 @@ class InBodyInsertionMode extends AbstractInsertionMode implements InsertionMode
             // td element, a tfoot element, a th element, a thead element, a tr
             // element, the body element, or the html element, then this is a
             // parse error.
-            $pattern = '/^(dd|dt|li|optgroup|option|p|rb|rp|rt|';
-            $pattern .= 'rtc|tbody|td|tfoot|th|thead|tr|body|html)$/';
-
             foreach ($context->parser->openElements as $el) {
-                if (!($el instanceof HTMLElement && preg_match($pattern, $el->localName))) {
+                if (
+                    !($el instanceof HTMLElement
+                    && in_array($el->localName, [
+                        'dd',
+                        'dt',
+                        'li',
+                        'optgroup',
+                        'option',
+                        'p',
+                        'rb',
+                        'rp',
+                        'rt',
+                        'rtc',
+                        'tbody',
+                        'td',
+                        'tfoot',
+                        'th',
+                        'thead',
+                        'tr',
+                        'body',
+                        'html',
+                    ], true))
+                ) {
                     // Parse error.
                     break;
                 }
@@ -1073,11 +1131,30 @@ class InBodyInsertionMode extends AbstractInsertionMode implements InsertionMode
             // td element, a tfoot element, a th element, a thead element, a tr
             // element, the body element, or the html element, then this is a
             // parse error.
-            $pattern = '/^(dd|dt|li|optgroup|option|p|rb|rp|rt|';
-            $pattern .= 'rtc|tbody|td|tfoot|th|thead|tr|body|html)$/';
-
             foreach ($context->parser->openElements as $el) {
-                if (!($el instanceof HTMLElement && preg_match($pattern, $el->localName))) {
+                if (
+                    !($el instanceof HTMLElement
+                    && in_array($el->localName, [
+                        'dd',
+                        'dt',
+                        'li',
+                        'optgroup',
+                        'option',
+                        'p',
+                        'rb',
+                        'rp',
+                        'rt',
+                        'rtc',
+                        'tbody',
+                        'td',
+                        'tfoot',
+                        'th',
+                        'thead',
+                        'tr',
+                        'body',
+                        'html',
+                    ], true))
+                ) {
                     // Parse error.
                     break;
                 }
@@ -1093,12 +1170,34 @@ class InBodyInsertionMode extends AbstractInsertionMode implements InsertionMode
         }
 
         if (
-            preg_match(
-                '/^(address|article|aside|blockquote|button|center|details|'
-                . 'dialog|dir|div|dl|fieldset|figcaption|figure|footer|header|'
-                . 'hgroup|listing|main|menu|nav|ol|pre|section|summary|ul)$/',
-                $token->tagName
-            )
+            in_array($token->tagName, [
+                'address',
+                'article',
+                'aside',
+                'blockquote',
+                'button',
+                'center',
+                'details',
+                'dialog',
+                'dir',
+                'div',
+                'dl',
+                'fieldset',
+                'figcaption',
+                'figure',
+                'footer',
+                'header',
+                'hgroup',
+                'listing',
+                'main',
+                'menu',
+                'nav',
+                'ol',
+                'pre',
+                'section',
+                'summary',
+                'ul',
+            ], true)
         ) {
             // If the stack of open elements does not have an element in
             // scope that is an HTML element with the same tag name as that of

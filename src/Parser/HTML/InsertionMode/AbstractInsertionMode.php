@@ -27,8 +27,9 @@ use Rowbot\DOM\Parser\Token\TagToken;
 use Rowbot\DOM\Parser\Token\Token;
 use Rowbot\DOM\Text;
 
+use function explode;
+use function in_array;
 use function is_string;
-use function preg_match;
 
 abstract class AbstractInsertionMode
 {
@@ -107,29 +108,34 @@ abstract class AbstractInsertionMode
     protected function adjustForeignAttributes(TagToken $token): void
     {
         foreach ($token->attributes as $attr) {
-            $name = $attr->name;
-
             if (
-                preg_match(
-                    '/^(xlink):(actuate|arcrole|href|role|show|title|type)$/',
-                    $name,
-                    $matches
-                )
+                in_array($attr->name, [
+                    'xlink:actuate',
+                    'xlink:arcrole',
+                    'xlink:href',
+                    'xlink:role',
+                    'xlink:show',
+                    'xlink:title',
+                    'xlink:type',
+                    'xml:lang',
+                    'xml:space',
+                ], true)
             ) {
-                $attr->prefix = $matches[1];
-                $attr->name = $matches[2];
-                $attr->namespace = Namespaces::XLINK;
-            } elseif (preg_match('/^(xml):(lang|space)$/', $name, $matches)) {
-                $attr->prefix = $matches[1];
-                $attr->name = $matches[2];
-                $attr->namespace = Namespaces::XML;
-            } elseif ($name === 'xmlns' || $name === 'xmlns:xlink') {
-                if ($name === 'xmlns:xlink') {
+                [$attr->prefix, $attr->name] = explode(':', $attr->name);
+                $attr->namespace = $attr->prefix === 'xlink' ? Namespaces::XLINK : Namespaces::XML;
+
+                continue;
+            }
+
+            switch ($attr->name) {
+                case 'xmlns:link':
                     $attr->prefix = 'xmlns';
                     $attr->name = 'xlink';
-                }
 
-                $attr->namespace = Namespaces::XMLNS;
+                    // no break
+
+                case 'xmlns':
+                    $attr->namespace = Namespaces::XMLNS;
             }
         }
     }

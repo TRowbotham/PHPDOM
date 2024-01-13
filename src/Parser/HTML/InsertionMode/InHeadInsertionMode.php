@@ -19,7 +19,7 @@ use Rowbot\DOM\Parser\Token\StartTagToken;
 use Rowbot\DOM\Parser\Token\Token;
 use Rowbot\DOM\Utils;
 
-use function preg_match;
+use function in_array;
 
 /**
  * @see https://html.spec.whatwg.org/multipage/syntax.html#parsing-main-inhead
@@ -323,13 +323,29 @@ class InHeadInsertionMode extends AbstractInsertionMode implements InsertionMode
      */
     private function generateAllImpliedEndTagsThoroughly(TreeBuilderContext $context): void
     {
-        $pattern = '/^(caption|colgroup|dd|dt|li|optgroup|option|p|rb|rp|rt';
-        $pattern .= '|rtc|tbody|td|tfoot|th|thead|tr)$/';
-
         foreach ($context->parser->openElements as $currentNode) {
             if (
                 !$currentNode instanceof HTMLElement
-                || !preg_match($pattern, $currentNode->localName)
+                || !in_array($currentNode->localName, [
+                    'caption',
+                    'colgroup',
+                    'dd',
+                    'dt',
+                    'li',
+                    'optgroup',
+                    'option',
+                    'p',
+                    'rb',
+                    'rp',
+                    'rt',
+                    'rtc',
+                    'tbody',
+                    'td',
+                    'tfoot',
+                    'th',
+                    'thead',
+                    'tr',
+                ], true)
             ) {
                 break;
             }
