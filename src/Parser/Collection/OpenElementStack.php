@@ -14,7 +14,6 @@ use Rowbot\DOM\Parser\Collection\Exception\DuplicateItemException;
 use Rowbot\DOM\Parser\Collection\Exception\EmptyStackException;
 use Rowbot\DOM\Parser\Collection\Exception\NotInCollectionException;
 
-use function array_merge_recursive;
 use function array_push;
 use function array_search;
 use function array_splice;
@@ -26,52 +25,63 @@ use function spl_object_id;
  */
 class OpenElementStack extends ObjectStack
 {
-    private const SPECIFIC_SCOPE = [
-        Namespaces::HTML => [
-            'applet'   => false,
-            'caption'  => false,
-            'html'     => false,
-            'table'    => false,
-            'td'       => false,
-            'th'       => false,
-            'marquee'  => false,
-            'object'   => false,
-            'template' => false,
-        ],
-        Namespaces::MATHML => [
-            'mi'             => false,
-            'mo'             => false,
-            'mn'             => false,
-            'ms'             => false,
-            'mtext'          => false,
-            'annotation-xml' => false,
-        ],
-        Namespaces::SVG => [
-            'foreignObject' => false,
-            'desc'          => false,
-            'title'         => false,
-        ],
+    private const SPECIFIC_SCOPE_HTML = [
+        'applet'   => false,
+        'caption'  => false,
+        'html'     => false,
+        'table'    => false,
+        'td'       => false,
+        'th'       => false,
+        'marquee'  => false,
+        'object'   => false,
+        'template' => false,
     ];
-    private const LIST_ITEM_SCOPE = [Namespaces::HTML => ['ol' => false, 'ul' => false]];
-    private const BUTTON_SCOPE    = [Namespaces::HTML => ['button' => false]];
-    private const TABLE_SCOPE     = [Namespaces::HTML => ['html' => false, 'table' => false, 'template' => false]];
+
+    private const SPECIFIC_SCOPE_MATHML = [
+        'mi'             => false,
+        'mo'             => false,
+        'mn'             => false,
+        'ms'             => false,
+        'mtext'          => false,
+        'annotation-xml' => false,
+    ];
+
+    private const SPECIFIC_SCOPE_SVG = [
+        'foreignObject' => false,
+        'desc'          => false,
+        'title'         => false,
+    ];
+
+    private const SPECIFIC_SCOPE = [
+        Namespaces::HTML   => self::SPECIFIC_SCOPE_HTML,
+        Namespaces::MATHML => self::SPECIFIC_SCOPE_MATHML,
+        Namespaces::SVG    => self::SPECIFIC_SCOPE_SVG,
+    ];
+
+    private const LIST_ITEM_SCOPE = [
+        Namespaces::HTML   => self::SPECIFIC_SCOPE_HTML + ['ol' => false, 'ul' => false],
+        Namespaces::MATHML => self::SPECIFIC_SCOPE_MATHML,
+        Namespaces::SVG    => self::SPECIFIC_SCOPE_SVG,
+    ];
+
+    private const BUTTON_SCOPE = [
+        Namespaces::HTML   => self::SPECIFIC_SCOPE_HTML + ['button' => false],
+        Namespaces::MATHML => self::SPECIFIC_SCOPE_MATHML,
+        Namespaces::SVG    => self::SPECIFIC_SCOPE_SVG,
+    ];
+
+    private const TABLE_SCOPE = [Namespaces::HTML => ['html' => false, 'table' => false, 'template' => false]];
 
     /**
      * The number of HTMLTemplateElements on the stack.
      */
     private int $templateElementCount;
 
-    /**
-     * @var array<string, array<string, bool>>
-     */
-    private array $mergedScopes;
-
     public function __construct()
     {
         parent::__construct();
 
         $this->templateElementCount = 0;
-        $this->mergedScopes = [];
     }
 
     public function push($item): void
@@ -300,11 +310,7 @@ class OpenElementStack extends ObjectStack
      */
     public function hasElementInListItemScope(string $tagName, string $namespace): bool
     {
-        if (!isset($this->mergedScopes['list'])) {
-            $this->mergedScopes['list'] = array_merge_recursive(self::SPECIFIC_SCOPE, self::LIST_ITEM_SCOPE);
-        }
-
-        return $this->hasElementInSpecificScope($tagName, $this->mergedScopes['list']);
+        return $this->hasElementInSpecificScope($tagName, self::LIST_ITEM_SCOPE);
     }
 
     /**
@@ -312,11 +318,7 @@ class OpenElementStack extends ObjectStack
      */
     public function hasElementInButtonScope(string $tagName, string $namespace): bool
     {
-        if (!isset($this->mergedScopes['button'])) {
-            $this->mergedScopes['button'] = array_merge_recursive(self::SPECIFIC_SCOPE, self::BUTTON_SCOPE);
-        }
-
-        return $this->hasElementInSpecificScope($tagName, $this->mergedScopes['button']);
+        return $this->hasElementInSpecificScope($tagName, self::BUTTON_SCOPE);
     }
 
     /**
