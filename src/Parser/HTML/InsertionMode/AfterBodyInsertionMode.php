@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Parser\HTML\InsertionMode;
 
+use Rowbot\DOM\NodeInsertionLocation;
+use Rowbot\DOM\Parser\HTML\AdjustedInsertionLocation;
 use Rowbot\DOM\Parser\HTML\TreeBuilderContext;
 use Rowbot\DOM\Parser\Token\CharacterToken;
 use Rowbot\DOM\Parser\Token\CommentToken;
@@ -40,7 +42,11 @@ class AfterBodyInsertionMode extends AbstractInsertionMode implements InsertionM
         if ($token instanceof CommentToken) {
             // Insert a comment as the last child of the first element in the
             // stack of open elements (the html element).
-            $this->insertComment($context, $token, [$context->parser->openElements->top(), 'beforeend']);
+            $this->insertComment(
+                $context,
+                $token,
+                new AdjustedInsertionLocation($context->parser->openElements->top(), NodeInsertionLocation::BEFORE_END)
+            );
 
             return;
         }

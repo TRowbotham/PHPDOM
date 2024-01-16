@@ -161,7 +161,7 @@ class InHeadInsertionMode extends AbstractInsertionMode implements InsertionMode
                 $node = $this->createElementForToken(
                     $token,
                     Namespaces::HTML,
-                    $adjustedInsertionLocation[0]
+                    $adjustedInsertionLocation->node
                 );
 
                 // TODO: Mark the element as being "parser-inserted" and unset the

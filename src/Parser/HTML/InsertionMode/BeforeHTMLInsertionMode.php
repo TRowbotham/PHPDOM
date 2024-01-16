@@ -6,6 +6,8 @@ namespace Rowbot\DOM\Parser\HTML\InsertionMode;
 
 use Rowbot\DOM\Element\ElementFactory;
 use Rowbot\DOM\Namespaces;
+use Rowbot\DOM\NodeInsertionLocation;
+use Rowbot\DOM\Parser\HTML\AdjustedInsertionLocation;
 use Rowbot\DOM\Parser\HTML\TreeBuilderContext;
 use Rowbot\DOM\Parser\Token\CharacterToken;
 use Rowbot\DOM\Parser\Token\CommentToken;
@@ -29,7 +31,11 @@ class BeforeHTMLInsertionMode extends AbstractInsertionMode implements Insertion
 
         if ($token instanceof CommentToken) {
             // Insert a comment as the last child of the Document object.
-            $this->insertComment($context, $token, [$context->document, 'beforeend']);
+            $this->insertComment(
+                $context,
+                $token,
+                new AdjustedInsertionLocation($context->document, NodeInsertionLocation::BEFORE_END)
+            );
 
             return;
         }

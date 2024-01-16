@@ -6,6 +6,8 @@ namespace Rowbot\DOM\Parser\HTML\InsertionMode;
 
 use Rowbot\DOM\DocumentMode;
 use Rowbot\DOM\DocumentType;
+use Rowbot\DOM\NodeInsertionLocation;
+use Rowbot\DOM\Parser\HTML\AdjustedInsertionLocation;
 use Rowbot\DOM\Parser\HTML\TreeBuilderContext;
 use Rowbot\DOM\Parser\Token\CharacterToken;
 use Rowbot\DOM\Parser\Token\CommentToken;
@@ -39,7 +41,11 @@ class InitialInsertionMode extends AbstractInsertionMode implements InsertionMod
         }
 
         if ($token instanceof CommentToken) {
-            $this->insertComment($context, $token, [$context->document, 'beforeend']);
+            $this->insertComment(
+                $context,
+                $token,
+                new AdjustedInsertionLocation($context->document, NodeInsertionLocation::BEFORE_END)
+            );
 
             return;
         }

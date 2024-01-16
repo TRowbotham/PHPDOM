@@ -22,6 +22,7 @@ use Rowbot\DOM\GetElementsBy;
 use Rowbot\DOM\NamedNodeMap;
 use Rowbot\DOM\Namespaces;
 use Rowbot\DOM\Node;
+use Rowbot\DOM\NodeInsertionLocation;
 use Rowbot\DOM\NonDocumentTypeChildNode;
 use Rowbot\DOM\ParentNode;
 use Rowbot\DOM\ParentNodeTrait;
@@ -632,9 +633,9 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
      */
     public function insertAdjacentHTML(string $position, string $text): void
     {
-        $position = Utils::toASCIILowercase($position);
+        $position = NodeInsertionLocation::tryFrom(Utils::toASCIILowercase($position));
 
-        if ($position === 'beforebegin' || $position === 'afterend') {
+        if ($position === NodeInsertionLocation::BEFORE_BEGIN || $position === NodeInsertionLocation::AFTER_END) {
             // Let context be the context object's parent.
             $context = $this->parentNode;
 
@@ -643,7 +644,7 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
             if ($context === null || $context instanceof Document) {
                 throw new NoModificationAllowedError();
             }
-        } elseif ($position === 'afterbegin' || $position === 'beforeend') {
+        } elseif ($position === NodeInsertionLocation::AFTER_BEGIN || $position === NodeInsertionLocation::BEFORE_END) {
             // Let context be the context object.
             $context = $this;
         } else {
@@ -669,17 +670,17 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
         // with text as markup, and context as the context element.
         $fragment = ParserFactory::parseFragment($text, $context);
 
-        if ($position === 'beforebegin') {
+        if ($position === NodeInsertionLocation::BEFORE_BEGIN) {
             // Insert fragment into the context object's parent before the
             // context object.
             $this->parentNode->preinsertNode($fragment, $this);
-        } elseif ($position === 'afterbegin') {
+        } elseif ($position === NodeInsertionLocation::AFTER_BEGIN) {
             // Insert fragment into the context object before its first child.
             $this->preinsertNode($fragment, $this->firstChild);
-        } elseif ($position === 'beforeend') {
+        } elseif ($position === NodeInsertionLocation::BEFORE_END) {
             // Append fragment to the context object.
             $this->preinsertNode($fragment, null);
-        } elseif ($position === 'afterend') {
+        } elseif ($position === NodeInsertionLocation::AFTER_END) {
             // Insert fragment into the context object's parent before the
             // context object's next sibling.
             $this->parentNode->preinsertNode($fragment, $this->nextSibling);
@@ -746,9 +747,13 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
      */
     private function insertAdjacent(Element $element, string $where, Node $node): ?Node
     {
-        $where = Utils::toASCIILowercase($where);
+        $where = NodeInsertionLocation::tryFrom(Utils::toASCIILowercase($where));
 
-        if ($where === 'beforebegin') {
+        if ($where === null) {
+            throw new SyntaxError();
+        }
+
+        if ($where === NodeInsertionLocation::BEFORE_BEGIN) {
             if ($element->parentNode === null) {
                 return null;
             }
@@ -756,23 +761,21 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
             return $element->parentNode->preinsertNode($node, $element);
         }
 
-        if ($where === 'afterbegin') {
+        if ($where === NodeInsertionLocation::AFTER_BEGIN) {
             return $element->preinsertNode($node, $element->childNodes->first());
         }
 
-        if ($where === 'beforeend') {
+        if ($where === NodeInsertionLocation::BEFORE_END) {
             return $element->preinsertNode($node, null);
         }
 
-        if ($where === 'afterend') {
+        if ($where === NodeInsertionLocation::AFTER_END) {
             if ($element->parentNode === null) {
                 return null;
             }
 
             return $element->parentNode->preinsertNode($node, $element->nextSibling);
         }
-
-        throw new SyntaxError();
     }
 
     /**

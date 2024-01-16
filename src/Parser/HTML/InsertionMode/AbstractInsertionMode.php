@@ -19,6 +19,8 @@ use Rowbot\DOM\Element\HTML\Support\Resettable;
 use Rowbot\DOM\Exception\DOMException;
 use Rowbot\DOM\Namespaces;
 use Rowbot\DOM\Node;
+use Rowbot\DOM\NodeInsertionLocation;
+use Rowbot\DOM\Parser\HTML\AdjustedInsertionLocation;
 use Rowbot\DOM\Parser\HTML\TokenizerState;
 use Rowbot\DOM\Parser\HTML\TreeBuilderContext;
 use Rowbot\DOM\Parser\Token\CommentToken;
@@ -275,10 +277,8 @@ abstract class AbstractInsertionMode
      *
      * @param \Rowbot\DOM\Node|null $overrideTarget (optional) When given, it overrides the target insertion point for
      *                                              the node. Default value is null.
-     *
-     * @return array{0: \Rowbot\DOM\Node, 1: 'beforeend'|'beforebegin'|'afterend'|'afterbegin'}
      */
-    protected function getAppropriatePlaceForInsertingNode(TreeBuilderContext $context, Node $overrideTarget = null): array
+    protected function getAppropriatePlaceForInsertingNode(TreeBuilderContext $context, Node $overrideTarget = null): AdjustedInsertionLocation
     {
         // If there was an override target specified, then let target be the
         // override target. Otherwise, let target be the current node.
@@ -318,36 +318,54 @@ abstract class AbstractInsertionMode
 
             do {
                 if ($lastTemplate && (!$lastTable || $lastTemplateIndex > $lastTableIndex)) {
-                    $adjustedInsertionLocation = [$lastTemplate->content, 'beforeend'];
+                    $adjustedInsertionLocation = new AdjustedInsertionLocation(
+                        $lastTemplate->content,
+                        NodeInsertionLocation::BEFORE_END,
+                    );
 
                     break;
                 }
 
                 if ($lastTable === null) {
                     // Fragment case
-                    $adjustedInsertionLocation = [$context->parser->openElements->top(), 'beforeend'];
+                    $adjustedInsertionLocation = new AdjustedInsertionLocation(
+                        $context->parser->openElements->top(),
+                        NodeInsertionLocation::BEFORE_END,
+                    );
 
                     break;
                 }
 
                 if ($lastTable->parentNode) {
-                    $adjustedInsertionLocation = [$lastTable, 'beforebegin'];
+                    $adjustedInsertionLocation = new AdjustedInsertionLocation(
+                        $lastTable,
+                        NodeInsertionLocation::BEFORE_BEGIN,
+                    );
 
                     break;
                 }
 
                 $previousElement = $context->parser->openElements->itemAt($lastTableIndex - 1);
-                $adjustedInsertionLocation = [$previousElement, 'beforeend'];
+                $adjustedInsertionLocation = new AdjustedInsertionLocation(
+                    $previousElement,
+                    NodeInsertionLocation::BEFORE_END,
+                );
             } while (false);
         } else {
-            $adjustedInsertionLocation = [$target, 'beforeend'];
+            $adjustedInsertionLocation = new AdjustedInsertionLocation(
+                $target,
+                NodeInsertionLocation::BEFORE_END,
+            );
         }
 
         if (
-            $adjustedInsertionLocation[0] instanceof HTMLTemplateElement
-            && $adjustedInsertionLocation[1] === 'beforeend'
+            $adjustedInsertionLocation->node instanceof HTMLTemplateElement
+            && $adjustedInsertionLocation->location === NodeInsertionLocation::BEFORE_END
         ) {
-            $adjustedInsertionLocation = [$adjustedInsertionLocation[0]->content, 'beforeend'];
+            $adjustedInsertionLocation = new AdjustedInsertionLocation(
+                $adjustedInsertionLocation->node->content,
+                NodeInsertionLocation::BEFORE_END,
+            );
         }
 
         return $adjustedInsertionLocation;
@@ -378,7 +396,7 @@ abstract class AbstractInsertionMode
         // these steps.
         // NOTE: The DOM will not let Document nodes have Text node children, so
         // they are dropped on the floor.
-        if ($adjustedInsertionLocation[0] instanceof Document) {
+        if ($adjustedInsertionLocation->node instanceof Document) {
             return;
         }
 
@@ -388,33 +406,20 @@ abstract class AbstractInsertionMode
         // same as that of the element in which the adjusted insertion location
         // finds itself, and insert the newly created node at the adjusted
         // insertion location.
-        switch ($adjustedInsertionLocation[1]) {
-            case 'beforeend':
-                $node = $adjustedInsertionLocation[0]->lastChild;
+        $adjustedNode = match ($adjustedInsertionLocation->location) {
+            NodeInsertionLocation::BEFORE_BEGIN => $adjustedInsertionLocation->node->previousSibling,
+            NodeInsertionLocation::AFTER_BEGIN  => $adjustedInsertionLocation->node->firstChild,
+            NodeInsertionLocation::BEFORE_END   => $adjustedInsertionLocation->node->lastChild,
+            NodeInsertionLocation::AFTER_END    => $adjustedInsertionLocation->node->nextSibling,
+        };
 
-                break;
-
-            case 'afterend':
-                $node = $adjustedInsertionLocation[0]->nextSibling;
-
-                break;
-
-            case 'afterbegin':
-                $node = $adjustedInsertionLocation[0]->firstChild;
-
-                break;
-
-            case 'beforebegin':
-                $node = $adjustedInsertionLocation[0]->previousSibling;
-        }
-
-        if ($node instanceof Text) {
-            $node->setData($data, true);
+        if ($adjustedNode instanceof Text) {
+            $adjustedNode->setData($data, true);
 
             return;
         }
 
-        $node = new Text($adjustedInsertionLocation[0]->getNodeDocument(), $data);
+        $node = new Text($adjustedInsertionLocation->node->getNodeDocument(), $data);
         $this->insertNode($node, $adjustedInsertionLocation);
     }
 
@@ -424,10 +429,9 @@ abstract class AbstractInsertionMode
      *
      * @see https://html.spec.whatwg.org/multipage/syntax.html#insert-a-comment
      *
-     * @param \Rowbot\DOM\Parser\Token\CommentToken                                                 $token
-     * @param array{0: \Rowbot\DOM\Node, 1: 'beforeend'|'beforebegin'|'afterend'|'afterbegin'}|null $position
+     * @param \Rowbot\DOM\Parser\Token\CommentToken $token
      */
-    protected function insertComment(TreeBuilderContext $context, CommentToken $token, array $position = null): void
+    protected function insertComment(TreeBuilderContext $context, CommentToken $token, AdjustedInsertionLocation $position = null): void
     {
         // Let data be the data given in the comment token being processed.
         $data = $token->data;
@@ -440,7 +444,7 @@ abstract class AbstractInsertionMode
         // Create a Comment node whose data attribute is set to data and whose
         // node document is the same as that of the node in which the adjusted
         // insertion location finds itself.
-        $ownerDocument = $adjustedInsertionLocation[0]->getNodeDocument();
+        $ownerDocument = $adjustedInsertionLocation->node->getNodeDocument();
         $node = new Comment($ownerDocument, $data);
 
         // Insert the newly created node at the adjusted insertion location.
@@ -468,7 +472,7 @@ abstract class AbstractInsertionMode
         $element = $this->createElementForToken(
             $token,
             $namespace,
-            $adjustedInsertionLocation[0]
+            $adjustedInsertionLocation->node
         );
 
         // If it is possible to insert an element at the adjusted insertion
@@ -495,21 +499,17 @@ abstract class AbstractInsertionMode
     /**
      * Inserts a node based at a specific location. It follows similar rules to
      * Element's insertAdjacentHTML method.
-     *
-     * @param array{0: \Rowbot\DOM\Node, 1: 'beforeend'|'beforebegin'|'afterend'|'afterbegin'} $position
      */
-    protected function insertNode(Node $node, array $position): void
+    protected function insertNode(Node $node, AdjustedInsertionLocation $position): void
     {
-        [$relativeNode, $location] = $position;
-
-        if ($location === 'beforebegin') {
-            $relativeNode->parentNode->insertNode($node, $relativeNode);
-        } elseif ($location === 'afterbegin') {
-            $relativeNode->insertNode($node, $relativeNode->firstChild);
-        } elseif ($location === 'beforeend') {
-            $relativeNode->appendChild($node);
-        } elseif ($location === 'afterend') {
-            $relativeNode->parentNode->insertNode($node, $relativeNode->nextSibling);
+        if ($position->location === NodeInsertionLocation::BEFORE_BEGIN) {
+            $position->node->parentNode->insertNode($node, $position->node);
+        } elseif ($position->location === NodeInsertionLocation::AFTER_BEGIN) {
+            $position->node->insertNode($node, $position->node->firstChild);
+        } elseif ($position->location === NodeInsertionLocation::BEFORE_END) {
+            $position->node->appendChild($node);
+        } elseif ($position->location === NodeInsertionLocation::AFTER_END) {
+            $position->node->parentNode->insertNode($node, $position->node->nextSibling);
         }
     }
 
