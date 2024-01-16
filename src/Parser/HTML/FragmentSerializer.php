@@ -27,6 +27,7 @@ class FragmentSerializer implements FragmentSerializerInterface
         'bgsound'  => true,
         'frame'    => true,
         'keygen'   => true,
+        'param'    => true,
     ];
 
     /**

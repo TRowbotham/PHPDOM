@@ -22,7 +22,6 @@ interface FragmentSerializerInterface
         'input'  => true,
         'link'   => true,
         'meta'   => true,
-        'param'  => true,
         'source' => true,
         'track'  => true,
         'wbr'    => true,
