@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Parser\HTML;
 
-use Rowbot\DOM\Attr;
 use Rowbot\DOM\Comment;
 use Rowbot\DOM\DocumentType;
 use Rowbot\DOM\Element\Element;
@@ -66,8 +65,19 @@ class FragmentSerializer implements FragmentSerializerInterface
                 $s .= '<' . $tagname;
 
                 foreach ($currentNode->getAttributeList() as $attr) {
-                    $s .= ' ' . $this->serializeContentAttributeName($attr);
-                    $s .= '="' . $this->escapeHTMLString($attr->getValue(), true) . '"';
+                    $attrName = match ($attr->getNamespace()) {
+                        null => $attr->getLocalName(),
+                        Namespaces::XML => 'xml:' . $attr->getLocalName(),
+                        Namespaces::XMLNS => match ($attr->getLocalName()) {
+                            'xmlns' => 'xmlns',
+                            default => 'xmlns:' . $attr->getLocalName(),
+                        },
+                        Namespaces::XLINK => 'xlink:' . $attr->getLocalName(),
+                        default => $attr->getQualifiedName(),
+                    };
+                    $attrValue = str_replace(['&', "\u{00A0}", '"'], ['&amp;', '&nbsp;', '&quot;'], $attr->getValue());
+
+                    $s .= ' ' . $attrName . '="' . $attrValue . '"';
                 }
 
                 $s .= '>';
@@ -96,7 +106,11 @@ class FragmentSerializer implements FragmentSerializerInterface
                 ) {
                     $s .= $currentNode->data;
                 } else {
-                    $s .= $this->escapeHTMLString($currentNode->data);
+                    $s .= str_replace(
+                        ['&', "\u{00A0}", '<', '>'],
+                        ['&amp;', '&nbsp;', '&lt;', '&gt;'],
+                        $currentNode->data
+                    );
                 }
             } elseif ($currentNode instanceof Comment) {
                 $s .= '<!--' . $currentNode->data . '-->';
@@ -111,78 +125,5 @@ class FragmentSerializer implements FragmentSerializerInterface
         }
 
         return $s;
-    }
-
-    /**
-     * @see https://html.spec.whatwg.org/multipage/syntax.html#escapingString
-     *
-     * @param string $string          The input string to be escaped.
-     * @param bool   $inAttributeMode (optional)
-     *
-     * @return string The escaped input string.
-     */
-    private function escapeHTMLString(string $string, bool $inAttributeMode = false): string
-    {
-        if ($string === '') {
-            return '';
-        }
-
-        // 1. Replace any occurrence of the "&" character by the string "&amp;".
-        // 2. Replace any occurrences of the U+00A0 NO-BREAK SPACE character by the string "&nbsp;".
-        $search = ['&', "\u{00A0}"];
-        $replace = ['&amp;', '&nbsp;'];
-
-        // 3. If the algorithm was invoked in the attribute mode, replace any occurrences of the """
-        // character by the string "&quot;".
-        if ($inAttributeMode) {
-            $search[] = '"';
-            $replace[] = '&quot;';
-        } else {
-            // 4. If the algorithm was not invoked in the attribute mode, replace any occurrences of
-            // the "<" character by the string "&lt;", and any occurrences of the ">" character by
-            // the string "&gt;".
-            $search[] = '<';
-            $search[] = '>';
-            $replace[] = '&lt;';
-            $replace[] = '&gt;';
-        }
-
-        return str_replace($search, $replace, $string);
-    }
-
-    /**
-     * @see https://html.spec.whatwg.org/multipage/syntax.html#attribute's-serialised-name
-     *
-     * @param \Rowbot\DOM\Attr $attr The attribute whose name is to be serialized.
-     *
-     * @return string The attribute's serialized name.
-     */
-    private function serializeContentAttributeName(Attr $attr): string
-    {
-        $namespace = $attr->getNamespace();
-
-        if ($namespace === null) {
-            return $attr->getLocalName();
-        }
-
-        if ($namespace === Namespaces::XML) {
-            return 'xml:' . $attr->getLocalName();
-        }
-
-        if ($namespace === Namespaces::XMLNS) {
-            $localName = $attr->getLocalName();
-
-            if ($localName === 'xmlns') {
-                return 'xmlns';
-            }
-
-            return 'xmlns:' . $localName;
-        }
-
-        if ($namespace === Namespaces::XLINK) {
-            return 'xlink:' . $attr->getLocalName();
-        }
-
-        return $attr->getQualifiedName();
     }
 }
