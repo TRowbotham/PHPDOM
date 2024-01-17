@@ -11,9 +11,7 @@ class CDATASection extends Text
 {
     public function __construct(Document $document, string $data)
     {
-        parent::__construct($document, $data);
-
-        $this->nodeType = self::CDATA_SECTION_NODE;
+        parent::__construct($document, $data, self::CDATA_SECTION_NODE);
     }
 
     protected function getNodeName(): string

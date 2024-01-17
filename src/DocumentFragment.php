@@ -26,10 +26,9 @@ class DocumentFragment extends Node implements NonElementParentNode, ParentNode
 
     public function __construct(Document $document)
     {
-        parent::__construct($document);
+        parent::__construct($document, self::DOCUMENT_FRAGMENT_NODE);
 
         $this->host = null;
-        $this->nodeType = Node::DOCUMENT_FRAGMENT_NODE;
     }
 
     public function __get(string $name)

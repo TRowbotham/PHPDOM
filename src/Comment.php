@@ -12,9 +12,7 @@ class Comment extends CharacterData
 {
     public function __construct(Document $document, string $data = '')
     {
-        parent::__construct($document, $data);
-
-        $this->nodeType = Node::COMMENT_NODE;
+        parent::__construct($document, $data, self::COMMENT_NODE);
     }
 
     public function isEqualNode(?Node $otherNode): bool

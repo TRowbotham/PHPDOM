@@ -48,9 +48,6 @@ use function range;
  *
  * @property-read \Rowbot\DOM\DOMTokenList                                $classList
  * @property-read \Rowbot\DOM\NamedNodeMap                                $attributes
- * @property-read ?string                                                 $namespaceURI
- * @property-read ?string                                                 $prefix
- * @property-read string                                                  $localName
  * @property-read string                                                  $tagName
  * @property-read \Rowbot\DOM\HTMLCollection<\Rowbot\DOM\Element\Element> $children
  * @property-read \Rowbot\DOM\Element\Element|null                        $firstElementChild
@@ -72,23 +69,22 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
 
     protected AttributeList $attributeList;
 
-    protected string $localName;
+    public readonly string $localName;
 
-    protected ?string $namespaceURI;
+    public readonly ?string $namespaceURI;
 
-    protected ?string $prefix;
+    public readonly ?string $prefix;
 
     private ?DOMTokenList $classList_;
 
     public function __construct(Document $document, string $localName, ?string $namespace, ?string $prefix = null)
     {
-        parent::__construct($document);
+        parent::__construct($document, self::ELEMENT_NODE);
 
         $this->attributeList = new AttributeList($this);
         $this->localName = $localName;
         $this->namedNodeMap = new NamedNodeMap($this);
         $this->namespaceURI = $namespace;
-        $this->nodeType = self::ELEMENT_NODE;
         $this->prefix = $prefix;
         $this->attributeList->observe($this);
         $this->classList_ = null;
@@ -132,9 +128,6 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
             case 'lastElementChild':
                 return $this->getLastElementChild();
 
-            case 'localName':
-                return $this->localName;
-
             case 'outerHTML':
                 // On getting, return the result of invoking the fragment
                 // serializing algorithm on a fictional node whose only child is
@@ -146,14 +139,8 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
 
                 return MarkupFactory::serializeFragment($fakeNode, true);
 
-            case 'namespaceURI':
-                return $this->namespaceURI;
-
             case 'nextElementSibling':
                 return $this->getNextElementSibling();
-
-            case 'prefix':
-                return $this->prefix;
 
             case 'previousElementSibling':
                 return $this->getPreviousElementSibling();

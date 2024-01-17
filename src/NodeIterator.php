@@ -11,8 +11,6 @@ namespace Rowbot\DOM;
  * @property-read \Rowbot\DOM\Node                     $root
  * @property-read \Rowbot\DOM\Node                     $referenceNode
  * @property-read bool                                 $pointerBeforeReferenceNode
- * @property-read int                                  $whatToShow
- * @property-read \Rowbot\DOM\NodeFilter|callable|null $filter
  */
 final class NodeIterator
 {
@@ -37,9 +35,6 @@ final class NodeIterator
     public function __get(string $name)
     {
         switch ($name) {
-            case 'filter':
-                return $this->filter;
-
             case 'pointerBeforeReferenceNode':
                 return $this->context->pointerBeforeReferenceNode;
 
@@ -48,9 +43,6 @@ final class NodeIterator
 
             case 'root':
                 return $this->context->root;
-
-            case 'whatToShow':
-                return $this->whatToShow;
         }
     }
 

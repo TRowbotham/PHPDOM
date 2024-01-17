@@ -32,9 +32,9 @@ abstract class CharacterData extends Node implements ChildNode
 
     protected string $data;
 
-    public function __construct(Document $document, string $data)
+    public function __construct(Document $document, string $data, int $nodeType)
     {
-        parent::__construct($document);
+        parent::__construct($document, $nodeType);
 
         $this->data = $data;
     }

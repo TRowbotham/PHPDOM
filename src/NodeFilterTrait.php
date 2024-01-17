@@ -15,11 +15,14 @@ trait NodeFilterTrait
     /**
      * @var \Rowbot\DOM\NodeFilter|callable|null
      */
-    private $filter;
+    public readonly mixed $filter;
+
+    /**
+     * @var \Rowbot\DOM\NodeFilter::SHOW_*
+     */
+    public readonly int $whatToShow;
 
     private bool $isActive = false;
-
-    private int $whatToShow;
 
     /**
      * @param \Rowbot\DOM\NodeFilter|callable|null $filter

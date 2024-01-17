@@ -7,20 +7,16 @@ namespace Rowbot\DOM;
 /**
  * @see https://dom.spec.whatwg.org/#documenttype
  * @see https://developer.mozilla.org/en-US/docs/Web/API/DocumentType
- *
- * @property-read string $name
- * @property-read string $publicId
- * @property-read string $systemId
  */
 class DocumentType extends Node implements ChildNode
 {
     use ChildNodeTrait;
 
-    private string $name;
+    public readonly string $name;
 
-    private string $publicId;
+    public readonly string $publicId;
 
-    private string $systemId;
+    public readonly string $systemId;
 
     public function __construct(
         Document $document,
@@ -28,29 +24,11 @@ class DocumentType extends Node implements ChildNode
         string $publicId = '',
         string $systemId = ''
     ) {
-        parent::__construct($document);
+        parent::__construct($document, self::DOCUMENT_TYPE_NODE);
 
         $this->name = $name;
-        $this->nodeType = self::DOCUMENT_TYPE_NODE;
         $this->publicId = $publicId;
         $this->systemId = $systemId;
-    }
-
-    public function __get(string $name)
-    {
-        switch ($name) {
-            case 'name':
-                return $this->name;
-
-            case 'publicId':
-                return $this->publicId;
-
-            case 'systemId':
-                return $this->systemId;
-
-            default:
-                return parent::__get($name);
-        }
     }
 
     public function isEqualNode(?Node $otherNode): bool

@@ -12,29 +12,27 @@ use Rowbot\DOM\Element\Element;
  * @see https://dom.spec.whatwg.org/#attr
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Attr
  *
- * @property-read string                           $localName    The attribute's local name.
- * @property-read string                           $name         The attribute's fully qualified name, usually inthe
- *                                                               form  of prefix:localName or localName if the attribute
- *                                                               does not have a namespace.
- * @property-read string|null                      $namespaceURI The attribute's namespace or null if it does not have a
- *                                                               namespace.
  * @property-read \Rowbot\DOM\Element\Element|null $ownerElement The Element to which this attribute belongs to, or null
  *                                                               if it is not owned by an Element.
- * @property-read string|null                      $prefix       The attribute's namespace prefix or null if it does not
- *                                                               have a namespace.
  * @property-read string                           $value        The value of the attribute.
  */
 class Attr extends Node
 {
-    private string $localName;
+    public readonly ?string $namespaceURI;
 
-    private ?string $namespaceURI;
+    public readonly ?string $prefix;
 
-    private ?Element $ownerElement;
+    public readonly string $localName;
 
-    private ?string $prefix;
+    /**
+     * The attribute's fully qualified name, usually in the form of prefix:localName or localName if the attribute
+     * does not have a namespace.
+     */
+    public readonly string $name;
 
     private string $value;
+
+    private ?Element $ownerElement;
 
     public function __construct(
         Document $document,
@@ -43,37 +41,24 @@ class Attr extends Node
         ?string $namespace = null,
         ?string $prefix = null
     ) {
-        parent::__construct($document);
+        parent::__construct($document, self::ATTRIBUTE_NODE);
 
         $this->localName = $localName;
-        $this->nodeType = self::ATTRIBUTE_NODE;
         $this->namespaceURI = $namespace;
         $this->ownerElement = null;
         $this->prefix = $prefix;
         $this->value = $value;
+        $this->name = match ($this->prefix) {
+            null    => $this->localName,
+            default => $this->prefix . ':' . $this->localName,
+        };
     }
 
     public function __get(string $name)
     {
         switch ($name) {
-            case 'localName':
-                return $this->localName;
-
-            case 'name':
-                if ($this->prefix) {
-                    return $this->prefix . ':' . $this->localName;
-                }
-
-                return $this->localName;
-
-            case 'namespaceURI':
-                return $this->namespaceURI;
-
             case 'ownerElement':
                 return $this->ownerElement;
-
-            case 'prefix':
-                return $this->prefix;
 
             case 'value':
                 return $this->value;

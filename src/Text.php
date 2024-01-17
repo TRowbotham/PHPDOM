@@ -17,11 +17,9 @@ use Rowbot\DOM\Exception\IndexSizeError;
  */
 class Text extends CharacterData
 {
-    public function __construct(Document $document, string $data = '')
+    public function __construct(Document $document, string $data = '', int $nodeType = self::TEXT_NODE)
     {
-        parent::__construct($document, $data);
-
-        $this->nodeType = Node::TEXT_NODE;
+        parent::__construct($document, $data, $nodeType);
     }
 
     public function __get(string $name)

@@ -34,7 +34,6 @@ use function trim;
  * @see https://html.spec.whatwg.org/#document
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Document
  *
- * @property-read \Rowbot\DOM\DOMImplementation                           $implementation
  * @property-read string                                                  $URL
  * @property-read string                                                  $documentURI
  * @property-read string                                                  $origin
@@ -78,7 +77,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
 
     private Environment $environment;
 
-    private DOMImplementation $implementation;
+    public readonly DOMImplementation $implementation;
 
     private bool $isIframeSrcDoc;
 
@@ -96,7 +95,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      */
     public function __construct(?Environment $env = null, string $type = 'xml')
     {
-        parent::__construct($this);
+        parent::__construct($this, self::DOCUMENT_NODE);
 
         $this->characterSet = 'UTF-8';
         $this->flags = 0;
@@ -104,7 +103,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
         $this->isIframeSrcDoc = false;
         $this->inertTemplateDocument = null;
         $this->mode = DocumentMode::NO_QUIRKS;
-        $this->nodeType = self::DOCUMENT_NODE;
         $this->type = $type;
         $this->baseElements = new BaseElementList();
 
@@ -169,9 +167,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
 
             case 'firstElementChild':
                 return $this->getFirstElementChild();
-
-            case 'implementation':
-                return $this->implementation;
 
             case 'lastElementChild':
                 return $this->getLastElementChild();

@@ -29,7 +29,6 @@ use function strcmp;
  * @property-read \Rowbot\DOM\Node|null            $lastChild
  * @property-read \Rowbot\DOM\Node|null            $nextSibling
  * @property-read string                           $nodeName
- * @property-read int                              $nodeType
  * @property-read bool                             $isConnected
  * @property-read \Rowbot\DOM\Document|null        $ownerDocument
  * @property-read \Rowbot\DOM\Node|null            $parentNode
@@ -63,7 +62,7 @@ abstract class Node
      */
     protected NodeSet $childNodes;
 
-    protected int $nodeType;
+    public readonly int $nodeType;
 
     /**
      * @var self|null
@@ -87,11 +86,12 @@ abstract class Node
      */
     protected $previousSibling;
 
-    protected function __construct(Document $document)
+    protected function __construct(Document $document, int $nodeType)
     {
         $this->nodeDocument = $document;
         $this->childNodes = new NodeSet();
         $this->nodeList = new LiveNodeList($this->childNodes);
+        $this->nodeType = $nodeType;
     }
 
     /**
@@ -122,9 +122,6 @@ abstract class Node
 
             case 'nodeName':
                 return $this->getNodeName();
-
-            case 'nodeType':
-                return $this->nodeType;
 
             case 'nodeValue':
                 return $this->getNodeValue();

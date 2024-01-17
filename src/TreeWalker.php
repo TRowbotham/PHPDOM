@@ -9,10 +9,6 @@ namespace Rowbot\DOM;
  * @see https://developer.mozilla.org/en-US/docs/Web/API/TreeWalker
  *
  * @property \Rowbot\DOM\Node $currentNode
- *
- * @property-read \Rowbot\DOM\Node                     $root
- * @property-read int                                  $whatToShow
- * @property-read \Rowbot\DOM\NodeFilter|callable|null $filter
  */
 final class TreeWalker
 {
@@ -20,7 +16,7 @@ final class TreeWalker
 
     public Node $currentNode;
 
-    private Node $root;
+    public readonly Node $root;
 
     /**
      * @param \Rowbot\DOM\NodeFilter|callable|null $filter
@@ -44,15 +40,6 @@ final class TreeWalker
         switch ($name) {
             case 'currentNode':
                 return $this->currentNode;
-
-            case 'filter':
-                return $this->filter;
-
-            case 'root':
-                return $this->root;
-
-            case 'whatToShow':
-                return $this->whatToShow;
         }
     }
 

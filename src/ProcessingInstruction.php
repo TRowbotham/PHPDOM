@@ -6,30 +6,16 @@ namespace Rowbot\DOM;
 
 /**
  * @see https://dom.spec.whatwg.org/#interface-processinginstruction
- *
- * @property-read string $target
  */
 class ProcessingInstruction extends CharacterData
 {
-    protected string $target;
+    public readonly string $target;
 
     public function __construct(Document $document, string $target, string $data)
     {
-        parent::__construct($document, $data);
+        parent::__construct($document, $data, self::PROCESSING_INSTRUCTION_NODE);
 
-        $this->nodeType = Node::PROCESSING_INSTRUCTION_NODE;
         $this->target = $target;
-    }
-
-    public function __get(string $name)
-    {
-        switch ($name) {
-            case 'target':
-                return $this->target;
-
-            default:
-                return parent::__get($name);
-        }
     }
 
     public function isEqualNode(?Node $otherNode): bool
