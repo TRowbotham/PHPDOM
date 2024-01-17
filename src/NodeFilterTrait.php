@@ -45,10 +45,7 @@ trait NodeFilterTrait
      *
      * @param \Rowbot\DOM\Node $node The node to check.
      *
-     * @return int Returns one of NodeFilter's FILTER_* constants.
-     *     - NodeFilter::FILTER_ACCEPT
-     *     - NodeFilter::FILTER_REJECT
-     *     - NodeFilter::FILTER_SKIP
+     * @return \Rowbot\DOM\NodeFilter::FILTER_*
      *
      * @throws \Rowbot\DOM\Exception\InvalidStateError
      */

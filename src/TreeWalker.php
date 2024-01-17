@@ -19,12 +19,13 @@ final class TreeWalker
     public readonly Node $root;
 
     /**
+     * @param \Rowbot\DOM\NodeFilter::SHOW_*       $whatToShow
      * @param \Rowbot\DOM\NodeFilter|callable|null $filter
      */
     public function __construct(
         Node $root,
         int $whatToShow = NodeFilter::SHOW_ALL,
-        $filter = null
+        mixed $filter = null
     ) {
         $this->currentNode = $root;
         $this->setFilter($filter);

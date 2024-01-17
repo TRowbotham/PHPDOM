@@ -38,10 +38,7 @@ interface NodeFilter
      *
      * @param \Rowbot\DOM\Node $node The current node being processed.
      *
-     * @return int Returns one of NodeFilter's FILTER_* constants.
-     *                 - NodeFilter::FILTER_ACCEPT
-     *                 - NodeFilter::FILTER_REJECT
-     *                 - NodeFilter::FILTER_SKIP
+     * @return self::FILTER_*
      */
     public function acceptNode(Node $node): int;
 }

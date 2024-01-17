@@ -19,9 +19,10 @@ final class NodeIterator
     private NodeIteratorContext $context;
 
     /**
+     * @param \Rowbot\DOM\NodeFilter::SHOW_*       $whatToShow
      * @param \Rowbot\DOM\NodeFilter|callable|null $filter
      */
-    public function __construct(Node $root, int $whatToShow = NodeFilter::SHOW_ALL, $filter = null)
+    public function __construct(Node $root, int $whatToShow = NodeFilter::SHOW_ALL, mixed $filter = null)
     {
         $this->context = new NodeIteratorContext($root);
         $this->context->observeSelf();

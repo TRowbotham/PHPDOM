@@ -62,6 +62,9 @@ abstract class Node
      */
     protected NodeSet $childNodes;
 
+    /**
+     * @var self::*_NODE
+     */
     public readonly int $nodeType;
 
     /**
