@@ -487,6 +487,7 @@ class HTMLElement extends Element
      * @see https://html.spec.whatwg.org/multipage/common-dom-interfaces.html#limited-to-only-non-negative-numbers-greater-than-zero-with-fallback
      *
      * @param mixed $newValue
+     * @param self::SIGNED_LONG*|self::UNSIGNED_LONG* $mode
      */
     protected function setLongAttributeValue(
         string $name,

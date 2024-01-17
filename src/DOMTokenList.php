@@ -49,9 +49,6 @@ final class DOMTokenList implements
         $this->onAttributeChanged($this->element, $this->attrLocalName, $value, $value, null);
     }
 
-    /**
-     * @return int|string
-     */
     public function __get(string $name)
     {
         switch ($name) {

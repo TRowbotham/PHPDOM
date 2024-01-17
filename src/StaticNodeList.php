@@ -32,7 +32,7 @@ final class StaticNodeList implements IteratorAggregate, NodeList
         $this->nodes = $nodes;
     }
 
-    public function __get(string $name): int
+    public function __get(string $name)
     {
         switch ($name) {
             case 'length':
