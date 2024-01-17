@@ -16,7 +16,7 @@ namespace Rowbot\DOM;
  */
 final class NodeIterator
 {
-    use NodeFilterUtils;
+    use NodeFilterTrait;
 
     private NodeIteratorContext $context;
 

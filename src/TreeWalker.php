@@ -16,7 +16,7 @@ namespace Rowbot\DOM;
  */
 final class TreeWalker
 {
-    use NodeFilterUtils;
+    use NodeFilterTrait;
 
     public Node $currentNode;
 

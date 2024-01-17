@@ -10,7 +10,7 @@ use TypeError;
 
 use function is_callable;
 
-trait NodeFilterUtils
+trait NodeFilterTrait
 {
     /**
      * @var \Rowbot\DOM\NodeFilter|callable|null
