@@ -135,7 +135,7 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
                 // flag (this might throw an exception instead of returning a
                 // string).
                 $fakeNode = ElementFactory::create($this->nodeDocument, 'fake', Namespaces::HTML);
-                $fakeNode->childNodes->append($this);
+                $fakeNode->childNodes_->append($this);
 
                 return MarkupFactory::serializeFragment($fakeNode, true);
 
@@ -749,7 +749,7 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
         }
 
         if ($where === NodeInsertionLocation::AFTER_BEGIN) {
-            return $element->preinsertNode($node, $element->childNodes->first());
+            return $element->preinsertNode($node, $element->childNodes_->first());
         }
 
         if ($where === NodeInsertionLocation::BEFORE_END) {
@@ -831,7 +831,7 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
 
     public function getLength(): int
     {
-        return count($this->childNodes);
+        return count($this->childNodes_);
     }
 
     protected function getClassList(): DOMTokenList

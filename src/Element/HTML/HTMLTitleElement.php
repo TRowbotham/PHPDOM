@@ -14,7 +14,7 @@ class HTMLTitleElement extends HTMLElement
             case 'text':
                 $value = '';
 
-                foreach ($this->childNodes as $node) {
+                foreach ($this->childNodes_ as $node) {
                     if ($node instanceof Text) {
                         $value .= $node->data;
                     }

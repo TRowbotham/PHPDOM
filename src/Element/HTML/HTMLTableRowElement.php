@@ -138,7 +138,7 @@ class HTMLTableRowElement extends HTMLElement
             throw new IndexSizeError();
         }
 
-        $node = $this->childNodes->first();
+        $node = $this->childNodes_->first();
         $numCells = 0;
         $indexedCell = null;
 
@@ -191,7 +191,7 @@ class HTMLTableRowElement extends HTMLElement
             throw new IndexSizeError();
         }
 
-        $node = $this->childNodes->first();
+        $node = $this->childNodes_->first();
         $indexedCell = null;
         $lastCell = null;
         $numCells = 0;

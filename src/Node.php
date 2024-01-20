@@ -60,7 +60,7 @@ abstract class Node
     /**
      * @var \Rowbot\DOM\Support\Collection\NodeSet<\Rowbot\DOM\Node>
      */
-    protected NodeSet $childNodes;
+    protected NodeSet $childNodes_;
 
     /**
      * @var self::*_NODE
@@ -89,11 +89,14 @@ abstract class Node
      */
     protected $previousSibling;
 
+    /**
+     * @param self::*_NODE $nodeType
+     */
     protected function __construct(Document $document, int $nodeType)
     {
         $this->nodeDocument = $document;
-        $this->childNodes = new NodeSet();
-        $this->nodeList = new LiveNodeList($this->childNodes);
+        $this->childNodes_ = new NodeSet();
+        $this->nodeList = new LiveNodeList($this->childNodes_);
         $this->nodeType = $nodeType;
     }
 
@@ -110,7 +113,7 @@ abstract class Node
                 return $this->nodeList;
 
             case 'firstChild':
-                return $this->childNodes->first();
+                return $this->childNodes_->first();
 
             case 'isConnected':
                 $options = ['composed' => true];
@@ -118,7 +121,7 @@ abstract class Node
                 return $this->getRootNode($options) instanceof Document;
 
             case 'lastChild':
-                return $this->childNodes->last();
+                return $this->childNodes_->last();
 
             case 'nextSibling':
                 return $this->nextSibling;
@@ -223,7 +226,7 @@ abstract class Node
      */
     public function hasChildNodes(): bool
     {
-        return !$this->childNodes->isEmpty();
+        return !$this->childNodes_->isEmpty();
     }
 
     /**
@@ -416,13 +419,13 @@ abstract class Node
     protected function hasEqualChildNodes(self $otherNode): bool
     {
         // A and B have the same number of children.
-        if (count($this->childNodes) !== count($otherNode->childNodes)) {
+        if (count($this->childNodes_) !== count($otherNode->childNodes_)) {
             return false;
         }
 
         // Each child of A equals the child of B at the identical index.
-        foreach ($this->childNodes as $i => $child) {
-            if (!$child->isEqualNode($otherNode->childNodes[$i])) {
+        foreach ($this->childNodes_ as $i => $child) {
+            if (!$child->isEqualNode($otherNode->childNodes_[$i])) {
                 return false;
             }
         }
@@ -785,7 +788,7 @@ abstract class Node
             // Documents cannot contain more than one element child or text
             // nodes. Throw a HierarchyRequestError if the document fragment
             // has more than 1 element child or a text node.
-            foreach ($node->childNodes as $childNode) {
+            foreach ($node->childNodes_ as $childNode) {
                 if ($childNode instanceof Element) {
                     if (++$elementChildren > 1) {
                         throw new HierarchyRequestError();
@@ -806,7 +809,7 @@ abstract class Node
             // Documents cannot contain more than one element child. Throw a
             // HierarchyRequestError if both the document fragment and
             // document contain an element child.
-            foreach ($parent->childNodes as $childNode) {
+            foreach ($parent->childNodes_ as $childNode) {
                 if ($childNode->nodeType === self::ELEMENT_NODE) {
                     throw new HierarchyRequestError();
                 }
@@ -839,7 +842,7 @@ abstract class Node
             // A Document cannot contain more than 1 element child. Throw a
             // HierarchyRequestError if the parent already contains an element
             // child.
-            foreach ($parent->childNodes as $childNode) {
+            foreach ($parent->childNodes_ as $childNode) {
                 if ($childNode instanceof Element) {
                     throw new HierarchyRequestError();
                 }
@@ -872,7 +875,7 @@ abstract class Node
             // A document can only contain 1 doctype definition. Throw a
             // HierarchyRequestError if we try to insert a doctype into a
             // document that already contains a doctype.
-            foreach ($parent->childNodes as $childNode) {
+            foreach ($parent->childNodes_ as $childNode) {
                 if ($childNode instanceof DocumentType) {
                     throw new HierarchyRequestError();
                 }
@@ -898,7 +901,7 @@ abstract class Node
             // The doctype must preceed any elements. Throw a
             // HierarchyRequestError if we try to append a doctype to a parent
             // that already contains an element.
-            foreach ($parent->childNodes as $childNode) {
+            foreach ($parent->childNodes_ as $childNode) {
                 if ($childNode instanceof Element) {
                     throw new HierarchyRequestError();
                 }
@@ -960,7 +963,7 @@ abstract class Node
         $nodeIsFragment = $node instanceof DocumentFragment;
 
         // 1. Let nodes be node’s children, if node is a DocumentFragment node; otherwise « node ».
-        $nodes = $nodeIsFragment ? $node->childNodes->all() : [$node];
+        $nodes = $nodeIsFragment ? $node->childNodes_->all() : [$node];
 
         // 2. Let count be nodes’s size.
         $count = count($nodes);
@@ -1008,13 +1011,13 @@ abstract class Node
 
             // 7.2. If child is null, then append node to parent’s children.
             if (!$child) {
-                $oldPreviousSibling = $this->childNodes->last();
-                $this->childNodes->append($node);
+                $oldPreviousSibling = $this->childNodes_->last();
+                $this->childNodes_->append($node);
                 $nextSibling = null;
 
             // 7.3. Otherwise, insert node into parent’s children before child’s index.
             } else {
-                $this->childNodes->insertBefore($child, $node);
+                $this->childNodes_->insertBefore($child, $node);
                 $oldPreviousSibling = $child->previousSibling;
                 $nextSibling = $child;
                 $child->previousSibling = $node;
@@ -1116,7 +1119,7 @@ abstract class Node
                 $elementChildren = 0;
 
                 // If node has more than one element child or has a Text node child.
-                foreach ($node->childNodes as $childNode) {
+                foreach ($node->childNodes_ as $childNode) {
                     if ($childNode instanceof Element) {
                         ++$elementChildren;
                     }
@@ -1129,7 +1132,7 @@ abstract class Node
                 // Otherwise, if node has one element child and either parent has an element child
                 // that is not child or a doctype is following child.
                 if ($elementChildren === 1) {
-                    foreach ($parent->childNodes as $childNode) {
+                    foreach ($parent->childNodes_ as $childNode) {
                         if ($childNode instanceof Element && $childNode !== $child) {
                             throw new HierarchyRequestError();
                         }
@@ -1147,7 +1150,7 @@ abstract class Node
                 }
             } elseif ($node instanceof Element) {
                 // parent has an element child that is not child or a doctype is following child.
-                foreach ($parent->childNodes as $childNode) {
+                foreach ($parent->childNodes_ as $childNode) {
                     if ($childNode instanceof Element && $childNode !== $child) {
                         throw new HierarchyRequestError();
                     }
@@ -1164,7 +1167,7 @@ abstract class Node
                 }
             } elseif ($node instanceof DocumentType) {
                 // parent has a doctype child that is not child, or an element is preceding child.
-                foreach ($parent->childNodes as $childNode) {
+                foreach ($parent->childNodes_ as $childNode) {
                     if ($childNode instanceof DocumentType && $childNode !== $child) {
                         throw new HierarchyRequestError();
                     }
@@ -1206,7 +1209,7 @@ abstract class Node
         }
 
         // 12. Let nodes be node’s children if node is a DocumentFragment node; otherwise « node ».
-        $nodes = $node instanceof DocumentFragment ? $node->childNodes->all() : [$node];
+        $nodes = $node instanceof DocumentFragment ? $node->childNodes_->all() : [$node];
 
         // 13. Insert node into parent before referenceChild with the suppress observers flag set.
         $parent->insertNode($node, $referenceChild, true);
@@ -1227,14 +1230,14 @@ abstract class Node
     public function replaceAllNodes(?self $node): void
     {
         // 1. Let removedNodes be parent’s children.
-        $removedNodes = $this->childNodes->all();
+        $removedNodes = $this->childNodes_->all();
 
         // 2. Let addedNodes be the empty set.
         $addedNodes = [];
 
         // 3. If node is a DocumentFragment node, then set addedNodes to node’s children.
         if ($node instanceof DocumentFragment) {
-            $addedNodes = $node->childNodes->all();
+            $addedNodes = $node->childNodes_->all();
 
         // 4. Otherwise, if node is non-null, set addedNodes to « node ».
         } elseif ($node) {
@@ -1302,7 +1305,7 @@ abstract class Node
         assert($parent !== null);
 
         // 3. Let index be node’s index.
-        $index = $parent->childNodes->indexOf($this);
+        $index = $parent->childNodes_->indexOf($this);
 
         foreach (Range::getRangeCollection() as $range) {
             // 4. For each live range whose start node is an inclusive descendant of node, set its
@@ -1347,7 +1350,7 @@ abstract class Node
         $oldNextSibling = $this->nextSibling;
 
         // 11. Remove node from its parent’s children.
-        $parent->childNodes->remove($this);
+        $parent->childNodes_->remove($this);
 
         if ($oldPreviousSibling) {
             $oldPreviousSibling->nextSibling = $oldNextSibling;
@@ -1429,7 +1432,7 @@ abstract class Node
             return 0;
         }
 
-        return $this->parentNode->childNodes->indexOf($this);
+        return $this->parentNode->childNodes_->indexOf($this);
     }
 
     /**
@@ -1440,7 +1443,7 @@ abstract class Node
      */
     public function nextNode(self $root = null): ?self
     {
-        $node = $this->childNodes->first();
+        $node = $this->childNodes_->first();
 
         if ($node !== null) {
             return $node;
@@ -1476,7 +1479,7 @@ abstract class Node
         if ($node->previousSibling) {
             $node = $node->previousSibling;
 
-            while ($node !== null && $node->childNodes->first()) {
+            while ($node !== null && $node->childNodes_->first()) {
                 if ($node === $root) {
                     return null;
                 }
@@ -1681,7 +1684,7 @@ abstract class Node
         }
 
         if ($cloneChildren) {
-            foreach ($this->childNodes as $child) {
+            foreach ($this->childNodes_ as $child) {
                 $copyChild = $child->cloneNodeInternal($document, true);
                 $copy->appendChild($copyChild);
             }
@@ -1859,7 +1862,7 @@ abstract class Node
         $this->parentNode = null;
         $this->nextSibling = null;
         $this->previousSibling = null;
-        $this->childNodes = new NodeSet();
-        $this->nodeList = new LiveNodeList($this->childNodes);
+        $this->childNodes_ = new NodeSet();
+        $this->nodeList = new LiveNodeList($this->childNodes_);
     }
 }

@@ -10,8 +10,12 @@ use Rowbot\DOM\Document;
 use Rowbot\DOM\DocumentFragment;
 use Rowbot\DOM\Node;
 
+use function assert;
+
 /**
  * @see https://html.spec.whatwg.org/multipage/scripting.html#the-template-element
+ *
+ * @property-read \Rowbot\DOM\DocumentFragment $content
  */
 class HTMLTemplateElement extends HTMLElement implements NodeAdoptHook, NodeCloneHook
 {
@@ -40,6 +44,7 @@ class HTMLTemplateElement extends HTMLElement implements NodeAdoptHook, NodeClon
     public function onAdopt(Node $node, Document $oldDocument): void
     {
         $doc = $node->nodeDocument->getAppropriateTemplateContentsOwnerDocument();
+        assert($node instanceof self);
         $doc->doAdoptNode($node->content);
     }
 
@@ -49,6 +54,7 @@ class HTMLTemplateElement extends HTMLElement implements NodeAdoptHook, NodeClon
             return;
         }
 
+        assert($copy instanceof self && $node instanceof self);
         $copiedContents = $node->content->cloneNodeInternal($copy->content->nodeDocument, true);
         $copy->content->appendChild($copiedContents);
     }

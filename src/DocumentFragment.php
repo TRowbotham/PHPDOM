@@ -86,7 +86,7 @@ class DocumentFragment extends Node implements NonElementParentNode, ParentNode
 
     public function getLength(): int
     {
-        return count($this->childNodes);
+        return count($this->childNodes_);
     }
 
     protected function getNodeName(): string

@@ -150,7 +150,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
                 return $this->mode === DocumentMode::QUIRKS ? 'BackCompat' : 'CSS1Compat';
 
             case 'doctype':
-                foreach ($this->childNodes as $child) {
+                foreach ($this->childNodes_ as $child) {
                     if ($child instanceof DocumentType) {
                         return $child;
                     }
@@ -504,7 +504,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
 
     public function getLength(): int
     {
-        return count($this->childNodes);
+        return count($this->childNodes_);
     }
 
     /**
@@ -729,7 +729,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
         if ($docElement && $docElement instanceof HTMLHtmlElement) {
             // Get the first child in the document element that is a head
             // element.
-            foreach ($docElement->childNodes as $child) {
+            foreach ($docElement->childNodes_ as $child) {
                 if ($child instanceof HTMLHeadElement) {
                     return $child;
                 }
@@ -769,7 +769,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
         if ($element) {
             // Concatenate the text data of all the text node children of the
             // title element.
-            foreach ($element->childNodes as $child) {
+            foreach ($element->childNodes_ as $child) {
                 if ($child instanceof Text) {
                     $value .= $child->data;
                 }
@@ -804,7 +804,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
         if ($docElement && $docElement instanceof SVGSVGElement) {
             // Find the first child of the document element that is a svg title
             // element.
-            foreach ($docElement->childNodes as $child) {
+            foreach ($docElement->childNodes_ as $child) {
                 if ($child instanceof SVGTitleElement) {
                     return $child;
                 }
@@ -840,7 +840,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
         if ($docElement && $docElement instanceof SVGSVGElement) {
             // Find the first child of the document element that is an
             // svg title element.
-            foreach ($docElement->childNodes as $child) {
+            foreach ($docElement->childNodes_ as $child) {
                 if ($child instanceof SVGTitleElement) {
                     $element = $child;
 
@@ -856,7 +856,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
                     'title',
                     Namespaces::SVG
                 );
-                $docElement->insertNode($element, $docElement->childNodes->first());
+                $docElement->insertNode($element, $docElement->childNodes_->first());
             }
 
             $element->textContent = $newTitle;
@@ -904,7 +904,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
         if ($docElement && $docElement instanceof HTMLHtmlElement) {
             // Get the first element in the document element that is a body or
             // frameset element.
-            foreach ($docElement->childNodes as $child) {
+            foreach ($docElement->childNodes_ as $child) {
                 if ($child instanceof HTMLBodyElement || $child instanceof HTMLFrameSetElement) {
                     return $child;
                 }

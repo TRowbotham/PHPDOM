@@ -77,7 +77,7 @@ class HTMLTableSectionElement extends HTMLElement
         }
 
         $indexedRow = null;
-        $node = $this->childNodes->first();
+        $node = $this->childNodes_->first();
         $numRows = 0;
 
         while ($node) {
@@ -130,7 +130,7 @@ class HTMLTableSectionElement extends HTMLElement
             throw new IndexSizeError();
         }
 
-        $node = $this->childNodes->first();
+        $node = $this->childNodes_->first();
         $numRows = 0;
         $indexedRow = null;
         $lastRow = null;

@@ -91,7 +91,7 @@ class HTMLTableElement extends HTMLElement
             case 'caption':
                 // The caption IDL attribute must return, on getting, the first caption element
                 // child of the table element, if any, or null otherwise.
-                $node = $this->childNodes->first();
+                $node = $this->childNodes_->first();
 
                 while ($node) {
                     if ($node instanceof HTMLTableCaptionElement) {
@@ -131,7 +131,7 @@ class HTMLTableElement extends HTMLElement
 
                 // The tHead IDL attribute must return, on getting, the first thead element child of
                 // the table element, if any, or null otherwise.
-                $node = $this->childNodes->first();
+                $node = $this->childNodes_->first();
 
                 while ($node) {
                     if ($node instanceof HTMLTableSectionElement && $node->localName === $name) {
@@ -159,7 +159,7 @@ class HTMLTableElement extends HTMLElement
                     throw new TypeError();
                 }
 
-                $node = $this->childNodes->first();
+                $node = $this->childNodes_->first();
                 $caption = null;
 
                 while ($node) {
@@ -177,7 +177,7 @@ class HTMLTableElement extends HTMLElement
                 }
 
                 if ($value) {
-                    $this->preinsertNode($value, $this->childNodes->first());
+                    $this->preinsertNode($value, $this->childNodes_->first());
                 }
 
                 break;
@@ -195,7 +195,7 @@ class HTMLTableElement extends HTMLElement
 
                 // On setting, if the new value is null or a tfoot element, the first tfoot element
                 // child of the table element, if any, must be removed,
-                $node = $this->childNodes->first();
+                $node = $this->childNodes_->first();
 
                 while ($node) {
                     if ($node instanceof HTMLTableSectionElement && $node->localName === 'tfoot') {
@@ -229,7 +229,7 @@ class HTMLTableElement extends HTMLElement
 
                 // On setting, if the new value is null or a thead element, the first thead element
                 // child of the table element, if any, must be removed,
-                $node = $this->childNodes->first();
+                $node = $this->childNodes_->first();
 
                 while ($node) {
                     if ($node instanceof HTMLTableSectionElement && $node->localName === 'thead') {
@@ -248,7 +248,7 @@ class HTMLTableElement extends HTMLElement
                     return;
                 }
 
-                $node = $this->childNodes->first();
+                $node = $this->childNodes_->first();
 
                 while ($node) {
                     if (
@@ -283,7 +283,7 @@ class HTMLTableElement extends HTMLElement
      */
     public function createCaption(): HTMLTableCaptionElement
     {
-        $firstChild = $this->childNodes->first();
+        $firstChild = $this->childNodes_->first();
         $node = $firstChild;
 
         while ($node) {
@@ -307,7 +307,7 @@ class HTMLTableElement extends HTMLElement
      */
     public function deleteCaption(): void
     {
-        $node = $this->childNodes->first();
+        $node = $this->childNodes_->first();
 
         while ($node) {
             if ($node instanceof HTMLTableCaptionElement) {
@@ -330,7 +330,7 @@ class HTMLTableElement extends HTMLElement
      */
     public function createTHead(): HTMLTableSectionElement
     {
-        $firstChild = $this->childNodes->first();
+        $firstChild = $this->childNodes_->first();
         $node = $firstChild;
 
         while ($node) {
@@ -370,7 +370,7 @@ class HTMLTableElement extends HTMLElement
      */
     public function deleteTHead(): void
     {
-        $node = $this->childNodes->first();
+        $node = $this->childNodes_->first();
 
         while ($node) {
             if ($node instanceof HTMLTableSectionElement && $node->localName === 'thead') {
@@ -392,7 +392,7 @@ class HTMLTableElement extends HTMLElement
      */
     public function createTFoot(): HTMLTableSectionElement
     {
-        $node = $this->childNodes->first();
+        $node = $this->childNodes_->first();
 
         while ($node) {
             if ($node instanceof HTMLTableSectionElement && $node->localName === 'tfoot') {
@@ -415,7 +415,7 @@ class HTMLTableElement extends HTMLElement
      */
     public function deleteTFoot(): void
     {
-        $node = $this->childNodes->first();
+        $node = $this->childNodes_->first();
 
         while ($node) {
             if ($node instanceof HTMLTableSectionElement && $node->localName === 'tfoot') {
@@ -437,7 +437,7 @@ class HTMLTableElement extends HTMLElement
      */
     public function createTBody(): HTMLTableSectionElement
     {
-        $node = $this->childNodes->last();
+        $node = $this->childNodes_->last();
         $lastTbody = null;
 
         while ($node) {
@@ -501,7 +501,7 @@ class HTMLTableElement extends HTMLElement
         }
 
         $tableRow = ElementFactory::create($this->nodeDocument, 'tr', Namespaces::HTML);
-        $node = $this->childNodes->last();
+        $node = $this->childNodes_->last();
         $lastTbody = null;
 
         while ($node) {

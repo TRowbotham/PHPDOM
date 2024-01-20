@@ -43,7 +43,7 @@ trait ParentNodeTrait
         $node = $this->convertNodesToNode($nodes, $this->nodeDocument);
 
         // 2. Pre-insert node into this before this’s first child.
-        $this->preinsertNode($node, $this->childNodes->first());
+        $this->preinsertNode($node, $this->childNodes_->first());
     }
 
     /**
@@ -93,7 +93,7 @@ trait ParentNodeTrait
      */
     protected function getFirstElementChild(): ?Element
     {
-        $node = $this->childNodes->first();
+        $node = $this->childNodes_->first();
 
         while ($node) {
             if ($node instanceof Element) {
@@ -115,7 +115,7 @@ trait ParentNodeTrait
      */
     protected function getLastElementChild(): ?Element
     {
-        $node = $this->childNodes->last();
+        $node = $this->childNodes_->last();
 
         while ($node) {
             if ($node instanceof Element) {
