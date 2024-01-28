@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM;
 
+use Rowbot\DOM\DynamicProperty\Getter;
 use Rowbot\DOM\Exception\IndexSizeError;
 
 /**
@@ -20,33 +21,6 @@ class Text extends CharacterData
     public function __construct(Document $document, string $data = '', int $nodeType = self::TEXT_NODE)
     {
         parent::__construct($document, $data, $nodeType);
-    }
-
-    public function __get(string $name)
-    {
-        switch ($name) {
-            case 'wholeText':
-                $wholeText = '';
-                $startNode = $this;
-
-                while ($startNode) {
-                    if (!$startNode->previousSibling instanceof Text) {
-                        break;
-                    }
-
-                    $startNode = $startNode->previousSibling;
-                }
-
-                while ($startNode instanceof Text) {
-                    $wholeText .= $startNode->data;
-                    $startNode = $startNode->nextSibling;
-                }
-
-                return $wholeText;
-
-            default:
-                return parent::__get($name);
-        }
     }
 
     public function isEqualNode(?Node $otherNode): bool
@@ -117,5 +91,27 @@ class Text extends CharacterData
     protected function getNodeName(): string
     {
         return '#text';
+    }
+
+    #[Getter('wholeText')]
+    private function getWholeText(): string
+    {
+        $wholeText = '';
+        $startNode = $this;
+
+        while ($startNode) {
+            if (!$startNode->previousSibling instanceof Text) {
+                break;
+            }
+
+            $startNode = $startNode->previousSibling;
+        }
+
+        while ($startNode instanceof Text) {
+            $wholeText .= $startNode->data;
+            $startNode = $startNode->nextSibling;
+        }
+
+        return $wholeText;
     }
 }

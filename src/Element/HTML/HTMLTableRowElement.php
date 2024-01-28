@@ -6,6 +6,7 @@ namespace Rowbot\DOM\Element\HTML;
 
 use Generator;
 use Rowbot\DOM\Document;
+use Rowbot\DOM\DynamicProperty\Getter;
 use Rowbot\DOM\Element\ElementFactory;
 use Rowbot\DOM\Exception\IndexSizeError;
 use Rowbot\DOM\HTMLCollection;
@@ -34,93 +35,6 @@ class HTMLTableRowElement extends HTMLElement
         parent::__construct($document, $localName, $namespace, $prefix);
 
         $this->cellsCollection = null;
-    }
-
-    public function __get(string $name)
-    {
-        switch ($name) {
-            case 'cells':
-                return $this->cellsCollection ??= new HTMLCollection(
-                    $this,
-                    static function (self $root): Generator {
-                        $node = $root->firstChild;
-
-                        while ($node) {
-                            if ($node instanceof HTMLTableCellElement) {
-                                yield $node;
-                            }
-
-                            $node = $node->nextSibling;
-                        }
-                    }
-                );
-
-            case 'rowIndex':
-                // The rowIndex attribute must, if this element has a parent table element, or a
-                // parent tbody, thead, or tfoot element and a grandparent table element, return the
-                // index of this tr element in that table element's rows collection. If there is no
-                // such table element, then the attribute must return −1.
-                $parentIsTable = $this->parentNode instanceof HTMLTableElement;
-
-                if (
-                    !$parentIsTable
-                    && (
-                        !$this->parentNode instanceof HTMLTableSectionElement
-                        || !$this->parentNode->parentNode instanceof HTMLTableElement
-                    )
-                ) {
-                    return -1;
-                }
-
-                $parentTable = $parentIsTable
-                    ? $this->parentNode
-                    : $this->parentNode->parentNode;
-                $rows = $parentTable->rows->getIterator();
-                $rows->rewind();
-                $index = 0;
-
-                while ($rows->valid()) {
-                    if ($rows->current() === $this) {
-                        break;
-                    }
-
-                    ++$index;
-                    $rows->next();
-                }
-
-                return $index;
-
-            case 'sectionRowIndex':
-                // The sectionRowIndex attribute must, if this element has a parent table, tbody,
-                // thead, or tfoot element, return the index of the tr element in the parent
-                // element's rows collection (for tables, that's HTMLTableElement's rows collection;
-                // for table sections, that's HTMLTableSectionElement's rows collection). If there
-                // is no such parent element, then the attribute must return −1.
-                if (
-                    !$this->parentNode instanceof HTMLTableElement
-                    && !$this->parentNode instanceof HTMLTableSectionElement
-                ) {
-                    return -1;
-                }
-
-                $index = 0;
-                $rows = $this->parentNode->rows->getIterator();
-                $rows->rewind();
-
-                while ($rows->valid()) {
-                    if ($rows->current() === $this) {
-                        break;
-                    }
-
-                    ++$index;
-                    $rows->next();
-                }
-
-                return $index;
-
-            default:
-                return parent::__get($name);
-        }
     }
 
     /**
@@ -228,5 +142,98 @@ class HTMLTableRowElement extends HTMLElement
         // 3. Otherwise, remove the indexth element in the cells collection from its parent.
         assert($indexedCell !== null);
         $indexedCell->removeNode();
+    }
+
+    #[Getter('cells')]
+    private function getCells(): HTMLCollection
+    {
+        return $this->cellsCollection ??= new HTMLCollection(
+            $this,
+            static function (self $root): Generator {
+                $node = $root->firstChild;
+
+                while ($node) {
+                    if ($node instanceof HTMLTableCellElement) {
+                        yield $node;
+                    }
+
+                    $node = $node->nextSibling;
+                }
+            }
+        );
+    }
+
+    /**
+     * The rowIndex attribute must, if this element has a parent table element, or a
+     * parent tbody, thead, or tfoot element and a grandparent table element, return the
+     * index of this tr element in that table element's rows collection. If there is no
+     * such table element, then the attribute must return −1.
+     */
+    #[Getter('rowIndex')]
+    private function getRowIndex(): int
+    {
+
+        $parentIsTable = $this->parentNode instanceof HTMLTableElement;
+
+        if (
+            !$parentIsTable
+            && (
+                !$this->parentNode instanceof HTMLTableSectionElement
+                || !$this->parentNode->parentNode instanceof HTMLTableElement
+            )
+        ) {
+            return -1;
+        }
+
+        $parentTable = $parentIsTable
+            ? $this->parentNode
+            : $this->parentNode->parentNode;
+        $rows = $parentTable->rows->getIterator();
+        $rows->rewind();
+        $index = 0;
+
+        while ($rows->valid()) {
+            if ($rows->current() === $this) {
+                break;
+            }
+
+            ++$index;
+            $rows->next();
+        }
+
+        return $index;
+    }
+
+    /**
+     * The sectionRowIndex attribute must, if this element has a parent table, tbody,
+     * thead, or tfoot element, return the index of the tr element in the parent
+     * element's rows collection (for tables, that's HTMLTableElement's rows collection;
+     * for table sections, that's HTMLTableSectionElement's rows collection). If there
+     * is no such parent element, then the attribute must return −1.
+     */
+    #[Getter('sectionRowIndex')]
+    private function getSectionRowIndex(): int
+    {
+        if (
+            !$this->parentNode instanceof HTMLTableElement
+            && !$this->parentNode instanceof HTMLTableSectionElement
+        ) {
+            return -1;
+        }
+
+        $index = 0;
+        $rows = $this->parentNode->rows->getIterator();
+        $rows->rewind();
+
+        while ($rows->valid()) {
+            if ($rows->current() === $this) {
+                break;
+            }
+
+            ++$index;
+            $rows->next();
+        }
+
+        return $index;
     }
 }

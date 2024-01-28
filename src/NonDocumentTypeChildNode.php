@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM;
 
+use Rowbot\DOM\DynamicProperty\Getter;
 use Rowbot\DOM\Element\Element;
 
 /**
@@ -16,6 +17,7 @@ trait NonDocumentTypeChildNode
      *
      * @see https://dom.spec.whatwg.org/#dom-nondocumenttypechildnode-previouselementsibling
      */
+    #[Getter('nextElementSibling')]
     private function getNextElementSibling(): ?Element
     {
         $node = $this->nextSibling;
@@ -36,6 +38,7 @@ trait NonDocumentTypeChildNode
      *
      * @see https://dom.spec.whatwg.org/#dom-nondocumenttypechildnode-nextelementsibling
      */
+    #[Getter('previousElementSibling')]
     private function getPreviousElementSibling(): ?Element
     {
         $node = $this->previousSibling;

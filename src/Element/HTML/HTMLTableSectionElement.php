@@ -6,6 +6,7 @@ namespace Rowbot\DOM\Element\HTML;
 
 use Generator;
 use Rowbot\DOM\Document;
+use Rowbot\DOM\DynamicProperty\Getter;
 use Rowbot\DOM\Element\ElementFactory;
 use Rowbot\DOM\Exception\IndexSizeError;
 use Rowbot\DOM\HTMLCollection;
@@ -34,30 +35,6 @@ class HTMLTableSectionElement extends HTMLElement
         parent::__construct($document, $localName, $namespace, $prefix);
 
         $this->rowsCollection = null;
-    }
-
-    public function __get(string $name)
-    {
-        switch ($name) {
-            case 'rows':
-                return $this->rowsCollection ??= new HTMLCollection(
-                    $this,
-                    static function (self $root): Generator {
-                        $node = $root->firstChild;
-
-                        while ($node) {
-                            if ($node instanceof HTMLTableRowElement) {
-                                yield $node;
-                            }
-
-                            $node = $node->nextSibling;
-                        }
-                    }
-                );
-
-            default:
-                return parent::__get($name);
-        }
     }
 
     /**
@@ -167,5 +144,24 @@ class HTMLTableSectionElement extends HTMLElement
         // 3. Otherwise, remove the indexth element in the rows collection from this element.
         assert($indexedRow !== null);
         $indexedRow->removeNode();
+    }
+
+    #[Getter('rows')]
+    private function getRows(): HTMLCollection
+    {
+        return $this->rowsCollection ??= new HTMLCollection(
+            $this,
+            static function (self $root): Generator {
+                $node = $root->firstChild;
+
+                while ($node) {
+                    if ($node instanceof HTMLTableRowElement) {
+                        yield $node;
+                    }
+
+                    $node = $node->nextSibling;
+                }
+            }
+        );
     }
 }

@@ -8,6 +8,7 @@ use Rowbot\DOM\NodeAdoptHook;
 use Rowbot\DOM\NodeCloneHook;
 use Rowbot\DOM\Document;
 use Rowbot\DOM\DocumentFragment;
+use Rowbot\DOM\DynamicProperty\Getter;
 use Rowbot\DOM\Node;
 
 use function assert;
@@ -19,6 +20,7 @@ use function assert;
  */
 class HTMLTemplateElement extends HTMLElement implements NodeAdoptHook, NodeCloneHook
 {
+    #[Getter('content')]
     protected DocumentFragment $content;
 
     public function __construct(Document $document, string $localName, ?string $namespace, ?string $prefix = null)
@@ -28,17 +30,6 @@ class HTMLTemplateElement extends HTMLElement implements NodeAdoptHook, NodeClon
         $doc = $this->nodeDocument->getAppropriateTemplateContentsOwnerDocument();
         $this->content = $doc->createDocumentFragment();
         $this->content->setHost($this);
-    }
-
-    public function __get(string $name)
-    {
-        switch ($name) {
-            case 'content':
-                return $this->content;
-
-            default:
-                return parent::__get($name);
-        }
     }
 
     public function onAdopt(Node $node, Document $oldDocument): void

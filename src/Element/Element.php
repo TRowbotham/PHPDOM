@@ -13,6 +13,7 @@ use Rowbot\DOM\ChildNodeTrait;
 use Rowbot\DOM\Document;
 use Rowbot\DOM\DocumentFragment;
 use Rowbot\DOM\DOMTokenList;
+use Rowbot\DOM\DynamicProperty\Getter;
 use Rowbot\DOM\Element\HTML\HTMLTemplateElement;
 use Rowbot\DOM\Exception\InvalidCharacterError;
 use Rowbot\DOM\Exception\NoModificationAllowedError;
@@ -65,6 +66,7 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
     use NonDocumentTypeChildNode;
     use ParentNodeTrait;
 
+    #[Getter('attributes')]
     protected NamedNodeMap $namedNodeMap;
 
     protected AttributeList $attributeList;
@@ -88,69 +90,6 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
         $this->prefix = $prefix;
         $this->attributeList->observe($this);
         $this->classList_ = null;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function __get(string $name)
-    {
-        switch ($name) {
-            case 'attributes':
-                return $this->namedNodeMap;
-
-            case 'childElementCount':
-                return $this->getChildElementCount();
-
-            case 'children':
-                return $this->getChildren();
-
-            case 'classList':
-                return $this->getClassList();
-
-            case 'className':
-                return $this->attributeList->getAttrValue('class');
-
-            case 'firstElementChild':
-                return $this->getFirstElementChild();
-
-            case 'id':
-                return $this->attributeList->getAttrValue($name);
-
-            case 'innerHTML':
-                // https://w3c.github.io/DOM-Parsing/#the-innerhtml-mixin
-                // On getting, return the result of invoking the fragment
-                // serializing algorithm on the context object providing true
-                // for the require well-formed flag (this might throw an
-                // exception instead of returning a string).
-                return MarkupFactory::serializeFragment($this, true);
-
-            case 'lastElementChild':
-                return $this->getLastElementChild();
-
-            case 'outerHTML':
-                // On getting, return the result of invoking the fragment
-                // serializing algorithm on a fictional node whose only child is
-                // the context object providing true for the require well-formed
-                // flag (this might throw an exception instead of returning a
-                // string).
-                $fakeNode = ElementFactory::create($this->nodeDocument, 'fake', Namespaces::HTML);
-                $fakeNode->childNodes_->append($this);
-
-                return MarkupFactory::serializeFragment($fakeNode, true);
-
-            case 'nextElementSibling':
-                return $this->getNextElementSibling();
-
-            case 'previousElementSibling':
-                return $this->getPreviousElementSibling();
-
-            case 'tagName':
-                return $this->getTagName();
-
-            default:
-                return parent::__get($name);
-        }
     }
 
     /**
@@ -703,6 +642,7 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
      *
      * @see https://dom.spec.whatwg.org/#element-html-uppercased-qualified-name
      */
+    #[Getter('tagName')]
     protected function getTagName(): string
     {
         $qualifiedName = $this->getQualifiedName();
@@ -834,6 +774,7 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
         return count($this->childNodes_);
     }
 
+    #[Getter('classList')]
     protected function getClassList(): DOMTokenList
     {
         return $this->classList_ ??= new DOMTokenList($this, 'class');
@@ -883,6 +824,48 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
         }
 
         $this->replaceAllNodes($node);
+    }
+
+    #[Getter('className')]
+    private function getClassName(): string
+    {
+        return $this->attributeList->getAttrValue('class');
+    }
+
+    #[Getter('id')]
+    private function getId(): string
+    {
+        return $this->attributeList->getAttrValue('id');
+    }
+
+    /**
+     * On getting, return the result of invoking the fragment
+     * serializing algorithm on the context object providing true
+     * for the require well-formed flag (this might throw an
+     * exception instead of returning a string).
+     *
+     * @see https://w3c.github.io/DOM-Parsing/#the-innerhtml-mixin
+     */
+    #[Getter('innerHTML')]
+    private function getInnerHTML(): string
+    {
+        return MarkupFactory::serializeFragment($this, true);
+    }
+
+    /**
+     * On getting, return the result of invoking the fragment
+     * serializing algorithm on a fictional node whose only child is
+     * the context object providing true for the require well-formed
+     * flag (this might throw an exception instead of returning a
+     * string).
+     */
+    #[Getter('outerHTML')]
+    private function getOuterHTML(): string
+    {
+        $fakeNode = ElementFactory::create($this->nodeDocument, 'fake', Namespaces::HTML);
+        $fakeNode->childNodes_->append($this);
+
+        return MarkupFactory::serializeFragment($fakeNode, true);
     }
 
     protected function __clone()

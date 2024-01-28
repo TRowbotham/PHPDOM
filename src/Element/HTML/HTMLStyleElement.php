@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Element\HTML;
 
+use Rowbot\DOM\DynamicProperty\Getter;
+
 /**
  * Represents the HTML <style> element.
  *
@@ -16,18 +18,16 @@ namespace Rowbot\DOM\Element\HTML;
  */
 class HTMLStyleElement extends HTMLElement
 {
-    public function __get(string $name)
+    #[Getter('media')]
+    private function getMedia(): string
     {
-        switch ($name) {
-            case 'media':
-                return $this->reflectStringAttributeValue($name);
+        return $this->reflectStringAttributeValue('media');
+    }
 
-            case 'type':
-                return $this->reflectStringAttributeValue($name);
-
-            default:
-                return parent::__get($name);
-        }
+    #[Getter('type')]
+    private function getType(): string
+    {
+        return $this->reflectStringAttributeValue('type');
     }
 
     public function __set(string $name, $value): void

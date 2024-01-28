@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Element\HTML;
 
 use Rowbot\DOM\DOMStringMap;
+use Rowbot\DOM\DynamicProperty\Getter;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Element\HTMLOrSVGElement;
 use Rowbot\DOM\Exception\DOMException;
@@ -70,122 +71,6 @@ class HTMLElement extends Element
     protected const UNSIGNED_LONG = 3;
     protected const UNSIGNED_LONG_NON_NEGATIVE_GREATER_THAN_ZERO = 4;
     protected const UNSIGNED_LONG_NON_NEGATIVE_GREATER_THAN_ZERO_WITH_FALLBACK = 5;
-
-    public function __get(string $name)
-    {
-        switch ($name) {
-            case 'contentEditable':
-                $state = $this->reflectEnumeratedStringAttributeValue(
-                    'contenteditable',
-                    'inherit',
-                    'inherit',
-                    self::CONTENT_EDITABLE_STATE_MAP
-                );
-
-                if ($state === 'true' || $state === '') {
-                    return 'true';
-                }
-
-                if ($state === 'false') {
-                    return 'false';
-                }
-
-                return 'inherit';
-
-            case 'dataset':
-                return $this->getDataset();
-
-            case 'dir':
-                return $this->reflectEnumeratedStringAttributeValue(
-                    $name,
-                    null,
-                    null,
-                    self::DIR_STATE_MAP
-                );
-
-            case 'draggable':
-                $state = $this->reflectEnumeratedStringAttributeValue(
-                    $name,
-                    null,
-                    'auto',
-                    self::DRAGGABLE_STATE_MAP
-                );
-
-                return $state === 'true' ? true : false;
-
-            case 'hidden':
-                return $this->reflectBooleanAttributeValue($name);
-
-            case 'isContentEditable':
-                $state = null;
-                $node = $this;
-
-                do {
-                    $state = $node->reflectEnumeratedStringAttributeValue(
-                        'contenteditable',
-                        'inherit',
-                        'inherit',
-                        self::CONTENT_EDITABLE_STATE_MAP
-                    );
-                    $node = $node->parentNode;
-                } while ($state === 'inherit' && $node instanceof self);
-
-                return in_array($state, self::CONTENT_EDITABLE_STATE_MAP['true'], true);
-
-            case 'lang':
-                return $this->reflectStringAttributeValue($name);
-
-            case 'spellcheck':
-                $state = $this->reflectEnumeratedStringAttributeValue(
-                    $name,
-                    'default',
-                    'default',
-                    self::SPELL_CHECK_STATE_MAP
-                );
-
-                if ($state === 'true') {
-                    $value = true;
-                } elseif ($state === 'false') {
-                    $value = false;
-                } else {
-                    // TODO: Handle default states
-                    return false;
-                }
-
-                return $value;
-
-            case 'tabIndex':
-                $index = filter_var(
-                    $this->reflectStringAttributeValue('tabindex'),
-                    FILTER_VALIDATE_INT,
-                    ['default' => 0]
-                );
-
-                return $index;
-
-            case 'title':
-                return $this->reflectStringAttributeValue($name);
-
-            case 'translate':
-                $state = null;
-                $node = $this;
-
-                do {
-                    $state = $node->reflectEnumeratedStringAttributeValue(
-                        $name,
-                        'inherit',
-                        'inherit',
-                        self::TRANSLATE_STATE_MAP
-                    );
-                    $node = $node->parentNode;
-                } while ($state === 'inherit' && $node instanceof self);
-
-                return $state === 'no' ? false : true;
-
-            default:
-                return parent::__get($name);
-        }
-    }
 
     public function __set(string $name, $value): void
     {
@@ -604,5 +489,138 @@ class HTMLElement extends Element
         }
 
         return Utf8String::transcode($attr->getValue(), 'utf-8', 'utf-8');
+    }
+
+    #[Getter('contentEditable')]
+    private function getContentEditable(): string
+    {
+        $state = $this->reflectEnumeratedStringAttributeValue(
+            'contenteditable',
+            'inherit',
+            'inherit',
+            self::CONTENT_EDITABLE_STATE_MAP
+        );
+
+        if ($state === 'true' || $state === '') {
+            return 'true';
+        }
+
+        if ($state === 'false') {
+            return 'false';
+        }
+
+        return 'inherit';
+    }
+
+    #[Getter('dir')]
+    private function getDir(): string
+    {
+        return $this->reflectEnumeratedStringAttributeValue(
+            'dir',
+            null,
+            null,
+            self::DIR_STATE_MAP
+        );
+    }
+
+    #[Getter('draggable')]
+    private function getDraggable(): bool
+    {
+        $state = $this->reflectEnumeratedStringAttributeValue(
+            'draggable',
+            null,
+            'auto',
+            self::DRAGGABLE_STATE_MAP
+        );
+
+        return $state === 'true' ? true : false;
+    }
+
+    #[Getter('hidden')]
+    private function getHidden(): bool
+    {
+        return $this->reflectBooleanAttributeValue($name);
+    }
+
+    #[Getter('isContentEditable')]
+    private function isContentEditable(): bool
+    {
+        $state = null;
+        $node = $this;
+
+        do {
+            $state = $node->reflectEnumeratedStringAttributeValue(
+                'contenteditable',
+                'inherit',
+                'inherit',
+                self::CONTENT_EDITABLE_STATE_MAP
+            );
+            $node = $node->parentNode;
+        } while ($state === 'inherit' && $node instanceof self);
+
+        return in_array($state, self::CONTENT_EDITABLE_STATE_MAP['true'], true);
+    }
+
+    #[Getter('lang')]
+    private function getLang(): string
+    {
+        return $this->reflectStringAttributeValue('lang');
+    }
+
+    #[Getter('spellcheck')]
+    private function getSpellcheck(): bool
+    {
+        $state = $this->reflectEnumeratedStringAttributeValue(
+            'spellcheck',
+            'default',
+            'default',
+            self::SPELL_CHECK_STATE_MAP
+        );
+
+        if ($state === 'true') {
+            $value = true;
+        } elseif ($state === 'false') {
+            $value = false;
+        } else {
+            // TODO: Handle default states
+            return false;
+        }
+
+        return $value;
+    }
+
+    #[Getter('tabIndex')]
+    private function getTabIndex(): int
+    {
+        return filter_var(
+            $this->reflectStringAttributeValue('tabindex'),
+            FILTER_VALIDATE_INT,
+            ['default' => 0]
+        );
+    }
+
+    #[Getter('title')]
+    private function getTitle(): string
+    {
+        return $this->reflectStringAttributeValue('title');
+    }
+
+    #[Getter('translate')]
+    private function getTranslate(): bool
+    {
+        $state = null;
+        $node = $this;
+
+        do {
+            $state = $node->reflectEnumeratedStringAttributeValue(
+                'translate',
+                'inherit',
+                'inherit',
+                self::TRANSLATE_STATE_MAP
+            );
+            $node = $node->parentNode;
+        } while ($state === 'inherit' && $node instanceof self);
+
+        return $state === 'no' ? false : true;
     }
 }

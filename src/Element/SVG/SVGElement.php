@@ -15,13 +15,4 @@ use Rowbot\DOM\Element\HTMLOrSVGElement;
 class SVGElement extends Element
 {
     use HTMLOrSVGElement;
-
-    public function __get(string $name)
-    {
-        if ($name === 'dataset') {
-            return $this->getDataset();
-        }
-
-        return parent::__get($name);
-    }
 }

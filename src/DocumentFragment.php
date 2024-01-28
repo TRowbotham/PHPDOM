@@ -31,26 +31,6 @@ class DocumentFragment extends Node implements NonElementParentNode, ParentNode
         $this->host = null;
     }
 
-    public function __get(string $name)
-    {
-        switch ($name) {
-            case 'childElementCount':
-                return $this->getChildElementCount();
-
-            case 'children':
-                return $this->getChildren();
-
-            case 'firstElementChild':
-                return $this->getFirstElementChild();
-
-            case 'lastElementChild':
-                return $this->getLastElementChild();
-
-            default:
-                return parent::__get($name);
-        }
-    }
-
     public function isEqualNode(?Node $otherNode): bool
     {
         return $otherNode !== null

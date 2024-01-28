@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM;
 
 use Generator;
+use Rowbot\DOM\DynamicProperty\Getter;
 use Rowbot\DOM\Element\Element;
 
 /**
@@ -69,6 +70,7 @@ trait ParentNodeTrait
      *
      * @return \Rowbot\DOM\HTMLCollection<\Rowbot\DOM\Element\Element>
      */
+    #[Getter('children')]
     protected function getChildren(): HTMLCollection
     {
         return $this->childElements ??= new HTMLCollection($this, static function (self $root): Generator {
@@ -91,6 +93,7 @@ trait ParentNodeTrait
      *
      * @see https://dom.spec.whatwg.org/#dom-parentnode-firstelementchild
      */
+    #[Getter('firstElementChild')]
     protected function getFirstElementChild(): ?Element
     {
         $node = $this->childNodes_->first();
@@ -113,6 +116,7 @@ trait ParentNodeTrait
      *
      * @see https://dom.spec.whatwg.org/#dom-parentnode-lastelementchild
      */
+    #[Getter('lastElementChild')]
     protected function getLastElementChild(): ?Element
     {
         $node = $this->childNodes_->last();
@@ -135,6 +139,7 @@ trait ParentNodeTrait
      *
      * @see https://dom.spec.whatwg.org/#dom-parentnode-childelementcount
      */
+    #[Getter('childElementCount')]
     protected function getChildElementCount(): int
     {
         return $this->getChildren()->count();

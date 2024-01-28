@@ -4,27 +4,23 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Element\HTML;
 
+use Rowbot\DOM\DynamicProperty\Getter;
 use Rowbot\DOM\Text;
 
 class HTMLTitleElement extends HTMLElement
 {
-    public function __get(string $name)
+    #[Getter('text')]
+    private function getText(): string
     {
-        switch ($name) {
-            case 'text':
-                $value = '';
+        $value = '';
 
-                foreach ($this->childNodes_ as $node) {
-                    if ($node instanceof Text) {
-                        $value .= $node->data;
-                    }
-                }
-
-                return $value;
-
-            default:
-                return parent::__get($name);
+        foreach ($this->childNodes_ as $node) {
+            if ($node instanceof Text) {
+                $value .= $node->data;
+            }
         }
+
+        return $value;
     }
 
     public function __set(string $name, $value): void

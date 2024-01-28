@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Element\HTML;
 
+use Rowbot\DOM\DynamicProperty\Getter;
+
 /**
  * Represents the HTML <td> and <th> elements respectively.
  *
@@ -24,42 +26,46 @@ namespace Rowbot\DOM\Element\HTML;
  */
 class HTMLTableCellElement extends HTMLElement
 {
-    public function __get(string $name)
+    #[Getter('cellIndex')]
+    private function getCellIndex(): int
     {
-        switch ($name) {
-            case 'cellIndex':
-                // The cellIndex IDL attribute must, if the element has a parent tr element, return
-                // the index of the cell's element in the parent element's cells collection. If
-                // there is no such parent element, then the attribute must return −1.
-                if (!$this->parentNode instanceof HTMLTableRowElement) {
-                    return -1;
-                }
-
-                $node = $this->previousSibling;
-                $index = 0;
-
-                while ($node) {
-                    if ($node instanceof self) {
-                        ++$index;
-                    }
-
-                    $node = $node->previousSibling;
-                }
-
-                return $index;
-
-            case 'colSpan':
-                return $this->reflectClampedUnsignedLongAttributeValue('colspan', 1, 1000, 1);
-
-            case 'headers':
-                return $this->reflectStringAttributeValue('headers');
-
-            case 'rowSpan':
-                return $this->reflectClampedUnsignedLongAttributeValue('rowspan', 0, 65534, 1);
-
-            default:
-                return parent::__get($name);
+        // The cellIndex IDL attribute must, if the element has a parent tr element, return
+        // the index of the cell's element in the parent element's cells collection. If
+        // there is no such parent element, then the attribute must return −1.
+        if (!$this->parentNode instanceof HTMLTableRowElement) {
+            return -1;
         }
+
+        $node = $this->previousSibling;
+        $index = 0;
+
+        while ($node) {
+            if ($node instanceof self) {
+                ++$index;
+            }
+
+            $node = $node->previousSibling;
+        }
+
+        return $index;
+    }
+
+    #[Getter('colSpan')]
+    private function getColSpan(): int
+    {
+        return $this->reflectClampedUnsignedLongAttributeValue('colspan', 1, 1000, 1);
+    }
+
+    #[Getter('headers')]
+    private function getHeaders(): string
+    {
+        return $this->reflectStringAttributeValue('headers');
+    }
+
+    #[Getter('rowSpan')]
+    private function getRowSpan(): int
+    {
+        return $this->reflectClampedUnsignedLongAttributeValue('rowspan', 0, 65534, 1);
     }
 
     public function __set(string $name, $value): void

@@ -6,6 +6,7 @@ namespace Rowbot\DOM\Element\HTML;
 
 use Rowbot\DOM\Document;
 use Rowbot\DOM\DOMTokenList;
+use Rowbot\DOM\DynamicProperty\Getter;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Element\HTMLHyperlinkElementUtils;
 
@@ -56,71 +57,6 @@ class HTMLAnchorElement extends HTMLElement
         $this->attributeList->observe($this);
         $this->relList = null;
         $this->setURL();
-    }
-
-    public function __get(string $name)
-    {
-        switch ($name) {
-            case 'download':
-                return $this->reflectStringAttributeValue($name);
-
-            case 'hash':
-                return $this->getHash();
-
-            case 'host':
-                return $this->getHost();
-
-            case 'hostname':
-                return $this->getHostname();
-
-            case 'href':
-                return $this->getHref();
-
-            case 'hrefLang':
-                return $this->reflectStringAttributeValue('hreflang');
-
-            case 'origin':
-                return $this->getOrigin();
-
-            case 'password':
-                return $this->getPassword();
-
-            case 'pathname':
-                return $this->getPathname();
-
-            case 'ping':
-                return $this->reflectStringAttributeValue($name);
-
-            case 'port':
-                return $this->getPort();
-
-            case 'protocol':
-                return $this->getProtocol();
-
-            case 'rel':
-                return $this->reflectStringAttributeValue($name);
-
-            case 'relList':
-                return $this->getRelList();
-
-            case 'search':
-                return $this->getSearch();
-
-            case 'target':
-                return $this->reflectStringAttributeValue($name);
-
-            case 'text':
-                return $this->getTextContent();
-
-            case 'type':
-                return $this->reflectStringAttributeValue($name);
-
-            case 'username':
-                return $this->getUsername();
-
-            default:
-                return parent::__get($name);
-        }
     }
 
     public function __set(string $name, $value): void
@@ -240,6 +176,48 @@ class HTMLAnchorElement extends HTMLElement
         parent::onAttributeChanged($element, $localName, $oldValue, $value, $namespace);
     }
 
+    #[Getter('download')]
+    private function getDownload(): string
+    {
+        return $this->reflectStringAttributeValue('download');
+    }
+
+    #[Getter('hrefLang')]
+    private function getHrefLang(): string
+    {
+        return $this->reflectStringAttributeValue('hreflang');
+    }
+
+    #[Getter('ping')]
+    private function getPing(): string
+    {
+        return $this->reflectStringAttributeValue('ping');
+    }
+
+    #[Getter('rel')]
+    private function getRel(): string
+    {
+        return $this->reflectStringAttributeValue('rel');
+    }
+
+    #[Getter('target')]
+    private function getTarget(): string
+    {
+        return $this->reflectStringAttributeValue('target');
+    }
+
+    #[Getter('text')]
+    private function getText(): string
+    {
+        return $this->getTextContent();
+    }
+
+    #[Getter('type')]
+    private function getType(): string
+    {
+        return $this->reflectStringAttributeValue('type');
+    }
+
     protected function __clone()
     {
         parent::__clone();
@@ -251,6 +229,7 @@ class HTMLAnchorElement extends HTMLElement
         }
     }
 
+    #[Getter('relList')]
     private function getRelList(): DOMTokenList
     {
         return $this->relList ??= new DOMTokenList($this, 'rel');

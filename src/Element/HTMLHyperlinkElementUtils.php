@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Element;
 
+use Rowbot\DOM\DynamicProperty\Getter;
 use Rowbot\URL\BasicURLParser;
 use Rowbot\URL\Component\PathList;
 use Rowbot\URL\State\FragmentState;
@@ -33,6 +34,7 @@ trait HTMLHyperlinkElementUtils
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#dom-hyperlink-href
      */
+    #[Getter('href')]
     protected function getHref(): string
     {
         // 1. Reinitialize url.
@@ -73,6 +75,7 @@ trait HTMLHyperlinkElementUtils
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#dom-hyperlink-origin
      */
+    #[Getter('origin')]
     protected function getOrigin(): string
     {
         // 1. Reinitialize url.
@@ -94,6 +97,7 @@ trait HTMLHyperlinkElementUtils
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#dom-hyperlink-protocol
      */
+    #[Getter('protocol')]
     protected function getProtocol(): string
     {
         // 1. Reinitialize url.
@@ -143,6 +147,7 @@ trait HTMLHyperlinkElementUtils
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#dom-hyperlink-username
      */
+    #[Getter('username')]
     protected function getUsername(): string
     {
         // 1. Reinitialize url.
@@ -187,6 +192,7 @@ trait HTMLHyperlinkElementUtils
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#dom-hyperlink-password
      */
+    #[Getter('password')]
     protected function getPassword(): string
     {
         // 1. Reinitialize url.
@@ -231,6 +237,7 @@ trait HTMLHyperlinkElementUtils
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#dom-hyperlink-host
      */
+    #[Getter('host')]
     protected function getHost(): string
     {
         // 1. Reinitialize url.
@@ -283,6 +290,7 @@ trait HTMLHyperlinkElementUtils
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#dom-hyperlink-hostname
      */
+    #[Getter('hostname')]
     protected function getHostname(): string
     {
         // 1. Reinitialize url.
@@ -328,6 +336,7 @@ trait HTMLHyperlinkElementUtils
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#dom-hyperlink-port
      */
+    #[Getter('port')]
     protected function getPort(): string
     {
         // 1. Reinitialize url.
@@ -382,6 +391,7 @@ trait HTMLHyperlinkElementUtils
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#dom-hyperlink-pathname
      */
+    #[Getter('pathname')]
     protected function getPathname(): string
     {
         // 1. Reinitialize url.
@@ -442,6 +452,7 @@ trait HTMLHyperlinkElementUtils
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#dom-hyperlink-search
      */
+    #[Getter('search')]
     protected function getSearch(): string
     {
         // 1. Reinitialize url.
@@ -512,6 +523,7 @@ trait HTMLHyperlinkElementUtils
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#dom-hyperlink-hash
      */
+    #[Getter('hash')]
     protected function getHash(): string
     {
         // 1. Reinitialize url.

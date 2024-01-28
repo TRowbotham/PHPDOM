@@ -6,6 +6,7 @@ namespace Rowbot\DOM\Element\HTML;
 
 use Rowbot\DOM\Document;
 use Rowbot\DOM\DOMTokenList;
+use Rowbot\DOM\DynamicProperty\Getter;
 
 /**
  * Represents the HTML <link> element.
@@ -39,43 +40,6 @@ class HTMLLinkElement extends HTMLElement
 
         $this->relList = null;
         $this->sizes = null;
-    }
-
-    public function __get(string $name)
-    {
-        switch ($name) {
-            case 'crossOrigin':
-                return $this->reflectEnumeratedStringAttributeValue(
-                    'crossorigin',
-                    'anonymous',
-                    'no-cors',
-                    self::CORS_STATE_MAP
-                );
-
-            case 'href':
-                return $this->reflectStringAttributeValue($name);
-
-            case 'hrefLang':
-                return $this->reflectStringAttributeValue('hreflang');
-
-            case 'media':
-                return $this->reflectStringAttributeValue($name);
-
-            case 'rel':
-                return $this->reflectStringAttributeValue($name);
-
-            case 'relList':
-                return $this->getRelList();
-
-            case 'sizes':
-                return $this->getSizes();
-
-            case 'type':
-                return $this->reflectStringAttributeValue($name);
-
-            default:
-                return parent::__get($name);
-        }
     }
 
     public function __set(string $name, $value): void
@@ -126,21 +90,64 @@ class HTMLLinkElement extends HTMLElement
         }
     }
 
+    #[Getter('crossOrigin')]
+    private function getCrossOrigin(): string
+    {
+        return $this->reflectEnumeratedStringAttributeValue(
+            'crossorigin',
+            'anonymous',
+            'no-cors',
+            self::CORS_STATE_MAP
+        );
+    }
+
+    #[Getter('href')]
+    private function getHref(): string
+    {
+        return $this->reflectStringAttributeValue('href');
+    }
+
+    #[Getter('hrefLang')]
+    private function getHrefLang(): string
+    {
+        return $this->reflectStringAttributeValue('hrefLang');
+    }
+
+    #[Getter('media')]
+    private function getMedia(): string
+    {
+        return $this->reflectStringAttributeValue('media');
+    }
+
+    #[Getter('rel')]
+    private function getRel(): string
+    {
+        return $this->reflectStringAttributeValue('rel');
+    }
+
+    #[Getter('relList')]
+    private function getRelList(): DOMTokenList
+    {
+        return $this->relList ??= new DOMTokenList($this, 'rel');
+    }
+
+    #[Getter('sizes')]
+    private function getSizes(): DOMTokenList
+    {
+        return $this->sizes ??= new DOMTokenList($this, 'sizes');
+    }
+
+    #[Getter('type')]
+    private function getType(): string
+    {
+        return $this->reflectStringAttributeValue('type');
+    }
+
     protected function __clone()
     {
         parent::__clone();
 
         $this->relList = null;
         $this->sizes = null;
-    }
-
-    private function getRelList(): DOMTokenList
-    {
-        return $this->relList ??= new DOMTokenList($this, 'rel');
-    }
-
-    private function getSizes(): DOMTokenList
-    {
-        return $this->sizes ??= new DOMTokenList($this, 'sizes');
     }
 }

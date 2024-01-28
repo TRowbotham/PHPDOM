@@ -36,47 +36,6 @@ class HTMLAreaElement extends HTMLElement
         $this->setURL();
     }
 
-    public function __get(string $name)
-    {
-        switch ($name) {
-            case 'hash':
-                return $this->getHash();
-
-            case 'host':
-                return $this->getHost();
-
-            case 'hostname':
-                return $this->getHostname();
-
-            case 'href':
-                return $this->getHref();
-
-            case 'origin':
-                return $this->getOrigin();
-
-            case 'password':
-                return $this->getPassword();
-
-            case 'pathname':
-                return $this->getPathname();
-
-            case 'port':
-                return $this->getPort();
-
-            case 'protocol':
-                return $this->getProtocol();
-
-            case 'search':
-                return $this->getSearch();
-
-            case 'username':
-                return $this->getUsername();
-
-            default:
-                return parent::__get($name);
-        }
-    }
-
     public function __set(string $name, $value): void
     {
         switch ($name) {

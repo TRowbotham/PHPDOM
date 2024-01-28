@@ -4,21 +4,18 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Element\HTML;
 
+use Rowbot\DOM\DynamicProperty\Getter;
+
 /**
  * @see https://html.spec.whatwg.org/multipage/tables.html#the-colgroup-element
  * @see https://html.spec.whatwg.org/multipage/tables.html#the-col-element
  */
 class HTMLTableColElement extends HTMLElement
 {
-    public function __get(string $name)
+    #[Getter('span')]
+    private function getSpan(): int
     {
-        switch ($name) {
-            case 'span':
-                return $this->reflectClampedUnsignedLongAttributeValue('span', 1, 1000, 1);
-
-            default:
-                return parent::__get($name);
-        }
+        return $this->reflectClampedUnsignedLongAttributeValue('span', 1, 1000, 1);
     }
 
     public function __set(string $name, $value): void

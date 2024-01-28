@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Element\HTML;
 
 use Rowbot\DOM\Document;
+use Rowbot\DOM\DynamicProperty\Getter;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\NodeInsertHook;
 use Rowbot\DOM\Node;
@@ -28,32 +29,6 @@ class HTMLBaseElement extends HTMLElement implements NodeInsertHook
         parent::__construct($document, $localName, $namespace, $prefix);
 
         $this->frozenBaseUrl = null;
-    }
-
-    public function __get(string $name)
-    {
-        switch ($name) {
-            case 'href':
-                $document = $this->nodeDocument;
-                $url = $this->attributeList->getAttrValue('href', null);
-                $urlRecord = URLParser::parseUrl(
-                    $url,
-                    $document->getFallbackBaseURL(),
-                    $document->characterSet
-                );
-
-                if ($urlRecord === false) {
-                    return $url;
-                }
-
-                return $urlRecord->serializeURL();
-
-            case 'target':
-                return $this->attributeList->getAttrValue('target', null);
-
-            default:
-                return parent::__get($name);
-        }
     }
 
     public function __set(string $name, $value): void
@@ -176,6 +151,30 @@ class HTMLBaseElement extends HTMLElement implements NodeInsertHook
             assert($baseElements->getActiveBase() !== null);
             $baseElements->getActiveBase()->setFrozenBaseURL();
         }
+    }
+
+    #[Getter('href')]
+    private function getHref(): string
+    {
+        $document = $this->nodeDocument;
+        $url = $this->attributeList->getAttrValue('href', null);
+        $urlRecord = URLParser::parseUrl(
+            $url,
+            $document->getFallbackBaseURL(),
+            $document->characterSet
+        );
+
+        if ($urlRecord === false) {
+            return $url;
+        }
+
+        return $urlRecord->serializeURL();
+    }
+
+    #[Getter('target')]
+    private function getTarget(): string
+    {
+        return $this->attributeList->getAttrValue('target', null);
     }
 
     protected function __clone()

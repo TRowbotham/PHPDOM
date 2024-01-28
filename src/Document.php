@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM;
 
+use Rowbot\DOM\DynamicProperty\Getter;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Element\ElementFactory;
 use Rowbot\DOM\Element\HTML\HTMLBodyElement;
@@ -60,6 +61,9 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
 
     protected const INERT_TEMPLATE_DOCUMENT = 0x1;
 
+    #[Getter('characterSet')]
+    #[Getter('charset')]
+    #[Getter('inputEncoding')]
     protected string $characterSet;
 
     protected int $flags;
@@ -77,7 +81,8 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
 
     private Environment $environment;
 
-    public readonly DOMImplementation $implementation;
+    #[Getter('implementation')]
+    protected DOMImplementation $implementation;
 
     private bool $isIframeSrcDoc;
 
@@ -86,6 +91,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      */
     private string $type;
 
+    #[Getter('readyState')]
     private string $readyState;
 
     private int $source;
@@ -121,68 +127,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
         $this->readyState = DocumentReadyState::COMPLETE;
 
         $this->source = DocumentSource::NOT_FROM_PARSER;
-    }
-
-    public function __get(string $name)
-    {
-        switch ($name) {
-            case 'body':
-                return $this->getBodyElement();
-
-            case 'head':
-                return $this->getHeadElement();
-
-            case 'characterSet':
-            case 'charset':
-            case 'inputEncoding':
-                return $this->characterSet;
-
-            case 'childElementCount':
-                return $this->getChildElementCount();
-
-            case 'children':
-                return $this->getChildren();
-
-            case 'contentType':
-                return $this->environment->getContentType();
-
-            case 'compatMode':
-                return $this->mode === DocumentMode::QUIRKS ? 'BackCompat' : 'CSS1Compat';
-
-            case 'doctype':
-                foreach ($this->childNodes_ as $child) {
-                    if ($child instanceof DocumentType) {
-                        return $child;
-                    }
-                }
-
-                return null;
-
-            case 'documentElement':
-                return $this->getFirstElementChild();
-
-            case 'documentURI':
-            case 'URL':
-                return $this->environment->getUrl()->serializeURL();
-
-            case 'firstElementChild':
-                return $this->getFirstElementChild();
-
-            case 'lastElementChild':
-                return $this->getLastElementChild();
-
-            case 'origin':
-                return (string) $this->environment->getUrl()->getOrigin();
-
-            case 'readyState':
-                return $this->readyState;
-
-            case 'title':
-                return $this->getTitle();
-
-            default:
-                return parent::__get($name);
-        }
     }
 
     public function __set(string $name, $value): void
@@ -722,6 +666,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      *
      * @see https://html.spec.whatwg.org/multipage/dom.html#dom-document-head
      */
+    #[Getter('head')]
     protected function getHeadElement(): ?HTMLHeadElement
     {
         $docElement = $this->getFirstElementChild();
@@ -761,6 +706,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      *
      * @see https://html.spec.whatwg.org/multipage/dom.html#document.title
      */
+    #[Getter('title')]
     protected function getTitle(): string
     {
         $element = $this->getTitleElement();
@@ -897,6 +843,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      *
      * @return \Rowbot\DOM\Element\HTML\HTMLBodyElement|\Rowbot\DOM\Element\HTML\HTMLFrameSetElement|null
      */
+    #[Getter('body')]
     protected function getBodyElement(): ?HTMLElement
     {
         $docElement = $this->getFirstElementChild();
@@ -973,6 +920,52 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
     public function toString(): string
     {
         return MarkupFactory::serializeFragment($this, true);
+    }
+
+    #[Getter('compatMode')]
+    private function getCompatMode(): string
+    {
+        return match ($this->mode) {
+            DocumentMode::QUIRKS => 'BackCompat',
+            default              => 'CSS1Compat',
+        };
+    }
+
+    #[Getter('contentType')]
+    private function getContentType(): string
+    {
+        return $this->environment->getContentType();
+    }
+
+    #[Getter('doctype')]
+    private function getDoctype(): ?DocumentType
+    {
+        foreach ($this->childNodes_ as $child) {
+            if ($child instanceof DocumentType) {
+                return $child;
+            }
+        }
+
+        return null;
+    }
+
+    #[Getter('documentElement')]
+    private function getDocumentElement(): ?Element
+    {
+        return $this->getFirstElementChild();
+    }
+
+    #[Getter('URL')]
+    #[Getter('documentURI')]
+    private function getDocumentURI(): string
+    {
+        return $this->environment->getUrl()->serializeURL();
+    }
+
+    #[Getter('origin')]
+    private function getOrigin(): string
+    {
+        return (string) $this->environment->getUrl()->getOrigin();
     }
 
     public function __toString(): string

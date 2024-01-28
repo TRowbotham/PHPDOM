@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Element\HTML;
 
+use Rowbot\DOM\DynamicProperty\Getter;
+
 /**
  * Represents the HTML <meta> element.
  *
@@ -16,21 +18,22 @@ namespace Rowbot\DOM\Element\HTML;
  */
 class HTMLMetaElement extends HTMLElement
 {
-    public function __get(string $name)
+    #[Getter('content')]
+    private function getContent(): string
     {
-        switch ($name) {
-            case 'content':
-                return $this->reflectStringAttributeValue($name);
+        return $this->reflectStringAttributeValue('content');
+    }
 
-            case 'httpEquiv':
-                return $this->reflectStringAttributeValue('http-equiv');
+    #[Getter('httpEquiv')]
+    private function getHttpEquiv(): string
+    {
+        return $this->reflectStringAttributeValue('http-equiv');
+    }
 
-            case 'name':
-                return $this->reflectStringAttributeValue($name);
-
-            default:
-                return parent::__get($name);
-        }
+    #[Getter('name')]
+    private function getName(): string
+    {
+        return $this->reflectStringAttributeValue('name');
     }
 
     public function __set(string $name, $value): void

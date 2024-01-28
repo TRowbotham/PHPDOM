@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM;
 
+use Rowbot\DOM\DynamicProperty\Getter;
 use Rowbot\DOM\Exception\IndexSizeError;
 
 use function mb_strlen;
@@ -30,6 +31,7 @@ abstract class CharacterData extends Node implements ChildNode
     use ChildNodeTrait;
     use NonDocumentTypeChildNode;
 
+    #[Getter('data')]
     protected string $data;
 
     public function __construct(Document $document, string $data, int $nodeType)
@@ -37,26 +39,6 @@ abstract class CharacterData extends Node implements ChildNode
         parent::__construct($document, $nodeType);
 
         $this->data = $data;
-    }
-
-    public function __get(string $name)
-    {
-        switch ($name) {
-            case 'data':
-                return $this->data;
-
-            case 'length':
-                return $this->getLength();
-
-            case 'nextElementSibling':
-                return $this->getNextElementSibling();
-
-            case 'previousElementSibling':
-                return $this->getPreviousElementSibling();
-
-            default:
-                return parent::__get($name);
-        }
     }
 
     public function __set(string $name, $value): void
@@ -224,6 +206,7 @@ abstract class CharacterData extends Node implements ChildNode
         return mb_substr($this->data, $offset, $count, 'utf-8');
     }
 
+    #[Getter('length')]
     public function getLength(): int
     {
         return mb_strlen($this->data, 'utf-8');

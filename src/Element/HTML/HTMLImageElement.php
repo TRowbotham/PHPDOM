@@ -4,18 +4,17 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Element\HTML;
 
+use Rowbot\DOM\DynamicProperty\Getter;
+
 /**
  * @see https://html.spec.whatwg.org/multipage/embedded-content.html#the-img-element
  */
 class HTMLImageElement extends HTMLElement
 {
-    public function __get(string $name)
+    #[Getter('src')]
+    private function getSrc(): string
     {
-        if ($name === 'src') {
-            return $this->reflectUrlAttribute($name);
-        }
-
-        return parent::__get($name);
+        return $this->reflectUrlAttribute('src');
     }
 
     public function __set(string $name, $value): void

@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM;
 
+use ReflectionClass;
+use ReflectionMethod;
+use ReflectionProperty;
+use Rowbot\DOM\DynamicProperty\Getter;
+use Rowbot\DOM\DynamicProperty\MethodGetter;
+use Rowbot\DOM\DynamicProperty\PropertyGetter;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Exception\HierarchyRequestError;
 use Rowbot\DOM\Exception\NotFoundError;
@@ -70,11 +76,13 @@ abstract class Node
     /**
      * @var self|null
      */
+    #[Getter('parentNode')]
     protected $parentNode;
 
     /**
      * @var self|null
      */
+    #[Getter('nextSibling')]
     protected $nextSibling;
 
     protected Document $nodeDocument;
@@ -82,12 +90,19 @@ abstract class Node
     /**
      * @var \Rowbot\DOM\NodeList<\Rowbot\DOM\Node>
      */
+    #[Getter('childNodes')]
     protected NodeList $nodeList;
 
     /**
      * @var self|null
      */
+    #[Getter('previousSibling')]
     protected $previousSibling;
+
+    /**
+     * @var array<class-string<self>, non-empty-array<\Rowbot\DOM\DynamicProperty\DynamicPropertyGetter>>
+     */
+    private static array $getters = [];
 
     /**
      * @param self::*_NODE $nodeType
@@ -98,55 +113,6 @@ abstract class Node
         $this->childNodes_ = new NodeSet();
         $this->nodeList = new LiveNodeList($this->childNodes_);
         $this->nodeType = $nodeType;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function __get(string $name)
-    {
-        switch ($name) {
-            case 'baseURI':
-                return $this->nodeDocument->getBaseURL()->serializeURL();
-
-            case 'childNodes':
-                return $this->nodeList;
-
-            case 'firstChild':
-                return $this->childNodes_->first();
-
-            case 'isConnected':
-                $options = ['composed' => true];
-
-                return $this->getRootNode($options) instanceof Document;
-
-            case 'lastChild':
-                return $this->childNodes_->last();
-
-            case 'nextSibling':
-                return $this->nextSibling;
-
-            case 'nodeName':
-                return $this->getNodeName();
-
-            case 'nodeValue':
-                return $this->getNodeValue();
-
-            case 'ownerDocument':
-                return $this->ownerDocument();
-
-            case 'parentElement':
-                return $this->parentElement();
-
-            case 'parentNode':
-                return $this->parentNode;
-
-            case 'previousSibling':
-                return $this->previousSibling;
-
-            case 'textContent':
-                return $this->getTextContent();
-        }
     }
 
     /**
@@ -172,11 +138,13 @@ abstract class Node
      *
      * @see https://dom.spec.whatwg.org/#dom-node-nodename
      */
+    #[Getter('nodeName')]
     abstract protected function getNodeName(): string;
 
     /**
      * Returns null if the node is a document, and the node's node document otherwise.
      */
+    #[Getter('ownerDocument')]
     public function ownerDocument(): ?Document
     {
         return $this->nodeDocument;
@@ -216,6 +184,7 @@ abstract class Node
      *
      * @internal
      */
+    #[Getter('parentElement')]
     public function parentElement(): ?Element
     {
         return $this->parentNode instanceof Element ? $this->parentNode : null;
@@ -236,6 +205,7 @@ abstract class Node
      *
      * @see https://dom.spec.whatwg.org/#dom-node-nodevalue
      */
+    #[Getter('nodeValue')]
     abstract protected function getNodeValue(): ?string;
 
     /**
@@ -254,6 +224,7 @@ abstract class Node
      *
      * @see https://dom.spec.whatwg.org/#dom-node-textcontent
      */
+    #[Getter('textContent')]
     abstract protected function getTextContent(): ?string;
 
     /**
@@ -1855,6 +1826,69 @@ abstract class Node
         return $root instanceof ShadowRoot
             && !$root->isShadowIncludingInclusiveAncestorOf($otherNode)
             && ($root->mode === 'closed' || $root->host->isClosedShadowHiddenFrom($otherNode));
+    }
+
+    #[Getter('baseURI')]
+    private function getBaseURI(): string
+    {
+        return $this->nodeDocument->getBaseURL()->serializeURL();
+    }
+
+    #[Getter('firstChild')]
+    private function getFirstChild(): ?self
+    {
+        return $this->childNodes_->first();
+    }
+
+    #[Getter('isConnected')]
+    private function isConnected(): bool
+    {
+        return $this->getRootNode(['composed' => true]) instanceof Document;
+    }
+
+    #[Getter('lastChild')]
+    private function getLastChild(): ?self
+    {
+        return $this->childNodes_->last();
+    }
+
+    private function registerDynamicPropertyGetters(ReflectionClass $reflection): void
+    {
+        $filter = ReflectionMethod::IS_PRIVATE | ReflectionMethod::IS_PROTECTED | ReflectionMethod::IS_PUBLIC;
+
+        foreach ($reflection->getMethods($filter) as $method) {
+            foreach ($method->getAttributes(Getter::class) as $attribute) {
+                $instance = $attribute->newInstance();
+                self::$getters[static::class][$instance->name] = new MethodGetter($method->getName());
+            }
+        }
+
+        $filter = ReflectionProperty::IS_PRIVATE | ReflectionProperty::IS_PROTECTED | ReflectionProperty::IS_PUBLIC;
+
+        foreach ($reflection->getProperties($filter) as $property) {
+            foreach ($property->getAttributes(Getter::class) as $attribute) {
+                $instance = $attribute->newInstance();
+                self::$getters[static::class][$instance->name] = new PropertyGetter($property->getName());
+            }
+        }
+    }
+
+    public function __get(string $name)
+    {
+        if (!isset(self::$getters[static::class])) {
+            self::$getters[static::class] = [];
+            $reflection = new ReflectionClass($this);
+
+            do {
+                $this->registerDynamicPropertyGetters($reflection);
+            } while (($reflection = $reflection->getParentClass()) !== false);
+        }
+
+        if (!isset(self::$getters[static::class][$name])) {
+            return null;
+        }
+
+        return self::$getters[static::class][$name]->getValue($this);
     }
 
     protected function __clone()

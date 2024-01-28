@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM;
 
+use Rowbot\DOM\DynamicProperty\Getter;
 use Rowbot\DOM\Element\Element;
 
 /**
@@ -24,14 +25,10 @@ class Attr extends Node
 
     public readonly string $localName;
 
-    /**
-     * The attribute's fully qualified name, usually in the form of prefix:localName or localName if the attribute
-     * does not have a namespace.
-     */
-    public readonly string $name;
-
+    #[Getter('value')]
     private string $value;
 
+    #[Getter('ownerElement')]
     private ?Element $ownerElement;
 
     public function __construct(
@@ -52,20 +49,6 @@ class Attr extends Node
             null    => $this->localName,
             default => $this->prefix . ':' . $this->localName,
         };
-    }
-
-    public function __get(string $name)
-    {
-        switch ($name) {
-            case 'ownerElement':
-                return $this->ownerElement;
-
-            case 'value':
-                return $this->value;
-
-            default:
-                return parent::__get($name);
-        }
     }
 
     public function __set(string $name, $value): void
@@ -183,6 +166,7 @@ class Attr extends Node
         $this->ownerElement->getAttributeList()->change($this, $value);
     }
 
+    #[Getter('name')]
     protected function getNodeName(): string
     {
         if ($this->prefix) {

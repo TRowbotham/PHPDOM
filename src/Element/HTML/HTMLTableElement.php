@@ -7,6 +7,7 @@ namespace Rowbot\DOM\Element\HTML;
 use Closure;
 use Generator;
 use Rowbot\DOM\Document;
+use Rowbot\DOM\DynamicProperty\Getter;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Element\ElementFactory;
 use Rowbot\DOM\Exception\HierarchyRequestError;
@@ -85,67 +86,80 @@ class HTMLTableElement extends HTMLElement
         $this->tBodyCollection = null;
     }
 
-    public function __get(string $name)
+    /**
+     * The caption IDL attribute must return, on getting, the first caption element child of the table element, if any,
+     * or null otherwise.
+     */
+    #[Getter('caption')]
+    private function getCaption(): ?HTMLTableCaptionElement
     {
-        switch ($name) {
-            case 'caption':
-                // The caption IDL attribute must return, on getting, the first caption element
-                // child of the table element, if any, or null otherwise.
-                $node = $this->childNodes_->first();
+        $node = $this->childNodes_->first();
 
-                while ($node) {
-                    if ($node instanceof HTMLTableCaptionElement) {
-                        return $node;
-                    }
+        while ($node) {
+            if ($node instanceof HTMLTableCaptionElement) {
+                return $node;
+            }
 
-                    $node = $node->nextSibling;
-                }
-
-                return null;
-
-            case 'rows':
-                return $this->rowsCollection ??= new HTMLCollection($this, $this->getRowsFilter());
-
-            case 'tBodies':
-                return $this->tBodyCollection ??= new HTMLCollection(
-                    $this,
-                    static function (self $root) {
-                        $node = $root->firstChild;
-
-                        while ($node !== null) {
-                            if (
-                                $node instanceof HTMLTableSectionElement
-                                && $node->localName === 'tbody'
-                            ) {
-                                yield $node;
-                            }
-
-                            $node = $node->nextSibling;
-                        }
-                    }
-                );
-
-            case 'tFoot':
-            case 'tHead':
-                $name = strtolower($name);
-
-                // The tHead IDL attribute must return, on getting, the first thead element child of
-                // the table element, if any, or null otherwise.
-                $node = $this->childNodes_->first();
-
-                while ($node) {
-                    if ($node instanceof HTMLTableSectionElement && $node->localName === $name) {
-                        return $node;
-                    }
-
-                    $node = $node->nextSibling;
-                }
-
-                return null;
-
-            default:
-                return parent::__get($name);
+            $node = $node->nextSibling;
         }
+
+        return null;
+    }
+
+    #[Getter('rows')]
+    private function getRows(): HTMLCollection
+    {
+        return $this->rowsCollection ??= new HTMLCollection($this, $this->getRowsFilter());
+    }
+
+    #[Getter('tBodies')]
+    private function getTBodies(): HTMLCollection
+    {
+        return $this->tBodyCollection ??= new HTMLCollection(
+            $this,
+            static function (self $root) {
+                $node = $root->firstChild;
+
+                while ($node !== null) {
+                    if (
+                        $node instanceof HTMLTableSectionElement
+                        && $node->localName === 'tbody'
+                    ) {
+                        yield $node;
+                    }
+
+                    $node = $node->nextSibling;
+                }
+            }
+        );
+    }
+
+
+    #[Getter('tHead')]
+    private function getTHead(): ?HTMLTableSectionElement
+    {
+        return $this->getTHeadOrTFoot('thead');
+    }
+
+    #[Getter('tFoot')]
+    private function getTFoot(): ?HTMLTableSectionElement
+    {
+        return $this->getTHeadOrTFoot('tfoot');
+    }
+
+    private function getTHeadOrTFoot(string $name): ?HTMLTableSectionElement
+    {
+        $node = $this->childNodes_->first();
+
+        while ($node) {
+            if ($node instanceof HTMLTableSectionElement && $node->localName === $name) {
+                return $node;
+            }
+
+            $node = $node->nextSibling;
+        }
+
+        return null;
     }
 
     public function __set(string $name, $value): void
