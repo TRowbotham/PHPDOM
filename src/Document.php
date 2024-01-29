@@ -18,6 +18,7 @@ use Rowbot\DOM\Element\SVG\SVGTitleElement;
 use Rowbot\DOM\Exception\HierarchyRequestError;
 use Rowbot\DOM\Exception\InvalidCharacterError;
 use Rowbot\DOM\Exception\NotSupportedError;
+use Rowbot\DOM\InternalEvent\NodeAdoptedEvent;
 use Rowbot\DOM\Parser\MarkupFactory;
 use Rowbot\DOM\Support\Collection\BaseElementList;
 use Rowbot\DOM\Support\Stringable;
@@ -432,10 +433,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
                 // 3.3. For each inclusiveDescendant in node’s shadow-including inclusive
                 // descendants, in shadow-including tree order, run the adopting steps with
                 // inclusiveDescendant and oldDocument.
-                if ($descendant instanceof NodeAdoptHook) {
-                    $descendant->onAdopt($descendant, $oldDocument);
-                }
-
+                $descendant->dispatcher->dispatch(new NodeAdoptedEvent($descendant, $oldDocument), 'node.adopted');
                 $descendant = $descendant->nextNode($node);
             } while ($descendant);
         }

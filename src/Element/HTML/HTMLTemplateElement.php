@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Element\HTML;
 
-use Rowbot\DOM\NodeAdoptHook;
-use Rowbot\DOM\NodeCloneHook;
 use Rowbot\DOM\Document;
 use Rowbot\DOM\DocumentFragment;
 use Rowbot\DOM\DynamicProperty\Getter;
-use Rowbot\DOM\Node;
+use Rowbot\DOM\InternalEvent\NodeAdoptedEvent;
+use Rowbot\DOM\InternalEvent\NodeClonedEvent;
 
 use function assert;
 
@@ -18,7 +17,7 @@ use function assert;
  *
  * @property-read \Rowbot\DOM\DocumentFragment $content
  */
-class HTMLTemplateElement extends HTMLElement implements NodeAdoptHook, NodeCloneHook
+class HTMLTemplateElement extends HTMLElement
 {
     #[Getter('content')]
     protected DocumentFragment $content;
@@ -30,24 +29,26 @@ class HTMLTemplateElement extends HTMLElement implements NodeAdoptHook, NodeClon
         $doc = $this->nodeDocument->getAppropriateTemplateContentsOwnerDocument();
         $this->content = $doc->createDocumentFragment();
         $this->content->setHost($this);
+        $this->dispatcher->addListener('node.adopted', $this->onAdopt(...));
+        $this->dispatcher->addListener('node.cloned', $this->onClone(...));
     }
 
-    public function onAdopt(Node $node, Document $oldDocument): void
+    public function onAdopt(NodeAdoptedEvent $event): void
     {
-        $doc = $node->nodeDocument->getAppropriateTemplateContentsOwnerDocument();
-        assert($node instanceof self);
-        $doc->doAdoptNode($node->content);
+        $doc = $event->node->nodeDocument->getAppropriateTemplateContentsOwnerDocument();
+        assert($event->node instanceof self);
+        $doc->doAdoptNode($event->node->content);
     }
 
-    public function onClone(Node $copy, Node $node, Document $document, bool $cloneChildren = false): void
+    public function onClone(NodeClonedEvent $event): void
     {
-        if (!$cloneChildren) {
+        if (!$event->cloneChildren) {
             return;
         }
 
-        assert($copy instanceof self && $node instanceof self);
-        $copiedContents = $node->content->cloneNodeInternal($copy->content->nodeDocument, true);
-        $copy->content->appendChild($copiedContents);
+        assert($event->copy instanceof self && $event->node instanceof self);
+        $copiedContents = $event->node->content->cloneNodeInternal($event->copy->content->nodeDocument, true);
+        $event->copy->content->appendChild($copiedContents);
     }
 
     protected function __clone()
@@ -57,5 +58,7 @@ class HTMLTemplateElement extends HTMLElement implements NodeAdoptHook, NodeClon
         $doc = $this->nodeDocument->getAppropriateTemplateContentsOwnerDocument();
         $this->content = $doc->createDocumentFragment();
         $this->content->setHost($this);
+        $this->dispatcher->addListener('node.adopted', $this->onAdopt(...));
+        $this->dispatcher->addListener('node.cloned', $this->onClone(...));
     }
 }

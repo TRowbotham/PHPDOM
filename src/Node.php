@@ -14,8 +14,14 @@ use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Exception\HierarchyRequestError;
 use Rowbot\DOM\Exception\NotFoundError;
 use Rowbot\DOM\Exception\NotSupportedError;
+use Rowbot\DOM\InternalEvent\NodeChildrenChangedEvent;
+use Rowbot\DOM\InternalEvent\NodeClonedEvent;
+use Rowbot\DOM\InternalEvent\NodeInsertedEvent;
+use Rowbot\DOM\InternalEvent\NodeRemovedEvent;
 use Rowbot\DOM\Support\Collection\NodeSet;
 use SplDoublyLinkedList;
+use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 use function assert;
 use function count;
@@ -87,6 +93,8 @@ abstract class Node
 
     protected Document $nodeDocument;
 
+    protected EventDispatcherInterface $dispatcher;
+
     /**
      * @var \Rowbot\DOM\NodeList<\Rowbot\DOM\Node>
      */
@@ -113,6 +121,7 @@ abstract class Node
         $this->childNodes_ = new NodeSet();
         $this->nodeList = new LiveNodeList($this->childNodes_);
         $this->nodeType = $nodeType;
+        $this->dispatcher = new EventDispatcher();
     }
 
     /**
@@ -177,6 +186,11 @@ abstract class Node
         }
 
         return $root;
+    }
+
+    public function getDispatcher(): EventDispatcherInterface
+    {
+        return $this->dispatcher;
     }
 
     /**
@@ -1009,18 +1023,14 @@ abstract class Node
             // shadow-including tree order:
             do {
                 // 7.7.1 Run the insertion steps with inclusiveDescendant.
-                if ($inclusiveDescendant instanceof NodeInsertHook) {
-                    $inclusiveDescendant->onInsert($inclusiveDescendant);
-                }
-
+                $event = new NodeInsertedEvent($inclusiveDescendant);
+                $inclusiveDescendant->dispatcher->dispatch($event, 'node.inserted');
                 $inclusiveDescendant = $inclusiveDescendant->nextNode($node);
             } while ($inclusiveDescendant);
         }
 
         // 9. Run the children changed steps for parent.
-        if ($this instanceof ChildrenChangedHook) {
-            $this->onChildrenChanged();
-        }
+        $this->dispatcher->dispatch(new NodeChildrenChangedEvent(), 'node.children.changed');
     }
 
     /**
@@ -1336,9 +1346,7 @@ abstract class Node
         $this->parentNode = null;
 
         // 15. Run the removing steps with node and parent.
-        if ($this instanceof NodeRemoveHook) {
-            $this->onRemove($this, $parent);
-        }
+        $this->dispatcher->dispatch(new NodeRemovedEvent($this, $parent), 'node.removed');
 
         $descendant = $this;
 
@@ -1346,17 +1354,13 @@ abstract class Node
         // order, then:
         do {
             // 19. Run the removing steps with descendant.
-            if ($descendant instanceof NodeRemoveHook) {
-                $descendant->onRemove($descendant);
-            }
+            $descendant->dispatcher->dispatch(new NodeRemovedEvent($descendant, null), 'node.removed');
 
             $descendant = $descendant->nextNode($this);
         } while ($descendant);
 
         // 21. Run the children changed steps for parent.
-        if ($parent instanceof ChildrenChangedHook) {
-            $parent->onChildrenChanged();
-        }
+        $parent->dispatcher->dispatch(new NodeChildrenChangedEvent(), 'node.children.changed');
     }
 
     /**
@@ -1650,9 +1654,7 @@ abstract class Node
             $copy->nodeDocument = $document;
         }
 
-        if ($this instanceof NodeCloneHook) {
-            $this->onClone($copy, $this, $document, $cloneChildren);
-        }
+        $this->dispatcher->dispatch(new NodeClonedEvent($copy, $this, $document, $cloneChildren), 'node.cloned');
 
         if ($cloneChildren) {
             foreach ($this->childNodes_ as $child) {
@@ -1898,5 +1900,6 @@ abstract class Node
         $this->previousSibling = null;
         $this->childNodes_ = new NodeSet();
         $this->nodeList = new LiveNodeList($this->childNodes_);
+        $this->dispatcher = new EventDispatcher();
     }
 }

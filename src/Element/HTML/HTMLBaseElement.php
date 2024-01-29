@@ -7,8 +7,8 @@ namespace Rowbot\DOM\Element\HTML;
 use Rowbot\DOM\Document;
 use Rowbot\DOM\DynamicProperty\Getter;
 use Rowbot\DOM\Element\Element;
-use Rowbot\DOM\NodeInsertHook;
-use Rowbot\DOM\Node;
+use Rowbot\DOM\InternalEvent\NodeInsertedEvent;
+use Rowbot\DOM\InternalEvent\NodeRemovedEvent;
 use Rowbot\DOM\URL\URLParser;
 use Rowbot\URL\URLRecord;
 
@@ -18,7 +18,7 @@ use function in_array;
 /**
  * @see https://html.spec.whatwg.org/multipage/semantics.html#the-base-element
  */
-class HTMLBaseElement extends HTMLElement implements NodeInsertHook
+class HTMLBaseElement extends HTMLElement
 {
     private const TARGET_KEYWORDS = ['_self', '_blank', '_parent', '_top'];
 
@@ -29,6 +29,8 @@ class HTMLBaseElement extends HTMLElement implements NodeInsertHook
         parent::__construct($document, $localName, $namespace, $prefix);
 
         $this->frozenBaseUrl = null;
+        $this->dispatcher->addListener('node.inserted', $this->onInsert(...));
+        $this->dispatcher->addListener('node.removed', $this->onRemove(...));
     }
 
     public function __set(string $name, $value): void
@@ -136,14 +138,14 @@ class HTMLBaseElement extends HTMLElement implements NodeInsertHook
         }
     }
 
-    public function onInsert(Node $insertedNode): void
+    public function onInsert(NodeInsertedEvent $event): void
     {
-        if ($insertedNode->nodeDocument->getBaseElements()->add($insertedNode)) {
-            $insertedNode->setFrozenBaseURL();
+        if ($event->insertedNode->nodeDocument->getBaseElements()->add($event->insertedNode)) {
+            $event->insertedNode->setFrozenBaseURL();
         }
     }
 
-    public function onRemove($parent = null): void
+    public function onRemove(NodeRemovedEvent $event): void
     {
         $baseElements = $this->nodeDocument->getBaseElements();
 
@@ -184,5 +186,8 @@ class HTMLBaseElement extends HTMLElement implements NodeInsertHook
         if ($this->frozenBaseUrl !== null) {
             $this->frozenBaseUrl = clone $this->frozenBaseUrl;
         }
+
+        $this->dispatcher->addListener('node.inserted', $this->onInsert(...));
+        $this->dispatcher->addListener('node.removed', $this->onRemove(...));
     }
 }
