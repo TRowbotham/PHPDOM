@@ -10,8 +10,10 @@ use Iterator;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Exception\InvalidCharacterError;
 use Rowbot\DOM\Exception\SyntaxError;
+use Rowbot\DOM\InternalEvent\AttributeChangedEvent;
 use Rowbot\DOM\Support\Collection\StringSet;
 use Rowbot\DOM\Support\Stringable;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 use function func_num_args;
 use function preg_match;
@@ -26,12 +28,7 @@ use function preg_match;
  * @implements \ArrayAccess<int, string>
  * @implements \Iterator<int, string>
  */
-final class DOMTokenList implements
-    ArrayAccess,
-    AttributeChangeObserver,
-    Countable,
-    Iterator,
-    Stringable
+final class DOMTokenList implements ArrayAccess, Countable, Iterator, Stringable
 {
     private string $attrLocalName;
 
@@ -39,14 +36,17 @@ final class DOMTokenList implements
 
     private StringSet $tokens;
 
-    public function __construct(Element $element, string $attrLocalName)
+    public function __construct(Element $element, EventDispatcherInterface $dispatcher, string $attrLocalName)
     {
         $this->attrLocalName = $attrLocalName;
         $this->element = $element;
         $attrList = $this->element->getAttributeList();
-        $attrList->observe($this);
         $value = $attrList->getAttrValue($attrLocalName);
-        $this->onAttributeChanged($this->element, $this->attrLocalName, $value, $value, null);
+        $dispatcher->addListener('attribute.changed', $this->onAttributeChanged(...));
+        $dispatcher->dispatch(
+            new AttributeChangedEvent($element, $attrLocalName, $value, $value, null),
+            'attribute.changed'
+        );
     }
 
     public function __get(string $name)
@@ -364,21 +364,16 @@ final class DOMTokenList implements
         return $this->tokens->valid();
     }
 
-    public function onAttributeChanged(
-        Element $element,
-        string $localName,
-        ?string $oldValue,
-        ?string $value,
-        ?string $namespace
-    ): void {
-        if ($localName === $this->attrLocalName && $namespace === null) {
-            if ($value === null) {
+    public function onAttributeChanged(AttributeChangedEvent $event): void
+    {
+        if ($event->localName === $this->attrLocalName && $event->namespace === null) {
+            if ($event->value === null) {
                 $this->tokens->clear();
 
                 return;
             }
 
-            $this->tokens = StringSet::createFromString($value);
+            $this->tokens = StringSet::createFromString($event->value);
         }
     }
 }

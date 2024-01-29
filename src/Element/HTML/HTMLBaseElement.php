@@ -6,7 +6,7 @@ namespace Rowbot\DOM\Element\HTML;
 
 use Rowbot\DOM\Document;
 use Rowbot\DOM\DynamicProperty\Getter;
-use Rowbot\DOM\Element\Element;
+use Rowbot\DOM\InternalEvent\AttributeChangedEvent;
 use Rowbot\DOM\InternalEvent\NodeInsertedEvent;
 use Rowbot\DOM\InternalEvent\NodeRemovedEvent;
 use Rowbot\DOM\URL\URLParser;
@@ -31,6 +31,7 @@ class HTMLBaseElement extends HTMLElement
         $this->frozenBaseUrl = null;
         $this->dispatcher->addListener('node.inserted', $this->onInsert(...));
         $this->dispatcher->addListener('node.removed', $this->onRemove(...));
+        $this->dispatcher->addListener('attribute.changed', $this->onTargetOrHrefAttributeChanged(...));
     }
 
     public function __set(string $name, $value): void
@@ -59,51 +60,42 @@ class HTMLBaseElement extends HTMLElement
         return $this->frozenBaseUrl;
     }
 
-    /**
-     * @see \Rowbot\DOM\AttributeChangeObserver
-     */
-    public function onAttributeChanged(
-        Element $element,
-        string $localName,
-        ?string $oldValue,
-        ?string $value,
-        ?string $namespace
-    ): void {
-        if ($namespace === null) {
-            assert($element === $this);
-
-            $isTarget = $localName === 'target';
-            $isHref = $localName === 'href';
-            $targetIsKeyword = false;
-            $hasTarget = false;
-
-            if (!$isHref && !$isTarget) {
-                return;
-            }
-
-            if ($isTarget) {
-                $targetIsKeyword = in_array($value, self::TARGET_KEYWORDS, true);
-                $hasTarget = true;
-            }
-
-            if ($isHref) {
-                $target = $this->attributeList->getAttrByNamespaceAndLocalName(null, 'target');
-                $hasTarget = $target !== null;
-                $targetIsKeyword = $target !== null && in_array($target->getValue(), self::TARGET_KEYWORDS, true);
-                $element->setFrozenBaseURL($value);
-            }
-
-            $list = $element->nodeDocument->getBaseElements();
-            $shouldActivate = (!$hasTarget || $targetIsKeyword) && $element->getRootNode() === $element->nodeDocument;
-
-            if ($shouldActivate && $list->getActiveBase() === null) {
-                $list->setActiveBase($element);
-            }
-
+    public function onTargetOrHrefAttributeChanged(AttributeChangedEvent $event): void
+    {
+        if ($event->namespace !== null) {
             return;
         }
 
-        parent::onAttributeChanged($element, $localName, $oldValue, $value, $namespace);
+        assert($event->element === $this);
+
+        $isTarget = $event->localName === 'target';
+        $isHref = $event->localName === 'href';
+        $targetIsKeyword = false;
+        $hasTarget = false;
+
+        if (!$isHref && !$isTarget) {
+            return;
+        }
+
+        if ($isTarget) {
+            $targetIsKeyword = in_array($event->value, self::TARGET_KEYWORDS, true);
+            $hasTarget = true;
+        }
+
+        if ($isHref) {
+            $target = $this->attributeList->getAttrByNamespaceAndLocalName(null, 'target');
+            $hasTarget = $target !== null;
+            $targetIsKeyword = $target !== null && in_array($target->getValue(), self::TARGET_KEYWORDS, true);
+            $event->element->setFrozenBaseURL($event->value);
+        }
+
+        $list = $event->element->nodeDocument->getBaseElements();
+        $shouldActivate = (!$hasTarget || $targetIsKeyword)
+            && $event->element->getRootNode() === $event->element->nodeDocument;
+
+        if ($shouldActivate && $list->getActiveBase() === null) {
+            $list->setActiveBase($event->element);
+        }
     }
 
     /**

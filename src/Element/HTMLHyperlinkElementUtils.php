@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Element;
 
 use Rowbot\DOM\DynamicProperty\Getter;
+use Rowbot\DOM\InternalEvent\AttributeChangedEvent;
 use Rowbot\URL\BasicURLParser;
 use Rowbot\URL\Component\PathList;
 use Rowbot\URL\State\FragmentState;
@@ -26,6 +27,15 @@ use function assert;
 trait HTMLHyperlinkElementUtils
 {
     private ?URLRecord $url;
+
+    public function onHrefAttributeChanged(AttributeChangedEvent $event): void
+    {
+        if ($event->localName !== 'href' || $event->namespace !== null) {
+            return;
+        }
+
+        $this->setURL();
+    }
 
     /**
      * Gets the Element's href IDL attribute.

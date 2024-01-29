@@ -128,13 +128,13 @@ class HTMLLinkElement extends HTMLElement
     #[Getter('relList')]
     private function getRelList(): DOMTokenList
     {
-        return $this->relList ??= new DOMTokenList($this, 'rel');
+        return $this->relList ??= new DOMTokenList($this, $this->dispatcher, 'rel');
     }
 
     #[Getter('sizes')]
     private function getSizes(): DOMTokenList
     {
-        return $this->sizes ??= new DOMTokenList($this, 'sizes');
+        return $this->sizes ??= new DOMTokenList($this, $this->dispatcher, 'sizes');
     }
 
     #[Getter('type')]

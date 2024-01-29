@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Element;
 
 use Rowbot\DOM\Attr;
-use Rowbot\DOM\AttributeChangeObserver;
 use Rowbot\DOM\AttributeList;
 use Rowbot\DOM\CDATASection;
 use Rowbot\DOM\ChildNode;
@@ -20,6 +19,7 @@ use Rowbot\DOM\Exception\NoModificationAllowedError;
 use Rowbot\DOM\Exception\NotFoundError;
 use Rowbot\DOM\Exception\SyntaxError;
 use Rowbot\DOM\GetElementsBy;
+use Rowbot\DOM\InternalEvent\AttributeChangedEvent;
 use Rowbot\DOM\NamedNodeMap;
 use Rowbot\DOM\Namespaces;
 use Rowbot\DOM\Node;
@@ -57,7 +57,7 @@ use function range;
  * @property-read \Rowbot\DOM\Element\Element|null                        $nextElementSibling
  * @property-read \Rowbot\DOM\Element\Element|null                        $previousElementSibling
  */
-class Element extends Node implements AttributeChangeObserver, ChildNode, ParentNode
+class Element extends Node implements ChildNode, ParentNode
 {
     use ChildNodeTrait {
         ChildNodeTrait::convertNodesToNode insteadof ParentNodeTrait;
@@ -83,12 +83,12 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
     {
         parent::__construct($document, self::ELEMENT_NODE);
 
-        $this->attributeList = new AttributeList($this);
+        $this->dispatcher->addListener('attribute.changed', $this->onIdAttributeChanged(...));
+        $this->attributeList = new AttributeList($this, $this->dispatcher);
         $this->localName = $localName;
         $this->namedNodeMap = new NamedNodeMap($this);
         $this->namespaceURI = $namespace;
         $this->prefix = $prefix;
-        $this->attributeList->observe($this);
         $this->classList_ = null;
     }
 
@@ -750,21 +750,16 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
         return $this->attributeList->getAttrValue($name);
     }
 
-    public function onAttributeChanged(
-        Element $element,
-        string $localName,
-        ?string $oldValue,
-        ?string $value,
-        ?string $namespace
-    ): void {
+    public function onIdAttributeChanged(AttributeChangedEvent $event): void
+    {
         // We currently don't do anything special with the element's ID.
         if (
-            $localName === 'id'
-            && $namespace === null
-            && ($value === null || $value === '')
+            $event->localName === 'id'
+            && $event->namespace === null
+            && ($event->value === null || $event->value === null)
         ) {
             // Unset the element's ID.
-        } elseif ($localName === 'id' && $namespace === null) {
+        } elseif ($event->localName === 'id' && $event->namespace === null) {
             // Set the element's ID to $value.
         }
     }
@@ -777,7 +772,7 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
     #[Getter('classList')]
     protected function getClassList(): DOMTokenList
     {
-        return $this->classList_ ??= new DOMTokenList($this, 'class');
+        return $this->classList_ ??= new DOMTokenList($this, $this->dispatcher, 'class');
     }
 
     protected function getNodeName(): string
@@ -871,7 +866,9 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
     protected function __clone()
     {
         parent::__clone();
-        $attributeList = new AttributeList($this);
+
+        $this->dispatcher->addListener('attribute.changed', $this->onIdAttributeChanged(...));
+        $attributeList = new AttributeList($this, $this->dispatcher);
 
         foreach ($this->attributeList as $attr) {
             $attributeList->append(clone $attr);
@@ -880,6 +877,5 @@ class Element extends Node implements AttributeChangeObserver, ChildNode, Parent
         $this->attributeList = $attributeList;
         $this->classList_ = null;
         $this->namedNodeMap = new NamedNodeMap($this);
-        $this->attributeList->observe($this);
     }
 }

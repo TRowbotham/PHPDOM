@@ -7,7 +7,6 @@ namespace Rowbot\DOM\Element\HTML;
 use Rowbot\DOM\Document;
 use Rowbot\DOM\DOMTokenList;
 use Rowbot\DOM\DynamicProperty\Getter;
-use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Element\HTMLHyperlinkElementUtils;
 
 /**
@@ -54,7 +53,7 @@ class HTMLAnchorElement extends HTMLElement
     {
         parent::__construct($document, $localName, $namespace, $prefix);
 
-        $this->attributeList->observe($this);
+        $this->dispatcher->addListener('attribute.changed', $this->onHrefAttributeChanged(...));
         $this->relList = null;
         $this->setURL();
     }
@@ -157,25 +156,6 @@ class HTMLAnchorElement extends HTMLElement
         }
     }
 
-    /**
-     * @see \Rowbot\DOM\AttributeChangeObserver
-     */
-    public function onAttributeChanged(
-        Element $element,
-        string $localName,
-        ?string $oldValue,
-        ?string $value,
-        ?string $namespace
-    ): void {
-        if ($localName === 'href' && $namespace === null) {
-            $this->setURL();
-
-            return;
-        }
-
-        parent::onAttributeChanged($element, $localName, $oldValue, $value, $namespace);
-    }
-
     #[Getter('download')]
     private function getDownload(): string
     {
@@ -232,6 +212,6 @@ class HTMLAnchorElement extends HTMLElement
     #[Getter('relList')]
     private function getRelList(): DOMTokenList
     {
-        return $this->relList ??= new DOMTokenList($this, 'rel');
+        return $this->relList ??= new DOMTokenList($this, $this->dispatcher, 'rel');
     }
 }

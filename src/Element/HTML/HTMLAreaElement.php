@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Element\HTML;
 
 use Rowbot\DOM\Document;
-use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Element\HTMLHyperlinkElementUtils;
 
 /**
@@ -33,6 +32,7 @@ class HTMLAreaElement extends HTMLElement
     {
         parent::__construct($document, $localName, $namespace, $prefix);
 
+        $this->dispatcher->addListener('attribute.changed', $this->onHrefAttributeChanged(...));
         $this->setURL();
     }
 
@@ -92,25 +92,6 @@ class HTMLAreaElement extends HTMLElement
             default:
                 parent::__set($name, $value);
         }
-    }
-
-    /**
-     * @see \Rowbot\DOM\AttributeChangeObserver
-     */
-    public function onAttributeChanged(
-        Element $element,
-        string $localName,
-        ?string $oldValue,
-        ?string $value,
-        ?string $namespace
-    ): void {
-        if ($localName === 'href' && $namespace === null) {
-            $this->setURL();
-
-            return;
-        }
-
-        parent::onAttributeChanged($element, $localName, $oldValue, $value, $namespace);
     }
 
     protected function __clone()

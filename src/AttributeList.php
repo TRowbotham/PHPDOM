@@ -10,12 +10,13 @@ use Generator;
 use IteratorAggregate;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Exception\InUseAttributeError;
+use Rowbot\DOM\InternalEvent\AttributeChangedEvent;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 use function array_search;
 use function array_splice;
 use function count;
 use function explode;
-use function spl_object_id;
 
 /**
  * @implements \ArrayAccess<int, \Rowbot\DOM\Attr>
@@ -23,12 +24,9 @@ use function spl_object_id;
  */
 class AttributeList implements ArrayAccess, Countable, IteratorAggregate
 {
-    private Element $element;
+    private EventDispatcherInterface $dispatcher;
 
-    /**
-     * @var array<int, \Rowbot\DOM\AttributeChangeObserver>
-     */
-    private array $observers;
+    private Element $element;
 
     /**
      * @var list<\Rowbot\DOM\Attr>
@@ -40,11 +38,11 @@ class AttributeList implements ArrayAccess, Countable, IteratorAggregate
      */
     private array $cache;
 
-    public function __construct(Element $element)
+    public function __construct(Element $element, EventDispatcherInterface $dispatcher)
     {
         $this->list = [];
+        $this->dispatcher = $dispatcher;
         $this->element = $element;
-        $this->observers = [];
         $this->cache = [];
     }
 
@@ -58,25 +56,14 @@ class AttributeList implements ArrayAccess, Countable, IteratorAggregate
      */
     public function change(Attr $attribute, string $value): void
     {
-        // TODO: Queue a mutation record of "attributes" for element with name
-        // attribute’s local name, namespace attribute’s namespace, and
-        // oldValue attribute’s value.
+        // 1. Let oldValue be attribute’s value.
+        $oldValue = $attribute->value;
 
-        $attrName = $attribute->getLocalName();
-        $attrValue = $attribute->getValue();
-        $attrNamespace = $attribute->getNamespace();
-
-        foreach ($this->observers as $observer) {
-            $observer->onAttributeChanged(
-                $this->element,
-                $attrName,
-                $attrValue,
-                $value,
-                $attrNamespace
-            );
-        }
-
+        // 2. Set attribute’s value to value.
         $attribute->setValue($value);
+
+        // 3. Handle attribute changes for attribute with attribute’s element, oldValue, and value.
+        $this->handleAttributeChanges($attribute, $attribute->ownerElement, $oldValue, $value);
     }
 
     /**
@@ -86,27 +73,15 @@ class AttributeList implements ArrayAccess, Countable, IteratorAggregate
      */
     public function append(Attr $attribute): void
     {
-        // TODO: Queue a mutation record of "attributes" for element with name
-        // attribute’s local name, namespace attribute’s namespace, and
-        // oldValue null.
-
-        $attrName = $attribute->getLocalName();
-        $attrValue = $attribute->getValue();
-        $attrNamespace = $attribute->getNamespace();
-
-        foreach ($this->observers as $observer) {
-            $observer->onAttributeChanged(
-                $this->element,
-                $attrName,
-                null,
-                $attrValue,
-                $attrNamespace
-            );
-        }
-
+        // 1. Append attribute to element’s attribute list.
         $this->list[] = $attribute;
-        $this->cache[$attrNamespace][$attrName] = $attribute;
+        $this->cache[$attribute->namespaceURI][$attribute->localName] = $attribute;
+
+        // 2. Set attribute’s element to element.
         $attribute->setOwnerElement($this->element);
+
+        // 3. Handle attribute changes for attribute with element, null, and attribute’s value.
+        $this->handleAttributeChanges($attribute, $this->element, null, $attribute->getValue());
     }
 
     /**
@@ -116,30 +91,15 @@ class AttributeList implements ArrayAccess, Countable, IteratorAggregate
      */
     public function remove(Attr $attribute): void
     {
-        // TODO: Queue a mutation record of "attributes" for element with name
-        // attribute’s local name, namespace attribute’s namespace, and
-        // oldValue attribute’s value.
+        // 1. Let element be attribute’s element.
+        $element = $attribute->getOwnerElement();
 
-        $attrName = $attribute->getLocalName();
-        $attrValue = $attribute->getValue();
-        $attrNamespace = $attribute->getNamespace();
-
-        foreach ($this->observers as $observer) {
-            $observer->onAttributeChanged(
-                $this->element,
-                $attrName,
-                $attrValue,
-                null,
-                $attrNamespace
-            );
-        }
-
-        if (!isset($this->cache[$attrNamespace][$attrName])) {
+        // 2. Remove attribute from element’s attribute list.
+        if (!isset($this->cache[$attribute->namespaceURI][$attribute->localName])) {
             return;
         }
 
-        $attribute->setOwnerElement(null);
-        unset($this->cache[$attrNamespace][$attrName]);
+        unset($this->cache[$attribute->namespaceURI][$attribute->localName]);
         $index = array_search($attribute, $this->list, true);
 
         if ($index === false) {
@@ -147,6 +107,12 @@ class AttributeList implements ArrayAccess, Countable, IteratorAggregate
         }
 
         array_splice($this->list, $index, 1);
+
+        // 3. Set attribute’s element to null.
+        $attribute->setOwnerElement(null);
+
+        // 4. Handle attribute changes for attribute with element, attribute’s value, and null.
+        $this->handleAttributeChanges($attribute, $element, $attribute->value, null);
     }
 
     /**
@@ -156,28 +122,7 @@ class AttributeList implements ArrayAccess, Countable, IteratorAggregate
      */
     public function replace(Attr $oldAttr, Attr $newAttr): void
     {
-        // TODO: Queue a mutation record of "attributes" for element with name
-        // oldAttr’s local name, namespace oldAttr’s namespace, and oldValue
-        // oldAttr’s value.
-
-        $oldAttrName = $oldAttr->getLocalName();
-        $oldAttrValue = $oldAttr->getValue();
-        $newAttrValue = $newAttr->getValue();
-        $oldAttrNamespace = $oldAttr->getNamespace();
-
-        foreach ($this->observers as $observer) {
-            $observer->onAttributeChanged(
-                $this->element,
-                $oldAttrName,
-                $oldAttrValue,
-                $newAttrValue,
-                $oldAttrNamespace
-            );
-        }
-
-        $oldAttr->setOwnerElement(null);
-        $newAttr->setOwnerElement($this->element);
-
+        // 1. Replace oldAttr by newAttr in oldAttr’s element’s attribute list.
         $index = array_search($oldAttr, $this->list, true);
 
         if ($index === false) {
@@ -185,8 +130,22 @@ class AttributeList implements ArrayAccess, Countable, IteratorAggregate
         }
 
         $this->list[$index] = $newAttr;
-        unset($this->cache[$oldAttrNamespace][$oldAttrName]);
-        $this->cache[$newAttr->getNamespace()][$newAttr->getLocalName()] = $newAttr;
+        unset($this->cache[$oldAttr->namespaceURI][$oldAttr->localName]);
+        $this->cache[$newAttr->namespaceURI][$newAttr->localName] = $newAttr;
+
+        // 2. Set newAttr’s element to oldAttr’s element.
+        $newAttr->setOwnerElement($oldAttr->getOwnerElement());
+
+        // 3. Set oldAttr’s element to null.
+        $oldAttr->setOwnerElement(null);
+
+        // 4. Handle attribute changes for oldAttr with newAttr’s element, oldAttr’s value, and newAttr’s value.
+        $this->handleAttributeChanges(
+            $oldAttr,
+            $newAttr->getOwnerElement(),
+            $oldAttr->getValue(),
+            $newAttr->getValue()
+        );
     }
 
     /**
@@ -359,16 +318,6 @@ class AttributeList implements ArrayAccess, Countable, IteratorAggregate
         return $attr;
     }
 
-    public function observe(AttributeChangeObserver $observer): void
-    {
-        $this->observers[spl_object_id($observer)] = $observer;
-    }
-
-    public function unobserve(AttributeChangeObserver $observer): void
-    {
-        unset($this->observers[spl_object_id($observer)]);
-    }
-
     public function contains(Attr $attr): bool
     {
         $namespace = $attr->getNamespace();
@@ -426,5 +375,33 @@ class AttributeList implements ArrayAccess, Countable, IteratorAggregate
         foreach ($this->list as $attr) {
             yield $attr;
         }
+    }
+
+    /**
+     * @see https://dom.spec.whatwg.org/#handle-attribute-changes
+     */
+    private function handleAttributeChanges(
+        Attr $attribute,
+        Element $element,
+        ?string $oldValue,
+        ?string $newValue
+    ): void {
+        // 1. Queue a mutation record of "attributes" for element with attribute’s local name, attribute’s namespace,
+        // oldValue, « », « », null, and null.
+
+        // 2. If element is custom, then enqueue a custom element callback reaction with element, callback name
+        // "attributeChangedCallback", and an argument list containing attribute’s local name, oldValue, newValue, and
+        // attribute’s namespace.
+
+        // 3. Run the attribute change steps with element, attribute’s local name, oldValue, newValue, and attribute’s
+        // namespace.
+        $event = new AttributeChangedEvent(
+            $element,
+            $attribute->localName,
+            $oldValue,
+            $newValue,
+            $attribute->namespaceURI
+        );
+        $this->dispatcher->dispatch($event, 'attribute.changed');
     }
 }
