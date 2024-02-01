@@ -7,6 +7,9 @@ namespace Rowbot\DOM\Element\HTML;
 use Rowbot\DOM\Document;
 use Rowbot\DOM\DOMTokenList;
 use Rowbot\DOM\DynamicProperty\Getter;
+use Rowbot\DOM\DynamicProperty\Setter;
+use Rowbot\DOM\Exception\TypeError;
+use Rowbot\DOM\Utils;
 
 /**
  * Represents the HTML <link> element.
@@ -40,54 +43,6 @@ class HTMLLinkElement extends HTMLElement
 
         $this->relList = null;
         $this->sizes = null;
-    }
-
-    public function __set(string $name, $value): void
-    {
-        switch ($name) {
-            case 'crossOrigin':
-                $this->attributeList->setAttrValue('crossorigin', (string) $value);
-
-                break;
-
-            case 'href':
-                $this->attributeList->setAttrValue($name, (string) $value);
-
-                break;
-
-            case 'hrefLang':
-                $this->attributeList->setAttrValue('hreflang', (string) $value);
-
-                break;
-
-            case 'media':
-                $this->attributeList->setAttrValue($name, (string) $value);
-
-                break;
-
-            case 'rel':
-                $this->attributeList->setAttrValue($name, (string) $value);
-
-                break;
-
-            case 'relList':
-                $this->getRelList()->value = (string) $value;
-
-                break;
-
-            case 'sizes':
-                $this->getSizes()->value = (string) $value;
-
-                break;
-
-            case 'type':
-                $this->attributeList->setAttrValue($name, (string) $value);
-
-                break;
-
-            default:
-                parent::__set($name, $value);
-        }
     }
 
     #[Getter('crossOrigin')]
@@ -141,6 +96,86 @@ class HTMLLinkElement extends HTMLElement
     private function getType(): string
     {
         return $this->reflectStringAttributeValue('type');
+    }
+
+    #[Setter('crossOrigin')]
+    private function setCrossOrigin(mixed $value): void
+    {
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
+        }
+
+        $this->attributeList->setAttrValue('crossorigin', (string) $value);
+    }
+
+    #[Setter('href')]
+    private function setHref(mixed $value): void
+    {
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
+        }
+
+        $this->attributeList->setAttrValue('href', (string) $value);
+    }
+
+    #[Setter('hrefLang')]
+    private function setHrefLang(mixed $value): void
+    {
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
+        }
+
+        $this->attributeList->setAttrValue('hrefLang', (string) $value);
+    }
+
+    #[Setter('media')]
+    private function setMedia(mixed $value): void
+    {
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
+        }
+
+        $this->attributeList->setAttrValue('media', (string) $value);
+    }
+
+    #[Setter('rel')]
+    private function setRel(mixed $value): void
+    {
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
+        }
+
+        $this->attributeList->setAttrValue('rel', (string) $value);
+    }
+
+    #[Setter('relList')]
+    private function setRelList(mixed $value): void
+    {
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
+        }
+
+        $this->getRelList()->value = (string) $value;
+    }
+
+    #[Setter('sizes')]
+    private function setSizes(mixed $value): void
+    {
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
+        }
+
+        $this->getSizes()->value = (string) $value;
+    }
+
+    #[Setter('type')]
+    private function setType(mixed $value): void
+    {
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
+        }
+
+        $this->attributeList->setAttrValue('type', (string) $value);
     }
 
     protected function __clone()

@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Element\HTML;
 
 use Rowbot\DOM\DynamicProperty\Getter;
+use Rowbot\DOM\DynamicProperty\Setter;
+use Rowbot\DOM\Exception\TypeError;
+use Rowbot\DOM\Utils;
 
 /**
  * Represents the HTML <style> element.
@@ -30,21 +33,23 @@ class HTMLStyleElement extends HTMLElement
         return $this->reflectStringAttributeValue('type');
     }
 
-    public function __set(string $name, $value): void
+    #[Setter('media')]
+    private function setMedia(mixed $value): void
     {
-        switch ($name) {
-            case 'media':
-                $this->attributeList->setAttrValue($name, (string) $value);
-
-                break;
-
-            case 'type':
-                $this->attributeList->setAttrValue($name, (string) $value);
-
-                break;
-
-            default:
-                parent::__set($name, $value);
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
         }
+
+        $this->attributeList->setAttrValue('media', (string) $value);
+    }
+
+    #[Setter('type')]
+    private function setType(mixed $value): void
+    {
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
+        }
+
+        $this->attributeList->setAttrValue('type', (string) $value);
     }
 }

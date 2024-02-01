@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Element\HTML;
 
-use Rowbot\DOM\DOMStringMap;
 use Rowbot\DOM\DynamicProperty\Getter;
+use Rowbot\DOM\DynamicProperty\Setter;
 use Rowbot\DOM\Element\Element;
+use Rowbot\DOM\Element\ElementContentEditable;
 use Rowbot\DOM\Element\HTMLOrSVGElement;
 use Rowbot\DOM\Exception\DOMException;
 use Rowbot\DOM\Exception\IndexSizeError;
-use Rowbot\DOM\Exception\SyntaxError;
+use Rowbot\DOM\Exception\TypeError;
 use Rowbot\DOM\Utils;
 use Rowbot\URL\String\Utf8String;
 
 use function assert;
 use function filter_var;
-use function in_array;
+use function is_bool;
 use function is_numeric;
-use function mb_strtolower;
 
 use const FILTER_VALIDATE_INT;
 
@@ -40,13 +40,10 @@ use const FILTER_VALIDATE_INT;
  */
 class HTMLElement extends Element
 {
+    use ElementContentEditable;
     use HTMLOrSVGElement;
 
     // state => array(keyword[, keyword, ...])
-    protected const CONTENT_EDITABLE_STATE_MAP = [
-        'true' => ['', 'true'],
-        'false' => ['false'],
-    ];
     protected const CORS_STATE_MAP = [
         'Anonymous' => ['', 'canonical' => 'anonymous'],
         'Use Credentials' => ['use-credentials'],
@@ -71,69 +68,6 @@ class HTMLElement extends Element
     protected const UNSIGNED_LONG = 3;
     protected const UNSIGNED_LONG_NON_NEGATIVE_GREATER_THAN_ZERO = 4;
     protected const UNSIGNED_LONG_NON_NEGATIVE_GREATER_THAN_ZERO_WITH_FALLBACK = 5;
-
-    public function __set(string $name, $value): void
-    {
-        switch ($name) {
-            case 'contentEditable':
-                $value = mb_strtolower((string) $value, 'utf-8');
-
-                if ($value === 'inherit') {
-                    $this->attributeList->removeAttrByNamespaceAndLocalName(null, 'contenteditable');
-                } elseif ($value === 'true' || $value === 'false') {
-                    $this->attributeList->setAttrValue('contenteditable', $value);
-                } else {
-                    throw new SyntaxError(
-                        'The value must be one of "true", "false", or "inherit".'
-                    );
-                }
-
-                break;
-
-            case 'dir':
-                $this->attributeList->setAttrValue($name, (string) $value);
-
-                break;
-
-            case 'draggable':
-                $this->attributeList->setAttrValue($name, (string) $value);
-
-                break;
-
-            case 'hidden':
-                $this->attributeList->setAttrValue($name, (string) $value);
-
-                break;
-
-            case 'lang':
-                $this->attributeList->setAttrValue($name, (string) $value);
-
-                break;
-
-            case 'spellcheck':
-                $this->attributeList->setAttrValue($name, ($value === true ? 'true' : 'false'));
-
-                break;
-
-            case 'tabIndex':
-                $this->attributeList->setAttrValue('tabindex', (string) $value);
-
-                break;
-
-            case 'title':
-                $this->attributeList->setAttrValue($name, (string) $value);
-
-                break;
-
-            case 'translate':
-                $this->attributeList->setAttrValue($name, ($value === true ? 'yes' : 'no'));
-
-                break;
-
-            default:
-                parent::__set($name, $value);
-        }
-    }
 
     /**
      * If the attribute is present, its value must either be the empty string or a value that is an
@@ -491,27 +425,6 @@ class HTMLElement extends Element
         return Utf8String::transcode($attr->getValue(), 'utf-8', 'utf-8');
     }
 
-    #[Getter('contentEditable')]
-    private function getContentEditable(): string
-    {
-        $state = $this->reflectEnumeratedStringAttributeValue(
-            'contenteditable',
-            'inherit',
-            'inherit',
-            self::CONTENT_EDITABLE_STATE_MAP
-        );
-
-        if ($state === 'true' || $state === '') {
-            return 'true';
-        }
-
-        if ($state === 'false') {
-            return 'false';
-        }
-
-        return 'inherit';
-    }
-
     #[Getter('dir')]
     private function getDir(): string
     {
@@ -540,25 +453,6 @@ class HTMLElement extends Element
     private function getHidden(): bool
     {
         return $this->reflectBooleanAttributeValue($name);
-    }
-
-    #[Getter('isContentEditable')]
-    private function isContentEditable(): bool
-    {
-        $state = null;
-        $node = $this;
-
-        do {
-            $state = $node->reflectEnumeratedStringAttributeValue(
-                'contenteditable',
-                'inherit',
-                'inherit',
-                self::CONTENT_EDITABLE_STATE_MAP
-            );
-            $node = $node->parentNode;
-        } while ($state === 'inherit' && $node instanceof self);
-
-        return in_array($state, self::CONTENT_EDITABLE_STATE_MAP['true'], true);
     }
 
     #[Getter('lang')]
@@ -622,5 +516,85 @@ class HTMLElement extends Element
         } while ($state === 'inherit' && $node instanceof self);
 
         return $state === 'no' ? false : true;
+    }
+
+    #[Setter('dir')]
+    private function setDir(mixed $value): void
+    {
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
+        }
+
+        $this->attributeList->setAttrValue('dir', (string) $value);
+    }
+
+    #[Setter('draggable')]
+    private function setDraggable(mixed $value): void
+    {
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
+        }
+
+        $this->attributeList->setAttrValue('draggable', (string) $value);
+    }
+
+    #[Setter('hidden')]
+    private function setHidden(mixed $value): void
+    {
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
+        }
+
+        $this->attributeList->setAttrValue('hidden', (string) $value);
+    }
+
+    #[Setter('lang')]
+    private function setLang(mixed $value): void
+    {
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
+        }
+
+        $this->attributeList->setAttrValue('lang', (string) $value);
+    }
+
+    #[Setter('spellcheck')]
+    private function setSpellcheck(mixed $value): void
+    {
+        if (!is_bool($value)) {
+            throw new TypeError();
+        }
+
+        $this->attributeList->setAttrValue('spellcheck', ($value === true ? 'true' : 'false'));
+    }
+
+    #[Setter('tabIndex')]
+    private function setTabIndex(mixed $value): void
+    {
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
+        }
+
+        $this->attributeList->setAttrValue('tabindex', (string) $value);
+    }
+
+    #[Setter('title')]
+    private function setTitle(mixed $value): void
+    {
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
+        }
+
+        $this->attributeList->setAttrValue('title', (string) $value);
+    }
+
+    #[Setter('translate')]
+    private function setTranslate(mixed $value): void
+    {
+        if (!is_bool($value)) {
+            throw new TypeError();
+        }
+
+        $this->attributeList->setAttrValue('translate', ($value === true ? 'yes' : 'no'));
     }
 }

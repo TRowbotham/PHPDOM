@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Element\HTML;
 
 use Rowbot\DOM\DynamicProperty\Getter;
+use Rowbot\DOM\DynamicProperty\Setter;
+use Rowbot\DOM\Exception\TypeError;
+use Rowbot\DOM\Utils;
 
 /**
  * @see https://html.spec.whatwg.org/multipage/embedded-content.html#the-img-element
@@ -17,14 +20,13 @@ class HTMLImageElement extends HTMLElement
         return $this->reflectUrlAttribute('src');
     }
 
-    public function __set(string $name, $value): void
+    #[Setter('src')]
+    private function setSrc(mixed $value): void
     {
-        if ($name === 'src') {
-            $this->attributeList->setAttrValue($name, (string) $value);
-
-            return;
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
         }
 
-        parent::__set($name, $value);
+        $this->attributeList->setAttrValue('src', (string) $value);
     }
 }

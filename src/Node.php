@@ -9,7 +9,10 @@ use ReflectionMethod;
 use ReflectionProperty;
 use Rowbot\DOM\DynamicProperty\Getter;
 use Rowbot\DOM\DynamicProperty\MethodGetter;
+use Rowbot\DOM\DynamicProperty\MethodSetter;
 use Rowbot\DOM\DynamicProperty\PropertyGetter;
+use Rowbot\DOM\DynamicProperty\PropertySetter;
+use Rowbot\DOM\DynamicProperty\Setter;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Exception\HierarchyRequestError;
 use Rowbot\DOM\Exception\NotFoundError;
@@ -113,6 +116,11 @@ abstract class Node
     private static array $getters = [];
 
     /**
+     * @var array<class-string<self>, non-empty-array<\Rowbot\DOM\DynamicProperty\DynamicPropertySetter>>
+     */
+    private static array $setters = [];
+
+    /**
      * @param self::*_NODE $nodeType
      */
     protected function __construct(Document $document, int $nodeType)
@@ -122,22 +130,6 @@ abstract class Node
         $this->nodeList = new LiveNodeList($this->childNodes_);
         $this->nodeType = $nodeType;
         $this->dispatcher = new EventDispatcher();
-    }
-
-    /**
-     * @param mixed $value
-     */
-    public function __set(string $name, $value): void
-    {
-        switch ($name) {
-            case 'nodeValue':
-                $this->setNodeValue($value === null ? $value : (string) $value);
-
-                break;
-
-            case 'textContent':
-                $this->setTextContent($value === null ? $value : (string) $value);
-        }
     }
 
     /**
@@ -229,7 +221,8 @@ abstract class Node
      *
      * @see https://dom.spec.whatwg.org/#dom-node-nodevalue
      */
-    abstract protected function setNodeValue(?string $value): void;
+    #[Setter('nodeValue')]
+    abstract protected function setNodeValue(mixed $value): void;
 
     /**
      * Gets the concatenation of all descendant text nodes.
@@ -248,6 +241,7 @@ abstract class Node
      *
      * @see https://dom.spec.whatwg.org/#dom-node-textcontent
      */
+    #[Setter('textContent')]
     abstract protected function setTextContent(?string $value): void;
 
     /**
@@ -1875,6 +1869,27 @@ abstract class Node
         }
     }
 
+    private function registerDynamicPropertySetters(ReflectionClass $reflection): void
+    {
+        $filter = ReflectionMethod::IS_PRIVATE | ReflectionMethod::IS_PROTECTED | ReflectionMethod::IS_PUBLIC;
+
+        foreach ($reflection->getMethods($filter) as $method) {
+            foreach ($method->getAttributes(Setter::class) as $attribute) {
+                $instance = $attribute->newInstance();
+                self::$setters[static::class][$instance->name] = new MethodSetter($method->getName());
+            }
+        }
+
+        $filter = ReflectionProperty::IS_PRIVATE | ReflectionProperty::IS_PROTECTED | ReflectionProperty::IS_PUBLIC;
+
+        foreach ($reflection->getProperties($filter) as $property) {
+            foreach ($property->getAttributes(Setter::class) as $attribute) {
+                $instance = $attribute->newInstance();
+                self::$setters[static::class][$instance->name] = new PropertySetter($property->getName());
+            }
+        }
+    }
+
     public function __get(string $name)
     {
         if (!isset(self::$getters[static::class])) {
@@ -1891,6 +1906,24 @@ abstract class Node
         }
 
         return self::$getters[static::class][$name]->getValue($this);
+    }
+
+    public function __set(string $name, mixed $value): void
+    {
+        if (!isset(self::$setters[static::class])) {
+            self::$setters[static::class] = [];
+            $reflection = new ReflectionClass($this);
+
+            do {
+                $this->registerDynamicPropertySetters($reflection);
+            } while (($reflection = $reflection->getParentClass()) !== false);
+        }
+
+        if (!isset(self::$setters[static::class][$name])) {
+            return;
+        }
+
+        self::$setters[static::class][$name]->setValue($this, $value);
     }
 
     protected function __clone()

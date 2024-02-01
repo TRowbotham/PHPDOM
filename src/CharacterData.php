@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Rowbot\DOM;
 
 use Rowbot\DOM\DynamicProperty\Getter;
+use Rowbot\DOM\DynamicProperty\Setter;
 use Rowbot\DOM\Exception\IndexSizeError;
+use Rowbot\DOM\Exception\TypeError;
 
 use function mb_strlen;
 use function mb_substr;
@@ -39,23 +41,6 @@ abstract class CharacterData extends Node implements ChildNode
         parent::__construct($document, $nodeType);
 
         $this->data = $data;
-    }
-
-    public function __set(string $name, $value): void
-    {
-        switch ($name) {
-            case 'data':
-                if ($value === null) {
-                    $value = '';
-                }
-
-                $this->doReplaceData(0, $this->getLength(), (string) $value);
-
-                break;
-
-            default:
-                parent::__set($name, $value);
-        }
     }
 
     /**
@@ -231,13 +216,18 @@ abstract class CharacterData extends Node implements ChildNode
         return $this->data;
     }
 
-    protected function setNodeValue(?string $value): void
+    #[Setter('data')]
+    protected function setNodeValue(mixed $value): void
     {
         if ($value === null) {
             $value = '';
         }
 
-        $this->doReplaceData(0, $this->getLength(), $value);
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
+        }
+
+        $this->doReplaceData(0, $this->getLength(), (string) $value);
     }
 
     protected function getTextContent(): string
@@ -245,12 +235,16 @@ abstract class CharacterData extends Node implements ChildNode
         return $this->data;
     }
 
-    protected function setTextContent(?string $value): void
+    protected function setTextContent(mixed $value): void
     {
         if ($value === null) {
             $value = '';
         }
 
-        $this->doReplaceData(0, $this->getLength(), $value);
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
+        }
+
+        $this->doReplaceData(0, $this->getLength(), (string) $value);
     }
 }

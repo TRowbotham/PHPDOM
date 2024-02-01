@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM;
 
 use Rowbot\DOM\DynamicProperty\Getter;
+use Rowbot\DOM\DynamicProperty\Setter;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Element\ElementFactory;
 use Rowbot\DOM\Element\HTML\HTMLBodyElement;
@@ -128,24 +129,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
         $this->readyState = DocumentReadyState::COMPLETE;
 
         $this->source = DocumentSource::NOT_FROM_PARSER;
-    }
-
-    public function __set(string $name, $value): void
-    {
-        switch ($name) {
-            case 'body':
-                $this->setBodyElement($value);
-
-                break;
-
-            case 'title':
-                $this->setTitle((string) $value);
-
-                break;
-
-            default:
-                parent::__set($name, $value);
-        }
     }
 
     /**
@@ -776,6 +759,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      *
      * @see https://html.spec.whatwg.org/multipage/dom.html#document.title
      */
+    #[Setter('title')]
     protected function setTitle(string $newTitle): void
     {
         $docElement = $this->getFirstElementChild();
@@ -868,6 +852,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      *
      * @param \Rowbot\DOM\Element\HTML\HTMLBodyElement|\Rowbot\DOM\Element\HTML\HTMLFrameSetElement $newBody
      */
+    #[Setter('body')]
     protected function setBodyElement(HTMLElement $newBody): void
     {
         // The document's body can only be a body or frameset element. If the
@@ -905,12 +890,12 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
         $docElement->appendChild($newBody);
     }
 
-    protected function setNodeValue(?string $value): void
+    protected function setNodeValue(mixed $value): void
     {
         // Do nothing.
     }
 
-    protected function setTextContent(?string $value): void
+    protected function setTextContent(mixed $value): void
     {
         // Do nothing.
     }

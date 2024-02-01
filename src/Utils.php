@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM;
 
+use Stringable;
+
+use function is_scalar;
 use function strtr;
 
 final class Utils
@@ -109,5 +112,13 @@ final class Utils
         }
 
         return $normalizedOffset;
+    }
+
+    /**
+     * @phpstan-assert-if-true scalar|\Stringable $value
+     */
+    public static function isStringable(mixed $value): bool
+    {
+        return $value instanceof Stringable || is_scalar($value);
     }
 }

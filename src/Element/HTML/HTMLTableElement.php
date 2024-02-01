@@ -8,6 +8,7 @@ use Closure;
 use Generator;
 use Rowbot\DOM\Document;
 use Rowbot\DOM\DynamicProperty\Getter;
+use Rowbot\DOM\DynamicProperty\Setter;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Element\ElementFactory;
 use Rowbot\DOM\Exception\HierarchyRequestError;
@@ -15,8 +16,6 @@ use Rowbot\DOM\Exception\IndexSizeError;
 use Rowbot\DOM\Exception\TypeError;
 use Rowbot\DOM\HTMLCollection;
 use Rowbot\DOM\Namespaces;
-
-use function strtolower;
 
 /**
  * Represents the HTML table element <table>.
@@ -160,132 +159,6 @@ class HTMLTableElement extends HTMLElement
         }
 
         return null;
-    }
-
-    public function __set(string $name, $value): void
-    {
-        switch ($name) {
-            case 'caption':
-                // On setting, the first caption element child of the table element, if any, must be
-                // removed, and the new value, if not null, must be inserted as the first node of
-                // the table element.
-                if ($value !== null && !$value instanceof HTMLTableCaptionElement) {
-                    throw new TypeError();
-                }
-
-                $node = $this->childNodes_->first();
-                $caption = null;
-
-                while ($node) {
-                    if ($node instanceof HTMLTableCaptionElement) {
-                        $caption = $node;
-
-                        break;
-                    }
-
-                    $node = $node->nextSibling;
-                }
-
-                if ($caption) {
-                    $caption->removeNode();
-                }
-
-                if ($value) {
-                    $this->preinsertNode($value, $this->childNodes_->first());
-                }
-
-                break;
-
-            case 'tFoot':
-                if ($value !== null && !$value instanceof HTMLTableSectionElement) {
-                    throw new TypeError();
-                }
-
-                // If the new value is neither null nor a tfoot element, then a
-                // "HierarchyRequestError" DOMException must be thrown instead.
-                if ($value && $value->localName !== 'tfoot') {
-                    throw new HierarchyRequestError();
-                }
-
-                // On setting, if the new value is null or a tfoot element, the first tfoot element
-                // child of the table element, if any, must be removed,
-                $node = $this->childNodes_->first();
-
-                while ($node) {
-                    if ($node instanceof HTMLTableSectionElement && $node->localName === 'tfoot') {
-                        $node->removeNode();
-
-                        break;
-                    }
-
-                    $node = $node->nextSibling;
-                }
-
-                // and the new value, if not null, must be inserted at the end of the table.
-                if (!$value) {
-                    return;
-                }
-
-                $this->preinsertNode($value);
-
-                break;
-
-            case 'tHead':
-                if ($value !== null && !$value instanceof HTMLTableSectionElement) {
-                    throw new TypeError();
-                }
-
-                // If the new value is neither null nor a thead element, then a
-                // "HierarchyRequestError" DOMException must be thrown instead.
-                if ($value && $value->localName !== 'thead') {
-                    throw new HierarchyRequestError();
-                }
-
-                // On setting, if the new value is null or a thead element, the first thead element
-                // child of the table element, if any, must be removed,
-                $node = $this->childNodes_->first();
-
-                while ($node) {
-                    if ($node instanceof HTMLTableSectionElement && $node->localName === 'thead') {
-                        $node->removeNode();
-
-                        break;
-                    }
-
-                    $node = $node->nextSibling;
-                }
-
-                // and the new value, if not null, must be inserted immediately before the first
-                // element in the table element that is neither a caption element nor a colgroup
-                // element, if any,
-                if (!$value) {
-                    return;
-                }
-
-                $node = $this->childNodes_->first();
-
-                while ($node) {
-                    if (
-                        $node instanceof Element
-                        && !$node instanceof HTMLTableColElement
-                        && !$node instanceof HTMLTableCaptionElement
-                    ) {
-                        $this->preinsertNode($value, $node);
-
-                        return;
-                    }
-
-                    $node = $node->nextSibling;
-                }
-
-                // or at the end of the table if there are no such elements.
-                $this->preinsertNode($value);
-
-                break;
-
-            default:
-                parent::__set($name, $value);
-        }
     }
 
     /**
@@ -681,5 +554,127 @@ class HTMLTableElement extends HTMLElement
                 }
             }
         };
+    }
+
+    /**
+     * On setting, the first caption element child of the table element, if any, must be removed, and the new value, if
+     * not null, must be inserted as the first node of the table element.
+     */
+    #[Setter('caption')]
+    private function setCaption(mixed $value): void
+    {
+        if ($value !== null && !$value instanceof HTMLTableCaptionElement) {
+            throw new TypeError();
+        }
+
+        $node = $this->childNodes_->first();
+        $caption = null;
+
+        while ($node) {
+            if ($node instanceof HTMLTableCaptionElement) {
+                $caption = $node;
+
+                break;
+            }
+
+            $node = $node->nextSibling;
+        }
+
+        if ($caption) {
+            $caption->removeNode();
+        }
+
+        if ($value) {
+            $this->preinsertNode($value, $this->childNodes_->first());
+        }
+    }
+
+    #[Setter('tFoot')]
+    private function setTFoot(mixed $value): void
+    {
+        if ($value !== null && !$value instanceof HTMLTableSectionElement) {
+            throw new TypeError();
+        }
+
+        // If the new value is neither null nor a tfoot element, then a
+        // "HierarchyRequestError" DOMException must be thrown instead.
+        if ($value && $value->localName !== 'tfoot') {
+            throw new HierarchyRequestError();
+        }
+
+        // On setting, if the new value is null or a tfoot element, the first tfoot element
+        // child of the table element, if any, must be removed,
+        $node = $this->childNodes_->first();
+
+        while ($node) {
+            if ($node instanceof HTMLTableSectionElement && $node->localName === 'tfoot') {
+                $node->removeNode();
+
+                break;
+            }
+
+            $node = $node->nextSibling;
+        }
+
+        // and the new value, if not null, must be inserted at the end of the table.
+        if (!$value) {
+            return;
+        }
+
+        $this->preinsertNode($value);
+    }
+
+    #[Setter('tHead')]
+    private function setTHead(mixed $value): void
+    {
+        if ($value !== null && !$value instanceof HTMLTableSectionElement) {
+            throw new TypeError();
+        }
+
+        // If the new value is neither null nor a thead element, then a
+        // "HierarchyRequestError" DOMException must be thrown instead.
+        if ($value && $value->localName !== 'thead') {
+            throw new HierarchyRequestError();
+        }
+
+        // On setting, if the new value is null or a thead element, the first thead element
+        // child of the table element, if any, must be removed,
+        $node = $this->childNodes_->first();
+
+        while ($node) {
+            if ($node instanceof HTMLTableSectionElement && $node->localName === 'thead') {
+                $node->removeNode();
+
+                break;
+            }
+
+            $node = $node->nextSibling;
+        }
+
+        // and the new value, if not null, must be inserted immediately before the first
+        // element in the table element that is neither a caption element nor a colgroup
+        // element, if any,
+        if (!$value) {
+            return;
+        }
+
+        $node = $this->childNodes_->first();
+
+        while ($node) {
+            if (
+                $node instanceof Element
+                && !$node instanceof HTMLTableColElement
+                && !$node instanceof HTMLTableCaptionElement
+            ) {
+                $this->preinsertNode($value, $node);
+
+                return;
+            }
+
+            $node = $node->nextSibling;
+        }
+
+        // or at the end of the table if there are no such elements.
+        $this->preinsertNode($value);
     }
 }

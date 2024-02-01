@@ -36,64 +36,6 @@ class HTMLAreaElement extends HTMLElement
         $this->setURL();
     }
 
-    public function __set(string $name, $value): void
-    {
-        switch ($name) {
-            case 'hash':
-                $this->setHash((string) $value);
-
-                break;
-
-            case 'host':
-                $this->setHost((string) $value);
-
-                break;
-
-            case 'hostname':
-                $this->setHostname((string) $value);
-
-                break;
-
-            case 'href':
-                $this->setHref((string) $value);
-
-                break;
-
-            case 'password':
-                $this->setPassword((string) $value);
-
-                break;
-
-            case 'pathname':
-                $this->setPathname((string) $value);
-
-                break;
-
-            case 'port':
-                $this->setPort((string) $value);
-
-                break;
-
-            case 'protocol':
-                $this->setProtocol((string) $value);
-
-                break;
-
-            case 'search':
-                $this->setSearch((string) $value);
-
-                break;
-
-            case 'username':
-                $this->setUsername((string) $value);
-
-                break;
-
-            default:
-                parent::__set($name, $value);
-        }
-    }
-
     protected function __clone()
     {
         parent::__clone();

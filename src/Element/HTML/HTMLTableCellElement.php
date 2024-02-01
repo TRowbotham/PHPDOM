@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Element\HTML;
 
 use Rowbot\DOM\DynamicProperty\Getter;
+use Rowbot\DOM\DynamicProperty\Setter;
 
 /**
  * Represents the HTML <td> and <th> elements respectively.
@@ -68,21 +69,15 @@ class HTMLTableCellElement extends HTMLElement
         return $this->reflectClampedUnsignedLongAttributeValue('rowspan', 0, 65534, 1);
     }
 
-    public function __set(string $name, $value): void
+    #[Setter('colSpan')]
+    private function setColSpan(mixed $value): void
     {
-        switch ($name) {
-            case 'colSpan':
-                $this->setLongAttributeValue('colspan', $value, self::UNSIGNED_LONG);
+        $this->setLongAttributeValue('colspan', $value, self::UNSIGNED_LONG);
+    }
 
-                break;
-
-            case 'rowSpan':
-                $this->setLongAttributeValue('rowspan', $value, self::UNSIGNED_LONG);
-
-                break;
-
-            default:
-                parent::__set($name, $value);
-        }
+    #[Setter('rowSpan')]
+    private function setRowSpan(mixed $value): void
+    {
+        $this->setLongAttributeValue('rowspan', $value, self::UNSIGNED_LONG);
     }
 }

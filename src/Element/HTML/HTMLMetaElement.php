@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Element\HTML;
 
 use Rowbot\DOM\DynamicProperty\Getter;
+use Rowbot\DOM\DynamicProperty\Setter;
+use Rowbot\DOM\Exception\TypeError;
+use Rowbot\DOM\Utils;
 
 /**
  * Represents the HTML <meta> element.
@@ -36,26 +39,33 @@ class HTMLMetaElement extends HTMLElement
         return $this->reflectStringAttributeValue('name');
     }
 
-    public function __set(string $name, $value): void
+    #[Setter('content')]
+    private function setContent(mixed $value): void
     {
-        switch ($name) {
-            case 'content':
-                $this->attributeList->setAttrValue($name, (string) $value);
-
-                break;
-
-            case 'httpEquiv':
-                $this->attributeList->setAttrValue('http-equiv', (string) $value);
-
-                break;
-
-            case 'name':
-                $this->attributeList->setAttrValue($name, (string) $value);
-
-                break;
-
-            default:
-                parent::__set($name, $value);
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
         }
+
+        $this->attributeList->setAttrValue('content', (string) $value);
+    }
+
+    #[Setter('http-equiv')]
+    private function setHttpEquiv(mixed $value): void
+    {
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
+        }
+
+        $this->attributeList->setAttrValue('http-equiv', (string) $value);
+    }
+
+    #[Setter('name')]
+    private function setName(mixed $value): void
+    {
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
+        }
+
+        $this->attributeList->setAttrValue('name', (string) $value);
     }
 }

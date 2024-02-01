@@ -13,11 +13,13 @@ use Rowbot\DOM\Document;
 use Rowbot\DOM\DocumentFragment;
 use Rowbot\DOM\DOMTokenList;
 use Rowbot\DOM\DynamicProperty\Getter;
+use Rowbot\DOM\DynamicProperty\Setter;
 use Rowbot\DOM\Element\HTML\HTMLTemplateElement;
 use Rowbot\DOM\Exception\InvalidCharacterError;
 use Rowbot\DOM\Exception\NoModificationAllowedError;
 use Rowbot\DOM\Exception\NotFoundError;
 use Rowbot\DOM\Exception\SyntaxError;
+use Rowbot\DOM\Exception\TypeError;
 use Rowbot\DOM\GetElementsBy;
 use Rowbot\DOM\InternalEvent\AttributeChangedEvent;
 use Rowbot\DOM\NamedNodeMap;
@@ -90,94 +92,6 @@ class Element extends Node implements ChildNode, ParentNode
         $this->namespaceURI = $namespace;
         $this->prefix = $prefix;
         $this->classList_ = null;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function __set(string $name, $value): void
-    {
-        switch ($name) {
-            case 'classList':
-                $this->getClassList()->value = (string) $value;
-
-                break;
-
-            case 'className':
-                $this->attributeList->setAttrValue('class', (string) $value);
-
-                break;
-
-            case 'id':
-                $this->attributeList->setAttrValue($name, (string) $value);
-
-                break;
-
-            case 'innerHTML':
-                // https://w3c.github.io/DOM-Parsing/#the-innerhtml-mixin
-                if ($value === null) {
-                    $value = '';
-                }
-
-                // 2. Let fragment be the result of invoking the fragment parsing algorithm with the
-                // new value as markup, and with context element.
-                $fragment = ParserFactory::parseFragment((string) $value, $this);
-
-                // 3. If the context object is a template element, then let context object be the
-                // template's template contents (a DocumentFragment).
-                $context = $this instanceof HTMLTemplateElement ? $this->content : $this;
-
-                // NOTE: Setting innerHTML on a template element will replace all the nodes in its
-                // template contents (template.content) rather than its children.
-
-                // 4. Replace all with fragment within the context object.
-                $context->replaceAllNodes($fragment);
-
-                break;
-
-            case 'outerHTML':
-                if ($value === null) {
-                    $value = '';
-                }
-
-                // Let parent be the context object's parent.
-                $parent = $this->parentNode;
-
-                // If parent is null, terminate these steps. There would be no
-                // way to obtain a reference to the nodes created even if the
-                // remaining steps were run.
-                if (!$parent) {
-                    return;
-                }
-
-                // If parent is a Document, throw a
-                // "NoModificationAllowedError" DOMException.
-                if ($parent instanceof Document) {
-                    throw new NoModificationAllowedError();
-                }
-
-                // If parent is a DocumentFragment, let parent be a new Element
-                // with body as its local name, the HTML namespace as its
-                // namespace, and the context object's node document as its node
-                // document.
-                if ($parent instanceof DocumentFragment) {
-                    $parent = ElementFactory::create($this->nodeDocument, 'body', Namespaces::HTML);
-                }
-
-                // Let fragment be the result of invoking the fragment parsing
-                // algorithm with the new value as markup, and parent as the
-                // context element.
-                $fragment = ParserFactory::parseFragment((string) $value, $parent);
-
-                // Replace the context object with fragment within the context
-                // object's parent.
-                $this->parentNode->replaceNode($fragment, $this);
-
-                break;
-
-            default:
-                parent::__set($name, $value);
-        }
     }
 
     /**
@@ -801,21 +715,25 @@ class Element extends Node implements ChildNode, ParentNode
         return $data;
     }
 
-    protected function setNodeValue(?string $value): void
+    protected function setNodeValue(mixed $value): void
     {
         // Do nothing.
     }
 
-    protected function setTextContent(?string $value): void
+    protected function setTextContent(mixed $value): void
     {
         if ($value === null) {
             $value = '';
         }
 
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
+        }
+
         $node = null;
 
         if ($value !== '') {
-            $node = new Text($this->nodeDocument, $value);
+            $node = new Text($this->nodeDocument, (string) $value);
         }
 
         $this->replaceAllNodes($node);
@@ -861,6 +779,110 @@ class Element extends Node implements ChildNode, ParentNode
         $fakeNode->childNodes_->append($this);
 
         return MarkupFactory::serializeFragment($fakeNode, true);
+    }
+
+    #[Setter('classList')]
+    private function setClassList(mixed $value): void
+    {
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
+        }
+
+        $this->getClassList()->value = (string) $value;
+    }
+
+    #[Setter('className')]
+    private function setClassName(mixed $value): void
+    {
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
+        }
+
+        $this->attributeList->setAttrValue('class', (string) $value);
+    }
+
+    #[Setter('id')]
+    private function setId(mixed $value): void
+    {
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
+        }
+
+        $this->attributeList->setAttrValue('id', (string) $value);
+    }
+
+    /**
+     * @see https://w3c.github.io/DOM-Parsing/#the-innerhtml-mixin
+     */
+    #[Setter('innerHTML')]
+    private function setInnerHTML(mixed $value): void
+    {
+        if ($value === null) {
+            $value = '';
+        }
+
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
+        }
+
+        // 2. Let fragment be the result of invoking the fragment parsing algorithm with the
+        // new value as markup, and with context element.
+        $fragment = ParserFactory::parseFragment((string) $value, $this);
+
+        // 3. If the context object is a template element, then let context object be the
+        // template's template contents (a DocumentFragment).
+        $context = $this instanceof HTMLTemplateElement ? $this->content : $this;
+
+        // NOTE: Setting innerHTML on a template element will replace all the nodes in its
+        // template contents (template.content) rather than its children.
+
+        // 4. Replace all with fragment within the context object.
+        $context->replaceAllNodes($fragment);
+    }
+
+    #[Setter('outerHTML')]
+    private function setOuterHTML(mixed $value): void
+    {
+        if ($value === null) {
+            $value = '';
+        }
+
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
+        }
+
+        // Let parent be the context object's parent.
+        $parent = $this->parentNode;
+
+        // If parent is null, terminate these steps. There would be no
+        // way to obtain a reference to the nodes created even if the
+        // remaining steps were run.
+        if (!$parent) {
+            return;
+        }
+
+        // If parent is a Document, throw a
+        // "NoModificationAllowedError" DOMException.
+        if ($parent instanceof Document) {
+            throw new NoModificationAllowedError();
+        }
+
+        // If parent is a DocumentFragment, let parent be a new Element
+        // with body as its local name, the HTML namespace as its
+        // namespace, and the context object's node document as its node
+        // document.
+        if ($parent instanceof DocumentFragment) {
+            $parent = ElementFactory::create($this->nodeDocument, 'body', Namespaces::HTML);
+        }
+
+        // Let fragment be the result of invoking the fragment parsing
+        // algorithm with the new value as markup, and parent as the
+        // context element.
+        $fragment = ParserFactory::parseFragment((string) $value, $parent);
+
+        // Replace the context object with fragment within the context
+        // object's parent.
+        $this->parentNode->replaceNode($fragment, $this);
     }
 
     protected function __clone()

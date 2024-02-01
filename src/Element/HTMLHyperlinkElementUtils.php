@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Element;
 
 use Rowbot\DOM\DynamicProperty\Getter;
+use Rowbot\DOM\DynamicProperty\Setter;
+use Rowbot\DOM\Exception\TypeError;
 use Rowbot\DOM\InternalEvent\AttributeChangedEvent;
+use Rowbot\DOM\Utils;
 use Rowbot\URL\BasicURLParser;
 use Rowbot\URL\Component\PathList;
 use Rowbot\URL\State\FragmentState;
@@ -73,9 +76,14 @@ trait HTMLHyperlinkElementUtils
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#dom-hyperlink-href
      */
+    #[Setter('href')]
     protected function setHref(string $value): void
     {
-        $this->attributeList->setAttrValue('href', $value);
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
+        }
+
+        $this->attributeList->setAttrValue('href', (string) $value);
     }
 
     /**
@@ -130,8 +138,13 @@ trait HTMLHyperlinkElementUtils
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#dom-hyperlink-protocol
      */
-    protected function setProtocol(string $value): void
+    #[Setter('protocol')]
+    protected function setProtocol(mixed $value): void
     {
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
+        }
+
         // 1. Reinitialize url.
         $this->reinitialiseUrl();
 
@@ -178,8 +191,13 @@ trait HTMLHyperlinkElementUtils
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#dom-hyperlink-username
      */
-    protected function setUsername(string $value): void
+    #[Setter('username')]
+    protected function setUsername(mixed $value): void
     {
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
+        }
+
         // 1. Reinitialize url.
         $this->reinitialiseUrl();
 
@@ -223,8 +241,13 @@ trait HTMLHyperlinkElementUtils
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#dom-hyperlink-password
      */
-    protected function setPassword(string $value): void
+    #[Setter('password')]
+    protected function setPassword(mixed $value): void
     {
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
+        }
+
         // 1. Reinitialize url.
         $this->reinitialiseUrl();
 
@@ -275,8 +298,13 @@ trait HTMLHyperlinkElementUtils
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#dom-hyperlink-host
      */
-    protected function setHost(string $value): void
+    #[Setter('host')]
+    protected function setHost(mixed $value): void
     {
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
+        }
+
         // 1. Reinitialize url.
         $this->reinitialiseUrl();
 
@@ -321,8 +349,13 @@ trait HTMLHyperlinkElementUtils
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#dom-hyperlink-hostname
      */
-    protected function setHostname(string $value): void
+    #[Setter('hostname')]
+    protected function setHostname(mixed $value): void
     {
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
+        }
+
         // 1. Reinitialize url.
         $this->reinitialiseUrl();
 
@@ -367,8 +400,13 @@ trait HTMLHyperlinkElementUtils
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#dom-hyperlink-port
      */
-    protected function setPort(string $value): void
+    #[Setter('port')]
+    protected function setPort(mixed $value): void
     {
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
+        }
+
         // 1. Reinitialize url.
         $this->reinitialiseUrl();
 
@@ -433,8 +471,13 @@ trait HTMLHyperlinkElementUtils
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#dom-hyperlink-pathname
      */
-    protected function setPathname(string $value): void
+    #[Setter('pathname')]
+    protected function setPathname(mixed $value): void
     {
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
+        }
+
         // 1. Reinitialize url.
         $this->reinitialiseUrl();
 
@@ -484,8 +527,13 @@ trait HTMLHyperlinkElementUtils
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#dom-hyperlink-search
      */
-    protected function setSearch(string $value): void
+    #[Setter('search')]
+    protected function setSearch(mixed $value): void
     {
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
+        }
+
         // 1. Reinitialize url.
         $this->reinitialiseUrl();
 
@@ -555,8 +603,13 @@ trait HTMLHyperlinkElementUtils
      *
      * @see https://html.spec.whatwg.org/multipage/semantics.html#dom-hyperlink-hash
      */
-    protected function setHash(string $value): void
+    #[Setter('hash')]
+    protected function setHash(mixed $value): void
     {
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
+        }
+
         // 1. Reinitialize url.
         $this->reinitialiseUrl();
 

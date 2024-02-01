@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Element\HTML;
 
 use Rowbot\DOM\DynamicProperty\Getter;
+use Rowbot\DOM\DynamicProperty\Setter;
 use Rowbot\DOM\Text;
 
 class HTMLTitleElement extends HTMLElement
@@ -23,16 +24,9 @@ class HTMLTitleElement extends HTMLElement
         return $value;
     }
 
-    public function __set(string $name, $value): void
+    #[Setter('text')]
+    private function setText(mixed $value): void
     {
-        switch ($name) {
-            case 'text':
-                parent::__set('textContent', $value);
-
-                break;
-
-            default:
-                parent::__set($name, $value);
-        }
+        $this->setTextContent($value);
     }
 }

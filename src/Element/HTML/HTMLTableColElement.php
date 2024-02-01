@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Element\HTML;
 
 use Rowbot\DOM\DynamicProperty\Getter;
+use Rowbot\DOM\DynamicProperty\Setter;
 
 /**
  * @see https://html.spec.whatwg.org/multipage/tables.html#the-colgroup-element
@@ -18,16 +19,9 @@ class HTMLTableColElement extends HTMLElement
         return $this->reflectClampedUnsignedLongAttributeValue('span', 1, 1000, 1);
     }
 
-    public function __set(string $name, $value): void
+    #[Setter('span')]
+    private function setSpan(mixed $value): void
     {
-        switch ($name) {
-            case 'span':
-                $this->setLongAttributeValue('span', $value, self::UNSIGNED_LONG);
-
-                break;
-
-            default:
-                parent::__set($name, $value);
-        }
+        $this->setLongAttributeValue('span', $value, self::UNSIGNED_LONG);
     }
 }

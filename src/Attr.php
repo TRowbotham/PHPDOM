@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Rowbot\DOM;
 
 use Rowbot\DOM\DynamicProperty\Getter;
+use Rowbot\DOM\DynamicProperty\Setter;
 use Rowbot\DOM\Element\Element;
+use Rowbot\DOM\Exception\TypeError;
 
 /**
  * Represents a content attribute on an Element.
@@ -49,19 +51,6 @@ class Attr extends Node
             null    => $this->localName,
             default => $this->prefix . ':' . $this->localName,
         };
-    }
-
-    public function __set(string $name, $value): void
-    {
-        switch ($name) {
-            case 'value':
-                $this->setExistingAttributeValue((string) $value);
-
-                break;
-
-            default:
-                parent::__set($name, $value);
-        }
     }
 
     public function isEqualNode(?Node $otherNode): bool
@@ -155,15 +144,20 @@ class Attr extends Node
      *
      * @see https://dom.spec.whatwg.org/#set-an-existing-attribute-value
      */
-    protected function setExistingAttributeValue(string $value): void
+    #[Setter('value')]
+    protected function setExistingAttributeValue(mixed $value): void
     {
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
+        }
+
         if (!$this->ownerElement) {
             $this->value = $value;
 
             return;
         }
 
-        $this->ownerElement->getAttributeList()->change($this, $value);
+        $this->ownerElement->getAttributeList()->change($this, (string) $value);
     }
 
     #[Getter('name')]
@@ -187,7 +181,7 @@ class Attr extends Node
         return $this->value;
     }
 
-    protected function setNodeValue(?string $value): void
+    protected function setNodeValue(mixed $value): void
     {
         if ($value === null) {
             $value = '';
@@ -201,7 +195,7 @@ class Attr extends Node
         return $this->value;
     }
 
-    protected function setTextContent(?string $value): void
+    protected function setTextContent(mixed $value): void
     {
         if ($value === null) {
             $value = '';

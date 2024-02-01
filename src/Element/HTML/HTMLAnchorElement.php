@@ -7,7 +7,10 @@ namespace Rowbot\DOM\Element\HTML;
 use Rowbot\DOM\Document;
 use Rowbot\DOM\DOMTokenList;
 use Rowbot\DOM\DynamicProperty\Getter;
+use Rowbot\DOM\DynamicProperty\Setter;
 use Rowbot\DOM\Element\HTMLHyperlinkElementUtils;
+use Rowbot\DOM\Exception\TypeError;
+use Rowbot\DOM\Utils;
 
 /**
  * Represents the HTML anchor element <a>.
@@ -58,104 +61,6 @@ class HTMLAnchorElement extends HTMLElement
         $this->setURL();
     }
 
-    public function __set(string $name, $value): void
-    {
-        switch ($name) {
-            case 'download':
-                $this->attributeList->setAttrValue($name, (string) $value);
-
-                break;
-
-            case 'hash':
-                $this->setHash((string) $value);
-
-                break;
-
-            case 'host':
-                $this->setHost((string) $value);
-
-                break;
-
-            case 'hostname':
-                $this->setHostname((string) $value);
-
-                break;
-
-            case 'href':
-                $this->setHref((string) $value);
-
-                break;
-
-            case 'hrefLang':
-                $this->attributeList->setAttrValue($name, (string) $value);
-
-                break;
-
-            case 'password':
-                $this->setPassword((string) $value);
-
-                break;
-
-            case 'pathname':
-                $this->setPathname((string) $value);
-
-                break;
-
-            case 'ping':
-                $this->attributeList->setAttrValue($name, (string) $value);
-
-                break;
-
-            case 'port':
-                $this->setPort((string) $value);
-
-                break;
-
-            case 'protocol':
-                $this->setProtocol((string) $value);
-
-                break;
-
-            case 'rel':
-                $this->attributeList->setAttrValue($name, (string) $value);
-
-                break;
-
-            case 'relList':
-                $this->getRelList()->value = (string) $value;
-
-                break;
-
-            case 'search':
-                $this->setSearch((string) $value);
-
-                break;
-
-            case 'target':
-                $this->attributeList->setAttrValue($name, (string) $value);
-
-                break;
-
-            case 'text':
-                $this->setTextContent((string) $value);
-
-                break;
-
-            case 'type':
-                $this->attributeList->setAttrValue($name, (string) $value);
-
-                break;
-
-            case 'username':
-                $this->setUsername((string) $value);
-
-                break;
-
-            default:
-                parent::__set($name, $value);
-        }
-    }
-
     #[Getter('download')]
     private function getDownload(): string
     {
@@ -198,6 +103,78 @@ class HTMLAnchorElement extends HTMLElement
         return $this->reflectStringAttributeValue('type');
     }
 
+    #[Getter('relList')]
+    private function getRelList(): DOMTokenList
+    {
+        return $this->relList ??= new DOMTokenList($this, $this->dispatcher, 'rel');
+    }
+
+    #[Setter('hrefLang')]
+    private function setHrefLang(mixed $value): void
+    {
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
+        }
+
+        $this->attributeList->setAttrValue('hrefLang', (string) $value);
+    }
+
+    #[Setter('ping')]
+    private function setPing(mixed $value): void
+    {
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
+        }
+
+        $this->attributeList->setAttrValue('ping', (string) $value);
+    }
+
+    #[Setter('rel')]
+    private function setRel(mixed $value): void
+    {
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
+        }
+
+        $this->attributeList->setAttrValue('rel', (string) $value);
+    }
+
+    #[Setter('relList')]
+    private function setRelList(mixed $value): void
+    {
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
+        }
+
+        $this->getRelList()->value = (string) $value;
+    }
+
+    #[Setter('target')]
+    private function setTarget(mixed $value): void
+    {
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
+        }
+
+        $this->attributeList->setAttrValue('target', (string) $value);
+    }
+
+    #[Setter('text')]
+    private function setText(mixed $value): void
+    {
+        $this->setTextContent($value);
+    }
+
+    #[Setter('type')]
+    private function setType(mixed $value): void
+    {
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
+        }
+
+        $this->attributeList->setAttrValue('type', (string) $value);
+    }
+
     protected function __clone()
     {
         parent::__clone();
@@ -207,11 +184,5 @@ class HTMLAnchorElement extends HTMLElement
         if ($this->url !== null) {
             $this->url = clone $this->url;
         }
-    }
-
-    #[Getter('relList')]
-    private function getRelList(): DOMTokenList
-    {
-        return $this->relList ??= new DOMTokenList($this, $this->dispatcher, 'rel');
     }
 }

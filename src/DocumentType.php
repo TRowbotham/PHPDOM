@@ -63,12 +63,12 @@ class DocumentType extends Node implements ChildNode
         return null;
     }
 
-    protected function setNodeValue(?string $value): void
+    protected function setNodeValue(mixed $value): void
     {
         // Do nothing.
     }
 
-    protected function setTextContent(?string $value): void
+    protected function setTextContent(mixed $value): void
     {
         // Do nothing.
     }

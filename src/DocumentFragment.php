@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM;
 
 use Rowbot\DOM\Element\Element;
+use Rowbot\DOM\Exception\TypeError;
 
 use function count;
 
@@ -95,21 +96,25 @@ class DocumentFragment extends Node implements NonElementParentNode, ParentNode
         return $data;
     }
 
-    protected function setNodeValue(?string $value): void
+    protected function setNodeValue(mixed $value): void
     {
         // Do nothing.
     }
 
-    protected function setTextContent(?string $value): void
+    protected function setTextContent(mixed $value): void
     {
         if ($value === null) {
             $value = '';
         }
 
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
+        }
+
         $node = null;
 
         if ($value !== '') {
-            $node = new Text($this->nodeDocument, $value);
+            $node = new Text($this->nodeDocument, (string) $value);
         }
 
         $this->replaceAllNodes($node);

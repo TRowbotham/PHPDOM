@@ -6,10 +6,13 @@ namespace Rowbot\DOM\Element\HTML;
 
 use Rowbot\DOM\Document;
 use Rowbot\DOM\DynamicProperty\Getter;
+use Rowbot\DOM\DynamicProperty\Setter;
+use Rowbot\DOM\Exception\TypeError;
 use Rowbot\DOM\InternalEvent\AttributeChangedEvent;
 use Rowbot\DOM\InternalEvent\NodeInsertedEvent;
 use Rowbot\DOM\InternalEvent\NodeRemovedEvent;
 use Rowbot\DOM\URL\URLParser;
+use Rowbot\DOM\Utils;
 use Rowbot\URL\URLRecord;
 
 use function assert;
@@ -32,20 +35,6 @@ class HTMLBaseElement extends HTMLElement
         $this->dispatcher->addListener('node.inserted', $this->onInsert(...));
         $this->dispatcher->addListener('node.removed', $this->onRemove(...));
         $this->dispatcher->addListener('attribute.changed', $this->onTargetOrHrefAttributeChanged(...));
-    }
-
-    public function __set(string $name, $value): void
-    {
-        switch ($name) {
-            case 'href':
-            case 'target':
-                $this->attributeList->setAttrValue($name, (string) $value);
-
-                break;
-
-            default:
-                parent::__set($name, $value);
-        }
     }
 
     /**
@@ -169,6 +158,26 @@ class HTMLBaseElement extends HTMLElement
     private function getTarget(): string
     {
         return $this->attributeList->getAttrValue('target', null);
+    }
+
+    #[Setter('href')]
+    private function setHref(mixed $value): void
+    {
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
+        }
+
+        $this->attributeList->setAttrValue('href', (string) $value);
+    }
+
+    #[Setter('target')]
+    private function setTarget(mixed $value): void
+    {
+        if (!Utils::isStringable($value)) {
+            throw new TypeError();
+        }
+
+        $this->attributeList->setAttrValue('target', (string) $value);
     }
 
     protected function __clone()
