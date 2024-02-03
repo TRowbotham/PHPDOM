@@ -12,10 +12,8 @@ namespace Rowbot\DOM;
  * @property-read \Rowbot\DOM\Node                     $referenceNode
  * @property-read bool                                 $pointerBeforeReferenceNode
  */
-final class NodeIterator
+final class NodeIterator extends NodeTraverser
 {
-    use NodeFilterTrait;
-
     private NodeIteratorContext $context;
 
     /**
@@ -24,10 +22,10 @@ final class NodeIterator
      */
     public function __construct(Node $root, int $whatToShow = NodeFilter::SHOW_ALL, mixed $filter = null)
     {
+        parent::__construct($whatToShow, $filter);
+
         $this->context = new NodeIteratorContext($root);
         $this->context->observeSelf();
-        $this->setFilter($filter);
-        $this->whatToShow = $whatToShow;
     }
 
     /**

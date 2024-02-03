@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Rowbot\DOM;
 
 use Rowbot\DOM\Exception\InvalidStateError;
+use Rowbot\DOM\Exception\TypeError;
 use Throwable;
-use TypeError;
 
 use function is_callable;
 
-trait NodeFilterTrait
+abstract class NodeTraverser
 {
     /**
      * @var \Rowbot\DOM\NodeFilter|callable|null
@@ -22,71 +22,68 @@ trait NodeFilterTrait
      */
     public readonly int $whatToShow;
 
-    private bool $isActive = false;
+    private bool $isActive;
 
     /**
+     * @param \Rowbot\DOM\NodeFilter::SHOW_*       $whatToShow
      * @param \Rowbot\DOM\NodeFilter|callable|null $filter
      */
-    private function setFilter($filter): void
+    public function __construct(int $whatToShow, mixed $filter)
     {
         if ($filter !== null && !$filter instanceof NodeFilter && !is_callable($filter)) {
             throw new TypeError();
         }
 
+        $this->whatToShow = $whatToShow;
+        $this->isActive = false;
         $this->filter = $filter;
     }
 
     /**
-     * Filters a node.
-     *
-     * @internal
-     *
      * @see https://dom.spec.whatwg.org/#concept-node-filter
-     *
-     * @param \Rowbot\DOM\Node $node The node to check.
      *
      * @return \Rowbot\DOM\NodeFilter::FILTER_*
      *
      * @throws \Rowbot\DOM\Exception\InvalidStateError
      */
-    private function filterNode(Node $node): int
+    protected function filterNode(Node $node): int
     {
+        // 1. If traverser’s active flag is set, then throw an "InvalidStateError" DOMException.
         if ($this->isActive) {
             throw new InvalidStateError();
         }
 
-        // Let n be node’s nodeType attribute value minus 1.
+        // 2. Let n be node’s nodeType attribute value − 1.
         $n = $node->nodeType - 1;
 
-        // If the nth bit (where 0 is the least significant bit) of whatToShow
-        // is not set, return FILTER_SKIP.
+        // 3. If the nth bit (where 0 is the least significant bit) of traverser’s whatToShow is not set, then return
+        // FILTER_SKIP.
         if (!((1 << $n) & $this->whatToShow)) {
             return NodeFilter::FILTER_SKIP;
         }
 
-        // If filter is null, return FILTER_ACCEPT.
-        if (!$this->filter) {
+        // 4. If traverser’s filter is null, then return FILTER_ACCEPT.
+        if ($this->filter === null) {
             return NodeFilter::FILTER_ACCEPT;
         }
 
+        // 5. Set traverser’s active flag.
         $this->isActive = true;
 
+        // 6. Let result be the return value of call a user object’s operation with traverser’s filter, "acceptNode",
+        // and « node ». If this throws an exception, then unset traverser’s active flag and rethrow the exception.
+        // 7. Unset traverser’s active flag.
         try {
-            // Let $result be the return value of call a user object's operation
-            // with traverser's filter, "acceptNode", and Node. If this throws
-            // an exception, then unset traverser's active flag and rethrow the
-            // exception.
             $result = $this->filter instanceof NodeFilter
                 ? $this->filter->acceptNode($node)
                 : ($this->filter)($node);
         } catch (Throwable $e) {
-            $this->isActive = false;
-
             throw $e;
+        } finally {
+            $this->isActive = false;
         }
 
-        $this->isActive = false;
-
+        // 8. Return result.
         return $result;
     }
 }

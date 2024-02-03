@@ -10,10 +10,8 @@ namespace Rowbot\DOM;
  *
  * @property \Rowbot\DOM\Node $currentNode
  */
-final class TreeWalker
+final class TreeWalker extends NodeTraverser
 {
-    use NodeFilterTrait;
-
     public Node $currentNode;
 
     public readonly Node $root;
@@ -27,10 +25,10 @@ final class TreeWalker
         int $whatToShow = NodeFilter::SHOW_ALL,
         mixed $filter = null
     ) {
+        parent::__construct($whatToShow, $filter);
+
         $this->currentNode = $root;
-        $this->setFilter($filter);
         $this->root = $root;
-        $this->whatToShow = $whatToShow;
     }
 
     /**
