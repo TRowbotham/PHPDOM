@@ -452,7 +452,7 @@ class HTMLElement extends Element
     #[Getter('hidden')]
     private function getHidden(): bool
     {
-        return $this->reflectBooleanAttributeValue($name);
+        return $this->reflectBooleanAttributeValue('hidden');
     }
 
     #[Getter('lang')]

@@ -111,12 +111,12 @@ abstract class Node
     protected $previousSibling;
 
     /**
-     * @var array<class-string<self>, non-empty-array<\Rowbot\DOM\DynamicProperty\DynamicPropertyGetter>>
+     * @var array<class-string<self>, array<string, \Rowbot\DOM\DynamicProperty\DynamicPropertyGetter>>
      */
     private static array $getters = [];
 
     /**
-     * @var array<class-string<self>, non-empty-array<\Rowbot\DOM\DynamicProperty\DynamicPropertySetter>>
+     * @var array<class-string<self>, array<string, \Rowbot\DOM\DynamicProperty\DynamicPropertySetter>>
      */
     private static array $setters = [];
 

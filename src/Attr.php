@@ -27,6 +27,8 @@ class Attr extends Node
 
     public readonly string $localName;
 
+    public readonly string $name;
+
     #[Getter('value')]
     private string $value;
 
