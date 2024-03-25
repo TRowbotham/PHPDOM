@@ -33,6 +33,36 @@ abstract class CharacterData extends Node implements ChildNode
     use ChildNodeTrait;
     use NonDocumentTypeChildNode;
 
+    public ?string $nodeValue {
+        get => $this->data;
+        set {
+            if ($value === null) {
+                $value = '';
+            }
+
+            if (!Utils::isStringable($value)) {
+                throw new TypeError();
+            }
+
+            $this->doReplaceData(0, $this->getLength(), (string) $value);
+        }
+    }
+
+    public ?string $textContent {
+        get => $this->data;
+        set(float|int|string|null $value) {
+            if ($value === null) {
+                $value = '';
+            }
+
+            if (!Utils::isStringable($value)) {
+                throw new TypeError();
+            }
+
+            $this->doReplaceData(0, $this->getLength(), (string) $value);
+        }
+    }
+
     #[Getter('data')]
     protected string $data;
 
@@ -211,31 +241,8 @@ abstract class CharacterData extends Node implements ChildNode
         $this->data .= $data;
     }
 
-    protected function getNodeValue(): string
-    {
-        return $this->data;
-    }
-
     #[Setter('data')]
     protected function setNodeValue(mixed $value): void
-    {
-        if ($value === null) {
-            $value = '';
-        }
-
-        if (!Utils::isStringable($value)) {
-            throw new TypeError();
-        }
-
-        $this->doReplaceData(0, $this->getLength(), (string) $value);
-    }
-
-    protected function getTextContent(): string
-    {
-        return $this->data;
-    }
-
-    protected function setTextContent(mixed $value): void
     {
         if ($value === null) {
             $value = '';

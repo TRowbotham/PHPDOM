@@ -29,6 +29,38 @@ class Attr extends Node
 
     public readonly string $name;
 
+    public string $nodeName {
+        get {
+            if ($this->prefix) {
+                return $this->prefix . ':' . $this->localName;
+            }
+
+            return $this->localName;
+        }
+    }
+
+    public ?string $nodeValue {
+        get => $this->value;
+        set {
+            if ($value === null) {
+                $value = '';
+            }
+
+            $this->setExistingAttributeValue($value);
+        }
+    }
+
+    public ?string $textContent {
+        get => $this->value;
+        set(float|int|string|null $value) {
+            if ($value === null) {
+                $value = '';
+            }
+
+            $this->setExistingAttributeValue($value);
+        }
+    }
+
     #[Getter('value')]
     private string $value;
 
@@ -162,48 +194,10 @@ class Attr extends Node
         $this->ownerElement->getAttributeList()->change($this, (string) $value);
     }
 
-    #[Getter('name')]
-    protected function getNodeName(): string
-    {
-        if ($this->prefix) {
-            return $this->prefix . ':' . $this->localName;
-        }
-
-        return $this->localName;
-    }
-
     public function getLength(): int
     {
         // Attr nodes cannot contain children, so just return 0.
         return 0;
-    }
-
-    protected function getNodeValue(): string
-    {
-        return $this->value;
-    }
-
-    protected function setNodeValue(mixed $value): void
-    {
-        if ($value === null) {
-            $value = '';
-        }
-
-        $this->setExistingAttributeValue($value);
-    }
-
-    protected function getTextContent(): string
-    {
-        return $this->value;
-    }
-
-    protected function setTextContent(mixed $value): void
-    {
-        if ($value === null) {
-            $value = '';
-        }
-
-        $this->setExistingAttributeValue($value);
     }
 
     protected function __clone()

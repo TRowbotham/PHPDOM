@@ -40,7 +40,6 @@ use Rowbot\DOM\Utils;
  * @property string $target   Reflects the target HTML attribute, which indicates where to display the linked resource.
  * @property string $type     Reflects the type HTML attribute, which indicates the MIME type of the linked resource.
  * @property string $username Represents the username specified, if any, of theURL.
- * @property string $text
  * @property \Rowbot\DOM\DOMTokenList $relList Reflects the rel HTML attribute as a list of tokens.
  *
  * @property-read string                   $origin  Represents the URL's origin which is composed of the scheme, domain,
@@ -49,6 +48,13 @@ use Rowbot\DOM\Utils;
 class HTMLAnchorElement extends HTMLElement
 {
     use HTMLHyperlinkElementUtils;
+
+    public string $text {
+        get => $this->textContent;
+        set {
+            $this->textContent = $value;
+        }
+    }
 
     private ?DOMTokenList $relList;
 
@@ -89,12 +95,6 @@ class HTMLAnchorElement extends HTMLElement
     private function getTarget(): string
     {
         return $this->reflectStringAttributeValue('target');
-    }
-
-    #[Getter('text')]
-    private function getText(): string
-    {
-        return $this->getTextContent();
     }
 
     #[Getter('type')]
@@ -157,12 +157,6 @@ class HTMLAnchorElement extends HTMLElement
         }
 
         $this->attributeList->setAttrValue('target', (string) $value);
-    }
-
-    #[Setter('text')]
-    private function setText(mixed $value): void
-    {
-        $this->setTextContent($value);
     }
 
     #[Setter('type')]

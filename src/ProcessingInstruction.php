@@ -9,6 +9,10 @@ namespace Rowbot\DOM;
  */
 class ProcessingInstruction extends CharacterData
 {
+    public string $nodeName {
+        get => $this->target;
+    }
+
     public readonly string $target;
 
     public function __construct(Document $document, string $target, string $data)
@@ -26,10 +30,5 @@ class ProcessingInstruction extends CharacterData
             && $otherNode->target === $this->target
             && $otherNode->data === $this->data
             && $this->hasEqualChildNodes($otherNode);
-    }
-
-    protected function getNodeName(): string
-    {
-        return $this->target;
     }
 }

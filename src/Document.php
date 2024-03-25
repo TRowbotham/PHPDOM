@@ -63,6 +63,14 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
 
     protected const INERT_TEMPLATE_DOCUMENT = 0x1;
 
+    public string $nodeName {
+        get => '#document';
+    }
+
+    public null $ownerDocument {
+        get => null;
+    }
+
     #[Getter('characterSet')]
     #[Getter('charset')]
     #[Getter('inputEncoding')]
@@ -665,21 +673,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
         return null;
     }
 
-    protected function getNodeName(): string
-    {
-        return '#document';
-    }
-
-    protected function getNodeValue(): ?string
-    {
-        return null;
-    }
-
-    protected function getTextContent(): ?string
-    {
-        return null;
-    }
-
     /**
      * Gets the text of the document's title element.
      *
@@ -888,16 +881,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
         }
 
         $docElement->appendChild($newBody);
-    }
-
-    protected function setNodeValue(mixed $value): void
-    {
-        // Do nothing.
-    }
-
-    protected function setTextContent(mixed $value): void
-    {
-        // Do nothing.
     }
 
     public function toString(): string

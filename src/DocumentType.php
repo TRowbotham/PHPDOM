@@ -18,6 +18,10 @@ class DocumentType extends Node implements ChildNode
 
     public readonly string $systemId;
 
+    public string $nodeName {
+        get => $this->name;
+    }
+
     public function __construct(
         Document $document,
         string $name,
@@ -46,30 +50,5 @@ class DocumentType extends Node implements ChildNode
     {
         // Return 0 since a DocumentType cannot have any children.
         return 0;
-    }
-
-    protected function getNodeName(): string
-    {
-        return $this->name;
-    }
-
-    protected function getNodeValue(): ?string
-    {
-        return null;
-    }
-
-    protected function getTextContent(): ?string
-    {
-        return null;
-    }
-
-    protected function setNodeValue(mixed $value): void
-    {
-        // Do nothing.
-    }
-
-    protected function setTextContent(mixed $value): void
-    {
-        // Do nothing.
     }
 }

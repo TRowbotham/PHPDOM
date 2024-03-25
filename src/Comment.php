@@ -10,6 +10,10 @@ namespace Rowbot\DOM;
  */
 class Comment extends CharacterData
 {
+    public string $nodeName {
+        get => '#comment';
+    }
+
     public function __construct(Document $document, string $data = '')
     {
         parent::__construct($document, $data, self::COMMENT_NODE);
@@ -22,10 +26,5 @@ class Comment extends CharacterData
             && $otherNode instanceof self
             && $otherNode->data === $this->data
             && $this->hasEqualChildNodes($otherNode);
-    }
-
-    protected function getNodeName(): string
-    {
-        return '#comment';
     }
 }

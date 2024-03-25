@@ -9,13 +9,12 @@ namespace Rowbot\DOM;
  */
 class CDATASection extends Text
 {
+    public string $nodeName {
+        get => '#cdata-section';
+    }
+
     public function __construct(Document $document, string $data)
     {
         parent::__construct($document, $data, self::CDATA_SECTION_NODE);
-    }
-
-    protected function getNodeName(): string
-    {
-        return '#cdata-section';
     }
 }

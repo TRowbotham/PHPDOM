@@ -23,6 +23,44 @@ class DocumentFragment extends Node implements NonElementParentNode, ParentNode
     use NonElementParentNodeTrait;
     use ParentNodeTrait;
 
+    public string $nodeName {
+        get => '#document-fragment';
+    }
+
+    public ?string $textContent {
+        get {
+            $node = $this->nextNode($this);
+            $data = '';
+
+            while ($node) {
+                if ($node instanceof Text && !$node instanceof CDATASection) {
+                    $data .= $node->data;
+                }
+
+                $node = $node->nextNode($this);
+            }
+
+            return $data;
+        }
+        set(float|int|string|null $value) {
+            if ($value === null) {
+                $value = '';
+            }
+
+            if (!Utils::isStringable($value)) {
+                throw new TypeError();
+            }
+
+            $node = null;
+
+            if ($value !== '') {
+                $node = new Text($this->nodeDocument, (string) $value);
+            }
+
+            $this->replaceAllNodes($node);
+        }
+    }
+
     protected ?Element $host;
 
     public function __construct(Document $document)
@@ -68,55 +106,5 @@ class DocumentFragment extends Node implements NonElementParentNode, ParentNode
     public function getLength(): int
     {
         return count($this->childNodes_);
-    }
-
-    protected function getNodeName(): string
-    {
-        return '#document-fragment';
-    }
-
-    protected function getNodeValue(): ?string
-    {
-        return null;
-    }
-
-    protected function getTextContent(): string
-    {
-        $node = $this->nextNode($this);
-        $data = '';
-
-        while ($node) {
-            if ($node instanceof Text && !$node instanceof CDATASection) {
-                $data .= $node->data;
-            }
-
-            $node = $node->nextNode($this);
-        }
-
-        return $data;
-    }
-
-    protected function setNodeValue(mixed $value): void
-    {
-        // Do nothing.
-    }
-
-    protected function setTextContent(mixed $value): void
-    {
-        if ($value === null) {
-            $value = '';
-        }
-
-        if (!Utils::isStringable($value)) {
-            throw new TypeError();
-        }
-
-        $node = null;
-
-        if ($value !== '') {
-            $node = new Text($this->nodeDocument, (string) $value);
-        }
-
-        $this->replaceAllNodes($node);
     }
 }

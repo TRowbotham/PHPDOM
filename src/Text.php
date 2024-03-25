@@ -18,6 +18,10 @@ use Rowbot\DOM\Exception\IndexSizeError;
  */
 class Text extends CharacterData
 {
+    public string $nodeName {
+        get => '#text';
+    }
+
     public function __construct(Document $document, string $data = '', int $nodeType = self::TEXT_NODE)
     {
         parent::__construct($document, $data, $nodeType);
@@ -86,11 +90,6 @@ class Text extends CharacterData
         $this->doReplaceData($offset, $count, '');
 
         return $newNode;
-    }
-
-    protected function getNodeName(): string
-    {
-        return '#text';
     }
 
     #[Getter('wholeText')]

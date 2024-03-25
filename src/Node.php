@@ -72,15 +72,59 @@ abstract class Node
     public const DOCUMENT_POSITION_CONTAINED_BY            = 0x10;
     public const DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC = 0x20;
 
+    public string $baseURI {
+        get => $this->nodeDocument->getBaseURL()->serializeURL();
+    }
+
     /**
-     * @var \Rowbot\DOM\Support\Collection\NodeSet<\Rowbot\DOM\Node>
+     * @var \Rowbot\DOM\NodeList<\Rowbot\DOM\Node>
      */
-    protected NodeSet $childNodes_;
+    public readonly NodeList $childNodes;
+
+    public bool $isConnected {
+        get => $this->getRootNode(['composed' => true]) instanceof Document;
+    }
+
+    /**
+     * @see https://dom.spec.whatwg.org/#dom-node-nodename
+     */
+    abstract public string $nodeName {
+        get;
+    }
 
     /**
      * @var self::*_NODE
      */
     public readonly int $nodeType;
+
+    /**
+     * @see https://dom.spec.whatwg.org/#dom-node-nodevalue
+     */
+    public ?string $nodeValue {
+        get => null;
+        set {
+            return;
+        }
+    }
+
+    public ?Document $ownerDocument {
+        get => $this->nodeDocument;
+    }
+
+    /**
+     * @see https://dom.spec.whatwg.org/#dom-node-textcontent
+     */
+    public ?string $textContent {
+        get => null;
+        set(float|int|string|null $value) {
+            return;
+        }
+    }
+
+    /**
+     * @var \Rowbot\DOM\Support\Collection\NodeSet<\Rowbot\DOM\Node>
+     */
+    protected NodeSet $childNodes_;
 
     /**
      * @var self|null
@@ -97,12 +141,6 @@ abstract class Node
     protected Document $nodeDocument;
 
     protected EventDispatcherInterface $dispatcher;
-
-    /**
-     * @var \Rowbot\DOM\NodeList<\Rowbot\DOM\Node>
-     */
-    #[Getter('childNodes')]
-    protected NodeList $nodeList;
 
     /**
      * @var self|null
@@ -127,25 +165,14 @@ abstract class Node
     {
         $this->nodeDocument = $document;
         $this->childNodes_ = new NodeSet();
-        $this->nodeList = new LiveNodeList($this->childNodes_);
+        $this->childNodes = new LiveNodeList($this->childNodes_);
         $this->nodeType = $nodeType;
         $this->dispatcher = new EventDispatcher();
     }
 
     /**
-     * Gets the name of the node.
-     *
-     * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#dom-node-nodename
-     */
-    #[Getter('nodeName')]
-    abstract protected function getNodeName(): string;
-
-    /**
      * Returns null if the node is a document, and the node's node document otherwise.
      */
-    #[Getter('ownerDocument')]
     public function ownerDocument(): ?Document
     {
         return $this->nodeDocument;
@@ -203,46 +230,6 @@ abstract class Node
     {
         return !$this->childNodes_->isEmpty();
     }
-
-    /**
-     * Gets the value of the node.
-     *
-     * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#dom-node-nodevalue
-     */
-    #[Getter('nodeValue')]
-    abstract protected function getNodeValue(): ?string;
-
-    /**
-     * Sets the node's value.
-     *
-     * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#dom-node-nodevalue
-     */
-    #[Setter('nodeValue')]
-    abstract protected function setNodeValue(mixed $value): void;
-
-    /**
-     * Gets the concatenation of all descendant text nodes.
-     *
-     * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#dom-node-textcontent
-     */
-    #[Getter('textContent')]
-    abstract protected function getTextContent(): ?string;
-
-    /**
-     * Sets the nodes text content.
-     *
-     * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#dom-node-textcontent
-     */
-    #[Setter('textContent')]
-    abstract protected function setTextContent(?string $value): void;
 
     /**
      * "Normalizes" the node and its sub-tree so that there are no empty text
@@ -1824,22 +1811,10 @@ abstract class Node
             && ($root->mode === 'closed' || $root->host->isClosedShadowHiddenFrom($otherNode));
     }
 
-    #[Getter('baseURI')]
-    private function getBaseURI(): string
-    {
-        return $this->nodeDocument->getBaseURL()->serializeURL();
-    }
-
     #[Getter('firstChild')]
     private function getFirstChild(): ?self
     {
         return $this->childNodes_->first();
-    }
-
-    #[Getter('isConnected')]
-    private function isConnected(): bool
-    {
-        return $this->getRootNode(['composed' => true]) instanceof Document;
     }
 
     #[Getter('lastChild')]
@@ -1932,7 +1907,7 @@ abstract class Node
         $this->nextSibling = null;
         $this->previousSibling = null;
         $this->childNodes_ = new NodeSet();
-        $this->nodeList = new LiveNodeList($this->childNodes_);
+        $this->childNodes = new LiveNodeList($this->childNodes_);
         $this->dispatcher = new EventDispatcher();
     }
 }
