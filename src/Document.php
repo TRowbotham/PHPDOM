@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM;
 
-use Rowbot\DOM\DynamicProperty\Getter;
-use Rowbot\DOM\DynamicProperty\Setter;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Element\ElementFactory;
 use Rowbot\DOM\Element\HTML\HTMLBodyElement;
@@ -34,7 +32,7 @@ use function trim;
 
 /**
  * @see https://dom.spec.whatwg.org/#interface-document
- * @see https://html.spec.whatwg.org/#document
+ * @see https://html.spec.whatwg.org/multipage/dom.html#document
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Document
  *
  * @property-read string                                                  $URL
@@ -63,6 +61,207 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
 
     protected const INERT_TEMPLATE_DOCUMENT = 0x1;
 
+    public readonly DOMImplementation $implementation;
+
+    public string $URL {
+        get => $this->environment->getUrl()->serializeURL();
+    }
+
+    public string $documentURI {
+        get => $this->environment->getUrl()->serializeURL();
+    }
+
+    public string $compatMode {
+        get => match ($this->mode) {
+            DocumentMode::QUIRKS => 'BackCompat',
+            default              => 'CSS1Compat',
+        };
+    }
+
+    public string $characterSet {
+        get => $this->_characterSet;
+    }
+
+    public string $charset {
+        get => $this->_characterSet;
+    }
+
+    public string $inputEncoding {
+        get => $this->_characterSet;
+    }
+
+    public string $contentType {
+        get => $this->environment->getContentType();
+    }
+
+    public ?DocumentType $doctype {
+        get {
+            foreach ($this->childNodes_ as $child) {
+                if ($child instanceof DocumentType) {
+                    return $child;
+                }
+            }
+
+            return null;
+        }
+    }
+
+    public ?Element $documentElement {
+        get => $this->getFirstElementChild();
+    }
+
+    public string $readyState {
+        get => $this->_readyState;
+    }
+
+    /**
+     * @see https://html.spec.whatwg.org/multipage/dom.html#document.title
+     */
+    public string $title {
+        get {
+            $element = $this->getTitleElement();
+            $value = '';
+
+            if ($element) {
+                // Concatenate the text data of all the text node children of the
+                // title element.
+                foreach ($element->childNodes_ as $child) {
+                    if ($child instanceof Text) {
+                        $value .= $child->data;
+                    }
+                }
+            }
+
+            // Trim whitespace and replace consecutive whitespace with a single
+            // space.
+            if ($value !== '') {
+                $value = preg_replace('/[\t\n\f\r\x20]+/', ' ', trim($value, "\t\n\f\r\x20"));
+                assert($value !== null);
+            }
+
+            return $value;
+        }
+        set {
+            $docElement = $this->getFirstElementChild();
+            $element = null;
+
+            if ($docElement && $docElement instanceof SVGSVGElement) {
+                // Find the first child of the document element that is an
+                // svg title element.
+                foreach ($docElement->childNodes_ as $child) {
+                    if ($child instanceof SVGTitleElement) {
+                        $element = $child;
+
+                        break;
+                    }
+                }
+
+                // If there is no pre-existing svg title element, then create one
+                // and insert it as the first child of the document element.
+                if (!$element) {
+                    $element = ElementFactory::create(
+                        $docElement->nodeDocument,
+                        'title',
+                        Namespaces::SVG
+                    );
+                    $docElement->insertNode($element, $docElement->childNodes_->first());
+                }
+
+                $element->textContent = $value;
+            } elseif ($docElement && $docElement->namespaceURI === Namespaces::HTML) {
+                $element = $this->getTitleElement();
+                $head = $this->head;
+
+                // The title element can only exist in the head element. If neither
+                // of these exist, then there is no title element to set and no
+                // place to insert a new one.
+                if (!$element && !$head) {
+                    return;
+                }
+
+                // If there is no pre-existing title element, then create one
+                // and append it to the head element.
+                if (!$element) {
+                    $element = ElementFactory::create(
+                        $docElement->nodeDocument,
+                        'title',
+                        Namespaces::HTML
+                    );
+                    $head->appendChild($element);
+                }
+
+                $element->textContent = $value;
+            }
+        }
+    }
+
+    /**
+     * @see https://html.spec.whatwg.org/multipage/dom.html#dom-document-body
+     */
+    public ?HTMLElement $body {
+        get => $this->getBodyElement();
+        set {
+            // The document's body can only be a body or frameset element. If the
+            // new value being passed is not one of these, then throw an exception
+            // and abort the algorithm.
+            if (!$value instanceof HTMLBodyElement && !$value instanceof HTMLFrameSetElement) {
+                throw new HierarchyRequestError();
+            }
+
+            $oldBody = $this->getBodyElement();
+
+            // Don't try setting the document's body to the same node.
+            if ($value === $oldBody) {
+                return;
+            }
+
+            // If there is a pre-existing body element, then replace it with the
+            // new body element.
+            if ($oldBody) {
+                assert($oldBody->parentNode !== null);
+                $oldBody->parentNode->replaceNode($value, $oldBody);
+
+                return;
+            }
+
+            $docElement = $this->getFirstElementChild();
+
+            // A body element can only exist as a child of the document element.
+            // Throw an exception and abort the algorithm if the document element
+            // does not exist.
+            if (!$docElement) {
+                throw new HierarchyRequestError();
+            }
+
+            $docElement->appendChild($value);
+        }
+    }
+
+    /**
+     * @see https://html.spec.whatwg.org/multipage/dom.html#dom-document-head
+     */
+    public ?HTMLHeadElement $head {
+        get {
+            $docElement = $this->getFirstElementChild();
+
+            if ($docElement && $docElement instanceof HTMLHtmlElement) {
+                // Get the first child in the document element that is a head
+                // element.
+                foreach ($docElement->childNodes_ as $child) {
+                    if ($child instanceof HTMLHeadElement) {
+                        return $child;
+                    }
+                }
+            }
+
+            return null;
+        }
+    }
+
+    public string $origin {
+        get => (string) $this->environment->getUrl()->origin;
+    }
+
     public string $nodeName {
         get => '#document';
     }
@@ -71,10 +270,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
         get => null;
     }
 
-    #[Getter('characterSet')]
-    #[Getter('charset')]
-    #[Getter('inputEncoding')]
-    protected string $characterSet;
+    private string $_characterSet;
 
     protected int $flags;
 
@@ -87,12 +283,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
 
     private BaseElementList $baseElements;
 
-    private string $compatMode;
-
     private Environment $environment;
-
-    #[Getter('implementation')]
-    protected DOMImplementation $implementation;
 
     private bool $isIframeSrcDoc;
 
@@ -100,9 +291,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      * @var 'xml'|'html'
      */
     private string $type;
-
-    #[Getter('readyState')]
-    private string $readyState;
 
     private int $source;
 
@@ -113,7 +301,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
     {
         parent::__construct($this, self::DOCUMENT_NODE);
 
-        $this->characterSet = 'UTF-8';
+        $this->_characterSet = 'UTF-8';
         $this->flags = 0;
         $this->implementation = new DOMImplementation($this);
         $this->isIframeSrcDoc = false;
@@ -134,7 +322,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
         // readiness set to the string "loading" if the document is associated
         // with an HTML parser, an XML parser, or an XSLT processor, and to the
         // string "complete" otherwise.
-        $this->readyState = DocumentReadyState::COMPLETE;
+        $this->_readyState = DocumentReadyState::COMPLETE;
 
         $this->source = DocumentSource::NOT_FROM_PARSER;
     }
@@ -522,7 +710,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      */
     public function setReadyState(string $readyState): void
     {
-        $this->readyState = $readyState;
+        $this->_readyState = $readyState;
     }
 
     /**
@@ -596,7 +784,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      */
     public function setCharacterSet(string $characterSet): void
     {
-        $this->characterSet = $characterSet;
+        $this->_characterSet = $characterSet;
     }
 
     /**
@@ -648,65 +836,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
     }
 
     /**
-     * Gets the document's head element. The document's head element is the
-     * first child of the html element that is a head element.
-     *
-     * @internal
-     *
-     * @see https://html.spec.whatwg.org/multipage/dom.html#dom-document-head
-     */
-    #[Getter('head')]
-    protected function getHeadElement(): ?HTMLHeadElement
-    {
-        $docElement = $this->getFirstElementChild();
-
-        if ($docElement && $docElement instanceof HTMLHtmlElement) {
-            // Get the first child in the document element that is a head
-            // element.
-            foreach ($docElement->childNodes_ as $child) {
-                if ($child instanceof HTMLHeadElement) {
-                    return $child;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Gets the text of the document's title element.
-     *
-     * @internal
-     *
-     * @see https://html.spec.whatwg.org/multipage/dom.html#document.title
-     */
-    #[Getter('title')]
-    protected function getTitle(): string
-    {
-        $element = $this->getTitleElement();
-        $value = '';
-
-        if ($element) {
-            // Concatenate the text data of all the text node children of the
-            // title element.
-            foreach ($element->childNodes_ as $child) {
-                if ($child instanceof Text) {
-                    $value .= $child->data;
-                }
-            }
-        }
-
-        // Trim whitespace and replace consecutive whitespace with a single
-        // space.
-        if ($value !== '') {
-            $value = preg_replace('/[\t\n\f\r\x20]+/', ' ', trim($value, "\t\n\f\r\x20"));
-            assert($value !== null);
-        }
-
-        return $value;
-    }
-
-    /**
      * Gets the document's title element. The title element is the
      * first title element in the document element if the document element is
      * an svg element, othwerwise it is the first title element in the document.
@@ -746,79 +875,10 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
     }
 
     /**
-     * Sets the text of the document's title element.
-     *
-     * @internal
-     *
-     * @see https://html.spec.whatwg.org/multipage/dom.html#document.title
-     */
-    #[Setter('title')]
-    protected function setTitle(string $newTitle): void
-    {
-        $docElement = $this->getFirstElementChild();
-        $element = null;
-
-        if ($docElement && $docElement instanceof SVGSVGElement) {
-            // Find the first child of the document element that is an
-            // svg title element.
-            foreach ($docElement->childNodes_ as $child) {
-                if ($child instanceof SVGTitleElement) {
-                    $element = $child;
-
-                    break;
-                }
-            }
-
-            // If there is no pre-existing svg title element, then create one
-            // and insert it as the first child of the document element.
-            if (!$element) {
-                $element = ElementFactory::create(
-                    $docElement->nodeDocument,
-                    'title',
-                    Namespaces::SVG
-                );
-                $docElement->insertNode($element, $docElement->childNodes_->first());
-            }
-
-            $element->textContent = $newTitle;
-        } elseif ($docElement && $docElement->namespaceURI === Namespaces::HTML) {
-            $element = $this->getTitleElement();
-            $head = $this->getHeadElement();
-
-            // The title element can only exist in the head element. If neither
-            // of these exist, then there is no title element to set and no
-            // place to insert a new one.
-            if (!$element && !$head) {
-                return;
-            }
-
-            // If there is no pre-existing title element, then create one
-            // and append it to the head element.
-            if (!$element) {
-                $element = ElementFactory::create(
-                    $docElement->nodeDocument,
-                    'title',
-                    Namespaces::HTML
-                );
-                $head->appendChild($element);
-            }
-
-            $element->textContent = $newTitle;
-        }
-    }
-
-    /**
-     * Gets the document's body element. The document's body element is the
-     * first child of the html element that is either a body or frameset
-     * element.
-     *
-     * @internal
-     *
      * @see https://html.spec.whatwg.org/multipage/dom.html#dom-document-body
      *
      * @return \Rowbot\DOM\Element\HTML\HTMLBodyElement|\Rowbot\DOM\Element\HTML\HTMLFrameSetElement|null
      */
-    #[Getter('body')]
     protected function getBodyElement(): ?HTMLElement
     {
         $docElement = $this->getFirstElementChild();
@@ -836,102 +896,9 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
         return null;
     }
 
-    /**
-     * Sets the document's body element.
-     *
-     * @internal
-     *
-     * @see https://html.spec.whatwg.org/multipage/dom.html#dom-document-body
-     *
-     * @param \Rowbot\DOM\Element\HTML\HTMLBodyElement|\Rowbot\DOM\Element\HTML\HTMLFrameSetElement $newBody
-     */
-    #[Setter('body')]
-    protected function setBodyElement(HTMLElement $newBody): void
-    {
-        // The document's body can only be a body or frameset element. If the
-        // new value being passed is not one of these, then throw an exception
-        // and abort the algorithm.
-        if (!$newBody instanceof HTMLBodyElement && !$newBody instanceof HTMLFrameSetElement) {
-            throw new HierarchyRequestError();
-        }
-
-        $oldBody = $this->getBodyElement();
-
-        // Don't try setting the document's body to the same node.
-        if ($newBody === $oldBody) {
-            return;
-        }
-
-        // If there is a pre-existing body element, then replace it with the
-        // new body element.
-        if ($oldBody) {
-            assert($oldBody->parentNode !== null);
-            $oldBody->parentNode->replaceNode($newBody, $oldBody);
-
-            return;
-        }
-
-        $docElement = $this->getFirstElementChild();
-
-        // A body element can only exist as a child of the document element.
-        // Throw an exception and abort the algorithm if the document element
-        // does not exist.
-        if (!$docElement) {
-            throw new HierarchyRequestError();
-        }
-
-        $docElement->appendChild($newBody);
-    }
-
     public function toString(): string
     {
         return MarkupFactory::serializeFragment($this, true);
-    }
-
-    #[Getter('compatMode')]
-    private function getCompatMode(): string
-    {
-        return match ($this->mode) {
-            DocumentMode::QUIRKS => 'BackCompat',
-            default              => 'CSS1Compat',
-        };
-    }
-
-    #[Getter('contentType')]
-    private function getContentType(): string
-    {
-        return $this->environment->getContentType();
-    }
-
-    #[Getter('doctype')]
-    private function getDoctype(): ?DocumentType
-    {
-        foreach ($this->childNodes_ as $child) {
-            if ($child instanceof DocumentType) {
-                return $child;
-            }
-        }
-
-        return null;
-    }
-
-    #[Getter('documentElement')]
-    private function getDocumentElement(): ?Element
-    {
-        return $this->getFirstElementChild();
-    }
-
-    #[Getter('URL')]
-    #[Getter('documentURI')]
-    private function getDocumentURI(): string
-    {
-        return $this->environment->getUrl()->serializeURL();
-    }
-
-    #[Getter('origin')]
-    private function getOrigin(): string
-    {
-        return (string) $this->environment->getUrl()->getOrigin();
     }
 
     public function __toString(): string
@@ -946,7 +913,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
         $this->implementation = new DOMImplementation($this);
         $this->isIframeSrcDoc = false;
         $this->inertTemplateDocument = null;
-        $this->readyState = DocumentReadyState::COMPLETE;
+        $this->_readyState = DocumentReadyState::COMPLETE;
         $this->source = DocumentSource::NOT_FROM_PARSER;
         $this->environment = clone $this->environment;
         $this->baseElements = new BaseElementList();
