@@ -240,18 +240,4 @@ abstract class CharacterData extends Node implements ChildNode
 
         $this->data .= $data;
     }
-
-    #[Setter('data')]
-    protected function setNodeValue(mixed $value): void
-    {
-        if ($value === null) {
-            $value = '';
-        }
-
-        if (!Utils::isStringable($value)) {
-            throw new TypeError();
-        }
-
-        $this->doReplaceData(0, $this->getLength(), (string) $value);
-    }
 }
