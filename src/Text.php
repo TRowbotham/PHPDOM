@@ -32,7 +32,7 @@ class Text extends CharacterData
         return $otherNode !== null
             && $otherNode->nodeType === $this->nodeType
             && $otherNode instanceof self
-            && $otherNode->data === $this->data
+            && $otherNode->_data === $this->_data
             && $otherNode->hasEqualChildNodes($otherNode);
     }
 
@@ -107,7 +107,7 @@ class Text extends CharacterData
         }
 
         while ($startNode instanceof Text) {
-            $wholeText .= $startNode->data;
+            $wholeText .= $startNode->_data;
             $startNode = $startNode->nextSibling;
         }
 

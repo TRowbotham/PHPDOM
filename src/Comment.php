@@ -24,7 +24,7 @@ class Comment extends CharacterData
         return $otherNode !== null
             && $otherNode->nodeType === $this->nodeType
             && $otherNode instanceof self
-            && $otherNode->data === $this->data
+            && $otherNode->_data === $this->_data
             && $this->hasEqualChildNodes($otherNode);
     }
 }

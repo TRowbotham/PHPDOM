@@ -28,7 +28,7 @@ class ProcessingInstruction extends CharacterData
             && $otherNode->nodeType === $this->nodeType
             && $otherNode instanceof self
             && $otherNode->target === $this->target
-            && $otherNode->data === $this->data
+            && $otherNode->_data === $this->_data
             && $this->hasEqualChildNodes($otherNode);
     }
 }

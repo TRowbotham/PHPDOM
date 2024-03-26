@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM;
 
-use Rowbot\DOM\DynamicProperty\Getter;
-use Rowbot\DOM\DynamicProperty\Setter;
 use Rowbot\DOM\Exception\IndexSizeError;
-use Rowbot\DOM\Exception\TypeError;
 
 use function mb_strlen;
 use function mb_substr;
@@ -19,10 +16,6 @@ use function sprintf;
  * @see https://dom.spec.whatwg.org/#characterdata
  * @see https://developer.mozilla.org/en-US/docs/Web/API/CharacterData
  *
- * @property string $data Represents the textual data contained by this Node.
- *
- * @property-read int                              $length                 Represents the length of the data contained
- *                                                                         by this Node.
  * @property-read \Rowbot\DOM\Element\Element|null $nextElementSibling     Returns the next sibling that is an Element,
  *                                                                         if any.
  * @property-read \Rowbot\DOM\Element\Element|null $previousElementSibling Returns the previous sibling that is an
@@ -33,44 +26,50 @@ abstract class CharacterData extends Node implements ChildNode
     use ChildNodeTrait;
     use NonDocumentTypeChildNode;
 
-    public ?string $nodeValue {
-        get => $this->data;
-        set {
-            if ($value === null) {
-                $value = '';
-            }
+    /**
+     * @see https://dom.spec.whatwg.org/#dom-characterdata-data
+     */
+    public string $data {
+        get => $this->_data;
+        set(float|int|string|null $value) {
+            $value ??= '';
 
-            if (!Utils::isStringable($value)) {
-                throw new TypeError();
-            }
+            $this->doReplaceData(0, $this->length, (string) $value);
+        }
+    }
+
+    /**
+     * @see https://dom.spec.whatwg.org/#dom-characterdata-length
+     */
+    public int $length {
+        get => $this->getLength();
+    }
+
+    public ?string $nodeValue {
+        get => $this->_data;
+        set(float|int|string|null $value) {
+            $value ??= '';
 
             $this->doReplaceData(0, $this->getLength(), (string) $value);
         }
     }
 
     public ?string $textContent {
-        get => $this->data;
+        get => $this->_data;
         set(float|int|string|null $value) {
-            if ($value === null) {
-                $value = '';
-            }
-
-            if (!Utils::isStringable($value)) {
-                throw new TypeError();
-            }
+            $value ??= '';
 
             $this->doReplaceData(0, $this->getLength(), (string) $value);
         }
     }
 
-    #[Getter('data')]
-    protected string $data;
+    protected string $_data;
 
     public function __construct(Document $document, string $data, int $nodeType)
     {
         parent::__construct($document, $nodeType);
 
-        $this->data = $data;
+        $this->_data = $data;
     }
 
     /**
@@ -148,9 +147,9 @@ abstract class CharacterData extends Node implements ChildNode
         // TODO: Queue a mutation record of "characterData" for node with
         // oldValue node’s data.
 
-        $this->data = mb_substr($this->data, 0, $offset, 'utf-8')
+        $this->_data = mb_substr($this->_data, 0, $offset, 'utf-8')
             . $data
-            . mb_substr($this->data, $offset + $count, $length - $offset, 'utf-8');
+            . mb_substr($this->_data, $offset + $count, $length - $offset, 'utf-8');
         $newDataLen = mb_strlen($data, 'utf-8');
 
         foreach (Range::getRangeCollection() as $range) {
@@ -215,16 +214,18 @@ abstract class CharacterData extends Node implements ChildNode
         }
 
         if ($offset + $count > $length) {
-            return mb_substr($this->data, $offset, null, 'utf-8');
+            return mb_substr($this->_data, $offset, null, 'utf-8');
         }
 
-        return mb_substr($this->data, $offset, $count, 'utf-8');
+        return mb_substr($this->_data, $offset, $count, 'utf-8');
     }
 
-    #[Getter('length')]
+    /**
+     * @internal
+     */
     public function getLength(): int
     {
-        return mb_strlen($this->data, 'utf-8');
+        return mb_strlen($this->_data, 'utf-8');
     }
 
     /**
@@ -233,11 +234,11 @@ abstract class CharacterData extends Node implements ChildNode
     public function setData(string $data, bool $append = false): void
     {
         if (!$append) {
-            $this->data = $data;
+            $this->_data = $data;
 
             return;
         }
 
-        $this->data .= $data;
+        $this->_data .= $data;
     }
 }
