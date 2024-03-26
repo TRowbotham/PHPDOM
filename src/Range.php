@@ -27,9 +27,6 @@ use function spl_object_id;
  *
  * @see https://dom.spec.whatwg.org/#range
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Range
- *
- * @property-read \Rowbot\DOM\Node $commonAncestor Returns the deepest node in the node tree that contains both the
- *                                                 start and end nodes.
  */
 final class Range extends AbstractRange implements Stringable
 {
@@ -37,6 +34,10 @@ final class Range extends AbstractRange implements Stringable
     public const START_TO_END   = 1;
     public const END_TO_END     = 2;
     public const END_TO_START   = 3;
+
+    public Node $commonAncestorContainer {
+        get => Node::getCommonAncestor($this->range->start->node, $this->range->end-node);
+    }
 
     /**
      * @var array<int, \Rowbot\DOM\Range\RangeBoundary>
@@ -47,15 +48,6 @@ final class Range extends AbstractRange implements Stringable
     {
         parent::__construct(new BoundaryPoint($document, 0), new BoundaryPoint($document, 0));
         self::$collection[spl_object_id($this->range)] = $this->range;
-    }
-
-    public function __get(string $name)
-    {
-        if ($name === 'commonAncestorContainer') {
-            return Node::getCommonAncestor($this->range->start->node, $this->range->end->node);
-        }
-
-        return parent::__get($name);
     }
 
     public function __clone(): void
