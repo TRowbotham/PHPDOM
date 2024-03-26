@@ -258,10 +258,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
         }
     }
 
-    public string $origin {
-        get => (string) $this->environment->getUrl()->origin;
-    }
-
     public string $nodeName {
         get => '#document';
     }
