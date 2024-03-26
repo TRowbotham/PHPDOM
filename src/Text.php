@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM;
 
-use Rowbot\DOM\DynamicProperty\Getter;
 use Rowbot\DOM\Exception\IndexSizeError;
 
 /**
@@ -12,12 +11,34 @@ use Rowbot\DOM\Exception\IndexSizeError;
  *
  * @see https://dom.spec.whatwg.org/#text
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Text
- *
- * @property-read string $wholeText Returns the concatenated string data of all contingious Text nodes relative to this
- *                                  Node in tree order.
  */
 class Text extends CharacterData
 {
+    /**
+     * @see https://dom.spec.whatwg.org/#dom-text-wholetext
+     */
+    public string $wholeText {
+        get {
+            $wholeText = '';
+            $startNode = $this;
+
+            while ($startNode) {
+                if (!$startNode->previousSibling instanceof Text) {
+                    break;
+                }
+
+                $startNode = $startNode->previousSibling;
+            }
+
+            while ($startNode instanceof Text) {
+                $wholeText .= $startNode->_data;
+                $startNode = $startNode->nextSibling;
+            }
+
+            return $wholeText;
+        }
+    }
+
     public string $nodeName {
         get => '#text';
     }
@@ -90,27 +111,5 @@ class Text extends CharacterData
         $this->doReplaceData($offset, $count, '');
 
         return $newNode;
-    }
-
-    #[Getter('wholeText')]
-    private function getWholeText(): string
-    {
-        $wholeText = '';
-        $startNode = $this;
-
-        while ($startNode) {
-            if (!$startNode->previousSibling instanceof Text) {
-                break;
-            }
-
-            $startNode = $startNode->previousSibling;
-        }
-
-        while ($startNode instanceof Text) {
-            $wholeText .= $startNode->_data;
-            $startNode = $startNode->nextSibling;
-        }
-
-        return $wholeText;
     }
 }
