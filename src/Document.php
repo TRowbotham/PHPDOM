@@ -35,23 +35,10 @@ use function trim;
  * @see https://html.spec.whatwg.org/multipage/dom.html#document
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Document
  *
- * @property-read string                                                  $URL
- * @property-read string                                                  $documentURI
- * @property-read string                                                  $origin
- * @property-read string                                                  $compatMode
- * @property-read string                                                  $characterSet
- * @property-read string                                                  $contentType
- * @property-read \Rowbot\DOM\DocumentType|null                           $doctype
- * @property-read \Rowbot\DOM\Element\Element|null                        $documentElement
- * @property-read string                                                  $readyState
  * @property-read \Rowbot\DOM\HTMLCollection<\Rowbot\DOM\Element\Element> $children
  * @property-read \Rowbot\DOM\Element\Element|null                        $firstElementChild
  * @property-read \Rowbot\DOM\Element\Element|null                        $lastElementChild
  * @property-read int                                                     $childElementCount
- *
- * @property \Rowbot\DOM\Element\HTML\HTMLBodyElement|null $body  Represents the HTML document's <body> element.
- * @property \Rowbot\DOM\Element\HTML\HTMLHeadElement|null $head  Represents the HTML document's <head> element.
- * @property string                                        $title Reflects the text content of the <title> element.
  */
 class Document extends Node implements NonElementParentNode, ParentNode, Stringable
 {

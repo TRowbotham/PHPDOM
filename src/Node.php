@@ -35,17 +35,9 @@ use function strcmp;
  * @see https://dom.spec.whatwg.org/#node
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Node
  *
- * @property string|null $nodeValue
- * @property string|null $textContent
- *
- * @property-read string                           $baseURI
- * @property-read \Rowbot\DOM\NodeList             $childNodes
  * @property-read \Rowbot\DOM\Node|null            $firstChild
  * @property-read \Rowbot\DOM\Node|null            $lastChild
  * @property-read \Rowbot\DOM\Node|null            $nextSibling
- * @property-read string                           $nodeName
- * @property-read bool                             $isConnected
- * @property-read \Rowbot\DOM\Document|null        $ownerDocument
  * @property-read \Rowbot\DOM\Node|null            $parentNode
  * @property-read \Rowbot\DOM\Element\Element|null $parentElement
  * @property-read \Rowbot\DOM\Node|null            $previousSibling
