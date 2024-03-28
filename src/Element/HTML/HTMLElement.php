@@ -4,20 +4,16 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Element\HTML;
 
-use Rowbot\DOM\DynamicProperty\Getter;
-use Rowbot\DOM\DynamicProperty\Setter;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Element\ElementContentEditable;
 use Rowbot\DOM\Element\HTMLOrSVGElement;
 use Rowbot\DOM\Exception\DOMException;
 use Rowbot\DOM\Exception\IndexSizeError;
-use Rowbot\DOM\Exception\TypeError;
 use Rowbot\DOM\Utils;
 use Rowbot\URL\String\Utf8String;
 
 use function assert;
 use function filter_var;
-use function is_bool;
 use function is_numeric;
 
 use const FILTER_VALIDATE_INT;
@@ -26,15 +22,7 @@ use const FILTER_VALIDATE_INT;
  * @see https://html.spec.whatwg.org/multipage/dom.html#htmlelement
  * @see https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement
  *
- * @property string                   $title
- * @property string                   $lang
- * @property bool                     $translate
- * @property string                   $dir
  * @property \Rowbot\DOM\DOMStringMap $dataset
- * @property bool                     $hidden
- * @property int                      $tabIndex
- * @property bool                     $draggable
- * @property bool                     $spellcheck
  * @property string                   $contentEditable
  * @property bool                     $isContentEditable
  */
@@ -68,6 +56,134 @@ class HTMLElement extends Element
     protected const UNSIGNED_LONG = 3;
     protected const UNSIGNED_LONG_NON_NEGATIVE_GREATER_THAN_ZERO = 4;
     protected const UNSIGNED_LONG_NON_NEGATIVE_GREATER_THAN_ZERO_WITH_FALLBACK = 5;
+
+    /**
+     * @see https://html.spec.whatwg.org/multipage/dom.html#dom-title
+     */
+    public string $title {
+        get => $this->reflectStringAttributeValue('title');
+        set(float|int|string $value) {
+            $this->attributeList->setAttrValue('title', (string) $value);
+        }
+    }
+
+    /**
+     * @see https://html.spec.whatwg.org/multipage/dom.html#dom-lang
+     */
+    public string $lang {
+        get => $this->reflectStringAttributeValue('lang');
+        set {
+            $this->attributeList->setAttrValue('lang', $value);
+        }
+    }
+
+    /**
+     * @see https://html.spec.whatwg.org/multipage/dom.html#dom-translate
+     */
+    public bool $translate {
+        get {
+            $state = null;
+            $node = $this;
+
+            do {
+                $state = $node->reflectEnumeratedStringAttributeValue(
+                    'translate',
+                    'inherit',
+                    'inherit',
+                    self::TRANSLATE_STATE_MAP
+                );
+                $node = $node->parentNode;
+            } while ($state === 'inherit' && $node instanceof self);
+
+            return $state === 'no' ? false : true;
+        }
+        set {
+            $this->attributeList->setAttrValue('translate', ($value === true ? 'yes' : 'no'));
+        }
+    }
+
+    /**
+     * @see https://html.spec.whatwg.org/multipage/dom.html#dom-dir
+     */
+    public string $dir {
+        get => $this->reflectEnumeratedStringAttributeValue(
+            'dir',
+            null,
+            null,
+            self::DIR_STATE_MAP
+        );
+        set {
+            $this->attributeList->setAttrValue('dir', $value);
+        }
+    }
+
+    /**
+     * @see https://html.spec.whatwg.org/multipage/interaction.html#dom-hidden
+     */
+    public bool $hidden {
+        get => $this->reflectBooleanAttributeValue('hidden');
+        set {
+            $this->attributeList->setAttrValue('hidden', $value);
+        }
+    }
+
+    /**
+     * @see https://html.spec.whatwg.org/multipage/dnd.html#dom-draggable
+     */
+    public bool $draggable {
+        get {
+            $state = $this->reflectEnumeratedStringAttributeValue(
+                'draggable',
+                null,
+                'auto',
+                self::DRAGGABLE_STATE_MAP
+            );
+
+            return $state === 'true' ? true : false;
+        }
+        set(bool|string $value) {
+            $this->attributeList->setAttrValue('draggable', (string) $value);
+        }
+    }
+
+    /**
+     * @see https://html.spec.whatwg.org/multipage/interaction.html#dom-spellcheck
+     */
+    public bool $spellcheck {
+        get {
+            $state = $this->reflectEnumeratedStringAttributeValue(
+                'spellcheck',
+                'default',
+                'default',
+                self::SPELL_CHECK_STATE_MAP
+            );
+
+            if ($state === 'true') {
+                $value = true;
+            } elseif ($state === 'false') {
+                $value = false;
+            } else {
+                // TODO: Handle default states
+                return false;
+            }
+
+            return $value;
+        }
+        set {
+            $this->attributeList->setAttrValue('spellcheck', ($value === true ? 'true' : 'false'));
+        }
+    }
+
+    public int $tabIndex {
+        get => filter_var(
+            $this->reflectStringAttributeValue('tabindex'),
+            FILTER_VALIDATE_INT,
+            ['default' => 0]
+        );
+        set(float|int|string $value) {
+            $this->attributeList->setAttrValue('tabindex', (string) $value);
+        }
+    }
 
     /**
      * If the attribute is present, its value must either be the empty string or a value that is an
@@ -423,178 +539,5 @@ class HTMLElement extends Element
         }
 
         return Utf8String::transcode($attr->getValue(), 'utf-8', 'utf-8');
-    }
-
-    #[Getter('dir')]
-    private function getDir(): string
-    {
-        return $this->reflectEnumeratedStringAttributeValue(
-            'dir',
-            null,
-            null,
-            self::DIR_STATE_MAP
-        );
-    }
-
-    #[Getter('draggable')]
-    private function getDraggable(): bool
-    {
-        $state = $this->reflectEnumeratedStringAttributeValue(
-            'draggable',
-            null,
-            'auto',
-            self::DRAGGABLE_STATE_MAP
-        );
-
-        return $state === 'true' ? true : false;
-    }
-
-    #[Getter('hidden')]
-    private function getHidden(): bool
-    {
-        return $this->reflectBooleanAttributeValue('hidden');
-    }
-
-    #[Getter('lang')]
-    private function getLang(): string
-    {
-        return $this->reflectStringAttributeValue('lang');
-    }
-
-    #[Getter('spellcheck')]
-    private function getSpellcheck(): bool
-    {
-        $state = $this->reflectEnumeratedStringAttributeValue(
-            'spellcheck',
-            'default',
-            'default',
-            self::SPELL_CHECK_STATE_MAP
-        );
-
-        if ($state === 'true') {
-            $value = true;
-        } elseif ($state === 'false') {
-            $value = false;
-        } else {
-            // TODO: Handle default states
-            return false;
-        }
-
-        return $value;
-    }
-
-    #[Getter('tabIndex')]
-    private function getTabIndex(): int
-    {
-        return filter_var(
-            $this->reflectStringAttributeValue('tabindex'),
-            FILTER_VALIDATE_INT,
-            ['default' => 0]
-        );
-    }
-
-    #[Getter('title')]
-    private function getTitle(): string
-    {
-        return $this->reflectStringAttributeValue('title');
-    }
-
-    #[Getter('translate')]
-    private function getTranslate(): bool
-    {
-        $state = null;
-        $node = $this;
-
-        do {
-            $state = $node->reflectEnumeratedStringAttributeValue(
-                'translate',
-                'inherit',
-                'inherit',
-                self::TRANSLATE_STATE_MAP
-            );
-            $node = $node->parentNode;
-        } while ($state === 'inherit' && $node instanceof self);
-
-        return $state === 'no' ? false : true;
-    }
-
-    #[Setter('dir')]
-    private function setDir(mixed $value): void
-    {
-        if (!Utils::isStringable($value)) {
-            throw new TypeError();
-        }
-
-        $this->attributeList->setAttrValue('dir', (string) $value);
-    }
-
-    #[Setter('draggable')]
-    private function setDraggable(mixed $value): void
-    {
-        if (!Utils::isStringable($value)) {
-            throw new TypeError();
-        }
-
-        $this->attributeList->setAttrValue('draggable', (string) $value);
-    }
-
-    #[Setter('hidden')]
-    private function setHidden(mixed $value): void
-    {
-        if (!Utils::isStringable($value)) {
-            throw new TypeError();
-        }
-
-        $this->attributeList->setAttrValue('hidden', (string) $value);
-    }
-
-    #[Setter('lang')]
-    private function setLang(mixed $value): void
-    {
-        if (!Utils::isStringable($value)) {
-            throw new TypeError();
-        }
-
-        $this->attributeList->setAttrValue('lang', (string) $value);
-    }
-
-    #[Setter('spellcheck')]
-    private function setSpellcheck(mixed $value): void
-    {
-        if (!is_bool($value)) {
-            throw new TypeError();
-        }
-
-        $this->attributeList->setAttrValue('spellcheck', ($value === true ? 'true' : 'false'));
-    }
-
-    #[Setter('tabIndex')]
-    private function setTabIndex(mixed $value): void
-    {
-        if (!Utils::isStringable($value)) {
-            throw new TypeError();
-        }
-
-        $this->attributeList->setAttrValue('tabindex', (string) $value);
-    }
-
-    #[Setter('title')]
-    private function setTitle(mixed $value): void
-    {
-        if (!Utils::isStringable($value)) {
-            throw new TypeError();
-        }
-
-        $this->attributeList->setAttrValue('title', (string) $value);
-    }
-
-    #[Setter('translate')]
-    private function setTranslate(mixed $value): void
-    {
-        if (!is_bool($value)) {
-            throw new TypeError();
-        }
-
-        $this->attributeList->setAttrValue('translate', ($value === true ? 'yes' : 'no'));
     }
 }
