@@ -7,13 +7,21 @@ namespace Rowbot\DOM;
 /**
  * @see https://dom.spec.whatwg.org/#nodeiterator
  * @see https://developer.mozilla.org/en-US/docs/Web/API/NodeIterator
- *
- * @property-read \Rowbot\DOM\Node                     $root
- * @property-read \Rowbot\DOM\Node                     $referenceNode
- * @property-read bool                                 $pointerBeforeReferenceNode
  */
 final class NodeIterator extends NodeTraverser
 {
+    public Node $root {
+        get => $this->context->root;
+    }
+
+    public Node $referenceNode {
+        get => $this->context->referenceNode;
+    }
+
+    public bool $pointerBeforeReferenceNode {
+        get => $this->context->pointerBeforeReferenceNode;
+    }
+
     private NodeIteratorContext $context;
 
     /**
@@ -26,23 +34,6 @@ final class NodeIterator extends NodeTraverser
 
         $this->context = new NodeIteratorContext($root);
         $this->context->observeSelf();
-    }
-
-    /**
-     * @return mixed
-     */
-    public function __get(string $name)
-    {
-        switch ($name) {
-            case 'pointerBeforeReferenceNode':
-                return $this->context->pointerBeforeReferenceNode;
-
-            case 'referenceNode':
-                return $this->context->referenceNode;
-
-            case 'root':
-                return $this->context->root;
-        }
     }
 
     public function __destruct()
