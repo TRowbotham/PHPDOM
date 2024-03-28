@@ -12,8 +12,6 @@ use Rowbot\DOM\ChildNodeTrait;
 use Rowbot\DOM\Document;
 use Rowbot\DOM\DocumentFragment;
 use Rowbot\DOM\DOMTokenList;
-use Rowbot\DOM\DynamicProperty\Getter;
-use Rowbot\DOM\DynamicProperty\Setter;
 use Rowbot\DOM\Element\HTML\HTMLTemplateElement;
 use Rowbot\DOM\Exception\InvalidCharacterError;
 use Rowbot\DOM\Exception\NoModificationAllowedError;
@@ -44,14 +42,6 @@ use function range;
  * @see https://dom.spec.whatwg.org/#element
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Element
  *
- * @property string $className
- * @property string $id
- * @property string $innerHTML
- * @property string $outerHTML
- *
- * @property-read \Rowbot\DOM\DOMTokenList                                $classList
- * @property-read \Rowbot\DOM\NamedNodeMap                                $attributes
- * @property-read string                                                  $tagName
  * @property-read \Rowbot\DOM\HTMLCollection<\Rowbot\DOM\Element\Element> $children
  * @property-read \Rowbot\DOM\Element\Element|null                        $firstElementChild
  * @property-read \Rowbot\DOM\Element\Element|null                        $lastElementChild
@@ -67,6 +57,129 @@ class Element extends Node implements ChildNode, ParentNode
     use GetElementsBy;
     use NonDocumentTypeChildNode;
     use ParentNodeTrait;
+
+    public readonly string $localName;
+
+    public readonly ?string $namespaceURI;
+
+    public readonly ?string $prefix;
+
+    public string $tagName {
+        get => $this->getTagName();
+    }
+
+    /**
+     * @see https://dom.spec.whatwg.org/#dom-element-id
+     */
+    public string $id {
+        get => $this->attributeList->getAttrValue('id');
+        set(float|int|string $value) {
+            $this->attributeList->setAttrValue('id', (string) $value);
+        }
+    }
+
+    /**
+     * @see https://dom.spec.whatwg.org/#dom-element-classname
+     */
+    public string $className {
+        get => $this->attributeList->getAttrValue('class');
+        set(float|int|string $value) {
+            $this->attributeList->setAttrValue('class', (string) $value);
+        }
+    }
+
+    /**
+     * @see https://dom.spec.whatwg.org/#dom-element-classlist
+     */
+    public DOMTokenList $classList {
+        get => $this->getClassList();
+        set(DOMTokenList|float|int|string $value) {
+            $this->getClassList()->value = (string) $value;
+        }
+    }
+
+    /**
+     * @see https://dom.spec.whatwg.org/#dom-element-attributes
+     */
+    public NamedNodeMap $attributes {
+        get => $this->namedNodeMap;
+    }
+
+    /**
+     * @see https://w3c.github.io/DOM-Parsing/#the-innerhtml-mixin
+     */
+    public string $innerHTML {
+        get => MarkupFactory::serializeFragment($this, true);
+        set(float|int|string|\Stringable|null $value) {
+            if ($value === null) {
+                $value = '';
+            }
+
+            // 2. Let fragment be the result of invoking the fragment parsing algorithm with the
+            // new value as markup, and with context element.
+            $fragment = ParserFactory::parseFragment((string) $value, $this);
+
+            // 3. If the context object is a template element, then let context object be the
+            // template's template contents (a DocumentFragment).
+            $context = $this instanceof HTMLTemplateElement ? $this->content : $this;
+
+            // NOTE: Setting innerHTML on a template element will replace all the nodes in its
+            // template contents (template.content) rather than its children.
+
+            // 4. Replace all with fragment within the context object.
+            $context->replaceAllNodes($fragment);
+        }
+    }
+
+    /**
+     * @see https://w3c.github.io/DOM-Parsing/#dom-element-outerhtml
+     */
+    public string $outerHTML {
+        get {
+            $fakeNode = ElementFactory::create($this->nodeDocument, 'fake', Namespaces::HTML);
+            $fakeNode->childNodes_->append($this);
+
+            return MarkupFactory::serializeFragment($fakeNode, true);
+        }
+        set(float|int|string|\Stringable|null $value) {
+            if ($value === null) {
+                $value = '';
+            }
+
+            // Let parent be the context object's parent.
+            $parent = $this->parentNode;
+
+            // If parent is null, terminate these steps. There would be no
+            // way to obtain a reference to the nodes created even if the
+            // remaining steps were run.
+            if (!$parent) {
+                return;
+            }
+
+            // If parent is a Document, throw a
+            // "NoModificationAllowedError" DOMException.
+            if ($parent instanceof Document) {
+                throw new NoModificationAllowedError();
+            }
+
+            // If parent is a DocumentFragment, let parent be a new Element
+            // with body as its local name, the HTML namespace as its
+            // namespace, and the context object's node document as its node
+            // document.
+            if ($parent instanceof DocumentFragment) {
+                $parent = ElementFactory::create($this->nodeDocument, 'body', Namespaces::HTML);
+            }
+
+            // Let fragment be the result of invoking the fragment parsing
+            // algorithm with the new value as markup, and parent as the
+            // context element.
+            $fragment = ParserFactory::parseFragment((string) $value, $parent);
+
+            // Replace the context object with fragment within the context
+            // object's parent.
+            $this->parentNode->replaceNode($fragment, $this);
+        }
+    }
 
     public string $nodeName {
         get => $this->getTagName();
@@ -106,18 +219,11 @@ class Element extends Node implements ChildNode, ParentNode
         }
     }
 
-    #[Getter('attributes')]
     protected NamedNodeMap $namedNodeMap;
 
     protected AttributeList $attributeList;
 
-    public readonly string $localName;
-
-    public readonly ?string $namespaceURI;
-
-    public readonly ?string $prefix;
-
-    private ?DOMTokenList $classList_;
+    private ?DOMTokenList $_classList;
 
     public function __construct(Document $document, string $localName, ?string $namespace, ?string $prefix = null)
     {
@@ -129,7 +235,7 @@ class Element extends Node implements ChildNode, ParentNode
         $this->namedNodeMap = new NamedNodeMap($this);
         $this->namespaceURI = $namespace;
         $this->prefix = $prefix;
-        $this->classList_ = null;
+        $this->_classList = null;
     }
 
     /**
@@ -590,11 +696,8 @@ class Element extends Node implements ChildNode, ParentNode
     /**
      * Gets the element's tag name.
      *
-     * @internal
-     *
      * @see https://dom.spec.whatwg.org/#element-html-uppercased-qualified-name
      */
-    #[Getter('tagName')]
     protected function getTagName(): string
     {
         $qualifiedName = $this->getQualifiedName();
@@ -721,156 +824,9 @@ class Element extends Node implements ChildNode, ParentNode
         return count($this->childNodes_);
     }
 
-    #[Getter('classList')]
     protected function getClassList(): DOMTokenList
     {
-        return $this->classList_ ??= new DOMTokenList($this, $this->dispatcher, 'class');
-    }
-
-    #[Getter('className')]
-    private function getClassName(): string
-    {
-        return $this->attributeList->getAttrValue('class');
-    }
-
-    #[Getter('id')]
-    private function getId(): string
-    {
-        return $this->attributeList->getAttrValue('id');
-    }
-
-    /**
-     * On getting, return the result of invoking the fragment
-     * serializing algorithm on the context object providing true
-     * for the require well-formed flag (this might throw an
-     * exception instead of returning a string).
-     *
-     * @see https://w3c.github.io/DOM-Parsing/#the-innerhtml-mixin
-     */
-    #[Getter('innerHTML')]
-    private function getInnerHTML(): string
-    {
-        return MarkupFactory::serializeFragment($this, true);
-    }
-
-    /**
-     * On getting, return the result of invoking the fragment
-     * serializing algorithm on a fictional node whose only child is
-     * the context object providing true for the require well-formed
-     * flag (this might throw an exception instead of returning a
-     * string).
-     */
-    #[Getter('outerHTML')]
-    private function getOuterHTML(): string
-    {
-        $fakeNode = ElementFactory::create($this->nodeDocument, 'fake', Namespaces::HTML);
-        $fakeNode->childNodes_->append($this);
-
-        return MarkupFactory::serializeFragment($fakeNode, true);
-    }
-
-    #[Setter('classList')]
-    private function setClassList(mixed $value): void
-    {
-        if (!Utils::isStringable($value)) {
-            throw new TypeError();
-        }
-
-        $this->getClassList()->value = (string) $value;
-    }
-
-    #[Setter('className')]
-    private function setClassName(mixed $value): void
-    {
-        if (!Utils::isStringable($value)) {
-            throw new TypeError();
-        }
-
-        $this->attributeList->setAttrValue('class', (string) $value);
-    }
-
-    #[Setter('id')]
-    private function setId(mixed $value): void
-    {
-        if (!Utils::isStringable($value)) {
-            throw new TypeError();
-        }
-
-        $this->attributeList->setAttrValue('id', (string) $value);
-    }
-
-    /**
-     * @see https://w3c.github.io/DOM-Parsing/#the-innerhtml-mixin
-     */
-    #[Setter('innerHTML')]
-    private function setInnerHTML(mixed $value): void
-    {
-        if ($value === null) {
-            $value = '';
-        }
-
-        if (!Utils::isStringable($value)) {
-            throw new TypeError();
-        }
-
-        // 2. Let fragment be the result of invoking the fragment parsing algorithm with the
-        // new value as markup, and with context element.
-        $fragment = ParserFactory::parseFragment((string) $value, $this);
-
-        // 3. If the context object is a template element, then let context object be the
-        // template's template contents (a DocumentFragment).
-        $context = $this instanceof HTMLTemplateElement ? $this->content : $this;
-
-        // NOTE: Setting innerHTML on a template element will replace all the nodes in its
-        // template contents (template.content) rather than its children.
-
-        // 4. Replace all with fragment within the context object.
-        $context->replaceAllNodes($fragment);
-    }
-
-    #[Setter('outerHTML')]
-    private function setOuterHTML(mixed $value): void
-    {
-        if ($value === null) {
-            $value = '';
-        }
-
-        if (!Utils::isStringable($value)) {
-            throw new TypeError();
-        }
-
-        // Let parent be the context object's parent.
-        $parent = $this->parentNode;
-
-        // If parent is null, terminate these steps. There would be no
-        // way to obtain a reference to the nodes created even if the
-        // remaining steps were run.
-        if (!$parent) {
-            return;
-        }
-
-        // If parent is a Document, throw a
-        // "NoModificationAllowedError" DOMException.
-        if ($parent instanceof Document) {
-            throw new NoModificationAllowedError();
-        }
-
-        // If parent is a DocumentFragment, let parent be a new Element
-        // with body as its local name, the HTML namespace as its
-        // namespace, and the context object's node document as its node
-        // document.
-        if ($parent instanceof DocumentFragment) {
-            $parent = ElementFactory::create($this->nodeDocument, 'body', Namespaces::HTML);
-        }
-
-        // Let fragment be the result of invoking the fragment parsing
-        // algorithm with the new value as markup, and parent as the
-        // context element.
-        $fragment = ParserFactory::parseFragment((string) $value, $parent);
-
-        // Replace the context object with fragment within the context
-        // object's parent.
-        $this->parentNode->replaceNode($fragment, $this);
+        return $this->_classList ??= new DOMTokenList($this, $this->dispatcher, 'class');
     }
 
     protected function __clone()
@@ -885,7 +841,7 @@ class Element extends Node implements ChildNode, ParentNode
         }
 
         $this->attributeList = $attributeList;
-        $this->classList_ = null;
+        $this->_classList = null;
         $this->namedNodeMap = new NamedNodeMap($this);
     }
 }
