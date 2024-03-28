@@ -7,8 +7,6 @@ namespace Rowbot\DOM;
 /**
  * @see https://dom.spec.whatwg.org/#treewalker
  * @see https://developer.mozilla.org/en-US/docs/Web/API/TreeWalker
- *
- * @property \Rowbot\DOM\Node $currentNode
  */
 final class TreeWalker extends NodeTraverser
 {
@@ -29,17 +27,6 @@ final class TreeWalker extends NodeTraverser
 
         $this->currentNode = $root;
         $this->root = $root;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function __get(string $name)
-    {
-        switch ($name) {
-            case 'currentNode':
-                return $this->currentNode;
-        }
     }
 
     /**
