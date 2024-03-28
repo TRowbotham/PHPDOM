@@ -5,14 +5,10 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Element\HTML;
 
 use Rowbot\DOM\Document;
-use Rowbot\DOM\DynamicProperty\Getter;
-use Rowbot\DOM\DynamicProperty\Setter;
-use Rowbot\DOM\Exception\TypeError;
 use Rowbot\DOM\InternalEvent\AttributeChangedEvent;
 use Rowbot\DOM\InternalEvent\NodeInsertedEvent;
 use Rowbot\DOM\InternalEvent\NodeRemovedEvent;
 use Rowbot\DOM\URL\URLParser;
-use Rowbot\DOM\Utils;
 use Rowbot\URL\URLRecord;
 
 use function assert;
@@ -24,6 +20,40 @@ use function in_array;
 class HTMLBaseElement extends HTMLElement
 {
     private const TARGET_KEYWORDS = ['_self', '_blank', '_parent', '_top'];
+
+    /**
+     * @see https://html.spec.whatwg.org/multipage/semantics.html#dom-base-href
+     */
+    public string $href {
+        get {
+            $document = $this->nodeDocument;
+            $url = $this->attributeList->getAttrValue('href', null);
+            $urlRecord = URLParser::parseUrl(
+                $url,
+                $document->getFallbackBaseURL(),
+                $document->characterSet
+            );
+
+            if ($urlRecord === false) {
+                return $url;
+            }
+
+            return $urlRecord->serializeURL();
+        }
+        set {
+            $this->attributeList->setAttrValue('href', $value);
+        }
+    }
+
+    /**
+     * @see https://html.spec.whatwg.org/multipage/semantics.html#dom-base-target
+     */
+    public string $target {
+        get => $this->attributeList->getAttrValue('target', null);
+        set {
+            $this->attributeList->setAttrValue('target', $value);
+        }
+    }
 
     private ?URLRecord $frozenBaseUrl;
 
@@ -134,50 +164,6 @@ class HTMLBaseElement extends HTMLElement
             assert($baseElements->getActiveBase() !== null);
             $baseElements->getActiveBase()->setFrozenBaseURL();
         }
-    }
-
-    #[Getter('href')]
-    private function getHref(): string
-    {
-        $document = $this->nodeDocument;
-        $url = $this->attributeList->getAttrValue('href', null);
-        $urlRecord = URLParser::parseUrl(
-            $url,
-            $document->getFallbackBaseURL(),
-            $document->characterSet
-        );
-
-        if ($urlRecord === false) {
-            return $url;
-        }
-
-        return $urlRecord->serializeURL();
-    }
-
-    #[Getter('target')]
-    private function getTarget(): string
-    {
-        return $this->attributeList->getAttrValue('target', null);
-    }
-
-    #[Setter('href')]
-    private function setHref(mixed $value): void
-    {
-        if (!Utils::isStringable($value)) {
-            throw new TypeError();
-        }
-
-        $this->attributeList->setAttrValue('href', (string) $value);
-    }
-
-    #[Setter('target')]
-    private function setTarget(mixed $value): void
-    {
-        if (!Utils::isStringable($value)) {
-            throw new TypeError();
-        }
-
-        $this->attributeList->setAttrValue('target', (string) $value);
     }
 
     protected function __clone()
