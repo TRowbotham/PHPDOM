@@ -7,13 +7,10 @@ namespace Rowbot\DOM\Element\HTML;
 use Closure;
 use Generator;
 use Rowbot\DOM\Document;
-use Rowbot\DOM\DynamicProperty\Getter;
-use Rowbot\DOM\DynamicProperty\Setter;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Element\ElementFactory;
 use Rowbot\DOM\Exception\HierarchyRequestError;
 use Rowbot\DOM\Exception\IndexSizeError;
-use Rowbot\DOM\Exception\TypeError;
 use Rowbot\DOM\HTMLCollection;
 use Rowbot\DOM\Namespaces;
 
@@ -21,100 +18,149 @@ use Rowbot\DOM\Namespaces;
  * Represents the HTML table element <table>.
  *
  * @see https://html.spec.whatwg.org/multipage/tables.html#the-table-element
- *
- * @property \Rowbot\DOM\Element\HTML\HTMLTableCaptionElement|null $caption Upon getting, it returns the first <caption>
- *                                                                          element in the table or null. Upon setting,
- *                                                                          if the value is an HTMLTableCaptionElement
- *                                                                          the first <caption> element in the table is
- *                                                                          removed and replaced with the given one. If
- *                                                                          the value is null, the first <caption>
- *                                                                          element is removed, if any.
- * @property \Rowbot\DOM\Element\HTML\HTMLTableSectionElement|null $tHead   Upon getting, it returns the first <thead>
- *                                                                          element in the table or null. Upon setting,
- *                                                                          if the value is an HTMLTableSectionElement
- *                                                                          and its tagName is THEAD or the value is
- *                                                                          null, the first <thead> element, if any, is
- *                                                                          removed from the table.  If  the value is
- *                                                                          HTMLTableSectionElement and its tagName is
- *                                                                          THEAD, the supplied value is inserted into
- *                                                                          the table before the first element that is
- *                                                                          neither a <caption>, <colgroup>, or <col>
- *                                                                          element. Throws a HierarchyRequestError if
- *                                                                          the given value is not null or
- *                                                                          HTMLTableSectionElement with a tagName of
- *                                                                          THEAD.
- * @property \Rowbot\DOM\Element\HTML\HTMLTableSectionElement|null $tFoot   Upon getting, it returns the first <tfoot>
- *                                                                          element in the table or null. Upon setting,
- *                                                                          if the value is an HTMLTableSectionElement
- *                                                                          and its tagName is TFOOT or the value is
- *                                                                          null, the first <tfoot> element, if any, is
- *                                                                          removed from the table. If the value is
- *                                                                          HTMLTableSectionElement and its tagName is
- *                                                                          TFOOT, the supplied value is inserted into
- *                                                                          the table before the first element that is
- *                                                                          neither a <caption>, <colgroup>, <col>, or
- *                                                                          <thead> element. Throws a
- *                                                                          HierarchyRequestError if the given value is
- *                                                                          not null or HTMLTableSectionElement with a
- *                                                                          tagName of TFOOT.
- *
- * @property-read \Rowbot\DOM\HTMLCollection<\Rowbot\DOM\Element\HTML\HTMLTableRowElement>     $rows    Returns a list of all the <tr>
- *                                                                                elements, in order, that are in the
- *                                                                                table.
- * @property-read \Rowbot\DOM\HTMLCollection<\Rowbot\DOM\Element\HTML\HTMLTableSectionElement> $tBodies Returns a list of all the <tbody>
- *                                                                                elements, in order, that are in the
- *                                                                                table.
  */
 class HTMLTableElement extends HTMLElement
 {
-    /**
-     * @var \Rowbot\DOM\HTMLCollection<\Rowbot\DOM\Element\HTML\HTMLTableRowElement>|null
-     */
-    private ?HTMLCollection $rowsCollection;
-
-    /**
-     * @var \Rowbot\DOM\HTMLCollection<\Rowbot\DOM\Element\HTML\HTMLTableSectionElement>|null
-     */
-    private ?HTMLCollection $tBodyCollection;
-
     public function __construct(Document $document, string $localName, ?string $namespace, ?string $prefix = null)
     {
         parent::__construct($document, $localName, $namespace, $prefix);
-
-        $this->rowsCollection = null;
-        $this->tBodyCollection = null;
     }
 
     /**
-     * The caption IDL attribute must return, on getting, the first caption element child of the table element, if any,
-     * or null otherwise.
+     * @see https://html.spec.whatwg.org/multipage/tables.html#dom-table-caption
      */
-    #[Getter('caption')]
-    private function getCaption(): ?HTMLTableCaptionElement
-    {
-        $node = $this->childNodes_->first();
+    public ?HTMLTableCaptionElement $caption {
+        get {
+            $node = $this->childNodes_->first();
 
-        while ($node) {
-            if ($node instanceof HTMLTableCaptionElement) {
-                return $node;
+            while ($node) {
+                if ($node instanceof HTMLTableCaptionElement) {
+                    return $node;
+                }
+
+                $node = $node->nextSibling;
             }
 
-            $node = $node->nextSibling;
+            return null;
         }
+        set {
+            $node = $this->childNodes_->first();
+            $caption = null;
 
-        return null;
+            while ($node) {
+                if ($node instanceof HTMLTableCaptionElement) {
+                    $caption = $node;
+
+                    break;
+                }
+
+                $node = $node->nextSibling;
+            }
+
+            if ($caption) {
+                $caption->removeNode();
+            }
+
+            if ($value) {
+                $this->preinsertNode($value, $this->childNodes_->first());
+            }
+        }
     }
 
-    #[Getter('rows')]
-    private function getRows(): HTMLCollection
-    {
-        return $this->rowsCollection ??= new HTMLCollection($this, $this->getRowsFilter());
+    /**
+     * @see https://html.spec.whatwg.org/multipage/tables.html#dom-table-thead
+     */
+    public ?HTMLTableSectionElement $tHead {
+        get => $this->getTHeadOrTFoot('thead');
+        set {
+            // If the new value is neither null nor a thead element, then a
+            // "HierarchyRequestError" DOMException must be thrown instead.
+            if ($value && $value->localName !== 'thead') {
+                throw new HierarchyRequestError();
+            }
+
+            // On setting, if the new value is null or a thead element, the first thead element
+            // child of the table element, if any, must be removed,
+            $node = $this->childNodes_->first();
+
+            while ($node) {
+                if ($node instanceof HTMLTableSectionElement && $node->localName === 'thead') {
+                    $node->removeNode();
+
+                    break;
+                }
+
+                $node = $node->nextSibling;
+            }
+
+            // and the new value, if not null, must be inserted immediately before the first
+            // element in the table element that is neither a caption element nor a colgroup
+            // element, if any,
+            if (!$value) {
+                return;
+            }
+
+            $node = $this->childNodes_->first();
+
+            while ($node) {
+                if (
+                    $node instanceof Element
+                    && !$node instanceof HTMLTableColElement
+                    && !$node instanceof HTMLTableCaptionElement
+                ) {
+                    $this->preinsertNode($value, $node);
+
+                    return;
+                }
+
+                $node = $node->nextSibling;
+            }
+
+            // or at the end of the table if there are no such elements.
+            $this->preinsertNode($value);
+        }
     }
 
-    #[Getter('tBodies')]
-    private function getTBodies(): HTMLCollection
-    {
-        return $this->tBodyCollection ??= new HTMLCollection(
+    /**
+     * @see https://html.spec.whatwg.org/multipage/tables.html#dom-table-tfoot
+     */
+    public ?HTMLTableSectionElement $tFoot {
+        get => $this->getTHeadOrTFoot('tfoot');
+        set {
+            // If the new value is neither null nor a tfoot element, then a
+            // "HierarchyRequestError" DOMException must be thrown instead.
+            if ($value && $value->localName !== 'tfoot') {
+                throw new HierarchyRequestError();
+            }
+
+            // On setting, if the new value is null or a tfoot element, the first tfoot element
+            // child of the table element, if any, must be removed,
+            $node = $this->childNodes_->first();
+
+            while ($node) {
+                if ($node instanceof HTMLTableSectionElement && $node->localName === 'tfoot') {
+                    $node->removeNode();
+
+                    break;
+                }
+
+                $node = $node->nextSibling;
+            }
+
+            // and the new value, if not null, must be inserted at the end of the table.
+            if (!$value) {
+                return;
+            }
+
+            $this->preinsertNode($value);
+        }
+    }
+
+    /**
+     * @see https://html.spec.whatwg.org/multipage/tables.html#dom-table-tbodies
+     */
+    public HTMLCollection $tBodies {
+        get => $this->tBodies ??= new HTMLCollection(
             $this,
             static function (self $root) {
                 $node = $root->firstChild;
@@ -133,32 +179,11 @@ class HTMLTableElement extends HTMLElement
         );
     }
 
-
-    #[Getter('tHead')]
-    private function getTHead(): ?HTMLTableSectionElement
-    {
-        return $this->getTHeadOrTFoot('thead');
-    }
-
-    #[Getter('tFoot')]
-    private function getTFoot(): ?HTMLTableSectionElement
-    {
-        return $this->getTHeadOrTFoot('tfoot');
-    }
-
-    private function getTHeadOrTFoot(string $name): ?HTMLTableSectionElement
-    {
-        $node = $this->childNodes_->first();
-
-        while ($node) {
-            if ($node instanceof HTMLTableSectionElement && $node->localName === $name) {
-                return $node;
-            }
-
-            $node = $node->nextSibling;
-        }
-
-        return null;
+    /**
+     * @see https://html.spec.whatwg.org/multipage/tables.html#dom-table-rows
+     */
+    public HTMLCollection $rows {
+        get => $this->rows ??= new HTMLCollection($this, $this->getRowsFilter());
     }
 
     /**
@@ -556,125 +581,18 @@ class HTMLTableElement extends HTMLElement
         };
     }
 
-    /**
-     * On setting, the first caption element child of the table element, if any, must be removed, and the new value, if
-     * not null, must be inserted as the first node of the table element.
-     */
-    #[Setter('caption')]
-    private function setCaption(mixed $value): void
+    private function getTHeadOrTFoot(string $name): ?HTMLTableSectionElement
     {
-        if ($value !== null && !$value instanceof HTMLTableCaptionElement) {
-            throw new TypeError();
-        }
-
         $node = $this->childNodes_->first();
-        $caption = null;
 
         while ($node) {
-            if ($node instanceof HTMLTableCaptionElement) {
-                $caption = $node;
-
-                break;
+            if ($node instanceof HTMLTableSectionElement && $node->localName === $name) {
+                return $node;
             }
 
             $node = $node->nextSibling;
         }
 
-        if ($caption) {
-            $caption->removeNode();
-        }
-
-        if ($value) {
-            $this->preinsertNode($value, $this->childNodes_->first());
-        }
-    }
-
-    #[Setter('tFoot')]
-    private function setTFoot(mixed $value): void
-    {
-        if ($value !== null && !$value instanceof HTMLTableSectionElement) {
-            throw new TypeError();
-        }
-
-        // If the new value is neither null nor a tfoot element, then a
-        // "HierarchyRequestError" DOMException must be thrown instead.
-        if ($value && $value->localName !== 'tfoot') {
-            throw new HierarchyRequestError();
-        }
-
-        // On setting, if the new value is null or a tfoot element, the first tfoot element
-        // child of the table element, if any, must be removed,
-        $node = $this->childNodes_->first();
-
-        while ($node) {
-            if ($node instanceof HTMLTableSectionElement && $node->localName === 'tfoot') {
-                $node->removeNode();
-
-                break;
-            }
-
-            $node = $node->nextSibling;
-        }
-
-        // and the new value, if not null, must be inserted at the end of the table.
-        if (!$value) {
-            return;
-        }
-
-        $this->preinsertNode($value);
-    }
-
-    #[Setter('tHead')]
-    private function setTHead(mixed $value): void
-    {
-        if ($value !== null && !$value instanceof HTMLTableSectionElement) {
-            throw new TypeError();
-        }
-
-        // If the new value is neither null nor a thead element, then a
-        // "HierarchyRequestError" DOMException must be thrown instead.
-        if ($value && $value->localName !== 'thead') {
-            throw new HierarchyRequestError();
-        }
-
-        // On setting, if the new value is null or a thead element, the first thead element
-        // child of the table element, if any, must be removed,
-        $node = $this->childNodes_->first();
-
-        while ($node) {
-            if ($node instanceof HTMLTableSectionElement && $node->localName === 'thead') {
-                $node->removeNode();
-
-                break;
-            }
-
-            $node = $node->nextSibling;
-        }
-
-        // and the new value, if not null, must be inserted immediately before the first
-        // element in the table element that is neither a caption element nor a colgroup
-        // element, if any,
-        if (!$value) {
-            return;
-        }
-
-        $node = $this->childNodes_->first();
-
-        while ($node) {
-            if (
-                $node instanceof Element
-                && !$node instanceof HTMLTableColElement
-                && !$node instanceof HTMLTableCaptionElement
-            ) {
-                $this->preinsertNode($value, $node);
-
-                return;
-            }
-
-            $node = $node->nextSibling;
-        }
-
-        // or at the end of the table if there are no such elements.
-        $this->preinsertNode($value);
+        return null;
     }
 }

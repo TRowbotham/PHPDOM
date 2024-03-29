@@ -6,8 +6,8 @@ namespace Rowbot\DOM\Tests\html\semantics\tabular_data\the_table_element;
 
 use Rowbot\DOM\Element\HTML\HTMLTableCaptionElement;
 use Rowbot\DOM\Exception\HierarchyRequestError;
-use Rowbot\DOM\Exception\TypeError;
 use Rowbot\DOM\Tests\dom\WindowTrait;
+use TypeError;
 
 /**
  * @see https://github.com/web-platform-tests/wpt/blob/master/html/semantics/tabular-data/the-table-element/caption-methods.html
