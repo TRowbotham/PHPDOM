@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Element\HTML;
 
 use Generator;
-use Rowbot\DOM\Document;
-use Rowbot\DOM\DynamicProperty\Getter;
 use Rowbot\DOM\Element\ElementFactory;
 use Rowbot\DOM\Exception\IndexSizeError;
 use Rowbot\DOM\HTMLCollection;
@@ -20,21 +18,27 @@ use function assert;
  * @see https://html.spec.whatwg.org/multipage/tables.html#the-tbody-element
  * @see https://html.spec.whatwg.org/multipage/tables.html#the-thead-element
  * @see https://html.spec.whatwg.org/multipage/tables.html#the-tfoot-element
- *
- * @property-read \Rowbot\DOM\HTMLCollection<\Rowbot\DOM\Element\HTML\HTMLTableRowElement> $rows
  */
 class HTMLTableSectionElement extends HTMLElement
 {
     /**
-     * @var \Rowbot\DOM\HTMLCollection<\Rowbot\DOM\Element\HTML\HTMLTableRowElement>|null
+     * @see https://html.spec.whatwg.org/multipage/tables.html#dom-tbody-rows
      */
-    private ?HTMLCollection $rowsCollection;
+    public HTMLCollection $rows {
+        get => $this->rows ??= new HTMLCollection(
+            $this,
+            static function (self $root): Generator {
+                $node = $root->firstChild;
 
-    public function __construct(Document $document, string $localName, ?string $namespace, ?string $prefix = null)
-    {
-        parent::__construct($document, $localName, $namespace, $prefix);
+                while ($node) {
+                    if ($node instanceof HTMLTableRowElement) {
+                        yield $node;
+                    }
 
-        $this->rowsCollection = null;
+                    $node = $node->nextSibling;
+                }
+            }
+        );
     }
 
     /**
@@ -144,24 +148,5 @@ class HTMLTableSectionElement extends HTMLElement
         // 3. Otherwise, remove the indexth element in the rows collection from this element.
         assert($indexedRow !== null);
         $indexedRow->removeNode();
-    }
-
-    #[Getter('rows')]
-    private function getRows(): HTMLCollection
-    {
-        return $this->rowsCollection ??= new HTMLCollection(
-            $this,
-            static function (self $root): Generator {
-                $node = $root->firstChild;
-
-                while ($node) {
-                    if ($node instanceof HTMLTableRowElement) {
-                        yield $node;
-                    }
-
-                    $node = $node->nextSibling;
-                }
-            }
-        );
     }
 }
