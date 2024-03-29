@@ -64,18 +64,10 @@ abstract class Node
     public const DOCUMENT_POSITION_CONTAINED_BY            = 0x10;
     public const DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC = 0x20;
 
-    public string $baseURI {
-        get => $this->nodeDocument->getBaseURL()->serializeURL();
-    }
-
     /**
-     * @var \Rowbot\DOM\NodeList<\Rowbot\DOM\Node>
+     * @var self::*_NODE
      */
-    public readonly NodeList $childNodes;
-
-    public bool $isConnected {
-        get => $this->getRootNode(['composed' => true]) instanceof Document;
-    }
+    public readonly int $nodeType;
 
     /**
      * @see https://dom.spec.whatwg.org/#dom-node-nodename
@@ -85,9 +77,37 @@ abstract class Node
     }
 
     /**
-     * @var self::*_NODE
+     * @see https://dom.spec.whatwg.org/#dom-node-baseuri
      */
-    public readonly int $nodeType;
+    public string $baseURI {
+        get => $this->nodeDocument->getBaseURL()->serializeURL();
+    }
+
+    /**
+     * @see https://dom.spec.whatwg.org/#dom-node-isconnected
+     */
+    public bool $isConnected {
+        get => $this->getRootNode(['composed' => true]) instanceof Document;
+    }
+
+    /**
+     * @see https://dom.spec.whatwg.org/#dom-node-ownerdocument
+     */
+    public ?Document $ownerDocument {
+        get => $this->nodeDocument;
+    }
+
+    /**
+     * @see https://dom.spec.whatwg.org/#dom-node-parentelement
+     */
+    public ?Element $parentElement {
+        get => $this->parentNode instanceof Element ? $this->parentNode : null;
+    }
+
+    /**
+     * @var \Rowbot\DOM\NodeList<\Rowbot\DOM\Node>
+     */
+    public readonly NodeList $childNodes;
 
     /**
      * @see https://dom.spec.whatwg.org/#dom-node-nodevalue
@@ -97,10 +117,6 @@ abstract class Node
         set {
             return;
         }
-    }
-
-    public ?Document $ownerDocument {
-        get => $this->nodeDocument;
     }
 
     /**
@@ -202,17 +218,6 @@ abstract class Node
     public function getDispatcher(): EventDispatcherInterface
     {
         return $this->dispatcher;
-    }
-
-    /**
-     * Returns the node's parent element.
-     *
-     * @internal
-     */
-    #[Getter('parentElement')]
-    public function parentElement(): ?Element
-    {
-        return $this->parentNode instanceof Element ? $this->parentNode : null;
     }
 
     /**
