@@ -203,7 +203,7 @@ class HTMLElement extends Element
 
         $value = $attr->getValue();
 
-        return $value === '' || $attr->getLocalName() === Utils::toASCIILowercase($value);
+        return $value === '' || $attr->localName === Utils::toASCIILowercase($value);
     }
 
     /**

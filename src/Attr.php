@@ -4,20 +4,13 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM;
 
-use Rowbot\DOM\DynamicProperty\Getter;
-use Rowbot\DOM\DynamicProperty\Setter;
 use Rowbot\DOM\Element\Element;
-use Rowbot\DOM\Exception\TypeError;
 
 /**
  * Represents a content attribute on an Element.
  *
  * @see https://dom.spec.whatwg.org/#attr
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Attr
- *
- * @property-read \Rowbot\DOM\Element\Element|null $ownerElement The Element to which this attribute belongs to, or null
- *                                                               if it is not owned by an Element.
- * @property-read string                           $value        The value of the attribute.
  */
 class Attr extends Node
 {
@@ -27,26 +20,39 @@ class Attr extends Node
 
     public readonly string $localName;
 
-    public readonly string $name;
+    /**
+     * @see https://dom.spec.whatwg.org/#dom-attr-name
+     */
+    public string $name {
+        get => $this->getQualifiedName();
+    }
+
+    /**
+     * @see https://dom.spec.whatwg.org/#dom-attr-value
+     */
+    public string $value {
+        get => $this->_value;
+        set(float|int|string $value) {
+            $this->setExistingAttributeValue((string) $value);
+        }
+    }
+
+    public ?Element $ownerElement {
+        get => $this->_ownerElement;
+    }
 
     public string $nodeName {
-        get {
-            if ($this->prefix) {
-                return $this->prefix . ':' . $this->localName;
-            }
-
-            return $this->localName;
-        }
+        get => $this->getQualifiedName();
     }
 
     public ?string $nodeValue {
         get => $this->value;
-        set {
+        set(float|int|string|null $value) {
             if ($value === null) {
                 $value = '';
             }
 
-            $this->setExistingAttributeValue($value);
+            $this->setExistingAttributeValue((string) $value);
         }
     }
 
@@ -57,15 +63,13 @@ class Attr extends Node
                 $value = '';
             }
 
-            $this->setExistingAttributeValue($value);
+            $this->setExistingAttributeValue((string) $value);
         }
     }
 
-    #[Getter('value')]
-    private string $value;
+    private string $_value;
 
-    #[Getter('ownerElement')]
-    private ?Element $ownerElement;
+    private ?Element $_ownerElement;
 
     public function __construct(
         Document $document,
@@ -78,13 +82,9 @@ class Attr extends Node
 
         $this->localName = $localName;
         $this->namespaceURI = $namespace;
-        $this->ownerElement = null;
+        $this->_ownerElement = null;
         $this->prefix = $prefix;
-        $this->value = $value;
-        $this->name = match ($this->prefix) {
-            null    => $this->localName,
-            default => $this->prefix . ':' . $this->localName,
-        };
+        $this->_value = $value;
     }
 
     public function isEqualNode(?Node $otherNode): bool
@@ -94,50 +94,8 @@ class Attr extends Node
             && $otherNode instanceof self
             && $otherNode->namespaceURI === $this->namespaceURI
             && $otherNode->localName === $this->localName
-            && $otherNode->value === $this->value
+            && $otherNode->_value === $this->_value
             && $this->hasEqualChildNodes($otherNode);
-    }
-
-    /**
-     * Returns the attribute's namespace.
-     *
-     * @internal
-     */
-    public function getNamespace(): ?string
-    {
-        return $this->namespaceURI;
-    }
-
-    /**
-     * Returns the attribute's local name.
-     *
-     * @internal
-     */
-    public function getLocalName(): string
-    {
-        return $this->localName;
-    }
-
-    /**
-     * Returns the attribute's qualified name.
-     *
-     * @internal
-     */
-    public function getQualifiedName(): string
-    {
-        if ($this->prefix === null) {
-            return $this->localName;
-        }
-
-        return $this->prefix . ':' . $this->localName;
-    }
-
-    /**
-     * Returns the attribute's owner element.
-     */
-    public function getOwnerElement(): ?Element
-    {
-        return $this->ownerElement;
     }
 
     /**
@@ -147,7 +105,7 @@ class Attr extends Node
      */
     public function setOwnerElement(?Element $element): void
     {
-        $this->ownerElement = $element;
+        $this->_ownerElement = $element;
     }
 
     /**
@@ -157,7 +115,7 @@ class Attr extends Node
      */
     public function getValue(): string
     {
-        return $this->value;
+        return $this->_value;
     }
 
     /**
@@ -168,30 +126,7 @@ class Attr extends Node
      */
     public function setValue(string $value): void
     {
-        $this->value = $value;
-    }
-
-    /**
-     * Sets the value of an existing attribute.
-     *
-     * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#set-an-existing-attribute-value
-     */
-    #[Setter('value')]
-    protected function setExistingAttributeValue(mixed $value): void
-    {
-        if (!Utils::isStringable($value)) {
-            throw new TypeError();
-        }
-
-        if (!$this->ownerElement) {
-            $this->value = $value;
-
-            return;
-        }
-
-        $this->ownerElement->getAttributeList()->change($this, (string) $value);
+        $this->_value = $value;
     }
 
     public function getLength(): int
@@ -200,9 +135,34 @@ class Attr extends Node
         return 0;
     }
 
+    /**
+     * Sets the value of an existing attribute.
+     *
+     * @see https://dom.spec.whatwg.org/#set-an-existing-attribute-value
+     */
+    protected function setExistingAttributeValue(string $value): void
+    {
+        if (!$this->_ownerElement) {
+            $this->_value = $value;
+
+            return;
+        }
+
+        $this->_ownerElement->getAttributeList()->change($this, $value);
+    }
+
+    protected function getQualifiedName(): string
+    {
+        if ($this->prefix === null) {
+            return $this->localName;
+        }
+
+        return $this->prefix . ':' . $this->localName;
+    }
+
     protected function __clone()
     {
         parent::__clone();
-        $this->ownerElement = null;
+        $this->_ownerElement = null;
     }
 }

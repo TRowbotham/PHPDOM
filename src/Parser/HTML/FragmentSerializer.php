@@ -65,15 +65,15 @@ class FragmentSerializer implements FragmentSerializerInterface
                 $s .= '<' . $tagname;
 
                 foreach ($currentNode->getAttributeList() as $attr) {
-                    $attrName = match ($attr->getNamespace()) {
-                        null => $attr->getLocalName(),
-                        Namespaces::XML => 'xml:' . $attr->getLocalName(),
-                        Namespaces::XMLNS => match ($attr->getLocalName()) {
+                    $attrName = match ($attr->namespaceURI) {
+                        null => $attr->localName,
+                        Namespaces::XML => 'xml:' . $attr->localName,
+                        Namespaces::XMLNS => match ($attr->localName) {
                             'xmlns' => 'xmlns',
-                            default => 'xmlns:' . $attr->getLocalName(),
+                            default => 'xmlns:' . $attr->localName,
                         },
-                        Namespaces::XLINK => 'xlink:' . $attr->getLocalName(),
-                        default => $attr->getQualifiedName(),
+                        Namespaces::XLINK => 'xlink:' . $attr->localName,
+                        default => $attr->name,
                     };
                     $attrValue = str_replace(['&', "\u{00A0}", '"'], ['&amp;', '&nbsp;', '&quot;'], $attr->getValue());
 

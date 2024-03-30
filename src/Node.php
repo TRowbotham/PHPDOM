@@ -1532,7 +1532,7 @@ abstract class Node
 
         foreach ($element->getAttributeList() as $attr) {
             if ($attr->prefix === 'xmlns' && $attr->getValue() === $namespace) {
-                return $attr->getLocalName();
+                return $attr->localName;
             }
         }
 

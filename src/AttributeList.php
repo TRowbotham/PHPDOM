@@ -57,7 +57,7 @@ class AttributeList implements ArrayAccess, Countable, IteratorAggregate
     public function change(Attr $attribute, string $value): void
     {
         // 1. Let oldValue be attribute’s value.
-        $oldValue = $attribute->value;
+        $oldValue = $attribute->getValue();
 
         // 2. Set attribute’s value to value.
         $attribute->setValue($value);
@@ -92,7 +92,7 @@ class AttributeList implements ArrayAccess, Countable, IteratorAggregate
     public function remove(Attr $attribute): void
     {
         // 1. Let element be attribute’s element.
-        $element = $attribute->getOwnerElement();
+        $element = $attribute->ownerElement;
 
         // 2. Remove attribute from element’s attribute list.
         if (!isset($this->cache[$attribute->namespaceURI][$attribute->localName])) {
@@ -134,7 +134,7 @@ class AttributeList implements ArrayAccess, Countable, IteratorAggregate
         $this->cache[$newAttr->namespaceURI][$newAttr->localName] = $newAttr;
 
         // 2. Set newAttr’s element to oldAttr’s element.
-        $newAttr->setOwnerElement($oldAttr->getOwnerElement());
+        $newAttr->setOwnerElement($oldAttr->ownerElement);
 
         // 3. Set oldAttr’s element to null.
         $oldAttr->setOwnerElement(null);
@@ -142,7 +142,7 @@ class AttributeList implements ArrayAccess, Countable, IteratorAggregate
         // 4. Handle attribute changes for oldAttr with newAttr’s element, oldAttr’s value, and newAttr’s value.
         $this->handleAttributeChanges(
             $oldAttr,
-            $newAttr->getOwnerElement(),
+            $newAttr->ownerElement,
             $oldAttr->getValue(),
             $newAttr->getValue()
         );
@@ -230,7 +230,7 @@ class AttributeList implements ArrayAccess, Countable, IteratorAggregate
      */
     public function setAttr(Attr $attr): ?Attr
     {
-        $owner = $attr->getOwnerElement();
+        $owner = $attr->ownerElement;
 
         if ($owner !== null && $owner !== $this->element) {
             throw new InUseAttributeError();
@@ -320,8 +320,8 @@ class AttributeList implements ArrayAccess, Countable, IteratorAggregate
 
     public function contains(Attr $attr): bool
     {
-        $namespace = $attr->getNamespace();
-        $localName = $attr->getLocalName();
+        $namespace = $attr->namespaceURI;
+        $localName = $attr->localName;
 
         return isset($this->cache[$namespace][$localName]) && $this->cache[$namespace][$localName] === $attr;
     }

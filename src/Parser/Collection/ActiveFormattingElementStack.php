@@ -55,16 +55,16 @@ class ActiveFormattingElementStack extends ObjectStack
             }
 
             foreach ($elementAttributes as $attr) {
-                $attrNamespace = $attr->getNamespace();
+                $attrNamespace = $attr->namespaceURI;
                 $itemAttr = $itemAttributes->getAttrByNamespaceAndLocalName(
                     $attrNamespace,
-                    $attr->getLocalName()
+                    $attr->localName
                 );
 
                 if (
                     $itemAttr === null
-                    || $attr->getQualifiedName() !== $itemAttr->getQualifiedName()
-                    || $attr->getNamespace() !== $itemAttr->getNamespace()
+                    || $attr->name !== $itemAttr->name
+                    || $attr->namespaceURI !== $itemAttr->namespaceURI
                     || $attr->getValue() !== $itemAttr->getValue()
                 ) {
                     continue 2;

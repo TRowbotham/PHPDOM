@@ -259,7 +259,7 @@ class Element extends Node implements ChildNode, ParentNode
         $list = [];
 
         foreach ($this->attributeList as $attr) {
-            $list[] = $attr->getQualifiedName();
+            $list[] = $attr->name;
         }
 
         return $list;
@@ -322,7 +322,7 @@ class Element extends Node implements ChildNode, ParentNode
         $attribute = null;
 
         foreach ($this->attributeList as $attr) {
-            if ($attr->getQualifiedName() === $qualifiedName) {
+            if ($attr->name === $qualifiedName) {
                 $attribute = $attr;
 
                 break;
@@ -399,7 +399,7 @@ class Element extends Node implements ChildNode, ParentNode
         $forceIsGiven = func_num_args() > 1;
 
         foreach ($this->attributeList as $attr) {
-            if ($attr->getQualifiedName() === $qualifiedName) {
+            if ($attr->name === $qualifiedName) {
                 $attribute = $attr;
 
                 break;

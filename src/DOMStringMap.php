@@ -111,9 +111,9 @@ final class DOMStringMap implements ArrayAccess, IteratorAggregate
         $list = [];
 
         foreach ($this->element->getAttributeList() as $attr) {
-            $name = $attr->getLocalName();
+            $name = $attr->localName;
 
-            if (strncmp($name, 'data-', 5) !== 0 || $attr->getNamespace() !== null) {
+            if (strncmp($name, 'data-', 5) !== 0 || $attr->namespaceURI !== null) {
                 continue;
             }
 
