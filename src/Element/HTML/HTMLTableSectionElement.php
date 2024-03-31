@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Element\HTML;
 
 use Generator;
+use Rowbot\DOM\Document;
 use Rowbot\DOM\Element\ElementFactory;
 use Rowbot\DOM\Exception\IndexSizeError;
 use Rowbot\DOM\HTMLCollection;
@@ -25,20 +26,16 @@ class HTMLTableSectionElement extends HTMLElement
      * @see https://html.spec.whatwg.org/multipage/tables.html#dom-tbody-rows
      */
     public HTMLCollection $rows {
-        get => $this->rows ??= new HTMLCollection(
-            $this,
-            static function (self $root): Generator {
-                $node = $root->firstChild;
+        get => $this->getRows();
+    }
 
-                while ($node) {
-                    if ($node instanceof HTMLTableRowElement) {
-                        yield $node;
-                    }
+    private ?HTMLCollection $_rows;
 
-                    $node = $node->nextSibling;
-                }
-            }
-        );
+    public function __construct(Document $document, string $localName, ?string $namespace, ?string $prefix = null)
+    {
+        parent::__construct($document, $localName, $namespace, $prefix);
+
+        $this->_rows = null;
     }
 
     /**
@@ -148,5 +145,30 @@ class HTMLTableSectionElement extends HTMLElement
         // 3. Otherwise, remove the indexth element in the rows collection from this element.
         assert($indexedRow !== null);
         $indexedRow->removeNode();
+    }
+
+    private function getRows(): HTMLCollection
+    {
+        return $this->_rows ??= new HTMLCollection(
+            $this,
+            static function (self $root): Generator {
+                $node = $root->firstChild;
+
+                while ($node) {
+                    if ($node instanceof HTMLTableRowElement) {
+                        yield $node;
+                    }
+
+                    $node = $node->nextSibling;
+                }
+            }
+        );
+    }
+
+    protected function __clone(): void
+    {
+        parent::__clone();
+
+        $this->_rows = null;
     }
 }

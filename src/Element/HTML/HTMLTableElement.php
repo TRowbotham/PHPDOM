@@ -21,11 +21,6 @@ use Rowbot\DOM\Namespaces;
  */
 class HTMLTableElement extends HTMLElement
 {
-    public function __construct(Document $document, string $localName, ?string $namespace, ?string $prefix = null)
-    {
-        parent::__construct($document, $localName, $namespace, $prefix);
-    }
-
     /**
      * @see https://html.spec.whatwg.org/multipage/tables.html#dom-table-caption
      */
@@ -160,30 +155,26 @@ class HTMLTableElement extends HTMLElement
      * @see https://html.spec.whatwg.org/multipage/tables.html#dom-table-tbodies
      */
     public HTMLCollection $tBodies {
-        get => $this->tBodies ??= new HTMLCollection(
-            $this,
-            static function (self $root) {
-                $node = $root->firstChild;
-
-                while ($node !== null) {
-                    if (
-                        $node instanceof HTMLTableSectionElement
-                        && $node->localName === 'tbody'
-                    ) {
-                        yield $node;
-                    }
-
-                    $node = $node->nextSibling;
-                }
-            }
-        );
+        get => $this->getTBodies();
     }
 
     /**
      * @see https://html.spec.whatwg.org/multipage/tables.html#dom-table-rows
      */
     public HTMLCollection $rows {
-        get => $this->rows ??= new HTMLCollection($this, $this->getRowsFilter());
+        get => $this->getRows();
+    }
+
+    private ?HTMLCollection $_tBodies;
+
+    private ?HTMLCollection $_rows;
+
+    public function __construct(Document $document, string $localName, ?string $namespace, ?string $prefix = null)
+    {
+        parent::__construct($document, $localName, $namespace, $prefix);
+
+        $this->_tBodies = null;
+        $this->_rows = null;
     }
 
     /**
@@ -594,5 +585,39 @@ class HTMLTableElement extends HTMLElement
         }
 
         return null;
+    }
+
+    private function getTBodies(): HTMLCollection
+    {
+        return $this->_tBodies ??= new HTMLCollection(
+            $this,
+            static function (self $root) {
+                $node = $root->firstChild;
+
+                while ($node !== null) {
+                    if (
+                        $node instanceof HTMLTableSectionElement
+                        && $node->localName === 'tbody'
+                    ) {
+                        yield $node;
+                    }
+
+                    $node = $node->nextSibling;
+                }
+            }
+        );
+    }
+
+    private function getRows(): HTMLCollection
+    {
+        return $this->_rows ??= new HTMLCollection($this, $this->getRowsFilter());
+    }
+
+    protected function __clone(): void
+    {
+        parent::__clone();
+
+        $this->_tBodies = null;
+        $this->_rows = null;
     }
 }

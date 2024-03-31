@@ -7,7 +7,7 @@ namespace Rowbot\DOM\Tests\html\semantics\tabular_data\attributes_common_to_td_a
 use Rowbot\DOM\Tests\dom\DocumentGetter;
 use Rowbot\DOM\Tests\TestCase;
 
-use function method_exists;
+use function property_exists;
 
 /**
  * @see https://github.com/web-platform-tests/wpt/blob/master/html/semantics/tabular-data/attributes-common-to-td-and-th-elements/cellIndex.html
@@ -18,13 +18,11 @@ class CellIndexTest extends TestCase
 
     public function testCellIndexShouldExist(): void
     {
-        self::markTestSkipped('Can\'t check existance of magic properties');
-
         $document = $this->getHTMLDocument();
         $th = $document->createElement('th');
-        self::assertTrue(method_exists($th, 'cellIndex'));
+        self::assertTrue(property_exists($th, 'cellIndex'));
         $td = $document->createElement('td');
-        self::assertTrue(method_exists($td, 'cellIndex'));
+        self::assertTrue(property_exists($td, 'cellIndex'));
     }
 
     public function testForCellsWithoutAParentShouldReturnNegativeOne(): void

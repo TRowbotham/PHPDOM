@@ -90,25 +90,16 @@ class HTMLTableRowElement extends HTMLElement
      * @see https://html.spec.whatwg.org/multipage/tables.html#dom-tr-cells
      */
     public HTMLCollection $cells {
-        get => $this->cells ??= new HTMLCollection(
-            $this,
-            static function (self $root): Generator {
-                $node = $root->firstChild;
-
-                while ($node) {
-                    if ($node instanceof HTMLTableCellElement) {
-                        yield $node;
-                    }
-
-                    $node = $node->nextSibling;
-                }
-            }
-        );
+        get => $this->getCells();
     }
+
+    private ?HTMLCollection $_cells;
 
     public function __construct(Document $document, string $localName, ?string $namespace, ?string $prefix = null)
     {
         parent::__construct($document, $localName, $namespace, $prefix);
+
+        $this->_cells = null;
     }
 
     /**
@@ -216,5 +207,30 @@ class HTMLTableRowElement extends HTMLElement
         // 3. Otherwise, remove the indexth element in the cells collection from its parent.
         assert($indexedCell !== null);
         $indexedCell->removeNode();
+    }
+
+    private function getCells(): HTMLCollection
+    {
+        return $this->_cells ??= new HTMLCollection(
+            $this,
+            static function (self $root): Generator {
+                $node = $root->firstChild;
+
+                while ($node) {
+                    if ($node instanceof HTMLTableCellElement) {
+                        yield $node;
+                    }
+
+                    $node = $node->nextSibling;
+                }
+            }
+        );
+    }
+
+    protected function __clone(): void
+    {
+        parent::__clone();
+
+        $this->_cells = null;
     }
 }

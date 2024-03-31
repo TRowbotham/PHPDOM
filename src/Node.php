@@ -39,7 +39,6 @@ use function strcmp;
  * @property-read \Rowbot\DOM\Node|null            $lastChild
  * @property-read \Rowbot\DOM\Node|null            $nextSibling
  * @property-read \Rowbot\DOM\Node|null            $parentNode
- * @property-read \Rowbot\DOM\Element\Element|null $parentElement
  * @property-read \Rowbot\DOM\Node|null            $previousSibling
  */
 abstract class Node

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\html\dom\documents\dom_tree_accessors;
 
+use Error;
 use Rowbot\DOM\Tests\dom\WindowTrait;
 
 /**
@@ -18,9 +19,27 @@ class DocumentHead01Test extends AccessorTestCase
         $document = self::getWindow()->document;
         $head = $document->getElementsByTagName('head')[0];
         self::assertSame($head, $document->head);
-        $document->head = '';
+        $headIsReadOnly = false;
+
+        try {
+            $document->head = '';
+        } catch (Error)  {
+            $headIsReadOnly = true;
+        } finally {
+            self::assertTrue($headIsReadOnly);
+        }
+
         self::assertSame($head, $document->head);
-        $document->head = $document->createElement('head');
+        $headIsReadOnly = false;
+
+        try {
+            $document->head = $document->createElement('head');
+        } catch (Error)  {
+            $headIsReadOnly = true;
+        } finally {
+            self::assertTrue($headIsReadOnly);
+        }
+
         self::assertSame($head, $document->head);
         $document->documentElement->appendChild($document->createElement('head'));
         self::assertSame($head, $document->head);
