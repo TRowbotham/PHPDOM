@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Rowbot\DOM;
 
 use Rowbot\DOM\Element\Element;
-use Rowbot\DOM\Exception\TypeError;
 
 use function count;
 
@@ -45,10 +44,6 @@ class DocumentFragment extends Node implements NonElementParentNode, ParentNode
         set(float|int|string|null $value) {
             if ($value === null) {
                 $value = '';
-            }
-
-            if (!Utils::isStringable($value)) {
-                throw new TypeError();
             }
 
             $node = null;
