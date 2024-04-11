@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM;
 
+use Rowbot\DOM\Range\BoundaryPoint;
+use Rowbot\DOM\Range\RangeBoundary;
+
 /**
  * @see https://dom.spec.whatwg.org/#abstractrange
  *
@@ -19,45 +22,25 @@ abstract class AbstractRange
 {
     protected RangeBoundary $range;
 
-    public function __construct(RangeBoundary $range)
+    public function __construct(BoundaryPoint $start, BoundaryPoint $end)
     {
-        $this->range = $range;
+        $this->range = new RangeBoundary($start, $end);
     }
 
-    /**
-     * @return mixed
-     */
     public function __get(string $name)
     {
-        if ($name === 'startContainer') {
-            return $this->range->startNode;
-        }
-
-        if ($name === 'startOffset') {
-            return $this->range->startOffset;
-        }
-
-        if ($name === 'endContainer') {
-            return $this->range->endNode;
-        }
-
-        if ($name === 'endOffset') {
-            return $this->range->endOffset;
-        }
-
-        if ($name === 'collapsed') {
-            return $this->isCollapsed();
-        }
+        return match ($name) {
+            'startContainer' => $this->range->start->node,
+            'startOffset' => $this->range->start->offset,
+            'endContainer' => $this->range->end->node,
+            'endOffset' => $this->range->end->offset,
+            'collapsed' => $this->range->isCollapsed(),
+            default => null,
+        };
     }
 
-    /**
-     * Determines if a range is collapsed.
-     *
-     * @see https://dom.spec.whatwg.org/#range-collapsed
-     */
-    protected function isCollapsed(): bool
+    public function __clone(): void
     {
-        return $this->range->startNode === $this->range->endNode
-            && $this->range->startOffset === $this->range->endOffset;
+        $this->range = clone $this->range;
     }
 }
