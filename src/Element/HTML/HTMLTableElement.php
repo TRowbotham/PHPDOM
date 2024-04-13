@@ -33,7 +33,7 @@ class HTMLTableElement extends HTMLElement
                     return $node;
                 }
 
-                $node = $node->nextSibling;
+                $node = $node->_nextSibling;
             }
 
             return null;
@@ -49,7 +49,7 @@ class HTMLTableElement extends HTMLElement
                     break;
                 }
 
-                $node = $node->nextSibling;
+                $node = $node->_nextSibling;
             }
 
             if ($caption) {
@@ -85,7 +85,7 @@ class HTMLTableElement extends HTMLElement
                     break;
                 }
 
-                $node = $node->nextSibling;
+                $node = $node->_nextSibling;
             }
 
             // and the new value, if not null, must be inserted immediately before the first
@@ -108,7 +108,7 @@ class HTMLTableElement extends HTMLElement
                     return;
                 }
 
-                $node = $node->nextSibling;
+                $node = $node->_nextSibling;
             }
 
             // or at the end of the table if there are no such elements.
@@ -139,7 +139,7 @@ class HTMLTableElement extends HTMLElement
                     break;
                 }
 
-                $node = $node->nextSibling;
+                $node = $node->_nextSibling;
             }
 
             // and the new value, if not null, must be inserted at the end of the table.
@@ -194,7 +194,7 @@ class HTMLTableElement extends HTMLElement
                 return $node;
             }
 
-            $node = $node->nextSibling;
+            $node = $node->_nextSibling;
         }
 
         $caption = ElementFactory::create($this->nodeDocument, 'caption', Namespaces::HTML);
@@ -219,7 +219,7 @@ class HTMLTableElement extends HTMLElement
                 return;
             }
 
-            $node = $node->nextSibling;
+            $node = $node->_nextSibling;
         }
     }
 
@@ -241,7 +241,7 @@ class HTMLTableElement extends HTMLElement
                 return $node;
             }
 
-            $node = $node->nextSibling;
+            $node = $node->_nextSibling;
         }
 
         $thead = ElementFactory::create($this->nodeDocument, 'thead', Namespaces::HTML);
@@ -258,7 +258,7 @@ class HTMLTableElement extends HTMLElement
                 return $thead;
             }
 
-            $node = $node->nextSibling;
+            $node = $node->_nextSibling;
         }
 
         $this->preinsertNode($thead);
@@ -282,7 +282,7 @@ class HTMLTableElement extends HTMLElement
                 return;
             }
 
-            $node = $node->nextSibling;
+            $node = $node->_nextSibling;
         }
     }
 
@@ -302,7 +302,7 @@ class HTMLTableElement extends HTMLElement
                 return $node;
             }
 
-            $node = $node->nextSibling;
+            $node = $node->_nextSibling;
         }
 
         $tfoot = ElementFactory::create($this->nodeDocument, 'tfoot', Namespaces::HTML);
@@ -327,7 +327,7 @@ class HTMLTableElement extends HTMLElement
                 return;
             }
 
-            $node = $node->nextSibling;
+            $node = $node->_nextSibling;
         }
     }
 
@@ -350,14 +350,14 @@ class HTMLTableElement extends HTMLElement
                 break;
             }
 
-            $node = $node->previousSibling;
+            $node = $node->_previousSibling;
         }
 
         $tbody = ElementFactory::create($this->nodeDocument, 'tbody', Namespaces::HTML);
         $child = null;
 
         if ($lastTbody) {
-            $child = $lastTbody->nextSibling;
+            $child = $lastTbody->_nextSibling;
         }
 
         $this->insertNode($tbody, $child);
@@ -412,7 +412,7 @@ class HTMLTableElement extends HTMLElement
                 $lastTbody = $node;
             }
 
-            $node = $node->previousSibling;
+            $node = $node->_previousSibling;
         }
 
         // If the rows collection has zero elements in it, and the table has no tbody elements in it:
@@ -440,7 +440,7 @@ class HTMLTableElement extends HTMLElement
         if ($index === -1 || $index === $numRows) {
             // The method must table-create a tr element, and append it to the parent of the last tr
             // element in the rows collection. Then, the newly created tr element must be returned.
-            $lastRow->parentNode->insertNode($tableRow, null);
+            $lastRow->_parentNode->insertNode($tableRow, null);
 
             return $tableRow;
         }
@@ -448,7 +448,7 @@ class HTMLTableElement extends HTMLElement
         // Otherwise:
         // The method must table-create a tr element, insert it immediately before the indexth tr element in the rows
         // collection, in the same parent, and finally must return the newly created tr element.
-        $indexedRow->parentNode->insertNode($tableRow, $indexedRow);
+        $indexedRow->_parentNode->insertNode($tableRow, $indexedRow);
 
         return $tableRow;
     }
@@ -530,14 +530,14 @@ class HTMLTableElement extends HTMLElement
                                 yield $child;
                             }
 
-                            $child = $child->nextSibling;
+                            $child = $child->_nextSibling;
                         }
                     }
                 } elseif ($node instanceof HTMLTableRowElement) {
                     $bodyOrRow[] = $node;
                 }
 
-                $node = $node->nextSibling;
+                $node = $node->_nextSibling;
             }
 
             foreach ($bodyOrRow as $potenialRow) {
@@ -554,7 +554,7 @@ class HTMLTableElement extends HTMLElement
                         yield $node;
                     }
 
-                    $node = $node->nextSibling;
+                    $node = $node->_nextSibling;
                 }
             }
 
@@ -566,7 +566,7 @@ class HTMLTableElement extends HTMLElement
                         yield $node;
                     }
 
-                    $node = $node->nextSibling;
+                    $node = $node->_nextSibling;
                 }
             }
         };
@@ -581,7 +581,7 @@ class HTMLTableElement extends HTMLElement
                 return $node;
             }
 
-            $node = $node->nextSibling;
+            $node = $node->_nextSibling;
         }
 
         return null;
@@ -602,7 +602,7 @@ class HTMLTableElement extends HTMLElement
                         yield $node;
                     }
 
-                    $node = $node->nextSibling;
+                    $node = $node->_nextSibling;
                 }
             }
         );

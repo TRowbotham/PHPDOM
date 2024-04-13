@@ -67,7 +67,7 @@ class HTMLTableSectionElement extends HTMLElement
                 ++$numRows;
             }
 
-            $node = $node->nextSibling;
+            $node = $node->_nextSibling;
         }
 
         if ($index > $numRows) {
@@ -123,7 +123,7 @@ class HTMLTableSectionElement extends HTMLElement
                 $lastRow = $node;
             }
 
-            $node = $node->nextSibling;
+            $node = $node->_nextSibling;
         }
 
         if ($index >= $numRows) {
@@ -159,7 +159,7 @@ class HTMLTableSectionElement extends HTMLElement
                         yield $node;
                     }
 
-                    $node = $node->nextSibling;
+                    $node = $node->_nextSibling;
                 }
             }
         );

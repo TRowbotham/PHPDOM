@@ -81,7 +81,7 @@ trait ParentNodeTrait
                     yield $node;
                 }
 
-                $node = $node->nextSibling;
+                $node = $node->_nextSibling;
             }
         });
     }
@@ -103,7 +103,7 @@ trait ParentNodeTrait
                 return $node;
             }
 
-            $node = $node->nextSibling;
+            $node = $node->_nextSibling;
         }
 
         return null;
@@ -126,7 +126,7 @@ trait ParentNodeTrait
                 return $node;
             }
 
-            $node = $node->previousSibling;
+            $node = $node->_previousSibling;
         }
 
         return null;

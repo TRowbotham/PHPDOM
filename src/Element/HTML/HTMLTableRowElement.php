@@ -25,21 +25,21 @@ class HTMLTableRowElement extends HTMLElement
      */
     public int $rowIndex {
         get {
-            $parentIsTable = $this->parentNode instanceof HTMLTableElement;
+            $parentIsTable = $this->_parentNode instanceof HTMLTableElement;
 
             if (
                 !$parentIsTable
                 && (
-                    !$this->parentNode instanceof HTMLTableSectionElement
-                    || !$this->parentNode->parentNode instanceof HTMLTableElement
+                    !$this->_parentNode instanceof HTMLTableSectionElement
+                    || !$this->_parentNode->_parentNode instanceof HTMLTableElement
                 )
             ) {
                 return -1;
             }
 
             $parentTable = $parentIsTable
-                ? $this->parentNode
-                : $this->parentNode->parentNode;
+                ? $this->_parentNode
+                : $this->_parentNode->_parentNode;
             $rows = $parentTable->rows->getIterator();
             $rows->rewind();
             $index = 0;
@@ -63,14 +63,14 @@ class HTMLTableRowElement extends HTMLElement
     public int $sectionRowIndex {
         get {
             if (
-                !$this->parentNode instanceof HTMLTableElement
-                && !$this->parentNode instanceof HTMLTableSectionElement
+                !$this->_parentNode instanceof HTMLTableElement
+                && !$this->_parentNode instanceof HTMLTableSectionElement
             ) {
                 return -1;
             }
 
             $index = 0;
-            $rows = $this->parentNode->rows->getIterator();
+            $rows = $this->_parentNode->rows->getIterator();
             $rows->rewind();
 
             while ($rows->valid()) {
@@ -130,7 +130,7 @@ class HTMLTableRowElement extends HTMLElement
                 ++$numCells;
             }
 
-            $node = $node->nextSibling;
+            $node = $node->_nextSibling;
         }
 
         if ($index > $numCells) {
@@ -185,7 +185,7 @@ class HTMLTableRowElement extends HTMLElement
                 ++$numCells;
             }
 
-            $node = $node->nextSibling;
+            $node = $node->_nextSibling;
         }
 
         if ($index >= $numCells) {
@@ -221,7 +221,7 @@ class HTMLTableRowElement extends HTMLElement
                         yield $node;
                     }
 
-                    $node = $node->nextSibling;
+                    $node = $node->_nextSibling;
                 }
             }
         );

@@ -20,7 +20,7 @@ trait ChildNodeTrait
     public function after(...$nodes): void
     {
         // 1. Let parent be this’s parent.
-        $parent = $this->parentNode;
+        $parent = $this->_parentNode;
 
         // 2. If parent is null, then return.
         if (!$parent) {
@@ -29,14 +29,14 @@ trait ChildNodeTrait
 
         // 3. Let viableNextSibling be this’s first following sibling not in nodes, and null
         // otherwise.
-        $viableNextSibling = $this->nextSibling;
+        $viableNextSibling = $this->_nextSibling;
 
         while ($viableNextSibling) {
             if (!in_array($viableNextSibling, $nodes, true)) {
                 break;
             }
 
-            $viableNextSibling = $viableNextSibling->nextSibling;
+            $viableNextSibling = $viableNextSibling->_nextSibling;
         }
 
         // 4. Let node be the result of converting nodes into a node, given nodes and this’s node
@@ -53,7 +53,7 @@ trait ChildNodeTrait
     public function before(...$nodes): void
     {
         // 1. Let parent be this’s parent.
-        $parent = $this->parentNode;
+        $parent = $this->_parentNode;
 
         // 2. If parent is null, then return.
         if (!$parent) {
@@ -62,14 +62,14 @@ trait ChildNodeTrait
 
         // 3. Let viablePreviousSibling be this’s first preceding sibling not in nodes, and null
         // otherwise.
-        $viablePreviousSibling = $this->previousSibling;
+        $viablePreviousSibling = $this->_previousSibling;
 
         while ($viablePreviousSibling) {
             if (!in_array($viablePreviousSibling, $nodes, true)) {
                 break;
             }
 
-            $viablePreviousSibling = $viablePreviousSibling->previousSibling;
+            $viablePreviousSibling = $viablePreviousSibling->_previousSibling;
         }
 
         // 4. Let node be the result of converting nodes into a node, given nodes and this’s node
@@ -79,7 +79,7 @@ trait ChildNodeTrait
         // 5. If viablePreviousSibling is null, set it to parent’s first child, and to
         // viablePreviousSibling’s next sibling otherwise.
         $viablePreviousSibling = $viablePreviousSibling
-            ? $viablePreviousSibling->nextSibling
+            ? $viablePreviousSibling->_nextSibling
             : $parent->firstChild;
 
         // 6. Pre-insert node into parent before viablePreviousSibling.
@@ -91,7 +91,7 @@ trait ChildNodeTrait
      */
     public function remove(): void
     {
-        if (!$this->parentNode) {
+        if (!$this->_parentNode) {
             return;
         }
 
@@ -104,7 +104,7 @@ trait ChildNodeTrait
     public function replaceWith(...$nodes): void
     {
         // 1. Let parent be this’s parent.
-        $parent = $this->parentNode;
+        $parent = $this->_parentNode;
 
         // 2. If parent is null, then return.
         if (!$parent) {
@@ -113,14 +113,14 @@ trait ChildNodeTrait
 
         // 3. Let viableNextSibling be this’s first following sibling not in nodes, and null
         // otherwise.
-        $viableNextSibling = $this->nextSibling;
+        $viableNextSibling = $this->_nextSibling;
 
         while ($viableNextSibling) {
             if (!in_array($viableNextSibling, $nodes, true)) {
                 break;
             }
 
-            $viableNextSibling = $viableNextSibling->nextSibling;
+            $viableNextSibling = $viableNextSibling->_nextSibling;
         }
 
         // 4. Let node be the result of converting nodes into a node, given nodes and this’s node
@@ -128,7 +128,7 @@ trait ChildNodeTrait
         $node = $this->convertNodesToNode($nodes, $this->nodeDocument);
 
         // 5. If this’s parent is parent, replace this with node within parent.
-        if ($this->parentNode === $parent) {
+        if ($this->_parentNode === $parent) {
             $parent->replaceNode($node, $this);
 
             return;

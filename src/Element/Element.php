@@ -147,7 +147,7 @@ class Element extends Node implements ChildNode, ParentNode
             }
 
             // Let parent be the context object's parent.
-            $parent = $this->parentNode;
+            $parent = $this->_parentNode;
 
             // If parent is null, terminate these steps. There would be no
             // way to obtain a reference to the nodes created even if the
@@ -177,7 +177,7 @@ class Element extends Node implements ChildNode, ParentNode
 
             // Replace the context object with fragment within the context
             // object's parent.
-            $this->parentNode->replaceNode($fragment, $this);
+            $this->_parentNode->replaceNode($fragment, $this);
         }
     }
 
@@ -621,7 +621,7 @@ class Element extends Node implements ChildNode, ParentNode
 
         if ($position === NodeInsertionLocation::BEFORE_BEGIN || $position === NodeInsertionLocation::AFTER_END) {
             // Let context be the context object's parent.
-            $context = $this->parentNode;
+            $context = $this->_parentNode;
 
             // If context is null or a Document, throw a
             // "NoModificationAllowedError" DOMException.
@@ -657,7 +657,7 @@ class Element extends Node implements ChildNode, ParentNode
         if ($position === NodeInsertionLocation::BEFORE_BEGIN) {
             // Insert fragment into the context object's parent before the
             // context object.
-            $this->parentNode->preinsertNode($fragment, $this);
+            $this->_parentNode->preinsertNode($fragment, $this);
         } elseif ($position === NodeInsertionLocation::AFTER_BEGIN) {
             // Insert fragment into the context object before its first child.
             $this->preinsertNode($fragment, $this->firstChild);
@@ -667,7 +667,7 @@ class Element extends Node implements ChildNode, ParentNode
         } elseif ($position === NodeInsertionLocation::AFTER_END) {
             // Insert fragment into the context object's parent before the
             // context object's next sibling.
-            $this->parentNode->preinsertNode($fragment, $this->nextSibling);
+            $this->_parentNode->preinsertNode($fragment, $this->_nextSibling);
         }
     }
 
@@ -736,11 +736,11 @@ class Element extends Node implements ChildNode, ParentNode
         }
 
         if ($where === NodeInsertionLocation::BEFORE_BEGIN) {
-            if ($element->parentNode === null) {
+            if ($element->_parentNode === null) {
                 return null;
             }
 
-            return $element->parentNode->preinsertNode($node, $element);
+            return $element->_parentNode->preinsertNode($node, $element);
         }
 
         if ($where === NodeInsertionLocation::AFTER_BEGIN) {
@@ -752,11 +752,11 @@ class Element extends Node implements ChildNode, ParentNode
         }
 
         if ($where === NodeInsertionLocation::AFTER_END) {
-            if ($element->parentNode === null) {
+            if ($element->_parentNode === null) {
                 return null;
             }
 
-            return $element->parentNode->preinsertNode($node, $element->nextSibling);
+            return $element->_parentNode->preinsertNode($node, $element->_nextSibling);
         }
     }
 

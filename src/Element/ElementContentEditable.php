@@ -81,7 +81,7 @@ trait ElementContentEditable
                 'inherit',
                 self::CONTENT_EDITABLE_STATE_MAP
             );
-            $node = $node->parentNode;
+            $node = $node->_parentNode;
         } while ($state === 'inherit' && $node instanceof self);
 
         return in_array($state, self::CONTENT_EDITABLE_STATE_MAP['true'], true);

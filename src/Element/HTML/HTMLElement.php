@@ -92,7 +92,7 @@ class HTMLElement extends Element
                     'inherit',
                     self::TRANSLATE_STATE_MAP
                 );
-                $node = $node->parentNode;
+                $node = $node->_parentNode;
             } while ($state === 'inherit' && $node instanceof self);
 
             return $state === 'no' ? false : true;

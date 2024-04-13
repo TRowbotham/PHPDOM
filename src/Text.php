@@ -23,16 +23,16 @@ class Text extends CharacterData
             $startNode = $this;
 
             while ($startNode) {
-                if (!$startNode->previousSibling instanceof Text) {
+                if (!$startNode->_previousSibling instanceof Text) {
                     break;
                 }
 
-                $startNode = $startNode->previousSibling;
+                $startNode = $startNode->_previousSibling;
             }
 
             while ($startNode instanceof Text) {
                 $wholeText .= $startNode->_data;
-                $startNode = $startNode->nextSibling;
+                $startNode = $startNode->_nextSibling;
             }
 
             return $wholeText;
@@ -76,8 +76,8 @@ class Text extends CharacterData
         $newData = $this->substringData($offset, $count);
         $newNode = new Text($this->nodeDocument, $newData);
 
-        if ($this->parentNode) {
-            $this->parentNode->insertNode($newNode, $this->nextSibling);
+        if ($this->_parentNode) {
+            $this->_parentNode->insertNode($newNode, $this->_nextSibling);
             $treeIndex = $this->getTreeIndex();
 
             foreach (Range::getRangeCollection() as $range) {
@@ -90,7 +90,7 @@ class Text extends CharacterData
 
                 // 7.4. For each live range whose start node is parent and start offset is equal to
                 // the index of node plus 1, increase its start offset by 1.
-                } elseif ($range->start->node === $this->parentNode && $range->start->offset === $treeIndex + 1) {
+                } elseif ($range->start->node === $this->_parentNode && $range->start->offset === $treeIndex + 1) {
                     $range->start->offset += 1;
                 }
 
@@ -102,7 +102,7 @@ class Text extends CharacterData
 
                 // 7.5. For each live range whose end node is parent and end offset is equal to the
                 // index of node plus 1, increase its end offset by 1.
-                } elseif ($range->end->node === $this->parentNode && $range->end->offset === $treeIndex + 1) {
+                } elseif ($range->end->node === $this->_parentNode && $range->end->offset === $treeIndex + 1) {
                     $range->end->offset += 1;
                 }
             }

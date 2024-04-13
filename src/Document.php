@@ -205,8 +205,8 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
             // If there is a pre-existing body element, then replace it with the
             // new body element.
             if ($oldBody) {
-                assert($oldBody->parentNode !== null);
-                $oldBody->parentNode->replaceNode($value, $oldBody);
+                assert($oldBody->_parentNode !== null);
+                $oldBody->_parentNode->replaceNode($value, $oldBody);
 
                 return;
             }
@@ -571,7 +571,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
     {
         $oldDocument = $node->nodeDocument;
 
-        if ($node->parentNode) {
+        if ($node->_parentNode) {
             $node->removeNode();
         }
 

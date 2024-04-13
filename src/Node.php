@@ -34,12 +34,6 @@ use function strcmp;
 /**
  * @see https://dom.spec.whatwg.org/#node
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Node
- *
- * @property-read \Rowbot\DOM\Node|null            $firstChild
- * @property-read \Rowbot\DOM\Node|null            $lastChild
- * @property-read \Rowbot\DOM\Node|null            $nextSibling
- * @property-read \Rowbot\DOM\Node|null            $parentNode
- * @property-read \Rowbot\DOM\Node|null            $previousSibling
  */
 abstract class Node
 {
@@ -96,17 +90,37 @@ abstract class Node
         get => $this->nodeDocument;
     }
 
+    public ?self $parentNode {
+        get => $this->_parentNode;
+    }
+
     /**
      * @see https://dom.spec.whatwg.org/#dom-node-parentelement
      */
     public ?Element $parentElement {
-        get => $this->parentNode instanceof Element ? $this->parentNode : null;
+        get => $this->_parentNode instanceof Element ? $this->_parentNode : null;
     }
 
     /**
      * @var \Rowbot\DOM\NodeList<\Rowbot\DOM\Node>
      */
     public readonly NodeList $childNodes;
+
+    public ?self $firstChild {
+        get => $this->childNodes_->first();
+    }
+
+    public ?self $lastChild {
+        get => $this->childNodes_->last();
+    }
+
+    public ?self $previousSibling {
+        get => $this->_previousSibling;
+    }
+
+    public ?self $nextSibling {
+        get => $this->_nextSibling;
+    }
 
     /**
      * @see https://dom.spec.whatwg.org/#dom-node-nodevalue
@@ -133,27 +147,15 @@ abstract class Node
      */
     protected NodeSet $childNodes_;
 
-    /**
-     * @var self|null
-     */
-    #[Getter('parentNode')]
-    protected $parentNode;
+    protected self|null $_parentNode;
 
-    /**
-     * @var self|null
-     */
-    #[Getter('nextSibling')]
-    protected $nextSibling;
+    protected ?self $_previousSibling;
+
+    protected ?self $_nextSibling;
 
     protected Document $nodeDocument;
 
     protected EventDispatcherInterface $dispatcher;
-
-    /**
-     * @var self|null
-     */
-    #[Getter('previousSibling')]
-    protected $previousSibling;
 
     /**
      * @var array<class-string<self>, array<string, \Rowbot\DOM\DynamicProperty\DynamicPropertyGetter>>
@@ -173,6 +175,9 @@ abstract class Node
         $this->nodeDocument = $document;
         $this->childNodes_ = new NodeSet();
         $this->childNodes = new LiveNodeList($this->childNodes_);
+        $this->_parentNode = null;
+        $this->_previousSibling = null;
+        $this->_nextSibling = null;
         $this->nodeType = $nodeType;
         $this->dispatcher = new EventDispatcher();
     }
@@ -199,8 +204,8 @@ abstract class Node
     {
         $root = $this;
 
-        while ($root->parentNode) {
-            $root = $root->parentNode;
+        while ($root->_parentNode) {
+            $root = $root->_parentNode;
         }
 
         if (
@@ -266,29 +271,29 @@ abstract class Node
             $contingiousTextNodes->setIteratorMode(
                 SplDoublyLinkedList::IT_MODE_FIFO | SplDoublyLinkedList::IT_MODE_DELETE
             );
-            $startNode = $node->previousSibling;
+            $startNode = $node->_previousSibling;
 
             while ($startNode !== null && $startNode->nodeType === self::TEXT_NODE) {
                 assert($startNode instanceof Text && !$startNode instanceof CDATASection);
                 $data = $startNode->data . $data;
                 $contingiousTextNodes->unshift($startNode);
-                $startNode = $startNode->previousSibling;
+                $startNode = $startNode->_previousSibling;
             }
 
-            $startNode = $node->nextSibling;
+            $startNode = $node->_nextSibling;
 
             while ($startNode !== null && $startNode->nodeType === self::TEXT_NODE) {
                 assert($startNode instanceof Text && !$startNode instanceof CDATASection);
                 $data .= $startNode->data;
                 $contingiousTextNodes->push($startNode);
-                $startNode = $startNode->nextSibling;
+                $startNode = $startNode->_nextSibling;
             }
 
             // 4. Replace data with node node, offset length, count 0, and data data.
             $node->doReplaceData($length, 0, $data);
 
             // 5. Let currentNode be node’s next sibling.
-            $currentNode = $node->nextSibling;
+            $currentNode = $node->_nextSibling;
 
             // 6. While currentNode is an exclusive Text node:
             while ($currentNode !== null && $currentNode->nodeType === self::TEXT_NODE) {
@@ -305,7 +310,7 @@ abstract class Node
                     // offset is currentNode’s index, set its start node to node and its start
                     // offset to length.
                     } elseif (
-                        $range->start->node === $currentNode->parentNode
+                        $range->start->node === $currentNode->_parentNode
                         && $range->start->offset === $treeIndex
                     ) {
                         $range->start->node = $node;
@@ -322,7 +327,7 @@ abstract class Node
                     // offset is currentNode’s index, set its end node to node and its end offset to
                     // length.
                     } elseif (
-                        $range->end->node === $currentNode->parentNode
+                        $range->end->node === $currentNode->_parentNode
                         && $range->end->offset === $treeIndex
                     ) {
                         $range->end->node = $node;
@@ -334,7 +339,7 @@ abstract class Node
                 $length += $currentNode->getLength();
 
                 // 6.6. Set currentNode to its next sibling.
-                $currentNode = $currentNode->nextSibling;
+                $currentNode = $currentNode->_nextSibling;
             }
 
             // 7. Remove node’s contiguous exclusive Text nodes (excluding itself), in tree order.
@@ -535,7 +540,7 @@ abstract class Node
                 return true;
             }
 
-            $node = $node->parentNode;
+            $node = $node->_parentNode;
         }
 
         return false;
@@ -713,7 +718,7 @@ abstract class Node
 
         // If child is not null and its parent is not parent, then throw a
         // NotFoundError.
-        if ($child !== null && $child->parentNode !== $parent) {
+        if ($child !== null && $child->_parentNode !== $parent) {
             throw new NotFoundError();
         }
 
@@ -897,7 +902,7 @@ abstract class Node
 
         // 3. If referenceChild is node, then set referenceChild to node’s next sibling.
         if ($referenceChild === $node) {
-            $referenceChild = $node->nextSibling;
+            $referenceChild = $node->_nextSibling;
         }
 
         // 4. Insert node into parent before referenceChild.
@@ -963,7 +968,7 @@ abstract class Node
         }
 
         // 6. Let previousSibling be child’s previous sibling or parent’s last child if child is null.
-        $previousSibling = $child ? $child->previousSibling : $this->lastChild;
+        $previousSibling = $child ? $child->_previousSibling : $this->lastChild;
 
         // 7. For each node in nodes, in tree order:
         // Overwriting $node is intentional
@@ -980,19 +985,19 @@ abstract class Node
             // 7.3. Otherwise, insert node into parent’s children before child’s index.
             } else {
                 $this->childNodes_->insertBefore($child, $node);
-                $oldPreviousSibling = $child->previousSibling;
+                $oldPreviousSibling = $child->_previousSibling;
                 $nextSibling = $child;
-                $child->previousSibling = $node;
+                $child->_previousSibling = $node;
             }
 
-            $node->parentNode = $this;
+            $node->_parentNode = $this;
 
             if ($oldPreviousSibling) {
-                $oldPreviousSibling->nextSibling = $node;
+                $oldPreviousSibling->_nextSibling = $node;
             }
 
-            $node->previousSibling = $oldPreviousSibling;
-            $node->nextSibling = $nextSibling;
+            $node->_previousSibling = $oldPreviousSibling;
+            $node->_nextSibling = $nextSibling;
 
             $inclusiveDescendant = $node;
 
@@ -1043,7 +1048,7 @@ abstract class Node
         }
 
         // 3. If child’s parent is not parent, then throw a "NotFoundError" DOMException.
-        if ($child->parentNode !== $parent) {
+        if ($child->_parentNode !== $parent) {
             throw new NotFoundError();
         }
 
@@ -1144,21 +1149,21 @@ abstract class Node
         }
 
         // 7. Let referenceChild be child’s next sibling.
-        $referenceChild = $child->nextSibling;
+        $referenceChild = $child->_nextSibling;
 
         // 8. If referenceChild is node, then set referenceChild to node’s next sibling.
         if ($referenceChild === $node) {
-            $referenceChild = $node->nextSibling;
+            $referenceChild = $node->_nextSibling;
         }
 
         // 9. Let previousSibling be child’s previous sibling.
-        $previousSibling = $child->previousSibling;
+        $previousSibling = $child->_previousSibling;
 
         // 10. Let removedNodes be the empty set.
         $removedNodes = [];
 
         // 11. If child’s parent is non-null, then:
-        if ($child->parentNode) {
+        if ($child->_parentNode) {
             // 11.1. Set removedNodes to « child ».
             $removedNodes = [$child];
 
@@ -1234,7 +1239,7 @@ abstract class Node
         $parent = $this;
 
         // 1. If child’s parent is not parent, then throw a "NotFoundError" DOMException.
-        if ($child->parentNode !== $parent) {
+        if ($child->_parentNode !== $parent) {
             throw new NotFoundError();
         }
 
@@ -1257,7 +1262,7 @@ abstract class Node
     public function removeNode(bool $suppressObservers = false): void
     {
         // Let parent be node’s parent
-        $parent = $this->parentNode;
+        $parent = $this->_parentNode;
 
         // 2. Assert: parent is non-null.
         assert($parent !== null);
@@ -1302,25 +1307,25 @@ abstract class Node
         }
 
         // 9. Let oldPreviousSibling be node’s previous sibling.
-        $oldPreviousSibling = $this->previousSibling;
+        $oldPreviousSibling = $this->_previousSibling;
 
         // 10. Let oldNextSibling be node’s next sibling.
-        $oldNextSibling = $this->nextSibling;
+        $oldNextSibling = $this->_nextSibling;
 
         // 11. Remove node from its parent’s children.
         $parent->childNodes_->remove($this);
 
         if ($oldPreviousSibling) {
-            $oldPreviousSibling->nextSibling = $oldNextSibling;
+            $oldPreviousSibling->_nextSibling = $oldNextSibling;
         }
 
         if ($oldNextSibling) {
-            $oldNextSibling->previousSibling = $oldPreviousSibling;
+            $oldNextSibling->_previousSibling = $oldPreviousSibling;
         }
 
-        $this->nextSibling = null;
-        $this->previousSibling = null;
-        $this->parentNode = null;
+        $this->_nextSibling = null;
+        $this->_previousSibling = null;
+        $this->_parentNode = null;
 
         // 15. Run the removing steps with node and parent.
         $this->dispatcher->dispatch(new NodeRemovedEvent($this, $parent), 'node.removed');
@@ -1380,11 +1385,11 @@ abstract class Node
      */
     public function getTreeIndex(): int
     {
-        if ($this->parentNode === null) {
+        if ($this->_parentNode === null) {
             return 0;
         }
 
-        return $this->parentNode->childNodes_->indexOf($this);
+        return $this->_parentNode->childNodes_->indexOf($this);
     }
 
     /**
@@ -1403,19 +1408,19 @@ abstract class Node
 
         $node = $this;
 
-        while ($node && !$node->nextSibling) {
+        while ($node && !$node->_nextSibling) {
             if ($node === $root) {
                 return null;
             }
 
-            $node = $node->parentNode;
+            $node = $node->_parentNode;
         }
 
         if ($node === null || $node === $root) {
             return null;
         }
 
-        return $node->nextSibling;
+        return $node->_nextSibling;
     }
 
     /**
@@ -1428,8 +1433,8 @@ abstract class Node
     {
         $node = $this;
 
-        if ($node->previousSibling) {
-            $node = $node->previousSibling;
+        if ($node->_previousSibling) {
+            $node = $node->_previousSibling;
 
             while ($node !== null && $node->childNodes_->first()) {
                 if ($node === $root) {
@@ -1446,7 +1451,7 @@ abstract class Node
             return null;
         }
 
-        return $node->parentNode;
+        return $node->_parentNode;
     }
 
     /**
@@ -1470,14 +1475,14 @@ abstract class Node
             return false;
         }
 
-        while ($nodeA->parentNode !== $commonAncestor) {
+        while ($nodeA->_parentNode !== $commonAncestor) {
             /** @var \Rowbot\DOM\Node $nodeA */
-            $nodeA = $nodeA->parentNode;
+            $nodeA = $nodeA->_parentNode;
         }
 
-        while ($nodeB->parentNode !== $commonAncestor) {
+        while ($nodeB->_parentNode !== $commonAncestor) {
             /** @var \Rowbot\DOM\Node $nodeB */
-            $nodeB = $nodeB->parentNode;
+            $nodeB = $nodeB->_parentNode;
         }
 
         return $nodeA->getTreeIndex() < $nodeB->getTreeIndex();
@@ -1504,14 +1509,14 @@ abstract class Node
             return true;
         }
 
-        while ($nodeA->parentNode !== $commonAncestor) {
+        while ($nodeA->_parentNode !== $commonAncestor) {
             /** @var \Rowbot\DOM\Node $nodeA */
-            $nodeA = $nodeA->parentNode;
+            $nodeA = $nodeA->_parentNode;
         }
 
-        while ($nodeB->parentNode !== $commonAncestor) {
+        while ($nodeB->_parentNode !== $commonAncestor) {
             /** @var \Rowbot\DOM\Node $nodeB */
-            $nodeB = $nodeB->parentNode;
+            $nodeB = $nodeB->_parentNode;
         }
 
         return $nodeA->getTreeIndex() > $nodeB->getTreeIndex();
@@ -1659,10 +1664,10 @@ abstract class Node
                     break 2;
                 }
 
-                $node = $node->parentNode;
+                $node = $node->_parentNode;
             }
 
-            $nodeA = $nodeA->parentNode;
+            $nodeA = $nodeA->_parentNode;
         }
 
         return $nodeA;
@@ -1676,11 +1681,11 @@ abstract class Node
     public function isAncestorOf(?self $otherNode): bool
     {
         while ($otherNode) {
-            if ($otherNode->parentNode === $this) {
+            if ($otherNode->_parentNode === $this) {
                 break;
             }
 
-            $otherNode = $otherNode->parentNode;
+            $otherNode = $otherNode->_parentNode;
         }
 
         return $otherNode !== null;
@@ -1807,18 +1812,6 @@ abstract class Node
             && ($root->mode === 'closed' || $root->host->isClosedShadowHiddenFrom($otherNode));
     }
 
-    #[Getter('firstChild')]
-    private function getFirstChild(): ?self
-    {
-        return $this->childNodes_->first();
-    }
-
-    #[Getter('lastChild')]
-    private function getLastChild(): ?self
-    {
-        return $this->childNodes_->last();
-    }
-
     private function registerDynamicPropertyGetters(ReflectionClass $reflection): void
     {
         $filter = ReflectionMethod::IS_PRIVATE | ReflectionMethod::IS_PROTECTED | ReflectionMethod::IS_PUBLIC;
@@ -1899,9 +1892,9 @@ abstract class Node
 
     protected function __clone()
     {
-        $this->parentNode = null;
-        $this->nextSibling = null;
-        $this->previousSibling = null;
+        $this->_parentNode = null;
+        $this->_nextSibling = null;
+        $this->_previousSibling = null;
         $this->childNodes_ = new NodeSet();
         $this->childNodes = new LiveNodeList($this->childNodes_);
         $this->dispatcher = new EventDispatcher();

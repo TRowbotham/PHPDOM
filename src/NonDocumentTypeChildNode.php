@@ -20,14 +20,14 @@ trait NonDocumentTypeChildNode
     #[Getter('nextElementSibling')]
     private function getNextElementSibling(): ?Element
     {
-        $node = $this->nextSibling;
+        $node = $this->_nextSibling;
 
         while ($node) {
             if ($node instanceof Element) {
                 return $node;
             }
 
-            $node = $node->nextSibling;
+            $node = $node->_nextSibling;
         }
 
         return null;
@@ -41,14 +41,14 @@ trait NonDocumentTypeChildNode
     #[Getter('previousElementSibling')]
     private function getPreviousElementSibling(): ?Element
     {
-        $node = $this->previousSibling;
+        $node = $this->_previousSibling;
 
         while ($node) {
             if ($node instanceof Element) {
                 return $node;
             }
 
-            $node = $node->previousSibling;
+            $node = $node->_previousSibling;
         }
 
         return null;

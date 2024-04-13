@@ -49,11 +49,11 @@ class HTMLTableCellElement extends HTMLElement
             // The cellIndex IDL attribute must, if the element has a parent tr element, return
             // the index of the cell's element in the parent element's cells collection. If
             // there is no such parent element, then the attribute must return −1.
-            if (!$this->parentNode instanceof HTMLTableRowElement) {
+            if (!$this->_parentNode instanceof HTMLTableRowElement) {
                 return -1;
             }
 
-            $node = $this->previousSibling;
+            $node = $this->_previousSibling;
             $index = 0;
 
             while ($node) {
@@ -61,7 +61,7 @@ class HTMLTableCellElement extends HTMLElement
                     ++$index;
                 }
 
-                $node = $node->previousSibling;
+                $node = $node->_previousSibling;
             }
 
             return $index;
