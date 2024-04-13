@@ -179,6 +179,7 @@ class HTMLAnchorElement extends HTMLElement
     {
         parent::__clone();
 
+        $this->dispatcher->addListener('attribute.changed', $this->onHrefAttributeChanged(...));
         $this->relList = null;
 
         if ($this->url !== null) {

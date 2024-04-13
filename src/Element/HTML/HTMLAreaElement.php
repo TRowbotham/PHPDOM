@@ -40,6 +40,8 @@ class HTMLAreaElement extends HTMLElement
     {
         parent::__clone();
 
+        $this->dispatcher->addListener('attribute.changed', $this->onHrefAttributeChanged(...));
+
         if ($this->url !== null) {
             $this->url = clone $this->url;
         }
