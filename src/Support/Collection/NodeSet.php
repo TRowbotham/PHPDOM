@@ -326,7 +326,7 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
      *
      * @return TValue|null
      */
-    public function first(Closure $callback = null): ?Node
+    public function first(?Closure $callback = null): ?Node
     {
         if ($callback === null) {
             return $this->list[0] ?? null;
@@ -348,7 +348,7 @@ final class NodeSet implements ArrayAccess, Countable, Iterator
      *
      * @return TValue|null
      */
-    public function last(Closure $callback = null): ?Node
+    public function last(?Closure $callback = null): ?Node
     {
         if ($callback === null) {
             return $this->list[$this->length - 1] ?? null;

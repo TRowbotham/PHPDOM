@@ -88,7 +88,7 @@ final class ParserContext
         CodePointStream $input,
         bool $isFragmentCase = false,
         bool $isScriptingEnabled = false,
-        int $tokenizerState = null
+        ?int $tokenizerState = null
     ) {
         $this->contextElement     = $contextElement;
         $this->encodingConfidence = self::CONFIDENCE_IRRELEVANT;

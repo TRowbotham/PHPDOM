@@ -890,7 +890,7 @@ abstract class Node
      *
      * @return self The node that was inserted.
      */
-    public function preinsertNode(self $node, self $child = null): self
+    public function preinsertNode(self $node, ?self $child = null): self
     {
         $parent = $this;
 
@@ -1398,7 +1398,7 @@ abstract class Node
      *
      * @internal
      */
-    public function nextNode(self $root = null): ?self
+    public function nextNode(?self $root = null): ?self
     {
         $node = $this->childNodes_->first();
 
@@ -1429,7 +1429,7 @@ abstract class Node
      *
      * @internal
      */
-    public function previousNode(self $root = null): ?self
+    public function previousNode(?self $root = null): ?self
     {
         $node = $this;
 
@@ -1624,7 +1624,7 @@ abstract class Node
      *
      * @return static The newly created node.
      */
-    public function cloneNodeInternal(Document $document = null, bool $cloneChildren = false)
+    public function cloneNodeInternal(?Document $document = null, bool $cloneChildren = false)
     {
         $document = $document ?? $this->nodeDocument;
         $copy = clone $this;

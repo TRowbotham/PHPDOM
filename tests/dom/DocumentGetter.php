@@ -14,7 +14,7 @@ trait DocumentGetter
     protected $htmlDocument;
     protected $xmlDocument;
 
-    public function getHTMLDocument(callable $callback = null): HTMLDocument
+    public function getHTMLDocument(?callable $callback = null): HTMLDocument
     {
         if (!$this->htmlDocument) {
             $this->htmlDocument = (new HTMLDocument())

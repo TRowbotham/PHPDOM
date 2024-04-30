@@ -41,7 +41,7 @@ final class DOMImplementation
     public function createDocument(
         ?string $namespace,
         ?string $qualifiedName,
-        DocumentType $doctype = null
+        ?DocumentType $doctype = null
     ): XMLDocument {
         $env = new Environment();
         $env->setScriptingEnabled($this->document->getEnvironment()->isScriptingEnabled());

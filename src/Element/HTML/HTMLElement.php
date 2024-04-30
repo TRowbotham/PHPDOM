@@ -215,7 +215,7 @@ class HTMLElement extends Element
     protected function reflectLongAttributeValue(
         string $name,
         int $mode,
-        int $default = null,
+        ?int $default = null,
         ?string $namespace = null
     ): int {
         $attr = $this->attributeList->getAttrByNamespaceAndLocalName($namespace, $name);
@@ -359,8 +359,8 @@ class HTMLElement extends Element
      */
     protected function reflectEnumeratedStringAttributeValue(
         string $name,
-        string $invalidValueDefault = null,
-        string $missingValueDefault = null,
+        ?string $invalidValueDefault = null,
+        ?string $missingValueDefault = null,
         array $stateMap = [],
         ?string $namespace = null
     ): string {
@@ -428,7 +428,7 @@ class HTMLElement extends Element
         string $name,
         $newValue,
         int $mode,
-        int $default = null,
+        ?int $default = null,
         ?string $prefix = null,
         ?string $namespace = null
     ): void {

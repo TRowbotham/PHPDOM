@@ -11,7 +11,7 @@ use Throwable;
  */
 class InvalidNodeTypeError extends DOMException
 {
-    public function __construct(string $message = '', Throwable $previous = null)
+    public function __construct(string $message = '', ?Throwable $previous = null)
     {
         if ($message === '') {
             $message = 'The supplied node is incorrect or has an incorrect '

@@ -11,7 +11,7 @@ use Throwable;
  */
 class NotFoundError extends DOMException
 {
-    public function __construct(string $message = '', Throwable $previous = null)
+    public function __construct(string $message = '', ?Throwable $previous = null)
     {
         if ($message === '') {
             $message = 'The object can not be found here.';

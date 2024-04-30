@@ -20,7 +20,7 @@ class Environment
 
     private bool $scriptingEnabled;
 
-    public function __construct(?URLRecord $url = null, string $contentType = null)
+    public function __construct(?URLRecord $url = null, ?string $contentType = null)
     {
         if ($url === null) {
             $url = $this->getDefaultUrl();

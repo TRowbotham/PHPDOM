@@ -11,7 +11,7 @@ use Throwable;
  */
 class IndexSizeError extends DOMException
 {
-    public function __construct(string $message = '', Throwable $previous = null)
+    public function __construct(string $message = '', ?Throwable $previous = null)
     {
         if ($message === '') {
             $message = 'The index is not in the allowed range.';

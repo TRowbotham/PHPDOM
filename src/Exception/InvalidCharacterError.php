@@ -11,7 +11,7 @@ use Throwable;
  */
 class InvalidCharacterError extends DOMException
 {
-    public function __construct(string $message = '', Throwable $previous = null)
+    public function __construct(string $message = '', ?Throwable $previous = null)
     {
         if ($message === '') {
             $message = 'The string contains invalid characters.';

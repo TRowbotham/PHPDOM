@@ -11,7 +11,7 @@ use Throwable;
  */
 class NamespaceError extends DOMException
 {
-    public function __construct(string $message = '', Throwable $previous = null)
+    public function __construct(string $message = '', ?Throwable $previous = null)
     {
         if ($message === '') {
             $message = 'The operation is not allowed by Namespaces in XML.';

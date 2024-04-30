@@ -48,7 +48,7 @@ class TreeBuilderTest extends TestCase
      *
      * @param \Rowbot\DOM\HTMLDocument|\Rowbot\DOM\DocumentFragment $expected
      */
-    public function testTreeBuilder(string $data, array $errors, $expected, Element $context = null): void
+    public function testTreeBuilder(string $data, array $errors, $expected, ?Element $context = null): void
     {
         if ($context === null) {
             $document = DocumentBuilder::create()->setContentType('text/html')->emulateScripting(false)->createEmptyDocument();

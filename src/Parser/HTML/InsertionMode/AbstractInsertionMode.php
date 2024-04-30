@@ -278,7 +278,7 @@ abstract class AbstractInsertionMode
      * @param \Rowbot\DOM\Node|null $overrideTarget (optional) When given, it overrides the target insertion point for
      *                                              the node. Default value is null.
      */
-    protected function getAppropriatePlaceForInsertingNode(TreeBuilderContext $context, Node $overrideTarget = null): AdjustedInsertionLocation
+    protected function getAppropriatePlaceForInsertingNode(TreeBuilderContext $context, ?Node $overrideTarget = null): AdjustedInsertionLocation
     {
         // If there was an override target specified, then let target be the
         // override target. Otherwise, let target be the current node.
@@ -431,7 +431,7 @@ abstract class AbstractInsertionMode
      *
      * @param \Rowbot\DOM\Parser\Token\CommentToken $token
      */
-    protected function insertComment(TreeBuilderContext $context, CommentToken $token, AdjustedInsertionLocation $position = null): void
+    protected function insertComment(TreeBuilderContext $context, CommentToken $token, ?AdjustedInsertionLocation $position = null): void
     {
         // Let data be the data given in the comment token being processed.
         $data = $token->data;

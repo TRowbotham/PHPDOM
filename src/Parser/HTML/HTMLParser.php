@@ -50,7 +50,7 @@ class HTMLParser extends Parser
     public function __construct(
         Document $document,
         bool $isFragmentCase = false,
-        Element $contextElement = null
+        ?Element $contextElement = null
     ) {
         parent::__construct();
 

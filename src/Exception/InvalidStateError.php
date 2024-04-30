@@ -11,7 +11,7 @@ use Throwable;
  */
 class InvalidStateError extends DOMException
 {
-    public function __construct(string $message = '', Throwable $previous = null)
+    public function __construct(string $message = '', ?Throwable $previous = null)
     {
         if ($message === '') {
             $message = 'This object is in an invalid state.';
