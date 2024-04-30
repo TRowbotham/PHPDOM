@@ -36,7 +36,7 @@ final class Range extends AbstractRange implements Stringable
     public const END_TO_START   = 3;
 
     public Node $commonAncestorContainer {
-        get => Node::getCommonAncestor($this->range->start->node, $this->range->end-node);
+        get => Node::getCommonAncestor($this->range->start->node, $this->range->end->node);
     }
 
     /**
