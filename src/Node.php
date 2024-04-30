@@ -314,36 +314,36 @@ abstract class Node
                 foreach (Range::getRangeCollection() as $range) {
                     // 6.1. For each live range whose start node is currentNode, add length to its
                     // start offset and set its start node to node.
-                    if ($range->startNode === $currentNode) {
-                        $range->startOffset += $length;
-                        $range->startNode = $node;
+                    if ($range->start->node === $currentNode) {
+                        $range->start->offset += $length;
+                        $range->start->node = $node;
 
                     // 6.3. For each live range whose start node is currentNode’s parent and start
                     // offset is currentNode’s index, set its start node to node and its start
                     // offset to length.
                     } elseif (
-                        $range->startNode === $currentNode->parentNode
-                        && $range->startOffset === $treeIndex
+                        $range->start->node === $currentNode->parentNode
+                        && $range->start->offset === $treeIndex
                     ) {
-                        $range->startNode = $node;
-                        $range->startOffset = $length;
+                        $range->start->node = $node;
+                        $range->start->offset = $length;
                     }
 
                     // 6.2. For each live range whose end node is currentNode, add length to its end
                     // offset and set its end node to node.
-                    if ($range->endNode === $currentNode) {
-                        $range->endOffset += $length;
-                        $range->endNode = $node;
+                    if ($range->end->node === $currentNode) {
+                        $range->end->offset += $length;
+                        $range->end->node = $node;
 
                     // 6.4. For each live range whose end node is currentNode’s parent and end
                     // offset is currentNode’s index, set its end node to node and its end offset to
                     // length.
                     } elseif (
-                        $range->endNode === $currentNode->parentNode
-                        && $range->endOffset === $treeIndex
+                        $range->end->node === $currentNode->parentNode
+                        && $range->end->offset === $treeIndex
                     ) {
-                        $range->endNode = $node;
-                        $range->endOffset = $length;
+                        $range->end->node = $node;
+                        $range->end->offset = $length;
                     }
                 }
 
@@ -967,14 +967,14 @@ abstract class Node
             foreach (Range::getRangeCollection() as $range) {
                 // 5.1. For each live range whose start node is parent and start offset is greater
                 // than child’s index, increase its start offset by count.
-                if ($range->startNode === $this && $range->startOffset > $index) {
-                    $range->startOffset += $count;
+                if ($range->start->node === $this && $range->start->offset > $index) {
+                    $range->start->offset += $count;
                 }
 
                 // 5.2. For each live range whose end node is parent and end offset is greater than
                 // child’s index, increase its end offset by count.
-                if ($range->endNode === $this && $range->endOffset > $index) {
-                    $range->endOffset += $count;
+                if ($range->end->node === $this && $range->end->offset > $index) {
+                    $range->end->offset += $count;
                 }
             }
         }
@@ -1285,28 +1285,28 @@ abstract class Node
         foreach (Range::getRangeCollection() as $range) {
             // 4. For each live range whose start node is an inclusive descendant of node, set its
             // start to (parent, index).
-            if ($range->startNode === $this || $this->contains($range->startNode)) {
-                $range->startNode = $parent;
-                $range->startOffset = $index;
+            if ($range->start->node === $this || $this->contains($range->start->node)) {
+                $range->start->node = $parent;
+                $range->start->offset = $index;
             }
 
             // 5. For each live range whose end node is an inclusive descendant of node, set its end
             // to (parent, index).
-            if ($range->endNode === $this || $this->contains($range->endNode)) {
-                $range->endNode = $parent;
-                $range->endOffset = $index;
+            if ($range->end->node === $this || $this->contains($range->end->node)) {
+                $range->end->node = $parent;
+                $range->end->offset = $index;
             }
 
             // 6. For each live range whose start node is parent and start offset is greater than
             // index, decrease its start offset by 1.
-            if ($range->startNode === $parent && $range->startOffset > $index) {
-                $range->startOffset -= 1;
+            if ($range->start->node === $parent && $range->start->offset > $index) {
+                $range->start->offset -= 1;
             }
 
             // 7. For each live range whose end node is parent and end offset is greater than index,
             // decrease its end offset by 1.
-            if ($range->endNode === $parent && $range->endOffset > $index) {
-                $range->endOffset -= 1;
+            if ($range->end->node === $parent && $range->end->offset > $index) {
+                $range->end->offset -= 1;
             }
         }
 

@@ -13,6 +13,9 @@ use Rowbot\DOM\Exception\InvalidStateError;
 use Rowbot\DOM\Exception\NotSupportedError;
 use Rowbot\DOM\Exception\WrongDocumentError;
 use Rowbot\DOM\Parser\ParserFactory;
+use Rowbot\DOM\Range\BoundaryPoint;
+use Rowbot\DOM\Range\BoundaryType;
+use Rowbot\DOM\Range\Position;
 use Rowbot\DOM\Support\Stringable;
 
 use function assert;
@@ -36,29 +39,29 @@ final class Range extends AbstractRange implements Stringable
     public const END_TO_START   = 3;
 
     /**
-     * @var array<int, \Rowbot\DOM\RangeBoundary>
+     * @var array<int, \Rowbot\DOM\Range\RangeBoundary>
      */
     private static $collection = [];
 
     public function __construct(Document $document)
     {
-        $range = new RangeBoundary($document, 0, $document, 0);
-        parent::__construct($range);
+        parent::__construct(new BoundaryPoint($document, 0), new BoundaryPoint($document, 0));
         self::$collection[spl_object_id($this->range)] = $this->range;
     }
 
     public function __get(string $name)
     {
         if ($name === 'commonAncestorContainer') {
-            return Node::getCommonAncestor($this->range->startNode, $this->range->endNode);
+            return Node::getCommonAncestor($this->range->start->node, $this->range->end->node);
         }
 
         return parent::__get($name);
     }
 
-    public function __clone()
+    public function __clone(): void
     {
-        $this->range = clone $this->range;
+        parent::__clone();
+
         self::$collection[spl_object_id($this->range)] = $this->range;
     }
 
@@ -77,7 +80,7 @@ final class Range extends AbstractRange implements Stringable
      */
     public function setStart(Node $node, int $offset): void
     {
-        $this->setStartOrEnd('start', $node, Utils::unsignedLong($offset));
+        $this->setStartOrEnd(BoundaryType::START, $node, Utils::unsignedLong($offset));
     }
 
     /**
@@ -90,7 +93,7 @@ final class Range extends AbstractRange implements Stringable
      */
     public function setEnd(Node $node, int $offset): void
     {
-        $this->setStartOrEnd('end', $node, Utils::unsignedLong($offset));
+        $this->setStartOrEnd(BoundaryType::END, $node, Utils::unsignedLong($offset));
     }
 
     /**
@@ -108,7 +111,7 @@ final class Range extends AbstractRange implements Stringable
             throw new InvalidNodeTypeError();
         }
 
-        $this->setStartOrEnd('start', $parent, $node->getTreeIndex());
+        $this->setStartOrEnd(BoundaryType::START, $parent, $node->getTreeIndex());
     }
 
     /**
@@ -126,7 +129,7 @@ final class Range extends AbstractRange implements Stringable
             throw new InvalidNodeTypeError();
         }
 
-        $this->setStartOrEnd('start', $parent, $node->getTreeIndex() + 1);
+        $this->setStartOrEnd(BoundaryType::START, $parent, $node->getTreeIndex() + 1);
     }
 
     /**
@@ -144,7 +147,7 @@ final class Range extends AbstractRange implements Stringable
             throw new InvalidNodeTypeError();
         }
 
-        $this->setStartOrEnd('end', $parent, $node->getTreeIndex());
+        $this->setStartOrEnd(BoundaryType::END, $parent, $node->getTreeIndex());
     }
 
     /**
@@ -162,7 +165,7 @@ final class Range extends AbstractRange implements Stringable
             throw new InvalidNodeTypeError();
         }
 
-        $this->setStartOrEnd('end', $parent, $node->getTreeIndex() + 1);
+        $this->setStartOrEnd(BoundaryType::END, $parent, $node->getTreeIndex() + 1);
     }
 
     /**
@@ -176,11 +179,9 @@ final class Range extends AbstractRange implements Stringable
     public function collapse(bool $toStart = false): void
     {
         if ($toStart) {
-            $this->range->endNode = $this->range->startNode;
-            $this->range->endOffset = $this->range->startOffset;
+            $this->range->end = clone $this->range->start;
         } else {
-            $this->range->startNode = $this->range->endNode;
-            $this->range->startOffset = $this->range->endOffset;
+            $this->range->start = clone $this->range->end;
         }
     }
 
@@ -201,10 +202,8 @@ final class Range extends AbstractRange implements Stringable
 
         $index = $node->getTreeIndex();
 
-        $this->range->startNode = $parent;
-        $this->range->startOffset = $index;
-        $this->range->endNode = $parent;
-        $this->range->endOffset = $index + 1;
+        $this->range->start = new BoundaryPoint($parent, $index);
+        $this->range->end = new BoundaryPoint($parent, $index + 1);
     }
 
     /**
@@ -220,10 +219,8 @@ final class Range extends AbstractRange implements Stringable
             throw new InvalidNodeTypeError();
         }
 
-        $this->range->startNode = $node;
-        $this->range->startOffset = 0;
-        $this->range->endNode = $node;
-        $this->range->endOffset = $node->getLength();
+        $this->range->start = new BoundaryPoint($node, 0);
+        $this->range->end = new BoundaryPoint($node, $node->getLength());
     }
 
     /**
@@ -256,48 +253,39 @@ final class Range extends AbstractRange implements Stringable
             throw new NotSupportedError();
         }
 
-        $sourceRangeRoot = $sourceRange->range->startNode->getRootNode();
+        $sourceRangeRoot = $sourceRange->range->start->node->getRootNode();
 
-        if ($this->range->startNode->getRootNode() !== $sourceRangeRoot) {
+        if ($this->range->start->node->getRootNode() !== $sourceRangeRoot) {
             throw new WrongDocumentError();
         }
 
         switch ($how) {
             case self::START_TO_START:
-                $thisPoint = [$this->range->startNode, $this->range->startOffset];
-                $otherPoint = [$sourceRange->range->startNode, $sourceRange->range->startOffset];
+                $thisPoint = $this->range->start;
+                $otherPoint = $sourceRange->range->start;
 
                 break;
 
             case self::START_TO_END:
-                $thisPoint = [$this->range->endNode, $this->range->endOffset];
-                $otherPoint = [$sourceRange->range->startNode, $sourceRange->range->startOffset];
+                $thisPoint = $this->range->end;
+                $otherPoint = $sourceRange->range->start;
 
                 break;
 
             case self::END_TO_END:
-                $thisPoint = [$this->range->endNode, $this->range->endOffset];
-                $otherPoint = [$sourceRange->range->endNode, $sourceRange->range->endOffset];
+                $thisPoint = $this->range->end;
+                $otherPoint = $sourceRange->range->end;
 
                 break;
 
             case self::END_TO_START:
-                $thisPoint = [$this->range->startNode, $this->range->startOffset];
-                $otherPoint = [$sourceRange->range->endNode, $sourceRange->range->endOffset];
+                $thisPoint = $this->range->start;
+                $otherPoint = $sourceRange->range->end;
 
                 break;
         }
 
-        switch ($this->computePosition(...$thisPoint, ...$otherPoint)) {
-            case 'before':
-                return -1;
-
-            case 'equal':
-                return 0;
-
-            case 'after':
-                return 1;
-        }
+        return BoundaryPoint::comparePosition($thisPoint, $otherPoint)->value;
     }
 
     /**
@@ -307,17 +295,14 @@ final class Range extends AbstractRange implements Stringable
      */
     public function deleteContents(): void
     {
-        if (
-            $this->range->startNode === $this->range->endNode
-            && $this->range->startOffset === $this->range->endOffset
-        ) {
+        if ($this->range->isCollapsed()) {
             return;
         }
 
-        $originalStartNode = $this->range->startNode;
-        $originalStartOffset = $this->range->startOffset;
-        $originalEndNode = $this->range->endNode;
-        $originalEndOffset = $this->range->endOffset;
+        $originalStartNode = $this->range->start->node;
+        $originalStartOffset = $this->range->start->offset;
+        $originalEndNode = $this->range->end->node;
+        $originalEndOffset = $this->range->end->offset;
 
         if (
             $originalStartNode === $originalEndNode
@@ -416,10 +401,8 @@ final class Range extends AbstractRange implements Stringable
             $originalEndNode->doReplaceData(0, $originalEndOffset, '');
         }
 
-        $this->range->startNode = $newNode;
-        $this->range->startOffset = $newOffset;
-        $this->range->endNode = $newNode;
-        $this->range->endOffset = $newOffset;
+        $this->range->start = new BoundaryPoint($newNode, $newOffset);
+        $this->range->end = new BoundaryPoint($newNode, $newOffset);
     }
 
     /**
@@ -430,19 +413,16 @@ final class Range extends AbstractRange implements Stringable
      */
     public function extractContents(): DocumentFragment
     {
-        $fragment = $this->range->startNode->getNodeDocument()->createDocumentFragment();
+        $fragment = $this->range->start->node->getNodeDocument()->createDocumentFragment();
 
-        if (
-            $this->range->startNode === $this->range->endNode
-            && $this->range->startOffset === $this->range->endOffset
-        ) {
+        if ($this->range->isCollapsed()) {
             return $fragment;
         }
 
-        $originalStartNode = $this->range->startNode;
-        $originalStartOffset = $this->range->startOffset;
-        $originalEndNode = $this->range->endNode;
-        $originalEndOffset = $this->range->endOffset;
+        $originalStartNode = $this->range->start->node;
+        $originalStartOffset = $this->range->start->offset;
+        $originalEndNode = $this->range->end->node;
+        $originalEndOffset = $this->range->end->offset;
 
         if (
             $originalStartNode === $originalEndNode
@@ -550,10 +530,11 @@ final class Range extends AbstractRange implements Stringable
             $clone = $firstPartiallyContainedChild->cloneNodeInternal();
             $fragment->appendChild($clone);
             $subrange = clone $this;
-            $subrange->range->startNode = $originalStartNode;
-            $subrange->range->startOffset = $originalStartOffset;
-            $subrange->range->endNode = $firstPartiallyContainedChild;
-            $subrange->range->endOffset = $firstPartiallyContainedChild->getLength();
+            $subrange->range->start = new BoundaryPoint($originalStartNode, $originalStartOffset);
+            $subrange->range->end = new BoundaryPoint(
+                $firstPartiallyContainedChild,
+                $firstPartiallyContainedChild->getLength()
+            );
             $subfragment = $subrange->extractContents();
             $clone->appendChild($subfragment);
         }
@@ -577,18 +558,14 @@ final class Range extends AbstractRange implements Stringable
             $clone = $lastPartiallyContainedChild->cloneNodeInternal();
             $fragment->appendChild($clone);
             $subrange = clone $this;
-            $subrange->range->startNode = $lastPartiallyContainedChild;
-            $subrange->range->startOffset = 0;
-            $subrange->range->endNode = $originalEndNode;
-            $subrange->range->endOffset = $originalEndOffset;
+            $subrange->range->start = new BoundaryPoint($lastPartiallyContainedChild, 0);
+            $subrange->range->end = new BoundaryPoint($originalEndNode, $originalEndOffset);
             $subfragment = $subrange->extractContents();
             $clone->appendChild($subfragment);
         }
 
-        $this->range->startNode = $newNode;
-        $this->range->startOffset = $newOffset;
-        $this->range->endNode = $newNode;
-        $this->range->endOffset = $newOffset;
+        $this->range->start = new BoundaryPoint($newNode, $newOffset);
+        $this->range->end = new BoundaryPoint($newNode, $newOffset);
 
         return $fragment;
     }
@@ -600,20 +577,17 @@ final class Range extends AbstractRange implements Stringable
      */
     public function cloneContents(): DocumentFragment
     {
-        $nodeDocument = $this->range->startNode->getNodeDocument();
+        $nodeDocument = $this->range->start->node->getNodeDocument();
         $fragment = $nodeDocument->createDocumentFragment();
 
-        if (
-            $this->range->startNode === $this->range->endNode
-            && $this->range->startOffset === $this->range->endOffset
-        ) {
+        if ($this->range->isCollapsed()) {
             return $fragment;
         }
 
-        $originalStartNode = $this->range->startNode;
-        $originalStartOffset = $this->range->startOffset;
-        $originalEndNode = $this->range->endNode;
-        $originalEndOffset = $this->range->endOffset;
+        $originalStartNode = $this->range->start->node;
+        $originalStartOffset = $this->range->start->offset;
+        $originalEndNode = $this->range->end->node;
+        $originalEndOffset = $this->range->end->offset;
 
         if (
             $originalStartNode === $originalEndNode
@@ -711,10 +685,11 @@ final class Range extends AbstractRange implements Stringable
             $clone = $firstPartiallyContainedChild->cloneNodeInternal();
             $fragment->appendChild($clone);
             $subrange = clone $this;
-            $subrange->range->startNode = $originalStartNode;
-            $subrange->range->startOffset = $originalStartOffset;
-            $subrange->range->endNode = $firstPartiallyContainedChild;
-            $subrange->range->endOffset = $firstPartiallyContainedChild->getLength();
+            $subrange->range->start = new BoundaryPoint($originalStartNode, $originalStartOffset);
+            $subrange->range->end = new BoundaryPoint(
+                $firstPartiallyContainedChild,
+                $firstPartiallyContainedChild->getLength()
+            );
             $subfragment = $subrange->cloneContents();
             $clone->appendChild($subfragment);
         }
@@ -746,10 +721,8 @@ final class Range extends AbstractRange implements Stringable
             $clone = $lastPartiallyContainedChild->cloneNodeInternal();
             $fragment->appendChild($clone);
             $subrange = clone $this;
-            $subrange->range->startNode = $lastPartiallyContainedChild;
-            $subrange->range->startOffset = 0;
-            $subrange->range->endNode = $originalEndNode;
-            $subrange->range->endOffset = $originalEndOffset;
+            $subrange->range->start = new BoundaryPoint($lastPartiallyContainedChild, 0);
+            $subrange->range->end = new BoundaryPoint($originalEndNode, $originalEndOffset);
             $subfragment = $subrange->cloneContents();
             $clone->appendChild($subfragment);
         }
@@ -767,29 +740,29 @@ final class Range extends AbstractRange implements Stringable
     public function insertNode(Node $node): void
     {
         if (
-            $this->range->startNode instanceof ProcessingInstruction || $this->range->startNode instanceof Comment
-            || ($this->range->startNode instanceof Text && $this->range->startNode->parentNode === null)
-            || $this->range->startNode === $node
+            $this->range->start->node instanceof ProcessingInstruction || $this->range->start->node instanceof Comment
+            || ($this->range->start->node instanceof Text && $this->range->start->node->parentNode === null)
+            || $this->range->start->node === $node
         ) {
             throw new HierarchyRequestError();
         }
 
         $referenceNode = null;
 
-        if ($this->range->startNode instanceof Text) {
-            $referenceNode = $this->range->startNode;
+        if ($this->range->start->node instanceof Text) {
+            $referenceNode = $this->range->start->node;
         } else {
-            $referenceNode = $this->range->startNode->childNodes[$this->range->startOffset] ?? null;
+            $referenceNode = $this->range->start->node->childNodes[$this->range->start->offset] ?? null;
         }
 
         $parent = !$referenceNode
-            ? $this->range->startNode
+            ? $this->range->start->node
             : $referenceNode->parentNode;
         assert($parent !== null);
         $parent->ensurePreinsertionValidity($node, $referenceNode);
 
-        if ($this->range->startNode instanceof Text) {
-            $referenceNode = $this->range->startNode->splitText($this->range->startOffset);
+        if ($this->range->start->node instanceof Text) {
+            $referenceNode = $this->range->start->node->splitText($this->range->start->offset);
         }
 
         if ($node === $referenceNode) {
@@ -809,12 +782,8 @@ final class Range extends AbstractRange implements Stringable
 
         $parent->preinsertNode($node, $referenceNode);
 
-        if (
-            $this->range->startNode === $this->range->endNode
-            && $this->range->startOffset === $this->range->endOffset
-        ) {
-            $this->range->endNode = $parent;
-            $this->range->endOffset = $newOffset;
+        if ($this->range->isCollapsed()) {
+            $this->range->end = new BoundaryPoint($parent, $newOffset);
         }
     }
 
@@ -828,7 +797,7 @@ final class Range extends AbstractRange implements Stringable
      */
     public function surroundContents(Node $newParent): void
     {
-        $commonAncestor = Node::getCommonAncestor($this->range->startNode, $this->range->endNode);
+        $commonAncestor = Node::getCommonAncestor($this->range->start->node, $this->range->end->node);
 
         if ($commonAncestor) {
             $node = $commonAncestor->nextNode($commonAncestor);
@@ -896,7 +865,7 @@ final class Range extends AbstractRange implements Stringable
     public function isPointInRange(Node $node, int $offset): bool
     {
         $offset = Utils::unsignedLong($offset);
-        $root = $this->range->startNode->getRootNode();
+        $root = $this->range->start->node->getRootNode();
 
         if ($node->getRootNode() !== $root) {
             return false;
@@ -910,9 +879,11 @@ final class Range extends AbstractRange implements Stringable
             throw new IndexSizeError();
         }
 
+        $bp = new BoundaryPoint($node, $offset);
+
         if (
-            $this->computePosition($node, $offset, $this->range->startNode, $this->range->startOffset) === 'before'
-            || $this->computePosition($node, $offset, $this->range->endNode, $this->range->endOffset) === 'after'
+            BoundaryPoint::comparePosition($bp, $this->range->start) === Position::BEFORE
+            || BoundaryPoint::comparePosition($bp, $this->range->end) === Position::AFTER
         ) {
             return false;
         }
@@ -935,7 +906,7 @@ final class Range extends AbstractRange implements Stringable
     public function comparePoint(Node $node, int $offset): int
     {
         $offset = Utils::unsignedLong($offset);
-        $root = $this->range->startNode->getRootNode();
+        $root = $this->range->start->node->getRootNode();
 
         if ($node->getRootNode() !== $root) {
             throw new WrongDocumentError();
@@ -949,11 +920,13 @@ final class Range extends AbstractRange implements Stringable
             throw new IndexSizeError();
         }
 
-        if ($this->computePosition($node, $offset, $this->range->startNode, $this->range->startOffset) === 'before') {
+        $bp = new BoundaryPoint($node, $offset);
+
+        if (BoundaryPoint::comparePosition($bp, $this->range->start) === Position::BEFORE) {
             return -1;
         }
 
-        if ($this->computePosition($node, $offset, $this->range->endNode, $this->range->endOffset) === 'after') {
+        if (BoundaryPoint::comparePosition($bp, $this->range->end) === Position::AFTER) {
             return 1;
         }
 
@@ -968,7 +941,7 @@ final class Range extends AbstractRange implements Stringable
      */
     public function intersectsNode(Node $node): bool
     {
-        $root = $this->range->startNode->getRootNode();
+        $root = $this->range->start->node->getRootNode();
 
         if ($node->getRootNode() !== $root) {
             return false;
@@ -981,10 +954,10 @@ final class Range extends AbstractRange implements Stringable
         }
 
         $offset = $node->getTreeIndex();
-        $position1 = $this->computePosition($parent, $offset, $this->range->endNode, $this->range->endOffset);
-        $position2 = $this->computePosition($parent, $offset + 1, $this->range->startNode, $this->range->startOffset);
+        $position1 = BoundaryPoint::comparePosition(new BoundaryPoint($parent, $offset), $this->range->end);
+        $position2 = BoundaryPoint::comparePosition(new BoundaryPoint($parent, $offset + 1), $this->range->start);
 
-        return $position1 === 'before' && $position2 === 'after';
+        return $position1 === Position::BEFORE && $position2 === Position::AFTER;
     }
 
     public function __toString(): string
@@ -1001,26 +974,26 @@ final class Range extends AbstractRange implements Stringable
     {
         $s = '';
 
-        if ($this->range->startNode === $this->range->endNode && $this->range->startNode instanceof Text) {
+        if ($this->range->start->node === $this->range->end->node && $this->range->start->node instanceof Text) {
             return mb_substr(
-                $this->range->startNode->data,
-                $this->range->startOffset,
-                $this->range->endOffset - $this->range->startOffset,
+                $this->range->start->node->data,
+                $this->range->start->offset,
+                $this->range->end->offset - $this->range->start->offset,
                 'utf-8'
             );
         }
 
-        if ($this->range->startNode instanceof Text) {
+        if ($this->range->start->node instanceof Text) {
             $s .= mb_substr(
-                $this->range->startNode->data,
-                $this->range->startOffset,
+                $this->range->start->node->data,
+                $this->range->start->offset,
                 null,
                 'utf-8'
             );
         }
 
-        $root = $this->range->startNode->getRootNode();
-        $node = $this->range->startNode->nextNode($root);
+        $root = $this->range->start->node->getRootNode();
+        $node = $this->range->start->node->nextNode($root);
 
         while ($node) {
             if ($node instanceof Text && $this->isFullyContainedNode($node)) {
@@ -1030,11 +1003,11 @@ final class Range extends AbstractRange implements Stringable
             $node = $node->nextNode($root);
         }
 
-        if ($this->range->endNode instanceof Text) {
+        if ($this->range->end->node instanceof Text) {
             $s .= mb_substr(
-                $this->range->endNode->data,
+                $this->range->end->node->data,
                 0,
-                $this->range->endOffset,
+                $this->range->end->offset,
                 'utf-8'
             );
         }
@@ -1043,11 +1016,11 @@ final class Range extends AbstractRange implements Stringable
     }
 
     /**
-     * Returns a collection of all Ranges.
+     * Returns a collection of all live ranges.
      *
      * @internal
      *
-     * @return array<int, \Rowbot\DOM\RangeBoundary>
+     * @return array<int, \Rowbot\DOM\Range\RangeBoundary>
      */
     public static function getRangeCollection(): array
     {
@@ -1059,7 +1032,7 @@ final class Range extends AbstractRange implements Stringable
      */
     public function createContextualFragment(string $fragment): DocumentFragment
     {
-        $node = $this->range->startNode;
+        $node = $this->range->start->node;
         $element = null;
 
         if ($node instanceof Document || $node instanceof DocumentFragment) {
@@ -1084,7 +1057,7 @@ final class Range extends AbstractRange implements Stringable
                 && $element->namespaceURI === Namespaces::HTML)
         ) {
             $element = ElementFactory::create(
-                $this->range->startNode->getNodeDocument(),
+                $this->range->start->node->getNodeDocument(),
                 'body',
                 Namespaces::HTML
             );
@@ -1101,74 +1074,18 @@ final class Range extends AbstractRange implements Stringable
     }
 
     /**
-     * Compares the position of two boundary points.
-     *
-     * @see https://dom.spec.whatwg.org/#concept-range-bp-position
-     *
-     * @return 'before'|'after'|'equal'
-     */
-    private function computePosition(Node $nodeA, int $offsetA, Node $nodeB, int $offsetB): string
-    {
-        // 1. Assert: nodeA and nodeB have the same root.
-        assert($nodeA->getRootNode() === $nodeB->getRootNode());
-
-        // 2. If nodeA is nodeB, then return equal if offsetA is offsetB, before if offsetA is less than offsetB, and
-        // after if offsetA is greater than offsetB.
-        if ($nodeA === $nodeB) {
-            if ($offsetA === $offsetB) {
-                return 'equal';
-            } elseif ($offsetA < $offsetB) {
-                return 'before';
-            } else {
-                return 'after';
-            }
-        }
-
-        // 3. If nodeA is following nodeB, then if the position of (nodeB, offsetB) relative to (nodeA, offsetA) is
-        // before, return after, and if it is after, return before.
-        if ($nodeA->followsNode($nodeB)) {
-            $position = $this->computePosition($nodeB, $offsetB, $nodeA, $offsetA);
-
-            if ($position === 'before') {
-                return 'after';
-            }
-
-            if ($position === 'after') {
-                return 'before';
-            }
-        }
-
-        // 4. If nodeA is an ancestor of nodeB:
-        if ($nodeA->isAncestorOf($nodeB)) {
-            // 4.1. Let child be nodeB.
-            $child = $nodeB;
-
-            // 4.2. While child is not a child of nodeA, set child to its parent.
-            while ($child->parentNode !== $nodeA) {
-                /** @var \Rowbot\DOM\Node $child */
-                $child = $child->parentNode;
-            }
-
-            // 4.3. If child’s index is less than offsetA, then return after.
-            if ($child->getTreeIndex() < $offsetA) {
-                return 'after';
-            }
-        }
-
-        // 5. Return before.
-        return 'before';
-    }
-
-    /**
      * Returns true if the entire Node is within the Range, otherwise false.
      *
      * @see https://dom.spec.whatwg.org/#contained
      */
     private function isFullyContainedNode(Node $node): bool
     {
-        return $node->getRootNode() === $this->range->startNode->getRootNode()
-            && $this->computePosition($node, 0, $this->range->startNode, $this->range->startOffset) === 'after'
-            && $this->computePosition($node, $node->getLength(), $this->range->endNode, $this->range->endOffset) === 'before';
+        return $node->getRootNode() === $this->range->start->node->getRootNode()
+            && BoundaryPoint::comparePosition(new BoundaryPoint($node, 0), $this->range->start) === Position::AFTER
+            && BoundaryPoint::comparePosition(
+                new BoundaryPoint($node, $node->getLength()),
+                $this->range->end
+            ) === Position::BEFORE;
     }
 
     /**
@@ -1178,7 +1095,7 @@ final class Range extends AbstractRange implements Stringable
      */
     private function isPartiallyContainedNode(Node $node): bool
     {
-        return $node->contains($this->range->startNode) xor $node->contains($this->range->endNode);
+        return $node->contains($this->range->start->node) xor $node->contains($this->range->end->node);
     }
 
     /**
@@ -1188,14 +1105,13 @@ final class Range extends AbstractRange implements Stringable
      *
      * @see https://dom.spec.whatwg.org/#concept-range-bp-set
      *
-     * @param string           $type   Which boundary point should be set. Valid values are start or end.
      * @param \Rowbot\DOM\Node $node   The Node that will become the boundary.
      * @param int              $offset The offset within the given Node that will be the boundary.
      *
      * @throws \Rowbot\DOM\Exception\IndexSizeError
      * @throws \Rowbot\DOM\Exception\InvalidNodeTypeError
      */
-    private function setStartOrEnd(string $type, Node $node, int $offset): void
+    private function setStartOrEnd(BoundaryType $type, Node $node, int $offset): void
     {
         $offset = Utils::unsignedLong($offset);
 
@@ -1207,32 +1123,30 @@ final class Range extends AbstractRange implements Stringable
             throw new IndexSizeError();
         }
 
+        $bp = new BoundaryPoint($node, $offset);
+
         switch ($type) {
-            case 'start':
+            case BoundaryType::START:
                 if (
-                    $this->range->startNode->getRootNode() !== $node->getRootNode()
-                    || $this->computePosition($node, $offset, $this->range->endNode, $this->range->endOffset) === 'after'
+                    $this->range->start->node->getRootNode() !== $node->getRootNode()
+                    || BoundaryPoint::comparePosition($bp, $this->range->end) === Position::AFTER
                 ) {
-                    $this->range->endNode = $node;
-                    $this->range->endOffset = $offset;
+                    $this->range->end = clone $bp;
                 }
 
-                $this->range->startNode = $node;
-                $this->range->startOffset = $offset;
+                $this->range->start = clone $bp;
 
                 break;
 
-            case 'end':
+            case BoundaryType::END:
                 if (
-                    $this->range->startNode->getRootNode() !== $node->getRootNode()
-                    || $this->computePosition($node, $offset, $this->range->startNode, $this->range->startOffset) === 'before'
+                    $this->range->start->node->getRootNode() !== $node->getRootNode()
+                    || BoundaryPoint::comparePosition($bp, $this->range->start) === Position::BEFORE
                 ) {
-                    $this->range->startNode = $node;
-                    $this->range->startOffset = $offset;
+                    $this->range->start = clone $bp;
                 }
 
-                $this->range->endNode = $node;
-                $this->range->endOffset = $offset;
+                $this->range->end = clone $bp;
         }
     }
 }
