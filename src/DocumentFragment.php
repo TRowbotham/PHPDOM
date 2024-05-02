@@ -11,11 +11,6 @@ use function count;
 /**
  * @see https://dom.spec.whatwg.org/#interface-documentfragment
  * @see https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
- *
- * @property-read \Rowbot\DOM\HTMLCollection<\Rowbot\DOM\Element\Element> $children
- * @property-read \Rowbot\DOM\Element\Element|null                        $firstElementChild
- * @property-read \Rowbot\DOM\Element\Element|null                        $lastElementChild
- * @property-read int                                                     $childElementCount
  */
 class DocumentFragment extends Node implements NonElementParentNode, ParentNode
 {
@@ -101,5 +96,12 @@ class DocumentFragment extends Node implements NonElementParentNode, ParentNode
     public function getLength(): int
     {
         return count($this->childNodes_);
+    }
+
+    protected function __clone()
+    {
+        parent::__clone();
+
+        $this->onCloneParentNode();
     }
 }

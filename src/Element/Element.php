@@ -42,10 +42,6 @@ use function range;
  * @see https://dom.spec.whatwg.org/#element
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Element
  *
- * @property-read \Rowbot\DOM\HTMLCollection<\Rowbot\DOM\Element\Element> $children
- * @property-read \Rowbot\DOM\Element\Element|null                        $firstElementChild
- * @property-read \Rowbot\DOM\Element\Element|null                        $lastElementChild
- * @property-read int                                                     $childElementCount
  * @property-read \Rowbot\DOM\Element\Element|null                        $nextElementSibling
  * @property-read \Rowbot\DOM\Element\Element|null                        $previousElementSibling
  */
@@ -843,5 +839,6 @@ class Element extends Node implements ChildNode, ParentNode
         $this->attributeList = $attributeList;
         $this->_classList = null;
         $this->namedNodeMap = new NamedNodeMap($this);
+        $this->onCloneParentNode();
     }
 }

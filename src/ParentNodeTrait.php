@@ -5,16 +5,69 @@ declare(strict_types=1);
 namespace Rowbot\DOM;
 
 use Generator;
-use Rowbot\DOM\DynamicProperty\Getter;
 use Rowbot\DOM\Element\Element;
 
 /**
  * This trait is meant to be used to fullfill the requirements of the ParentNode interface in the
  * context of a Node object.
+ *
+ * @see https://dom.spec.whatwg.org/#parentnode
  */
 trait ParentNodeTrait
 {
     use ChildOrParentNode;
+
+    /**
+     * @var \Rowbot\DOM\HTMLCollection<\Rowbot\DOM\Element\Element>
+     */
+    public HTMLCollection $children {
+        get => $this->getChildren();
+    }
+
+    /**
+     * @see https://dom.spec.whatwg.org/#dom-parentnode-children
+     */
+    public ?Element $firstElementChild {
+        get {
+            $node = $this->childNodes_->first();
+
+            while ($node) {
+                if ($node instanceof Element) {
+                    return $node;
+                }
+
+                $node = $node->_nextSibling;
+            }
+
+            return null;
+        }
+    }
+
+    /**
+     * @see https://dom.spec.whatwg.org/#dom-parentnode-lastelementchild
+     */
+    public ?Element $lastElementChild {
+        get {
+            $node = $this->childNodes_->last();
+
+            while ($node) {
+                if ($node instanceof Element) {
+                    return $node;
+                }
+
+                $node = $node->_previousSibling;
+            }
+
+            return null;
+        }
+    }
+
+    /**
+     * @see https://dom.spec.whatwg.org/#dom-parentnode-childelementcount
+     */
+    public int $childElementCount {
+        get => $this->getChildren()->count();
+    }
 
     /**
      * @var \Rowbot\DOM\HTMLCollection<\Rowbot\DOM\Element\Element>|null
@@ -64,13 +117,10 @@ trait ParentNodeTrait
     }
 
     /**
-     * @internal
-     *
      * @see https://dom.spec.whatwg.org/#dom-parentnode-children
      *
      * @return \Rowbot\DOM\HTMLCollection<\Rowbot\DOM\Element\Element>
      */
-    #[Getter('children')]
     protected function getChildren(): HTMLCollection
     {
         return $this->childElements ??= new HTMLCollection($this, static function (self $root): Generator {
@@ -86,62 +136,8 @@ trait ParentNodeTrait
         });
     }
 
-    /**
-     * Gets the first element child.
-     *
-     * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#dom-parentnode-firstelementchild
-     */
-    #[Getter('firstElementChild')]
-    protected function getFirstElementChild(): ?Element
+    private function onCloneParentNode(): void
     {
-        $node = $this->childNodes_->first();
-
-        while ($node) {
-            if ($node instanceof Element) {
-                return $node;
-            }
-
-            $node = $node->_nextSibling;
-        }
-
-        return null;
-    }
-
-    /**
-     * Gets the last element child.
-     *
-     * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#dom-parentnode-lastelementchild
-     */
-    #[Getter('lastElementChild')]
-    protected function getLastElementChild(): ?Element
-    {
-        $node = $this->childNodes_->last();
-
-        while ($node) {
-            if ($node instanceof Element) {
-                return $node;
-            }
-
-            $node = $node->_previousSibling;
-        }
-
-        return null;
-    }
-
-    /**
-     * Gets the number of element children.
-     *
-     * @internal
-     *
-     * @see https://dom.spec.whatwg.org/#dom-parentnode-childelementcount
-     */
-    #[Getter('childElementCount')]
-    protected function getChildElementCount(): int
-    {
-        return $this->getChildren()->count();
+        $this->childElements = null;
     }
 }

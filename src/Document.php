@@ -34,11 +34,6 @@ use function trim;
  * @see https://dom.spec.whatwg.org/#interface-document
  * @see https://html.spec.whatwg.org/multipage/dom.html#document
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Document
- *
- * @property-read \Rowbot\DOM\HTMLCollection<\Rowbot\DOM\Element\Element> $children
- * @property-read \Rowbot\DOM\Element\Element|null                        $firstElementChild
- * @property-read \Rowbot\DOM\Element\Element|null                        $lastElementChild
- * @property-read int                                                     $childElementCount
  */
 class Document extends Node implements NonElementParentNode, ParentNode, Stringable
 {
@@ -94,7 +89,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
     }
 
     public ?Element $documentElement {
-        get => $this->getFirstElementChild();
+        get => $this->firstElementChild;
     }
 
     public string $readyState {
@@ -129,7 +124,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
             return $value;
         }
         set {
-            $docElement = $this->getFirstElementChild();
+            $docElement = $this->firstElementChild;
             $element = null;
 
             if ($docElement && $docElement instanceof SVGSVGElement) {
@@ -211,7 +206,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
                 return;
             }
 
-            $docElement = $this->getFirstElementChild();
+            $docElement = $this->firstElementChild;
 
             // A body element can only exist as a child of the document element.
             // Throw an exception and abort the algorithm if the document element
@@ -229,7 +224,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      */
     public ?HTMLHeadElement $head {
         get {
-            $docElement = $this->getFirstElementChild();
+            $docElement = $this->firstElementChild;
 
             if ($docElement && $docElement instanceof HTMLHtmlElement) {
                 // Get the first child in the document element that is a head
@@ -831,7 +826,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      */
     protected function getTitleElement(): ?Element
     {
-        $docElement = $this->getFirstElementChild();
+        $docElement = $this->firstElementChild;
 
         if ($docElement && $docElement instanceof SVGSVGElement) {
             // Find the first child of the document element that is a svg title
@@ -864,7 +859,7 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
      */
     protected function getBodyElement(): ?HTMLElement
     {
-        $docElement = $this->getFirstElementChild();
+        $docElement = $this->firstElementChild;
 
         if ($docElement && $docElement instanceof HTMLHtmlElement) {
             // Get the first element in the document element that is a body or
@@ -900,5 +895,6 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
         $this->source = DocumentSource::NOT_FROM_PARSER;
         $this->environment = clone $this->environment;
         $this->baseElements = new BaseElementList();
+        $this->onCloneParentNode();
     }
 }
