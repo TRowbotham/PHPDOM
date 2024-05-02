@@ -21,9 +21,6 @@ use const FILTER_VALIDATE_INT;
 /**
  * @see https://html.spec.whatwg.org/multipage/dom.html#htmlelement
  * @see https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement
- *
- * @property string                   $contentEditable
- * @property bool                     $isContentEditable
  */
 class HTMLElement extends Element
 {

@@ -21,10 +21,6 @@ use function preg_match;
 /**
  * @see https://dom.spec.whatwg.org/#interface-domtokenlist
  *
- * @property string $value
- *
- * @property-read int $length Returns the number of tokens in the list.
- *
  * @implements \ArrayAccess<int, string>
  * @implements \Iterator<int, string>
  */
