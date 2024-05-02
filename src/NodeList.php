@@ -19,6 +19,8 @@ use Traversable;
  */
 interface NodeList extends ArrayAccess, Countable, Traversable
 {
+    public int $length { get; }
+
     /**
      * Returns the node at the given index.
      */

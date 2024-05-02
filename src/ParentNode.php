@@ -4,12 +4,22 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM;
 
+use Rowbot\DOM\Element\Element;
+
 /**
  * @see https://dom.spec.whatwg.org/#interface-parentnode
  * @see https://developer.mozilla.org/en-US/docs/Web/API/ParentNode
  */
 interface ParentNode
 {
+    public HTMLCollection $children { get; }
+
+    public ?Element $firstElementChild { get; }
+
+    public ?Element $lastElementChild { get; }
+
+    public int $childElementCount { get; }
+
     /**
      * Inserts nodes before the first child of this node, while replacing strings in nodes with
      * equivalent Text nodes.
