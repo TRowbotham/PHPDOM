@@ -30,6 +30,23 @@ use function preg_match;
  */
 final class DOMTokenList implements ArrayAccess, Countable, Iterator, Stringable
 {
+    /**
+     * @see https://dom.spec.whatwg.org/#dom-domtokenlist-length
+     */
+    public int $length {
+        get => $this->tokens->count();
+    }
+
+    /**
+     * @see https://dom.spec.whatwg.org/#dom-domtokenlist-value
+     */
+    public string $value {
+        get => $this->toString();
+        set {
+            $this->element->getAttributeList()->setAttrValue($this->attrLocalName, $value);
+        }
+    }
+
     private string $attrLocalName;
 
     private Element $element;
@@ -47,25 +64,6 @@ final class DOMTokenList implements ArrayAccess, Countable, Iterator, Stringable
             new AttributeChangedEvent($element, $attrLocalName, $value, $value, null),
             'attribute.changed'
         );
-    }
-
-    public function __get(string $name)
-    {
-        switch ($name) {
-            case 'length':
-                return $this->tokens->count();
-
-            case 'value':
-                return $this->toString();
-        }
-    }
-
-    public function __set(string $name, string $value): void
-    {
-        switch ($name) {
-            case 'value':
-                $this->element->getAttributeList()->setAttrValue($this->attrLocalName, $value);
-        }
     }
 
     /**
