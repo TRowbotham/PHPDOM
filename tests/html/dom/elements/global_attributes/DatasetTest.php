@@ -9,6 +9,8 @@ use Rowbot\DOM\DOMStringMap;
 use Rowbot\DOM\Element\HTML\HTMLElement;
 use Rowbot\DOM\Tests\TestCase;
 
+use function property_exists;
+
 /**
  * @see https://github.com/web-platform-tests/wpt/blob/master/html/dom/elements/global-attributes/dataset.html
  */
@@ -19,6 +21,7 @@ class DatasetTest extends TestCase
         $document = DocumentBuilder::create()->setContentType('text/html')->createEmptyDocument();
         $div = $document->createElement('div');
 
+        self::assertTrue(property_exists($div, 'dataset'));
         self::assertInstanceOf(DOMStringMap::class, $div->dataset);
 
         return $div;
@@ -74,8 +77,7 @@ class DatasetTest extends TestCase
         $document = DocumentBuilder::create()->setContentType('text/html')->createEmptyDocument();
         $el = $document->createElementNS('test', 'test');
 
-        self::assertNotInstanceOf(DOMStringMap::class, $el->dataset);
-        self::assertNull($el->dataset);
+        self::assertFalse(property_exists($el, 'dataset'));
     }
 
     public function testSVGElementsShouldHaveDataset(): void
@@ -83,6 +85,7 @@ class DatasetTest extends TestCase
         $document = DocumentBuilder::create()->setContentType('text/html')->createEmptyDocument();
         $el = $document->createElementNS("http://www.w3.org/2000/svg", "svg");
 
+        self::assertTrue(property_exists($el, 'dataset'));
         self::assertInstanceOf(DOMStringMap::class, $el->dataset);
     }
 }

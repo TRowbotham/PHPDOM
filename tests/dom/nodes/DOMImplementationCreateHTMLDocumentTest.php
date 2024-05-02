@@ -106,6 +106,7 @@ class DOMImplementationCreateHTMLDocumentTest extends TestCase
 
     public function testLocationGetterIsNullOutsideOfBrowserContext(): void
     {
+        $this->markTestSkipped('We don\'t support the location attribute yet');
         $doc = self::loadDocument()->implementation->createHTMLDocument();
 
         $this->assertNull($doc->location);

@@ -273,6 +273,11 @@ class Document extends Node implements NonElementParentNode, ParentNode, Stringa
     private int $source;
 
     /**
+     * @var \Rowbot\DOM\DocumentReadyState::*
+     */
+    private string $_readyState;
+
+    /**
      * @param 'xml'|'html' $type
      */
     public function __construct(?Environment $env = null, string $type = 'xml')
