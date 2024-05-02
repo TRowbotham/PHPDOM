@@ -5,18 +5,20 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Element;
 
 use Rowbot\DOM\DOMStringMap;
-use Rowbot\DOM\DynamicProperty\Getter;
 
 /**
  * @see https://html.spec.whatwg.org/multipage/dom.html#htmlorsvgelement
  */
 trait HTMLOrSVGElement
 {
-    private ?DOMStringMap $dataset = null;
+    public DOMStringMap $dataset {
+        get => $this->_dataset ??= new DOMStringMap($this);
+    }
 
-    #[Getter('dataset')]
-    protected function getDataset(): DOMStringMap
+    private ?DOMStringMap $_dataset = null;
+
+    private function onCloneHTMLOrSVGElement(): void
     {
-        return $this->dataset ??= new DOMStringMap($this);
+        $this->_dataset = null;
     }
 }

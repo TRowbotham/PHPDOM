@@ -9,10 +9,15 @@ use Rowbot\DOM\Element\HTMLOrSVGElement;
 
 /**
  * @see https://svgwg.org/svg2-draft/types.html#InterfaceSVGElement
- *
- * @property \Rowbot\DOM\DOMStringMap $dataset
  */
 class SVGElement extends Element
 {
     use HTMLOrSVGElement;
+
+    protected function __clone(): void
+    {
+        parent::__clone();
+
+        $this->onCloneHTMLOrSVGElement();
+    }
 }

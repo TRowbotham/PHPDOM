@@ -22,7 +22,6 @@ use const FILTER_VALIDATE_INT;
  * @see https://html.spec.whatwg.org/multipage/dom.html#htmlelement
  * @see https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement
  *
- * @property \Rowbot\DOM\DOMStringMap $dataset
  * @property string                   $contentEditable
  * @property bool                     $isContentEditable
  */
@@ -539,5 +538,12 @@ class HTMLElement extends Element
         }
 
         return Utf8String::transcode($attr->getValue(), 'utf-8', 'utf-8');
+    }
+
+    protected function __clone()
+    {
+        parent::__clone();
+
+        $this->onCloneHTMLOrSVGElement();
     }
 }
