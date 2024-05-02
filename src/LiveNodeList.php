@@ -13,11 +13,13 @@ use Rowbot\DOM\Support\Collection\NodeSet;
  *
  * @implements \Rowbot\DOM\NodeList<T>
  * @implements \IteratorAggregate<int, T>
- *
- * @property-read int $length
  */
 final class LiveNodeList implements IteratorAggregate, NodeList
 {
+    public int $length {
+        get => $this->nodes->count();
+    }
+
     /**
      * @var \Rowbot\DOM\Support\Collection\NodeSet<T>
      */
@@ -29,14 +31,6 @@ final class LiveNodeList implements IteratorAggregate, NodeList
     public function __construct(NodeSet $nodes)
     {
         $this->nodes = $nodes;
-    }
-
-    public function __get(string $name)
-    {
-        switch ($name) {
-            case 'length':
-                return $this->nodes->count();
-        }
     }
 
     /**

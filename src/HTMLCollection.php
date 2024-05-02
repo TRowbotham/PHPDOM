@@ -23,11 +23,13 @@ use function iterator_count;
  *
  * @implements \ArrayAccess<int|string, TValue>
  * @implements \IteratorAggregate<int, TValue>
- *
- * @property-read int $length
  */
 class HTMLCollection implements ArrayAccess, Countable, IteratorAggregate
 {
+    public int $length {
+        get => iterator_count(($this->filter)($this->root));
+    }
+
     private Closure $filter;
 
     private Node $root;
@@ -36,14 +38,6 @@ class HTMLCollection implements ArrayAccess, Countable, IteratorAggregate
     {
         $this->filter = $filter;
         $this->root = $root;
-    }
-
-    public function __get(string $name)
-    {
-        switch ($name) {
-            case 'length':
-                return iterator_count(($this->filter)($this->root));
-        }
     }
 
     /**

@@ -17,13 +17,15 @@ use Rowbot\DOM\Exception\NotFoundError;
  * @see https://dom.spec.whatwg.org/#namednodemap
  * @see https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap
  *
- * @property-read int $length Returns the number of attributes in the list.
- *
  * @implements \ArrayAccess<int, \Rowbot\DOM\Attr>
  * @implements \IteratorAggregate<int, \Rowbot\DOM\Attr>
  */
 class NamedNodeMap implements ArrayAccess, Countable, IteratorAggregate
 {
+    public int $length {
+        get => $this->element->getAttributeList()->count();
+    }
+
     private Element $element;
 
     public function __construct(Element $element)
@@ -31,16 +33,8 @@ class NamedNodeMap implements ArrayAccess, Countable, IteratorAggregate
         $this->element = $element;
     }
 
-    /**
-     * @return \Rowbot\DOM\Attr|int|null
-     */
-    public function __get(string $name)
+    public function __get(string $name): ?Attr
     {
-        switch ($name) {
-            case 'length':
-                return $this->element->getAttributeList()->count();
-        }
-
         return $this->element->getAttributeList()->getAttrByName($name);
     }
 

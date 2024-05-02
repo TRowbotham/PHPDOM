@@ -14,11 +14,13 @@ use function count;
  *
  * @implements \Rowbot\DOM\NodeList<T>
  * @implements \IteratorAggregate<int, T>
- *
- * @property-read int $length
  */
 final class StaticNodeList implements IteratorAggregate, NodeList
 {
+    public int $length {
+        get => count($this->nodes);
+    }
+
     /**
      * @var list<T>
      */
@@ -30,14 +32,6 @@ final class StaticNodeList implements IteratorAggregate, NodeList
     public function __construct(array $nodes)
     {
         $this->nodes = $nodes;
-    }
-
-    public function __get(string $name)
-    {
-        switch ($name) {
-            case 'length':
-                return count($this->nodes);
-        }
     }
 
     /**
