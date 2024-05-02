@@ -41,9 +41,6 @@ use function range;
 /**
  * @see https://dom.spec.whatwg.org/#element
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Element
- *
- * @property-read \Rowbot\DOM\Element\Element|null                        $nextElementSibling
- * @property-read \Rowbot\DOM\Element\Element|null                        $previousElementSibling
  */
 class Element extends Node implements ChildNode, ParentNode
 {

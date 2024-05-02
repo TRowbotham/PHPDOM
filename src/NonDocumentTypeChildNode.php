@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM;
 
-use Rowbot\DOM\DynamicProperty\Getter;
 use Rowbot\DOM\Element\Element;
 
 /**
@@ -13,44 +12,44 @@ use Rowbot\DOM\Element\Element;
 trait NonDocumentTypeChildNode
 {
     /**
-     * Gets the next element sibling.
+     * Gets the previous element sibling.
      *
      * @see https://dom.spec.whatwg.org/#dom-nondocumenttypechildnode-previouselementsibling
      */
-    #[Getter('nextElementSibling')]
-    private function getNextElementSibling(): ?Element
-    {
-        $node = $this->_nextSibling;
+    public ?Element $previousElementSibling {
+        get {
+            $node = $this->_previousSibling;
 
-        while ($node) {
-            if ($node instanceof Element) {
-                return $node;
+            while ($node) {
+                if ($node instanceof Element) {
+                    return $node;
+                }
+
+                $node = $node->_previousSibling;
             }
 
-            $node = $node->_nextSibling;
+            return null;
         }
-
-        return null;
     }
 
     /**
-     * Gets the previous element sibling.
+     * Gets the next element sibling.
      *
      * @see https://dom.spec.whatwg.org/#dom-nondocumenttypechildnode-nextelementsibling
      */
-    #[Getter('previousElementSibling')]
-    private function getPreviousElementSibling(): ?Element
-    {
-        $node = $this->_previousSibling;
+    public ?Element $nextElementSibling {
+        get {
+            $node = $this->_nextSibling;
 
-        while ($node) {
-            if ($node instanceof Element) {
-                return $node;
+            while ($node) {
+                if ($node instanceof Element) {
+                    return $node;
+                }
+
+                $node = $node->_nextSibling;
             }
 
-            $node = $node->_previousSibling;
+            return null;
         }
-
-        return null;
     }
 }

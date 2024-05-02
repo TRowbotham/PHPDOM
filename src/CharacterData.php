@@ -15,11 +15,6 @@ use function sprintf;
  *
  * @see https://dom.spec.whatwg.org/#characterdata
  * @see https://developer.mozilla.org/en-US/docs/Web/API/CharacterData
- *
- * @property-read \Rowbot\DOM\Element\Element|null $nextElementSibling     Returns the next sibling that is an Element,
- *                                                                         if any.
- * @property-read \Rowbot\DOM\Element\Element|null $previousElementSibling Returns the previous sibling that is an
- *                                                                         Element, if any.
  */
 abstract class CharacterData extends Node implements ChildNode
 {
