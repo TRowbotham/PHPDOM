@@ -4,15 +4,6 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM;
 
-use ReflectionClass;
-use ReflectionMethod;
-use ReflectionProperty;
-use Rowbot\DOM\DynamicProperty\Getter;
-use Rowbot\DOM\DynamicProperty\MethodGetter;
-use Rowbot\DOM\DynamicProperty\MethodSetter;
-use Rowbot\DOM\DynamicProperty\PropertyGetter;
-use Rowbot\DOM\DynamicProperty\PropertySetter;
-use Rowbot\DOM\DynamicProperty\Setter;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Exception\HierarchyRequestError;
 use Rowbot\DOM\Exception\NotFoundError;
@@ -156,16 +147,6 @@ abstract class Node
     protected Document $nodeDocument;
 
     protected EventDispatcherInterface $dispatcher;
-
-    /**
-     * @var array<class-string<self>, array<string, \Rowbot\DOM\DynamicProperty\DynamicPropertyGetter>>
-     */
-    private static array $getters = [];
-
-    /**
-     * @var array<class-string<self>, array<string, \Rowbot\DOM\DynamicProperty\DynamicPropertySetter>>
-     */
-    private static array $setters = [];
 
     /**
      * @param self::*_NODE $nodeType
@@ -1810,84 +1791,6 @@ abstract class Node
         return $root instanceof ShadowRoot
             && !$root->isShadowIncludingInclusiveAncestorOf($otherNode)
             && ($root->mode === 'closed' || $root->host->isClosedShadowHiddenFrom($otherNode));
-    }
-
-    private function registerDynamicPropertyGetters(ReflectionClass $reflection): void
-    {
-        $filter = ReflectionMethod::IS_PRIVATE | ReflectionMethod::IS_PROTECTED | ReflectionMethod::IS_PUBLIC;
-
-        foreach ($reflection->getMethods($filter) as $method) {
-            foreach ($method->getAttributes(Getter::class) as $attribute) {
-                $instance = $attribute->newInstance();
-                self::$getters[static::class][$instance->name] = new MethodGetter($method->getName());
-            }
-        }
-
-        $filter = ReflectionProperty::IS_PRIVATE | ReflectionProperty::IS_PROTECTED | ReflectionProperty::IS_PUBLIC;
-
-        foreach ($reflection->getProperties($filter) as $property) {
-            foreach ($property->getAttributes(Getter::class) as $attribute) {
-                $instance = $attribute->newInstance();
-                self::$getters[static::class][$instance->name] = new PropertyGetter($property->getName());
-            }
-        }
-    }
-
-    private function registerDynamicPropertySetters(ReflectionClass $reflection): void
-    {
-        $filter = ReflectionMethod::IS_PRIVATE | ReflectionMethod::IS_PROTECTED | ReflectionMethod::IS_PUBLIC;
-
-        foreach ($reflection->getMethods($filter) as $method) {
-            foreach ($method->getAttributes(Setter::class) as $attribute) {
-                $instance = $attribute->newInstance();
-                self::$setters[static::class][$instance->name] = new MethodSetter($method->getName());
-            }
-        }
-
-        $filter = ReflectionProperty::IS_PRIVATE | ReflectionProperty::IS_PROTECTED | ReflectionProperty::IS_PUBLIC;
-
-        foreach ($reflection->getProperties($filter) as $property) {
-            foreach ($property->getAttributes(Setter::class) as $attribute) {
-                $instance = $attribute->newInstance();
-                self::$setters[static::class][$instance->name] = new PropertySetter($property->getName());
-            }
-        }
-    }
-
-    public function __get(string $name)
-    {
-        if (!isset(self::$getters[static::class])) {
-            self::$getters[static::class] = [];
-            $reflection = new ReflectionClass($this);
-
-            do {
-                $this->registerDynamicPropertyGetters($reflection);
-            } while (($reflection = $reflection->getParentClass()) !== false);
-        }
-
-        if (!isset(self::$getters[static::class][$name])) {
-            return null;
-        }
-
-        return self::$getters[static::class][$name]->getValue($this);
-    }
-
-    public function __set(string $name, mixed $value): void
-    {
-        if (!isset(self::$setters[static::class])) {
-            self::$setters[static::class] = [];
-            $reflection = new ReflectionClass($this);
-
-            do {
-                $this->registerDynamicPropertySetters($reflection);
-            } while (($reflection = $reflection->getParentClass()) !== false);
-        }
-
-        if (!isset(self::$setters[static::class][$name])) {
-            return;
-        }
-
-        self::$setters[static::class][$name]->setValue($this, $value);
     }
 
     protected function __clone()
