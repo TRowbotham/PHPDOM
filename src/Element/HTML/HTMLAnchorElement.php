@@ -13,20 +13,19 @@ use Rowbot\DOM\Element\HTMLHyperlinkElementUtils;
  *
  * @see https://html.spec.whatwg.org/multipage/semantics.html#the-a-element
  *
- * @property string $hash     Represents the fragment identifier, including the leading hash (#) mark, if one is
- *                            present, of the URL.
- * @property string $host     Represents the hostname and the port, if the port is not the default port, of the URL.
- * @property string $hostname Represents the hostname of the URL.
- * @property string $href     Reflects the href HTML attribute.
- * @property string $password Represents the password specified in the URL.
- * @property string $pathname Represents the pathname of the URL, if any.
- * @property string $port     Represents the port, if any, of the URL.
- * @property string $protocol Represents the protocol, including the trailing colon (:), of the URL.
- * @property string $search   Represents the query string, including the leading question mark (?), if any, of the URL.
- * @property string $username Represents the username specified, if any, of theURL.
- *
- * @property-read string                   $origin  Represents the URL's origin which is composed of the scheme, domain,
- *                                                  and port.
+ * @property string $download Reflects the download HTML attribute, which indicates that the linked resource should be
+ *                            downloaded rather than displayed in the browser. The value is the prefered name of the
+ *                            file to be saved to disk. While there are no restrictions on the characters allowed, you
+ *                            must take into consideration disallowed characters in file names on most operating
+ *                            systems.
+ * @property string $hrefLang Reflects the hrefLang HTML attribute, indicating the language of the linked resource.
+ * @property string $ping     Reflects the ping HTML attribute. A notification will be sent to all the URLs contained
+ *                            within this property if the user clicks on this link.
+ * @property string $rel      Reflects the rel HTML attribute, which specifies the relationship of the target object to
+ *                            the linked object.
+ * @property string $target   Reflects the target HTML attribute, which indicates where to display the linked resource.
+ * @property string $type     Reflects the type HTML attribute, which indicates the MIME type of the linked resource.
+ * @property \Rowbot\DOM\DOMTokenList $relList Reflects the rel HTML attribute as a list of tokens.
  */
 class HTMLAnchorElement extends HTMLElement
 {
