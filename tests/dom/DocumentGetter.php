@@ -29,7 +29,7 @@ trait DocumentGetter
         return $this->htmlDocument;
     }
 
-    public function getXMLDocument(callable $callback = null): Document
+    public function getXMLDocument(?callable $callback = null): Document
     {
         if (!$this->xmlDocument) {
             $this->xmlDocument = new Document();
