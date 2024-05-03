@@ -16,27 +16,23 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-versions: ['7.1', '7.2', '7.4', '8.0']
+        php-versions: ['8.4']
         composer-options: ['--optimize-autoloader']
         coverage: ['none']
         include:
-          - php-versions: '7.3'
-            composer-options: '--optimize-autoloader'
-            coverage: 'pcov'
-
-          - php-versions: '8.1'
+          - php-versions: '8.4'
             composer-options: '--optimize-autoloader --ignore-platform-reqs'
-            coverage: 'none'
+            coverage: 'pcov'
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Setup PHP, with composer and extensions
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-versions }}
-          extensions: ctype, json, mbstring, opcache, pcre, gmp
+          extensions: ctype, mbstring, opcache, pcre, gmp
           ini-values: zend.assertions=1
           coverage: ${{ matrix.coverage }}
 
@@ -45,7 +41,7 @@ jobs:
         run: echo "::set-output name=dir::$(composer config cache-files-dir)"
 
       - name: Cache composer dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
@@ -56,7 +52,7 @@ jobs:
 
       - name: Run Tests
         run: |
-          if [[ ${{ matrix.php-versions == '7.3' }} ]]; then
+          if [[ ${{ matrix.php-versions == '8.4' }} ]]; then
             mkdir -p ./build/coverage/
             vendor/bin/phpunit --coverage-clover ./build/coverage/clover.xml
           else
@@ -64,7 +60,7 @@ jobs:
           fi
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v4
         if: ${{ always() && matrix.php-versions == '7.3' }}
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
