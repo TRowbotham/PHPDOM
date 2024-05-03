@@ -5,10 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM;
 
 use Rowbot\DOM\Exception\InvalidStateError;
-use Rowbot\DOM\Exception\TypeError;
 use Throwable;
-
-use function is_callable;
 
 abstract class NodeTraverser
 {
@@ -25,15 +22,10 @@ abstract class NodeTraverser
     private bool $isActive;
 
     /**
-     * @param \Rowbot\DOM\NodeFilter::SHOW_*       $whatToShow
-     * @param \Rowbot\DOM\NodeFilter|callable|null $filter
+     * @param \Rowbot\DOM\NodeFilter::SHOW_* $whatToShow
      */
-    public function __construct(int $whatToShow, mixed $filter)
+    public function __construct(int $whatToShow, callable|NodeFilter|null $filter)
     {
-        if ($filter !== null && !$filter instanceof NodeFilter && !is_callable($filter)) {
-            throw new TypeError();
-        }
-
         $this->whatToShow = $whatToShow;
         $this->isActive = false;
         $this->filter = $filter;

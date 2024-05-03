@@ -15,13 +15,12 @@ final class TreeWalker extends NodeTraverser
     public readonly Node $root;
 
     /**
-     * @param \Rowbot\DOM\NodeFilter::SHOW_*       $whatToShow
-     * @param \Rowbot\DOM\NodeFilter|callable|null $filter
+     * @param \Rowbot\DOM\NodeFilter::SHOW_* $whatToShow
      */
     public function __construct(
         Node $root,
         int $whatToShow = NodeFilter::SHOW_ALL,
-        mixed $filter = null
+        callable|NodeFilter|null $filter = null
     ) {
         parent::__construct($whatToShow, $filter);
 
