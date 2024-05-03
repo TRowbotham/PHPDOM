@@ -9,18 +9,9 @@ use Rowbot\DOM\InternalEvent\AttributeChangedEvent;
 use Rowbot\DOM\Utils;
 use Rowbot\URL\BasicURLParser;
 use Rowbot\URL\Component\PathList;
-use Rowbot\URL\State\FragmentState;
-use Rowbot\URL\State\HostnameState;
-use Rowbot\URL\State\HostState;
-use Rowbot\URL\State\PathStartState;
-use Rowbot\URL\State\PortState;
-use Rowbot\URL\State\QueryState;
-use Rowbot\URL\State\SchemeStartState;
-use Rowbot\URL\String\CodePoint;
-use Rowbot\URL\String\IDLString;
+use Rowbot\URL\ParserState;
+use Rowbot\URL\String\Utf8String;
 use Rowbot\URL\URLRecord;
-
-use function assert;
 
 /**
  * @see https://html.spec.whatwg.org/multipage/semantics.html#htmlhyperlinkelementutils
@@ -101,16 +92,16 @@ trait HTMLHyperlinkElementUtils
             // 1. Reinitialize url.
             $this->reinitialiseUrl();
 
-            // 2. If this element's url is null, terminate these steps.
+            // 2. If this's url is null, then return.
             if ($this->url === null) {
                 return;
             }
 
             // 3. Basic URL parse the given value, followed by ":", with this element's url as url and
             // scheme start state as state override.
-            $input = new IDLString($value);
+            $input = new Utf8String($value);
             $parser = new BasicURLParser();
-            $parser->parse($input->append(':'), null, null, $this->url, new SchemeStartState());
+            $parser->parse($input->append(':'), null, null, $this->url, ParserState::SCHEME_START);
 
             // 4. Update href.
             $this->attributeList->setAttrValue('href', $this->url->serializeURL());
@@ -147,7 +138,7 @@ trait HTMLHyperlinkElementUtils
             }
 
             // 4. Set the username, given url and the given value.
-            $this->setUrlUsername($value);
+            $this->url->setUsername(new Utf8String($value));
 
             // 5. Update href.
             $this->attributeList->setAttrValue('href', $this->url->serializeURL());
@@ -184,7 +175,7 @@ trait HTMLHyperlinkElementUtils
             }
 
             // 4. Set the password, given url and the given value.
-            $this->setUrlPassword($value);
+            $this->url->setPassword(new Utf8String($value));
 
             // 5. Update href.
             $this->attributeList->setAttrValue('href', $this->url->serializeURL());
@@ -222,14 +213,14 @@ trait HTMLHyperlinkElementUtils
             // 1. Reinitialize url.
             $this->reinitialiseUrl();
 
-            // 3. If url is null or url's cannot-be-a-base-URL flag is set, terminate these steps.
-            if ($this->url === null || $this->url->cannotBeABaseUrl) {
+            // 3. If url is null or url has an opaque path, then return.
+            if ($this->url === null || $this->url->path->isOpaque()) {
                 return;
             }
 
             // 4. Basic URL parse the given value, with url as url and host state as state override.
             $parser = new BasicURLParser();
-            $parser->parse(new IDLString($value), null, null, $this->url, new HostState());
+            $parser->parse(new Utf8String($value), null, null, $this->url, ParserState::HOST);
 
             // 5. Update href.
             $this->attributeList->setAttrValue('href', $this->url->serializeURL());
@@ -260,14 +251,14 @@ trait HTMLHyperlinkElementUtils
             // 1. Reinitialize url.
             $this->reinitialiseUrl();
 
-            // 3. If url is null or url's cannot-be-a-base-URL flag is set, terminate these steps.
-            if ($this->url === null || $this->url->cannotBeABaseUrl) {
+            // 3. If url is null or url has an opaque path, then return.
+            if ($this->url === null || $this->url->path->isOpaque()) {
                 return;
             }
 
             // 4. Basic URL parse the given value, with url as url and hostname state as state override.
             $parser = new BasicURLParser();
-            $parser->parse(new IDLString($value), null, null, $this->url, new HostnameState());
+            $parser->parse(new Utf8String($value), null, null, $this->url, ParserState::HOSTNAME);
 
             // 5. Update href.
             $this->attributeList->setAttrValue('href', $this->url->serializeURL());
@@ -303,7 +294,7 @@ trait HTMLHyperlinkElementUtils
                 return;
             }
 
-            $input = new IDLString($value);
+            $input = new Utf8String($value);
 
             // 4. If the given value is the empty string, then set url's port to null.
             if ($input->isEmpty()) {
@@ -313,7 +304,7 @@ trait HTMLHyperlinkElementUtils
             // override.
             } else {
                 $parser = new BasicURLParser();
-                $parser->parse($input, null, null, $this->url, new PortState());
+                $parser->parse($input, null, null, $this->url, ParserState::PORT);
             }
 
             // 5. Update href.
@@ -334,19 +325,8 @@ trait HTMLHyperlinkElementUtils
                 return '';
             }
 
-            // 4. If url's cannot-be-a-base-URL flag is set, return the first string in url's path.
-            if ($this->url->cannotBeABaseUrl) {
-                return (string) $this->url->path->first();
-            }
-
-            // 5. If url's path is empty, then return the empty string.
-            if ($this->url->path->isEmpty()) {
-                return '';
-            }
-
-            // 6. Return "/", followed by the strings in url's path (including empty strings), separated
-            // from each other by "/".
-            return '/' . $this->url->path;
+            // 4. Return the result of URL path serializing url.
+            return (string) $this->url->path;
         }
         set(mixed $value) {
             if (!Utils::isStringable($value)) {
@@ -356,8 +336,8 @@ trait HTMLHyperlinkElementUtils
             // 1. Reinitialize url.
             $this->reinitialiseUrl();
 
-            // 3. If url is null or url's cannot-be-a-base-URL flag is set, terminate these steps.
-            if ($this->url === null || $this->url->cannotBeABaseUrl) {
+            // 3. If url is null or url has an opaque path, then return.
+            if ($this->url === null || $this->url->path->isOpaque()) {
                 return;
             }
 
@@ -367,7 +347,7 @@ trait HTMLHyperlinkElementUtils
             // 5. Basic URL parse the given value, with url as url and path start state as state
             // override.
             $parser = new BasicURLParser();
-            $parser->parse(new IDLString($value), null, null, $this->url, new PathStartState());
+            $parser->parse(new Utf8String($value), null, null, $this->url, ParserState::PATH_START);
 
             // 6. Update href.
             $this->attributeList->setAttrValue('href', $this->url->serializeURL());
@@ -404,7 +384,7 @@ trait HTMLHyperlinkElementUtils
                 return;
             }
 
-            $input = new IDLString($value);
+            $input = new Utf8String($value);
 
             // 4. If the given value is the empty string, set url's query to null.
             if ($input->isEmpty()) {
@@ -420,16 +400,9 @@ trait HTMLHyperlinkElementUtils
                 // 5.2 Set url's query to the empty string.
                 $this->url->query = '';
 
-                // 5.3 Basic URL parse input, with url as url and query state as state override, and
-                // this element's node document's document's character encoding as encoding override.
+                // 5.3 Basic URL parse input, with url as url and query state as state override.
                 $parser = new BasicURLParser();
-                $parser->parse(
-                    $input,
-                    null,
-                    $this->nodeDocument->characterSet,
-                    $this->url,
-                    new QueryState()
-                );
+                $parser->parse($input, null, null, $this->url, ParserState::QUERY);
             }
 
             // 6. Update href.
@@ -467,7 +440,7 @@ trait HTMLHyperlinkElementUtils
                 return;
             }
 
-            $input = new IDLString($value);
+            $input = new Utf8String($value);
 
             // 4. If the given value is the empty string, set url's fragment to null.
             if ($input->isEmpty()) {
@@ -485,7 +458,7 @@ trait HTMLHyperlinkElementUtils
 
                 // 5.3 Basic URL parse input, with url as url and fragment state as state override.
                 $parser = new BasicURLParser();
-                $parser->parse($input, null, null, $this->url, new FragmentState());
+                $parser->parse($input, null, null, $this->url, ParserState::FRAGMENT);
             }
 
             // 6. Update href.
@@ -516,9 +489,8 @@ trait HTMLHyperlinkElementUtils
      */
     protected function reinitialiseUrl(): void
     {
-        // 1. If element's url is non-null, its scheme is "blob", and its cannot-be-a-base-URL flag
-        // is set, terminate these steps.
-        if ($this->url && $this->url->scheme->isBlob() && $this->url->cannotBeABaseUrl) {
+        // 1. If element's url is non-null, its scheme is "blob", and it has an opaque path, then terminate these steps.
+        if ($this->url && $this->url->scheme->isBlob() && $this->url->path->isOpaque()) {
             return;
         }
 
@@ -538,51 +510,23 @@ trait HTMLHyperlinkElementUtils
      */
     protected function setURL(): void
     {
+        // 1. Set this element's url to null.
+        $this->url = null;
+
+        // 2. If this element's href content attribute is absent, then return.
         $href = $this->attributeList->getAttrByNamespaceAndLocalName(null, 'href');
 
-        // 1. If this element's href content attribute is absent, set this element's url to null.
-        if (!$href) {
-            $this->url = null;
-
+        if ($href === null) {
             return;
         }
 
-        // 2. Otherwise, parse this element's href content attribute value relative to this
-        // element's node document. If parsing is successful, set this element's url to the result;
-        // otherwise, set this element's url to null.
-        $url = $this->parseURL($href->value, $this->nodeDocument);
-        $this->url = $url === false ? null : $url['urlRecord'];
-    }
+        // 3. Let url be the result of encoding-parsing a URL given this element's href content attribute's value,
+        // relative to this element's node document.
+        $url = URLResolver::encodingParseURL($href->value, $this->nodeDocument);
 
-    /**
-     * @see https://url.spec.whatwg.org/#set-the-password
-     */
-    private function setUrlPassword(string $input): void
-    {
-        assert($this->url instanceof URLRecord);
-        $this->url->password = '';
-
-        foreach (new IDLString($input) as $codePoint) {
-            $this->url->password .= CodePoint::utf8PercentEncode(
-                $codePoint,
-                CodePoint::USERINFO_PERCENT_ENCODE_SET
-            );
-        }
-    }
-
-    /**
-     * @see https://url.spec.whatwg.org/#set-the-username
-     */
-    private function setUrlUsername(string $input): void
-    {
-        assert($this->url instanceof URLRecord);
-        $this->url->username = '';
-
-        foreach (new IDLString($input) as $codePoint) {
-            $this->url->username .= CodePoint::utf8PercentEncode(
-                $codePoint,
-                CodePoint::USERINFO_PERCENT_ENCODE_SET
-            );
+        // 4. If url is not failure, then set this element's url to url.
+        if ($url !== null) {
+            $this->url = $url;
         }
     }
 }

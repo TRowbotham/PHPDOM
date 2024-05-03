@@ -11,7 +11,7 @@
     "require": {
         "php": ">=8.4",
         "ext-mbstring": "*",
-        "rowbot/url": "3.1.4",
+        "rowbot/url": "dev-dev",
         "symfony/event-dispatcher": "^6.4|^7.0"
     },
     "config": {

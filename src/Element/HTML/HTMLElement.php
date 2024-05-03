@@ -7,6 +7,7 @@ namespace Rowbot\DOM\Element\HTML;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Element\ElementContentEditable;
 use Rowbot\DOM\Element\HTMLOrSVGElement;
+use Rowbot\DOM\Element\URLResolver;
 use Rowbot\DOM\Exception\DOMException;
 use Rowbot\DOM\Exception\IndexSizeError;
 use Rowbot\DOM\Utils;
@@ -517,10 +518,10 @@ class HTMLElement extends Element
             return '';
         }
 
-        $url = $this->parseURL($attr->getValue(), $this->nodeDocument);
+        $urlString = URLResolver::encodingParseAndSerializeURL($attr->getValue(), $this->nodeDocument);
 
-        if ($url !== false) {
-            return $url['urlString'];
+        if ($urlString !== null) {
+            return $urlString;
         }
 
         return Utf8String::transcode($attr->getValue(), 'utf-8', 'utf-8');

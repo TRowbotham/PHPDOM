@@ -30,7 +30,6 @@ use Rowbot\DOM\ParentNodeTrait;
 use Rowbot\DOM\Parser\MarkupFactory;
 use Rowbot\DOM\Parser\ParserFactory;
 use Rowbot\DOM\Text;
-use Rowbot\DOM\URL\URLParser;
 use Rowbot\DOM\Utils;
 
 use function count;
@@ -751,40 +750,6 @@ class Element extends Node implements ChildNode, ParentNode
 
             return $element->_parentNode->preinsertNode($node, $element->_nextSibling);
         }
-    }
-
-    /**
-     * Resolves a URL to the absolute URL that it implies.
-     *
-     * @see https://html.spec.whatwg.org/multipage/infrastructure.html#parse-a-url
-     *
-     * @internal
-     *
-     * @param string $url                                        A URL string to be resolved.
-     * @param \Rowbot\DOM\Document $documentOrEnvironmentSetting Either a document or environment settings object that
-     *                                                           contain a base URL.
-     *
-     * @return array<string, mixed>|false An array containing the serialized absolute URL as well as the parsed URL or
-     *                                    false on failure.
-     */
-    protected function parseURL(string $url, $documentOrEnvironmentSetting)
-    {
-        if ($documentOrEnvironmentSetting instanceof Document) {
-            $encoding = $documentOrEnvironmentSetting->characterSet;
-            $baseURL = $documentOrEnvironmentSetting->getBaseURL();
-        } else {
-            // TODO: Let encoding be the environment settings object'a API URL
-            // character encoding.  Let baseURL be the environment settings
-            // object's API base URL.
-        }
-
-        $urlRecord = URLParser::parseUrl($url, $baseURL, $encoding);
-
-        if ($urlRecord === false) {
-            return false;
-        }
-
-        return ['urlRecord' => $urlRecord, 'urlString' => $urlRecord->serializeURL()];
     }
 
     /**

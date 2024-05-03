@@ -6,6 +6,9 @@ namespace Rowbot\DOM\Tests\url\resources;
 
 use Generator;
 
+use function is_string;
+use function str_starts_with;
+
 /**
  * @see https://github.com/web-platform-tests/wpt/blob/master/url/resources/a-element.js
  */
@@ -18,9 +21,11 @@ trait AElementTrait
      */
     public function testUrl(array $expected): void
     {
-        $url = $this->bURL($expected['input'], $expected['base']);
+        // We cannot use a null base for HTML tests
+        $base = $expected['base'] ?? 'about:blank';
+        $url = $this->bURL($expected['input'], $base);
 
-        if (isset($expected['failure'])) {
+        if (isset($expected['failure']) && $expected['failure']) {
             self::assertSame(':', $url->protocol);
             self::assertSame($expected['input'], $url->href);
 
@@ -42,9 +47,28 @@ trait AElementTrait
     public function urlTestDataProvider(): Generator
     {
         foreach ($this->decodeUrlTestData() as $data) {
-            if (isset($data['base'])) {
-                yield [$data];
+            // Skip comments
+            if (is_string($data)) {
+                continue;
             }
+
+            // Fragments are relative against "about:blank"
+            if (isset($data['relativeTo']) && $data['relativeTo'] === 'any-base') {
+                continue;
+            }
+
+            if (
+                $data['base'] !== null
+                && (str_starts_with($data['base'], 'data:') || str_starts_with($data['base'], 'javascript:'))
+            ) {
+                continue;
+            }
+
+            if ($data['base'] === null) {
+                continue;
+            }
+
+            yield [$data];
         }
     }
 }

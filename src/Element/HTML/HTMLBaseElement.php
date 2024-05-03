@@ -34,7 +34,7 @@ class HTMLBaseElement extends HTMLElement
                 $document->characterSet
             );
 
-            if ($urlRecord === false) {
+            if ($urlRecord === null) {
                 return $url;
             }
 
@@ -130,23 +130,31 @@ class HTMLBaseElement extends HTMLElement
      */
     public function setFrozenBaseURL(?string $href = null): void
     {
+        // 1. Let document be element's node document.
         $document = $this->nodeDocument;
         $fallbackBaseURL = $document->getFallbackBaseURL();
-        $urlRecord = false;
+        $urlRecord = null;
 
+        // 2. Let urlRecord be the result of parsing the value of element's href content attribute with document's
+        // fallback base URL, and document's character encoding. (Thus, the base element isn't affected by itself.)
         if ($href !== null) {
             // Parse the Element's href attribute.
             $urlRecord = URLParser::parseUrl($href, $fallbackBaseURL, $document->characterSet);
         }
 
-        // TODO: Set element's frozen base URL to document's fallback base URL
-        // if urlRecord is failure or running Is base allowed for Document? on
-        // the resulting URL record and document returns "Blocked"
-        if ($urlRecord === false) {
+        // 3. If any of the following are true:
+        //    - urlRecord is failure;
+        //    - urlRecord's scheme is "data" or "javascript"
+        //    - running Is Base allowed for Document? on urlRecord and document returns "Blocked"
+        // then set element's frozen base URL to document's fallback base URL and return.
+        if ($urlRecord === null || ($scheme = (string) $urlRecord->scheme) === 'data' || $scheme === 'javascript') {
             $this->frozenBaseUrl = $fallbackBaseURL;
-        } else {
-            $this->frozenBaseUrl = $urlRecord;
+
+            return;
         }
+
+        // 4. Set element's frozen base URL to urlRecord.
+        $this->frozenBaseUrl = $urlRecord;
     }
 
     public function onInsert(NodeInsertedEvent $event): void
