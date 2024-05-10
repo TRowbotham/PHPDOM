@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Element;
 
-use Rowbot\DOM\Exception\TypeError;
 use Rowbot\DOM\InternalEvent\AttributeChangedEvent;
-use Rowbot\DOM\Utils;
 use Rowbot\URL\BasicURLParser;
 use Rowbot\URL\Component\PathList;
 use Rowbot\URL\ParserState;
@@ -41,11 +39,7 @@ trait HTMLHyperlinkElementUtils
             // 5. Return url, serialized.
             return $this->url->serializeURL();
         }
-        set(mixed $value) {
-            if (!Utils::isStringable($value)) {
-                throw new TypeError();
-            }
-
+        set(string $value) {
             $this->attributeList->setAttrValue('href', (string) $value);
         }
     }
@@ -84,11 +78,7 @@ trait HTMLHyperlinkElementUtils
             // 3. Return this element's url's scheme, followed by ":".
             return $this->url->scheme . ':';
         }
-        set(mixed $value) {
-            if (!Utils::isStringable($value)) {
-                throw new TypeError();
-            }
-
+        set(string $value) {
             // 1. Reinitialize url.
             $this->reinitialiseUrl();
 
@@ -124,11 +114,7 @@ trait HTMLHyperlinkElementUtils
             // 3. Return this element's url's username.
             return $this->url->username;
         }
-        set(mixed $value) {
-            if (!Utils::isStringable($value)) {
-                throw new TypeError();
-            }
-
+        set(string $value) {
             // 1. Reinitialize url.
             $this->reinitialiseUrl();
 
@@ -161,11 +147,7 @@ trait HTMLHyperlinkElementUtils
             // 4. Return url's password.
             return $this->url->password;
         }
-        set(mixed $value) {
-            if (!Utils::isStringable($value)) {
-                throw new TypeError();
-            }
-
+        set(string $value) {
             // 1. Reinitialize url.
             $this->reinitialiseUrl();
 
@@ -205,11 +187,7 @@ trait HTMLHyperlinkElementUtils
             // 5. Return url's host, serialized, followed by ":" and url's port, serialized.
             return $serializer->toFormattedString() . ':' . $this->url->port;
         }
-        set(mixed $value) {
-            if (!Utils::isStringable($value)) {
-                throw new TypeError();
-            }
-
+        set(string $value) {
             // 1. Reinitialize url.
             $this->reinitialiseUrl();
 
@@ -243,11 +221,7 @@ trait HTMLHyperlinkElementUtils
             // 4. Return url's host, serialized.
             return $this->url->host->getSerializer()->toFormattedString();
         }
-        set(mixed $value) {
-            if (!Utils::isStringable($value)) {
-                throw new TypeError();
-            }
-
+        set(string $value) {
             // 1. Reinitialize url.
             $this->reinitialiseUrl();
 
@@ -281,11 +255,7 @@ trait HTMLHyperlinkElementUtils
             // Return url's port, serialized.
             return (string) $this->url->port;
         }
-        set(mixed $value) {
-            if (!Utils::isStringable($value)) {
-                throw new TypeError();
-            }
-
+        set(int|string $value) {
             // 1. Reinitialize url.
             $this->reinitialiseUrl();
 
@@ -294,7 +264,7 @@ trait HTMLHyperlinkElementUtils
                 return;
             }
 
-            $input = new Utf8String($value);
+            $input = new Utf8String((string) $value);
 
             // 4. If the given value is the empty string, then set url's port to null.
             if ($input->isEmpty()) {
@@ -328,11 +298,7 @@ trait HTMLHyperlinkElementUtils
             // 4. Return the result of URL path serializing url.
             return (string) $this->url->path;
         }
-        set(mixed $value) {
-            if (!Utils::isStringable($value)) {
-                throw new TypeError();
-            }
-
+        set(string $value) {
             // 1. Reinitialize url.
             $this->reinitialiseUrl();
 
@@ -371,11 +337,7 @@ trait HTMLHyperlinkElementUtils
             // 4. Return "?", followed by url's query.
             return '?' . $this->url->query;
         }
-        set(mixed $value) {
-            if (!Utils::isStringable($value)) {
-                throw new TypeError();
-            }
-
+        set(string $value) {
             // 1. Reinitialize url.
             $this->reinitialiseUrl();
 
@@ -427,11 +389,7 @@ trait HTMLHyperlinkElementUtils
             // 4. Return "#", followed by url's fragment.
             return '#' . $this->url->fragment;
         }
-        set(mixed $value) {
-            if (!Utils::isStringable($value)) {
-                throw new TypeError();
-            }
-
+        set(string $value) {
             // 1. Reinitialize url.
             $this->reinitialiseUrl();
 

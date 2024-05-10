@@ -10,7 +10,7 @@ use Throwable;
 abstract class NodeTraverser
 {
     /**
-     * @var \Rowbot\DOM\NodeFilter|callable|null
+     * @var callable(\Rowbot\DOM\Node)|\Rowbot\DOM\NodeFilter|null
      */
     public readonly mixed $filter;
 
@@ -22,7 +22,8 @@ abstract class NodeTraverser
     private bool $isActive;
 
     /**
-     * @param \Rowbot\DOM\NodeFilter::SHOW_* $whatToShow
+     * @param \Rowbot\DOM\NodeFilter::SHOW_*                         $whatToShow
+     * @param callable(\Rowbot\DOM\Node)|\Rowbot\DOM\NodeFilter|null $filter
      */
     public function __construct(int $whatToShow, callable|NodeFilter|null $filter)
     {

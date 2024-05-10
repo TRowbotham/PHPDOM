@@ -15,7 +15,8 @@ final class TreeWalker extends NodeTraverser
     public readonly Node $root;
 
     /**
-     * @param \Rowbot\DOM\NodeFilter::SHOW_* $whatToShow
+     * @param \Rowbot\DOM\NodeFilter::SHOW_*                         $whatToShow
+     * @param callable(\Rowbot\DOM\Node)|\Rowbot\DOM\NodeFilter|null $filter
      */
     public function __construct(
         Node $root,
