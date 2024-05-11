@@ -170,17 +170,6 @@ class HTMLElement extends Element
         }
     }
 
-    public int $tabIndex {
-        get => filter_var(
-            $this->reflectStringAttributeValue('tabindex'),
-            FILTER_VALIDATE_INT,
-            ['default' => 0]
-        );
-        set(float|int|string $value) {
-            $this->attributeList->setAttrValue('tabindex', (string) $value);
-        }
-    }
-
     /**
      * If the attribute is present, its value must either be the empty string or a value that is an
      * ASCII case-insensitive match for the attribute's canonical name, with no leading or trailing
