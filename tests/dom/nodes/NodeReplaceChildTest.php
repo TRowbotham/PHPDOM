@@ -24,7 +24,7 @@ class NodeReplaceChildTest extends NodeTestCase
      */
     public function test1()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $a = $document->createElement('div');
 
         $this->assertThrows(static function () use ($a) {
@@ -47,7 +47,7 @@ class NodeReplaceChildTest extends NodeTestCase
      */
     public function test2()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $a = $document->createElement('div');
         $b = $document->createElement('div');
         $c = $document->createElement('div');
@@ -67,7 +67,7 @@ class NodeReplaceChildTest extends NodeTestCase
 
     public function getNodes()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
 
         return [
             [$document->implementation->createDocumentType('html', '', '')],
@@ -86,7 +86,7 @@ class NodeReplaceChildTest extends NodeTestCase
     public function test3($node)
     {
         $this->expectException(HierarchyRequestError::class);
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $a = $document->createElement('div');
         $b = $document->createElement('div');
         $node->replaceChild($a, $b);
@@ -98,7 +98,7 @@ class NodeReplaceChildTest extends NodeTestCase
      */
     public function test4()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $a = $document->createElement('div');
         $b = $document->createElement('div');
 
@@ -124,7 +124,7 @@ class NodeReplaceChildTest extends NodeTestCase
      */
     public function test5()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $doc = $document->implementation->createHTMLDocument('title');
         $doc2 = $document->implementation->createHTMLDocument('title2');
 
@@ -147,7 +147,7 @@ class NodeReplaceChildTest extends NodeTestCase
      */
     public function test6()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $doc = $document->implementation->createHTMLDocument('title');
 
         $df = $doc->createDocumentFragment();
@@ -178,7 +178,7 @@ class NodeReplaceChildTest extends NodeTestCase
      */
     public function test7()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $doc = $document->implementation->createHTMLDocument('title');
         $doc->removeChild($doc->documentElement);
 
@@ -197,7 +197,7 @@ class NodeReplaceChildTest extends NodeTestCase
      */
     public function test8()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         // The context node has an element child that is not /child/.
         $doc = $document->implementation->createHTMLDocument('title');
         $comment = $doc->appendChild($doc->createComment('foo'));
@@ -223,7 +223,7 @@ class NodeReplaceChildTest extends NodeTestCase
      */
     public function test9()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         // A doctype is following /child/.
         $doc = $document->implementation->createHTMLDocument('title');
         $comment = $doc->insertBefore(
@@ -249,7 +249,7 @@ class NodeReplaceChildTest extends NodeTestCase
      */
     public function test10()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $doc = $document->implementation->createHTMLDocument('title');
         $comment = $doc->appendChild($doc->createComment('foo'));
         $this->assertSame(
@@ -273,7 +273,7 @@ class NodeReplaceChildTest extends NodeTestCase
      */
     public function test11()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $doc = $document->implementation->createHTMLDocument('title');
         $comment = $doc->insertBefore(
             $doc->createComment('foo'),
@@ -297,7 +297,7 @@ class NodeReplaceChildTest extends NodeTestCase
      */
     public function test12()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $doc = $document->implementation->createHTMLDocument('title');
         $comment = $doc->insertBefore(
             $doc->createComment('foo'),
@@ -324,7 +324,7 @@ class NodeReplaceChildTest extends NodeTestCase
      */
     public function test13()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $doc = $document->implementation->createHTMLDocument('title');
         $comment = $doc->appendChild($doc->createComment('foo'));
         $doc->removeChild($doc->doctype);
@@ -345,7 +345,7 @@ class NodeReplaceChildTest extends NodeTestCase
      */
     public function test14()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $df = $document->createDocumentFragment();
         $a = $df->appendChild($document->createElement('a'));
 
@@ -366,7 +366,7 @@ class NodeReplaceChildTest extends NodeTestCase
      */
     public function test15()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $el = $document->createElement('div');
         $a = $el->appendChild($document->createElement('a'));
 
@@ -386,7 +386,7 @@ class NodeReplaceChildTest extends NodeTestCase
      */
     public function test16()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $a = $document->createElement('div');
         $b = $document->createElement('div');
         $c = $document->createElement('div');
@@ -402,7 +402,7 @@ class NodeReplaceChildTest extends NodeTestCase
      */
     public function test17()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $a = $document->createElement('div');
         $b = $document->createElement('div');
         $c = $document->createElement('div');
@@ -422,7 +422,7 @@ class NodeReplaceChildTest extends NodeTestCase
      */
     public function test18()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $a = $document->createElement('div');
         $b = $document->createElement('div');
         $c = $document->createElement('div');
@@ -440,7 +440,7 @@ class NodeReplaceChildTest extends NodeTestCase
      */
     public function test19()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $doc = $document->implementation->createHTMLDocument('title');
         $doctype = $doc->doctype;
         $this->assertSame(
@@ -476,7 +476,7 @@ class NodeReplaceChildTest extends NodeTestCase
      */
     public function test20()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $doc = $document->implementation->createHTMLDocument('title');
         $df = $doc->createDocumentFragment();
         $a = $df->appendChild($doc->createElement('a'));
@@ -496,7 +496,7 @@ class NodeReplaceChildTest extends NodeTestCase
      */
     public function test21()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $doc = $document->implementation->createHTMLDocument('title');
         $df = $doc->createDocumentFragment();
         $a = $df->appendChild($doc->createComment('a'));
@@ -517,7 +517,7 @@ class NodeReplaceChildTest extends NodeTestCase
      */
     public function test22()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $doc = $document->implementation->createHTMLDocument('title');
         $a = $doc->createElement('a');
         $this->assertSame(
@@ -536,7 +536,7 @@ class NodeReplaceChildTest extends NodeTestCase
     public function test23()
     {
         $this->markTestSkipped('We don\'t yet support mutation events.');
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $document->addEventListener('DOMNodeRemoved', static function ($e) use ($document) {
             $document->body->appendChild($document->createElement('x'));
         }, false);
@@ -555,7 +555,7 @@ class NodeReplaceChildTest extends NodeTestCase
      */
     public function test24()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $TEST_ID = 'findme';
         $gBody = $document->getElementsByTagName('body')[0];
         $parent = $document->createElement('div');

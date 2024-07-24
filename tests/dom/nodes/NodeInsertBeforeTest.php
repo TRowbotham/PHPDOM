@@ -31,7 +31,7 @@ class NodeInsertBeforeTest extends NodeTestCase
      */
     public function test1()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
 
         $this->assertThrows(static function () use ($document) {
             $document->body->insertBefore(null, null);
@@ -48,7 +48,7 @@ class NodeInsertBeforeTest extends NodeTestCase
 
     public function getLeafNodes()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
 
         return [
             ['DocumentType', static function () use ($document) {
@@ -71,7 +71,7 @@ class NodeInsertBeforeTest extends NodeTestCase
      */
     public function testLeafNode($nodeName, $createNodeFunction)
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $node = $createNodeFunction();
 
         $this->assertThrows(static function () use ($node) {
@@ -90,7 +90,7 @@ class NodeInsertBeforeTest extends NodeTestCase
 
     public function test2()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
 
         $this->assertThrows(static function () use ($document) {
             $document->body->insertBefore(
@@ -114,7 +114,7 @@ class NodeInsertBeforeTest extends NodeTestCase
     public function test3()
     {
         $this->expectException(NotFoundError::class);
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $a = $document->createElement('div');
         $b = $document->createElement('div');
         $c = $document->createElement('div');
@@ -127,7 +127,7 @@ class NodeInsertBeforeTest extends NodeTestCase
      */
     public function test4()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $doc = $document->implementation->createHTMLDocument('title');
         $doc2 = $document->implementation->createHTMLDocument('title');
 
@@ -149,7 +149,7 @@ class NodeInsertBeforeTest extends NodeTestCase
      */
     public function test5()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $doc = $document->implementation->createHTMLDocument('title');
 
         $df = $doc->createDocumentFragment();
@@ -177,7 +177,7 @@ class NodeInsertBeforeTest extends NodeTestCase
     // Step 4.1
     public function test51(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $doc = $document->implementation->createHTMLDocument('title');
         $doc2 = $document->implementation->createHTMLDocument('title2');
 
@@ -198,7 +198,7 @@ class NodeInsertBeforeTest extends NodeTestCase
      */
     public function test6()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $doc = $document->implementation->createHTMLDocument('title');
         $doc->removeChild($doc->documentElement);
 
@@ -232,7 +232,7 @@ class NodeInsertBeforeTest extends NodeTestCase
      */
     public function test7()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $doc = $document->implementation->createHTMLDocument('title');
         $comment = $doc->appendChild($doc->createComment('foo'));
         $this->assertSame([$doc->doctype, $doc->documentElement, $comment], iterator_to_array($doc->childNodes));
@@ -260,7 +260,7 @@ class NodeInsertBeforeTest extends NodeTestCase
     public function test75(): void
     {
         // /child/ is a doctype.
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $doc = $document->implementation->createHTMLDocument('title');
         $comment = $doc->insertBefore($doc->createComment('foo'), $doc->firstChild);
         $doc->removeChild($doc->documentElement);
@@ -283,7 +283,7 @@ class NodeInsertBeforeTest extends NodeTestCase
     public function test8()
     {
         // /child/ is not null and a doctype is following /child/.
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $doc = $document->implementation->createHTMLDocument('title');
         $comment = $doc->insertBefore(
             $doc->createComment('foo'),
@@ -311,7 +311,7 @@ class NodeInsertBeforeTest extends NodeTestCase
     public function test9()
     {
         // The context node has an element child.
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $doc = $document->implementation->createHTMLDocument('title');
         $comment = $doc->appendChild($doc->createComment('foo'));
         $this->assertSame(
@@ -341,7 +341,7 @@ class NodeInsertBeforeTest extends NodeTestCase
     public function test10()
     {
         // /child/ is a doctype.
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $doc = $document->implementation->createHTMLDocument('title');
         $comment = $doc->insertBefore(
             $doc->createComment('foo'),
@@ -366,7 +366,7 @@ class NodeInsertBeforeTest extends NodeTestCase
     public function test11()
     {
         // /child/ is not null and a doctype is following /child/.
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $doc = $document->implementation->createHTMLDocument('title');
         $comment = $doc->insertBefore(
             $doc->createComment('foo'),
@@ -392,7 +392,7 @@ class NodeInsertBeforeTest extends NodeTestCase
      */
     public function test12()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $doc = $document->implementation->createHTMLDocument('title');
         $comment = $doc->insertBefore(
             $doc->createComment('foo'),
@@ -424,7 +424,7 @@ class NodeInsertBeforeTest extends NodeTestCase
      */
     public function test13()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $doc = $document->implementation->createHTMLDocument('title');
         $comment = $doc->appendChild($doc->createComment('foo'));
         $doc->removeChild($doc->doctype);
@@ -445,7 +445,7 @@ class NodeInsertBeforeTest extends NodeTestCase
      */
     public function test14()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $doc = $document->implementation->createHTMLDocument('title');
         $comment = $doc->appendChild($doc->createComment('foo'));
         $doc->removeChild($doc->doctype);
@@ -468,7 +468,7 @@ class NodeInsertBeforeTest extends NodeTestCase
      */
     public function test15()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $df = $document->createDocumentFragment();
         $a = $df->appendChild($document->createElement('a'));
 
@@ -495,7 +495,7 @@ class NodeInsertBeforeTest extends NodeTestCase
      */
     public function test16()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $el = $document->createElement('div');
         $a = $el->appendChild($document->createElement('a'));
 
@@ -523,7 +523,7 @@ class NodeInsertBeforeTest extends NodeTestCase
      */
     public function test17()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $a = $document->createElement('div');
         $b = $document->createElement('div');
         $c = $document->createElement('div');

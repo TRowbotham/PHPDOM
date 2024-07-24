@@ -16,7 +16,7 @@ class DocumentImplementationTest extends NodeTestCase
 
     public function testGettingImplementationOffTheSameDocument(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $implementation = $document->implementation;
         $this->assertInstanceOf(DOMImplementation::class, $implementation);
         $this->assertSame($implementation, $document->implementation);
@@ -24,7 +24,7 @@ class DocumentImplementationTest extends NodeTestCase
 
     public function testGettingImplementationOffDifferentDocuments(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $doc = $document->implementation->createHTMLDocument();
         $this->assertNotSame($doc->implementation, $document->implementation);
     }

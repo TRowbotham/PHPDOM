@@ -19,7 +19,7 @@ class NodeNodeValueTest extends TestCase
      */
     public function test1()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $the_text = $document->createTextNode('A span!');
         $this->assertSame('A span!', $the_text->nodeValue);
         $this->assertSame('A span!', $the_text->data);
@@ -36,7 +36,7 @@ class NodeNodeValueTest extends TestCase
      */
     public function test2()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $the_comment = $document->createComment('A comment!');
         $this->assertSame('A comment!', $the_comment->nodeValue);
         $this->assertSame('A comment!', $the_comment->data);
@@ -53,7 +53,7 @@ class NodeNodeValueTest extends TestCase
      */
     public function test3()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $the_pi = $document->createProcessingInstruction('pi', 'A PI!');
         $this->assertSame('A PI!', $the_pi->nodeValue);
         $this->assertSame('A PI!', $the_pi->data);
@@ -70,7 +70,7 @@ class NodeNodeValueTest extends TestCase
      */
     public function test4()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $the_link = $document->createElement('a');
         $this->assertNull($the_link->nodeValue);
         $the_link->nodeValue = 'foo';
@@ -82,7 +82,7 @@ class NodeNodeValueTest extends TestCase
      */
     public function test5()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $this->assertNull($document->nodeValue);
         $document->nodeValue = 'foo';
         $this->assertNull($document->nodeValue);
@@ -93,7 +93,7 @@ class NodeNodeValueTest extends TestCase
      */
     public function test6()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $the_frag = $document->createDocumentFragment();
         $this->assertNull($the_frag->nodeValue);
         $the_frag->nodeValue = 'foo';
@@ -105,7 +105,7 @@ class NodeNodeValueTest extends TestCase
      */
     public function test7()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $the_doctype = $document->doctype;
         $this->assertNull($the_doctype->nodeValue);
         $the_doctype->nodeValue = 'foo';

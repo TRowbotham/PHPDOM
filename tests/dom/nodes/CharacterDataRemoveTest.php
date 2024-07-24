@@ -16,7 +16,7 @@ class CharacterDataRemoveTest extends NodeTestCase
 
     public function childNodeRemoveNodesProvider(): iterable
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
 
         return [
             [$document, $document->createTextNode('text'), $document->createElement('div')],

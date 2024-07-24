@@ -19,7 +19,7 @@ class NodeParentNodeTest extends TestCase
      */
     public function test1()
     {
-        $this->assertNull($this->getHTMLDocument()->parentNode);
+        $this->assertNull(self::getHTMLDocument()->parentNode);
     }
 
     /**
@@ -27,7 +27,7 @@ class NodeParentNodeTest extends TestCase
      */
     public function test2()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $this->assertSame($document, $document->doctype->parentNode);
     }
 
@@ -36,7 +36,7 @@ class NodeParentNodeTest extends TestCase
      */
     public function test3()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $this->assertSame($document, $document->documentElement->parentNode);
     }
 
@@ -45,7 +45,7 @@ class NodeParentNodeTest extends TestCase
      */
     public function test4()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $el = $document->createElement('div');
         $this->assertNull($el->parentNode);
         $document->body->appendChild($el);

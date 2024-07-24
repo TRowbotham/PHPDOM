@@ -18,16 +18,16 @@ class DocumentCreateAttributeTest extends TestCase
     use DocumentGetter;
     use Productions;
 
-    public function getXMLDocument()
+    public static function getXMLDocument()
     {
-        if (!$this->xmlDocument) {
-            $this->xmlDocument = $this
-                ->getHTMLDocument()
+        if (self::$xmlDocument === null) {
+            self::$xmlDocument = self
+                ::getHTMLDocument()
                 ->implementation
                 ->createDocument(null, null, null);
         }
 
-        return $this->xmlDocument;
+        return self::$xmlDocument;
     }
 
     /**
@@ -36,7 +36,7 @@ class DocumentCreateAttributeTest extends TestCase
     public function testInvalidNameHTMLCreateAttribute(string $name): void
     {
         $this->expectException(InvalidCharacterError::class);
-        $this->getHTMLDocument()->createAttribute($name);
+        self::getHTMLDocument()->createAttribute($name);
     }
 
     /**
@@ -45,7 +45,7 @@ class DocumentCreateAttributeTest extends TestCase
     public function testInvalidNameXMLCreateAttribute(string $name): void
     {
         $this->expectException(InvalidCharacterError::class);
-        $this->getXMLDocument()->createAttribute($name);
+        self::getXMLDocument()->createAttribute($name);
     }
 
     /**
@@ -53,7 +53,7 @@ class DocumentCreateAttributeTest extends TestCase
      */
     public function testValidNamesHTMLCreateAttribute(string $name): void
     {
-        $attr = $this->getHTMLDocument()->createAttribute($name);
+        $attr = self::getHTMLDocument()->createAttribute($name);
         $this->attr_is($attr, '', $name, null, null, $name);
     }
 
@@ -62,7 +62,7 @@ class DocumentCreateAttributeTest extends TestCase
      */
     public function testValidNamesXMLCreateAttribute(string $name): void
     {
-        $attr = $this->getXMLDocument()->createAttribute($name);
+        $attr = self::getXMLDocument()->createAttribute($name);
         $this->attr_is($attr, '', $name, null, null, $name);
     }
 
@@ -71,7 +71,7 @@ class DocumentCreateAttributeTest extends TestCase
      */
     public function testHTMLDocumentCreateAttribute($name): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $attribute = $document->createAttribute($name);
         $this->attr_is(
             $attribute,
@@ -89,7 +89,7 @@ class DocumentCreateAttributeTest extends TestCase
      */
     public function testXMLDocumentCreateAttribtue($name): void
     {
-        $document = $this->getXMLDocument();
+        $document = self::getXMLDocument();
         $attribute = $document->createAttribute($name);
         $this->attr_is($attribute, '', $name, null, null, $name);
         $this->assertNull($attribute->ownerElement);

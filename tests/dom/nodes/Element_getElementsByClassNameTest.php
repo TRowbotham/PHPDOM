@@ -19,7 +19,7 @@ class Element_getElementsByClassNameTest extends NodeTestCase
 
     public function testGetElementsByClassNameShouldWorkOnDisconnectedSubtrees(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $a = $document->createElement('a');
         $b = $document->createElement('b');
         $b->className = 'foo';
@@ -32,14 +32,14 @@ class Element_getElementsByClassNameTest extends NodeTestCase
 
     public function testInterfaceShouldBeCorrect(): void
     {
-        $list = $this->getHTMLDocument()->getElementsByClassName('foo');
+        $list = self::getHTMLDocument()->getElementsByClassName('foo');
         self::assertNotInstanceOf(NodeList::class, $list);
         self::assertInstanceOf(HTMLCollection::class, $list);
     }
 
     public function testGetElementsByClassNameShouldWorkBeALiveCollection(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $a = $document->createElement("a");
         $b = $document->createElement("b");
         $c = $document->createElement("c");

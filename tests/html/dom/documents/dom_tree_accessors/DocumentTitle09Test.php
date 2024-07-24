@@ -75,7 +75,7 @@ class DocumentTitle09Test extends AccessorTestCase
     public function testRootElementNotNamedSVG(): void
     {
         // "SVG" != "svg"
-        $doc = $this->getHTMLDocument()->implementation->createDocument(Namespaces::SVG, 'SVG', null);
+        $doc = self::getHTMLDocument()->implementation->createDocument(Namespaces::SVG, 'SVG', null);
 
         // Per spec, this does nothing
         $doc->title = 'foo';
@@ -108,6 +108,6 @@ class DocumentTitle09Test extends AccessorTestCase
 
     private function newSVGDocument()
     {
-        return $this->getHTMLDocument()->implementation->createDocument(Namespaces::SVG, 'svg', null);
+        return self::getHTMLDocument()->implementation->createDocument(Namespaces::SVG, 'svg', null);
     }
 }

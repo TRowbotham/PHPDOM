@@ -20,7 +20,7 @@ class NodeTextContentTest extends TestCase
      */
     public function test1()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $element = $document->createElement('div');
         $this->assertSame('', $element->textContent);
     }
@@ -30,7 +30,7 @@ class NodeTextContentTest extends TestCase
      */
     public function test2()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $this->assertSame(
             '',
             $document->createDocumentFragment()->textContent
@@ -42,7 +42,7 @@ class NodeTextContentTest extends TestCase
      */
     public function test3()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $el = $document->createElement('div');
         $el->appendChild($document->createComment(' abc '));
         $el->appendChild($document->createTextNode("\tDEF\t"));
@@ -55,7 +55,7 @@ class NodeTextContentTest extends TestCase
      */
     public function test4()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $el = $document->createElement('div');
         $child = $document->createElement('div');
         $el->appendChild($child);
@@ -70,7 +70,7 @@ class NodeTextContentTest extends TestCase
      */
     public function test5()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $df = $document->createDocumentFragment();
         $df->appendChild($document->createComment(' abc '));
         $df->appendChild($document->createTextNode("\tDEF\t"));
@@ -83,7 +83,7 @@ class NodeTextContentTest extends TestCase
      */
     public function test6()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $df = $document->createDocumentFragment();
         $child = $document->createElement('div');
         $df->appendChild($child);
@@ -98,7 +98,7 @@ class NodeTextContentTest extends TestCase
      */
     public function test7()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $this->assertSame('', $document->createTextNode('')->textContent);
     }
 
@@ -108,7 +108,7 @@ class NodeTextContentTest extends TestCase
      */
     public function test8()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $this->assertSame(
             '',
             $document->createProcessingInstruction('x', '')->textContent
@@ -120,7 +120,7 @@ class NodeTextContentTest extends TestCase
      */
     public function test9()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $this->assertSame('', $document->createComment('')->textContent);
     }
 
@@ -129,7 +129,7 @@ class NodeTextContentTest extends TestCase
      */
     public function test10()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $this->assertSame(
             'abc',
             $document->createTextNode('abc')->textContent
@@ -141,7 +141,7 @@ class NodeTextContentTest extends TestCase
      */
     public function test11()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $this->assertSame(
             'abc',
             $document->createProcessingInstruction('x', 'abc')->textContent
@@ -153,7 +153,7 @@ class NodeTextContentTest extends TestCase
      */
     public function test12()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $this->assertSame(
             'abc',
             $document->createComment('abc')->textContent
@@ -162,7 +162,7 @@ class NodeTextContentTest extends TestCase
 
     public function documentsProvider()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
 
         return [
             [$document],
@@ -173,7 +173,7 @@ class NodeTextContentTest extends TestCase
 
     public function doctypesProvider()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
 
         return [
             [$document->doctype],
@@ -236,7 +236,7 @@ class NodeTextContentTest extends TestCase
      */
     public function test15($argument, $expectation)
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $el = $document->createElement('div');
         $el->textContent = $argument;
         $this->check($el, $expectation);
@@ -247,7 +247,7 @@ class NodeTextContentTest extends TestCase
      */
     public function test16($argument, $expectation)
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $el = $document->createElement('div');
         $text = $el->appendChild($document->createTextNode(''));
         $el->textContent = $argument;
@@ -260,7 +260,7 @@ class NodeTextContentTest extends TestCase
      */
     public function test17($argument, $expectation)
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $el = $document->createElement('div');
         $el->appendChild($document->createComment(' abc '));
         $el->appendChild($document->createTextNode("\tDEF\t"));
@@ -274,7 +274,7 @@ class NodeTextContentTest extends TestCase
      */
     public function test18($argument, $expectation)
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $el = $document->createElement('div');
         $child = $document->createElement('div');
         $el->appendChild($child);
@@ -291,7 +291,7 @@ class NodeTextContentTest extends TestCase
      */
     public function test19($argument, $expectation)
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $df = $document->createDocumentFragment();
         $df->textContent = $argument;
         $this->check($df, $expectation);
@@ -302,7 +302,7 @@ class NodeTextContentTest extends TestCase
      */
     public function test20($argument, $expectation)
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $df = $document->createDocumentFragment();
         $df->appendChild($document->createComment(' abc '));
         $df->appendChild($document->createTextNode("\tDEF\t"));
@@ -316,7 +316,7 @@ class NodeTextContentTest extends TestCase
      */
     public function test21($argument, $expectation)
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $df = $document->createDocumentFragment();
         $child = $document->createElement('div');
         $df->appendChild($child);
@@ -333,7 +333,7 @@ class NodeTextContentTest extends TestCase
      */
     public function test22()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $text = $document->createTextNode('abc');
         $text->textContent = 'def';
         $this->assertSame('def', $text->textContent);
@@ -345,7 +345,7 @@ class NodeTextContentTest extends TestCase
      */
     public function test23()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $pi = $document->createProcessingInstruction('x', 'abc');
         $pi->textContent = 'def';
         $this->assertSame('def', $pi->textContent);
@@ -358,7 +358,7 @@ class NodeTextContentTest extends TestCase
      */
     public function test24()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $comment = $document->createComment('abc');
         $comment->textContent = 'def';
         $this->assertSame('def', $comment->textContent);

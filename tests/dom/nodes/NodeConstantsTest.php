@@ -19,7 +19,7 @@ class NodeConstantsTest extends TestCase
 
     public function constantsProvider(): array
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
 
         return [
             [

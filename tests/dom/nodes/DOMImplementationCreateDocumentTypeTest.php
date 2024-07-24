@@ -25,7 +25,7 @@ class DOMImplementationCreateDocumentTypeTest extends TestCase
         string $systemId,
         ?string $expected
     ): void {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $doc = $document->implementation->createHTMLDocument('title');
 
         if ($expected) {

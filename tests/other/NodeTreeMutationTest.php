@@ -17,7 +17,7 @@ class NodeTreeMutationTest extends TestCase
 
     public function testAppendChild(): HTMLDivElement
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $parent = $document->createElement('div');
         $a = $document->createElement('p');
         $b = $document->createElement('span');
@@ -207,7 +207,7 @@ class NodeTreeMutationTest extends TestCase
 
     public function testRemoveChildWithNodeNotInParent(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $parent = $document->createElement('div');
         $this->expectException(NotFoundError::class);
         $parent->removeChild($document->createElement('div'));
@@ -323,7 +323,7 @@ class NodeTreeMutationTest extends TestCase
 
     public function testInsertBeforeBeforeChildNotInParent(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $parent = $document->createElement('div');
         $this->expectException(NotFoundError::class);
         $parent->insertBefore($document->createElement('a'), $document->createElement('span'));

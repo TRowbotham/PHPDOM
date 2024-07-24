@@ -19,7 +19,7 @@ class NodeIsSameNodeTest extends TestCase
      */
     public function testDoctypes()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $doctype1 = $document->implementation->createDocumentType(
             'qualifiedName',
             'publicId',
@@ -41,7 +41,7 @@ class NodeIsSameNodeTest extends TestCase
      */
     public function testElements1()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $element1 = $document->createElementNS('namespace', 'prefix:localName');
         $element2 = $document->createElementNS('namespace', 'prefix:localName');
 
@@ -55,7 +55,7 @@ class NodeIsSameNodeTest extends TestCase
      */
     public function testElements2()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $element1 = $document->createElement("element");
         $element1->setAttributeNS("namespace", "prefix:localName", "value");
         $element2 = $document->createElement("element");
@@ -71,7 +71,7 @@ class NodeIsSameNodeTest extends TestCase
      */
     public function testProcessingInstruction()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $pi1 = $document->createProcessingInstruction("target", 'data');
         $pi2 = $document->createProcessingInstruction("target", 'data');
 
@@ -85,7 +85,7 @@ class NodeIsSameNodeTest extends TestCase
      */
     public function testTextNode()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $text1 = $document->createTextNode('data');
         $text2 = $document->createTextNode('data');
 
@@ -99,7 +99,7 @@ class NodeIsSameNodeTest extends TestCase
      */
     public function testCommentNode()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $comment1 = $document->createComment('data');
         $comment2 = $document->createComment('data');
 
@@ -113,7 +113,7 @@ class NodeIsSameNodeTest extends TestCase
      */
     public function testDocumentFragment()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $documentFragment1 = $document->createDocumentFragment();
         $documentFragment2 = $document->createDocumentFragment();
 
@@ -127,7 +127,7 @@ class NodeIsSameNodeTest extends TestCase
      */
     public function testDocument()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $document1 = $document->implementation->createDocument('', '');
         $document2 = $document->implementation->createDocument('', '');
 

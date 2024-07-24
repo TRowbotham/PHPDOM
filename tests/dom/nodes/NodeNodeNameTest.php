@@ -17,7 +17,7 @@ class NodeNodeNameTest extends TestCase
 
     public function test()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
 
         // For Element nodes, nodeName should return the same as tagName.
         $this->assertSame(

@@ -16,7 +16,7 @@ class NodeIsConnectedTest extends TestCase
 
     public function testOrdinaryNodes()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $nodes = [
             $document->createElement('div'),
             $document->createElement('div'),
@@ -42,7 +42,7 @@ class NodeIsConnectedTest extends TestCase
 
     public function testIframes()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $nodes = [
             $document->createElement("iframe"),
             $document->createElement("iframe"),

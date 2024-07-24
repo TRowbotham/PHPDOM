@@ -19,7 +19,7 @@ class NodeIsEqualNodeTest extends TestCase
      */
     public function testDoctype()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $doctype1 = $document->implementation->createDocumentType(
             'qualifiedName',
             'publicId',
@@ -59,7 +59,7 @@ class NodeIsEqualNodeTest extends TestCase
      */
     public function testElement1()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $element1 = $document->createElementNS('namespace', 'prefix:localName');
         $element2 = $document->createElementNS('namespace', 'prefix:localName');
         $element3 = $document->createElementNS('namespace2', 'prefix:localName');
@@ -83,7 +83,7 @@ class NodeIsEqualNodeTest extends TestCase
      */
     public function testElement2()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $element1 = $document->createElement('element');
         $element1->setAttributeNS('namespace', 'prefix:localName', 'value');
 
@@ -115,7 +115,7 @@ class NodeIsEqualNodeTest extends TestCase
      */
     public function testProcessingInstruction()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $pi1 = $document->createProcessingInstruction('target', 'data');
         $pi2 = $document->createProcessingInstruction('target', 'data');
         $pi3 = $document->createProcessingInstruction('target2', 'data');
@@ -132,7 +132,7 @@ class NodeIsEqualNodeTest extends TestCase
      */
     public function testText()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $text1 = $document->createTextNode('data');
         $text2 = $document->createTextNode('data');
         $text3 = $document->createTextNode('data2');
@@ -147,7 +147,7 @@ class NodeIsEqualNodeTest extends TestCase
      */
     public function testComment()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $comment1 = $document->createComment('data');
         $comment2 = $document->createComment('data');
         $comment3 = $document->createComment('data2');
@@ -162,7 +162,7 @@ class NodeIsEqualNodeTest extends TestCase
      */
     public function testDocumentFragment()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $documentFragment1 = $document->createDocumentFragment();
         $documentFragment2 = $document->createDocumentFragment();
 
@@ -175,7 +175,7 @@ class NodeIsEqualNodeTest extends TestCase
      */
     public function testDocument()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $document1 = $document->implementation->createDocument('', '');
         $document2 = $document->implementation->createDocument('', '');
 
@@ -204,7 +204,7 @@ class NodeIsEqualNodeTest extends TestCase
 
     public function getTestData()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
 
         return [
             [static function () use ($document) {
@@ -229,7 +229,7 @@ class NodeIsEqualNodeTest extends TestCase
      */
     public function testDeepEquality($parentFactory)
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $parentA = $parentFactory();
         $parentB = $parentFactory();
 

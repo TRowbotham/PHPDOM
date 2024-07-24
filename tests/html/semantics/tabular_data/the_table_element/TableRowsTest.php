@@ -24,7 +24,7 @@ class TableRowsTest extends TestCase
      */
     public function testTableSimple($group, HTMLTableElement $table): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
 
         $foo1 = $group->appendChild($document->createElement('tr'));
         $foo1->id = 'foo';
@@ -45,7 +45,7 @@ class TableRowsTest extends TestCase
 
     public function testTableRows(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
 
         $table = $document->createElement("table");
         $orphan1 = $table->appendChild($document->createElement("tr"));
@@ -222,7 +222,7 @@ class TableRowsTest extends TestCase
 
     public function tableGroupsProvider(): Generator
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
 
         $table = $document->createElement('table');
 

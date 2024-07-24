@@ -16,7 +16,7 @@ class Document_getElementsByClassNameTest extends NodeTestCase
 
     public function testGetElementsByClassNameShouldBeALiveCollection(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $a = $document->createElement('a');
         $b = $document->createElement('b');
         $a->className = 'foo';

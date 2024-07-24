@@ -55,7 +55,7 @@ class DocumentCreateElementNSTest extends TestCase
      */
     public function test1($namespace, $qualifiedName, $expected): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
 
         foreach (['HTML document', 'XML document', 'XHTML document'] as $desc) {
             if ($desc === 'HTML document') {
@@ -107,7 +107,7 @@ class DocumentCreateElementNSTest extends TestCase
      */
     public function test2(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $element = $document->createElementNS(Namespaces::HTML, 'span');
         $this->assertSame(Namespaces::HTML, $element->namespaceURI);
         $this->assertNull($element->prefix);
@@ -124,7 +124,7 @@ class DocumentCreateElementNSTest extends TestCase
      */
     public function test3(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $element = $document->createElementNS(Namespaces::HTML, 'html:span');
         $this->assertSame(Namespaces::HTML, $element->namespaceURI);
         $this->assertSame('html', $element->prefix);
@@ -141,7 +141,7 @@ class DocumentCreateElementNSTest extends TestCase
      */
     public function test4(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $element = $document->createElementNS('test', 'span');
         $this->assertSame('test', $element->namespaceURI);
         $this->assertNull($element->prefix);
@@ -158,7 +158,7 @@ class DocumentCreateElementNSTest extends TestCase
      */
     public function test5(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $element = $document->createElementNS('test', 'html:span');
         $this->assertSame('test', $element->namespaceURI);
         $this->assertSame('html', $element->prefix);
@@ -175,7 +175,7 @@ class DocumentCreateElementNSTest extends TestCase
      */
     public function test6(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $element = $document->createElementNS(Namespaces::HTML, 'SPAN');
         $this->assertSame(Namespaces::HTML, $element->namespaceURI);
         $this->assertNull($element->prefix);
@@ -193,7 +193,7 @@ class DocumentCreateElementNSTest extends TestCase
      */
     public function test7(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $element = $document->createElementNS(Namespaces::HTML, 'html:SPAN');
         $this->assertSame(Namespaces::HTML, $element->namespaceURI);
         $this->assertSame('html', $element->prefix);
@@ -210,7 +210,7 @@ class DocumentCreateElementNSTest extends TestCase
      */
     public function test8(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $element = $document->createElementNS('test', 'SPAN');
         $this->assertSame('test', $element->namespaceURI);
         $this->assertNull($element->prefix);
@@ -227,7 +227,7 @@ class DocumentCreateElementNSTest extends TestCase
      */
     public function test9(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $element = $document->createElementNS('test', 'html:SPAN');
         $this->assertSame('test', $element->namespaceURI);
         $this->assertSame('html', $element->prefix);
@@ -241,7 +241,7 @@ class DocumentCreateElementNSTest extends TestCase
 
     public function testNullNamespace(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $element = $document->createElementNS(null, 'span');
         $this->assertNull($element->namespaceURI);
         $this->assertNull($element->prefix);
@@ -255,7 +255,7 @@ class DocumentCreateElementNSTest extends TestCase
 
     public function testEmptyStringNamespace(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $element = $document->createElementNS('', 'span');
         $this->assertNull($element->namespaceURI);
         $this->assertNull($element->prefix);

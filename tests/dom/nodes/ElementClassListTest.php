@@ -104,7 +104,7 @@ class ElementClassListTest extends TestCase
      */
     public function nodeProvider(): array
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
 
         return [
             $document->createElement("div"),

@@ -20,7 +20,7 @@ class ElementTagNameTest extends TestCase
      */
     public function test1()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $this->assertSame('I', $document->createElementNS(
             Namespaces::HTML,
             'I'
@@ -40,7 +40,7 @@ class ElementTagNameTest extends TestCase
      */
     public function test2()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $this->assertSame('svg', $document->createElementNS(
             Namespaces::SVG,
             'svg'
@@ -65,7 +65,7 @@ class ElementTagNameTest extends TestCase
     public function test3()
     {
         $this->markTestSkipped('We don\'t support parsing xml documents yet.');
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $xmlel = (new DOMParser())
             ->parseFromString(
                 '<div xmlns="http://www.w3.org/1999/xhtml">Test</div>',
@@ -83,7 +83,7 @@ class ElementTagNameTest extends TestCase
      */
     public function test4()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $xmlel = $document->implementation->createDocument(
             "http://www.w3.org/1999/xhtml",
             "div",
@@ -100,7 +100,7 @@ class ElementTagNameTest extends TestCase
      */
     public function test5()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $xmlel = $document->implementation->createDocument(
             "http://www.w3.org/1999/xhtml",
             "foo:div",

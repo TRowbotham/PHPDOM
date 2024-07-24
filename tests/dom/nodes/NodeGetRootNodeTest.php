@@ -20,7 +20,7 @@ class NodeGetRootNodeTest extends TestCase
      */
     public function test1()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $element = $document->createElement('div');
         $this->assertSame($element, $element->getRootNode());
 
@@ -43,7 +43,7 @@ class NodeGetRootNodeTest extends TestCase
      */
     public function test2()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $parent = $document->createElement('div');
 
         $element = $document->createElement('div');
@@ -70,7 +70,7 @@ class NodeGetRootNodeTest extends TestCase
      */
     public function test3()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $parent = $document->createElement('div');
         $document->body->appendChild($parent);
 
@@ -99,7 +99,7 @@ class NodeGetRootNodeTest extends TestCase
      */
     public function test4()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $fragment = $document->createDocumentFragment();
         $parent = $document->createElement('div');
         $fragment->appendChild($parent);

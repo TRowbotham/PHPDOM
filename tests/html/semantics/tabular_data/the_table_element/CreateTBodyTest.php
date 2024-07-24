@@ -26,7 +26,7 @@ class CreateTBodyTest extends TableTestCase
 
     public function testNoChildNodes(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $table = $document->createElement('table');
         $tbody = $table->createTBody();
         self::assertSame($tbody, $table->firstChild);
@@ -35,7 +35,7 @@ class CreateTBodyTest extends TableTestCase
 
     public function testOneTbodyChildNode(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $table = $document->createElement('table');
         $before = $table->appendChild($document->createElement("tbody"));
         self::assertSame([$before], iterator_to_array($table->childNodes));
@@ -47,7 +47,7 @@ class CreateTBodyTest extends TableTestCase
 
     public function testTwoTbodyChildNode(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $table = $document->createElement('table');
         $before1 = $table->appendChild($document->createElement("tbody"));
         $before2 = $table->appendChild($document->createElement("tbody"));
@@ -60,7 +60,7 @@ class CreateTBodyTest extends TableTestCase
 
     public function testATheadAndATbodyChildNode(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $table = $document->createElement('table');
         $before1 = $table->appendChild($document->createElement("thead"));
         $before2 = $table->appendChild($document->createElement("tbody"));
@@ -73,7 +73,7 @@ class CreateTBodyTest extends TableTestCase
 
     public function testATfootAndATbodyChildNode(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $table = $document->createElement('table');
         $before1 = $table->appendChild($document->createElement("tfoot"));
         $before2 = $table->appendChild($document->createElement("tbody"));
@@ -86,7 +86,7 @@ class CreateTBodyTest extends TableTestCase
 
     public function testATbodyAndATheadChildNode(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $table = $document->createElement('table');
         $before = $table->appendChild($document->createElement("tbody"));
         $after = $table->appendChild($document->createElement("thead"));
@@ -99,7 +99,7 @@ class CreateTBodyTest extends TableTestCase
 
     public function testATbodyAndATfootChildNode(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $table = $document->createElement('table');
         $before = $table->appendChild($document->createElement("tbody"));
         $after = $table->appendChild($document->createElement("tfoot"));
@@ -112,7 +112,7 @@ class CreateTBodyTest extends TableTestCase
 
     public function testTwoTbodyChildNodesAndADiv(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $table = $document->createElement('table');
         $before1 = $table->appendChild($document->createElement("tbody"));
         $before2 = $table->appendChild($document->createElement("tbody"));
@@ -126,7 +126,7 @@ class CreateTBodyTest extends TableTestCase
 
     public function testOneHTMLAndOneNamespacedTbodyChildNode(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $table = $document->createElement('table');
         $before = $table->appendChild($document->createElement("tbody"));
         $after = $table->appendChild($document->createElementNS("x", "tbody"));
@@ -139,7 +139,7 @@ class CreateTBodyTest extends TableTestCase
 
     public function testTwoNestedTbodyChildNodes(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $table = $document->createElement('table');
         $before1 = $table->appendChild($document->createElement("tbody"));
         $before2 = $before1->appendChild($document->createElement("tbody"));
@@ -152,7 +152,7 @@ class CreateTBodyTest extends TableTestCase
 
     public function testATbodyNodeInsideATheadChildNode(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $table = $document->createElement('table');
         $before1 = $table->appendChild($document->createElement("thead"));
         $before2 = $before1->appendChild($document->createElement("tbody"));
@@ -165,7 +165,7 @@ class CreateTBodyTest extends TableTestCase
 
     public function testATbodyNodeInsideATfootChildNode(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $table = $document->createElement('table');
         $before1 = $table->appendChild($document->createElement("tfoot"));
         $before2 = $before1->appendChild($document->createElement("tbody"));
@@ -178,7 +178,7 @@ class CreateTBodyTest extends TableTestCase
 
     public function testATbodyInsideATheadChildNodeAfterATbodyChildNode(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $table = $document->createElement('table');
         $before = $table->appendChild($document->createElement("tbody"));
         $after1 = $table->appendChild($document->createElement("thead"));
@@ -192,7 +192,7 @@ class CreateTBodyTest extends TableTestCase
 
     public function testATbodyInsideATfootChildNodeAfterATbodyChildNode(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $table = $document->createElement('table');
         $before = $table->appendChild($document->createElement("tbody"));
         $after1 = $table->appendChild($document->createElement("tfoot"));
@@ -206,7 +206,7 @@ class CreateTBodyTest extends TableTestCase
 
     public function testAPrefixedTableCreatesTbodyWithoutPrefix(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $table = $document->createElement('table');
         $tbody = $table->appendChild($document->createElement("tbody"));
         self::assertNull($tbody->prefix);

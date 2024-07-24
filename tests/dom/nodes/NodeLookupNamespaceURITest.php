@@ -16,7 +16,7 @@ class NodeLookupNamespaceURITest extends TestCase
 
     public function test1()
     {
-        $frag = $this->getHTMLDocument()->createDocumentFragment();
+        $frag = self::getHTMLDocument()->createDocumentFragment();
         $this->assertSame(
             null,
             $frag->lookupNamespaceURI(null),
@@ -61,7 +61,7 @@ class NodeLookupNamespaceURITest extends TestCase
 
     public function test2()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $fooElem = $document->createElementNS(
             'fooNamespace',
             'prefix:elem'

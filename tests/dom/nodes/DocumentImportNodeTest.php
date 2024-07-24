@@ -16,7 +16,7 @@ class DocumentImportNodeTest extends TestCase
 
     public function testNoDeepArgument()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $doc = $document->implementation->createHTMLDocument('Title');
         $div = $doc->body->appendChild($doc->createElement('div'));
         $div->appendChild($doc->createElement('span'));
@@ -31,7 +31,7 @@ class DocumentImportNodeTest extends TestCase
 
     public function testTrueDeepArgument()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $doc = $document->implementation->createHTMLDocument('Title');
         $div = $doc->body->appendChild($doc->createElement('div'));
         $div->appendChild($doc->createElement('span'));
@@ -46,7 +46,7 @@ class DocumentImportNodeTest extends TestCase
 
     public function testFalseDeepArgument()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $doc = $document->implementation->createHTMLDocument('Title');
         $div = $doc->body->appendChild($doc->createElement('div'));
         $div->appendChild($doc->createElement('span'));
@@ -61,7 +61,7 @@ class DocumentImportNodeTest extends TestCase
 
     public function testImportAttrWithNamespaceAndPrefixCorrectly(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $doc = $document->implementation->createHTMLDocument('Title');
         $doc->body->setAttributeNS("http://example.com/", "p:name", "value");
         $originalAttr = $doc->body->getAttributeNodeNS("http://example.com/", "name");

@@ -20,7 +20,7 @@ class NodeRemoveChildTest extends TestCase
 
     public function test1()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
 
         foreach ($this->creators as $creator) {
             $doc = $document;
@@ -36,7 +36,7 @@ class NodeRemoveChildTest extends TestCase
     public function test2()
     {
         $this->markTestSkipped('We don\'t support frames yet.');
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
 
         foreach ($this->creators as $creator) {
             $doc = $fames[0]->document;
@@ -51,7 +51,7 @@ class NodeRemoveChildTest extends TestCase
 
     public function test3()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
 
         foreach ($this->creators as $creator) {
             $doc = $document->implementation->createHTMLDocument();
@@ -70,7 +70,7 @@ class NodeRemoveChildTest extends TestCase
      */
     public function test4()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $this->assertThrows(static function () use ($document) {
             $document->removeChild(null);
         }, TypeError::class);

@@ -19,7 +19,7 @@ class NodeParentElementTest extends TestCase
      */
     public function test1()
     {
-        $this->assertNull($this->getHTMLDocument()->parentElement);
+        $this->assertNull(self::getHTMLDocument()->parentElement);
     }
 
     /**
@@ -27,7 +27,7 @@ class NodeParentElementTest extends TestCase
      */
     public function test2()
     {
-        $this->assertNull($this->getHTMLDocument()->doctype->parentElement);
+        $this->assertNull(self::getHTMLDocument()->doctype->parentElement);
     }
 
     /**
@@ -36,7 +36,7 @@ class NodeParentElementTest extends TestCase
     public function test3()
     {
         $this->assertNull(
-            $this->getHTMLDocument()->documentElement->parentElement
+            self::getHTMLDocument()->documentElement->parentElement
         );
     }
 
@@ -45,7 +45,7 @@ class NodeParentElementTest extends TestCase
      */
     public function test4()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $comment = $document->appendChild($document->createComment('foo'));
         $this->assertNull($comment->parentElement);
     }
@@ -56,7 +56,7 @@ class NodeParentElementTest extends TestCase
      */
     public function test5()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $df = $document->createDocumentFragment();
         $this->assertNull($df->parentElement);
         $el = $document->createElement('div');
@@ -71,7 +71,7 @@ class NodeParentElementTest extends TestCase
      */
     public function test6()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $df = $document->createDocumentFragment();
         $this->assertNull($df->parentElement);
         $text = $document->createTextNode('bar');
@@ -86,7 +86,7 @@ class NodeParentElementTest extends TestCase
      */
     public function test7()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $df = $document->createDocumentFragment();
         $parent = $document->createElement('div');
         $df->appendChild($parent);
@@ -102,7 +102,7 @@ class NodeParentElementTest extends TestCase
      */
     public function test8()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $df = $document->createDocumentFragment();
         $parent = $document->createElement("div");
         $df->appendChild($parent);
@@ -117,7 +117,7 @@ class NodeParentElementTest extends TestCase
      */
     public function test9()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $parent = $document->createElement('div');
         $el = $document->createElement('div');
         $this->assertNull($el->parentElement);
@@ -130,7 +130,7 @@ class NodeParentElementTest extends TestCase
      */
     public function test10()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $parent = $document->createElement('div');
         $text = $document->createTextNode('bar');
         $this->assertNull($text->parentElement);
@@ -143,7 +143,7 @@ class NodeParentElementTest extends TestCase
      */
     public function test11()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $el = $document->createElement('div');
         $this->assertNull($el->parentElement);
         $document->body->appendChild($el);
@@ -155,7 +155,7 @@ class NodeParentElementTest extends TestCase
      */
     public function test12()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $text = $document->createElement('div');
         $this->assertNull($text->parentElement);
         $document->body->appendChild($text);

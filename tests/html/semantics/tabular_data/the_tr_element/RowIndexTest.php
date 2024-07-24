@@ -16,7 +16,7 @@ class RowIndexTest extends TestCase
 
     public function test1(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $row = $document->createElement('table')
             ->appendChild($document->createElement('div'))
             ->appendChild($document->createElement('tr'));
@@ -25,7 +25,7 @@ class RowIndexTest extends TestCase
 
     public function test2(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $row = $document->createElement('table')
             ->appendChild($document->createElement('thead'))
             ->appendChild($document->createElement('tr'));
@@ -34,7 +34,7 @@ class RowIndexTest extends TestCase
 
     public function test3(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $row = $document->createElement('table')
             ->appendChild($document->createElement('tbody'))
             ->appendChild($document->createElement('tr'));
@@ -43,7 +43,7 @@ class RowIndexTest extends TestCase
 
     public function test4(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $row = $document->createElement('table')
             ->appendChild($document->createElement('tfoot'))
             ->appendChild($document->createElement('tr'));
@@ -52,7 +52,7 @@ class RowIndexTest extends TestCase
 
     public function test5(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $row = $document->createElement('table')
             ->appendChild($document->createElement('tr'));
         self::assertSame(0, $row->rowIndex);
@@ -60,7 +60,7 @@ class RowIndexTest extends TestCase
 
     public function test6(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $row = $document->createElementNS('', 'table')
             ->appendChild($document->createElement('thead'))
             ->appendChild($document->createElement('tr'));
@@ -69,7 +69,7 @@ class RowIndexTest extends TestCase
 
     public function test7(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $row = $document->createElementNS('', 'table')
             ->appendChild($document->createElement('tbody'))
             ->appendChild($document->createElement('tr'));
@@ -78,7 +78,7 @@ class RowIndexTest extends TestCase
 
     public function test8(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $row = $document->createElementNS('', 'table')
             ->appendChild($document->createElement('tfoot'))
             ->appendChild($document->createElement('tr'));
@@ -87,7 +87,7 @@ class RowIndexTest extends TestCase
 
     public function test9(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $row = $document->createElementNS('', 'table')
             ->appendChild($document->createElement('thead'))
             ->appendChild($document->createElement('tr'));
@@ -96,7 +96,7 @@ class RowIndexTest extends TestCase
 
     public function test10(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $row = $document->createElementNS('', 'table')
             ->appendChild($document->createElement('tr'));
         self::assertSame(-1, $row->rowIndex);
@@ -104,7 +104,7 @@ class RowIndexTest extends TestCase
 
     public function test11(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $row = $document->createElement('table')
             ->appendChild($document->createElementNS('', 'thead'))
             ->appendChild($document->createElement('tr'));
@@ -113,7 +113,7 @@ class RowIndexTest extends TestCase
 
     public function test12(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $row = $document->createElement('table')
             ->appendChild($document->createElementNS('', 'tbody'))
             ->appendChild($document->createElement('tr'));
@@ -122,7 +122,7 @@ class RowIndexTest extends TestCase
 
     public function test13(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $row = $document->createElement('table')
             ->appendChild($document->createElementNS('', 'tfoot'))
             ->appendChild($document->createElement('tr'));

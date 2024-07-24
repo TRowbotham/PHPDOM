@@ -17,7 +17,7 @@ class OuterHTML01Test extends TestCase
 
     public function testOuterHTMLAndStringConversionNull(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $this->expectException(NoModificationAllowedError::class);
         $document->documentElement->outerHTML = '<html><p>FAIL: Should have thrown an error<\/p><\/html>';
     }

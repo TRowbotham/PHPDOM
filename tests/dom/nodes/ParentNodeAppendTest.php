@@ -21,7 +21,7 @@ class ParentNodeAppendTest extends NodeTestCase
     public function getTests()
     {
         if (!$this->tests) {
-            $document = $this->getHTMLDocument();
+            $document = self::getHTMLDocument();
             $this->tests = [
                 [$document->createElement('div')],
                 [$document->createDocumentFragment()],
@@ -76,7 +76,7 @@ class ParentNodeAppendTest extends NodeTestCase
     public function test4($node)
     {
         $parent = $node->cloneNode();
-        $x = $this->getHTMLDocument()->createElement('x');
+        $x = self::getHTMLDocument()->createElement('x');
         $parent->append($x);
         $this->assertSame([$x], iterator_to_array($parent->childNodes));
     }
@@ -89,7 +89,7 @@ class ParentNodeAppendTest extends NodeTestCase
     public function test5($node)
     {
         $parent = $node->cloneNode();
-        $child = $this->getHTMLDocument()->createElement('test');
+        $child = self::getHTMLDocument()->createElement('test');
         $parent->append($child);
         $parent->append(null);
         $this->assertSame($child, $parent->childNodes[0]);
@@ -105,7 +105,7 @@ class ParentNodeAppendTest extends NodeTestCase
     public function test6($node)
     {
         $parent = $node->cloneNode();
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $x = $document->createElement('x');
         $child = $document->createElement('test');
         $parent->append($child);

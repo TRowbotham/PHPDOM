@@ -17,7 +17,7 @@ class NodeBaseURITest extends TestCase
     // "For elements belonging to document, baseURI should be document url"
     public function test1()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $element = $document->createElement('div');
         $document->body->appendChild($element);
         $this->assertSame($document->URL, $element->baseURI);
@@ -26,7 +26,7 @@ class NodeBaseURITest extends TestCase
     // "For elements unassigned to document, baseURI should be document url"
     public function test2()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $element = $document->createElement('div');
         $this->assertSame($document->URL, $element->baseURI);
     }
@@ -35,7 +35,7 @@ class NodeBaseURITest extends TestCase
     // url"
     public function test3()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $fragment = $document->createDocumentFragment();
         $element = $document->createElement('div');
         $fragment->appendChild($element);
@@ -46,7 +46,7 @@ class NodeBaseURITest extends TestCase
     // document url"
     public function test4()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $fragment = $document->createDocumentFragment();
         $element = $document->createElement('div');
         $fragment->appendChild($element);

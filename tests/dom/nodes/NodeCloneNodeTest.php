@@ -90,21 +90,21 @@ class NodeCloneNodeTest extends TestCase
      */
     public function testCloneElements($aLocalName, $aType)
     {
-        $element = $this->getHTMLDocument()->createElement($aLocalName);
+        $element = self::getHTMLDocument()->createElement($aLocalName);
         $copy = $element->cloneNode();
         $this->checkCopy($element, $copy, $aType);
     }
 
     public function testCreateDocumentFragment()
     {
-        $fragment = $this->getHTMLDocument()->createDocumentFragment();
+        $fragment = self::getHTMLDocument()->createDocumentFragment();
         $copy = $fragment->cloneNode();
         $this->checkCopy($fragment, $copy, 'Rowbot\DOM\DocumentFragment');
     }
 
     public function testCreateTextNode()
     {
-        $text = $this->getHTMLDocument()->createTextNode('hello world');
+        $text = self::getHTMLDocument()->createTextNode('hello world');
         $copy = $text->cloneNode();
         $this->checkCopy($text, $copy, 'Rowbot\DOM\Text');
         $this->assertSame($text->data, $copy->data, 'data');
@@ -113,7 +113,7 @@ class NodeCloneNodeTest extends TestCase
 
     public function testCreateComment()
     {
-        $comment = $this->getHTMLDocument()->createComment('a comment');
+        $comment = self::getHTMLDocument()->createComment('a comment');
         $copy = $comment->cloneNode();
         $this->checkCopy($comment, $copy, 'Rowbot\DOM\Comment');
         $this->assertSame($comment->data, $copy->data, 'data');
@@ -121,7 +121,7 @@ class NodeCloneNodeTest extends TestCase
 
     public function testCreateElementWithAttributes()
     {
-        $el = $this->getHTMLDocument()->createElement('foo');
+        $el = self::getHTMLDocument()->createElement('foo');
         $el->setAttribute('a', 'b');
         $el->setAttribute('c', 'd');
         $copy = $el->cloneNode();
@@ -130,14 +130,14 @@ class NodeCloneNodeTest extends TestCase
 
     public function testCreateElementNSHTML()
     {
-        $el = $this->getHTMLDocument()->createElementNS(Namespaces::HTML, 'foo:div');
+        $el = self::getHTMLDocument()->createElementNS(Namespaces::HTML, 'foo:div');
         $copy = $el->cloneNode();
         $this->checkCopy($el, $copy, 'Rowbot\DOM\Element\HTML\HTMLDivElement');
     }
 
     public function testCreateElementNSNonHTML()
     {
-        $el = $this->getHTMLDocument()->createElementNS(
+        $el = self::getHTMLDocument()->createElementNS(
             "http://www.example.com/",
             'foo:div'
         );
@@ -147,7 +147,7 @@ class NodeCloneNodeTest extends TestCase
 
     public function testCreateProcessingInstruction()
     {
-        $pi = $this->getHTMLDocument()->createProcessingInstruction('target', 'data');
+        $pi = self::getHTMLDocument()->createProcessingInstruction('target', 'data');
         $copy = $pi->cloneNode();
         $this->checkCopy($pi, $copy, 'Rowbot\DOM\ProcessingInstruction');
         $this->assertSame($pi->data, $copy->data, 'data');
@@ -156,7 +156,7 @@ class NodeCloneNodeTest extends TestCase
 
     public function testCreateDocumentType()
     {
-        $doctype = $this->getHTMLDocument()->implementation->createDocumentType(
+        $doctype = self::getHTMLDocument()->implementation->createDocumentType(
             'html',
             'public',
             'system'
@@ -170,7 +170,7 @@ class NodeCloneNodeTest extends TestCase
 
     public function testCreateDocument()
     {
-        $doc = $this->getHTMLDocument()->implementation->createDocument(null, null);
+        $doc = self::getHTMLDocument()->implementation->createDocument(null, null);
         $copy = $doc->cloneNode();
         $this->checkCopy($doc, $copy, 'Rowbot\DOM\Document');
         $this->assertSame('UTF-8', $copy->charset, 'charset');
@@ -185,7 +185,7 @@ class NodeCloneNodeTest extends TestCase
 
     public function testCreateHTMLDocument()
     {
-        $doc = $this->getHTMLDocument()->implementation->createHTMLDocument('title');
+        $doc = self::getHTMLDocument()->implementation->createHTMLDocument('title');
         $copy = $doc->cloneNode();
         $this->checkCopy($doc, $copy, 'Rowbot\DOM\HTMLDocument');
         $this->assertSame('', $copy->title, 'title');
@@ -193,7 +193,7 @@ class NodeCloneNodeTest extends TestCase
 
     public function testNodeWithChildren()
     {
-        $doc = $this->getHTMLDocument();
+        $doc = self::getHTMLDocument();
         $parent = $doc->createElement('div');
         $child1 = $doc->createElement('div');
         $child2 = $doc->createElement('div');

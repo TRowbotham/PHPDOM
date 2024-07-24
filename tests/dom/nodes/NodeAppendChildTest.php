@@ -19,7 +19,7 @@ class NodeAppendChildTest extends TestCase
 
     public function test1()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $this->assertThrows(static function () use ($document) {
             $document->body->appendChild(null);
         }, TypeError::class);
@@ -32,7 +32,7 @@ class NodeAppendChildTest extends TestCase
 
     public function getLeafNodes()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
 
         return [
             [$document->createTextNode('foo'), 'text node'],
@@ -46,7 +46,7 @@ class NodeAppendChildTest extends TestCase
      */
     public function testLeaf($node, $desc)
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $this->assertThrows(static function () use ($node) {
             $node->appendChild(null);
         }, TypeError::class);
@@ -62,7 +62,7 @@ class NodeAppendChildTest extends TestCase
     public function test2()
     {
         $this->markTestIncomplete();
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         // We don't have a window object to access the frames property
         $frameDoc = $frames[0]->document;
         $this->assertThrows(static function () use ($document, $frameDoc) {
@@ -76,7 +76,7 @@ class NodeAppendChildTest extends TestCase
     public function test3()
     {
         $this->markTestIncomplete();
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         // We don't have a window object to access the frames property
         $frameDoc = $frames[0]->document;
         $s = $frameDoc->createElement('a');
@@ -91,7 +91,7 @@ class NodeAppendChildTest extends TestCase
     public function test4()
     {
         $this->markTestIncomplete();
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         // We don't have a window object to access the frames property
         $frameDoc = $frames[0]->document;
         $s = $frameDoc->createElement('b');

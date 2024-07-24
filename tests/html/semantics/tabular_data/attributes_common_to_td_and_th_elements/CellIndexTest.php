@@ -18,7 +18,7 @@ class CellIndexTest extends TestCase
 
     public function testCellIndexShouldExist(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $th = $document->createElement('th');
         self::assertTrue(property_exists($th, 'cellIndex'));
         $td = $document->createElement('td');
@@ -27,7 +27,7 @@ class CellIndexTest extends TestCase
 
     public function testForCellsWithoutAParentShouldReturnNegativeOne(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $th = $document->createElement('th');
         self::assertSame(-1, $th->cellIndex);
         $td = $document->createElement('td');
@@ -36,7 +36,7 @@ class CellIndexTest extends TestCase
 
     public function testForCellsWhoseParentIsNotATrShouldReturnNegativeOne(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $table = $document->createElement('table');
         $th = $table->appendChild($document->createElement('th'));
         self::assertSame(-1, $th->cellIndex);
@@ -46,7 +46,7 @@ class CellIndexTest extends TestCase
 
     public function testForCellsWhoseParentIsNotAHTMLTrShouldReturnNegativeOne(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $tr = $document->createElementNS('', 'tr');
         $th = $tr->appendChild($document->createElement('th'));
         self::assertSame(-1, $th->cellIndex);
@@ -56,7 +56,7 @@ class CellIndexTest extends TestCase
 
     public function testForCellsWhoseParentIsATrShouldReturnIndex(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $tr = $document->createElement('tr');
         $th = $tr->appendChild($document->createElement('th'));
         self::assertSame(0, $th->cellIndex);
@@ -66,7 +66,7 @@ class CellIndexTest extends TestCase
 
     public function testForCellsWhoseParentIsATrWithNonTdThSiblingShouldSkipThoseSiblings(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $tr = $document->createElement('tr');
         $th = $tr->appendChild($document->createElement('th'));
         self::assertSame(0, $th->cellIndex);

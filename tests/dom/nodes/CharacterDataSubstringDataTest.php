@@ -207,7 +207,7 @@ class CharacterDataSubstringDataTest extends NodeTestCase
 
     public function nodesProvider(): array
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
 
         return [
             [static function () use ($document): Text {

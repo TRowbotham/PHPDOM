@@ -18,7 +18,7 @@ class TableInsertRowTest extends TableTestCase
 
     public function testInsertRowShouldNotCopyPrefixes(): void
     {
-        $parentEl = $this->getHTMLDocument()->createElementNS(Namespaces::HTML, 'html:table');
+        $parentEl = self::getHTMLDocument()->createElementNS(Namespaces::HTML, 'html:table');
         self::assertSame(Namespaces::HTML, $parentEl->namespaceURI);
         self::assertSame('html', $parentEl->prefix);
         self::assertSame('table', $parentEl->localName);
@@ -43,7 +43,7 @@ class TableInsertRowTest extends TableTestCase
 
     public function testInsertRowShouldInsertIntoATbodyNotIntoATheadIfTableRowsIsEmpty(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $table = $document->createElement('table');
         $head = $table->appendChild($document->createElement('thead'));
         self::assertSame([], iterator_to_array($table->rows));
@@ -58,7 +58,7 @@ class TableInsertRowTest extends TableTestCase
 
     public function testInsertRowIntoATbodyNotIntoATfootIfTableRowsIsEmpty(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $table = $document->createElement('table');
         $tfoot = $table->appendChild($document->createElement('tfoot'));
         self::assertSame([], iterator_to_array($table->rows));

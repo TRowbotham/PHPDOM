@@ -59,7 +59,7 @@ class DocumentCreateElementTest extends TestCase
 
     public function getWin($desc)
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
 
         if ($desc === 'HTML document') {
             return $document;

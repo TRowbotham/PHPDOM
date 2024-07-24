@@ -33,7 +33,7 @@ class DOMImplementationCreateDocumentTest extends TestCase
         $doctype,
         ?string $expected = null
     ): void {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
 
         if ($expected) {
             $this->expectException($expected);
@@ -95,7 +95,7 @@ class DOMImplementationCreateDocumentTest extends TestCase
         ?string $qualifiedName,
         ?DocumentType $doctype
     ): void {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $doc = $document->implementation->createDocument(
             $namespace,
             $qualifiedName,
@@ -123,7 +123,7 @@ class DOMImplementationCreateDocumentTest extends TestCase
      */
     public function testCharacterSetAliases(?string $namespace, ?string $qualifiedName, ?DocumentType $doctype): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $doc = $document->implementation->createDocument($namespace, $qualifiedName, $doctype);
         $this->assertSame('UTF-8', $doc->characterSet, 'characterSet');
         $this->assertSame('UTF-8', $doc->charset, 'charset');
@@ -132,7 +132,7 @@ class DOMImplementationCreateDocumentTest extends TestCase
 
     public function testCreateDocumentWithMissingArgsShouldThrow(): void
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $this->assertThrows(static function () use ($document): void {
             $document->implementation->createDocument();
         }, TypeError::class);
@@ -144,7 +144,7 @@ class DOMImplementationCreateDocumentTest extends TestCase
     public function getTestData(): array
     {
         if (!$this->tests) {
-            $document = $this->getHTMLDocument();
+            $document = self::getHTMLDocument();
 
             $this->tests = array_merge(
                 array_map(static function ($t) {

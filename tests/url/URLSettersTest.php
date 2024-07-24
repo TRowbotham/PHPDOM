@@ -29,7 +29,7 @@ class URLSettersTest extends TestCase
      */
     public function testUrlSettersOnAnchorElement(array $input): void
     {
-        $url = $this->getHTMLDocument()->createElement('a');
+        $url = self::getHTMLDocument()->createElement('a');
         $url->href = $input['href'];
         $url->{$input['setter']} = $input['new_value'];
 
@@ -43,7 +43,7 @@ class URLSettersTest extends TestCase
      */
     public function testUrlSettersOnAreaElement(array $input): void
     {
-        $url = $this->getHTMLDocument()->createElement('area');
+        $url = self::getHTMLDocument()->createElement('area');
         $url->href = $input['href'];
         $url->{$input['setter']} = $input['new_value'];
 

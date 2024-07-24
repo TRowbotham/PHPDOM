@@ -18,7 +18,7 @@ trait HtmlTableSectionElementTrait
     public function testRowsAttribute(): void
     {
         $localName = $this->getTableSectionName();
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $elem = $document->createElement($localName);
         self::assertSame(0, $elem->rows->length);
 

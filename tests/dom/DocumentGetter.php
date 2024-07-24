@@ -11,40 +11,41 @@ use function call_user_func;
 
 trait DocumentGetter
 {
-    protected $htmlDocument;
-    protected $xmlDocument;
+    private static ?HTMLDocument $htmlDocument = null;
 
-    public function getHTMLDocument(?callable $callback = null): HTMLDocument
+    private static ?Document $xmlDocument = null;
+
+    public static function getHTMLDocument(?callable $callback = null): HTMLDocument
     {
-        if (!$this->htmlDocument) {
-            $this->htmlDocument = (new HTMLDocument())
+        if (self::$htmlDocument === null) {
+            self::$htmlDocument = (new HTMLDocument())
                 ->implementation
                 ->createHTMLDocument();
 
             if ($callback !== null) {
-                call_user_func($callback, $this->htmlDocument);
+                call_user_func($callback, self::$htmlDocument);
             }
         }
 
-        return $this->htmlDocument;
+        return self::$htmlDocument;
     }
 
     public function getXMLDocument(?callable $callback = null): Document
     {
-        if (!$this->xmlDocument) {
-            $this->xmlDocument = new Document();
+        if (self::$xmlDocument === null) {
+            self::$xmlDocument = new Document();
 
             if ($callback !== null) {
-                call_user_func($callback, $this->htmlDocument);
+                call_user_func($callback, self::$htmlDocument);
             }
         }
 
-        return $this->xmlDocument;
+        return self::$xmlDocument;
     }
 
     public function tearDown(): void
     {
-        unset($this->htmlDocument);
-        unset($this->xmlDocument);
+        self::$htmlDocument = null;
+        self::$xmlDocument = null;
     }
 }

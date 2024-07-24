@@ -18,7 +18,7 @@ class NodeNormalizeTest extends TestCase
 
     public function test1()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $df = $document->createDocumentFragment();
         $t1 = $document->createTextNode("1");
         $t2 = $document->createTextNode("2");
@@ -54,7 +54,7 @@ class NodeNormalizeTest extends TestCase
      */
     public function test2()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $div = $document->createElement('div');
         $t1 = $div->appendChild($document->createTextNode(''));
         $t2 = $div->appendChild($document->createTextNode('a'));
@@ -69,7 +69,7 @@ class NodeNormalizeTest extends TestCase
      */
     public function test3()
     {
-        $document = $this->getHTMLDocument();
+        $document = self::getHTMLDocument();
         $div = $document->createElement('div');
         $t1 = $div->appendChild($document->createTextNode(''));
         $t2 = $div->appendChild($document->createTextNode(''));
