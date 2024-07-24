@@ -44,9 +44,9 @@ trait AElementTrait
         self::assertSame($expected['hash'], $url->hash);
     }
 
-    public function urlTestDataProvider(): Generator
+    public static function urlTestDataProvider(): Generator
     {
-        foreach ($this->decodeUrlTestData() as $data) {
+        foreach (self::decodeUrlTestData() as $data) {
             // Skip comments
             if (is_string($data)) {
                 continue;

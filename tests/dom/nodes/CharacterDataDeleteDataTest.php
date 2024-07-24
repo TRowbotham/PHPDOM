@@ -128,7 +128,7 @@ class CharacterDataDeleteDataTest extends NodeTestCase
         $this->assertSame("🌠 teST", $node->data);
     }
 
-    public function nodesProvider(): array
+    public static function nodesProvider(): array
     {
         $document = self::getHTMLDocument();
 

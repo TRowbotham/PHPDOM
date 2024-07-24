@@ -12,7 +12,7 @@ use Rowbot\DOM\Exception\NamespaceError;
  */
 trait CreateElementNSTests
 {
-    public function getCreateElementNSTests(): array
+    public static function getCreateElementNSTests(): array
     {
         return [
             /* Arrays with three elements:

@@ -11,11 +11,11 @@ class Range_mutations_appendDataTest extends RangeTestCase
 {
     use Range_mutationTrait;
 
-    public function rangeProvider(): array
+    public static function rangeProvider(): array
     {
         $appendDataTests = [];
 
-        foreach ($this->characterDataNodes() as $node) {
+        foreach (self::characterDataNodes() as $node) {
             $appendDataTests[] = [$node, '"foo"', $node, 0, $node, 1];
             $appendDataTests[] = [$node, '"foo"', $node, 0, $node, 0];
             $appendDataTests[] = [$node, '"foo"', $node, 1, $node, 1];
@@ -45,14 +45,14 @@ class Range_mutations_appendDataTest extends RangeTestCase
         $appendDataTests[] = ["paras[0]->firstChild", '"foo"', "paras[0]->firstChild", 1, "paras[0]", 1];
         $appendDataTests[] = ["paras[0]->firstChild", '"foo"', "paras[0]", 0, "paras[0]->firstChild", 3];
 
-        return $this->doTests($appendDataTests, static function ($params) {
+        return self::doTests($appendDataTests, static function ($params) {
             return $params[0] . ".appendData(" . $params[1] . ")";
-        }, [$this, '_testAppendData']);
+        }, self::_testAppendData(...));
     }
 
-    public function _testAppendData($node, $data, $startContainer, $startOffset, $endContainer, $endOffset)
+    public static function _testAppendData($node, $data, $startContainer, $startOffset, $endContainer, $endOffset)
     {
-        return $this->_testReplaceDataAlgorithm($node, $node->length, 0, $data, static function () use ($node, $data) {
+        return self::_testReplaceDataAlgorithm($node, $node->length, 0, $data, static function () use ($node, $data) {
             $node->appendData($data);
         }, $startContainer, $startOffset, $endContainer, $endOffset);
     }

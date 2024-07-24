@@ -33,7 +33,7 @@ class Html_content_in_foreign_contextTest extends TestCase
         self::assertSame($wrapper, $element->parentNode);
     }
 
-    public function elementProvider(): Generator
+    public static function elementProvider(): Generator
     {
         foreach (self::CONTEXTS as $context) {
             foreach (self::ELEMENTS as $element) {

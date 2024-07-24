@@ -98,7 +98,7 @@ class NodeCompareDocumentPositionTest extends NodeTestCase
         $this->assertSame($result, Node::DOCUMENT_POSITION_FOLLOWING);
     }
 
-    public function rangeTestNodesProvider(): Generator
+    public static function rangeTestNodesProvider(): Generator
     {
         $window = self::getWindow();
         $window->setupRangeTests();

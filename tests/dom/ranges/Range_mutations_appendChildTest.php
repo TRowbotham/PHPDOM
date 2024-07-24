@@ -58,20 +58,20 @@ class Range_mutations_appendChildTest extends RangeTestCase
         ["paras[0]", "document->doctype", "paras[0]", 0, "paras[0]", 1],
     ];
 
-    public function rangeProvider(): array
+    public static function rangeProvider(): array
     {
-        return $this->doTests(self::APPEND_CHILD_TESTS, static function ($params) {
+        return self::doTests(self::APPEND_CHILD_TESTS, static function ($params) {
             return $params[0] . ".appendChild(" . $params[1] . ")";
-        }, [$this, '_testAppendChild']);
+        }, self::_testAppendChild(...));
     }
 
-    public function _testAppendChild($newParent, $affectedNode, $startContainer, $startOffset, $endContainer, $endOffset)
+    public static function _testAppendChild($newParent, $affectedNode, $startContainer, $startOffset, $endContainer, $endOffset)
     {
         $expectedStart = [$startContainer, $startOffset];
         $expectedEnd = [$endContainer, $endOffset];
 
-        $expectedStart = $this->modifyForRemove($affectedNode, $expectedStart);
-        $expectedEnd = $this->modifyForRemove($affectedNode, $expectedEnd);
+        $expectedStart = self::modifyForRemove($affectedNode, $expectedStart);
+        $expectedEnd = self::modifyForRemove($affectedNode, $expectedEnd);
 
         try {
             $newParent->appendChild($affectedNode);
@@ -81,8 +81,8 @@ class Range_mutations_appendChildTest extends RangeTestCase
 
         // These two lines will actually never do anything, if you think about it,
         // but let's leave them in so correctness is more obvious.
-        $expectedStart = $this->modifyForInsert($affectedNode, $expectedStart);
-        $expectedEnd = $this->modifyForInsert($affectedNode, $expectedEnd);
+        $expectedStart = self::modifyForInsert($affectedNode, $expectedStart);
+        $expectedEnd = self::modifyForInsert($affectedNode, $expectedEnd);
 
         return array_merge($expectedStart, $expectedEnd);
     }

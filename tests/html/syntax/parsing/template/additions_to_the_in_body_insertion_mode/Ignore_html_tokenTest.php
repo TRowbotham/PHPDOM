@@ -21,7 +21,7 @@ class Ignore_html_tokenTest extends TestCase
 
     public function testHtmlElementAssignedToTemplateInnerHTML(): void
     {
-        $doc = $this->newHTMLDocument();
+        $doc = self::newHTMLDocument();
         $template = $doc->createElement('template');
         $template->innerHTML = '<html><body></body></html>';
         $doc->body->appendChild($template);
@@ -31,7 +31,7 @@ class Ignore_html_tokenTest extends TestCase
 
     public function testHtmlElementAndSomeValidElementBeforeItAssignedToTemplateInnerHTML(): void
     {
-        $doc = $this->newHTMLDocument();
+        $doc = self::newHTMLDocument();
         $template = $doc->createElement('template');
         $template->innerHTML = '<div id="div1">Some text</div><html><body></body></html>';
         $doc->body->appendChild($template);
@@ -43,7 +43,7 @@ class Ignore_html_tokenTest extends TestCase
 
     public function testHtmlElementAndSomeValidElementAfterItAssignedToTemplateInnerHTML(): void
     {
-        $doc = $this->newHTMLDocument();
+        $doc = self::newHTMLDocument();
         $template = $doc->createElement('template');
         $template->innerHTML = '<html><body></body></html><div id="div1">Some text</div>';
         $doc->body->appendChild($template);
@@ -55,7 +55,7 @@ class Ignore_html_tokenTest extends TestCase
 
     public function testHtmlTagInsideTemplateTagAssignedToAnotherTemplatesInnerHTML(): void
     {
-        $doc = $this->newHTMLDocument();
+        $doc = self::newHTMLDocument();
         $template = $doc->createElement('template');
         $template->innerHTML = '<template id="t2"><html><body></body></html></template>';
         $doc->body->appendChild($template);
@@ -72,7 +72,7 @@ class Ignore_html_tokenTest extends TestCase
 
     public function testSomeValidElementInsideHtmlElement(): void
     {
-        $doc = $this->newHTMLDocument();
+        $doc = self::newHTMLDocument();
         $template = $doc->createElement('template');
         $template->innerHTML = '<html><div id="div1">Some text</div></html>';
         $doc->body->appendChild($template);
@@ -84,7 +84,7 @@ class Ignore_html_tokenTest extends TestCase
 
     public function testValidElementInsideAndBetweenHtmlAndBodyElements(): void
     {
-        $doc = $this->newHTMLDocument();
+        $doc = self::newHTMLDocument();
         $template = $doc->createElement('template');
         $template->innerHTML = '<html><span id="span1">Span</span><body><div id="div1">Some text</div><body></html>';
         $doc->body->appendChild($template);

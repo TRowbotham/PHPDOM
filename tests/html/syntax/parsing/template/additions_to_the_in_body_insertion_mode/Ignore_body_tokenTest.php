@@ -21,7 +21,7 @@ class Ignore_body_tokenTest extends TestCase
 
     public function testEmptyBodyElementAssignedToTemplateInnerHTML(): void
     {
-        $doc = $this->newHTMLDocument();
+        $doc = self::newHTMLDocument();
         $template = $doc->createElement('template');
         $template->innerHTML = '<body></body>';
         $doc->body->appendChild($template);
@@ -31,7 +31,7 @@ class Ignore_body_tokenTest extends TestCase
 
     public function testNotEmptyBodyElementAssignedToTemplateInnerHTML(): void
     {
-        $doc = $this->newHTMLDocument();
+        $doc = self::newHTMLDocument();
         $template = $doc->createElement('template');
         $template->innerHTML = '<body><div>Some content</div></body>';
         $doc->body->appendChild($template);
@@ -42,7 +42,7 @@ class Ignore_body_tokenTest extends TestCase
 
     public function testBodyElementAndSomeValidElementAfterBodyAssignedToTemplateInnerHTML(): void
     {
-        $doc = $this->newHTMLDocument();
+        $doc = self::newHTMLDocument();
         $template = $doc->createElement('template');
         $template->innerHTML = '<body><div <div id="div1">Some content</div></body><div id="div2">Some valid content</div>';
         $doc->body->appendChild($template);
@@ -56,7 +56,7 @@ class Ignore_body_tokenTest extends TestCase
 
     public function testBodyElementAndSomeValidElementBeforeBodyAssignedToTemplateInnerHTML(): void
     {
-        $doc = $this->newHTMLDocument();
+        $doc = self::newHTMLDocument();
         $template = $doc->createElement('template');
         $template->innerHTML = '<div id="div1">Some valid content</div><body><div id="div2">Some content</div></body>';
         $doc->body->appendChild($template);
@@ -70,7 +70,7 @@ class Ignore_body_tokenTest extends TestCase
 
     public function testTemplateWithNotEmptyBodyElementInsideAssignedToAnotherTemplatesInnerHTML(): void
     {
-        $doc = $this->newHTMLDocument();
+        $doc = self::newHTMLDocument();
         $template = $doc->createElement('template');
         $template->innerHTML = '<template id="t2"><body><span>Body!<span></body></template>';
         $doc->body->appendChild($template);

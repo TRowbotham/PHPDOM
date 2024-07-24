@@ -17,12 +17,12 @@ trait DataProviderTrait
 {
     use WindowTrait;
 
-    private $urltestdata = [];
+    private static array $urltestdata = [];
 
-    public function decodeUrlTestData(): array
+    public static function decodeUrlTestData(): array
     {
-        if ($this->urltestdata !== []) {
-            return $this->urltestdata;
+        if (self::$urltestdata !== []) {
+            return self::$urltestdata;
         }
 
         $body = file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'urltestdata.json');
@@ -47,9 +47,9 @@ trait DataProviderTrait
         );
 
         // Remove comments and check to make sure it is valid JSON.
-        $this->urltestdata = array_filter(json_decode($body, true, flags: JSON_THROW_ON_ERROR), 'is_array');;
+        self::$urltestdata = array_filter(json_decode($body, true, flags: JSON_THROW_ON_ERROR), 'is_array');;
 
-        return $this->urltestdata;
+        return self::$urltestdata;
     }
 
     public function bURL(string $url, ?string $base): HTMLAnchorElement

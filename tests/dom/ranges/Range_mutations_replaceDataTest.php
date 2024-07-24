@@ -11,11 +11,11 @@ class Range_mutations_replaceDataTest extends RangeTestCase
 {
     use Range_mutationTrait;
 
-    public function rangeProvider(): array
+    public static function rangeProvider(): array
     {
         $replaceDataTests = [];
 
-        foreach ($this->characterDataNodes() as $node) {
+        foreach (self::characterDataNodes() as $node) {
             $replaceDataTests[] = [$node, 376, 0, '"foo"', $node, 0, $node, 1];
             $replaceDataTests[] = [$node, 0, 0, '"foo"', $node, 0, $node, 0];
             $replaceDataTests[] = [$node, 1, 0, '"foo"', $node, 1, $node, 1];
@@ -95,14 +95,14 @@ class Range_mutations_replaceDataTest extends RangeTestCase
         $replaceDataTests[] = ["paras[0]->firstChild", 2, 47, '"foo"', "paras[0]", 0, "paras[0]->firstChild", 3];
         $replaceDataTests[] = ["paras[0]->firstChild", 3, 47, '"foo"', "paras[0]", 0, "paras[0]->firstChild", 3];
 
-        return $this->doTests($replaceDataTests, static function ($params) {
+        return self::doTests($replaceDataTests, static function ($params) {
             return $params[0] . ".replaceData(" . $params[1] . ", " . $params[2] . ", " . $params[3] . ")";
-        }, [$this, '_testReplaceData']);
+        }, self::_testReplaceData(...));
     }
 
-    public function _testReplaceData($node, $offset, $count, $data, $startContainer, $startOffset, $endContainer, $endOffset)
+    public static function _testReplaceData($node, $offset, $count, $data, $startContainer, $startOffset, $endContainer, $endOffset)
     {
-        return $this->_testReplaceDataAlgorithm($node, $offset, $count, $data, static function () use ($node, $data, $offset, $count) {
+        return self::_testReplaceDataAlgorithm($node, $offset, $count, $data, static function () use ($node, $data, $offset, $count) {
             $node->replaceData($offset, $count, $data);
         }, $startContainer, $startOffset, $endContainer, $endOffset);
     }

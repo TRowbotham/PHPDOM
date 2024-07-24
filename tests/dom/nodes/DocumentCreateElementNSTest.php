@@ -26,9 +26,9 @@ class DocumentCreateElementNSTest extends TestCase
     use DocumentGetter;
     use CreateElementNSTests;
 
-    public function getTestData(): array
+    public static function getTestData(): array
     {
-        return array_merge($this->getCreateElementNSTests(), [
+        return array_merge(self::getCreateElementNSTests(), [
             /* Arrays with three elements:
              *   the namespace argument
              *   the qualifiedName argument

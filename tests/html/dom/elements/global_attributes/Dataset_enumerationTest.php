@@ -35,7 +35,7 @@ class Dataset_enumerationTest extends TestCase
         self::assertSame($expectedCount, $count);
     }
 
-    public function attributesProvider(): array
+    public static function attributesProvider(): array
     {
         return [
             [['data-foo', 'data-bar', 'data-baz'], 3],

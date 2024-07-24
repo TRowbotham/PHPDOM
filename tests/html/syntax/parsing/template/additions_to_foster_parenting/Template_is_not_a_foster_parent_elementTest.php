@@ -16,7 +16,7 @@ class Template_is_not_a_foster_parent_elementTest extends TestCase
 
     public function testTemplateIsNotAFosterParentElementWhenHigherInTheStack(): void
     {
-        $doc = $this->newHTMLDocument();
+        $doc = self::newHTMLDocument();
 
         $doc->body->innerHTML = ''
             . '<div id="tmplParent">'
@@ -44,7 +44,7 @@ class Template_is_not_a_foster_parent_elementTest extends TestCase
 
     public function testTemplateIsNotAFosterParentElementWhenLowerInTheStack(): void
     {
-        $doc = $this->newHTMLDocument();
+        $doc = self::newHTMLDocument();
 
         $doc->body->innerHTML = ''
                 . '<div id="fosterParent">'

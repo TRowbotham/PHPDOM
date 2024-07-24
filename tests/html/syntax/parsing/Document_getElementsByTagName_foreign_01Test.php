@@ -34,7 +34,7 @@ class Document_getElementsByTagName_foreign_01Test extends TestCase
         self::assertSame(0, $document->getElementsByTagNameNS(Namespaces::SVG, strtolower($el))->length);
     }
 
-    public function elementNameProvider(): array
+    public static function elementNameProvider(): array
     {
         return [
             ["altGlyph"],

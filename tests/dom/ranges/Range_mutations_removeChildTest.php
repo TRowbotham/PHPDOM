@@ -27,20 +27,20 @@ class Range_mutations_removeChildTest extends RangeTestCase
         ["foreignDoc->documentElement", "foreignDoc", 0, "foreignDoc", "foreignDoc->childNodes->length"],
     ];
 
-    public function rangeProvider(): array
+    public static function rangeProvider(): array
     {
-        return $this->doTests(self::REMOVE_CHILD_TESTS, static function ($params) {
+        return self::doTests(self::REMOVE_CHILD_TESTS, static function ($params) {
             return $params[0] . ".removeChild(" . $params[1] . ")";
-        }, [$this, '_testRemoveChild']);
+        }, self::_testRemoveChild(...));
     }
 
-    public function _testRemoveChild($affectedNode, $startContainer, $startOffset, $endContainer, $endOffset)
+    public static function _testRemoveChild($affectedNode, $startContainer, $startOffset, $endContainer, $endOffset)
     {
         $expectedStart = [$startContainer, $startOffset];
         $expectedEnd = [$endContainer, $endOffset];
 
-        $expectedStart = $this->modifyForRemove($affectedNode, $expectedStart);
-        $expectedEnd = $this->modifyForRemove($affectedNode, $expectedEnd);
+        $expectedStart = self::modifyForRemove($affectedNode, $expectedStart);
+        $expectedEnd = self::modifyForRemove($affectedNode, $expectedEnd);
 
         $affectedNode->parentNode->removeChild($affectedNode);
 

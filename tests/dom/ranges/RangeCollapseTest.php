@@ -56,7 +56,7 @@ class RangeCollapseTest extends RangeTestCase
         $this->assertTrue($range->collapsed);
     }
 
-    public function rangeProvider(): array
+    public static function rangeProvider(): array
     {
         $window = self::getWindow();
         $window->initStrings();

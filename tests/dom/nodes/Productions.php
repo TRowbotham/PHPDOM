@@ -6,7 +6,7 @@ namespace Rowbot\DOM\Tests\dom\nodes;
 
 trait Productions
 {
-    public function invalidNamesProvider()
+    public static function invalidNamesProvider()
     {
         return [
             [""],
@@ -19,7 +19,7 @@ trait Productions
         ];
     }
 
-    public function validNamesProvider()
+    public static function validNamesProvider()
     {
         return [
             ["x"],
@@ -28,7 +28,7 @@ trait Productions
         ];
     }
 
-    public function invalidQNamesProvider()
+    public static function invalidQNamesProvider()
     {
         return [
             [":a"],

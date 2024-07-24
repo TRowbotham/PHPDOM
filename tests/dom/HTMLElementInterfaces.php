@@ -10,7 +10,7 @@ use Rowbot\DOM\Element\ElementFactory;
 
 trait HTMLElementInterfaces
 {
-    public function getHTMLElementInterfaces(): Generator
+    public static function getHTMLElementInterfaces(): Generator
     {
         $reflection = new ReflectionClass(ElementFactory::class);
 

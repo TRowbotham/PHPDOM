@@ -160,7 +160,7 @@ class NodeTextContentTest extends TestCase
         );
     }
 
-    public function documentsProvider()
+    public static function documentsProvider()
     {
         $document = self::getHTMLDocument();
 
@@ -171,7 +171,7 @@ class NodeTextContentTest extends TestCase
         ];
     }
 
-    public function doctypesProvider()
+    public static function doctypesProvider()
     {
         $document = self::getHTMLDocument();
 
@@ -197,7 +197,7 @@ class NodeTextContentTest extends TestCase
         $this->assertNull($doctype->textContent);
     }
 
-    public function argumentsProvider()
+    public static function argumentsProvider()
     {
         return [
             [null, null],

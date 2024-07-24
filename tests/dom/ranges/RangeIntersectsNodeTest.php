@@ -69,7 +69,7 @@ class RangeIntersectsNodeTest extends RangeTestCase
         $this->assertFalse($range->intersectsNode($node));
     }
 
-    public function intersectionNodeProvider(): Generator
+    public static function intersectionNodeProvider(): Generator
     {
         $window = self::getWindow();
         $window->initStrings();

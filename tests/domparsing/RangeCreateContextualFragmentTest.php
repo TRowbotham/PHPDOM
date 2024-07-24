@@ -146,7 +146,7 @@ class RangeCreateContextualFragmentTest extends TestCase
     /**
      * @dataProvider fragmentProvider
      */
-    public function fragmentsProvider(): array
+    public static function fragmentsProvider(): array
     {
         $document = self::getDocument();
 
@@ -228,7 +228,7 @@ class RangeCreateContextualFragmentTest extends TestCase
         ];
     }
 
-    public function voidElementProvider(): Generator
+    public static function voidElementProvider(): Generator
     {
         $elements = [
             // Void

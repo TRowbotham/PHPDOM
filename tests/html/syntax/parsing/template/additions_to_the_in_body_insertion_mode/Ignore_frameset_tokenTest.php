@@ -21,7 +21,7 @@ class Ignore_frameset_tokenTest extends TestCase
 
     public function testFramesetElementAssignedToTemplateInnerHTML(): void
     {
-        $doc = $this->newHTMLDocument();
+        $doc = self::newHTMLDocument();
         $template = $doc->createElement('template');
         $template->innerHTML = '<frameset cols="25%,*,25%">'
             . '<frame src="frame_a.htm">'
@@ -34,7 +34,7 @@ class Ignore_frameset_tokenTest extends TestCase
 
     public function testFramesetElementAndSomeValidElementBeforeItAssignedToTemplateInnerHTML(): void
     {
-        $doc = $this->newHTMLDocument();
+        $doc = self::newHTMLDocument();
         $template = $doc->createElement('template');
         $template->innerHTML = '<div id="div1">Some text</div>'
             . '<frameset cols="25%,*,25%">'
@@ -51,7 +51,7 @@ class Ignore_frameset_tokenTest extends TestCase
 
     public function testFramesetElementAndSomeValidElementAfteritAssignedToTemplateInnerHTML(): void
     {
-        $doc = $this->newHTMLDocument();
+        $doc = self::newHTMLDocument();
         $template = $doc->createElement('template');
         $template->innerHTML = '<frameset cols="25%,*,25%">'
             . '<frame src="frame_a.htm">'
@@ -67,7 +67,7 @@ class Ignore_frameset_tokenTest extends TestCase
 
     public function testFramesetElementInsideTemplateTagAssignedToAnotherTemplatesInnerHTML(): void
     {
-        $doc = $this->newHTMLDocument();
+        $doc = self::newHTMLDocument();
         $template = $doc->createElement('template');
         $template->innerHTML = '<template id="t2">'
             . '<frameset cols="25%,*,25%">'

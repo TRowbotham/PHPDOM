@@ -34,7 +34,7 @@ class DocumentBuilderTest extends TestCase
         }
     }
 
-    public function validContentTypeStringProvider(): Generator
+    public static function validContentTypeStringProvider(): Generator
     {
         $reflection = new ReflectionClass(DocumentBuilder::class);
         $reflection->getConstant('VALID_CONTENT_TYPES');
@@ -72,9 +72,9 @@ class DocumentBuilderTest extends TestCase
         self::assertNotInstanceOf($expectedDocNotOfType, $doc2);
     }
 
-    public function contentTypeProvider(): Generator
+    public static function contentTypeProvider(): Generator
     {
-        foreach ($this->validContentTypeStringProvider() as $contentType) {
+        foreach (self::validContentTypeStringProvider() as $contentType) {
             yield [$contentType[0], $contentType[0] === 'text/html'];
         }
     }

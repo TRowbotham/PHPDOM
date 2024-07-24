@@ -16,19 +16,19 @@ class ParentNodePrependTest extends NodeTestCase
     use DocumentGetter;
     use PreinsertionValidationHierarchyTrait;
 
-    protected $tests;
+    protected static array $tests = [];
 
-    public function getTests()
+    public static function getTests()
     {
-        if (!$this->tests) {
+        if (self::$tests === []) {
             $document = self::getHTMLDocument();
-            $this->tests = [
+            self::$tests = [
                 [$document->createElement('div')],
                 [$document->createDocumentFragment()],
             ];
         }
 
-        return $this->tests;
+        return self::$tests;
     }
 
     /**

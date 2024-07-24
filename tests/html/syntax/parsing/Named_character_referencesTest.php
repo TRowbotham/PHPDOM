@@ -33,7 +33,7 @@ class Named_character_referencesTest extends TestCase
         self::assertSame($characters, $dummy->textContent);
     }
 
-    public function entityProvider(): Generator
+    public static function entityProvider(): Generator
     {
         $data = file_get_contents(__DIR__ . DS . 'resources' . DS . 'named-character-references-data.json');
 

@@ -14,7 +14,7 @@ class ElementRemoveTest extends NodeTestCase
     use ChildNodeRemoveTrait;
     use DocumentGetter;
 
-    public function childNodeRemoveNodesProvider(): iterable
+    public static function childNodeRemoveNodesProvider(): iterable
     {
         $document = self::getHTMLDocument();
         $node = $document->createElement('div');

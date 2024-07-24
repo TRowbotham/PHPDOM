@@ -83,7 +83,7 @@ class RangeCloneRangeTest extends RangeTestCase
         $this->assertSame(2, $range->endOffset);
     }
 
-    public function rangeProvider(): array
+    public static function rangeProvider(): array
     {
         $window = self::getWindow();
         $window->initStrings();

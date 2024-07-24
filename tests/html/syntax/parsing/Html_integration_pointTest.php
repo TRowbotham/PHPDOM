@@ -34,7 +34,7 @@ class Html_integration_pointTest extends TestCase
         self::assertSame('&lt;', substr($rawTextElement->textContent, 0, 4));
     }
 
-    public function idProvider(): array
+    public static function idProvider(): array
     {
         return [
             ['point-1'], // MathML annotation-xml with encoding=text/html should be an HTML integration point

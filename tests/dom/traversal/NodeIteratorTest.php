@@ -229,7 +229,7 @@ class NodeIteratorTest extends TestCase
         // assert_readonly(iter, 'pointerBeforeReferenceNode');
     }
 
-    public function iteratorInputProvider(): array
+    public static function iteratorInputProvider(): array
     {
         $whatToShows = [
             0,

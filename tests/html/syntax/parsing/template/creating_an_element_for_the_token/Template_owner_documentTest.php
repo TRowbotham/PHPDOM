@@ -24,7 +24,7 @@ class Template_owner_documentTest extends TestCase
 
     public function testTemplateElementInsideTheDiv(): void
     {
-        $doc = $this->newHTMLDocument();
+        $doc = self::newHTMLDocument();
         $doc->body->innerHTML = '<div><template id="tmpl1"><div id="div">DIV</div></template></div>';
 
         // $template = $doc->querySelector('#tmpl1');
@@ -38,7 +38,7 @@ class Template_owner_documentTest extends TestCase
 
     public function testTemplateElementInTheRootOfTheBody(): void
     {
-        $doc = $this->newHTMLDocument();
+        $doc = self::newHTMLDocument();
         $doc->body->innerHTML = '<template id="tmpl1"><div id="div">DIV</div></template>';
 
         // $template = $doc->querySelector('#tmpl1');
@@ -52,7 +52,7 @@ class Template_owner_documentTest extends TestCase
 
     public function testOwnerDocumentPropertyOfTheElementInANestedTemplate(): void
     {
-        $doc = $this->newHTMLDocument();
+        $doc = self::newHTMLDocument();
         $doc->body->innerHTML = '<template id="tmpl1">'
             . '<template id="tmpl2"><div id="div">DIV</div></template></template>';
 
@@ -125,13 +125,13 @@ class Template_owner_documentTest extends TestCase
         self::assertSame($template->content->ownerDocument, $element->ownerDocument);
     }
 
-    public function compareOwnersDataProvider(): Generator
+    public static function compareOwnersDataProvider(): Generator
     {
         foreach (self::$HTML5_ELEMENTS as $value) {
             if ($value !== 'body' && $value !== 'html' && $value !== 'head' && $value !== 'frameset') {
-                $doc = $this->newHTMLDocument();
+                $doc = self::newHTMLDocument();
 
-                if ($this->isVoidElement($value)) {
+                if (self::isVoidElement($value)) {
                     $doc->body->innerHTML = '<template><' . $value . '/></template>';
                 } else {
                     $doc->body->innerHTML = '<template><' . $value . '></' . $value . '></template>';

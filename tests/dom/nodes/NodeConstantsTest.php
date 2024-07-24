@@ -17,7 +17,7 @@ class NodeConstantsTest extends TestCase
     use Constants;
     use DocumentGetter;
 
-    public function constantsProvider(): array
+    public static function constantsProvider(): array
     {
         $document = self::getHTMLDocument();
 

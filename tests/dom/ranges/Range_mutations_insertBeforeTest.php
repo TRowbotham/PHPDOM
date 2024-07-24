@@ -55,20 +55,20 @@ class Range_mutations_insertBeforeTest extends RangeTestCase
         ["paras[0]", "document->doctype", "paras[0]->firstChild", "paras[0]", 0, "paras[0]", 1],
     ];
 
-    public function rangeProvider(): array
+    public static function rangeProvider(): array
     {
-        return $this->doTests(self::INSERT_BEFORE_TESTS, static function ($params) {
+        return self::doTests(self::INSERT_BEFORE_TESTS, static function ($params) {
             return $params[0] . ".insertBefore(" . $params[1] . ", " . $params[2] . ")";
-        }, [$this, '_testInsertBefore']);
+        }, self::_testInsertBefore(...));
     }
 
-    public function _testInsertBefore($newParent, $affectedNode, $refNode, $startContainer, $startOffset, $endContainer, $endOffset)
+    public static function _testInsertBefore($newParent, $affectedNode, $refNode, $startContainer, $startOffset, $endContainer, $endOffset)
     {
         $expectedStart = [$startContainer, $startOffset];
         $expectedEnd = [$endContainer, $endOffset];
 
-        $expectedStart = $this->modifyForRemove($affectedNode, $expectedStart);
-        $expectedEnd = $this->modifyForRemove($affectedNode, $expectedEnd);
+        $expectedStart = self::modifyForRemove($affectedNode, $expectedStart);
+        $expectedEnd = self::modifyForRemove($affectedNode, $expectedEnd);
 
         try {
             $newParent->insertBefore($affectedNode, $refNode);
@@ -78,8 +78,8 @@ class Range_mutations_insertBeforeTest extends RangeTestCase
             return [$startContainer, $startOffset, $endContainer, $endOffset];
         }
 
-        $expectedStart = $this->modifyForInsert($affectedNode, $expectedStart);
-        $expectedEnd = $this->modifyForInsert($affectedNode, $expectedEnd);
+        $expectedStart = self::modifyForInsert($affectedNode, $expectedStart);
+        $expectedEnd = self::modifyForInsert($affectedNode, $expectedEnd);
 
         return array_merge($expectedStart, $expectedEnd);
     }

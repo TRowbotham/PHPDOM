@@ -51,7 +51,7 @@ class Dataset_deleteTest extends TestCase
         self::assertSame('value', $d->getAttribute('data--foo'));
     }
 
-    public function datasetProvider(): array
+    public static function datasetProvider(): array
     {
         return [
             ['data-foo', 'foo'],
@@ -64,7 +64,7 @@ class Dataset_deleteTest extends TestCase
         ];
     }
 
-    public function datasetNoAddProvider(): array
+    public static function datasetNoAddProvider(): array
     {
         return [['foo']];
     }

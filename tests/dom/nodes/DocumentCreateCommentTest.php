@@ -26,9 +26,9 @@ class DocumentCreateCommentTest extends CharacterDataTestCase
         $this->checkDocumentCreateMethod(new HTMLDocument(), $method, $iface, $nodeType, $nodeValue, $value);
     }
 
-    public function commentNodeDataProvider(): Generator
+    public static function commentNodeDataProvider(): Generator
     {
-        foreach ($this->valuesProvider() as $value) {
+        foreach (self::valuesProvider() as $value) {
             yield ['createComment', Comment::class, 8, '#comment', $value];
         }
     }

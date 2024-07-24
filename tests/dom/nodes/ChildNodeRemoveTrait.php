@@ -15,7 +15,7 @@ use function method_exists;
  */
 trait ChildNodeRemoveTrait
 {
-    abstract public function childNodeRemoveNodesProvider(): iterable;
+    abstract public static function childNodeRemoveNodesProvider(): iterable;
 
     /**
      * @dataProvider childNodeRemoveNodesProvider

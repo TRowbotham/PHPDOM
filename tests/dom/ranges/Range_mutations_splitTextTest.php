@@ -13,11 +13,11 @@ class Range_mutations_splitTextTest extends RangeTestCase
 {
     use Range_mutationTrait;
 
-    public function rangeProvider(): array
+    public static function rangeProvider(): array
     {
         $splitTextTests = [];
 
-        foreach ($this->textNodes() as $node) {
+        foreach (self::textNodes() as $node) {
             $splitTextTests[] = [$node, 376, $node, 0, $node, 1];
             $splitTextTests[] = [$node, 0, $node, 0, $node, 0];
             $splitTextTests[] = [$node, 1, $node, 1, $node, 1];
@@ -37,12 +37,12 @@ class Range_mutations_splitTextTest extends RangeTestCase
         $splitTextTests[] = ["paras[0]->firstChild", 2, "paras[0]", 0, "paras[0]->firstChild", 3];
         $splitTextTests[] = ["paras[0]->firstChild", 3, "paras[0]", 0, "paras[0]->firstChild", 3];
 
-        return $this->doTests($splitTextTests, static function ($params) {
+        return self::doTests($splitTextTests, static function ($params) {
             return $params[0] . ".splitText(" . $params[1] . ")";
-        }, [$this, '_testSplitText']);
+        }, self::_testSplitText(...));
     }
 
-    protected function _testSplitText($oldNode, $offset, $startContainer, $startOffset, $endContainer, $endOffset): array
+    protected static function _testSplitText($oldNode, $offset, $startContainer, $startOffset, $endContainer, $endOffset): array
     {
         // Save these for later
         $originalStartOffset = $startOffset;

@@ -95,7 +95,7 @@ class DocumentCreateAttributeTest extends TestCase
         $this->assertNull($attribute->ownerElement);
     }
 
-    public function attrNameProvider(): array
+    public static function attrNameProvider(): array
     {
         return [
             ['title'],

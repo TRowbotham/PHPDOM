@@ -41,7 +41,7 @@ class CharacterDataAppendChildTest extends TestCase
         }
     }
 
-    public function typeProvider(): array
+    public static function typeProvider(): array
     {
         self::$document = new HTMLDocument();
         $types = ["Text", "Comment", "ProcessingInstruction"];

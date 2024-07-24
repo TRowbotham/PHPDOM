@@ -46,7 +46,7 @@ class NodeInsertBeforeTest extends NodeTestCase
         }, TypeError::class);
     }
 
-    public function getLeafNodes()
+    public static function getLeafNodes()
     {
         $document = self::getHTMLDocument();
 

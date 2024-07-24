@@ -32,7 +32,7 @@ class NodePropertiesTest extends NodeTestCase
         }
     }
 
-    public function nodePropertiesProvider(): Generator
+    public static function nodePropertiesProvider(): Generator
     {
         $window = self::getWindow();
         $window->setupRangeTests();

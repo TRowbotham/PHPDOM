@@ -43,7 +43,7 @@ class InsertAdjacentTest extends TestCase
         self::assertSame(Node::TEXT_NODE, $el->{self::POSSIBLE_POSITIONS[$position]}->firstChild->nodeType);
     }
 
-    public function positionProvider(): Generator
+    public static function positionProvider(): Generator
     {
         foreach (array_keys(self::POSSIBLE_POSITIONS) as $position) {
             yield [$position];

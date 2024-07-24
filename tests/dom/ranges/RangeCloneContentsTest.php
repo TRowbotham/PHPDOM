@@ -175,7 +175,7 @@ class RangeCloneContentsTest extends RangeTestCase
         $this->assertSame([], iterator_to_array($range->cloneContents()->childNodes));
     }
 
-    public function rangesProvider(): Generator
+    public static function rangesProvider(): Generator
     {
         $window = self::getWindow();
         $window->initStrings();

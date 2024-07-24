@@ -90,7 +90,7 @@ class RangeIsPointInRangeTest extends RangeTestCase
         $this->assertTrue($range->isPointInRange($node, $offset));
     }
 
-    public function pointsProvider(): Generator
+    public static function pointsProvider(): Generator
     {
         $window = self::getWindow();
         $window->initStrings();

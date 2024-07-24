@@ -49,7 +49,7 @@ class Initial_linefeed_preTest extends TestCase
         self::assertSame("\nx", self::getWindow()->document->getElementById($tag . '2')->innerHTML);
     }
 
-    public function tagProvider(): array
+    public static function tagProvider(): array
     {
         return [
             ["pre"],

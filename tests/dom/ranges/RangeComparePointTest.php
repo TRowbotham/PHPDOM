@@ -99,7 +99,7 @@ class RangeComparePointTest extends RangeTestCase
         $this->assertSame(0, $range->comparePoint($node, $offset));
     }
 
-    public function pointsProvider(): Generator
+    public static function pointsProvider(): Generator
     {
         $window = self::getWindow();
         $window->initStrings();

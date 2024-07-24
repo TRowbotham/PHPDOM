@@ -38,7 +38,7 @@ trait Document_createProcessingInstructionTrait
         $this->assertInstanceOf(Node::class, $pi);
     }
 
-    public function invalidNamesProvider(): array
+    public static function invalidNamesProvider(): array
     {
         return [
             ["A", "?>"],
@@ -52,7 +52,7 @@ trait Document_createProcessingInstructionTrait
         ];
     }
 
-    public function validNamesProvider(): array
+    public static function validNamesProvider(): array
     {
         return [
             ["xml:fail", "x"],

@@ -19,7 +19,7 @@ class DocumentCreateElementTest extends TestCase
 {
     use DocumentGetter;
 
-    public function validNamesProvider()
+    public static function validNamesProvider()
     {
         return [
             // [null],
@@ -113,7 +113,7 @@ class DocumentCreateElementTest extends TestCase
         }
     }
 
-    public function invalidNamesProvider()
+    public static function invalidNamesProvider()
     {
         return [
             [""],

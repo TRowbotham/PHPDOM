@@ -26,9 +26,9 @@ class DocumentCreateTextNodeTest extends CharacterDataTestCase
         $this->checkDocumentCreateMethod(new HTMLDocument(), $method, $iface, $nodeType, $nodeValue, $value);
     }
 
-    public function textNodeDataProvider(): Generator
+    public static function textNodeDataProvider(): Generator
     {
-        foreach ($this->valuesProvider() as $value) {
+        foreach (self::valuesProvider() as $value) {
             yield ['createTextNode', Text::class, 3, '#text', $value];
         }
     }

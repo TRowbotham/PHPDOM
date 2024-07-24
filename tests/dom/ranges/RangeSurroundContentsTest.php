@@ -263,7 +263,7 @@ class RangeSurroundContentsTest extends RangeTestCase
         $iframe->contentWindow->run();
     }
 
-    public function rangesProvider(): Generator
+    public static function rangesProvider(): Generator
     {
         $window = self::getWindow();
         $window->initStrings();

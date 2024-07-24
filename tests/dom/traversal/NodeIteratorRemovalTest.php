@@ -132,7 +132,7 @@ class NodeIteratorRemovalTest extends TestCase
         }
     }
 
-    public function nodesProvider(): Generator
+    public static function nodesProvider(): Generator
     {
         $window = self::getWindow();
         $window->setupRangeTests();

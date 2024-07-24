@@ -23,7 +23,7 @@ trait Range_mutationTrait
     use WindowTrait;
 
     // Give a textual description of the range we're testing, for the test names.
-    protected function describeRange($startContainer, $startOffset, $endContainer, $endOffset): string
+    protected static function describeRange($startContainer, $startOffset, $endContainer, $endOffset): string
     {
         if ($startContainer === $endContainer && $startOffset === $endOffset) {
             return "range collapsed at (" . $startContainer . ", " . $startOffset . ")";
@@ -34,7 +34,7 @@ trait Range_mutationTrait
         }
     }
 
-    protected function textNodes(): array
+    protected static function textNodes(): array
     {
         return [
             "paras[0]->firstChild",
@@ -47,7 +47,7 @@ trait Range_mutationTrait
         ];
     }
 
-    protected function commentNodes(): array
+    protected static function commentNodes(): array
     {
         return [
             "comment",
@@ -59,12 +59,12 @@ trait Range_mutationTrait
         ];
     }
 
-    protected function characterDataNodes(): array
+    protected static function characterDataNodes(): array
     {
-        return array_merge($this->textNodes(), $this->commentNodes());
+        return array_merge(self::textNodes(), self::commentNodes());
     }
 
-    public function doTests(array $sourceTests, Closure $descFn, callable $testFn): array
+    public static function doTests(array $sourceTests, Closure $descFn, callable $testFn): array
     {
         $tests = [];
         $window = self::getWindow();
@@ -176,7 +176,7 @@ trait Range_mutationTrait
         self::assertSame($expected[3], $range->endOffset);
     }
 
-    protected function _testReplaceDataAlgorithm($node, $offset, $count, $data, $callback, $startContainer, $startOffset, $endContainer, $endOffset)
+    protected static function _testReplaceDataAlgorithm($node, $offset, $count, $data, $callback, $startContainer, $startOffset, $endContainer, $endOffset)
     {
         // Mutation works the same any time DOM Core's "replace data" algorithm is
         // invoked.  node, offset, count, data are as in that algorithm.  The
@@ -273,7 +273,7 @@ trait Range_mutationTrait
     // point [node, offset] become?  Returns [new node, new offset].  Must be
     // called BEFORE the node is actually removed, so its parent is not null.  (If
     // the parent is null, it will do nothing.)
-    public function modifyForRemove($removedNode, $point)
+    public static function modifyForRemove($removedNode, $point)
     {
         $oldParent = $removedNode->parentNode;
         $oldIndex = self::getWindow()->indexOf($removedNode);
@@ -301,7 +301,7 @@ trait Range_mutationTrait
     // Update the given boundary point [node, offset] to account for the fact that
     // insertedNode was just inserted into its current position.  This must be
     // called AFTER insertedNode was already inserted.
-    public function modifyForInsert($insertedNode, $point)
+    public static function modifyForInsert($insertedNode, $point)
     {
         // "For each boundary point whose node is the new parent of the affected
         // node and whose offset is greater than the new index of the affected

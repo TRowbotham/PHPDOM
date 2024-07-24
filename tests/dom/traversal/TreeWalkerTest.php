@@ -331,7 +331,7 @@ class TreeWalkerTest extends TestCase
         return $filter($node);
     }
 
-    public function treeWalkerInputProvider(): array
+    public static function treeWalkerInputProvider(): array
     {
         $window = self::getWindow();
         $window->setupRangeTests();

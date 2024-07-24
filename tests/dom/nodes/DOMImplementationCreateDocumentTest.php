@@ -22,7 +22,7 @@ class DOMImplementationCreateDocumentTest extends TestCase
     use CreateElementNSTests;
     use DocumentGetter;
 
-    protected $tests;
+    protected static ?array $tests = null;
 
     /**
      * @dataProvider getTestData
@@ -141,15 +141,15 @@ class DOMImplementationCreateDocumentTest extends TestCase
         }, TypeError::class);
     }
 
-    public function getTestData(): array
+    public static function getTestData(): array
     {
-        if (!$this->tests) {
+        if (self::$tests === null) {
             $document = self::getHTMLDocument();
 
-            $this->tests = array_merge(
+            self::$tests = array_merge(
                 array_map(static function ($t) {
                     return [$t[0], $t[1], null, $t[2]];
-                }, $this->getCreateElementNSTests()),
+                }, self::getCreateElementNSTests()),
                 [
                     /* Arrays with four elements:
                      *   the namespace argument
@@ -217,12 +217,12 @@ class DOMImplementationCreateDocumentTest extends TestCase
             );
         }
 
-        return $this->tests;
+        return self::$tests;
     }
 
-    public function noErrorProvider(): array
+    public static function noErrorProvider(): array
     {
-        return array_filter($this->getTestData(), static function ($value) {
+        return array_filter(self::getTestData(), static function ($value) {
             return !isset($value[3]) || $value[3] === null;
         });
     }

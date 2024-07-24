@@ -21,7 +21,7 @@ class Generating_of_implied_end_tagsTest extends TestCase
 
     public function testGeneratingOfImpliedEndTagsForTableElements(): void
     {
-        $doc = $this->newHTMLDocument();
+        $doc = self::newHTMLDocument();
 
         //No end </td></tr></table> tags. Should be added implicitly
         $doc->head->innerHTML = '<template id="tpl">'
@@ -48,7 +48,7 @@ class Generating_of_implied_end_tagsTest extends TestCase
 
     public function testGeneratingOfImpliedEndTagsForDivElement(): void
     {
-        $doc = $this->newHTMLDocument();
+        $doc = self::newHTMLDocument();
 
         //No end </div> tag. Should be added implicitly
         $doc->head->innerHTML = '<template id="tpl"><div id="dv">Div content</template>';
@@ -65,7 +65,7 @@ class Generating_of_implied_end_tagsTest extends TestCase
 
     public function testGeneratingOfImpliedEndTagsForSomeTextAndDivElement(): void
     {
-        $doc = $this->newHTMLDocument();
+        $doc = self::newHTMLDocument();
 
         //No end </div> tag. Should be added implicitly
         $doc->head->innerHTML = '<template id="tpl">Template text<div id="dv">Div content</template>';
@@ -84,7 +84,7 @@ class Generating_of_implied_end_tagsTest extends TestCase
 
     public function testGeneratingOfImpliedEndTagsForWrongEndTag(): void
     {
-        $doc = $this->newHTMLDocument();
+        $doc = self::newHTMLDocument();
 
         //No end </div> tag. Should be added implicitly
         $doc->head->innerHTML = '<template id="tpl"><div id="dv">Div content</span></template>';

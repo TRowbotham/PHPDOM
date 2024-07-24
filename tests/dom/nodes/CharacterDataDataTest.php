@@ -106,7 +106,7 @@ class CharacterDataDataTest extends NodeTestCase
         self::assertSame(13, $node->length); // Counting UTF-8 code points
     }
 
-    public function nodesProvider(): array
+    public static function nodesProvider(): array
     {
         $document = self::getHTMLDocument();
 

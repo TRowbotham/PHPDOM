@@ -43,7 +43,7 @@ class RangeCommonAncestorContainerTest extends RangeTestCase
         $this->assertSame($container, $range->commonAncestorContainer);
     }
 
-    public function rangeProvider(): Generator
+    public static function rangeProvider(): Generator
     {
         $window = self::getWindow();
         $window->initStrings();

@@ -136,7 +136,7 @@ class CharacterDataInsertDataTest extends NodeTestCase
         $this->assertSame("🌠 te--st 🌠 TEST", $node->data);
     }
 
-    public function nodesProvider(): array
+    public static function nodesProvider(): array
     {
         $document = self::getHTMLDocument();
 

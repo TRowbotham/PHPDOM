@@ -112,7 +112,7 @@ class DOMImplementationCreateHTMLDocumentTest extends TestCase
         $this->assertNull($doc->location);
     }
 
-    public function createDocumentArgsProvider(): Generator
+    public static function createDocumentArgsProvider(): Generator
     {
         self::loadDocument();
 

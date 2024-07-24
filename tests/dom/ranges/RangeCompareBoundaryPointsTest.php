@@ -165,7 +165,7 @@ class RangeCompareBoundaryPointsTest extends RangeTestCase
         $this->assertSame($expected, $range1->compareBoundaryPoints($convertedHow, $range2));
     }
 
-    public function rangeProvider(): Generator
+    public static function rangeProvider(): Generator
     {
         $window = self::getWindow();
         $window->initStrings();

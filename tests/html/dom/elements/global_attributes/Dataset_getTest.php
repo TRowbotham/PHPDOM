@@ -38,7 +38,7 @@ class Dataset_getTest extends TestCase
         self::assertFalse($d->dataset->getIterator()->valid());
     }
 
-    public function attributesProvider(): array
+    public static function attributesProvider(): array
     {
         return [
             ['data-foo', 'foo'],
@@ -53,7 +53,7 @@ class Dataset_getTest extends TestCase
         ];
     }
 
-    public function nonMatchingAttributesProvider(): array
+    public static function nonMatchingAttributesProvider(): array
     {
         return [['dataFoo']];
     }

@@ -150,7 +150,7 @@ class ChildNodeReplaceWithTest extends TestCase
         $this->assertSame('<x></x><y></y>', $parent->innerHTML);
     }
 
-    public function nodesProvider(): array
+    public static function nodesProvider(): array
     {
         if (!self::$document) {
             self::$document = new HTMLDocument();

@@ -30,7 +30,7 @@ class NodeAppendChildTest extends TestCase
         }, TypeError::class);
     }
 
-    public function getLeafNodes()
+    public static function getLeafNodes()
     {
         $document = self::getHTMLDocument();
 

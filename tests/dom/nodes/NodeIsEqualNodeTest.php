@@ -202,7 +202,7 @@ class NodeIsEqualNodeTest extends TestCase
         $this->assertTrue($document3->isEqualNode($document4));
     }
 
-    public function getTestData()
+    public static function getTestData()
     {
         $document = self::getHTMLDocument();
 

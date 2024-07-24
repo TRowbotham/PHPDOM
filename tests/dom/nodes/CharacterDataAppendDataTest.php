@@ -78,7 +78,7 @@ class CharacterDataAppendDataTest extends TestCase
         $this->assertSame('test', $node->data);
     }
 
-    public function nodeProvider(): array
+    public static function nodeProvider(): array
     {
         $document = new HTMLDocument();
 

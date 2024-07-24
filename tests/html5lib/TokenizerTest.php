@@ -152,7 +152,7 @@ class TokenizerTest extends TestCase
         self::assertInstanceOf(EOFToken::class, $gen->current());
     }
 
-    public function tokenizerTestProvider(): Generator
+    public static function tokenizerTestProvider(): Generator
     {
         foreach (new DirectoryIterator(self::TEST_FILES_DIR) as $file) {
             if ($file->isDir() || $file->isDot() || $file->getFilename() === 'README.md') {

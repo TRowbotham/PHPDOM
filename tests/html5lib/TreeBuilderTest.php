@@ -66,7 +66,7 @@ class TreeBuilderTest extends TestCase
         self::assertTrue($expected->isEqualNode($fragment));
     }
 
-    public function input(): array
+    public static function input(): array
     {
         $tests = [];
         $i = 0;
@@ -149,7 +149,7 @@ class TreeBuilderTest extends TestCase
                         break;
 
                     case "#document\n":
-                        $this->parseDocumentSection($handle, $tests[$i]['expected']);
+                        self::parseDocumentSection($handle, $tests[$i]['expected']);
 
                         // We don't support scripting
                         if ($tests[$i]['enableScripting']) {
@@ -174,7 +174,7 @@ class TreeBuilderTest extends TestCase
      * @param resource                                              $handle
      * @param \Rowbot\DOM\HTMLDocument|\Rowbot\DOM\DocumentFragment $root
      */
-    public function parseDocumentSection($handle, $root): void
+    public static function parseDocumentSection($handle, $root): void
     {
         $lineQueue = new SplQueue();
 

@@ -83,13 +83,13 @@ class ElementClassListTest extends TestCase
         );
     }
 
-    public function buildTestData(array $data)
+    public static function buildTestData(array $data)
     {
         $testData = [];
         $length = count($data);
 
         for ($i = 0; $i < $length; ++$i) {
-            foreach ($this->nodeProvider() as $node) {
+            foreach (self::nodeProvider() as $node) {
                 $arr = [$node];
                 array_push($arr, ...$data[$i]);
                 $testData[] = $arr;
@@ -102,7 +102,7 @@ class ElementClassListTest extends TestCase
     /**
      * @return array<\Rowbot\DOM\Element\Element>
      */
-    public function nodeProvider(): array
+    public static function nodeProvider(): array
     {
         $document = self::getHTMLDocument();
 
@@ -122,9 +122,9 @@ class ElementClassListTest extends TestCase
      *      @var int                         $length
      * }
      */
-    public function lengthProvider(): array
+    public static function lengthProvider(): array
     {
-        return $this->buildTestData([
+        return self::buildTestData([
             [null, 0],
             ["", 0],
             ["   \t  \f", 0],
@@ -157,9 +157,9 @@ class ElementClassListTest extends TestCase
      *      @var string                      $expected
      * }
      */
-    public function stringifierProvider()
+    public static function stringifierProvider()
     {
-        return $this->buildTestData([
+        return self::buildTestData([
             [null, ""],
             ["foo", "foo"],
             ["   a  a b", "   a  a b"],
@@ -184,9 +184,9 @@ class ElementClassListTest extends TestCase
         $this->assertSame($expected, $element->classList->toString());
     }
 
-    public function itemsProvider()
+    public static function itemsProvider()
     {
-        return $this->buildTestData([
+        return self::buildTestData([
             [null, []],
             ["a", ["a"]],
             ["aa AA aa", ["aa", "AA"]],
@@ -228,9 +228,9 @@ class ElementClassListTest extends TestCase
         $this->assertNull($element->classList[0xfffffffe]);
     }
 
-    public function containsProvider()
+    public static function containsProvider()
     {
-        return $this->buildTestData([
+        return self::buildTestData([
             [null, ["a", "", "  "], false],
             ["", ["a"], false],
 
@@ -275,9 +275,9 @@ class ElementClassListTest extends TestCase
         }
     }
 
-    public function addProvider()
+    public static function addProvider()
     {
-        return $this->buildTestData([
+        return self::buildTestData([
             [null, "", null, SyntaxError::class],
             [null, ["a", ""], null, SyntaxError::class],
             [null, " ", null, InvalidCharacterError::class],
@@ -374,9 +374,9 @@ class ElementClassListTest extends TestCase
     /**
      * @return array
      */
-    public function removeProvider(): array
+    public static function removeProvider(): array
     {
-        return $this->buildTestData([
+        return self::buildTestData([
             [null, "", null, SyntaxError::class],
             [null, " ", null, InvalidCharacterError::class],
             ["\ta", "\ta", "\ta", InvalidCharacterError::class],
@@ -482,9 +482,9 @@ class ElementClassListTest extends TestCase
         }
     }
 
-    public function toggleProvider()
+    public static function toggleProvider()
     {
-        return $this->buildTestData([
+        return self::buildTestData([
             [null, "", null, null, SyntaxError::class],
             [null, "aa ", null, null, InvalidCharacterError::class],
 
@@ -542,9 +542,9 @@ class ElementClassListTest extends TestCase
         );
     }
 
-    public function replaceProvider()
+    public static function replaceProvider()
     {
-        return $this->buildTestData([
+        return self::buildTestData([
             [null, "", "a", null, null, SyntaxError::class],
             [null, "", " ", null, null, SyntaxError::class],
             [null, " ", "a", null, null, InvalidCharacterError::class],

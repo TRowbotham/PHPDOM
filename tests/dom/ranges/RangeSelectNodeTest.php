@@ -76,21 +76,21 @@ class RangeSelectNodeTest extends RangeTestCase
         }
     }
 
-    public function rangeProvider(): Generator
+    public static function rangeProvider(): Generator
     {
         $window = self::getWindow();
         $window->setupRangeTests();
 
-        yield from $this->generateTestTree($window->document, 'current doc');
-        yield from $this->generateTestTree($window->foreignDoc, 'foreign doc');
-        yield from $this->generateTestTree($window->detachedDiv, 'detached div in current doc');
+        yield from self::generateTestTree($window->document, 'current doc');
+        yield from self::generateTestTree($window->foreignDoc, 'foreign doc');
+        yield from self::generateTestTree($window->detachedDiv, 'detached div in current doc');
 
         $otherTests = ['xmlDoc', 'xmlElement', 'detachedTextNode',
         'foreignTextNode', 'xmlTextNode', 'processingInstruction', 'comment',
         'foreignComment', 'xmlComment', 'docfrag', 'foreignDocfrag', 'xmlDocfrag'];
 
         foreach ($otherTests as $test) {
-            yield from $this->generateTestTree($window->eval($test), $test);
+            yield from self::generateTestTree($window->eval($test), $test);
         }
     }
 
@@ -100,7 +100,7 @@ class RangeSelectNodeTest extends RangeTestCase
         self::getWindow()->setupRangeTests(false);
     }
 
-    public function generateTestTree(Node $root, string $marker): Generator
+    public static function generateTestTree(Node $root, string $marker): Generator
     {
         if ($root->nodeType === Node::ELEMENT_NODE && $root->id === 'log') {
             // This is being modified during the tests, so let's not test it.
@@ -113,7 +113,7 @@ class RangeSelectNodeTest extends RangeTestCase
         yield [$marker, 'document', true, $root];
 
         foreach ($root->childNodes as $node) {
-            yield from $this->generateTestTree($node, $marker);
+            yield from self::generateTestTree($node, $marker);
         }
     }
 

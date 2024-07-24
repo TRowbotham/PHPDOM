@@ -60,7 +60,7 @@ class DOMImplementationCreateDocumentTypeTest extends TestCase
         $this->assertNull($doctype->nodeValue);
     }
 
-    public function getTestData(): array
+    public static function getTestData(): array
     {
         return [
             ["", "", "", InvalidCharacterError::class],

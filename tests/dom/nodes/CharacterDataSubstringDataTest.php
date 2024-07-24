@@ -205,7 +205,7 @@ class CharacterDataSubstringDataTest extends NodeTestCase
         $this->assertSame("st 🌠 TE", $node->substringData(4, 7)); // Counting UTF-8 code points
     }
 
-    public function nodesProvider(): array
+    public static function nodesProvider(): array
     {
         $document = self::getHTMLDocument();
 

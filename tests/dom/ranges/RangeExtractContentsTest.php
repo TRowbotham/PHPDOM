@@ -160,7 +160,7 @@ class RangeExtractContentsTest extends RangeTestCase
         $this->assertTrue($actualFrag->isEqualNode($expectedFrag));
     }
 
-    public function rangesProvider(): Generator
+    public static function rangesProvider(): Generator
     {
         $window = self::getWindow();
         $window->initStrings();

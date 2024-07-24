@@ -21,7 +21,7 @@ class Template_end_tag_without_start_oneTest extends TestCase
 
     public function testTemplateEndTagInHTMLBodyWithoutStartOneSouldBeIgnored(): void
     {
-        $doc = $this->newHTMLDocument();
+        $doc = self::newHTMLDocument();
         $doc->body->innerHTML = '</template>';
 
         self::assertSame(0, $doc->body->childNodes->length);
@@ -29,7 +29,7 @@ class Template_end_tag_without_start_oneTest extends TestCase
 
     public function testValidTemplateElementAndTemplateEndTagAfterIt(): void
     {
-        $doc = $this->newHTMLDocument();
+        $doc = self::newHTMLDocument();
         $doc->body->innerHTML = '<template id="tmpl"></template></template>';
 
         self::assertSame(1, $doc->body->childNodes->length);
@@ -39,7 +39,7 @@ class Template_end_tag_without_start_oneTest extends TestCase
 
     public function testValidTemplateElementAndTemplateEndTagBeforeIt(): void
     {
-        $doc = $this->newHTMLDocument();
+        $doc = self::newHTMLDocument();
         $doc->body->innerHTML = '</template><template id="tmpl"></template>';
 
         self::assertSame(1, $doc->body->childNodes->length);
@@ -49,7 +49,7 @@ class Template_end_tag_without_start_oneTest extends TestCase
 
     public function testValidTemplateElementAndTemplateEndTagBeforeThem(): void
     {
-        $doc = $this->newHTMLDocument();
+        $doc = self::newHTMLDocument();
         $doc->body->innerHTML = '</template><template id="tmpl"></template><title></title>';
 
         self::assertSame(2, $doc->body->childNodes->length);
@@ -61,7 +61,7 @@ class Template_end_tag_without_start_oneTest extends TestCase
 
     public function testValidTemplateElementAndTemplateEndTagAfterThem(): void
     {
-        $doc = $this->newHTMLDocument();
+        $doc = self::newHTMLDocument();
         $doc->body->innerHTML = '<template id="tmpl"></template><title></title></template>';
 
         self::assertSame(2, $doc->body->childNodes->length);

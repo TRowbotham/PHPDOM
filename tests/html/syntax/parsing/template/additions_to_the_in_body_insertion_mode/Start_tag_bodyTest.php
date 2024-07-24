@@ -17,7 +17,7 @@ class Start_tag_bodyTest extends TestCase
 
     public function testBodyTagOnly(): void
     {
-        $doc = $this->newHTMLDocument();
+        $doc = self::newHTMLDocument();
         $doc->body->innerHTML = '<template id="tmpl"><body></template>';
         // $template = $doc->querySelector('#tmpl');
         $template = $doc->getElementById('tmpl');
@@ -27,7 +27,7 @@ class Start_tag_bodyTest extends TestCase
 
     public function testBodyTagContainingSomeText(): void
     {
-        $doc = $this->newHTMLDocument();
+        $doc = self::newHTMLDocument();
         $doc->body->innerHTML = '<template id="tmpl"><body>Body text content</body></template>';
         // $template = $doc->querySelector('#tmpl');
         $template = $doc->getElementById('tmpl');
@@ -40,7 +40,7 @@ class Start_tag_bodyTest extends TestCase
 
     public function testBodyTagContainingSomeOtherElements(): void
     {
-        $doc = $this->newHTMLDocument();
+        $doc = self::newHTMLDocument();
         $doc->body->innerHTML = '<template id="tmpl"><body>'
             . '<div id="div1">DIV 1</div>'
             . '<div id="div2">DIV 2</div>'
@@ -59,7 +59,7 @@ class Start_tag_bodyTest extends TestCase
 
     public function testNestedTemplateTagContainingBodyTagWithSomeOtherElements(): void
     {
-        $doc = $this->newHTMLDocument();
+        $doc = self::newHTMLDocument();
         $doc->body->innerHTML = '<template id="tmpl1"><template id="tmpl2"><body>'
             . '<div id="div1">DIV 1</div>'
             . '<div id="div2">DIV 2</div>'

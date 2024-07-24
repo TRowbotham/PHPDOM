@@ -62,7 +62,7 @@ trait InsertAdjacentHTMLTrait
         }, NoModificationAllowedError::class);
     }
 
-    public function elementProvider(): array
+    public static function elementProvider(): array
     {
         $document = self::getWindow()->document;
         $child = $document->createElement('div');

@@ -37,7 +37,7 @@ class Dataset_setTest extends TestCase
         $d->dataset[$prop] = 'value';
     }
 
-    public function attributesProvider(): array
+    public static function attributesProvider(): array
     {
         return [
             ['foo', 'data-foo'],
@@ -51,7 +51,7 @@ class Dataset_setTest extends TestCase
         ];
     }
 
-    public function invalidAttributesProvider(): array
+    public static function invalidAttributesProvider(): array
     {
         return [
             ['-foo', SyntaxError::class],

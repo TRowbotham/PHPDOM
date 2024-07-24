@@ -81,7 +81,7 @@ class SerializingTest extends TestCase
         self::assertSame($expected, $func($elem)->outerHTML);
     }
 
-    public function innerHTMLExpectedTestProvider(): Generator
+    public static function innerHTMLExpectedTestProvider(): Generator
     {
         foreach (self::EXPECTED as $i => $item) {
             yield [
@@ -94,7 +94,7 @@ class SerializingTest extends TestCase
         }
     }
 
-    public function outerHTMLExpectedTestProvider(): Generator
+    public static function outerHTMLExpectedTestProvider(): Generator
     {
         foreach (self::EXPECTED as $i => $item) {
             yield [
@@ -107,25 +107,25 @@ class SerializingTest extends TestCase
         }
     }
 
-    public function innerHTMLDOMTestProvider(): Generator
+    public static function innerHTMLDOMTestProvider(): Generator
     {
-        foreach ($this->domTests() as $item) {
+        foreach (self::domTests() as $item) {
             yield [$item[1], null, $item[2]];
         }
     }
 
-    public function outerHTMLDOMTestProvider(): Generator
+    public static function outerHTMLDOMTestProvider(): Generator
     {
-        foreach ($this->domTests() as $item) {
+        foreach (self::domTests() as $item) {
             yield [$item[1], null, $item[3]];
         }
     }
 
-    public function innerHTMLTextCrossMapTestProvider(): array
+    public static function innerHTMLTextCrossMapTestProvider(): array
     {
         $document = self::getWindow()->document;
 
-        return $this->cross_map($this->text_tests(), self::TEXT_ELEMENTS, static function ($test_data, $elem_name) use ($document) {
+        return self::cross_map(self::text_tests(), self::TEXT_ELEMENTS, static function ($test_data, $elem_name) use ($document) {
             return [
                 $test_data[1],
                 $document->createElement($elem_name),
@@ -134,11 +134,11 @@ class SerializingTest extends TestCase
         });
     }
 
-    public function outerHTMLTextCrossMapTestProvider(): array
+    public static function outerHTMLTextCrossMapTestProvider(): array
     {
         $document = self::getWindow()->document;
 
-        return $this->cross_map($this->text_tests(), self::TEXT_ELEMENTS, static function ($test_data, $elem_name) use ($document) {
+        return self::cross_map(self::text_tests(), self::TEXT_ELEMENTS, static function ($test_data, $elem_name) use ($document) {
             return [
                 $test_data[1],
                 $document->createElement($elem_name),
@@ -147,29 +147,29 @@ class SerializingTest extends TestCase
         });
     }
 
-    public function innerHTMLVoidCrossMapTestProvider(): array
+    public static function innerHTMLVoidCrossMapTestProvider(): array
     {
-        return $this->cross_map($this->void_tests(), self::VOID_ELEMENTS, function ($test_data, $elem_name) {
+        return self::cross_map(self::void_tests(), self::VOID_ELEMENTS, function ($test_data, $elem_name) {
             return [
                 $test_data[1],
-                $this->make_void($elem_name),
+                self::make_void($elem_name),
                 str_replace('%void', $elem_name, $test_data[2]),
             ];
         });
     }
 
-    public function outerHTMLVoidCrossMapTestProvider(): array
+    public static function outerHTMLVoidCrossMapTestProvider(): array
     {
-        return $this->cross_map($this->void_tests(), self::VOID_ELEMENTS, function ($test_data, $elem_name) {
+        return self::cross_map(self::void_tests(), self::VOID_ELEMENTS, function ($test_data, $elem_name) {
             return [
                 $test_data[1],
-                $this->make_void($elem_name),
+                self::make_void($elem_name),
                 str_replace('%void', $elem_name, $test_data[3]),
             ];
         });
     }
 
-    public function cross_map($a1, $a2, $f)
+    public static function cross_map($a1, $a2, $f)
     {
         $rv = [];
 
@@ -182,7 +182,7 @@ class SerializingTest extends TestCase
         return $rv;
     }
 
-    public function make_void(string $name)
+    public static function make_void(string $name)
     {
         $document = self::getWindow()->document;
         $rv = $document->createElement($name);
@@ -194,7 +194,7 @@ class SerializingTest extends TestCase
         return $rv;
     }
 
-    public function domTests(): array
+    public static function domTests(): array
     {
         $document = self::getWindow()->document;
 
@@ -273,7 +273,7 @@ class SerializingTest extends TestCase
         ];
     }
 
-    public function text_tests(): array
+    public static function text_tests(): array
     {
         $document = self::getWindow()->document;
 
@@ -320,7 +320,7 @@ class SerializingTest extends TestCase
         ];
     }
 
-    public function void_tests(): array
+    public static function void_tests(): array
     {
         $document = self::getWindow()->document;
 

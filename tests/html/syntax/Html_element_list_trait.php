@@ -9,7 +9,7 @@ namespace Rowbot\DOM\Tests\html\syntax;
  */
 trait Html_element_list_trait
 {
-    public function elementsWithEndTagProvider(): array
+    public static function elementsWithEndTagProvider(): array
     {
         return [
             ["a"],
@@ -135,7 +135,7 @@ trait Html_element_list_trait
         ];
     }
 
-    public function elementsWithoutEndTagProvider(): array
+    public static function elementsWithoutEndTagProvider(): array
     {
         return [
             ["area"],

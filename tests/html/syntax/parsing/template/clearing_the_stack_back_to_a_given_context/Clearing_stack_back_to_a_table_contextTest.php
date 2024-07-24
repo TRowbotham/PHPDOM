@@ -72,9 +72,9 @@ class Clearing_stack_back_to_a_table_contextTest extends TestCase
         }
     }
 
-    public function contextProvider(): array
+    public static function contextProvider(): array
     {
-        $doc = $this->newHTMLDocument();
+        $doc = self::newHTMLDocument();
 
         return [
             ['Clearing stack back to a table context. Test <caption>',

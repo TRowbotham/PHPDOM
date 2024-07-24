@@ -28,9 +28,9 @@ trait AElementOriginTrait
         self::assertSame($expected['origin'], $url->origin);
     }
 
-    public function urlOriginTestProvider(): Generator
+    public static function urlOriginTestProvider(): Generator
     {
-        foreach ($this->decodeUrlTestData() as $data) {
+        foreach (self::decodeUrlTestData() as $data) {
             // Skip comments and tests without "origin" expectation
             if (is_string($data) || !array_key_exists('origin', $data)) {
                 continue;

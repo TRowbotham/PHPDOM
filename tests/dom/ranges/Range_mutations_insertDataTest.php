@@ -11,11 +11,11 @@ class Range_mutations_insertDataTest extends RangeTestCase
 {
     use Range_mutationTrait;
 
-    public function rangeProvider(): array
+    public static function rangeProvider(): array
     {
         $insertDataTests = [];
 
-        foreach ($this->characterDataNodes() as $node) {
+        foreach (self::characterDataNodes() as $node) {
             $insertDataTests[] = [$node, 376, '"foo"', $node, 0, $node, 1];
             $insertDataTests[] = [$node, 0, '"foo"', $node, 0, $node, 0];
             $insertDataTests[] = [$node, 1, '"foo"', $node, 1, $node, 1];
@@ -43,14 +43,14 @@ class Range_mutations_insertDataTest extends RangeTestCase
         $insertDataTests[] = ["paras[0]->firstChild", 2, '"foo"', "paras[0]", 0, "paras[0]->firstChild", 3];
         $insertDataTests[] = ["paras[0]->firstChild", 3, '"foo"', "paras[0]", 0, "paras[0]->firstChild", 3];
 
-        return $this->doTests($insertDataTests, static function ($params) {
+        return self::doTests($insertDataTests, static function ($params) {
             return $params[0] . ".insertData(" . $params[1] . ", " . $params[2] . ")";
-        }, [$this, '_testInsertData']);
+        }, self::_testInsertData(...));
     }
 
-    public function _testInsertData($node, $offset, $data, $startContainer, $startOffset, $endContainer, $endOffset)
+    public static function _testInsertData($node, $offset, $data, $startContainer, $startOffset, $endContainer, $endOffset)
     {
-        return $this->_testReplaceDataAlgorithm($node, $offset, 0, $data, static function () use ($node, $data, $offset) {
+        return self::_testReplaceDataAlgorithm($node, $offset, 0, $data, static function () use ($node, $data, $offset) {
             $node->insertData($offset, $data);
         }, $startContainer, $startOffset, $endContainer, $endOffset);
     }

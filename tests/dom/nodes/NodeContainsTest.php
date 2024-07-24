@@ -36,7 +36,7 @@ class NodeContainsTest extends NodeTestCase
         );
     }
 
-    public function rangeTestNodesProvider(): Generator
+    public static function rangeTestNodesProvider(): Generator
     {
         $window = self::getWindow();
         $window->setupRangeTests();

@@ -225,7 +225,7 @@ class RangeSetTest extends RangeTestCase
         return [$range, $evaled[0], $evaled[1]];
     }
 
-    public function buildTests1(): Generator
+    public static function buildTests1(): Generator
     {
         $window = self::getWindow();
         $window->initStrings();
@@ -237,7 +237,7 @@ class RangeSetTest extends RangeTestCase
         }
     }
 
-    public function buildTests2(): Generator
+    public static function buildTests2(): Generator
     {
         $window = self::getWindow();
         $window->initStrings();

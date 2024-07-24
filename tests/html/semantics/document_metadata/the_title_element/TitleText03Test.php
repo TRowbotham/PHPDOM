@@ -29,7 +29,7 @@ class TitleText03Test extends TestCase
         self::assertSame($str, $title->firstChild->nodeValue);
     }
 
-    public function titleProvider(): array
+    public static function titleProvider(): array
     {
         return [
             ["one space", "two  spaces"],

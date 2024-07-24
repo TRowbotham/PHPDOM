@@ -202,7 +202,7 @@ class ChildNodeBeforeTest extends TestCase
         $this->assertSame('1<y></y><x></x>2' . $innerHTML, $parent->innerHTML);
     }
 
-    public function nodesProvider(): array
+    public static function nodesProvider(): array
     {
         if (!self::$document) {
             self::$document = new HTMLDocument();

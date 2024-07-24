@@ -16,7 +16,7 @@ class End_tag_tableTest extends TestCase
 
     public function testIgnoreTableEndTagToken(): void
     {
-        $doc = $this->newHTMLDocument();
+        $doc = self::newHTMLDocument();
         $doc->body->innerHTML = '<table id="table">'
             . '<template id="template">'
             . '</table>'

@@ -22,7 +22,7 @@ class URLSettersTest extends TestCase
 {
     use DocumentGetter;
 
-    private $testData = [];
+    private static array $testData = [];
 
     /**
      * @dataProvider settersDataProvider
@@ -52,10 +52,10 @@ class URLSettersTest extends TestCase
         }
     }
 
-    public function settersDataProvider(): iterable
+    public static function settersDataProvider(): iterable
     {
-        if ($this->testData !== []) {
-            return $this->testData;
+        if (self::$testData !== []) {
+            return self::$testData;
         }
 
         $data = file_get_contents(__DIR__ . DS . 'resources' . DS . 'setters_tests.json');
@@ -73,10 +73,10 @@ class URLSettersTest extends TestCase
             foreach ($inputs as $data) {
                 unset($data['comment']);
                 $data['setter'] = $key;
-                $this->testData[] = [$data];
+                self::$testData[] = [$data];
             }
         }
 
-        return $this->testData;
+        return self::$testData;
     }
 }

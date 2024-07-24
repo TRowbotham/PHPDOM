@@ -239,7 +239,7 @@ class CharacterDataReplaceDataTest extends NodeTestCase
         $this->assertSame("🌠 te--ST", $node->data);
     }
 
-    public function nodesProvider(): array
+    public static function nodesProvider(): array
     {
         $document = self::getHTMLDocument();
 

@@ -86,7 +86,7 @@ class ParentNodeReplaceChildrenTest extends NodeTestCase
         $this->assertSame('text', $parent->childNodes[1]->textContent);
     }
 
-    public function nodesProvider(): array
+    public static function nodesProvider(): array
     {
         if (self::$testNodes !== []) {
             return self::$testNodes;

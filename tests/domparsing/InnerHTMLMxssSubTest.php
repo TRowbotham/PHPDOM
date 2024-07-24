@@ -77,7 +77,7 @@ class InnerHTMLMxssSubTest extends TestCase
         // );
     }
 
-    public function whitespaceProvider(): array
+    public static function whitespaceProvider(): array
     {
         return self::WHITESPACES;
     }

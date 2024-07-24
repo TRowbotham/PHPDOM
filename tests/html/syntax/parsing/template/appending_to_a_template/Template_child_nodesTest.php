@@ -21,7 +21,7 @@ class Template_child_nodesTest extends TestCase
 
     public function testTemplateChildNodesMustBeAppendedToTemplateContentNode(): void
     {
-        $doc = $this->newHTMLDocument();
+        $doc = self::newHTMLDocument();
         $doc->body->innerHTML = '<template id="tmpl1">'
             . '<div id="div1">This is div inside template</div>'
             . '<div id="div2">This is another div inside template</div>'
@@ -40,7 +40,7 @@ class Template_child_nodesTest extends TestCase
 
     public function testNestedTemplate(): void
     {
-        $doc = $this->newHTMLDocument();
+        $doc = self::newHTMLDocument();
         $doc->body->innerHTML = '<template id="tmpl1">'
             . '<div id="div1">This is div inside template</div>'
             . '<div id="div2">This is another div inside template</div>'

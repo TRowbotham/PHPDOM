@@ -40,7 +40,7 @@ abstract class CharacterDataTestCase extends TestCase
         $this->assertNull($c->lastChild);
     }
 
-    public function valuesProvider(): array
+    public static function valuesProvider(): array
     {
         return ["\u{000b}", "a -- b", "a-", "-b", /* null, undefined */];
     }

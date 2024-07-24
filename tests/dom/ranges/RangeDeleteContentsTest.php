@@ -110,7 +110,7 @@ class RangeDeleteContentsTest extends RangeTestCase
         $this->assertSame($expected, $actual);
     }
 
-    public function rangesProvider()
+    public static function rangesProvider()
     {
         $window = self::getWindow();
         $window->initStrings();

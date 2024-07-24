@@ -15,12 +15,12 @@ class Range_mutations_dataChangeTest extends RangeTestCase
 {
     use Range_mutationTrait;
 
-    public function rangeProvider(): array
+    public static function rangeProvider(): array
     {
         $dataChangeTests = [];
         $dataChangeTestAttrs = ["data", "textContent", "nodeValue"];
 
-        foreach ($this->characterDataNodes() as $node) {
+        foreach (self::characterDataNodes() as $node) {
             $dataChangeTestRanges = [
                 [$node, 0, $node, 0],
                 [$node, 0, $node, 1],
@@ -70,14 +70,14 @@ class Range_mutations_dataChangeTest extends RangeTestCase
             }
         }
 
-        return $this->doTests($dataChangeTests, static function ($params) {
+        return self::doTests($dataChangeTests, static function ($params) {
             return $params[0] . ".appendData(" . $params[1] . ")";
-        }, [$this, '_testDataChange']);
+        }, self::_testDataChange(...));
     }
 
-    public function _testDataChange($node, $attr, $op, $rval, $startContainer, $startOffset, $endContainer, $endOffset)
+    public static function _testDataChange($node, $attr, $op, $rval, $startContainer, $startOffset, $endContainer, $endOffset)
     {
-        return $this->_testReplaceDataAlgorithm($node, 0, $node->length, $op === '=' ? $rval : $node->{$attr} . $rval, static function () use ($node, $op, $attr, $rval) {
+        return self::_testReplaceDataAlgorithm($node, 0, $node->length, $op === '=' ? $rval : $node->{$attr} . $rval, static function () use ($node, $op, $attr, $rval) {
             if ($op === '=') {
                 $node->{$attr} = $rval;
             } elseif ($op === '+=') {

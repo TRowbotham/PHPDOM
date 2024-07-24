@@ -111,7 +111,7 @@ trait PreinsertionValidationNotFoundTrait
         $method->invoke($parent, $node, $child);
     }
 
-    public function nonParentNodesProvider(): array
+    public static function nonParentNodesProvider(): array
     {
         $document = self::getWindow()->document;
 
@@ -124,7 +124,7 @@ trait PreinsertionValidationNotFoundTrait
         ];
     }
 
-    public function nonInsertableNodesProvider(): array
+    public static function nonInsertableNodesProvider(): array
     {
         $document = self::getWindow()->document;
 
@@ -133,7 +133,7 @@ trait PreinsertionValidationNotFoundTrait
         ];
     }
 
-    public function nonDocumentParentNodesProvider(): array
+    public static function nonDocumentParentNodesProvider(): array
     {
         $document = self::getWindow()->document;
 

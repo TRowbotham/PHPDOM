@@ -32,7 +32,7 @@ class DocumentTitle03Test extends AccessorTestCase
         self::assertSame($expected, $document->title);
     }
 
-    public function titleProvider(): array
+    public static function titleProvider(): array
     {
         return [
             ["one space", "one space"],

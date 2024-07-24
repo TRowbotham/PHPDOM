@@ -65,7 +65,7 @@ class NodeReplaceChildTest extends NodeTestCase
         }, NotFoundError::class);
     }
 
-    public function getNodes()
+    public static function getNodes()
     {
         $document = self::getHTMLDocument();
 

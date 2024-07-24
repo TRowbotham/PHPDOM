@@ -858,14 +858,14 @@ class AttributesTest extends NodeTestCase
     // properties on the NamedNodeMap object, so there is no point in adding tests for that
     // feature.
 
-    public function childElementForTest2Provider(): Generator
+    public static function childElementForTest2Provider(): Generator
     {
         foreach (self::getWindow()->document->getElementById('test2')->children as $child) {
             yield [$child];
         }
     }
 
-    public function xmlnsNameProvider(): array
+    public static function xmlnsNameProvider(): array
     {
         return [
             ["xmlns"],

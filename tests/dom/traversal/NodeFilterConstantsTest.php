@@ -15,7 +15,7 @@ class NodeFilterConstantsTest extends TestCase
 {
     use Constants;
 
-    public function constantsProvider(): array
+    public static function constantsProvider(): array
     {
         return [
             [

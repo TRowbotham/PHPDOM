@@ -49,7 +49,7 @@ class DocumentTitle05Test extends AccessorTestCase
         self::assertSame($s, $document->title);
     }
 
-    public function whitespaceProvider(): Generator
+    public static function whitespaceProvider(): Generator
     {
         foreach (self::WHITESPACE as $i => $char) {
             yield [$char, $i];

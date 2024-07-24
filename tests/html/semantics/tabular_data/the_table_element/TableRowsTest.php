@@ -220,7 +220,7 @@ class TableRowsTest extends TestCase
         }
     }
 
-    public function tableGroupsProvider(): Generator
+    public static function tableGroupsProvider(): Generator
     {
         $document = self::getHTMLDocument();
 

@@ -126,14 +126,14 @@ class InsertAdjacentHTMLTest extends TestCase
         self::assertSame(1, $document->getElementsByTagName('body')->length);
     }
 
-    public function nodeProvider1(): array
+    public static function nodeProvider1(): array
     {
         $content = self::getWindow()->document->getElementById('content');
 
         return [[$content], [$content]];
     }
 
-    public function nodeProvider2(): array
+    public static function nodeProvider2(): array
     {
         $content2 = self::getWindow()->document->getElementById('content');
 

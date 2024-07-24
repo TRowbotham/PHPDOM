@@ -21,7 +21,7 @@ class Ignore_head_tokenTest extends TestCase
 
     public function testEmptyHeadElementAssignedToTemplateInnerHTML(): void
     {
-        $doc = $this->newHTMLDocument();
+        $doc = self::newHTMLDocument();
         $template = $doc->createElement('template');
         $template->innerHTML = '<head></head>';
         $doc->body->appendChild($template);
@@ -31,7 +31,7 @@ class Ignore_head_tokenTest extends TestCase
 
     public function testNotEmptyHeadElementAssignedToTemplateInnerHTML(): void
     {
-        $doc = $this->newHTMLDocument();
+        $doc = self::newHTMLDocument();
         $template = $doc->createElement('template');
         $template->innerHTML = '<head><title>test</title></head>';
         $doc->body->appendChild($template);
@@ -42,7 +42,7 @@ class Ignore_head_tokenTest extends TestCase
 
     public function testHeadElementAndSomeValidElementBeforeItAssignedToTemplateInnerHTML(): void
     {
-        $doc = $this->newHTMLDocument();
+        $doc = self::newHTMLDocument();
         $template = $doc->createElement('template');
         $template->innerHTML = '<div id="div1">Some text</div><head><title>test</title></head>';
         $doc->body->appendChild($template);
@@ -55,7 +55,7 @@ class Ignore_head_tokenTest extends TestCase
 
     public function testHeadElementAndSomeValidElementAfterItAssignedToTemplateInnerHTML(): void
     {
-        $doc = $this->newHTMLDocument();
+        $doc = self::newHTMLDocument();
         $template = $doc->createElement('template');
         $template->innerHTML = '<head><title>test</title></head><div id="div1">Some text</div>';
         $doc->body->appendChild($template);
@@ -68,7 +68,7 @@ class Ignore_head_tokenTest extends TestCase
 
     public function testHeadTagInsideTemplateAssignedToAnotherTemplatesInnerHTML(): void
     {
-        $doc = $this->newHTMLDocument();
+        $doc = self::newHTMLDocument();
         $template = $doc->createElement('template');
         $template->innerHTML = '<template id="t2"><head><title>test</title></head></template>';
         $doc->body->appendChild($template);

@@ -55,25 +55,25 @@ class Range_mutations_replaceChildTest extends RangeTestCase
         ["paras[0]", "document->doctype", "paras[0]->firstChild", "paras[0]", 0, "paras[0]", 1],
     ];
 
-    public function rangeProvider(): array
+    public static function rangeProvider(): array
     {
-        return $this->doTests(self::REPLACE_CHILD_TESTS, static function ($params) {
+        return self::doTests(self::REPLACE_CHILD_TESTS, static function ($params) {
             return $params[0] . ".replaceChild(" . $params[1] . ", " . $params[2] . ")";
-        }, [$this, '_testReplaceChild']);
+        }, self::_testReplaceChild(...));
     }
 
-    public function _testReplaceChild($newParent, $newChild, $oldChild, $startContainer, $startOffset, $endContainer, $endOffset)
+    public static function _testReplaceChild($newParent, $newChild, $oldChild, $startContainer, $startOffset, $endContainer, $endOffset)
     {
         $expectedStart = [$startContainer, $startOffset];
         $expectedEnd = [$endContainer, $endOffset];
 
-        $expectedStart = $this->modifyForRemove($oldChild, $expectedStart);
-        $expectedEnd = $this->modifyForRemove($oldChild, $expectedEnd);
+        $expectedStart = self::modifyForRemove($oldChild, $expectedStart);
+        $expectedEnd = self::modifyForRemove($oldChild, $expectedEnd);
 
         if ($newChild !== $oldChild) {
             // Don't do this twice, if they're the same!
-            $expectedStart = $this->modifyForRemove($newChild, $expectedStart);
-            $expectedEnd = $this->modifyForRemove($newChild, $expectedEnd);
+            $expectedStart = self::modifyForRemove($newChild, $expectedStart);
+            $expectedEnd = self::modifyForRemove($newChild, $expectedEnd);
         }
 
         try {
@@ -82,8 +82,8 @@ class Range_mutations_replaceChildTest extends RangeTestCase
             return [$startContainer, $startOffset, $endContainer, $endOffset];
         }
 
-        $expectedStart = $this->modifyForInsert($newChild, $expectedStart);
-        $expectedEnd = $this->modifyForInsert($newChild, $expectedEnd);
+        $expectedStart = self::modifyForInsert($newChild, $expectedStart);
+        $expectedEnd = self::modifyForInsert($newChild, $expectedEnd);
 
         return array_merge($expectedStart, $expectedEnd);
     }

@@ -105,7 +105,7 @@ class InsertAdjacentTest extends NodeTestCase
         $this->assertNull($div->insertAdjacentElement('beforebegin', $this->getEl()));
     }
 
-    public function positionProvider(): Generator
+    public static function positionProvider(): Generator
     {
         $div = self::getWindow()->document->createElement('h3');
 

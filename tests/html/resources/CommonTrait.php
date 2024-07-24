@@ -32,12 +32,12 @@ trait CommonTrait
         'hr', 'img', 'input', 'keygen', 'link', 'meta', 'param', 'source',
         'track', 'wbr' ];
 
-    protected function newHTMLDocument(): HTMLDocument
+    protected static function newHTMLDocument(): HTMLDocument
     {
         return (new HTMLDocument())->implementation->createHTMLDocument('Test Document');
     }
 
-    protected function isVoidElement(string $elementName): bool
+    protected static function isVoidElement(string $elementName): bool
     {
         return in_array($elementName, self::$HTML5_VOID_ELEMENTS, true);
     }

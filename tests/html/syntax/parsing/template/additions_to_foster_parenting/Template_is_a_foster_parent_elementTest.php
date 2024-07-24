@@ -16,7 +16,7 @@ class Template_is_a_foster_parent_elementTest extends TestCase
 
     public function testTemplateIsAFosterParentElementWithTable(): void
     {
-        $doc = $this->newHTMLDocument();
+        $doc = self::newHTMLDocument();
 
         $doc->body->innerHTML = ''
             . '<div id="tmplParent">'
@@ -40,7 +40,7 @@ class Template_is_a_foster_parent_elementTest extends TestCase
 
     public function testTemplateIsAFosterParentElementWithoutTable(): void
     {
-        $doc = $this->newHTMLDocument();
+        $doc = self::newHTMLDocument();
 
         $doc->body->innerHTML = ''
             . '<div id="tmplParent">'

@@ -13,7 +13,7 @@ use function sprintf;
  */
 trait Constants
 {
-    abstract public function constantsProvider(): array;
+    abstract public static function constantsProvider(): array;
 
     /**
      * @dataProvider constantsProvider

@@ -215,7 +215,7 @@ class ChildNodeAfterTest extends TestCase
         $this->assertNull($x->nextSibling);
     }
 
-    public function nodeProvider(): array
+    public static function nodeProvider(): array
     {
         $document = self::loadDocument();
 
