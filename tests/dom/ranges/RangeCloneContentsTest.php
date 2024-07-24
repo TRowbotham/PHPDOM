@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Tests\dom\ranges;
 
 use Generator;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Exception\HierarchyRequestError;
 use Rowbot\DOM\Node;
 use Rowbot\DOM\Range;
@@ -29,9 +30,7 @@ class RangeCloneContentsTest extends RangeTestCase
     private static $actualIframe;
     private static $expectedIframe;
 
-    /**
-     * @dataProvider rangesProvider
-     */
+    #[DataProvider('rangesProvider')]
     public function testCloneContents(int $i): void
     {
         self::restoreIframe(self::$actualIframe, $i);

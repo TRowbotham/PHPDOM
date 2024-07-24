@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\dom\nodes;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Namespaces;
 use Rowbot\DOM\Node;
 use Rowbot\DOM\Tests\dom\DocumentGetter;
@@ -85,9 +86,7 @@ class NodeCloneNodeTest extends TestCase
         $this->assertInstanceOf($aType, $aCopy);
     }
 
-    /**
-     * @dataProvider getHTMLElementInterfaces
-     */
+    #[DataProvider('getHTMLElementInterfaces')]
     public function testCloneElements($aLocalName, $aType)
     {
         $element = self::getHTMLDocument()->createElement($aLocalName);

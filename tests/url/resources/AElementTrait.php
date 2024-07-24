@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Tests\url\resources;
 
 use Generator;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 use function is_string;
 use function str_starts_with;
@@ -16,9 +17,7 @@ trait AElementTrait
 {
     use DataProviderTrait;
 
-    /**
-     * @dataProvider urlTestDataProvider
-     */
+    #[DataProvider('urlTestDataProvider')]
     public function testUrl(array $expected): void
     {
         // We cannot use a null base for HTML tests

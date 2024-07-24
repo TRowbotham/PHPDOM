@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\html\semantics\tabular_data\the_table_element;
 
+use PHPUnit\Framework\Attributes\Depends;
 use Rowbot\DOM\Element\HTML\HTMLTableElement;
 use Rowbot\DOM\Namespaces;
 use Rowbot\DOM\Tests\dom\WindowTrait;
@@ -24,9 +25,7 @@ class InsertRowMethod03Test extends TableTestCase
         return $table;
     }
 
-    /**
-     * @depends testTableShouldStartOutWithTwoRows
-     */
+    #[Depends('testTableShouldStartOutWithTwoRows')]
     public function testInsertRowShouldInsertATrElementBeforeTheSecondRow(HTMLTableElement $table): void
     {
         $tr = $table->insertRow(1);

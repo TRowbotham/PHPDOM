@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Tests\dom\nodes;
 
 use Closure;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Comment;
 use Rowbot\DOM\Tests\dom\DocumentGetter;
 use Rowbot\DOM\Text;
@@ -16,9 +17,7 @@ class CharacterDataDataTest extends NodeTestCase
 {
     use DocumentGetter;
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testDataInitialValue(Closure $create): void
     {
         $node = $create();
@@ -27,9 +26,7 @@ class CharacterDataDataTest extends NodeTestCase
         $this->assertSame(4, $node->length);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testAssignDataNullValue(Closure $create): void
     {
         $node = $create();
@@ -40,9 +37,7 @@ class CharacterDataDataTest extends NodeTestCase
         $this->assertSame(0, $node->length);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testAssignDataNumericZero(Closure $create): void
     {
         $node = $create();
@@ -53,9 +48,7 @@ class CharacterDataDataTest extends NodeTestCase
         $this->assertSame(1, $node->length);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testAssignDataEmptyString(Closure $create): void
     {
         $node = $create();
@@ -66,9 +59,7 @@ class CharacterDataDataTest extends NodeTestCase
         $this->assertSame(0, $node->length);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testAssignDataDoubleHyphen(Closure $create): void
     {
         $node = $create();
@@ -79,9 +70,7 @@ class CharacterDataDataTest extends NodeTestCase
         $this->assertSame(2, $node->length);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testAssignDataNonAscii(Closure $create): void
     {
         $node = $create();
@@ -92,9 +81,7 @@ class CharacterDataDataTest extends NodeTestCase
         $this->assertSame(2, $node->length);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testAssignDataNonBMP(Closure $create): void
     {
         $node = $create();

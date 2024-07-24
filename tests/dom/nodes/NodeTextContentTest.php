@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\dom\nodes;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Tests\dom\DocumentGetter;
 use Rowbot\DOM\Tests\TestCase;
 use Rowbot\DOM\Text;
@@ -181,17 +182,13 @@ class NodeTextContentTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider documentsProvider
-     */
+    #[DataProvider('documentsProvider')]
     public function test13($doc)
     {
         $this->assertNull($doc->textContent);
     }
 
-    /**
-     * @dataProvider doctypesProvider
-     */
+    #[DataProvider('doctypesProvider')]
     public function test14($doctype)
     {
         $this->assertNull($doctype->textContent);
@@ -231,9 +228,7 @@ class NodeTextContentTest extends TestCase
         $this->assertSame($expectation, $firstChild->data);
     }
 
-    /**
-     * @dataProvider argumentsProvider
-     */
+    #[DataProvider('argumentsProvider')]
     public function test15($argument, $expectation)
     {
         $document = self::getHTMLDocument();
@@ -242,9 +237,7 @@ class NodeTextContentTest extends TestCase
         $this->check($el, $expectation);
     }
 
-    /**
-     * @dataProvider argumentsProvider
-     */
+    #[DataProvider('argumentsProvider')]
     public function test16($argument, $expectation)
     {
         $document = self::getHTMLDocument();
@@ -255,9 +248,7 @@ class NodeTextContentTest extends TestCase
         $this->assertNull($text->parentNode);
     }
 
-    /**
-     * @dataProvider argumentsProvider
-     */
+    #[DataProvider('argumentsProvider')]
     public function test17($argument, $expectation)
     {
         $document = self::getHTMLDocument();
@@ -269,9 +260,7 @@ class NodeTextContentTest extends TestCase
         $this->check($el, $expectation);
     }
 
-    /**
-     * @dataProvider argumentsProvider
-     */
+    #[DataProvider('argumentsProvider')]
     public function test18($argument, $expectation)
     {
         $document = self::getHTMLDocument();
@@ -286,9 +275,7 @@ class NodeTextContentTest extends TestCase
         $this->assertSame(3, $child->childNodes->length);
     }
 
-    /**
-     * @dataProvider argumentsProvider
-     */
+    #[DataProvider('argumentsProvider')]
     public function test19($argument, $expectation)
     {
         $document = self::getHTMLDocument();
@@ -297,9 +284,7 @@ class NodeTextContentTest extends TestCase
         $this->check($df, $expectation);
     }
 
-    /**
-     * @dataProvider argumentsProvider
-     */
+    #[DataProvider('argumentsProvider')]
     public function test20($argument, $expectation)
     {
         $document = self::getHTMLDocument();
@@ -311,9 +296,7 @@ class NodeTextContentTest extends TestCase
         $this->check($df, $expectation);
     }
 
-    /**
-     * @dataProvider argumentsProvider
-     */
+    #[DataProvider('argumentsProvider')]
     public function test21($argument, $expectation)
     {
         $document = self::getHTMLDocument();
@@ -365,9 +348,7 @@ class NodeTextContentTest extends TestCase
         $this->assertSame('def', $comment->data);
     }
 
-    /**
-     * @dataProvider documentsProvider
-     */
+    #[DataProvider('documentsProvider')]
     public function test25($doc)
     {
         $root = $doc->documentElement;
@@ -376,9 +357,7 @@ class NodeTextContentTest extends TestCase
         $this->assertSame($root, $doc->documentElement);
     }
 
-    /**
-     * @dataProvider doctypesProvider
-     */
+    #[DataProvider('doctypesProvider')]
     public function test26($doctype)
     {
         $props = [

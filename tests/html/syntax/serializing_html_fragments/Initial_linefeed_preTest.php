@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\html\syntax\serializing_html_fragments;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Tests\dom\WindowTrait;
 use Rowbot\DOM\Tests\TestCase;
 
@@ -33,17 +34,13 @@ class Initial_linefeed_preTest extends TestCase
         self::assertSame($expected_inner, $inner->innerHTML);
     }
 
-    /**
-     * @dataProvider tagProvider
-     */
+    #[DataProvider('tagProvider')]
     public function testTag1(string $tag): void
     {
         self::assertSame('x', self::getWindow()->document->getElementById($tag . '1')->innerHTML);
     }
 
-    /**
-     * @dataProvider tagProvider
-     */
+    #[DataProvider('tagProvider')]
     public function testTag2(string $tag): void
     {
         self::assertSame("\nx", self::getWindow()->document->getElementById($tag . '2')->innerHTML);

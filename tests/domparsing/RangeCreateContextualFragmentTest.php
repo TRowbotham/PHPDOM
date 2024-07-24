@@ -6,6 +6,8 @@ namespace Rowbot\DOM\Tests\domparsing;
 
 use ArgumentCountError;
 use Generator;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\DoesNotPerformAssertions;
 use Rowbot\DOM\DOMParser;
 use Rowbot\DOM\HTMLDocument;
 use Rowbot\DOM\Node;
@@ -23,9 +25,7 @@ class RangeCreateContextualFragmentTest extends TestCase
 {
     private static $document;
 
-    /**
-     * @doesNotPerformAssertions
-     */
+    #[DoesNotPerformAssertions]
     public function testMustNotThrowForDetachedNode(): void
     {
         $range = self::getDocument()->createRange();
@@ -92,11 +92,8 @@ class RangeCreateContextualFragmentTest extends TestCase
 
     // Historical bugs in browsers; see https://github.com/whatwg/html/issues/2222
 
-    /**
-     * @doesNotPerformAssertions
-     *
-     * @dataProvider voidElementProvider
-     */
+    #[DoesNotPerformAssertions]
+    #[DataProvider('voidElementProvider')]
     public function testCreateContextualFragmentShouldWorkOnContext(string $name): void
     {
         $document = self::getDocument();
@@ -108,9 +105,7 @@ class RangeCreateContextualFragmentTest extends TestCase
         $range->createContextualFragment('some text');
     }
 
-    /**
-     * @dataProvider fragmentsProvider
-     */
+    #[DataProvider('fragmentsProvider')]
     public function testEquivalence(
         string $description,
         Node $element1,
@@ -143,9 +138,7 @@ class RangeCreateContextualFragmentTest extends TestCase
         }
     }
 
-    /**
-     * @dataProvider fragmentProvider
-     */
+    #[DataProvider('fragmentProvider')]
     public static function fragmentsProvider(): array
     {
         $document = self::getDocument();

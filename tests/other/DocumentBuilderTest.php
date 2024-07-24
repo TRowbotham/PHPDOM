@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Tests\other;
 
 use Generator;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use Rowbot\DOM\DocumentBuilder;
@@ -20,9 +21,7 @@ class DocumentBuilderTest extends TestCase
         DocumentBuilder::create()->createEmptyDocument();
     }
 
-    /**
-     * @dataProvider validContentTypeStringProvider
-     */
+    #[DataProvider('validContentTypeStringProvider')]
     public function testValidContentTypeStringDoesNotThrow(string $contentType): void
     {
         $document = null;
@@ -56,9 +55,7 @@ class DocumentBuilderTest extends TestCase
         DocumentBuilder::create()->setDocumentUrl('//my.scheme-relative-url.com');
     }
 
-    /**
-     * @dataProvider contentTypeProvider
-     */
+    #[DataProvider('contentTypeProvider')]
     public function testBuilderCreatesCorrectDocumentBasedOnContentType(string $contentType, bool $isHtmlDocument): void
     {
         $builder = DocumentBuilder::create()->setContentType($contentType);

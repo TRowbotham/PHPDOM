@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\dom\nodes;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\HTMLDocument;
 use Rowbot\DOM\Tests\TestCase;
 
@@ -14,9 +15,7 @@ class ChildNodeBeforeTest extends TestCase
 {
     private static $document;
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testBeforeWithoutArgument($child, string $nodeName, string $innerHTML): void
     {
         $parent = self::$document->createElement('div');
@@ -26,9 +25,7 @@ class ChildNodeBeforeTest extends TestCase
         $this->assertSame($innerHTML, $parent->innerHTML);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testBeforeWithNull($child, string $nodeName, string $innerHTML): void
     {
         $parent = self::$document->createElement('div');
@@ -38,9 +35,7 @@ class ChildNodeBeforeTest extends TestCase
         $this->assertSame('null' . $innerHTML, $parent->innerHTML);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testBeforeWithEmptyString($child, string $nodeName, string $innerHTML): void
     {
         $parent = self::$document->createElement('div');
@@ -50,9 +45,7 @@ class ChildNodeBeforeTest extends TestCase
         $this->assertSame('', $parent->firstChild->data);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testBeforeWithTextOnly($child, string $nodeName, string $innerHTML): void
     {
         $parent = self::$document->createElement('div');
@@ -62,9 +55,7 @@ class ChildNodeBeforeTest extends TestCase
         $this->assertSame('text' . $innerHTML, $parent->innerHTML);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testBeforeWithOneElement($child, string $nodeName, string $innerHTML): void
     {
         $parent = self::$document->createElement('div');
@@ -75,9 +66,7 @@ class ChildNodeBeforeTest extends TestCase
         $this->assertSame('<x></x>' . $innerHTML, $parent->innerHTML);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testBeforeWithOneElementAndText($child, string $nodeName, string $innerHTML): void
     {
         $parent = self::$document->createElement('div');
@@ -88,9 +77,7 @@ class ChildNodeBeforeTest extends TestCase
         $this->assertSame('<x></x>text' . $innerHTML, $parent->innerHTML);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testBeforeWithContextObject($child, string $nodeName, string $innerHTML): void
     {
         $parent = self::$document->createElement('div');
@@ -100,9 +87,7 @@ class ChildNodeBeforeTest extends TestCase
         $this->assertSame('text' . $innerHTML, $parent->innerHTML);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testBeforeWithContextObjectSwitching($child, string $nodeName, string $innerHTML): void
     {
         $parent = self::$document->createElement('div');
@@ -114,9 +99,7 @@ class ChildNodeBeforeTest extends TestCase
         $this->assertSame('<x></x>' . $innerHTML, $parent->innerHTML);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testBeforeWithSiblingsOfChild($child, string $nodeName, string $innerHTML): void
     {
         $parent = self::$document->createElement('div');
@@ -131,9 +114,7 @@ class ChildNodeBeforeTest extends TestCase
         $this->assertSame('<x></x><y></y><z></z>' . $innerHTML, $parent->innerHTML);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testBeforeWithSomeSiblings1($child, string $nodeName, string $innerHTML): void
     {
         $parent = self::$document->createElement('div');
@@ -149,9 +130,7 @@ class ChildNodeBeforeTest extends TestCase
         $this->assertSame('<x></x><y></y><z></z>' . $innerHTML, $parent->innerHTML);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testBeforeWithSomeSiblings2($child, string $nodeName, string $innerHTML): void
     {
         $parent = self::$document->createElement('div');
@@ -169,9 +148,7 @@ class ChildNodeBeforeTest extends TestCase
         $this->assertSame('<v></v><x></x><y></y><z></z>' . $innerHTML, $parent->innerHTML);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testBeforeWhenPreinsertBehavesLikeAppend($child, string $nodeName, string $innerHTML): void
     {
         $parent = self::$document->createElement('div');
@@ -185,9 +162,7 @@ class ChildNodeBeforeTest extends TestCase
         $this->assertSame('<y></y><x></x>' . $innerHTML, $parent->innerHTML);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testBeforeWithOneSiblingAndTest($child, string $nodeName, string $innerHTML): void
     {
         $parent = self::$document->createElement('div');

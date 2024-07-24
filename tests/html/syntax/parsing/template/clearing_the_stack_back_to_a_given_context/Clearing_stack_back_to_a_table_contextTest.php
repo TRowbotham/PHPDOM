@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\html\syntax\parsing\template\clearing_the_stack_back_to_a_given_context;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\HTMLDocument;
 use Rowbot\DOM\Tests\html\resources\CommonTrait;
 use Rowbot\DOM\Tests\TestCase;
@@ -15,9 +16,7 @@ class Clearing_stack_back_to_a_table_contextTest extends TestCase
 {
     use CommonTrait;
 
-    /**
-     * @dataProvider contextProvider
-     */
+    #[DataProvider('contextProvider')]
     public function testClearing(
         string $description,
         HTMLDocument $doc,

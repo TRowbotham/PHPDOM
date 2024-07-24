@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\html\semantics\tabular_data\the_tbody_element;
 
+use PHPUnit\Framework\Attributes\Depends;
 use Rowbot\DOM\Element\HTML\HTMLTableSectionElement;
 use Rowbot\DOM\Exception\IndexSizeError;
 use Rowbot\DOM\Tests\dom\WindowTrait;
@@ -28,9 +29,7 @@ class InsertRowTest extends TestCase
         return $tbody;
     }
 
-    /**
-     * @depends testInsertRowWithZeroArg
-     */
+    #[Depends('testInsertRowWithZeroArg')]
     public function testInsertRowWithNegativeOneArg(HTMLTableSectionElement $tbody): HTMLTableSectionElement
     {
         $trEle = $tbody->insertRow(-1);
@@ -40,9 +39,7 @@ class InsertRowTest extends TestCase
         return $tbody;
     }
 
-    /**
-     * @depends testInsertRowWithNegativeOneArg
-     */
+    #[Depends('testInsertRowWithNegativeOneArg')]
     public function testInsertRowWithNoArg(HTMLTableSectionElement $tbody): HTMLTableSectionElement
     {
         $trEle = $tbody->insertRow();
@@ -52,9 +49,7 @@ class InsertRowTest extends TestCase
         return $tbody;
     }
 
-    /**
-     * @depends testInsertRowWithNoArg
-     */
+    #[Depends('testInsertRowWithNoArg')]
     public function testInsertRowWithSameNumberOfRowsArg(HTMLTableSectionElement $tbody): void
     {
         $trEle = $tbody->insertRow($tbody->rows->length);

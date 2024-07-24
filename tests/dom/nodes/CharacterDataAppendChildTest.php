@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\dom\nodes;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Exception\HierarchyRequestError;
 use Rowbot\DOM\HTMLDocument;
 use Rowbot\DOM\Tests\TestCase;
@@ -15,9 +16,7 @@ class CharacterDataAppendChildTest extends TestCase
 {
     private static $document;
 
-    /**
-     * @dataProvider typeProvider
-     */
+    #[DataProvider('typeProvider')]
     public function testNode(string $type1, string $type2): void
     {
         $node1 = self::create($type1);

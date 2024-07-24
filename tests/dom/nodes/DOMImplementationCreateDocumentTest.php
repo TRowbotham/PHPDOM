@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\dom\nodes;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\DocumentType;
 use Rowbot\DOM\Namespaces;
 use Rowbot\DOM\Node;
@@ -24,9 +25,7 @@ class DOMImplementationCreateDocumentTest extends TestCase
 
     protected static ?array $tests = null;
 
-    /**
-     * @dataProvider getTestData
-     */
+    #[DataProvider('getTestData')]
     public function testCreateDocument(
         ?string $namespace,
         ?string $qualifiedName,
@@ -87,9 +86,7 @@ class DOMImplementationCreateDocumentTest extends TestCase
         }
     }
 
-    /**
-     * @dataProvider noErrorProvider
-     */
+    #[DataProvider('noErrorProvider')]
     public function testCreateDocumentMetadata(
         ?string $namespace,
         ?string $qualifiedName,
@@ -118,9 +115,7 @@ class DOMImplementationCreateDocumentTest extends TestCase
         $this->assertSame('DIV', $doc->createElement('DIV')->localName);
     }
 
-    /**
-     * @dataProvider noErrorProvider
-     */
+    #[DataProvider('noErrorProvider')]
     public function testCharacterSetAliases(?string $namespace, ?string $qualifiedName, ?DocumentType $doctype): void
     {
         $document = self::getHTMLDocument();

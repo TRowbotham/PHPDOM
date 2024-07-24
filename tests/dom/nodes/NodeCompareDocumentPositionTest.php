@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Tests\dom\nodes;
 
 use Generator;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Node;
 use Rowbot\DOM\Tests\dom\Window;
 use Rowbot\DOM\Tests\dom\WindowTrait;
@@ -16,9 +17,7 @@ class NodeCompareDocumentPositionTest extends NodeTestCase
 {
     use WindowTrait;
 
-    /**
-     * @dataProvider rangeTestNodesProvider
-     */
+    #[DataProvider('rangeTestNodesProvider')]
     public function test($referenceName, $otherName)
     {
         $window = self::getWindow();

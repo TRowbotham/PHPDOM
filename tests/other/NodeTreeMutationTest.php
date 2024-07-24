@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\other;
 
+use PHPUnit\Framework\Attributes\Depends;
 use Rowbot\DOM\Element\HTML\HTMLDivElement;
 use Rowbot\DOM\Exception\NotFoundError;
 use Rowbot\DOM\Tests\dom\DocumentGetter;
@@ -91,9 +92,7 @@ class NodeTreeMutationTest extends TestCase
         return $parent;
     }
 
-    /**
-     * @depends testAppendChild
-     */
+    #[Depends('testAppendChild')]
     public function testAppendChildWithMiddleChildToSameParent(HTMLDivElement $parent): void
     {
         $parent = $parent->cloneNode(true);
@@ -129,9 +128,7 @@ class NodeTreeMutationTest extends TestCase
         $this->assertSame($b, $c->nextSibling);
     }
 
-    /**
-     * @depends testAppendChild
-     */
+    #[Depends('testAppendChild')]
     public function testAppendChildWithFirstChildToSameParent(HTMLDivElement $parent): void
     {
         $parent = $parent->cloneNode(true);
@@ -167,9 +164,7 @@ class NodeTreeMutationTest extends TestCase
         $this->assertSame($a, $c->nextSibling);
     }
 
-    /**
-     * @depends testAppendChild
-     */
+    #[Depends('testAppendChild')]
     public function testAppendChildWithLastChildToSameParent(HTMLDivElement $parent): void
     {
         $parent = $parent->cloneNode(true);
@@ -213,9 +208,7 @@ class NodeTreeMutationTest extends TestCase
         $parent->removeChild($document->createElement('div'));
     }
 
-    /**
-     * @depends testAppendChild
-     */
+    #[Depends('testAppendChild')]
     public function testRemoveChildWithFirstChild(HTMLDivElement $parent): void
     {
         $parent = $parent->cloneNode(true);
@@ -249,9 +242,7 @@ class NodeTreeMutationTest extends TestCase
         $this->assertNull($c->nextSibling);
     }
 
-    /**
-     * @depends testAppendChild
-     */
+    #[Depends('testAppendChild')]
     public function testRemoveChildWithMiddleChild(HTMLDivElement $parent): void
     {
         $parent = $parent->cloneNode(true);
@@ -285,9 +276,7 @@ class NodeTreeMutationTest extends TestCase
         $this->assertNull($c->nextSibling);
     }
 
-    /**
-     * @depends testAppendChild
-     */
+    #[Depends('testAppendChild')]
     public function testRemoveChildWithLastChild(HTMLDivElement $parent): void
     {
         $parent = $parent->cloneNode(true);
@@ -329,9 +318,7 @@ class NodeTreeMutationTest extends TestCase
         $parent->insertBefore($document->createElement('a'), $document->createElement('span'));
     }
 
-    /**
-     * @depends testAppendChild
-     */
+    #[Depends('testAppendChild')]
     public function testInsertBeforeBeforeFirstChild(HTMLDivElement $parent): HTMLDivElement
     {
         $document = $parent->ownerDocument;
@@ -378,9 +365,7 @@ class NodeTreeMutationTest extends TestCase
         return $parent;
     }
 
-    /**
-     * @depends testInsertBeforeBeforeFirstChild
-     */
+    #[Depends('testInsertBeforeBeforeFirstChild')]
     public function testInsertBeforeBeforeSecondChildKeepingSamePositions(HTMLDivElement $parent): void
     {
         $parent = $parent->cloneNode(true);
@@ -423,9 +408,7 @@ class NodeTreeMutationTest extends TestCase
         $this->assertNull($d->nextSibling);
     }
 
-    /**
-     * @depends testInsertBeforeBeforeFirstChild
-     */
+    #[Depends('testInsertBeforeBeforeFirstChild')]
     public function testInsertBeforeBeforeSelf(HTMLDivElement $parent): void
     {
         $parent = $parent->cloneNode(true);
@@ -468,9 +451,7 @@ class NodeTreeMutationTest extends TestCase
         $this->assertNull($d->nextSibling);
     }
 
-    /**
-     * @depends testInsertBeforeBeforeFirstChild
-     */
+    #[Depends('testInsertBeforeBeforeFirstChild')]
     public function testInsertBeforeBeforeLastChildKeepingSamePosition(HTMLDivElement $parent): void
     {
         $parent = $parent->cloneNode(true);
@@ -513,9 +494,7 @@ class NodeTreeMutationTest extends TestCase
         $this->assertNull($d->nextSibling);
     }
 
-    /**
-     * @depends testAppendChild
-     */
+    #[Depends('testAppendChild')]
     public function testInsertBeforeBeforeLastChild(HTMLDivElement $parent): void
     {
         $parent = $parent->cloneNode(true);

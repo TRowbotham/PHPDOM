@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\html\semantics\tabular_data\the_table_element;
 
+use PHPUnit\Framework\Attributes\Depends;
 use Rowbot\DOM\Element\HTML\HTMLTableElement;
 use Rowbot\DOM\Exception\IndexSizeError;
 use Rowbot\DOM\Tests\dom\WindowTrait;
@@ -25,9 +26,7 @@ class DeleteRowTest extends TableTestCase
         return $el;
     }
 
-    /**
-     * @depends testDeleteRowFunctionInvalidArg
-     */
+    #[Depends('testDeleteRowFunctionInvalidArg')]
     public function testDeleteRowFunctionInvalidArgBis(HTMLTableElement $el): HTMLTableElement
     {
         $this->assertThrows(static function () use ($el): void {
@@ -37,9 +36,7 @@ class DeleteRowTest extends TableTestCase
         return $el;
     }
 
-    /**
-     * @depends testDeleteRowFunctionInvalidArgBis
-     */
+    #[Depends('testDeleteRowFunctionInvalidArgBis')]
     public function testCheckNormalDeleteRow(HTMLTableElement $el): HTMLTableElement
     {
         $oldLength = $el->rows->length;
@@ -50,9 +47,7 @@ class DeleteRowTest extends TableTestCase
         return $el;
     }
 
-    /**
-     * @depends testCheckNormalDeleteRow
-     */
+    #[Depends('testCheckNormalDeleteRow')]
     public function testCheckNormalDeleteRowBis(HTMLTableElement $el): HTMLTableElement
     {
         self::assertSame(3, $el->rows->length);
@@ -66,9 +61,7 @@ class DeleteRowTest extends TableTestCase
         return $el;
     }
 
-    /**
-     * @depends testCheckNormalDeleteRowBis
-     */
+    #[Depends('testCheckNormalDeleteRowBis')]
     public function testDeleteRowWithArgNegativeOneWithNoRows(HTMLTableElement $el): HTMLTableElement
     {
         self::assertSame(0, $el->rows->length);
@@ -77,9 +70,7 @@ class DeleteRowTest extends TableTestCase
         return $el;
     }
 
-    /**
-     * @depends testDeleteRowWithArgNegativeOneWithNoRows
-     */
+    #[Depends('testDeleteRowWithArgNegativeOneWithNoRows')]
     public function testDeleteRowWithArgZeroWithNoRows(HTMLTableElement $el): void
     {
         self::assertSame(0, $el->rows->length);

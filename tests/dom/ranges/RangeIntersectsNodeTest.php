@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Tests\dom\ranges;
 
 use Generator;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Tests\dom\Window;
 use Rowbot\DOM\Tests\dom\WindowTrait;
 use Throwable;
@@ -16,9 +17,7 @@ class RangeIntersectsNodeTest extends RangeTestCase
 {
     use WindowTrait;
 
-    /**
-     * @dataProvider intersectionNodeProvider
-     */
+    #[DataProvider('intersectionNodeProvider')]
     public function testIntersectsNode(string $node, string $range): void
     {
         $window = self::getWindow();

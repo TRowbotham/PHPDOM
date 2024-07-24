@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\dom\ranges;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Exception\DOMException;
 use Rowbot\DOM\Node;
 use Rowbot\DOM\Range;
@@ -28,9 +29,7 @@ class RangeInsertNodeTest extends RangeTestCase
     private static $actualIframe;
     private static $expectedIframe;
 
-    /**
-     * @dataProvider rangesProvider
-     */
+    #[DataProvider('rangesProvider')]
     public function testInsertNode(int $i, int $j): void
     {
         $actualRoots = [];

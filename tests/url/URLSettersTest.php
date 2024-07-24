@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\url;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Tests\dom\DocumentGetter;
 use Rowbot\DOM\Tests\TestCase;
 use RuntimeException;
@@ -24,9 +25,7 @@ class URLSettersTest extends TestCase
 
     private static array $testData = [];
 
-    /**
-     * @dataProvider settersDataProvider
-     */
+    #[DataProvider('settersDataProvider')]
     public function testUrlSettersOnAnchorElement(array $input): void
     {
         $url = self::getHTMLDocument()->createElement('a');
@@ -38,9 +37,7 @@ class URLSettersTest extends TestCase
         }
     }
 
-    /**
-     * @dataProvider settersDataProvider
-     */
+    #[DataProvider('settersDataProvider')]
     public function testUrlSettersOnAreaElement(array $input): void
     {
         $url = self::getHTMLDocument()->createElement('area');

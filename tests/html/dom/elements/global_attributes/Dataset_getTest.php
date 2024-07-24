@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\html\dom\elements\global_attributes;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\DocumentBuilder;
 use Rowbot\DOM\DOMStringMap;
 use Rowbot\DOM\Tests\TestCase;
@@ -13,9 +14,7 @@ use Rowbot\DOM\Tests\TestCase;
  */
 class Dataset_getTest extends TestCase
 {
-    /**
-     * @dataProvider attributesProvider
-     */
+    #[DataProvider('attributesProvider')]
     public function testGet(string $attr, string $expected): void
     {
         $document = DocumentBuilder::create()->setContentType('text/html')->createEmptyDocument();
@@ -25,9 +24,7 @@ class Dataset_getTest extends TestCase
         self::assertSame('value', $d->dataset[$expected]);
     }
 
-    /**
-     * @dataProvider nonMatchingAttributesProvider
-     */
+    #[DataProvider('nonMatchingAttributesProvider')]
     public function testMatchesNothingInDataset(string $attr): void
     {
         $document = DocumentBuilder::create()->setContentType('text/html')->createEmptyDocument();

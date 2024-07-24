@@ -6,6 +6,7 @@ namespace Rowbot\DOM\Tests\html\syntax\serializing_html_fragments;
 
 use Closure;
 use Generator;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\DocumentBuilder;
 use Rowbot\DOM\Tests\dom\WindowTrait;
 use Rowbot\DOM\Tests\TestCase;
@@ -59,23 +60,19 @@ class SerializingTest extends TestCase
         "meta", "param", "source", "track", "wbr",
     ];
 
-    /**
-     * @dataProvider innerHTMLExpectedTestProvider
-     * @dataProvider innerHTMLDOMTestProvider
-     * @dataProvider innerHTMLTextCrossMapTestProvider
-     * @dataProvider innerHTMLVoidCrossMapTestProvider
-     */
+    #[DataProvider('innerHTMLExpectedTestProvider')]
+    #[DataProvider('innerHTMLDOMTestProvider')]
+    #[DataProvider('innerHTMLTextCrossMapTestProvider')]
+    #[DataProvider('innerHTMLVoidCrossMapTestProvider')]
     public function testInnerHTML(Closure $func, $elem, $expected): void
     {
         self::assertSame($expected, $func($elem)->innerHTML);
     }
 
-    /**
-     * @dataProvider outerHTMLExpectedTestProvider
-     * @dataProvider outerHTMLDOMTestProvider
-     * @dataProvider outerHTMLTextCrossMapTestProvider
-     * @dataProvider outerHTMLVoidCrossMapTestProvider
-     */
+    #[DataProvider('outerHTMLExpectedTestProvider')]
+    #[DataProvider('outerHTMLDOMTestProvider')]
+    #[DataProvider('outerHTMLTextCrossMapTestProvider')]
+    #[DataProvider('outerHTMLVoidCrossMapTestProvider')]
     public function testOuterHTML(Closure $func, $elem, $expected): void
     {
         self::assertSame($expected, $func($elem)->outerHTML);

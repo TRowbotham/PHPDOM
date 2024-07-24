@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Tests\dom\nodes;
 
 use Generator;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Document;
 use Rowbot\DOM\DocumentType;
 use Rowbot\DOM\Element\HTML\HTMLBodyElement;
@@ -22,9 +23,7 @@ class DOMImplementationCreateHTMLDocumentTest extends TestCase
 {
     private static $document;
 
-    /**
-     * @dataProvider createDocumentArgsProvider
-     */
+    #[DataProvider('createDocumentArgsProvider')]
     public function testCreateHTMLDocument(HTMLDocument $doc, ?string $expectedTitle, string $normalizedTitle): void
     {
         $this->assertInstanceOf(Document::class, $doc);

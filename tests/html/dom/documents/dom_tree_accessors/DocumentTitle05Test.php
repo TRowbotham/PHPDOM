@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Tests\html\dom\documents\dom_tree_accessors;
 
 use Generator;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Tests\dom\WindowTrait;
 
 /**
@@ -38,9 +39,7 @@ class DocumentTitle05Test extends AccessorTestCase
         "\u{3000}",
     ];
 
-    /**
-     * @dataProvider whitespaceProvider
-     */
+    #[DataProvider('whitespaceProvider')]
     public function testSetTitle(string $character, int $i): void
     {
         $document = self::getWindow()->document;

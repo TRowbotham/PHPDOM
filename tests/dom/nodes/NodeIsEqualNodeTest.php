@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\dom\nodes;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Tests\dom\DocumentGetter;
 use Rowbot\DOM\Tests\TestCase;
 
@@ -224,9 +225,8 @@ class NodeIsEqualNodeTest extends TestCase
 
     /**
      * Node equality testing should test descendant equality too.
-     *
-     * @dataProvider getTestData
      */
+    #[DataProvider('getTestData')]
     public function testDeepEquality($parentFactory)
     {
         $document = self::getHTMLDocument();

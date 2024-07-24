@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Tests\dom\ranges;
 
 use Generator;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Exception\IndexSizeError;
 use Rowbot\DOM\Exception\InvalidNodeTypeError;
 use Rowbot\DOM\Node;
@@ -19,27 +20,21 @@ class RangeSetTest extends RangeTestCase
 {
     use WindowTrait;
 
-    /**
-     * @dataProvider buildTests1
-     */
+    #[DataProvider('buildTests1')]
     public function testSetStart(string $rangeEndpoints, string $nodes): void
     {
         [$range, $node, $offset] = $this->doEval($rangeEndpoints, $nodes);
         $this->checkSetStart($range, $node, $offset);
     }
 
-    /**
-     * @dataProvider buildTests1
-     */
+    #[DataProvider('buildTests1')]
     public function testSetEnd(string $rangeEndpoints, string $nodes): void
     {
         [$range, $node, $offset] = $this->doEval($rangeEndpoints, $nodes);
         $this->checkSetEnd($range, $node, $offset);
     }
 
-    /**
-     * @dataProvider buildTests2
-     */
+    #[DataProvider('buildTests2')]
     public function testSetStartBefore(string $rangeEndpoints, string $nodes): void
     {
         [$range, $node] = $this->doEval($rangeEndpoints, $nodes);
@@ -62,9 +57,7 @@ class RangeSetTest extends RangeTestCase
         $this->checkSetStart($range, $node->parentNode, $idx);
     }
 
-    /**
-     * @dataProvider buildTests2
-     */
+    #[DataProvider('buildTests2')]
     public function testSetStartAfter(string $rangeEndpoints, string $nodes): void
     {
         [$range, $node] = $this->doEval($rangeEndpoints, $nodes);
@@ -87,9 +80,7 @@ class RangeSetTest extends RangeTestCase
         $this->checkSetStart($range, $node->parentNode, $idx + 1);
     }
 
-    /**
-     * @dataProvider buildTests2
-     */
+    #[DataProvider('buildTests2')]
     public function testSetEndBefore(string $rangeEndpoints, string $nodes): void
     {
         [$range, $node] = $this->doEval($rangeEndpoints, $nodes);
@@ -112,9 +103,7 @@ class RangeSetTest extends RangeTestCase
         $this->checkSetEnd($range, $node->parentNode, $idx);
     }
 
-    /**
-     * @dataProvider buildTests2
-     */
+    #[DataProvider('buildTests2')]
     public function testSetEndAfter(string $rangeEndpoints, string $nodes): void
     {
         [$range, $node] = $this->doEval($rangeEndpoints, $nodes);

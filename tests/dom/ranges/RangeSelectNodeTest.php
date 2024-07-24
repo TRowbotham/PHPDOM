@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Tests\dom\ranges;
 
 use Generator;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Exception\InvalidNodeTypeError;
 use Rowbot\DOM\Exception\InvalidStateError;
 use Rowbot\DOM\Node;
@@ -18,9 +19,7 @@ class RangeSelectNodeTest extends RangeTestCase
 {
     use WindowTrait;
 
-    /**
-     * @dataProvider rangeProvider
-     */
+    #[DataProvider('rangeProvider')]
     public function testSelectNode(string $marker, string $rangeDoc, bool $detached, Node $node): void
     {
         $range = self::getWindow()->eval($rangeDoc)->createRange();

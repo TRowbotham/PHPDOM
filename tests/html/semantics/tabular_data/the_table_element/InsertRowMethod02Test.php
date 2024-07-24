@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\html\semantics\tabular_data\the_table_element;
 
+use PHPUnit\Framework\Attributes\Depends;
 use Rowbot\DOM\Element\HTML\HTMLTableElement;
 use Rowbot\DOM\Namespaces;
 use Rowbot\DOM\Tests\dom\WindowTrait;
@@ -25,9 +26,7 @@ class InsertRowMethod02Test extends TableTestCase
         return $table;
     }
 
-    /**
-     * @depends testTableShouldStartOutEmpty
-     */
+    #[Depends('testTableShouldStartOutEmpty')]
     public function testInsertRowShouldInsertATrElement(HTMLTableElement $table): array
     {
         $tr = $table->insertRow(0);
@@ -37,9 +36,7 @@ class InsertRowMethod02Test extends TableTestCase
         return [$table, $tr];
     }
 
-    /**
-     * @depends testInsertRowShouldInsertATrElement
-     */
+    #[Depends('testInsertRowShouldInsertATrElement')]
     public function testInsertRowShouldInsertATbodyElement(array $elements): void
     {
         [$table, $tr] = $elements;

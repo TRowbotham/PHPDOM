@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\dom\nodes;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Document;
 use Rowbot\DOM\Exception\InvalidCharacterError;
 use Rowbot\DOM\Node;
@@ -14,18 +15,14 @@ use Rowbot\DOM\ProcessingInstruction;
  */
 trait Document_createProcessingInstructionTrait
 {
-    /**
-     * @dataProvider invalidNamesProvider
-     */
+    #[DataProvider('invalidNamesProvider')]
     public function testCreateProcessingInstructionInvalidNames($target, string $data): void
     {
         $this->expectException(InvalidCharacterError::class);
         $this->getDocument()->createProcessingInstruction((string) $target, $data);
     }
 
-    /**
-     * @dataProvider validNamesProvider
-     */
+    #[DataProvider('validNamesProvider')]
     public function testCreateProcessingInstructionValidNames($target, string $data): void
     {
         $document = $this->getDocument();

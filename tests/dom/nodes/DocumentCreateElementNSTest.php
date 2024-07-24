@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\dom\nodes;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Element\HTML\HTMLElement;
 use Rowbot\DOM\Element\HTML\HTMLSpanElement;
@@ -50,9 +51,7 @@ class DocumentCreateElementNSTest extends TestCase
         ]);
     }
 
-    /**
-     * @dataProvider getTestData
-     */
+    #[DataProvider('getTestData')]
     public function test1($namespace, $qualifiedName, $expected): void
     {
         $document = self::getHTMLDocument();

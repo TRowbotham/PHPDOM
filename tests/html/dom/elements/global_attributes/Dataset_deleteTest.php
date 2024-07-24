@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\html\dom\elements\global_attributes;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\DocumentBuilder;
 use Rowbot\DOM\Tests\TestCase;
 
@@ -12,9 +13,7 @@ use Rowbot\DOM\Tests\TestCase;
  */
 class Dataset_deleteTest extends TestCase
 {
-    /**
-     * @dataProvider datasetProvider
-     */
+    #[DataProvider('datasetProvider')]
     public function testDelete(string $attr, string $prop): void
     {
         $document = DocumentBuilder::create()->setContentType('text/html')->createEmptyDocument();
@@ -26,9 +25,7 @@ class Dataset_deleteTest extends TestCase
         self::assertNotSame('value', $d->getAttribute($attr));
     }
 
-    /**
-     * @dataProvider datasetNoAddProvider
-     */
+    #[DataProvider('datasetNoAddProvider')]
     public function testDeleteNoAdd(string $prop): void
     {
         $document = DocumentBuilder::create()->setContentType('text/html')->createEmptyDocument();

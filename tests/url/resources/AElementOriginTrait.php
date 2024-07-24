@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Tests\url\resources;
 
 use Generator;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 use function array_key_exists;
 use function is_string;
@@ -17,9 +18,7 @@ trait AElementOriginTrait
 {
     use DataProviderTrait;
 
-    /**
-     * @dataProvider urlOriginTestProvider
-     */
+    #[DataProvider('urlOriginTestProvider')]
     public function testUrlOrigin(array $expected): void
     {
         // We cannot use a null base for HTML tests

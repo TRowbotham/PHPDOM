@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Tests\html\semantics\tabular_data\the_table_element;
 
 use Generator;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Element\HTML\HTMLTableElement;
 use Rowbot\DOM\HTMLCollection;
 use Rowbot\DOM\Tests\dom\DocumentGetter;
@@ -19,9 +20,7 @@ class TableRowsTest extends TestCase
 {
     use DocumentGetter;
 
-    /**
-     * @dataProvider tableGroupsProvider
-     */
+    #[DataProvider('tableGroupsProvider')]
     public function testTableSimple($group, HTMLTableElement $table): void
     {
         $document = self::getHTMLDocument();

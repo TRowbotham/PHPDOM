@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\dom\nodes;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Exception\InvalidCharacterError;
 use Rowbot\DOM\Exception\SyntaxError;
@@ -141,9 +142,7 @@ class ElementClassListTest extends TestCase
         ]);
     }
 
-    /**
-     * @dataProvider lengthProvider
-     */
+    #[DataProvider('lengthProvider')]
     public function testLength(Element $element, ?string $value, int $length)
     {
         $this->setClass($element, $value);
@@ -167,14 +166,13 @@ class ElementClassListTest extends TestCase
     }
 
     /**
-     * @dataProvider stringifierProvider
-     *
      * @param \Rowbot\DOM\Element\Element $element
      * @param ?string                     $value
      * @param string                      $expected
      *
      * @return void
      */
+    #[DataProvider('stringifierProvider')]
     public function testStringifier(
         Element $element,
         ?string $value,
@@ -197,13 +195,12 @@ class ElementClassListTest extends TestCase
     }
 
     /**
-     * @dataProvider itemsProvider
-     *
      * @param string   $attributeValue
      * @param string[] $expectedValues
      *
      * @return void
      */
+    #[DataProvider('itemsProvider')]
     public function testCheckItems(
         Element $element,
         ?string $attributeValue,
@@ -250,11 +247,7 @@ class ElementClassListTest extends TestCase
         ]);
     }
 
-    /**
-     * @dataProvider containsProvider
-     *
-     * @return void
-     */
+    #[DataProvider('containsProvider')]
     public function testContains(
         Element $element,
         $attributeValue,
@@ -321,17 +314,7 @@ class ElementClassListTest extends TestCase
         ]);
     }
 
-    /**
-     * @dataProvider addProvider
-     *
-     * @param \Rowbot\DOM\Element\Element $element
-     * @param string|null $before
-     * @param [type] $argument
-     * @param string|null $after
-     * @param string|null $param
-     *
-     * @return void
-     */
+    #[DataProvider('addProvider')]
     public function testAdd(
         Element $element,
         ?string $before,
@@ -432,17 +415,7 @@ class ElementClassListTest extends TestCase
         ]);
     }
 
-    /**
-     * @dataProvider removeProvider
-     *
-     * @param \Rowbot\DOM\Element\Element $element
-     * @param string|null $before
-     * @param [type] $argument
-     * @param string|null $after
-     * @param string|null $param
-     *
-     * @return void
-     */
+    #[DataProvider('removeProvider')]
     public function testRemove(
         Element $element,
         ?string $before,
@@ -513,16 +486,7 @@ class ElementClassListTest extends TestCase
         ]);
     }
 
-    /**
-     * @dataProvider toggleProvider
-     *
-     * @param \Rowbot\DOM\Element\Element $element
-     * @param ?string                     $before
-     * @param ?string                     $argument
-     * @param ?bool                       $expectedRes
-     * @param ?string                     $after
-     * @param ?string                     $expectedException
-     */
+    #[DataProvider('toggleProvider')]
     public function testToggleHTMLElement(
         Element $element,
         ?string $before,
@@ -600,17 +564,7 @@ class ElementClassListTest extends TestCase
         ]);
     }
 
-    /**
-     * @dataProvider replaceProvider
-     *
-     * @param \Rowbot\DOM\Element\Element $element
-     * @param ?string                     $before
-     * @param ?string                      $token
-     * @param ?string                      $newToken
-     * @param ?bool                       $expectedRes
-     * @param ?string                     $after
-     * @param ?string                     $expectedException
-     */
+    #[DataProvider('replaceProvider')]
     public function testReplaceHTMLElement(
         Element $element,
         ?string $before,

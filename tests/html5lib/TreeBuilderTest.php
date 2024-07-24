@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Tests\html5lib;
 
 use DirectoryIterator;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Rowbot\DOM\Attr;
 use Rowbot\DOM\DocumentBuilder;
@@ -44,10 +45,9 @@ class TreeBuilderTest extends TestCase
     private const TEST_FILES_DIR = __DIR__ . DS . 'test_data' . DS . 'tree-construction';
 
     /**
-     * @dataProvider input
-     *
      * @param \Rowbot\DOM\HTMLDocument|\Rowbot\DOM\DocumentFragment $expected
      */
+    #[DataProvider('input')]
     public function testTreeBuilder(string $data, array $errors, $expected, ?Element $context, bool $enableScripting): void
     {
         if ($context === null) {

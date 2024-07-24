@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Tests\dom\nodes;
 
 use Generator;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\HTMLDocument;
 use Rowbot\DOM\Text;
 
@@ -13,9 +14,7 @@ use Rowbot\DOM\Text;
  */
 class DocumentCreateTextNodeTest extends CharacterDataTestCase
 {
-    /**
-     * @dataProvider textNodeDataProvider
-     */
+    #[DataProvider('textNodeDataProvider')]
     public function testCreateTextNode(
         string $method,
         string $iface,

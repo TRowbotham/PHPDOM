@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\domparsing;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Exception\NoModificationAllowedError;
 use Rowbot\DOM\Tests\dom\WindowTrait;
@@ -17,9 +18,7 @@ trait InsertAdjacentHTMLTrait
 {
     use WindowTrait;
 
-    /**
-     * @dataProvider elementProvider
-     */
+    #[DataProvider('elementProvider')]
     public function testShouldThrowForBeforebeginAndAfterendText(Element $element): void
     {
         $this->assertThrows(static function () use ($element): void {
@@ -36,9 +35,7 @@ trait InsertAdjacentHTMLTrait
         }, NoModificationAllowedError::class);
     }
 
-    /**
-     * @dataProvider elementProvider
-     */
+    #[DataProvider('elementProvider')]
     public function testShouldThrowForBeforebeginAndAfterendComment(Element $element): void
     {
         $this->assertThrows(static function () use ($element): void {
@@ -49,9 +46,7 @@ trait InsertAdjacentHTMLTrait
         }, NoModificationAllowedError::class);
     }
 
-    /**
-     * @dataProvider elementProvider
-     */
+    #[DataProvider('elementProvider')]
     public function testShouldThrowForBeforebeginAndAfterendElements(Element $element): void
     {
         $this->assertThrows(static function () use ($element): void {

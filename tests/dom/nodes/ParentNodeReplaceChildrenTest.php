@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\dom\nodes;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Node;
 
 use function iterator_to_array;
@@ -17,9 +18,7 @@ class ParentNodeReplaceChildrenTest extends NodeTestCase
 
     private static $testNodes = [];
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testReplaceChildrenWithoutArgsOnParentHavingNoChild(Node $node, string $nodeName): void
     {
         $parent = $node->cloneNode();
@@ -27,9 +26,7 @@ class ParentNodeReplaceChildrenTest extends NodeTestCase
         $this->assertSame([], iterator_to_array($parent->childNodes));
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testReplaceChildrenWithNullAsArgOnParentHavingNoChild(Node $node, string $nodeName): void
     {
         $parent = $node->cloneNode();
@@ -37,9 +34,7 @@ class ParentNodeReplaceChildrenTest extends NodeTestCase
         $this->assertSame('null', $parent->childNodes[0]->textContent);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testReplaceChildrenWithOnlyTextOnParentHavingNoChild(Node $node, string $nodeName): void
     {
         $parent = $node->cloneNode();
@@ -47,9 +42,7 @@ class ParentNodeReplaceChildrenTest extends NodeTestCase
         $this->assertSame('text', $parent->childNodes[0]->textContent);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testReplaceChildrenWithOnlyElementOnParentHavingNoChild(Node $node, string $nodeName): void
     {
         $parent = $node->cloneNode();
@@ -58,9 +51,7 @@ class ParentNodeReplaceChildrenTest extends NodeTestCase
         $this->assertSame([$x], iterator_to_array($parent->childNodes));
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testReplaceChildrenWithNullOnParentHavingChild(Node $node, string $nodeName): void
     {
         $parent = $node->cloneNode();
@@ -71,9 +62,7 @@ class ParentNodeReplaceChildrenTest extends NodeTestCase
         $this->assertSame('null', $parent->childNodes[0]->textContent);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testReplaceChildrenWithElementAndTextOnParentHavingChild(Node $node, string $nodeName): void
     {
         $parent = $node->cloneNode();

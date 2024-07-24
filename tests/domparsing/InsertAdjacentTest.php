@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Tests\domparsing;
 
 use Generator;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Node;
 use Rowbot\DOM\Tests\dom\WindowTrait;
 use Rowbot\DOM\Tests\TestCase;
@@ -27,9 +28,7 @@ class InsertAdjacentTest extends TestCase
         'afterend'    => 'nextSibling',
     ];
 
-    /**
-     * @dataProvider positionProvider
-     */
+    #[DataProvider('positionProvider')]
     public function testInsertAdjacentHTML(string $position): void
     {
         $document = self::getWindow()->document;

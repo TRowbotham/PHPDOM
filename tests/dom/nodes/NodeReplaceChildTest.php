@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\dom\nodes;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Exception\HierarchyRequestError;
 use Rowbot\DOM\Exception\NotFoundError;
 use Rowbot\DOM\Tests\dom\DocumentGetter;
@@ -80,9 +81,8 @@ class NodeReplaceChildTest extends NodeTestCase
     /**
      * If the context node is not a node that can contain children, a
      * HierarchyRequestError exception should be thrown.
-     *
-     * @dataProvider getNodes
      */
+    #[DataProvider('getNodes')]
     public function test3($node)
     {
         $this->expectException(HierarchyRequestError::class);

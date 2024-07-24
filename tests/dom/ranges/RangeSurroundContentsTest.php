@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Tests\dom\ranges;
 
 use Generator;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Exception\DOMException;
 use Rowbot\DOM\Exception\InvalidNodeTypeError;
 use Rowbot\DOM\Exception\InvalidStateError;
@@ -31,9 +32,7 @@ class RangeSurroundContentsTest extends RangeTestCase
     private static $expectedIframe;
     private static $referenceDoc;
 
-    /**
-     * @dataProvider rangesProvider
-     */
+    #[DataProvider('rangesProvider')]
     public function testSurroundContents(int $i, int $j): void
     {
         self::restoreIframe(self::$actualIframe, $i, $j);

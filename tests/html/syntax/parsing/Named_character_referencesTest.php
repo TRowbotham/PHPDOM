@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Tests\html\syntax\parsing;
 
 use Generator;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\HTMLDocument;
 use Rowbot\DOM\Tests\TestCase;
 use RuntimeException;
@@ -22,9 +23,7 @@ use const JSON_ERROR_NONE;
  */
 class Named_character_referencesTest extends TestCase
 {
-    /**
-     * @dataProvider entityProvider
-     */
+    #[DataProvider('entityProvider')]
     public function testCharacterReference(string $entity, string $characters): void
     {
         $dummy = (new HTMLDocument())->createElement('p');

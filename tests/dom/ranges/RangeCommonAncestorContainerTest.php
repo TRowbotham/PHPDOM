@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Tests\dom\ranges;
 
 use Generator;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Tests\dom\Window;
 use Rowbot\DOM\Tests\dom\WindowTrait;
 
@@ -17,9 +18,7 @@ class RangeCommonAncestorContainerTest extends RangeTestCase
 {
     use WindowTrait;
 
-    /**
-     * @dataProvider rangeProvider
-     */
+    #[DataProvider('rangeProvider')]
     public function testRanges(int $i, string $endpoints): void
     {
         $window = self::getWindow();

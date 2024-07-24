@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\dom\nodes;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Tests\dom\DocumentGetter;
 
 use function iterator_to_array;
@@ -33,9 +34,8 @@ class ParentNodePrependTest extends NodeTestCase
 
     /**
      * .prepend() without any argument, on a parent having no child.
-     *
-     * @dataProvider getTests
      */
+    #[DataProvider('getTests')]
     public function test1($node)
     {
         $parent = $node->cloneNode();
@@ -45,9 +45,8 @@ class ParentNodePrependTest extends NodeTestCase
 
     /**
      * .prepend() with null as an argument, on a parent having no child.
-     *
-     * @dataProvider getTests
      */
+    #[DataProvider('getTests')]
     public function test2($node)
     {
         $parent = $node->cloneNode();
@@ -57,9 +56,8 @@ class ParentNodePrependTest extends NodeTestCase
 
     /**
      * .prepend() with only text as an argument, on a parent having no child.
-     *
-     * @dataProvider getTests
      */
+    #[DataProvider('getTests')]
     public function test3($node)
     {
         $parent = $node->cloneNode();
@@ -70,9 +68,8 @@ class ParentNodePrependTest extends NodeTestCase
     /**
      * .prepend() with only one element as an argument, on a parent having no
      * child.
-     *
-     * @dataProvider getTests
      */
+    #[DataProvider('getTests')]
     public function test4($node)
     {
         $parent = $node->cloneNode();
@@ -83,9 +80,8 @@ class ParentNodePrependTest extends NodeTestCase
 
     /**
      * .prepend() with null as an argument, on a parent having a child.
-     *
-     * @dataProvider getTests
      */
+    #[DataProvider('getTests')]
     public function test5($node)
     {
         $parent = $node->cloneNode();
@@ -99,9 +95,8 @@ class ParentNodePrependTest extends NodeTestCase
     /**
      * .prepend() with one element and text as argument, on a parent having a
      * child.
-     *
-     * @dataProvider getTests
      */
+    #[DataProvider('getTests')]
     public function test6($node)
     {
         $parent = $node->cloneNode();

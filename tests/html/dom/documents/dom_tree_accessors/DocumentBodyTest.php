@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\html\dom\documents\dom_tree_accessors;
 
+use PHPUnit\Framework\Attributes\Depends;
 use Rowbot\DOM\Element\HTML\HTMLBodyElement;
 use Rowbot\DOM\Element\HTML\HTMLFrameSetElement;
 use Rowbot\DOM\Exception\HierarchyRequestError;
@@ -170,9 +171,7 @@ class DocumentBodyTest extends AccessorTestCase
         return $originalBody;
     }
 
-    /**
-     * @depends testSettingDocumentBodyToAString
-     */
+    #[Depends('testSettingDocumentBodyToAString')]
     public function testSettingDocumentBodyToADivElement(HTMLBodyElement $originalBody): void
     {
         $document = self::getWindow()->document;

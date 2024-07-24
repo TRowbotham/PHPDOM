@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\html\syntax\serializing_html_fragments;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\HTMLDocument;
 use Rowbot\DOM\Tests\html\syntax\Html_element_list_trait;
 use Rowbot\DOM\Tests\TestCase;
@@ -15,18 +16,14 @@ class OuterHTMLTest extends TestCase
 {
     use Html_element_list_trait;
 
-    /**
-     * @dataProvider elementsWithEndTagProvider
-     */
+    #[DataProvider('elementsWithEndTagProvider')]
     public function testElementsWithEndTag(string $ele): void
     {
         $e = (new HTMLDocument())->createElement($ele);
         self::assertSame('<' . $ele . '></' . $ele . '>', $e->outerHTML);
     }
 
-    /**
-     * @dataProvider elementsWithoutEndTagProvider
-     */
+    #[DataProvider('elementsWithoutEndTagProvider')]
     public function testElementsWithoutEndTag(string $ele): void
     {
         $e = (new HTMLDocument())->createElement($ele);

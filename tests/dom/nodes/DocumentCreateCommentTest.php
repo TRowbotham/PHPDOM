@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Tests\dom\nodes;
 
 use Generator;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Comment;
 use Rowbot\DOM\HTMLDocument;
 
@@ -13,9 +14,7 @@ use Rowbot\DOM\HTMLDocument;
  */
 class DocumentCreateCommentTest extends CharacterDataTestCase
 {
-    /**
-     * @dataProvider commentNodeDataProvider
-     */
+    #[DataProvider('commentNodeDataProvider')]
     public function testCreateComment(
         string $method,
         string $iface,

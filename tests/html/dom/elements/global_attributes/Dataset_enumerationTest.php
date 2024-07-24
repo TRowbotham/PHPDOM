@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\html\dom\elements\global_attributes;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\DocumentBuilder;
 use Rowbot\DOM\Tests\TestCase;
 
@@ -14,9 +15,7 @@ use function count;
  */
 class Dataset_enumerationTest extends TestCase
 {
-    /**
-     * @dataProvider attributesProvider
-     */
+    #[DataProvider('attributesProvider')]
     public function testEnumeration(array $array, int $expectedCount): void
     {
         $document = DocumentBuilder::create()->setContentType('text/html')->createEmptyDocument();

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\html\syntax\parsing;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Namespaces;
 use Rowbot\DOM\Tests\dom\WindowTrait;
 use Rowbot\DOM\Tests\TestCase;
@@ -20,9 +21,7 @@ class Document_getElementsByTagName_foreign_01Test extends TestCase
 {
     use WindowTrait;
 
-    /**
-     * @dataProvider elementNameProvider
-     */
+    #[DataProvider('elementNameProvider')]
     public function testGetElementsByTagName(string $el): void
     {
         $document = self::getWindow()->document;

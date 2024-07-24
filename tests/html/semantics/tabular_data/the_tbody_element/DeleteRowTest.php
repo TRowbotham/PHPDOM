@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\html\semantics\tabular_data\the_tbody_element;
 
+use PHPUnit\Framework\Attributes\Depends;
 use Rowbot\DOM\Element\HTML\HTMLTableSectionElement;
 use Rowbot\DOM\Exception\IndexSizeError;
 use Rowbot\DOM\Tests\dom\WindowTrait;
@@ -28,9 +29,7 @@ class DeleteRowTest extends TestCase
         return $tbody;
     }
 
-    /**
-     * @depends testDeleteRowWithZeroArg
-     */
+    #[Depends('testDeleteRowWithZeroArg')]
     public function testDeleteRowWithNegativeOneArg(HTMLTableSectionElement $tbody): HTMLTableSectionElement
     {
         $tbody->deleteRow(-1);
@@ -54,9 +53,7 @@ class DeleteRowTest extends TestCase
         $tbody->deleteRow(-2);
     }
 
-    /**
-     * @depends testDeleteRowWithNegativeOneArg
-     */
+    #[Depends('testDeleteRowWithNegativeOneArg')]
     public function testDeleteRowWithNegativeOneArgNoRows(HTMLTableSectionElement $tbody): HTMLTableSectionElement
     {
         self::assertSame(1, $tbody->rows->length);
@@ -68,9 +65,7 @@ class DeleteRowTest extends TestCase
         return $tbody;
     }
 
-    /**
-     * @depends testDeleteRowWithNegativeOneArgNoRows
-     */
+    #[Depends('testDeleteRowWithNegativeOneArgNoRows')]
     public function testDeleteRowWithZeroArgNoRows(HTMLTableSectionElement $tbody): void
     {
         self::assertSame(0, $tbody->rows->length);

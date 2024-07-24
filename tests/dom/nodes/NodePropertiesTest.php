@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Tests\dom\nodes;
 
 use Generator;
+use PHPUnit\Framework\Attributes\DataProvider;
 use ReflectionObject;
 use ReflectionProperty;
 use Rowbot\DOM\Node;
@@ -20,9 +21,7 @@ class NodePropertiesTest extends NodeTestCase
 {
     use WindowTrait;
 
-    /**
-     * @dataProvider nodePropertiesProvider
-     */
+    #[DataProvider('nodePropertiesProvider')]
     public function testNodeProperties(string $node, array $nodeData): void
     {
         $window = self::getWindow();

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\dom;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use ReflectionClass;
 
 use function sprintf;
@@ -15,9 +16,7 @@ trait Constants
 {
     abstract public static function constantsProvider(): array;
 
-    /**
-     * @dataProvider constantsProvider
-     */
+    #[DataProvider('constantsProvider')]
     public function testConstants($objects, $constants): void
     {
         foreach ($objects as $object) {

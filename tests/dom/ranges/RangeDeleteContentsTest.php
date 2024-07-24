@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\dom\ranges;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Node;
 use Rowbot\DOM\Range;
 use Rowbot\DOM\Tests\dom\Window;
@@ -25,9 +26,7 @@ class RangeDeleteContentsTest extends RangeTestCase
     private static $expectedIframe;
     private static $referenceDoc;
 
-    /**
-     * @dataProvider rangesProvider
-     */
+    #[DataProvider('rangesProvider')]
     public function testDeleteContents(int $i): void
     {
         self::restoreIframe(self::$actualIframe, $i);

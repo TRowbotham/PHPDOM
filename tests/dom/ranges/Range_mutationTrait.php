@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Tests\dom\ranges;
 
 use Closure;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 use Rowbot\DOM\Exception\DOMException;
 use Rowbot\DOM\Node;
 use Rowbot\DOM\Tests\dom\WindowTrait;
@@ -133,11 +135,9 @@ trait Range_mutationTrait
      * both false and true, because when it's set to true WebKit and Opera fail all
      * tests' sanity checks, which is unhelpful.  The last four parameters just
      * tell us what range to build.
-     *
-     * @dataProvider rangeProvider
-     *
-     * @test
      */
+    #[Test]
+    #[DataProvider('rangeProvider')]
     public function doTest($callback, $useSelection, $startContainer, $startOffset, $endContainer, $endOffset): void
     {
         $window = self::getWindow();

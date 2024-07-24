@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\dom\nodes;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Document;
 use Rowbot\DOM\Exception\InvalidCharacterError;
 use Rowbot\DOM\Tests\dom\DocumentGetter;
@@ -16,9 +17,7 @@ class DOMImplementationCreateDocumentTypeTest extends TestCase
 {
     use DocumentGetter;
 
-    /**
-     * @dataProvider getTestData
-     */
+    #[DataProvider('getTestData')]
     public function testCreateDocumentType(
         string $qualifiedName,
         string $publicId,

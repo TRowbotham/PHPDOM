@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\dom\nodes;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Exception\HierarchyRequestError;
 use Rowbot\DOM\Exception\NotFoundError;
 use Rowbot\DOM\Tests\dom\DocumentGetter;
@@ -66,9 +67,7 @@ class NodeInsertBeforeTest extends NodeTestCase
         ];
     }
 
-    /**
-     * @dataProvider getLeafNodes
-     */
+    #[DataProvider('getLeafNodes')]
     public function testLeafNode($nodeName, $createNodeFunction)
     {
         $document = self::getHTMLDocument();

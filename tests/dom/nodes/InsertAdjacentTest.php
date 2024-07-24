@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Tests\dom\nodes;
 
 use Generator;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Exception\HierarchyRequestError;
 use Rowbot\DOM\Exception\SyntaxError;
@@ -35,9 +36,7 @@ class InsertAdjacentTest extends NodeTestCase
 
     private static $el;
 
-    /**
-     * @dataProvider positionProvider
-     */
+    #[DataProvider('positionProvider')]
     public function testInsertAdjacentElement(Element $div, string $position): void
     {
         $div->id = self::TEXTS[$position];
@@ -46,9 +45,7 @@ class InsertAdjacentTest extends NodeTestCase
         $this->assertSame(self::TEXTS[$position], $el->{self::POSSIBLE_POSITIONS[$position]}->id);
     }
 
-    /**
-     * @dataProvider positionProvider
-     */
+    #[DataProvider('positionProvider')]
     public function testInsertAdjacentText(Element $div, string $position): void
     {
         $el = $this->getEl();

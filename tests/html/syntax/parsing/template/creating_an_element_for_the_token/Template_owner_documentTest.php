@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Tests\html\syntax\parsing\template\creating_an_element_for_the_token;
 
 use Generator;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Element\HTML\HTMLTemplateElement;
 use Rowbot\DOM\Tests\dom\ranges\FakeIframe;
@@ -117,9 +118,7 @@ class Template_owner_documentTest extends TestCase
         self::assertSame($div1->ownerDocument, $div2->ownerDocument);
     }
 
-    /**
-     * @dataProvider compareOwnersDataProvider
-     */
+    #[DataProvider('compareOwnersDataProvider')]
     public function testCompareOwners(Element $element, HTMLTemplateElement $template): void
     {
         self::assertSame($template->content->ownerDocument, $element->ownerDocument);

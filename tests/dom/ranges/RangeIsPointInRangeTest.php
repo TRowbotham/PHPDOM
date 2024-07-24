@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Tests\dom\ranges;
 
 use Generator;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Exception\IndexSizeError;
 use Rowbot\DOM\Exception\InvalidNodeTypeError;
 use Rowbot\DOM\Node;
@@ -23,9 +24,7 @@ class RangeIsPointInRangeTest extends RangeTestCase
 
     private static $testRangesCached;
 
-    /**
-     * @dataProvider pointsProvider
-     */
+    #[DataProvider('pointsProvider')]
     public function testIsPointInRange(string $node, string $range): void
     {
         $window = self::getWindow();

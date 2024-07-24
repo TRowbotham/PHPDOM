@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\dom\nodes;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Exception\InvalidCharacterError;
 use Rowbot\DOM\Namespaces;
@@ -87,9 +88,7 @@ class DocumentCreateElementTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider validNamesProvider
-     */
+    #[DataProvider('validNamesProvider')]
     public function testValidNames($t)
     {
         foreach ($this->getDocumentDescription() as $desc) {
@@ -137,9 +136,7 @@ class DocumentCreateElementTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider invalidNamesProvider
-     */
+    #[DataProvider('invalidNamesProvider')]
     public function testInvalidNames($arg)
     {
         foreach ($this->getDocumentDescription() as $desc) {

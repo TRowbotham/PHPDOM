@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Tests\dom\ranges;
 
 use Generator;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Exception\NotSupportedError;
 use Rowbot\DOM\Exception\WrongDocumentError;
 use Rowbot\DOM\Range;
@@ -34,9 +35,7 @@ class RangeCompareBoundaryPointsTest extends RangeTestCase
 
     private static $extraTests;
 
-    /**
-     * @dataProvider rangeProvider
-     */
+    #[DataProvider('rangeProvider')]
     public function testCompareBoundaryPoints(string $range, int $i, $how): void
     {
         $window = self::getWindow();

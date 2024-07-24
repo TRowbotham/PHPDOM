@@ -6,6 +6,7 @@ namespace Rowbot\DOM\Tests\dom\traversal;
 
 use Closure;
 use Exception;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Exception\InvalidStateError;
 use Rowbot\DOM\Node;
 use Rowbot\DOM\NodeFilter;
@@ -88,9 +89,7 @@ class NodeIteratorTest extends TestCase
         }, InvalidStateError::class);
     }
 
-    /**
-     * @dataProvider iteratorInputProvider
-     */
+    #[DataProvider('iteratorInputProvider')]
     public function testIterator(Node $root, int $whatToShow, ?Closure $filter): void
     {
         $document = self::getWindow()->document;

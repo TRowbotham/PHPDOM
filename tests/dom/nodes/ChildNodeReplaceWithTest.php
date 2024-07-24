@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\dom\nodes;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\HTMLDocument;
 use Rowbot\DOM\Tests\TestCase;
 
@@ -14,9 +15,7 @@ class ChildNodeReplaceWithTest extends TestCase
 {
     private static $document;
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testReplaceWithWithoutArgs($child, string $nodeName, string $innerHTML): void
     {
         $parent = self::$document->createElement('div');
@@ -26,9 +25,7 @@ class ChildNodeReplaceWithTest extends TestCase
         $this->assertSame('', $parent->innerHTML);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testReplaceWithWithNull($child, string $nodeName, string $innerHTML): void
     {
         $parent = self::$document->createElement('div');
@@ -38,9 +35,7 @@ class ChildNodeReplaceWithTest extends TestCase
         $this->assertSame('null', $parent->innerHTML);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testReplaceWithWithEmptyString($child, string $nodeName, string $innerHTML): void
     {
         $parent = self::$document->createElement('div');
@@ -50,9 +45,7 @@ class ChildNodeReplaceWithTest extends TestCase
         $this->assertSame('', $parent->innerHTML);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testReplaceWithWithOnlyText($child, string $nodeName, string $innerHTML): void
     {
         $parent = self::$document->createElement('div');
@@ -62,9 +55,7 @@ class ChildNodeReplaceWithTest extends TestCase
         $this->assertSame('text', $parent->innerHTML);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testReplaceWithWithOneElement($child, string $nodeName, string $innerHTML): void
     {
         $parent = self::$document->createElement('div');
@@ -75,9 +66,7 @@ class ChildNodeReplaceWithTest extends TestCase
         $this->assertSame('<x></x>', $parent->innerHTML);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testReplaceWithWithSiblingOfChild($child, string $nodeName, string $innerHTML): void
     {
         $parent = self::$document->createElement('div');
@@ -92,9 +81,7 @@ class ChildNodeReplaceWithTest extends TestCase
         $this->assertSame('<x></x><y></y><z></z>', $parent->innerHTML);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testReplaceWithWithSiblingOfChildAndText($child, string $nodeName, string $innerHTML): void
     {
         $parent = self::$document->createElement('div');
@@ -107,9 +94,7 @@ class ChildNodeReplaceWithTest extends TestCase
         $this->assertSame('<x></x>21', $parent->innerHTML);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testReplaceWithWithSiblingOfChildAndChild($child, string $nodeName, string $innerHTML): void
     {
         $parent = self::$document->createElement('div');
@@ -122,9 +107,7 @@ class ChildNodeReplaceWithTest extends TestCase
         $this->assertSame('<x></x>' . $innerHTML . 'text', $parent->innerHTML);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testReplaceWithWithOneElementAndText($child, string $nodeName, string $innerHTML): void
     {
         $parent = self::$document->createElement('div');
@@ -135,9 +118,7 @@ class ChildNodeReplaceWithTest extends TestCase
         $this->assertSame('<x></x>text', $parent->innerHTML);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testReplaceWithOnParentlessChildWithTwoElements($child, string $nodeName, string $innerHTML): void
     {
         $parent = self::$document->createElement('div');

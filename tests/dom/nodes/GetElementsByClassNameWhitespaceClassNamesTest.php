@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Tests\dom\nodes;
 
 use Generator;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Tests\dom\WindowTrait;
 
@@ -18,9 +19,7 @@ class GetElementsByClassNameWhitespaceClassNamesTest extends NodeTestCase
 {
     use WindowTrait;
 
-    /**
-     * @dataProvider spanNodesProvider
-     */
+    #[DataProvider('spanNodesProvider')]
     public function testPassingUnicodeToGetElementsByClassNameStillFindsTheSpan(
         string $charName,
         Element $span

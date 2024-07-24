@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Tests\dom\traversal;
 
 use Generator;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Node;
 use Rowbot\DOM\Tests\dom\Window;
 use Rowbot\DOM\Tests\dom\WindowTrait;
@@ -19,9 +20,7 @@ class NodeIteratorRemovalTest extends TestCase
 {
     use WindowTrait;
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testRemovingNode(Node $node): void
     {
         $window = self::getWindow();

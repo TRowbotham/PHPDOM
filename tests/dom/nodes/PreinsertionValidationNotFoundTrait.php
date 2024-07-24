@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\dom\nodes;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use ReflectionClass;
 use Rowbot\DOM\Exception\HierarchyRequestError;
 use Rowbot\DOM\Exception\NotFoundError;
@@ -19,9 +20,7 @@ trait PreinsertionValidationNotFoundTrait
 
     abstract public function getMethodName(): string;
 
-    /**
-     * @dataProvider nonParentNodesProvider
-     */
+    #[DataProvider('nonParentNodesProvider')]
     public function testStep1HappensBeforeStep3(Node $parent): void
     {
         $document = self::getWindow()->document;
@@ -43,9 +42,7 @@ trait PreinsertionValidationNotFoundTrait
         $this->insertFunc($parent, $node, $child);
     }
 
-    /**
-     * @dataProvider nonInsertableNodesProvider
-     */
+    #[DataProvider('nonInsertableNodesProvider')]
     public function testStep3HappensBeforeStep4(Node $node): void
     {
         $document = self::getWindow()->document;
@@ -56,9 +53,7 @@ trait PreinsertionValidationNotFoundTrait
         $this->insertFunc($parent, $node, $child);
     }
 
-    /**
-     * @dataProvider nonDocumentParentNodesProvider
-     */
+    #[DataProvider('nonDocumentParentNodesProvider')]
     public function testStep3HappensBeforeStep5(Node $parent_): void
     {
         $document = self::getWindow()->document;

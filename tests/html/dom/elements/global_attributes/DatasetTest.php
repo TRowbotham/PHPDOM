@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\html\dom\elements\global_attributes;
 
+use PHPUnit\Framework\Attributes\Depends;
 use Rowbot\DOM\DocumentBuilder;
 use Rowbot\DOM\DOMStringMap;
 use Rowbot\DOM\Element\HTML\HTMLElement;
@@ -27,9 +28,7 @@ class DatasetTest extends TestCase
         return $div;
     }
 
-    /**
-     * @depends testHTMLElementsShouldHaveDataset
-     */
+    #[Depends('testHTMLElementsShouldHaveDataset')]
     public function testShouldReturnUndefinedBeforeSettingAnAttribute(HTMLElement $div): HTMLElement
     {
         self::assertFalse(isset($div->dataset->foo));
@@ -38,9 +37,7 @@ class DatasetTest extends TestCase
         return $div;
     }
 
-    /**
-     * @depends testShouldReturnUndefinedBeforeSettingAnAttribute
-     */
+    #[Depends('testShouldReturnUndefinedBeforeSettingAnAttribute')]
     public function testShouldReturnCorrectValue(HTMLElement $div): HTMLElement
     {
         $div->setAttribute('data-foo', 'value');
@@ -50,9 +47,7 @@ class DatasetTest extends TestCase
         return $div;
     }
 
-    /**
-     * @depends testShouldReturnCorrectValue
-     */
+    #[Depends('testShouldReturnCorrectValue')]
     public function testShouldReturnEmptyIfSetToEmptyString(HTMLElement $div): HTMLElement
     {
         $div->setAttribute('data-foo', '');
@@ -62,9 +57,7 @@ class DatasetTest extends TestCase
         return $div;
     }
 
-    /**
-     * @depends testShouldReturnEmptyIfSetToEmptyString
-     */
+    #[Depends('testShouldReturnEmptyIfSetToEmptyString')]
     public function testShouldReturnUndefinedAfterRemovingAttribute(HTMLElement $div)
     {
         $div->removeAttribute('data-foo');

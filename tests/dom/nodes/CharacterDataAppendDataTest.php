@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Tests\dom\nodes;
 
 use Closure;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Comment;
 use Rowbot\DOM\HTMLDocument;
 use Rowbot\DOM\Tests\TestCase;
@@ -16,9 +17,7 @@ use TypeError;
  */
 class CharacterDataAppendDataTest extends TestCase
 {
-    /**
-     * @dataProvider nodeProvider
-     */
+    #[DataProvider('nodeProvider')]
     public function testAppendDataBar(Closure $create, string $type): void
     {
         $node = $create();
@@ -28,9 +27,7 @@ class CharacterDataAppendDataTest extends TestCase
         $this->assertSame('testbar', $node->data);
     }
 
-    /**
-     * @dataProvider nodeProvider
-     */
+    #[DataProvider('nodeProvider')]
     public function testAppendDataEmptyString(Closure $create, string $type): void
     {
         $node = $create();
@@ -40,9 +37,7 @@ class CharacterDataAppendDataTest extends TestCase
         $this->assertSame('test', $node->data);
     }
 
-    /**
-     * @dataProvider nodeProvider
-     */
+    #[DataProvider('nodeProvider')]
     public function testAppendDataNonASCII(Closure $create, string $type): void
     {
         $node = $create();
@@ -53,9 +48,7 @@ class CharacterDataAppendDataTest extends TestCase
         $this->assertSame(25, $node->length);
     }
 
-    /**
-     * @dataProvider nodeProvider
-     */
+    #[DataProvider('nodeProvider')]
     public function testAppendDataNull(Closure $create, string $type): void
     {
         $this->expectException(TypeError::class);
@@ -66,9 +59,7 @@ class CharacterDataAppendDataTest extends TestCase
         $this->assertSame('testnull', $node->data);
     }
 
-    /**
-     * @dataProvider nodeProvider
-     */
+    #[DataProvider('nodeProvider')]
     public function testAppendDataEmptyStringBar(Closure $create, string $type): void
     {
         $node = $create();

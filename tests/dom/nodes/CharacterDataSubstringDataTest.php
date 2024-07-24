@@ -6,6 +6,7 @@ namespace Rowbot\DOM\Tests\dom\nodes;
 
 use ArgumentCountError;
 use Closure;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Comment;
 use Rowbot\DOM\Exception\IndexSizeError;
 use Rowbot\DOM\Tests\dom\DocumentGetter;
@@ -16,9 +17,7 @@ class CharacterDataSubstringDataTest extends NodeTestCase
 {
     use DocumentGetter;
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testSubstringDataWithTooFewArgs(Closure $create): void
     {
         $node = $create();
@@ -32,9 +31,7 @@ class CharacterDataSubstringDataTest extends NodeTestCase
         }, ArgumentCountError::class);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testSubstringDataWithTooManyArgs(Closure $create): void
     {
         $node = $create();
@@ -43,9 +40,7 @@ class CharacterDataSubstringDataTest extends NodeTestCase
         $this->assertSame('t', $node->substringData(0, 1));
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testSubstringDataWithInvalidOffset(Closure $create): void
     {
         $node = $create();
@@ -62,9 +57,7 @@ class CharacterDataSubstringDataTest extends NodeTestCase
         }, IndexSizeError::class);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testSubstringDataWithInBoundOffset(Closure $create): void
     {
         $node = $create();
@@ -77,9 +70,7 @@ class CharacterDataSubstringDataTest extends NodeTestCase
         $this->assertSame('', $node->substringData(4, 1));
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testSubstringDataWithZeroCount(Closure $create): void
     {
         $node = $create();
@@ -92,9 +83,7 @@ class CharacterDataSubstringDataTest extends NodeTestCase
         $this->assertSame('', $node->substringData(4, 0));
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testSubstringDataWithVeryLargeOffset(Closure $create): void
     {
         $node = $create();
@@ -107,9 +96,7 @@ class CharacterDataSubstringDataTest extends NodeTestCase
         $this->assertSame('', $node->substringData(0x100000000 + 4, 1));
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testSubstringDataWithNegativeOffset(Closure $create): void
     {
         $node = $create();
@@ -118,9 +105,7 @@ class CharacterDataSubstringDataTest extends NodeTestCase
         $this->assertSame('s', $node->substringData(-0x100000000 + 2, 1));
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testSubstringDataWithStringOffset(Closure $create): void
     {
         $node = $create();
@@ -130,9 +115,7 @@ class CharacterDataSubstringDataTest extends NodeTestCase
         $this->assertSame('tes', $node->substringData('test', 3));
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testSubstringDataWithInBoundsCount(Closure $create): void
     {
         $node = $create();
@@ -144,9 +127,7 @@ class CharacterDataSubstringDataTest extends NodeTestCase
         $this->assertSame('test', $node->substringData(0, 4));
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testSubstringDataWithLargeCount(Closure $create): void
     {
         $node = $create();
@@ -156,9 +137,7 @@ class CharacterDataSubstringDataTest extends NodeTestCase
         $this->assertSame('st', $node->substringData(2, 20));
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testSubstringDataWithVeryLargeCount(Closure $create): void
     {
         $node = $create();
@@ -167,9 +146,7 @@ class CharacterDataSubstringDataTest extends NodeTestCase
         $this->assertSame('s', $node->substringData(2, 0x100000000 + 1));
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testSubstringDataWithNegativeCount(Closure $create): void
     {
         $node = $create();
@@ -179,9 +156,7 @@ class CharacterDataSubstringDataTest extends NodeTestCase
         $this->assertSame('te', $node->substringData(0, -0x100000000 + 2));
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testSubstringDataWithNonAsciiData(Closure $create): void
     {
         $node = $create();
@@ -192,9 +167,7 @@ class CharacterDataSubstringDataTest extends NodeTestCase
         $this->assertSame("資料", $node->substringData(39, 2));
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testSubstringDataWithNonBMPData(Closure $create): void
     {
         $node = $create();

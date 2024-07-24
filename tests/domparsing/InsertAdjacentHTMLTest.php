@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\domparsing;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Depends;
 use Rowbot\DOM\Exception\SyntaxError;
 use Rowbot\DOM\Node;
 use Rowbot\DOM\Tests\TestCase;
@@ -17,9 +19,7 @@ class InsertAdjacentHTMLTest extends TestCase
 
     private $script_ran = false;
 
-    /**
-     * @dataProvider nodeProvider1
-     */
+    #[DataProvider('nodeProvider1')]
     public function testBeforebegin(Node $node): void
     {
         $this->script_ran = false;
@@ -29,9 +29,7 @@ class InsertAdjacentHTMLTest extends TestCase
         self::assertFalse($this->script_ran);
     }
 
-    /**
-     * @dataProvider nodeProvider1
-     */
+    #[DataProvider('nodeProvider1')]
     public function testAfterbegin(Node $node): void
     {
         $this->script_ran = false;
@@ -41,9 +39,7 @@ class InsertAdjacentHTMLTest extends TestCase
         self::assertFalse($this->script_ran);
     }
 
-    /**
-     * @dataProvider nodeProvider1
-     */
+    #[DataProvider('nodeProvider1')]
     public function testBeforeEnd(Node $node): void
     {
         $this->script_ran = false;
@@ -53,9 +49,7 @@ class InsertAdjacentHTMLTest extends TestCase
         self::assertFalse($this->script_ran);
     }
 
-    /**
-     * @dataProvider nodeProvider1
-     */
+    #[DataProvider('nodeProvider1')]
     public function testAfterend(Node $node): void
     {
         $this->script_ran = false;
@@ -95,9 +89,7 @@ class InsertAdjacentHTMLTest extends TestCase
         return [$document, $content, $parentElement];
     }
 
-    /**
-     * @depends testInsertingAfterbeginAndBeforeendShouldOrderThingsCorrectly
-     */
+    #[Depends('testInsertingAfterbeginAndBeforeendShouldOrderThingsCorrectly')]
     public function test2(array $nodes): void
     {
         [$document, $content, $parentElement] = $nodes;
@@ -106,9 +98,7 @@ class InsertAdjacentHTMLTest extends TestCase
         self::assertFalse($this->script_ran);
     }
 
-    /**
-     * @dataProvider nodeProvider2
-     */
+    #[DataProvider('nodeProvider2')]
     public function test3(Node $node): void
     {
         $this->testBeforebegin($node);

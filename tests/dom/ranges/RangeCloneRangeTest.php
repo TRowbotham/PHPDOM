@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\dom\ranges;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Node;
 use Rowbot\DOM\Tests\dom\WindowTrait;
 
@@ -14,9 +15,7 @@ class RangeCloneRangeTest extends RangeTestCase
 {
     use WindowTrait;
 
-    /**
-     * @dataProvider rangeProvider
-     */
+    #[DataProvider('rangeProvider')]
     public function testCloneRange(string $rangeEndpoints): void
     {
         if ($rangeEndpoints === 'detached') {

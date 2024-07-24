@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Tests\dom\nodes;
 
 use Generator;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\TestWith;
 use Rowbot\DOM\Element\Element;
 use Rowbot\DOM\Exception\InUseAttributeError;
 use Rowbot\DOM\Exception\InvalidCharacterError;
@@ -24,9 +26,7 @@ class AttributesTest extends NodeTestCase
 
     // toggleAttribute exhaustive tests
     // Step 1
-    /**
-     * @dataProvider invalidNamesProvider
-     */
+    #[DataProvider('invalidNamesProvider')]
     public function testQualifiedNameNameDoesNotMatchProductionToggleAttribute(string $invalidName): void
     {
         $document = self::getWindow()->document;
@@ -43,9 +43,7 @@ class AttributesTest extends NodeTestCase
         }, InvalidCharacterError::class);
     }
 
-    /**
-     * @dataProvider childElementForTest2Provider
-     */
+    #[DataProvider('childElementForTest2Provider')]
     public function testQualifiedNameNameDoesNotMatchProductionWhenAttrIsPresentToggleAttribute(Element $child): void
     {
         $this->assertThrows(static function () use ($child) {
@@ -85,9 +83,7 @@ class AttributesTest extends NodeTestCase
     }
 
     // Step 3
-    /**
-     * @dataProvider xmlnsNameProvider
-     */
+    #[DataProvider('xmlnsNameProvider')]
     public function testToggleAttributeShouldNotThrowIfQualifiedNameStartsWithStringXmlns(string $name): void
     {
         $el = self::getWindow()->document->createElement('foo');
@@ -97,9 +93,7 @@ class AttributesTest extends NodeTestCase
     }
 
     // Step 4
-    /**
-     * @dataProvider validNamesProvider
-     */
+    #[DataProvider('validNamesProvider')]
     public function testToggleAttributeBasicFunctionality(string $validName): void
     {
         $el = self::getWindow()->document->createElement('foo');
@@ -166,9 +160,7 @@ class AttributesTest extends NodeTestCase
 
     // setAttribute exhaustive tests
     // Step 1
-    /**
-     * @dataProvider invalidNamesProvider
-     */
+    #[DataProvider('invalidNamesProvider')]
     public function testSetAttributeThrowsWhenQualifiedNameDoesNotMatchNameProduction(string $name): void
     {
         $this->expectException(InvalidCharacterError::class);
@@ -176,9 +168,7 @@ class AttributesTest extends NodeTestCase
         $el->setAttribute($name, 'test');
     }
 
-    /**
-     * @dataProvider childElementForTest2Provider
-     */
+    #[DataProvider('childElementForTest2Provider')]
     public function testSetAttributeThrowsWhenQualifiedNameDoesNotMatchNameProductionIfAttrExists(Element $el): void
     {
         $this->expectException(InvalidCharacterError::class);
@@ -206,9 +196,7 @@ class AttributesTest extends NodeTestCase
     }
 
     // Step 3
-    /**
-     * @dataProvider xmlnsNameProvider
-     */
+    #[DataProvider('xmlnsNameProvider')]
     public function testSetAttributeShouldNotThrowWhenQualifiedNameStartsWithStringXmlns(string $name): void
     {
         $el = self::getWindow()->document->createElement('foo');
@@ -217,9 +205,7 @@ class AttributesTest extends NodeTestCase
     }
 
     // Step 4
-    /**
-     * @dataProvider validNamesProvider
-     */
+    #[DataProvider('validNamesProvider')]
     public function testSetAttributeBasicFunctionality(string $name): void
     {
         $el = self::getWindow()->document->createElement('foo');
@@ -268,9 +254,7 @@ class AttributesTest extends NodeTestCase
 
     // setAttributeNS exhaustive tests
     // Step 1
-    /**
-     * @dataProvider invalidNamesProvider
-     */
+    #[DataProvider('invalidNamesProvider')]
     public function testSetAttributeNSShouldThrowWhenQualifiedNameDoesNotMatchNameProduction(string $invalidName): void
     {
         $el = self::getWindow()->document->createElement('foo');
@@ -278,9 +262,7 @@ class AttributesTest extends NodeTestCase
         $el->setAttributeNS('a', $invalidName, 'fail');
     }
 
-    /**
-     * @dataProvider childElementForTest2Provider
-     */
+    #[DataProvider('childElementForTest2Provider')]
     public function testSetAttributeNSShouldThrowWhenQualifiedNameDoesNotMatchNameProductionIfAttrExists(Element $el): void
     {
         $this->expectException(InvalidCharacterError::class);
@@ -288,9 +270,7 @@ class AttributesTest extends NodeTestCase
     }
 
     // Step 2
-    /**
-     * @dataProvider invalidNamesProvider
-     */
+    #[DataProvider('invalidNamesProvider')]
     public function testSetAttributeNSShouldThrowWhenQualifiedNameDoesNotMatchQNameProduction(string $invalidName): void
     {
         $el = self::getWindow()->document->createElement('foo');
@@ -311,10 +291,8 @@ class AttributesTest extends NodeTestCase
     }
 
     // Step 4
-    /**
-     * @testWith ["", "aa:bb", "fail"]
-     *           [null, "aa:bb", "fail"]
-     */
+    #[TestWith(["", "aa:bb", "fail"])]
+    #[TestWith([null, "aa:bb", "fail"])]
     public function testSetAttributeNSANamespaceIsRequiredToUseAPrefix(?string $namespace, string $name, string $value): void
     {
         $this->expectException(NamespaceError::class);

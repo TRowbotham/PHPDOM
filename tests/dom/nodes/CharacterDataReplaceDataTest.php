@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Tests\dom\nodes;
 
 use Closure;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Comment;
 use Rowbot\DOM\Exception\IndexSizeError;
 use Rowbot\DOM\Tests\dom\DocumentGetter;
@@ -17,9 +18,7 @@ class CharacterDataReplaceDataTest extends NodeTestCase
 {
     use DocumentGetter;
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testReplaceDataWithInvalidOffset(Closure $create): void
     {
         $node = $create();
@@ -40,9 +39,7 @@ class CharacterDataReplaceDataTest extends NodeTestCase
         $this->assertSame('test', $node->data);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testReplaceDataWithClampedCount(Closure $create): void
     {
         $node = $create();
@@ -52,9 +49,7 @@ class CharacterDataReplaceDataTest extends NodeTestCase
         $this->assertSame('teyo', $node->data);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testReplaceDataWithNegativeClampedCount(Closure $create): void
     {
         $node = $create();
@@ -64,9 +59,7 @@ class CharacterDataReplaceDataTest extends NodeTestCase
         $this->assertSame('teyo', $node->data);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testReplaceDataBeforeStart(Closure $create): void
     {
         $node = $create();
@@ -76,9 +69,7 @@ class CharacterDataReplaceDataTest extends NodeTestCase
         $this->assertSame('yotest', $node->data);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testReplaceDataAtStartShorter(Closure $create): void
     {
         $node = $create();
@@ -88,9 +79,7 @@ class CharacterDataReplaceDataTest extends NodeTestCase
         $this->assertSame('yst', $node->data);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testReplaceDataAtStartEqualLength(Closure $create): void
     {
         $node = $create();
@@ -100,9 +89,7 @@ class CharacterDataReplaceDataTest extends NodeTestCase
         $this->assertSame('yost', $node->data);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testReplaceDataAtStartLonger(Closure $create): void
     {
         $node = $create();
@@ -112,9 +99,7 @@ class CharacterDataReplaceDataTest extends NodeTestCase
         $this->assertSame('yoast', $node->data);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testReplaceDataInMiddleShorter(Closure $create): void
     {
         $node = $create();
@@ -124,9 +109,7 @@ class CharacterDataReplaceDataTest extends NodeTestCase
         $this->assertSame('tot', $node->data);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testReplaceDataInMiddleEqualLength(Closure $create): void
     {
         $node = $create();
@@ -136,9 +119,7 @@ class CharacterDataReplaceDataTest extends NodeTestCase
         $this->assertSame('tyot', $node->data);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testReplaceDataInMiddleLonger(Closure $create): void
     {
         $node = $create();
@@ -150,9 +131,7 @@ class CharacterDataReplaceDataTest extends NodeTestCase
         $this->assertSame('tyupaddupst', $node->data);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testReplaceDataAtEndShorter(Closure $create): void
     {
         $node = $create();
@@ -162,9 +141,7 @@ class CharacterDataReplaceDataTest extends NodeTestCase
         $this->assertSame('tyo', $node->data);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testReplaceDataAtEndEqualLength(Closure $create): void
     {
         $node = $create();
@@ -174,9 +151,7 @@ class CharacterDataReplaceDataTest extends NodeTestCase
         $this->assertSame('teyo', $node->data);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testReplaceDataAtEndLonger(Closure $create): void
     {
         $node = $create();
@@ -186,9 +161,7 @@ class CharacterDataReplaceDataTest extends NodeTestCase
         $this->assertSame('testyo', $node->data);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testReplaceDataWholeString(Closure $create): void
     {
         $node = $create();
@@ -198,9 +171,7 @@ class CharacterDataReplaceDataTest extends NodeTestCase
         $this->assertSame('quux', $node->data);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testReplaceDataWithEmptyString(Closure $create): void
     {
         $node = $create();
@@ -210,9 +181,7 @@ class CharacterDataReplaceDataTest extends NodeTestCase
         $this->assertSame('', $node->data);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testReplaceDataWithNonAsciiData(Closure $create): void
     {
         $node = $create();
@@ -225,9 +194,7 @@ class CharacterDataReplaceDataTest extends NodeTestCase
         $this->assertSame("This is the character data test, other 資料，更多文字", $node->data);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testReplaceDataWithNonBMPData(Closure $create): void
     {
         $node = $create();

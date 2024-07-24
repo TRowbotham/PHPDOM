@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\dom\nodes;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Document;
 use Rowbot\DOM\Node;
 
@@ -17,9 +18,7 @@ trait ChildNodeRemoveTrait
 {
     abstract public static function childNodeRemoveNodesProvider(): iterable;
 
-    /**
-     * @dataProvider childNodeRemoveNodesProvider
-     */
+    #[DataProvider('childNodeRemoveNodesProvider')]
     public function testRemove(Document $document, Node $node, Node $parent): void
     {
         $this->assertTrue(method_exists($node, 'remove'));

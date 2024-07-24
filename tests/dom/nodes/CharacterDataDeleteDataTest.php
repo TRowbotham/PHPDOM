@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Tests\dom\nodes;
 
 use Closure;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Comment;
 use Rowbot\DOM\Exception\IndexSizeError;
 use Rowbot\DOM\Tests\dom\DocumentGetter;
@@ -17,9 +18,7 @@ class CharacterDataDeleteDataTest extends NodeTestCase
 {
     use DocumentGetter;
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testDeleteDataOutOfBounds(Closure $create): void
     {
         $node = $create();
@@ -39,9 +38,7 @@ class CharacterDataDeleteDataTest extends NodeTestCase
         }, IndexSizeError::class);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testDeleteDataAtStart(Closure $create): void
     {
         $node = $create();
@@ -51,9 +48,7 @@ class CharacterDataDeleteDataTest extends NodeTestCase
         $this->assertSame('st', $node->data);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testDeleteDataAtEnd(Closure $create): void
     {
         $node = $create();
@@ -63,9 +58,7 @@ class CharacterDataDeleteDataTest extends NodeTestCase
         $this->assertSame('te', $node->data);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testDeleteDataInMiddle(Closure $create): void
     {
         $node = $create();
@@ -75,9 +68,7 @@ class CharacterDataDeleteDataTest extends NodeTestCase
         $this->assertSame('tst', $node->data);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testDeleteDataSmallNegativeCount(Closure $create): void
     {
         $node = $create();
@@ -87,9 +78,7 @@ class CharacterDataDeleteDataTest extends NodeTestCase
         $this->assertSame('te', $node->data);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testDeleteDataWithLargeNegativeCount(Closure $create): void
     {
         $node = $create();
@@ -100,9 +89,7 @@ class CharacterDataDeleteDataTest extends NodeTestCase
         $this->assertSame('tt', $node->data);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testDeleteDataWithNonAsciiData(Closure $create): void
     {
         $node = $create();
@@ -114,9 +101,7 @@ class CharacterDataDeleteDataTest extends NodeTestCase
         $this->assertSame("This is the character data test, append 資料，更多資料", $node->data);
     }
 
-     /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testDeleteDataWithNonBMPData(Closure $create): void
     {
         $node = $create();

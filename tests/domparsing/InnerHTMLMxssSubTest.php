@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\domparsing;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Tests\dom\WindowTrait;
 use Rowbot\DOM\Tests\TestCase;
 
@@ -38,9 +39,7 @@ class InnerHTMLMxssSubTest extends TestCase
         ["3000"],
     ];
 
-    /**
-     * @dataProvider whitespaceProvider
-     */
+    #[DataProvider('whitespaceProvider')]
     public function testInnerHTML(string $whitespace): void
     {
         $document = self::getWindow()->document;

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Tests\html\syntax\parsing;
 
 use Generator;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\HTMLDocument;
 use Rowbot\DOM\Tests\TestCase;
 
@@ -15,9 +16,7 @@ class Html_content_in_foreign_contextTest extends TestCase
     private const CONTEXTS = ["svg", "math"];
     private const ELEMENTS = ["/p", "/br", "b", "big", "blockquote", "br", "center", "code", "dd", "div", "dl", "dt", "em", "embed", "h1", "h2", "h3", "h4", "h5", "h6", "hr", "i", "img", "li", "listing", "menu", "meta", "nobr", "ol", "p", "pre", "ruby", "s", "small", "span", "strong", "strike", "sub", "sup", "table", "tt", "u", "ul", "var"];
 
-    /**
-     * @dataProvider elementProvider
-     */
+    #[DataProvider('elementProvider')]
     public function testHTMLNamespaceNodesShouldExitForeignContent(string $c, string $e): void
     {
         $document = new HTMLDocument();

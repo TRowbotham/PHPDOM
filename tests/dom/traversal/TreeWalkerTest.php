@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Tests\dom\traversal;
 
 use Closure;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Exception\InvalidStateError;
 use Rowbot\DOM\Node;
 use Rowbot\DOM\NodeFilter;
@@ -65,9 +66,7 @@ class TreeWalkerTest extends TestCase
         }, InvalidStateError::class);
     }
 
-    /**
-     * @dataProvider treeWalkerInputProvider
-     */
+    #[DataProvider('treeWalkerInputProvider')]
     public function testWalker(Node $root, int $whatToShow, ?Closure $filter): void
     {
         $walker = self::getWindow()->document->createTreeWalker($root, $whatToShow, $filter);

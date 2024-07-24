@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Tests\dom\nodes;
 
 use Generator;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Tests\dom\WindowTrait;
 
 /**
@@ -14,9 +15,7 @@ class NodeContainsTest extends NodeTestCase
 {
     use WindowTrait;
 
-    /**
-     * @dataProvider rangeTestNodesProvider
-     */
+    #[DataProvider('rangeTestNodesProvider')]
     public function testContains($referenceName, $otherName)
     {
         $window = self::getWindow();

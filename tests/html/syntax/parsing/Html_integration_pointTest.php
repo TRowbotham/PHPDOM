@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\html\syntax\parsing;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Namespaces;
 use Rowbot\DOM\Tests\dom\WindowTrait;
 use Rowbot\DOM\Tests\TestCase;
@@ -19,9 +20,7 @@ class Html_integration_pointTest extends TestCase
 {
     use WindowTrait;
 
-    /**
-     * @dataProvider idProvider
-     */
+    #[DataProvider('idProvider')]
     public function testIntegrationPoint(string $id): void
     {
         $document = self::getWindow()->document;

@@ -6,6 +6,7 @@ namespace Rowbot\DOM\Tests\html5lib;
 
 use DirectoryIterator;
 use Generator;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Rowbot\DOM\Parser\Collection\OpenElementStack;
 use Rowbot\DOM\Parser\HTML\ParserContext;
@@ -60,9 +61,7 @@ class TokenizerTest extends TestCase
 
     private const TEST_FILES_DIR = __DIR__ . DS . 'test_data' . DS . 'tokenizer';
 
-    /**
-     * @dataProvider tokenizerTestProvider
-     */
+    #[DataProvider('tokenizerTestProvider')]
     public function testTokenizer(string $description, string $input, array $output, int $state, ?string $lastStartTag): void
     {
         $stream = new CodePointStream();

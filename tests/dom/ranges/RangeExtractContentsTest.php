@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Tests\dom\ranges;
 
 use Generator;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Node;
 use Rowbot\DOM\Range;
 use Rowbot\DOM\Tests\dom\Window;
@@ -27,9 +28,7 @@ class RangeExtractContentsTest extends RangeTestCase
     private static $expectedIframe;
     private static $referenceDoc;
 
-    /**
-     * @dataProvider rangesProvider
-     */
+    #[DataProvider('rangesProvider')]
     public function testExtractContents(int $i): void
     {
         self::restoreIframe(self::$actualIframe, $i);

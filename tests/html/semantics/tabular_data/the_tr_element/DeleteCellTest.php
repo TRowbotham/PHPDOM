@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\html\semantics\tabular_data\the_tr_element;
 
+use PHPUnit\Framework\Attributes\Depends;
 use Rowbot\DOM\Element\HTML\HTMLTableRowElement;
 use Rowbot\DOM\Exception\IndexSizeError;
 use Rowbot\DOM\Tests\dom\WindowTrait;
@@ -28,9 +29,7 @@ class DeleteCellTest extends TestCase
         return $tr;
     }
 
-    /**
-     * @depends testDeleteCellWithArgZero
-     */
+    #[Depends('testDeleteCellWithArgZero')]
     public function testDeleteCellWithArgNegativeOne(HTMLTableRowElement $tr): HTMLTableRowElement
     {
         $tr->deleteCell(-1);
@@ -47,9 +46,7 @@ class DeleteCellTest extends TestCase
         $tr->deleteCell($tr->cells->length);
     }
 
-    /**
-     * @depends testDeleteCellWithArgNegativeOne
-     */
+    #[Depends('testDeleteCellWithArgNegativeOne')]
     public function testDeleteCellWithArgNegativeOneWithNoCells(HTMLTableRowElement $tr): void
     {
         self::assertSame(1, $tr->cells->length);

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Tests\dom\ranges;
 
 use Generator;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Exception\IndexSizeError;
 use Rowbot\DOM\Exception\InvalidNodeTypeError;
 use Rowbot\DOM\Exception\WrongDocumentError;
@@ -22,9 +23,7 @@ class RangeComparePointTest extends RangeTestCase
 {
     use WindowTrait;
 
-    /**
-     * @dataProvider pointsProvider
-     */
+    #[DataProvider('pointsProvider')]
     public function testComparePoint(string $testPoint, string $testRange): void
     {
         $window = self::getWindow();

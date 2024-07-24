@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\dom\nodes;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Exception\InvalidCharacterError;
 use Rowbot\DOM\Tests\dom\DocumentGetter;
 use Rowbot\DOM\Tests\TestCase;
@@ -30,45 +31,35 @@ class DocumentCreateAttributeTest extends TestCase
         return self::$xmlDocument;
     }
 
-    /**
-     * @dataProvider invalidNamesProvider
-     */
+    #[DataProvider('invalidNamesProvider')]
     public function testInvalidNameHTMLCreateAttribute(string $name): void
     {
         $this->expectException(InvalidCharacterError::class);
         self::getHTMLDocument()->createAttribute($name);
     }
 
-    /**
-     * @dataProvider invalidNamesProvider
-     */
+    #[DataProvider('invalidNamesProvider')]
     public function testInvalidNameXMLCreateAttribute(string $name): void
     {
         $this->expectException(InvalidCharacterError::class);
         self::getXMLDocument()->createAttribute($name);
     }
 
-    /**
-     * @dataProvider validNamesProvider
-     */
+    #[DataProvider('validNamesProvider')]
     public function testValidNamesHTMLCreateAttribute(string $name): void
     {
         $attr = self::getHTMLDocument()->createAttribute($name);
         $this->attr_is($attr, '', $name, null, null, $name);
     }
 
-    /**
-     * @dataProvider validNamesProvider
-     */
+    #[DataProvider('validNamesProvider')]
     public function testValidNamesXMLCreateAttribute(string $name): void
     {
         $attr = self::getXMLDocument()->createAttribute($name);
         $this->attr_is($attr, '', $name, null, null, $name);
     }
 
-    /**
-     * @dataProvider attrNameProvider
-     */
+    #[DataProvider('attrNameProvider')]
     public function testHTMLDocumentCreateAttribute($name): void
     {
         $document = self::getHTMLDocument();
@@ -84,9 +75,7 @@ class DocumentCreateAttributeTest extends TestCase
         $this->assertNull($attribute->ownerElement);
     }
 
-    /**
-     * @dataProvider attrNameProvider
-     */
+    #[DataProvider('attrNameProvider')]
     public function testXMLDocumentCreateAttribtue($name): void
     {
         $document = self::getXMLDocument();

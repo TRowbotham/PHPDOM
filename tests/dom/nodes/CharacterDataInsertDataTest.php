@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rowbot\DOM\Tests\dom\nodes;
 
 use Closure;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Comment;
 use Rowbot\DOM\Exception\IndexSizeError;
 use Rowbot\DOM\Tests\dom\DocumentGetter;
@@ -17,9 +18,7 @@ class CharacterDataInsertDataTest extends NodeTestCase
 {
     use DocumentGetter;
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testInsertDataOutOfBounds(Closure $create): void
     {
         $node = $create();
@@ -33,9 +32,7 @@ class CharacterDataInsertDataTest extends NodeTestCase
         }, IndexSizeError::class);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testInsertDataNegativeOutOfBounds(Closure $create): void
     {
         $node = $create();
@@ -49,9 +46,7 @@ class CharacterDataInsertDataTest extends NodeTestCase
         }, IndexSizeError::class);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testInsertDataNegativeInOfBounds(Closure $create): void
     {
         $node = $create();
@@ -61,9 +56,7 @@ class CharacterDataInsertDataTest extends NodeTestCase
         $this->assertSame('teXst', $node->data);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testInsertDataEmptyString(Closure $create): void
     {
         $node = $create();
@@ -73,9 +66,7 @@ class CharacterDataInsertDataTest extends NodeTestCase
         $this->assertSame('test', $node->data);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testInsertDataAtStart(Closure $create): void
     {
         $node = $create();
@@ -85,9 +76,7 @@ class CharacterDataInsertDataTest extends NodeTestCase
         $this->assertSame('Xtest', $node->data);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testInsertDataInMiddle(Closure $create): void
     {
         $node = $create();
@@ -97,9 +86,7 @@ class CharacterDataInsertDataTest extends NodeTestCase
         $this->assertSame('teXst', $node->data);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testInsertDataAtEnd(Closure $create): void
     {
         $node = $create();
@@ -109,9 +96,7 @@ class CharacterDataInsertDataTest extends NodeTestCase
         $this->assertSame('testing', $node->data);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testInsertDataWithNonAsciiData(Closure $create): void
     {
         $node = $create();
@@ -123,9 +108,7 @@ class CharacterDataInsertDataTest extends NodeTestCase
         $this->assertSame("This is the character data test, append more 資料，更多測試資料", $node->data);
     }
 
-    /**
-     * @dataProvider nodesProvider
-     */
+    #[DataProvider('nodesProvider')]
     public function testInsertDataWithNonBMPData(Closure $create): void
     {
         $node = $create();

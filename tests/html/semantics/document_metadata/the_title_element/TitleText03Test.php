@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rowbot\DOM\Tests\html\semantics\document_metadata\the_title_element;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Rowbot\DOM\Tests\dom\WindowTrait;
 use Rowbot\DOM\Tests\TestCase;
 
@@ -16,9 +17,7 @@ class TitleText03Test extends TestCase
 {
     use WindowTrait;
 
-    /**
-     * @dataProvider titleProvider
-     */
+    #[DataProvider('titleProvider')]
     public function testTitleText(string $str): void
     {
         $document = self::getWindow()->document;
