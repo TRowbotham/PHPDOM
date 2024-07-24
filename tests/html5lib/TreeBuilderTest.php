@@ -48,10 +48,10 @@ class TreeBuilderTest extends TestCase
      *
      * @param \Rowbot\DOM\HTMLDocument|\Rowbot\DOM\DocumentFragment $expected
      */
-    public function testTreeBuilder(string $data, array $errors, $expected, ?Element $context = null): void
+    public function testTreeBuilder(string $data, array $errors, $expected, ?Element $context, bool $enableScripting): void
     {
         if ($context === null) {
-            $document = DocumentBuilder::create()->setContentType('text/html')->emulateScripting(false)->createEmptyDocument();
+            $document = DocumentBuilder::create()->setContentType('text/html')->emulateScripting($enableScripting)->createEmptyDocument();
             $parser = new HTMLParser($document);
             $parser->preprocessInputStream($data);
             $parser->run();
@@ -87,7 +87,7 @@ class TreeBuilderTest extends TestCase
                             'errors' => [],
                             'expected' => new HTMLDocument(),
                             'context' => null,
-                            'enableScripting' => null,
+                            'enableScripting' => false,
                         ];
                         $prevLine = '';
 
